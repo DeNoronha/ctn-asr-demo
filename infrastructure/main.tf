@@ -75,7 +75,7 @@ resource "azurerm_storage_account" "main" {
   account_replication_type = "LRS"
   
   min_tls_version          = "TLS1_2"
-  enable_https_traffic_only = true
+  https_traffic_only_enabled = true
   
   tags = local.common_tags
 }
@@ -350,7 +350,7 @@ resource "azurerm_automation_schedule" "stop_postgres" {
   automation_account_name = azurerm_automation_account.main.name
   frequency               = "Week"
   interval                = 1
-  timezone                = "W. Europe Standard Time"
+  timezone                = "Europe/Amsterdam"
   start_time              = "2025-10-08T17:00:00+01:00"
   week_days               = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 }
@@ -362,7 +362,7 @@ resource "azurerm_automation_schedule" "start_postgres" {
   automation_account_name = azurerm_automation_account.main.name
   frequency               = "Week"
   interval                = 1
-  timezone                = "W. Europe Standard Time"
+  timezone                = "Europe/Amsterdam"
   start_time              = "2025-10-08T09:00:00+01:00"
   week_days               = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 }
