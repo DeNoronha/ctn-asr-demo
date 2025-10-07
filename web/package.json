@@ -1,0 +1,76 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@progress/kendo-data-query": "^1.7.1",
+    "@progress/kendo-date-math": "^1.5.15",
+    "@progress/kendo-drawing": "^1.22.1",
+    "@progress/kendo-inputs-common": "^3.1.2",
+    "@progress/kendo-intl": "^3.1.2",
+    "@progress/kendo-licensing": "^1.7.1",
+    "@progress/kendo-popup-common": "^1.9.5",
+    "@progress/kendo-react-animation": "^8.5.0",
+    "@progress/kendo-react-buttons": "^8.5.0",
+    "@progress/kendo-react-common": "^8.5.0",
+    "@progress/kendo-react-data-tools": "^8.5.0",
+    "@progress/kendo-react-dateinputs": "^8.5.0",
+    "@progress/kendo-react-dialogs": "^8.5.0",
+    "@progress/kendo-react-dropdowns": "^8.5.0",
+    "@progress/kendo-react-grid": "^8.5.0",
+    "@progress/kendo-react-indicators": "^8.5.0",
+    "@progress/kendo-react-inputs": "^8.5.0",
+    "@progress/kendo-react-intl": "^8.5.0",
+    "@progress/kendo-react-labels": "^8.5.0",
+    "@progress/kendo-react-layout": "^8.5.0",
+    "@progress/kendo-react-popup": "^8.5.0",
+    "@progress/kendo-react-progressbars": "^8.5.0",
+    "@progress/kendo-react-tooltip": "^8.5.0",
+    "@progress/kendo-react-treeview": "^8.5.0",
+    "@progress/kendo-svg-icons": "^3.3.0",
+    "@progress/kendo-theme-default": "^8.0.0",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.126",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "ajv": "^8.17.1",
+    "axios": "^1.12.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-scripts": "5.0.1",
+    "react-transition-group": "^4.4.5",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/axios": "^0.9.36"
+  }
+}
