@@ -1,0 +1,77 @@
+/* Admin Portal Styles - CTN Brand */
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+}
+
+.user-role {
+  font-size: 12px;
+  color: #ff8c00;
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+.user-info svg {
+  color: #00a3e0;
+}
+
+.user-info button {
+  margin-left: 8px;
+  color: white;
+}
+
+.user-info button:hover {
+  background: rgba(255, 140, 0, 0.2);
+}
+
+/* Empty State Styles */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: #f9fafb;
+  border-radius: 8px;
+  margin: 20px;
+}
+
+.empty-state h3 {
+  margin: 0 0 10px 0;
+  color: #1976d2;
+  font-size: 24px;
+}
+
+.empty-state p {
+  margin: 0 0 20px 0;
+  color: #666;
+  font-size: 16px;
+  max-width: 500px;
+}
+
+/* View Styles */
+.endpoints-view {
+  height: 100%;
+}
+
+.endpoints-view .empty-state {
+  height: calc(100vh - 200px);
+}

@@ -1,0 +1,61 @@
+/**
+ * Unauthorized Access Page
+ * Shown when user doesn't have required permissions
+ */
+
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@progress/kendo-react-buttons';
+import { useAuth } from '../../auth/AuthContext';
+import { ShieldX, Home, LogOut } from 'lucide-react';
+import './Unauthorized.css';
+
+export const UnauthorizedPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleGoHome = () => {
+    navigate('/');
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  return (
+    <div className="unauthorized-container">
+      <div className="unauthorized-card">
+        <ShieldX size={64} className="unauthorized-icon" />
+        <h1>Access Denied</h1>
+        
+        <p className="unauthorized-message">
+          You don't have permission to access this resource.
+        </p>
+
+        {user && (
+          <div className="unauthorized-info">
+            <p><strong>Current Role:</strong> {user.primaryRole}</p>
+            <p><strong>Account:</strong> {user.account.username}</p>
+          </div>
+        )}
+
+        <div className="unauthorized-actions">
+          <Button
+            themeColor="primary"
+            onClick={handleGoHome}
+          >
+            <Home size={18} style={{ marginRight: 8 }} />
+            Go to Home
+          </Button>
+          <Button
+            onClick={handleLogout}
+          >
+            <LogOut size={18} style={{ marginRight: 8 }} />
+            Sign Out
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};

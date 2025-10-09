@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@azure/msal-browser": "^4.24.1",
+    "@azure/msal-react": "^3.0.20",
     "@progress/kendo-data-query": "^1.7.1",
     "@progress/kendo-date-math": "^1.5.15",
     "@progress/kendo-drawing": "^1.22.1",
@@ -12,17 +14,20 @@
     "@progress/kendo-popup-common": "^1.9.5",
     "@progress/kendo-react-animation": "^8.5.0",
     "@progress/kendo-react-buttons": "^8.5.0",
-    "@progress/kendo-react-common": "^8.5.0",
+    "@progress/kendo-react-common": "8.5.0",
     "@progress/kendo-react-data-tools": "^8.5.0",
     "@progress/kendo-react-dateinputs": "^8.5.0",
     "@progress/kendo-react-dialogs": "^8.5.0",
     "@progress/kendo-react-dropdowns": "^8.5.0",
+    "@progress/kendo-react-excel-export": "8.5.0",
+    "@progress/kendo-react-form": "^8.5.0",
     "@progress/kendo-react-grid": "^8.5.0",
     "@progress/kendo-react-indicators": "^8.5.0",
     "@progress/kendo-react-inputs": "^8.5.0",
     "@progress/kendo-react-intl": "^8.5.0",
     "@progress/kendo-react-labels": "^8.5.0",
     "@progress/kendo-react-layout": "^8.5.0",
+    "@progress/kendo-react-notification": "^12.1.0",
     "@progress/kendo-react-popup": "^8.5.0",
     "@progress/kendo-react-progressbars": "^8.5.0",
     "@progress/kendo-react-tooltip": "^8.5.0",
@@ -39,8 +44,10 @@
     "@types/react-dom": "^19.2.0",
     "ajv": "^8.17.1",
     "axios": "^1.12.2",
+    "lucide-react": "^0.545.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-router-dom": "^7.9.3",
     "react-scripts": "5.0.1",
     "react-transition-group": "^4.4.5",
     "typescript": "^4.9.5",
@@ -71,6 +78,7 @@
     ]
   },
   "devDependencies": {
-    "@types/axios": "^0.9.36"
+    "@types/axios": "^0.9.36",
+    "@types/react-router-dom": "^5.3.3"
   }
 }

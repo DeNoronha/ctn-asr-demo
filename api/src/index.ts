@@ -4,5 +4,9 @@ import './functions/GetMember';
 import './functions/CreateMember';
 import './functions/IssueToken';
 import './functions/EndpointManagement';
-
-// This file ensures all functions are loaded
+import './functions/GetLegalEntity';
+import './functions/UpdateLegalEntity';
+import './functions/GetContacts';
+import './functions/CreateContact';
+import './functions/UpdateContact';
+import './functions/DeleteContact';

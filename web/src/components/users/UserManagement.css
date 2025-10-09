@@ -1,0 +1,183 @@
+/* User Management Styles - CTN Brand */
+
+.user-management {
+  padding: 0;
+}
+
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-icon {
+  color: #00a3e0;
+}
+
+.header-description {
+  color: #64748b;
+  font-size: 14px;
+  margin: 4px 0 0 0;
+}
+
+.user-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-item {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #ff8c00;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a4d6d;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.action-buttons button {
+  padding: 4px 8px;
+}
+
+/* Role and Status Badges */
+.role-badge,
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.role-badge.role-system-admin {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.role-badge.role-association-admin {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.role-badge.role-member {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.status-badge.status-active {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.status-badge.status-disabled {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* Dialog Styles */
+.user-dialog {
+  width: 500px;
+  max-width: 90vw;
+}
+
+.dialog-content {
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a4d6d;
+  margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #00a3e0;
+  box-shadow: 0 0 0 3px rgba(0, 163, 224, 0.1);
+}
+
+.form-group .help-text {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.role-description {
+  background: #f0f9ff;
+  border-left: 3px solid #00a3e0;
+  padding: 12px;
+  margin-top: 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #475569;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .user-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}

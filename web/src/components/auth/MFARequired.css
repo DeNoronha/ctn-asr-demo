@@ -1,0 +1,87 @@
+/* MFA Required Page Styles */
+
+.mfa-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  padding: 20px;
+}
+
+.mfa-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 48px;
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+}
+
+.mfa-icon {
+  color: #f5576c;
+  margin-bottom: 24px;
+}
+
+.mfa-card h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 24px 0;
+}
+
+.mfa-message {
+  text-align: left;
+  margin-bottom: 32px;
+}
+
+.mfa-message p {
+  color: #4a5568;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+.mfa-steps {
+  text-align: left;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.mfa-steps h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 16px 0;
+}
+
+.mfa-steps ol {
+  margin: 0;
+  padding-left: 20px;
+  color: #4a5568;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.mfa-steps li {
+  margin-bottom: 8px;
+}
+
+.mfa-steps a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.mfa-steps a:hover {
+  text-decoration: underline;
+}
+
+.mfa-card button {
+  width: 100%;
+  max-width: 200px;
+}

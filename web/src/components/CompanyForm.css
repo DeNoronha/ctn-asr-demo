@@ -1,0 +1,35 @@
+.company-form {
+  padding: 20px;
+}
+
+.company-form .k-form-fieldset {
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.company-form .k-form-fieldset legend {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+  padding: 0 8px;
+}
+
+.company-form .k-form-field {
+  margin-bottom: 16px;
+}
+
+.form-row-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.k-form-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}

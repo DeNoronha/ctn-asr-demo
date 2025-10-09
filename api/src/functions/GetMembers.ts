@@ -15,7 +15,7 @@ export async function GetMembers(request: HttpRequest, context: InvocationContex
 
   try {
     const result = await pool.query(
-      'SELECT org_id, legal_name, lei, kvk, domain, status, membership_level, created_at FROM members ORDER BY created_at DESC'
+      'SELECT org_id, legal_name, lei, kvk, domain, status, membership_level, created_at, legal_entity_id FROM members ORDER BY created_at DESC'
     );
 
     return {

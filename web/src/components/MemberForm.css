@@ -1,0 +1,101 @@
+/* MemberForm.css */
+.member-form-container {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.member-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-section h3 {
+  margin: 0;
+  color: #424242;
+  font-size: 18px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field .k-label {
+  font-weight: 500;
+  color: #424242;
+  font-size: 14px;
+}
+
+.form-field .k-input {
+  width: 100%;
+}
+
+.form-field .k-invalid {
+  border-color: #f44336;
+}
+
+.form-field .k-hint {
+  color: #757575;
+  font-size: 12px;
+}
+
+.form-field e {
+  color: #f44336;
+  font-size: 12px;
+  font-style: normal;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.form-status {
+  text-align: center;
+  padding: 8px;
+  background: #e8f5e9;
+  border-radius: 4px;
+  color: #2e7d32;
+}
+
+.form-status small {
+  font-size: 13px;
+}
+
+/* Focus management */
+.form-field .k-input:focus {
+  outline: none;
+  border-color: #ff6358;
+  box-shadow: 0 0 0 2px rgba(255, 99, 88, 0.2);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .member-form-container {
+    padding: 16px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+}

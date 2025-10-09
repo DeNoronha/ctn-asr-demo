@@ -22,7 +22,10 @@ export async function GetMember(request: HttpRequest, context: InvocationContext
 
   try {
     const result = await pool.query(
-      'SELECT org_id, legal_name, lei, kvk, domain, status, membership_level, created_at, metadata FROM members WHERE org_id = $1',
+      `SELECT org_id, legal_name, lei, kvk, domain, status, membership_level, 
+              created_at, metadata, legal_entity_id 
+       FROM members 
+       WHERE org_id = $1`,
       [orgId]
     );
 
