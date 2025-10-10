@@ -1,0 +1,47 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - web/*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  # Production environment variables
+  REACT_APP_AZURE_CLIENT_ID: 'd3037c11-a541-4f21-8862-8079137a0cde'
+  REACT_APP_AZURE_TENANT_ID: '598664e7-725c-4daa-bd1f-89c4ada717ff'
+  REACT_APP_REDIRECT_URI: 'https://calm-tree-03352ba03.1.azurestaticapps.net'
+  REACT_APP_API_URL: 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1'
+
+steps:
+  - task: NodeTool@0
+    displayName: 'Install Node.js'
+    inputs:
+      versionSpec: '18.x'
+
+  - script: |
+      cd web
+      npm ci
+    displayName: 'Install dependencies'
+
+  - script: |
+      cd web
+      npm run build
+    displayName: 'Build React application'
+    env:
+      CI: false
+      NODE_ENV: production
+      REACT_APP_AZURE_CLIENT_ID: $(REACT_APP_AZURE_CLIENT_ID)
+      REACT_APP_AZURE_TENANT_ID: $(REACT_APP_AZURE_TENANT_ID)
+      REACT_APP_REDIRECT_URI: $(REACT_APP_REDIRECT_URI)
+      REACT_APP_API_URL: $(REACT_APP_API_URL)
+
+  - task: AzureStaticWebApp@0
+    displayName: 'Deploy to Azure Static Web Apps'
+    inputs:
+      app_location: '/web/build'
+      skip_app_build: true
+      azure_static_web_apps_api_token: $(AZURE_STATIC_WEB_APPS_API_TOKEN)
