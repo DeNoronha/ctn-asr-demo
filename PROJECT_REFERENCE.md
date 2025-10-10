@@ -84,7 +84,71 @@ export POSTGRES_PASSWORD='[REDACTED]'
 
 ## Deployment Commands
 
-### Frontend Deployment (Automatic via Azure Pipeline - PREFERRED)
+### 🚀 PERSISTENT DEPLOYMENT WORKFLOW
+
+**⚠️ CRITICAL: Build and Deploy ONLY on Azure - No Local Builds**
+
+**Why Azure-Only:**
+- ✅ Consistent build environment (Azure Pipelines)
+- ✅ No manual .env juggling (Azure Pipelines)
+- ⚠️ Azure Pipelines parallel jobs NOT yet activated (awaiting Microsoft)
+- ⚠️ Use Azure DevOps (NOT GitHub Actions)
+- ⚠️ **Temporary:** Manual SWA deployments require local builds until pipelines active
+
+### Standard Workflow (Until Azure Pipeline Activated)
+
+**⚠️ NOTE:** SWA CLI manual deployments require local builds. True "build on Azure" only works with Azure Pipelines.
+
+**1. Commit and Push to Azure DevOps:**
+```bash
+cd /Users/ramondenoronha/Dev/DIL/repo/ASR
+git add .
+git commit -m "Your changes"
+git push
+```
+
+**2. Deploy API to Azure:**
+```bash
+cd /Users/ramondenoronha/Dev/DIL/repo/ASR/api
+func azure functionapp publish func-ctn-demo-asr-dev
+```
+
+**3. Deploy Frontend (Temporary Local Build):**
+```bash
+cd /Users/ramondenoronha/Dev/DIL/repo/ASR/web
+
+# Hide .env.local to prevent override
+mv .env.local .env.local.backup
+
+# Build for production
+npm run build
+
+# Deploy to Azure Static Web Apps
+npx @azure/static-web-apps-cli deploy ./build \
+  --deployment-token d1ec51feb9c93a061372a5fa151c2aa371b799b058087937c62d031bdd1457af01-15d4bfd4-f72a-4eb0-82cc-051069db9ab1003172603352ba03 \
+  --env production
+
+# Restore .env.local
+mv .env.local.backup .env.local
+```
+
+**Verify Deployment:**
+- Frontend: https://calm-tree-03352ba03.1.azurestaticapps.net
+- API: https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
+
+### ⚠️ FUTURE: Automatic Deployment (When Azure Pipeline Activated)
+Once parallel jobs enabled:
+```bash
+cd /Users/ramondenoronha/Dev/DIL/repo/ASR
+git add .
+git commit -m "Your changes"
+git push
+# Azure Pipeline automatically builds and deploys both API and Frontend
+```
+
+---
+
+### Frontend Deployment (Automatic via Azure Pipeline - NOT YET AVAILABLE)
 ```bash
 cd ~/Dev/DIL/repo/ASR
 git add .
@@ -97,31 +161,18 @@ git push origin main
 - Pipeline: https://dev.azure.com/ctn-demo/ASR/_build
 - Static Web App: Azure Portal → rg-ctn-demo-asr-dev → calm-tree-03352ba03 → Deployments
 
-### Frontend Deployment (Manual - Only if Azure Pipeline fails)
-```bash
-cd ~/Dev/DIL/repo/ASR/web
+### ⚠️ DEPRECATED: Direct swa deploy from source
+**DO NOT USE - SWA CLI cannot build on Azure for manual deployments**
 
-# CRITICAL: Rename .env.local to prevent localhost override
-mv .env.local .env.local.backup
+The command `swa deploy --app-location .` was attempted but SWA CLI requires pre-built files for manual deployments. Building on Azure only works with Azure Pipelines.
 
-# Build
-npm run build
-
-# Deploy using SWA CLI
-npx @azure/static-web-apps-cli deploy ./build \
-  --deployment-token d1ec51feb9c93a061372a5fa151c2aa371b799b058087937c62d031bdd1457af01-15d4bfd4-f72a-4eb0-82cc-051069db9ab1003172603352ba03 \
-  --env production
-
-# Restore .env.local for local development
-mv .env.local.backup .env.local
-```
-
-### API Deployment
+### API Deployment (Part of Standard Workflow)
 ```bash
 cd ~/Dev/DIL/repo/ASR/api
-npm run build
 func azure functionapp publish func-ctn-demo-asr-dev
 ```
+
+**Note:** This deploys directly to Azure Function App. The local `npm run build` is automatic.
 
 ### Database Migration
 ```bash
@@ -233,17 +284,13 @@ REACT_APP_API_URL=https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
 ## Common Issues & Solutions
 
 ### Issue: Production build redirects to localhost
-**Problem:** `.env.local` overrides `.env.production` during build
+**Problem:** `.env.local` was present during a local build
 
 **Solution:**
-```bash
-cd ~/Dev/DIL/repo/ASR/web
-mv .env.local .env.local.backup  # Temporarily hide
-npm run build                     # Build for production
-mv .env.local.backup .env.local   # Restore for local dev
-```
+- **DO NOT build locally** - always deploy using `swa deploy` which builds on Azure
+- If you accidentally did a local build, redeploy using the Standard Workflow
 
-**Prevention:** Use Azure Pipeline for deployments (handles this automatically)
+**Prevention:** Follow the Azure-only deployment workflow (builds happen on Azure, not locally)
 
 ### Issue: 404 errors on direct URL navigation in production
 **Problem:** Missing or incorrect `staticwebapp.config.json`
@@ -302,12 +349,15 @@ repo/ASR/
 - ✅ Created Azure Pipeline for auto-deployment (NOT GitHub Actions)
 - ✅ Updated PROJECT_REFERENCE with Azure DevOps information
 - ✅ Documented pipeline setup and testing procedures
+- ✅ **PERSISTENT: Azure-only deployment workflow (no local builds)**
 
 ## Notes
 - ⚠️ CHECK THIS FILE AT START OF EVERY NEW CONVERSATION
-- ⚠️ Source control: Azure DevOps (NOT GitHub)
+- ⚠️ **CRITICAL: Build ONLY on Azure - NO local npm run build**
+- ⚠️ Source control: Azure DevOps (NOT GitHub Actions)
+- ⚠️ Azure Pipelines NOT yet activated (awaiting parallel jobs)
 - Repository location: ~/Dev/DIL/repo/ASR (not in iCloud)
-- Use MacStudio for builds and deployments
-- `.env.local` MUST NOT be committed to git
-- Always use Azure Pipeline for production deployments
-- Manual deployments require temporarily hiding .env.local
+- Use MacStudio for deployments
+- `.env.local` for local dev only - never committed to git
+- Frontend deployment: Use `swa deploy` (builds on Azure)
+- API deployment: Use `func azure functionapp publish`

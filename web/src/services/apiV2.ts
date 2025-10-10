@@ -263,14 +263,14 @@ export const apiV2 = {
   
   async getContacts(legalEntityId: string): Promise<LegalEntityContact[]> {
     const response = await axios.get<LegalEntityContact[]>(
-      `${API_BASE_URL}/entities/${legalEntityId}/contacts`
+      `${API_BASE_URL}/legal-entities/${legalEntityId}/contacts`
     );
     return response.data;
   },
 
   async addContact(contact: Omit<LegalEntityContact, 'legal_entity_contact_id' | 'dt_created' | 'dt_modified'>): Promise<LegalEntityContact> {
     const response = await axios.post<LegalEntityContact>(
-      `${API_BASE_URL}/entities/${contact.legal_entity_id}/contacts`,
+      `${API_BASE_URL}/contacts`,
       contact
     );
     return response.data;
