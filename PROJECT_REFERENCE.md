@@ -18,7 +18,7 @@
 **1. Bicep Infrastructure Template** (`infrastructure/main.bicep`)
 - Single command deploys entire Azure infrastructure
 
-**2. CI/CD Pipeline** (GitHub Actions)
+**2. CI/CD Pipeline** (Azure DevOps Pipelines)
 - Automatic build & deploy on `git push`
 - Zero manual deployment steps
 
@@ -35,7 +35,8 @@ Access: https://calm-tree-03352ba03.1.azurestaticapps.net
 - Backend: Python (Azure Functions)
 - Database: PostgreSQL
 - IaC: Bicep
-- CI/CD: GitHub Actions
+- CI/CD: Azure DevOps Pipelines
+- Source Control: Azure DevOps Repos
 
 **Future (V2+):**
 - Frontend: React (stays the same)
@@ -45,6 +46,12 @@ Access: https://calm-tree-03352ba03.1.azurestaticapps.net
 ---
 
 ## Azure Resources
+
+### Azure DevOps
+- **Organization:** ctn-demo
+- **Project:** ASR
+- **Repository:** https://dev.azure.com/ctn-demo/_git/ASR
+- **Pipelines:** https://dev.azure.com/ctn-demo/ASR/_build
 
 ### Resource Groups
 - **Dev Environment:** rg-ctn-demo-asr-dev
@@ -77,16 +84,20 @@ export POSTGRES_PASSWORD='[REDACTED]'
 
 ## Deployment Commands
 
-### Frontend Deployment (Automatic via GitHub Actions - PREFERRED)
+### Frontend Deployment (Automatic via Azure Pipeline - PREFERRED)
 ```bash
 cd ~/Dev/DIL/repo/ASR
 git add .
 git commit -m "Your commit message"
 git push origin main
-# GitHub Actions automatically builds and deploys
+# Azure Pipeline automatically builds and deploys
 ```
 
-### Frontend Deployment (Manual - Only if GitHub Actions fails)
+**Monitor deployment:**
+- Pipeline: https://dev.azure.com/ctn-demo/ASR/_build
+- Static Web App: Azure Portal → rg-ctn-demo-asr-dev → calm-tree-03352ba03 → Deployments
+
+### Frontend Deployment (Manual - Only if Azure Pipeline fails)
 ```bash
 cd ~/Dev/DIL/repo/ASR/web
 
@@ -117,16 +128,48 @@ func azure functionapp publish func-ctn-demo-asr-dev
 psql "host=$POSTGRES_HOST port=$POSTGRES_PORT dbname=$POSTGRES_DATABASE user=$POSTGRES_USER password=$POSTGRES_PASSWORD sslmode=require" -f <migration-file.sql>
 ```
 
+## Azure DevOps Pipeline Setup
+
+### First-Time Pipeline Configuration
+1. Go to: https://dev.azure.com/ctn-demo/ASR/_build
+2. Click **New pipeline**
+3. Select **Azure Repos Git**
+4. Select **ASR** repository
+5. Select **Existing Azure Pipelines YAML file**
+6. Path: `/azure-pipelines.yml`
+7. Click **Continue**
+8. Click **Variables** → **New variable**
+   - Name: `AZURE_STATIC_WEB_APPS_API_TOKEN`
+   - Value: `d1ec51feb9c93a061372a5fa151c2aa371b799b058087937c62d031bdd1457af01-15d4bfd4-f72a-4eb0-82cc-051069db9ab1003172603352ba03`
+   - ✅ Check "Keep this value secret"
+   - Click **OK**
+9. Click **Save and run**
+
+### Testing the Pipeline
+```bash
+# Make a small change to test
+cd ~/Dev/DIL/repo/ASR
+echo "# Test deployment" >> web/README.md
+git add .
+git commit -m "Test: trigger Azure Pipeline deployment"
+git push origin main
+
+# Monitor pipeline execution:
+# https://dev.azure.com/ctn-demo/ASR/_build
+
+# After pipeline completes (2-5 minutes), verify:
+# https://calm-tree-03352ba03.1.azurestaticapps.net
+```
+
 ## Environment Files - CRITICAL CONFIGURATION
 
 ### ⚠️ .env.local MUST NOT BE COMMITTED TO GIT
 **Problem:** `.env.local` overrides `.env.production` during build, causing localhost redirects in production
 
 **Solution:**
-1. Keep `.env.local` in `.gitignore`
-2. Before production builds, temporarily rename: `mv .env.local .env.local.backup`
-3. After build, restore: `mv .env.local.backup .env.local`
-4. GitHub Actions workflow handles this automatically
+1. Keep `.env.local` in `.gitignore` (already configured)
+2. Azure Pipeline uses environment variables, not .env files
+3. For manual builds, temporarily rename: `mv .env.local .env.local.backup`
 
 ### Local Development (.env.local) - NOT IN GIT
 ```
@@ -200,12 +243,17 @@ npm run build                     # Build for production
 mv .env.local.backup .env.local   # Restore for local dev
 ```
 
-**Prevention:** Use GitHub Actions for deployments (handles this automatically)
+**Prevention:** Use Azure Pipeline for deployments (handles this automatically)
 
 ### Issue: 404 errors on direct URL navigation in production
 **Problem:** Missing or incorrect `staticwebapp.config.json`
 
 **Solution:** Ensure `web/public/staticwebapp.config.json` exists with correct navigationFallback configuration
+
+### Issue: Azure Pipeline fails with "permission denied"
+**Problem:** Missing deployment token in pipeline variables
+
+**Solution:** Add `AZURE_STATIC_WEB_APPS_API_TOKEN` as secret variable in Azure Pipeline
 
 ### Issue: New Azure Functions not deploying
 **Problem:** Function not imported in index.ts
@@ -228,9 +276,7 @@ func start --cors http://localhost:3000
 ## Project Structure
 ```
 repo/ASR/
-├── .github/
-│   └── workflows/
-│       └── azure-static-web-apps.yml  # Auto-deployment
+├── azure-pipelines.yml     # Auto-deployment configuration
 ├── api/                    # Azure Functions (TypeScript)
 │   ├── src/
 │   │   ├── functions/      # Function handlers
@@ -253,13 +299,15 @@ repo/ASR/
 - ✅ Moved repository to ~/Dev/DIL/repo/ASR (no iCloud sync)
 - ✅ Fixed authentication redirect loop (.env.local override issue)
 - ✅ Added staticwebapp.config.json for React Router support
-- ✅ Created GitHub Actions workflow for auto-deployment
-- ✅ Updated PROJECT_REFERENCE with critical deployment gotchas
+- ✅ Created Azure Pipeline for auto-deployment (NOT GitHub Actions)
+- ✅ Updated PROJECT_REFERENCE with Azure DevOps information
+- ✅ Documented pipeline setup and testing procedures
 
 ## Notes
 - ⚠️ CHECK THIS FILE AT START OF EVERY NEW CONVERSATION
+- ⚠️ Source control: Azure DevOps (NOT GitHub)
 - Repository location: ~/Dev/DIL/repo/ASR (not in iCloud)
 - Use MacStudio for builds and deployments
 - `.env.local` MUST NOT be committed to git
-- Always use GitHub Actions for production deployments
+- Always use Azure Pipeline for production deployments
 - Manual deployments require temporarily hiding .env.local
