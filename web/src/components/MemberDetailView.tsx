@@ -56,7 +56,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
       }
     };
     loadData();
-  }, [member.legal_entity_id, notification]);
+  }, [member.legal_entity_id]); // notification is stable from useCallback
 
   const handleUpdateCompany = async (data: LegalEntity) => {
     if (!legalEntity) return;

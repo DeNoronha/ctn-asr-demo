@@ -1,5 +1,5 @@
 // NotificationContext.tsx - Global notification system
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import {
   Notification,
   NotificationGroup,
@@ -105,13 +105,16 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     [showNotification]
   );
 
-  const value: NotificationContextType = {
-    showNotification,
-    showSuccess,
-    showError,
-    showWarning,
-    showInfo,
-  };
+  const value: NotificationContextType = useMemo(
+    () => ({
+      showNotification,
+      showSuccess,
+      showError,
+      showWarning,
+      showInfo,
+    }),
+    [showNotification, showSuccess, showError, showWarning, showInfo]
+  );
 
   return (
     <NotificationContext.Provider value={value}>
