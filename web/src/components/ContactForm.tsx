@@ -5,13 +5,13 @@ import { Input } from '@progress/kendo-react-inputs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Checkbox } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
-import { Contact } from '../services/api';
+import { LegalEntityContact } from '../services/api';
 import './ContactForm.css';
 
 interface ContactFormProps {
-  contact: Contact | null;
+  contact: LegalEntityContact | null;
   legalEntityId: string;
-  onSave: (contact: Contact) => Promise<void>;
+  onSave: (contact: LegalEntityContact) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -30,14 +30,13 @@ export const ContactForm: React.FC<ContactFormProps> = ({
   onCancel,
 }) => {
   const handleSubmit = async (dataItem: { [name: string]: any }) => {
-    const contactData: Contact = {
+    const contactData: LegalEntityContact = {
       legal_entity_contact_id: contact?.legal_entity_contact_id || crypto.randomUUID(),
       legal_entity_id: legalEntityId,
       dt_created: contact?.dt_created || new Date().toISOString(),
       dt_modified: new Date().toISOString(),
       contact_type: dataItem.contact_type,
-      first_name: dataItem.first_name,
-      last_name: dataItem.last_name,
+      full_name: `${dataItem.first_name} ${dataItem.last_name}`,
       email: dataItem.email,
       phone: dataItem.phone,
       mobile: dataItem.mobile,
@@ -49,9 +48,21 @@ export const ContactForm: React.FC<ContactFormProps> = ({
     await onSave(contactData);
   };
 
+  const getInitialValues = () => {
+    if (contact) {
+      const [first_name, ...lastNames] = (contact.full_name || '').split(' ');
+      return {
+        ...contact,
+        first_name: first_name || '',
+        last_name: lastNames.join(' ') || ''
+      };
+    }
+    return { contact_type: 'Primary', is_primary: false, first_name: '', last_name: '' };
+  };
+
   return (
     <Form
-      initialValues={contact || { contact_type: 'Primary', is_primary: false }}
+      initialValues={getInitialValues()}
       onSubmit={handleSubmit}
       render={(formRenderProps: FormRenderProps) => (
         <FormElement className="contact-form">

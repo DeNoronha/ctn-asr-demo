@@ -9,7 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@progress/kendo-react-buttons';
 import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
 import { ArrowLeft } from 'lucide-react';
-import { Member, LegalEntity, Contact, api } from '../services/api';
+import { Member, LegalEntity, LegalEntityContact, api } from '../services/api';
 import { EndpointManagement } from './EndpointManagement';
 import { CompanyDetails } from './CompanyDetails';
 import { CompanyForm } from './CompanyForm';
@@ -32,7 +32,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
   const [selected, setSelected] = useState(0);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(null);
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contacts, setContacts] = useState<LegalEntityContact[]>([]);
   const [loading, setLoading] = useState(false);
   const notification = useNotification();
 
@@ -62,7 +62,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
     if (!legalEntity) return;
     
     try {
-      const updated = await api.updateLegalEntity(legalEntity.legal_entity_id, data);
+      const updated = await api.updateLegalEntity(legalEntity.legal_entity_id!, data);
       setLegalEntity(updated);
       setIsEditingCompany(false);
       notification.showSuccess('Company information updated successfully');
@@ -72,7 +72,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
     }
   };
 
-  const handleUpdateContacts = async (updatedContacts: Contact[]) => {
+  const handleUpdateContacts = async (updatedContacts: LegalEntityContact[]) => {
     if (!legalEntity) return;
     
     try {
@@ -278,7 +278,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
               <div className="loading-state">Loading contacts...</div>
             ) : legalEntity ? (
               <ContactsManager
-                legalEntityId={legalEntity.legal_entity_id}
+                legalEntityId={legalEntity.legal_entity_id!}
                 contacts={contacts}
                 onUpdate={handleUpdateContacts}
               />

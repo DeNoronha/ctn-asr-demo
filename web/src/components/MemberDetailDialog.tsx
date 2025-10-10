@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
 import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
-import { Member, LegalEntity, Contact, api } from '../services/api';
+import { Member, LegalEntity, LegalEntityContact, api } from '../services/api';
 import MemberForm from './MemberForm';
 import { EndpointManagement } from './EndpointManagement';
 import { CompanyDetails } from './CompanyDetails';
@@ -46,15 +46,14 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
     dt_modified: member.updated_at || member.created_at,
   };
 
-  const mockContacts: Contact[] = [
+  const mockContacts: LegalEntityContact[] = [
     {
       legal_entity_contact_id: 'contact-1',
-      legal_entity_id: mockLegalEntity.legal_entity_id,
+      legal_entity_id: mockLegalEntity.legal_entity_id!,
       dt_created: new Date().toISOString(),
       dt_modified: new Date().toISOString(),
-      contact_type: 'Primary',
-      first_name: 'John',
-      last_name: 'Doe',
+      contact_type: 'PRIMARY',
+      full_name: 'John Doe',
       email: 'john.doe@example.com',
       phone: '+31 20 123 4567',
       mobile: '+31 6 12 34 56 78',
@@ -64,12 +63,11 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
     },
     {
       legal_entity_contact_id: 'contact-2',
-      legal_entity_id: mockLegalEntity.legal_entity_id,
+      legal_entity_id: mockLegalEntity.legal_entity_id!,
       dt_created: new Date().toISOString(),
       dt_modified: new Date().toISOString(),
-      contact_type: 'Technical',
-      first_name: 'Jane',
-      last_name: 'Smith',
+      contact_type: 'TECHNICAL',
+      full_name: 'Jane Smith',
       email: 'jane.smith@example.com',
       phone: '+31 20 987 6543',
       job_title: 'Technical Lead',
@@ -79,7 +77,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
   ];
 
   const [legalEntity, setLegalEntity] = useState<LegalEntity>(mockLegalEntity);
-  const [contacts, setContacts] = useState<Contact[]>(mockContacts);
+  const [contacts, setContacts] = useState<LegalEntityContact[]>(mockContacts);
   const [loading, setLoading] = useState(false);
   const notification = useNotification();
 
@@ -101,7 +99,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
     }
   };
 
-  const handleUpdateContacts = async (updatedContacts: Contact[]) => {
+  const handleUpdateContacts = async (updatedContacts: LegalEntityContact[]) => {
     try {
       // TODO: Replace with actual API calls when backend is ready
       setContacts(updatedContacts);
@@ -269,7 +267,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
         <TabStripTab title="Contacts">
           <div className="detail-content">
             <ContactsManager
-              legalEntityId={legalEntity.legal_entity_id}
+              legalEntityId={legalEntity.legal_entity_id!}
               contacts={contacts}
               onUpdate={handleUpdateContacts}
             />

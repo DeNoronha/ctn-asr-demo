@@ -3,14 +3,14 @@ import React, { useState } from 'react';
 import { Grid, GridColumn, GridCellProps } from '@progress/kendo-react-grid';
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
-import { Contact } from '../services/api';
+import { LegalEntityContact } from '../services/api';
 import { ContactForm } from './ContactForm';
 import './ContactsManager.css';
 
 interface ContactsManagerProps {
   legalEntityId: string;
-  contacts: Contact[];
-  onUpdate: (contacts: Contact[]) => Promise<void>;
+  contacts: LegalEntityContact[];
+  onUpdate: (contacts: LegalEntityContact[]) => Promise<void>;
 }
 
 export const ContactsManager: React.FC<ContactsManagerProps> = ({
@@ -19,20 +19,20 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
   onUpdate,
 }) => {
   const [showDialog, setShowDialog] = useState(false);
-  const [editingContact, setEditingContact] = useState<Contact | null>(null);
+  const [editingContact, setEditingContact] = useState<LegalEntityContact | null>(null);
 
   const handleAddContact = () => {
     setEditingContact(null);
     setShowDialog(true);
   };
 
-  const handleEditContact = (contact: Contact) => {
+  const handleEditContact = (contact: LegalEntityContact) => {
     setEditingContact(contact);
     setShowDialog(true);
   };
 
-  const handleSaveContact = async (contact: Contact) => {
-    let updatedContacts: Contact[];
+  const handleSaveContact = async (contact: LegalEntityContact) => {
+    let updatedContacts: LegalEntityContact[];
     
     if (editingContact) {
       // Update existing
@@ -85,8 +85,7 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
   };
 
   const NameCell = (props: GridCellProps) => {
-    const fullName = `${props.dataItem.first_name || ''} ${props.dataItem.last_name || ''}`.trim();
-    return <td>{fullName || '-'}</td>;
+    return <td>{props.dataItem.full_name || '-'}</td>;
   };
 
   const ActionsCell = (props: GridCellProps) => {

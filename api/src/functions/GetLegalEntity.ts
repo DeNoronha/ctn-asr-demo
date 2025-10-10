@@ -21,15 +21,29 @@ export async function GetLegalEntity(request: HttpRequest, context: InvocationCo
   }
 
   try {
-    const result = await pool.query(
-      `SELECT legal_entity_id, party_id, dt_created, dt_modified, created_by, modified_by, 
-              is_deleted, primary_legal_name, address_line1, address_line2, postal_code, 
-              city, province, country_code, entity_legal_form, registered_at,
-              direct_parent_legal_entity_id, ultimate_parent_legal_entity_id
-       FROM legal_entity 
-       WHERE legal_entity_id = $1 AND (is_deleted IS NULL OR is_deleted = FALSE)`,
-      [legalEntityId]
-    );
+    // Check if legalEntityId is a UUID or an org_id
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(legalEntityId);
+    
+    let query;
+    if (isUUID) {
+      // Query by UUID
+      query = `SELECT legal_entity_id, party_id, dt_created, dt_modified, created_by, modified_by, 
+                      is_deleted, primary_legal_name, address_line1, address_line2, postal_code, 
+                      city, province, country_code, entity_legal_form, registered_at,
+                      direct_parent_legal_entity_id, ultimate_parent_legal_entity_id
+               FROM legal_entity 
+               WHERE legal_entity_id = $1 AND (is_deleted IS NULL OR is_deleted = FALSE)`;
+    } else {
+      // Query by org_id - assume it's the legal_entity_id UUID as string
+      query = `SELECT legal_entity_id, party_id, dt_created, dt_modified, created_by, modified_by, 
+                      is_deleted, primary_legal_name, address_line1, address_line2, postal_code, 
+                      city, province, country_code, entity_legal_form, registered_at,
+                      direct_parent_legal_entity_id, ultimate_parent_legal_entity_id
+               FROM legal_entity 
+               WHERE legal_entity_id::text = $1 AND (is_deleted IS NULL OR is_deleted = FALSE)`;
+    }
+    
+    const result = await pool.query(query, [legalEntityId]);
 
     if (result.rows.length === 0) {
       return {
