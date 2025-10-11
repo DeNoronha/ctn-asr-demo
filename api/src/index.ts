@@ -23,3 +23,9 @@ import './functions/GetMemberTokens';
 
 // Event Grid and notifications
 import './functions/EventGridHandler';
+
+// KvK Document Verification
+import './functions/uploadKvkDocument';
+import './functions/getKvkVerificationStatus';
+import './functions/reviewKvkVerification';
+import './functions/getFlaggedEntities';

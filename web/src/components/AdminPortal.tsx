@@ -19,6 +19,7 @@ import UserManagement from './users/UserManagement';
 import AuditLogViewer from './audit/AuditLogViewer';
 import LoadingSpinner from './LoadingSpinner';
 import Dashboard from './Dashboard';
+import { KvkReviewQueue } from './KvkReviewQueue';
 import { RoleGuard } from '../auth/ProtectedRoute';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAsync } from '../hooks/useAsync';
@@ -203,6 +204,13 @@ const AdminPortal: React.FC = () => {
         return (
           <div className="audit-view">
             <AuditLogViewer />
+          </div>
+        );
+
+      case 'kvk-review':
+        return (
+          <div className="kvk-review-view">
+            <KvkReviewQueue />
           </div>
         );
 

@@ -1,29 +1,35 @@
 # 🗺️ CTN ASR Roadmap
 
-**Version:** 1.7.0 | **Updated:** October 12, 2025
+**Version:** 1.8.0 | **Updated:** October 12, 2025
 
 ---
 
 ## 🚨 TO DO
 
-### To Do 1: Email Notifications (HIGH) ⚡
-- [ ] Setup Azure Communication Services
-- [ ] Configure Azure Event Grid
-- [ ] Create email templates (approval, rejection, token issued, etc.)
-- [ ] Test notification workflows
+### To Do 1: KvK Document Verification - Complete Implementation (HIGH)
+- [x] PDF upload for KvK statement
+- [x] Extract company name and KvK number
+- [x] Validate against KvK API
+- [x] Flag suspicious cases (bankrupt, dissolved, mismatch)
+- [x] Admin review queue
+- [x] Azure Blob Storage with private access
+- [x] Multipart file upload working
+- [ ] **Fix blob URL access (SAS token generation required)**
+- [ ] **Get KvK API key from website (maintenance until Monday)**
+- [ ] **Test full verification flow with real KvK documents**
+- [ ] **Error handling improvements**
 
-### To Do 2: KvK Document Verification (HIGH)
-- [ ] PDF upload for KvK statement
-- [ ] Extract company name and KvK number
-- [ ] Validate against KvK API
-- [ ] Flag suspicious cases (bankrupt, dissolved, mismatch)
-- [ ] Admin review queue
-
-### To Do 3: Multi-System Endpoint Management (MEDIUM-HIGH)
+### To Do 2: Multi-System Endpoint Management (MEDIUM-HIGH)
 - [ ] UI for members to register multiple systems/endpoints
 - [ ] Generate separate BVAD tokens per endpoint
 - [ ] Enable/disable endpoints independently
 - [ ] Track endpoint usage per system
+
+### To Do 3: Email Template Management (MEDIUM)
+- [ ] Move templates to separate HTML files
+- [ ] Add company logo/branding
+- [ ] Support multiple languages
+- [ ] Use a template engine
 
 ### To Do 4: Workflow Automation with Logic Apps (MEDIUM-HIGH)
 - [ ] Setup Azure Logic Apps orchestrator
@@ -89,6 +95,22 @@
 
 **Week 2 (Oct 12):**
 - Dashboard analytics complete
+- Email notifications infrastructure:
+  - Communication Services deployed
+  - Event Grid Topic and subscription created
+  - EventGridHandler function deployed
+  - Event publishing service created
+  - 5 email templates (Application Created, Activated, Suspended, Terminated, Token Issued)
+- **KvK Document Verification (85% complete):**
+  - Azure Blob Storage deployed (stctnasrdev96858) with private access
+  - Azure AI Document Intelligence deployed (doc-intel-ctn-asr-dev)
+  - Database migration 007 applied (11 new columns)
+  - API services created: BlobStorageService, DocumentIntelligenceService, KvKService
+  - API endpoints deployed: upload, status check, admin review, flagged list
+  - React components: KvkDocumentUpload, KvkReviewQueue
+  - UI integration: KvK Verification tab in Member Detail, KvK Review Queue in admin menu
+  - File upload working with multipart form data
+  - **Remaining:** SAS token generation for secure document viewing, KvK API key configuration, real-world testing
 
 ---
 
@@ -96,8 +118,10 @@
 
 **Admin Portal:** Production-ready, all features working  
 **Member Portal:** Infrastructure complete, authentication working  
-**Database:** 6 tables + 2 views deployed  
-**API v2:** 20+ endpoints operational  
+**Database:** 11 tables + 2 views deployed (incl. KvK verification fields)  
+**API v2:** 28+ endpoints operational  
+**Email Notifications:** Configured and tested  
+**KvK Verification:** Deployed, awaiting testing  
 **Deployment:** Azure DevOps + manual workflow
 
 ---

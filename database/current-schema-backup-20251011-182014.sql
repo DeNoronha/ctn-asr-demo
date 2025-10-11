@@ -28,9 +28,9 @@ Referenced by:
     TABLE "vetting_records" CONSTRAINT "vetting_records_member_id_fkey" FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
 Access method: heap
 
-                                                                                                             Table "public.legal_entity"
-             Column              |           Type           | Collation | Nullable |           Default            | Storage  | Compression | Stats target |                                        Description                                        
----------------------------------+--------------------------+-----------+----------+------------------------------+----------+-------------+--------------+-------------------------------------------------------------------------------------------
+                                                                      Table "public.legal_entity"
+             Column              |           Type           | Collation | Nullable |           Default            | Storage  | Compression | Stats target | Description 
+---------------------------------+--------------------------+-----------+----------+------------------------------+----------+-------------+--------------+-------------
  legal_entity_id                 | uuid                     |           | not null | gen_random_uuid()            | plain    |             |              | 
  party_id                        | uuid                     |           | not null |                              | plain    |             |              | 
  dt_created                      | timestamp with time zone |           |          | now()                        | plain    |             |              | 
@@ -53,26 +53,13 @@ Access method: heap
  status                          | character varying(20)    |           |          | 'PENDING'::character varying | extended |             |              | 
  membership_level                | character varying(20)    |           |          | 'BASIC'::character varying   | extended |             |              | 
  metadata                        | jsonb                    |           |          |                              | extended |             |              | 
- kvk_document_url                | text                     |           |          |                              | extended |             |              | Azure Blob Storage URL for uploaded KvK statement PDF
- kvk_verification_status         | character varying(20)    |           |          | 'pending'::character varying | extended |             |              | Verification status: pending, verified, failed, flagged
- kvk_verified_at                 | timestamp with time zone |           |          |                              | plain    |             |              | 
- kvk_verified_by                 | character varying(100)   |           |          |                              | extended |             |              | 
- kvk_verification_notes          | text                     |           |          |                              | extended |             |              | 
- kvk_extracted_company_name      | text                     |           |          |                              | extended |             |              | Company name extracted from PDF via Azure Document Intelligence
- kvk_extracted_number            | text                     |           |          |                              | extended |             |              | KvK number extracted from PDF via Azure Document Intelligence
- kvk_api_response                | jsonb                    |           |          |                              | extended |             |              | Full response from KvK API basisprofiel endpoint
- kvk_mismatch_flags              | text[]                   |           |          |                              | extended |             |              | Array of detected issues: company_name_mismatch, kvk_number_mismatch, bankrupt, dissolved
- document_uploaded_at            | timestamp with time zone |           |          |                              | plain    |             |              | 
 Indexes:
     "legal_entity_pkey" PRIMARY KEY, btree (legal_entity_id)
     "idx_legal_entity_created" btree (dt_created)
     "idx_legal_entity_deleted" btree (is_deleted) WHERE is_deleted = false
-    "idx_legal_entity_kvk_verification" btree (kvk_verification_status, kvk_verified_at)
     "idx_legal_entity_name" btree (primary_legal_name)
     "idx_legal_entity_party" btree (party_id)
     "idx_legal_entity_status" btree (status)
-Check constraints:
-    "legal_entity_kvk_verification_status_check" CHECK (kvk_verification_status::text = ANY (ARRAY['pending'::character varying, 'verified'::character varying, 'failed'::character varying, 'flagged'::character varying]::text[]))
 Foreign-key constraints:
     "fk_direct_parent" FOREIGN KEY (direct_parent_legal_entity_id) REFERENCES legal_entity(legal_entity_id)
     "fk_party" FOREIGN KEY (party_id) REFERENCES party_reference(party_id) ON DELETE CASCADE
@@ -325,124 +312,4 @@ Indexes:
 Foreign-key constraints:
     "vetting_records_member_id_fkey" FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
 Access method: heap
-
- schemaname |       tablename        |              indexname              |                                                               indexdef                                                               
-------------+------------------------+-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------
- public     | audit_logs             | audit_logs_pkey                     | CREATE UNIQUE INDEX audit_logs_pkey ON public.audit_logs USING btree (id)
- public     | audit_logs             | idx_audit_actor                     | CREATE INDEX idx_audit_actor ON public.audit_logs USING btree (actor_org_id)
- public     | audit_logs             | idx_audit_time                      | CREATE INDEX idx_audit_time ON public.audit_logs USING btree (event_time DESC)
- public     | audit_logs             | idx_audit_type                      | CREATE INDEX idx_audit_type ON public.audit_logs USING btree (event_type)
- public     | endpoint_authorization | endpoint_authorization_pkey         | CREATE UNIQUE INDEX endpoint_authorization_pkey ON public.endpoint_authorization USING btree (endpoint_authorization_id)
- public     | endpoint_authorization | idx_endpoint_authorization_active   | CREATE INDEX idx_endpoint_authorization_active ON public.endpoint_authorization USING btree (is_active) WHERE (is_active = true)
- public     | endpoint_authorization | idx_endpoint_authorization_deleted  | CREATE INDEX idx_endpoint_authorization_deleted ON public.endpoint_authorization USING btree (is_deleted) WHERE (is_deleted = false)
- public     | endpoint_authorization | idx_endpoint_authorization_endpoint | CREATE INDEX idx_endpoint_authorization_endpoint ON public.endpoint_authorization USING btree (legal_entity_endpoint_id)
- public     | endpoint_authorization | idx_endpoint_authorization_expires  | CREATE INDEX idx_endpoint_authorization_expires ON public.endpoint_authorization USING btree (expires_at)
- public     | issued_tokens          | idx_tokens_expiry                   | CREATE INDEX idx_tokens_expiry ON public.issued_tokens USING btree (expires_at)
- public     | issued_tokens          | idx_tokens_member                   | CREATE INDEX idx_tokens_member ON public.issued_tokens USING btree (member_id)
- public     | issued_tokens          | idx_tokens_type                     | CREATE INDEX idx_tokens_type ON public.issued_tokens USING btree (token_type)
- public     | issued_tokens          | issued_tokens_pkey                  | CREATE UNIQUE INDEX issued_tokens_pkey ON public.issued_tokens USING btree (jti)
- public     | legal_entity           | idx_legal_entity_created            | CREATE INDEX idx_legal_entity_created ON public.legal_entity USING btree (dt_created)
- public     | legal_entity           | idx_legal_entity_deleted            | CREATE INDEX idx_legal_entity_deleted ON public.legal_entity USING btree (is_deleted) WHERE (is_deleted = false)
- public     | legal_entity           | idx_legal_entity_kvk_verification   | CREATE INDEX idx_legal_entity_kvk_verification ON public.legal_entity USING btree (kvk_verification_status, kvk_verified_at)
- public     | legal_entity           | idx_legal_entity_name               | CREATE INDEX idx_legal_entity_name ON public.legal_entity USING btree (primary_legal_name)
- public     | legal_entity           | idx_legal_entity_party              | CREATE INDEX idx_legal_entity_party ON public.legal_entity USING btree (party_id)
- public     | legal_entity           | idx_legal_entity_status             | CREATE INDEX idx_legal_entity_status ON public.legal_entity USING btree (status)
- public     | legal_entity           | legal_entity_pkey                   | CREATE UNIQUE INDEX legal_entity_pkey ON public.legal_entity USING btree (legal_entity_id)
- public     | legal_entity_contact   | idx_legal_entity_contact_active     | CREATE INDEX idx_legal_entity_contact_active ON public.legal_entity_contact USING btree (is_active) WHERE (is_active = true)
- public     | legal_entity_contact   | idx_legal_entity_contact_deleted    | CREATE INDEX idx_legal_entity_contact_deleted ON public.legal_entity_contact USING btree (is_deleted) WHERE (is_deleted = false)
- public     | legal_entity_contact   | idx_legal_entity_contact_email      | CREATE INDEX idx_legal_entity_contact_email ON public.legal_entity_contact USING btree (email)
- public     | legal_entity_contact   | idx_legal_entity_contact_entity     | CREATE INDEX idx_legal_entity_contact_entity ON public.legal_entity_contact USING btree (legal_entity_id)
- public     | legal_entity_contact   | idx_legal_entity_contact_primary    | CREATE INDEX idx_legal_entity_contact_primary ON public.legal_entity_contact USING btree (is_primary) WHERE (is_primary = true)
- public     | legal_entity_contact   | idx_legal_entity_contact_type       | CREATE INDEX idx_legal_entity_contact_type ON public.legal_entity_contact USING btree (contact_type)
- public     | legal_entity_contact   | legal_entity_contact_pkey           | CREATE UNIQUE INDEX legal_entity_contact_pkey ON public.legal_entity_contact USING btree (legal_entity_contact_id)
- public     | legal_entity_endpoint  | idx_legal_entity_endpoint_active    | CREATE INDEX idx_legal_entity_endpoint_active ON public.legal_entity_endpoint USING btree (is_active) WHERE (is_active = true)
- public     | legal_entity_endpoint  | idx_legal_entity_endpoint_category  | CREATE INDEX idx_legal_entity_endpoint_category ON public.legal_entity_endpoint USING btree (data_category)
- public     | legal_entity_endpoint  | idx_legal_entity_endpoint_deleted   | CREATE INDEX idx_legal_entity_endpoint_deleted ON public.legal_entity_endpoint USING btree (is_deleted) WHERE (is_deleted = false)
- public     | legal_entity_endpoint  | idx_legal_entity_endpoint_entity    | CREATE INDEX idx_legal_entity_endpoint_entity ON public.legal_entity_endpoint USING btree (legal_entity_id)
- public     | legal_entity_endpoint  | legal_entity_endpoint_pkey          | CREATE UNIQUE INDEX legal_entity_endpoint_pkey ON public.legal_entity_endpoint USING btree (legal_entity_endpoint_id)
- public     | legal_entity_number    | idx_legal_entity_number_deleted     | CREATE INDEX idx_legal_entity_number_deleted ON public.legal_entity_number USING btree (is_deleted) WHERE (is_deleted = false)
- public     | legal_entity_number    | idx_legal_entity_number_entity      | CREATE INDEX idx_legal_entity_number_entity ON public.legal_entity_number USING btree (legal_entity_id)
- public     | legal_entity_number    | idx_legal_entity_number_status      | CREATE INDEX idx_legal_entity_number_status ON public.legal_entity_number USING btree (validation_status)
- public     | legal_entity_number    | idx_legal_entity_number_type        | CREATE INDEX idx_legal_entity_number_type ON public.legal_entity_number USING btree (identifier_type)
- public     | legal_entity_number    | idx_legal_entity_number_value       | CREATE INDEX idx_legal_entity_number_value ON public.legal_entity_number USING btree (identifier_value)
- public     | legal_entity_number    | legal_entity_number_pkey            | CREATE UNIQUE INDEX legal_entity_number_pkey ON public.legal_entity_number USING btree (legal_entity_reference_id)
- public     | legal_entity_number    | uq_identifier                       | CREATE UNIQUE INDEX uq_identifier ON public.legal_entity_number USING btree (legal_entity_id, identifier_type, identifier_value)
- public     | members                | idx_members_domain                  | CREATE INDEX idx_members_domain ON public.members USING btree (domain)
- public     | members                | idx_members_lei                     | CREATE INDEX idx_members_lei ON public.members USING btree (lei) WHERE (lei IS NOT NULL)
- public     | members                | idx_members_org_id                  | CREATE INDEX idx_members_org_id ON public.members USING btree (org_id)
- public     | members                | idx_members_status                  | CREATE INDEX idx_members_status ON public.members USING btree (status)
- public     | members                | members_org_id_key                  | CREATE UNIQUE INDEX members_org_id_key ON public.members USING btree (org_id)
- public     | members                | members_pkey                        | CREATE UNIQUE INDEX members_pkey ON public.members USING btree (id)
- public     | oauth_clients          | idx_oauth_member                    | CREATE INDEX idx_oauth_member ON public.oauth_clients USING btree (member_id)
- public     | oauth_clients          | oauth_clients_pkey                  | CREATE UNIQUE INDEX oauth_clients_pkey ON public.oauth_clients USING btree (client_id)
- public     | party_reference        | idx_party_reference_created         | CREATE INDEX idx_party_reference_created ON public.party_reference USING btree (dt_created)
- public     | party_reference        | idx_party_reference_deleted         | CREATE INDEX idx_party_reference_deleted ON public.party_reference USING btree (is_deleted) WHERE (is_deleted = false)
- public     | party_reference        | party_reference_pkey                | CREATE UNIQUE INDEX party_reference_pkey ON public.party_reference USING btree (party_id)
- public     | vetting_records        | idx_vetting_member                  | CREATE INDEX idx_vetting_member ON public.vetting_records USING btree (member_id)
- public     | vetting_records        | idx_vetting_status                  | CREATE INDEX idx_vetting_status ON public.vetting_records USING btree (status)
- public     | vetting_records        | vetting_records_pkey                | CREATE UNIQUE INDEX vetting_records_pkey ON public.vetting_records USING btree (id)
-(53 rows)
-
-       table_name       |              constraint_name               | constraint_type |                      columns                       
-------------------------+--------------------------------------------+-----------------+----------------------------------------------------
- audit_logs             | 2200_24882_1_not_null                      | CHECK           | 
- audit_logs             | 2200_24882_3_not_null                      | CHECK           | 
- audit_logs             | audit_logs_pkey                            | PRIMARY KEY     | id
- endpoint_authorization | 2200_25030_1_not_null                      | CHECK           | 
- endpoint_authorization | 2200_25030_2_not_null                      | CHECK           | 
- endpoint_authorization | 2200_25030_8_not_null                      | CHECK           | 
- endpoint_authorization | fk_endpoint_authorization                  | FOREIGN KEY     | legal_entity_endpoint_id
- endpoint_authorization | endpoint_authorization_pkey                | PRIMARY KEY     | endpoint_authorization_id
- issued_tokens          | 2200_24864_1_not_null                      | CHECK           | 
- issued_tokens          | 2200_24864_2_not_null                      | CHECK           | 
- issued_tokens          | 2200_24864_5_not_null                      | CHECK           | 
- issued_tokens          | issued_tokens_member_id_fkey               | FOREIGN KEY     | member_id
- issued_tokens          | issued_tokens_pkey                         | PRIMARY KEY     | jti
- legal_entity           | 2200_24925_1_not_null                      | CHECK           | 
- legal_entity           | 2200_24925_2_not_null                      | CHECK           | 
- legal_entity           | 2200_24925_8_not_null                      | CHECK           | 
- legal_entity           | legal_entity_kvk_verification_status_check | CHECK           | 
- legal_entity           | fk_direct_parent                           | FOREIGN KEY     | direct_parent_legal_entity_id
- legal_entity           | fk_party                                   | FOREIGN KEY     | party_id
- legal_entity           | fk_ultimate_parent                         | FOREIGN KEY     | ultimate_parent_legal_entity_id
- legal_entity           | legal_entity_pkey                          | PRIMARY KEY     | legal_entity_id
- legal_entity_contact   | 2200_24982_10_not_null                     | CHECK           | 
- legal_entity_contact   | 2200_24982_1_not_null                      | CHECK           | 
- legal_entity_contact   | 2200_24982_2_not_null                      | CHECK           | 
- legal_entity_contact   | 2200_24982_8_not_null                      | CHECK           | 
- legal_entity_contact   | 2200_24982_9_not_null                      | CHECK           | 
- legal_entity_contact   | fk_legal_entity_contact                    | FOREIGN KEY     | legal_entity_id
- legal_entity_contact   | legal_entity_contact_pkey                  | PRIMARY KEY     | legal_entity_contact_id
- legal_entity_endpoint  | 2200_25008_1_not_null                      | CHECK           | 
- legal_entity_endpoint  | 2200_25008_2_not_null                      | CHECK           | 
- legal_entity_endpoint  | 2200_25008_8_not_null                      | CHECK           | 
- legal_entity_endpoint  | fk_legal_entity_endpoint                   | FOREIGN KEY     | legal_entity_id
- legal_entity_endpoint  | legal_entity_endpoint_pkey                 | PRIMARY KEY     | legal_entity_endpoint_id
- legal_entity_number    | 2200_24958_1_not_null                      | CHECK           | 
- legal_entity_number    | 2200_24958_2_not_null                      | CHECK           | 
- legal_entity_number    | 2200_24958_8_not_null                      | CHECK           | 
- legal_entity_number    | 2200_24958_9_not_null                      | CHECK           | 
- legal_entity_number    | fk_legal_entity                            | FOREIGN KEY     | legal_entity_id
- legal_entity_number    | legal_entity_number_pkey                   | PRIMARY KEY     | legal_entity_reference_id
- legal_entity_number    | uq_identifier                              | UNIQUE          | legal_entity_id, identifier_type, identifier_value
- members                | 2200_24815_1_not_null                      | CHECK           | 
- members                | 2200_24815_2_not_null                      | CHECK           | 
- members                | 2200_24815_3_not_null                      | CHECK           | 
- members                | 2200_24815_6_not_null                      | CHECK           | 
- members                | 2200_24815_7_not_null                      | CHECK           | 
- members                | members_legal_entity_id_fkey               | FOREIGN KEY     | legal_entity_id
- members                | members_pkey                               | PRIMARY KEY     | id
- members                | members_org_id_key                         | UNIQUE          | org_id
- oauth_clients          | 2200_24849_1_not_null                      | CHECK           | 
- oauth_clients          | 2200_24849_3_not_null                      | CHECK           | 
- oauth_clients          | oauth_clients_member_id_fkey               | FOREIGN KEY     | member_id
- oauth_clients          | oauth_clients_pkey                         | PRIMARY KEY     | client_id
- party_reference        | 2200_24912_1_not_null                      | CHECK           | 
- party_reference        | party_reference_pkey                       | PRIMARY KEY     | party_id
- vetting_records        | 2200_24833_1_not_null                      | CHECK           | 
- vetting_records        | 2200_24833_3_not_null                      | CHECK           | 
- vetting_records        | 2200_24833_4_not_null                      | CHECK           | 
- vetting_records        | vetting_records_member_id_fkey             | FOREIGN KEY     | member_id
- vetting_records        | vetting_records_pkey                       | PRIMARY KEY     | id
-(59 rows)
 

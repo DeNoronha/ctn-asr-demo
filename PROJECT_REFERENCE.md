@@ -1,107 +1,25 @@
-# ⚠️ READ THIS FIRST IN EVERY NEW CONVERSATION ⚠️
+# ⚠️ CLAUDE: READ THIS FIRST IN EVERY NEW CONVERSATION ⚠️
 
-# CTN ASR Project - Quick Reference
+## 📍 Repository Location
+`/Users/ramondenoronha/Dev/DIL/ASR-full`
 
----
+## 🎯 Ramon's Preferences
 
-## 🎯 V1 PRODUCTION STRATEGY
+### Communication Style
+- **Brief and concise** - no lengthy explanations
+- **No summaries or MD files** unless explicitly requested
+- **Action-oriented** - provide next steps, not all possibilities
+- Ramon is **not a programmer** - developing via Claude (not Claude Code)
 
-**Goal:** Production-ready deployment with Infrastructure as Code (IaC)
+### Tools to Use
+- ✅ **ONLY use Filesystem tools:** `Filesystem:read_file`, `Filesystem:write_file`, `Filesystem:edit_file`
+- ❌ **NEVER use:** `bash_tool`, `str_replace`, `create_file`, `view`
+- ✅ Provide bash commands for Ramon to execute
+- ✅ Monitor Chrome Dev Console during testing
 
-### Current Phase: Building V1 Features
-- Focus on functionality, not documentation
-- Documentation comes later during handover (V2+)
-- Prepare for eventual .NET conversion (backend only, keep React frontend)
+## 🚀 Standard Deployment Workflow
 
-### V1 Deliverables (Infrastructure as Code)
-
-**1. Bicep Infrastructure Template** (`infrastructure/main.bicep`)
-- Single command deploys entire Azure infrastructure
-
-**2. CI/CD Pipeline** (Azure DevOps Pipelines)
-- Automatic build & deploy on `git push`
-- Zero manual deployment steps
-
-**3. Minimal README**
-```
-# CTN Solution V1
-Deploy: az deployment sub create --template-file infrastructure/main.bicep
-Access: https://calm-tree-03352ba03.1.azurestaticapps.net
-```
-
-### Technology Stack
-**Current (V1):**
-- Frontend: React + TypeScript
-- Backend: Azure Functions + TypeScript
-- Database: PostgreSQL
-- IaC: Bicep
-- CI/CD: Azure DevOps Pipelines
-- Source Control: Azure DevOps Repos
-
-**Future (V2+):**
-- Frontend: React (stays the same)
-- Backend: ASP.NET Core Web API
-- Containers: Docker + Kubernetes
-
----
-
-## Azure Resources
-
-### Azure DevOps
-- **Organization:** ctn-demo
-- **Project:** ASR
-- **Repository:** https://dev.azure.com/ctn-demo/_git/ASR
-- **Pipelines:** https://dev.azure.com/ctn-demo/ASR/_build
-
-### Resource Groups
-- **Dev Environment:** rg-ctn-demo-asr-dev
-- **Terraform State:** rg-ctn-demo-tfstate
-
-### Services
-- **Function App:** func-ctn-demo-asr-dev
-- **Static Web App (ASR):** calm-tree-03352ba03
-  - URL: https://calm-tree-03352ba03.1.azurestaticapps.net
-  - Deployment Token: d1ec51feb9c93a061372a5fa151c2aa371b799b058087937c62d031bdd1457af01-15d4bfd4-f72a-4eb0-82cc-051069db9ab1003172603352ba03
-- **Static Web App (Member Portal):** ctn-member-portal
-  - Deployment Token: e597cda7728ed30e397d3301a18abcc4d89ab6a67b6ac6477835faf3261b183f01-4dec1d69-71a6-4c4d-9091-bae5673f9ab60031717043b2db03
-- **Database:** psql-ctn-demo-asr-dev.postgres.database.azure.com
-- **API Base URL (Production):** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
-- **API Base URL (Local):** http://localhost:7071/api/v1
-
-### Azure Entra ID
-- **App Registration:** CTN Association Register
-- **Client ID:** d3037c11-a541-4f21-8862-8079137a0cde
-- **Tenant ID:** 598664e7-725c-4daa-bd1f-89c4ada717ff
-- **Redirect URI (Production):** https://calm-tree-03352ba03.1.azurestaticapps.net
-- **Redirect URI (Local):** http://localhost:3000
-
-## Database Credentials
-```bash
-export POSTGRES_HOST=psql-ctn-demo-asr-dev.postgres.database.azure.com
-export POSTGRES_PORT=5432
-export POSTGRES_DATABASE=asr_dev
-export POSTGRES_USER=asradmin
-export POSTGRES_PASSWORD='[REDACTED]'
-```
-
-## Deployment Commands
-
-### 🚀 PERSISTENT DEPLOYMENT WORKFLOW
-
-**⚠️ CRITICAL: Build and Deploy ONLY on Azure - No Local Builds**
-
-**Why Azure-Only:**
-- ✅ Consistent build environment (Azure Pipelines)
-- ✅ No manual .env juggling (Azure Pipelines)
-- ⚠️ Azure Pipelines parallel jobs NOT yet activated (awaiting Microsoft)
-- ⚠️ Use Azure DevOps (NOT GitHub Actions)
-- ⚠️ **Temporary:** Manual SWA deployments require local builds until pipelines active
-
-### Standard Workflow (Until Azure Pipeline Activated)
-
-**⚠️ NOTE:** SWA CLI manual deployments require local builds. True "build on Azure" only works with Azure Pipelines.
-
-**1. Commit and Push to Azure DevOps:**
+### 1. Commit and Push
 ```bash
 cd /Users/ramondenoronha/Dev/DIL/ASR-full
 git add .
@@ -109,293 +27,121 @@ git commit -m "Your changes"
 git push
 ```
 
-**2. Deploy API to Azure:**
+### 2. Deploy API
 ```bash
 cd /Users/ramondenoronha/Dev/DIL/ASR-full/api
 func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote
 ```
+**⚠️ CRITICAL:** Always use `--build remote` flag
 
-**⚠️ CRITICAL:** Always use `--build remote` flag. Never include OPTIONS in methods array - handle it in function code instead.
-
-**3. Deploy Frontend (Temporary Local Build):**
+### 3. Deploy Frontend
 ```bash
 cd /Users/ramondenoronha/Dev/DIL/ASR-full/web
-
-# Hide .env.local to prevent override
 mv .env.local .env.local.backup
-
-# Build for production
 npm run build
-
-# Deploy to Azure Static Web Apps
 npx @azure/static-web-apps-cli deploy ./build \
   --deployment-token d1ec51feb9c93a061372a5fa151c2aa371b799b058087937c62d031bdd1457af01-15d4bfd4-f72a-4eb0-82cc-051069db9ab1003172603352ba03 \
   --env production
-
-# Restore .env.local
 mv .env.local.backup .env.local
 ```
 
-**Verify Deployment:**
-- Frontend: https://calm-tree-03352ba03.1.azurestaticapps.net
-- API: https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
+## 🔑 Azure Resources
 
-### ⚠️ FUTURE: Automatic Deployment (When Azure Pipeline Activated)
-Once parallel jobs enabled:
+### URLs
+- **Frontend:** https://calm-tree-03352ba03.1.azurestaticapps.net
+- **API:** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
+- **Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
+
+### Key Services
+- **Function App:** func-ctn-demo-asr-dev
+- **Static Web App:** calm-tree-03352ba03
+- **Database:** psql-ctn-demo-asr-dev.postgres.database.azure.com
+- **Storage:** stctnasrdev96858 (KvK documents)
+- **Document Intelligence:** doc-intel-ctn-asr-dev
+
+### Database Credentials
 ```bash
-cd /Users/ramondenoronha/Dev/DIL/repo/ASR
-git add .
-git commit -m "Your changes"
-git push
-# Azure Pipeline automatically builds and deploys both API and Frontend
+Host: psql-ctn-demo-asr-dev.postgres.database.azure.com
+Port: 5432
+Database: asr_dev
+User: asradmin
+Password: [REDACTED]
 ```
 
----
+### Azure Entra ID
+- **Client ID:** d3037c11-a541-4f21-8862-8079137a0cde
+- **Tenant ID:** 598664e7-725c-4daa-bd1f-89c4ada717ff
+- **Redirect (Prod):** https://calm-tree-03352ba03.1.azurestaticapps.net
+- **Redirect (Local):** http://localhost:3000
 
-### Frontend Deployment (Automatic via Azure Pipeline - NOT YET AVAILABLE)
-```bash
-cd /Users/ramondenoronha/Dev/DIL/ASR-full
-git add .
-git commit -m "Your commit message"
-git push origin main
-# Azure Pipeline automatically builds and deploys
+## ⚠️ Critical Issues & Solutions
+
+### Multipart Form Data Parsing
+```typescript
+// CORRECT import
+import * as multipart from 'parse-multipart-data';
+
+// Check multiple header variations
+let contentType = request.headers.get('content-type');
+if (!contentType) contentType = request.headers.get('Content-Type');
 ```
 
-**Monitor deployment:**
-- Pipeline: https://dev.azure.com/ctn-demo/ASR/_build
-- Static Web App: Azure Portal → rg-ctn-demo-asr-dev → calm-tree-03352ba03 → Deployments
+### Azure Blob Storage
+```typescript
+// CORRECT - no public access
+await containerClient.createIfNotExists();
 
-### ⚠️ DEPRECATED: Direct swa deploy from source
-**DO NOT USE - SWA CLI cannot build on Azure for manual deployments**
-
-The command `swa deploy --app-location .` was attempted but SWA CLI requires pre-built files for manual deployments. Building on Azure only works with Azure Pipelines.
-
-### API Deployment (Part of Standard Workflow)
-```bash
-cd /Users/ramondenoronha/Dev/DIL/ASR-full/api
-func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote
+// TODO: Implement SAS tokens for viewing
+async getDocumentSasUrl(blobUrl: string, expiryMinutes: number = 60)
 ```
 
-**Note:** Always use `--build remote` to build on Azure. Never add OPTIONS to methods array.
+### Environment Files
+- `.env.local` - local dev only (NOT in git)
+- `.env.production` - production config (IN git)
+- **MUST hide .env.local before building** or it overrides production config
 
-### Database Migration
-```bash
-psql "host=$POSTGRES_HOST port=$POSTGRES_PORT dbname=$POSTGRES_DATABASE user=$POSTGRES_USER password=$POSTGRES_PASSWORD sslmode=require" -f <migration-file.sql>
-```
+### Static Web App Routing
+**MUST have:** `web/public/staticwebapp.config.json` for React Router to work
 
-## Azure DevOps Pipeline Setup
+### New Azure Functions
+1. Create function in `api/src/functions/`
+2. **MUST import in `api/src/index.ts`**
+3. Use `methods: ['GET']` NOT `['GET', 'OPTIONS']`
+4. Handle OPTIONS inside function code
 
-### First-Time Pipeline Configuration
-1. Go to: https://dev.azure.com/ctn-demo/ASR/_build
-2. Click **New pipeline**
-3. Select **Azure Repos Git**
-4. Select **ASR** repository
-5. Select **Existing Azure Pipelines YAML file**
-6. Path: `/azure-pipelines.yml`
-7. Click **Continue**
-8. Click **Variables** → **New variable**
-   - Name: `AZURE_STATIC_WEB_APPS_API_TOKEN`
-   - Value: `d1ec51feb9c93a061372a5fa151c2aa371b799b058087937c62d031bdd1457af01-15d4bfd4-f72a-4eb0-82cc-051069db9ab1003172603352ba03`
-   - ✅ Check "Keep this value secret"
-   - Click **OK**
-9. Click **Save and run**
+## 📊 Current Status
 
-### Testing the Pipeline
-```bash
-# Make a small change to test
-cd /Users/ramondenoronha/Dev/DIL/ASR-full
-echo "# Test deployment" >> web/README.md
-git add .
-git commit -m "Test: trigger Azure Pipeline deployment"
-git push origin main
+**See:** `docs/ROADMAP.md` for detailed status
 
-# Monitor pipeline execution:
-# https://dev.azure.com/ctn-demo/ASR/_build
+**KvK Verification (85% complete):**
+- ✅ File upload working
+- ⏳ Awaiting: KvK API key (website maintenance until Monday)
+- ⏳ TODO: SAS token generation for document viewing
 
-# After pipeline completes (2-5 minutes), verify:
-# https://calm-tree-03352ba03.1.azurestaticapps.net
-```
+## 🗂️ Project Structure
 
-## Environment Files - CRITICAL CONFIGURATION
-
-### ⚠️ .env.local MUST NOT BE COMMITTED TO GIT
-**Problem:** `.env.local` overrides `.env.production` during build, causing localhost redirects in production
-
-**Solution:**
-1. Keep `.env.local` in `.gitignore` (already configured)
-2. Azure Pipeline uses environment variables, not .env files
-3. For manual builds, temporarily rename: `mv .env.local .env.local.backup`
-
-### Local Development (.env.local) - NOT IN GIT
-```
-REACT_APP_AZURE_CLIENT_ID=d3037c11-a541-4f21-8862-8079137a0cde
-REACT_APP_AZURE_TENANT_ID=598664e7-725c-4daa-bd1f-89c4ada717ff
-REACT_APP_REDIRECT_URI=http://localhost:3000
-REACT_APP_API_URL=http://localhost:7071/api/v1
-```
-
-### Production (.env.production) - COMMITTED TO GIT
-```
-REACT_APP_AZURE_CLIENT_ID=d3037c11-a541-4f21-8862-8079137a0cde
-REACT_APP_AZURE_TENANT_ID=598664e7-725c-4daa-bd1f-89c4ada717ff
-REACT_APP_REDIRECT_URI=https://calm-tree-03352ba03.1.azurestaticapps.net
-REACT_APP_API_URL=https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
-```
-
-### Static Web App Configuration
-**File:** `web/public/staticwebapp.config.json` (MUST exist for React Router to work)
-```json
-{
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": ["/static/*", "/*.{css,js,json,png,jpg,jpeg,gif,svg,ico,woff,woff2,ttf,eot}"]
-  },
-  "routes": [],
-  "responseOverrides": {
-    "404": {
-      "rewrite": "/index.html",
-      "statusCode": 200
-    }
-  }
-}
-```
-
-## Current API Endpoints
-
-### Members
-- GET /api/v1/members
-- GET /api/v1/members/{orgId}
-- POST /api/v1/members
-
-### Legal Entities (Companies)
-- GET /api/v1/legal-entities/{legalEntityId}
-- PUT /api/v1/legal-entities/{legalEntityId}
-
-### Contacts
-- GET /api/v1/legal-entities/{legalEntityId}/contacts
-- POST /api/v1/contacts
-- PUT /api/v1/contacts/{contactId}
-- DELETE /api/v1/contacts/{contactId}
-
-### Endpoints
-- GET /api/v1/entities/{legal_entity_id}/endpoints
-- POST /api/v1/entities/{legal_entity_id}/endpoints
-- POST /api/v1/endpoints/{endpoint_id}/tokens
-
-### OAuth
-- POST /api/v1/oauth/token
-
-## Common Issues & Solutions
-
-### Issue: Production build redirects to localhost
-**Problem:** `.env.local` was present during a local build
-
-**Solution:**
-- **DO NOT build locally** - always deploy using `swa deploy` which builds on Azure
-- If you accidentally did a local build, redeploy using the Standard Workflow
-
-**Prevention:** Follow the Azure-only deployment workflow (builds happen on Azure, not locally)
-
-### Issue: 404 errors on direct URL navigation in production
-**Problem:** Missing or incorrect `staticwebapp.config.json`
-
-**Solution:** Ensure `web/public/staticwebapp.config.json` exists with correct navigationFallback configuration
-
-### Issue: Azure Pipeline fails with "permission denied"
-**Problem:** Missing deployment token in pipeline variables
-
-**Solution:** Add `AZURE_STATIC_WEB_APPS_API_TOKEN` as secret variable in Azure Pipeline
-
-### Issue: New Azure Functions not deploying
-**Problem:** Function not imported in index.ts OR OPTIONS in methods array causes routing conflicts
-
-**Solution:**
-```bash
-cd /Users/ramondenoronha/Dev/DIL/ASR-full/api
-# Edit src/index.ts and add: import './functions/NewFunctionName';
-# CRITICAL: Use methods: ['GET'] NOT ['GET', 'OPTIONS']
-# Handle OPTIONS inside the function with if (request.method === 'OPTIONS')
-func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote
-```
-
-### Issue: CORS errors when running locally
-**Solution:**
-```bash
-cd /Users/ramondenoronha/Dev/DIL/ASR-full/api
-func start --cors http://localhost:3000
-```
-
-## Project Structure
 ```
 ASR-full/
-├── azure-pipelines.yml     # Auto-deployment configuration
-├── api/                    # Azure Functions (TypeScript)
-│   ├── src/
-│   │   ├── functions/      # Function handlers
-│   │   └── index.ts        # ⚠️ MUST import all functions
-│   └── dist/               # Built output
-├── web/                    # React frontend
+├── api/src/
+│   ├── functions/          # API endpoints
+│   ├── services/           # Business logic
+│   └── index.ts           # ⚠️ Import all functions here
+├── web/
 │   ├── public/
-│   │   └── staticwebapp.config.json  # ⚠️ REQUIRED for routing
-│   ├── .env.local          # ⚠️ NOT in git, for local dev only
-│   ├── .env.production     # ✅ In git, for production
-│   └── src/
-│       ├── auth/           # Azure Entra ID authentication
-│       └── components/     # React components
-├── database/
-│   └── migrations/         # SQL migration scripts
-└── infrastructure/         # Bicep templates
+│   │   └── staticwebapp.config.json  # ⚠️ Required for routing
+│   ├── .env.local         # ⚠️ NOT in git
+│   └── .env.production    # ✅ In git
+├── database/migrations/   # SQL scripts
+└── docs/                  # Documentation
+    ├── ROADMAP.md         # Current status
+    ├── ARCHITECTURE.md    # System design
+    ├── DEPLOYMENT_GUIDE.md
+    └── TESTING_GUIDE.md
 ```
 
-## Recent Changes (2025-10-11)
-- ✅ Repository location: /Users/ramondenoronha/Dev/DIL/ASR-full (no iCloud sync)
-- ✅ Added Dashboard component with Recharts analytics (Step 6)
-- ✅ Deployed to production
-- ✅ Fixed authentication redirect loop (.env.local override issue)
-- ✅ Added staticwebapp.config.json for React Router support
-- ✅ Created Azure Pipeline for auto-deployment (NOT GitHub Actions)
-- ✅ Updated PROJECT_REFERENCE with Azure DevOps information
-- ✅ Documented pipeline setup and testing procedures
-- ✅ **PERSISTENT: Azure-only deployment workflow (no local builds)**
+## 📝 Notes
 
-## 🎯 CLAUDE'S WORKING METHOD - READ EVERY NEW CONVERSATION
-
-### Ramon's Preferences
-- **NO summaries or MD files** unless explicitly requested or updating existing files
-- **NO lengthy explanations** - brief and concise only
-- Ramon is **NOT a programmer** - developing via Claude (not Claude Code)
-
-### Standard Workflow
-1. **Claude creates/edits code files** directly
-2. **Claude provides bash commands** for Ramon to execute
-3. **Ramon executes commands** and provides feedback
-4. **Claude monitors Chrome Dev Console** during testing
-5. **Iterate** based on feedback and console observations
-
-### What Claude Should Do
-- ✅ Create and edit files directly
-- ✅ Provide ready-to-execute bash commands
-- ✅ Check Chrome Dev Console for errors during testing
-- ✅ Keep responses brief and action-oriented
-- ❌ Don't create summaries unless asked
-- ❌ Don't create documentation unless asked
-- ❌ Don't provide multiple options - pick the best approach
-
-### Communication Style
-- Brief explanations
-- Clear next steps
-- Bash commands ready to copy/paste
-- Focus on solving the immediate problem
-
-## Notes
-- ⚠️ CHECK THIS FILE AT START OF EVERY NEW CONVERSATION
-- ⚠️ **PROVIDE CONCISE ANSWERS - Next steps only, not all possibilities**
-- ⚠️ **CRITICAL: Build ONLY on Azure - NO local npm run build**
-- ⚠️ Source control: Azure DevOps (NOT GitHub Actions)
-- ⚠️ Azure Pipelines NOT yet activated (awaiting parallel jobs)
-- Repository location: /Users/ramondenoronha/Dev/DIL/ASR-full (not in iCloud)
-- Use MacStudio for deployments
-- Backend: TypeScript Azure Functions (use --typescript flag)
-- `.env.local` for local dev only - never committed to git
-- Frontend deployment: Use `swa deploy` (builds on Azure)
-- API deployment: Use `func azure functionapp publish --typescript`
+- Azure Pipelines NOT yet active (awaiting Microsoft approval)
+- Manual deployment workflow until pipelines enabled
+- Build ONLY on Azure (use `--build remote`)
+- Source control: Azure DevOps (NOT GitHub)

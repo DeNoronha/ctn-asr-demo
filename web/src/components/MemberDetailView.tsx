@@ -14,6 +14,7 @@ import { EndpointManagement } from './EndpointManagement';
 import { CompanyDetails } from './CompanyDetails';
 import { CompanyForm } from './CompanyForm';
 import { ContactsManager } from './ContactsManager';
+import { KvkDocumentUpload } from './KvkDocumentUpload';
 import { useNotification } from '../contexts/NotificationContext';
 import './MemberDetailView.css';
 
@@ -285,6 +286,27 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
             ) : (
               <div className="info-section">
                 <h3>Contact Information</h3>
+                <p className="empty-message">No company linked to this member</p>
+              </div>
+            )}
+          </div>
+        </TabStripTab>
+
+        <TabStripTab title="KvK Verification">
+          <div className="tab-content">
+            {legalEntity ? (
+              <KvkDocumentUpload 
+                legalEntityId={legalEntity.legal_entity_id!}
+                onVerificationComplete={() => {
+                  // Reload legal entity data after verification
+                  if (member.legal_entity_id) {
+                    api.getLegalEntity(member.legal_entity_id).then(setLegalEntity);
+                  }
+                }}
+              />
+            ) : (
+              <div className="info-section">
+                <h3>KvK Document Verification</h3>
                 <p className="empty-message">No company linked to this member</p>
               </div>
             )}

@@ -6,7 +6,8 @@ import {
   Shield, 
   FileText,
   BookOpen,
-  Plug 
+  Plug,
+  FileCheck 
 } from 'lucide-react';
 import './AdminSidebar.css';
 
@@ -27,6 +28,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
   const items: MenuItem[] = [
     { text: 'Dashboard', iconComponent: LayoutDashboard, route: 'dashboard' },
     { text: 'Members', iconComponent: Users, route: 'members' },
+    { text: 'KvK Review Queue', iconComponent: FileCheck, route: 'kvk-review' },
     { text: 'Endpoints', iconComponent: Plug, route: 'endpoints' },
     { text: 'Token Management', iconComponent: Key, route: 'tokens' },
     { separator: true, text: '' },

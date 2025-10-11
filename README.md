@@ -1,12 +1,9 @@
-# CTN Association Register (ASR) - Demo Application
+# CTN Association Register (ASR)
 
-**Full-Stack Azure Application with Cost Optimization**
+A full-stack web application for managing CTN member organizations, their endpoints, tokens, and KvK document verification.
 
 [![Status](https://img.shields.io/badge/status-deployed-success)](https://calm-tree-03352ba03.1.azurestaticapps.net)
 [![Azure](https://img.shields.io/badge/azure-functions%20%7C%20static%20web%20apps-blue)](https://portal.azure.com)
-[![Cost](https://img.shields.io/badge/cost-optimized%20~75%25%20savings-green)](#cost-optimization)
-
-A demonstration application for the CTN Association Service Register, showcasing member management with OAuth 2.0 token issuance. Deployed on Azure with automated cost optimization.
 
 ---
 
@@ -14,382 +11,216 @@ A demonstration application for the CTN Association Service Register, showcasing
 
 - **Live Application:** https://calm-tree-03352ba03.1.azurestaticapps.net
 - **API Endpoint:** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
-- **Documentation:** See [docs/](#documentation) section below
-
----
-
-## 📋 What's Included
-
-### Infrastructure (Terraform)
-- 26 Azure resources deployed via Infrastructure as Code
-- PostgreSQL Flexible Server with auto-shutdown schedule
-- Azure Functions for API backend
-- Azure Static Web Apps for frontend hosting
-- Key Vault for secrets management
-- Application Insights for monitoring
-- ~75% cost savings through intelligent scheduling
-
-### Backend API (Node.js/TypeScript)
-- RESTful API with 4 endpoints
-- PostgreSQL database integration
-- OAuth 2.0 token issuance
-- Comprehensive error handling
-- Deployed to Azure Functions
-
-### Frontend (React/TypeScript)
-- Member directory with live data
-- Member registration form
-- Modern, responsive UI
-- Deployed to Azure Static Web Apps
-
----
-
-## 📊 Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     Azure Cloud Platform                     │
-├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  ┌──────────────────┐         ┌──────────────────┐          │
-│  │  Static Web App  │────────▶│  Function App    │          │
-│  │  (React UI)      │  HTTPS  │  (Node.js API)   │          │
-│  └──────────────────┘         └────────┬─────────┘          │
-│                                         │                     │
-│                                         ▼                     │
-│                              ┌──────────────────┐            │
-│                              │   PostgreSQL     │            │
-│                              │ Flexible Server  │            │
-│                              │  (Auto-shutdown) │            │
-│                              └──────────────────┘            │
-│                                                               │
-│  ┌──────────────────┐         ┌──────────────────┐          │
-│  │   Key Vault      │         │  Automation      │          │
-│  │   (Secrets)      │         │  (Scheduling)    │          │
-│  └──────────────────┘         └──────────────────┘          │
-│                                                               │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🎯 Key Features
-
-### Cost Optimization
-- **Auto-shutdown Schedule:** Database runs only during business hours (9 AM - 5 PM, Mon-Fri)
-- **Estimated Monthly Cost:** €20-30 (vs €80-120 without optimization)
-- **Savings:** Approximately 75%
-
-### API Endpoints
-```
-GET  /api/v1/members          # List all members
-GET  /api/v1/members/:orgId   # Get specific member
-POST /api/v1/members          # Create new member
-POST /api/v1/oauth/token      # Issue OAuth token
-```
-
-### Member Management
-- Organization registration
-- Legal entity information (LEI, KVK)
-- Membership levels (bronze, silver, gold, platinum)
-- Status tracking (pending, active, suspended, revoked)
+- **Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
 
 ---
 
 ## 📚 Documentation
 
-### Getting Started
-- **[Deployment Guide](./DEPLOYMENT_GUIDE.md)** - Complete deployment instructions with all fixes integrated
-- **[Deployment Checklist](./DEPLOYMENT_CHECKLIST.md)** - Step-by-step checklist
+### For New Developers - Start Here
 
-### Business & Functional
-- **[Onboarding Flow](./ONBOARDING_FLOW.md)** - Complete member onboarding specification
+1. **[docs/README.md](./docs/README.md)** - Documentation index
+2. **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - System design and technology stack
+3. **[docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)** - How to deploy locally and to production
+4. **[docs/TESTING_GUIDE.md](./docs/TESTING_GUIDE.md)** - Testing procedures
+5. **[docs/ROADMAP.md](./docs/ROADMAP.md)** - Current status and future plans
 
-### Technical Documentation
-- **[Infrastructure README](./infrastructure/readme.md)** - Terraform configuration details
-- **[API Documentation](./api/README.md)** - API endpoints and usage
-- **[Frontend Documentation](./web/README.md)** - React application details
+### For Claude AI Assistant
+
+**[PROJECT_REFERENCE.md](./PROJECT_REFERENCE.md)** - **⚠️ READ THIS FIRST IN EVERY NEW CONVERSATION**
+- Azure credentials and resources
+- Deployment commands
+- Common issues and solutions
+- Working method and preferences
+- **This file is for Claude only** - contains sensitive info and AI-specific instructions
+
+---
+
+## 🎯 What This Application Does
+
+### Admin Portal
+- Manage member organizations (CRUD operations)
+- Review and approve KvK documents
+- Issue BVAD access tokens
+- View dashboard analytics
+- User management
+- Audit log viewer
+
+### Member Portal
+- View organization details
+- Manage contacts and endpoints
+- Upload KvK verification documents
+- Request access tokens
+
+### KvK Document Verification (NEW)
+Automated verification of Chamber of Commerce documents:
+1. Member uploads PDF KvK statement
+2. Azure AI extracts company data
+3. System validates against KvK API
+4. Auto-flags suspicious cases
+5. Admin reviews flagged cases
+6. System sends notifications
+
+---
+
+## 🏗️ Technology Stack
+
+**Frontend:**
+- React 18 + TypeScript
+- Kendo React UI components
+- Azure Static Web Apps
+
+**Backend:**
+- Azure Functions (Node.js 20 + TypeScript)
+- PostgreSQL (Azure Database)
+- Azure Blob Storage (documents)
+- Azure AI Document Intelligence
+- Azure Event Grid + Communication Services (email)
+
+**Infrastructure:**
+- Bicep (planned)
+- Azure DevOps Repos
+- Manual deployment (CI/CD pipeline planned)
+
+---
+
+## 📦 Project Structure
+
+```
+ASR-full/
+├── api/                    # Azure Functions (TypeScript)
+│   ├── src/
+│   │   ├── functions/      # API endpoints
+│   │   └── services/       # Business logic
+│   └── dist/               # Built output
+├── web/                    # React frontend
+│   ├── src/
+│   │   ├── components/     # React components
+│   │   └── services/       # API client
+│   ├── public/
+│   │   └── staticwebapp.config.json  # Required for routing
+│   ├── .env.local          # Local dev config (NOT in git)
+│   └── .env.production     # Production config (in git)
+├── database/
+│   └── migrations/         # SQL migration scripts
+├── infrastructure/         # Bicep templates (planned)
+└── docs/                   # Documentation
+    ├── README.md           # Documentation index
+    ├── ROADMAP.md          # Action items
+    ├── ARCHITECTURE.md     # System design
+    ├── DEPLOYMENT_GUIDE.md # How to deploy
+    ├── TESTING_GUIDE.md    # How to test
+    └── archive/            # Historical docs
+```
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Azure CLI (`az` command)
-- Terraform (v1.5.0+)
-- Node.js (v18+)
-- Azure subscription with appropriate permissions
+- Node.js 20.x
+- Azure CLI
+- Git
+- Access to Azure subscription
 
-### Deployment Steps
+### Clone and Setup
 
-1. **Deploy Infrastructure**
 ```bash
-cd infrastructure
-terraform init
-terraform plan
-terraform apply
+# Clone repository
+git clone https://dev.azure.com/ctn-demo/_git/ASR
+cd ASR
+
+# Install dependencies
+cd api && npm install
+cd ../web && npm install
 ```
 
-2. **Deploy API**
+### Local Development
+
+See [docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md#local-development) for detailed instructions.
+
 ```bash
+# Terminal 1 - API
 cd api
-npm install
-npm run build
-func azure functionapp publish func-ctn-demo-asr-dev
-```
+func start --cors http://localhost:3000
 
-3. **Deploy Frontend**
-```bash
+# Terminal 2 - Frontend
 cd web
-
-# IMPORTANT: Create production environment file first
-cat > .env.production << 'EOF'
-REACT_APP_API_URL=https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
-EOF
-
-npm install
-npm run build
-swa deploy ./build --deployment-token $DEPLOYMENT_TOKEN --app-name stapp-ctn-demo-asr-dev --env production
+npm start
 ```
 
-4. **Configure CORS**
-```bash
-az functionapp cors add \
-  --name func-ctn-demo-asr-dev \
-  --resource-group rg-ctn-demo-asr-dev \
-  --allowed-origins "https://calm-tree-03352ba03.1.azurestaticapps.net"
-```
+Access: http://localhost:3000
 
-> ✅ **Note:** All known deployment issues have been pre-fixed in the deployment guide steps!
+### Deploy to Production
+
+See [docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md#production-deployment) for detailed instructions.
 
 ---
 
-## 🔧 Common Issues & Fixes
+## 📊 Current Status
 
-### Issue: TypeScript Build Fails
-**Error:** `Module '"axios"' has no exported member 'AxiosResponse'`
+**Admin Portal:** ✅ Production-ready, all features working  
+**Member Portal:** ✅ Infrastructure complete, authentication working  
+**Database:** ✅ 11 tables + 2 views deployed  
+**API:** ✅ 28+ endpoints operational  
+**Email Notifications:** ✅ Configured and tested  
+**KvK Verification:** 🟡 85% complete (awaiting KvK API key and SAS tokens)  
 
-**Fix:** Update `web/src/services/api.ts` to use generic type parameters:
-```typescript
-// ✅ Use this pattern
-const response = await axios.get<Member>(`${API_BASE_URL}/members/${orgId}`);
-```
-
-See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md#step-10-fix-typescript-issues-critical) for details.
-
-### Issue: CORS Errors
-**Fix:** Configure CORS on Function App:
-```bash
-az functionapp cors add \
-  --name func-ctn-demo-asr-dev \
-  --resource-group rg-ctn-demo-asr-dev \
-  --allowed-origins "https://calm-tree-03352ba03.1.azurestaticapps.net"
-```
-
-### Issue: API URL Error in Production
-**Fix:** Create `.env.production` file before building:
-```bash
-cat > web/.env.production << 'EOF'
-REACT_APP_API_URL=https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
-EOF
-```
-
-**For complete troubleshooting:** See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md#troubleshooting)
-
----
-
-## ✨ What Makes This Deployment Different
-
-**All known issues pre-fixed!** Unlike typical deployment guides that list fixes separately, this guide integrates all solutions directly into the proper steps. You won't encounter:
-- ❌ TypeScript axios import errors
-- ❌ "Insecure content blocked" errors
-- ❌ CORS issues
-- ❌ Missing environment configuration
-
-**Follow the guide step-by-step and deploy successfully the first time!**
-
----
-
-## 🏗️ Project Structure
-
-```
-ASR/
-├── infrastructure/          # Terraform IaC
-│   ├── main.tf             # Main infrastructure definition
-│   ├── variables.tf        # Configuration variables
-│   └── outputs.tf          # Output values
-├── api/                    # Node.js/TypeScript API
-│   ├── src/
-│   │   └── functions/      # Azure Function endpoints
-│   ├── package.json
-│   └── tsconfig.json
-├── web/                    # React frontend
-│   ├── src/
-│   │   ├── components/     # React components
-│   │   └── services/       # API service layer
-│   ├── public/
-│   └── package.json
-├── docs/                   # Additional documentation
-├── DEPLOYMENT_GUIDE.md     # Complete deployment guide (all fixes integrated)
-├── DEPLOYMENT_CHECKLIST.md # Step-by-step checklist
-└── README.md              # This file
-```
-
----
-
-## 💰 Cost Breakdown
-
-### Monthly Costs (Estimated)
-
-| Service | Without Auto-Shutdown | With Auto-Shutdown | Savings |
-|---------|----------------------|-------------------|---------|
-| PostgreSQL Flexible Server | €60-80 | €15-20 | 75% |
-| Function App (Consumption) | €10-15 | €10-15 | - |
-| Static Web App (Free tier) | €0 | €0 | - |
-| Storage Account | €5-10 | €5-10 | - |
-| Key Vault | €1-2 | €1-2 | - |
-| **Total** | **€76-107** | **€31-47** | **~75%** |
-
-**Auto-shutdown schedule:**
-- **Start:** Monday-Friday at 9:00 AM CET
-- **Stop:** Monday-Friday at 5:00 PM CET
-- **Weekend:** Stopped (saves ~48 hours)
+See [docs/ROADMAP.md](./docs/ROADMAP.md) for detailed status and next steps.
 
 ---
 
 ## 🔐 Security
 
-- Secrets stored in Azure Key Vault
-- HTTPS/TLS encryption for all communication
-- CORS configured for specific origins only
-- PostgreSQL with SSL required
-- Azure Managed Identities (where applicable)
-
----
-
-## 📈 Monitoring
-
-- Application Insights integrated
-- Function App logs available in Azure Portal
-- PostgreSQL metrics and diagnostics
-- Cost tracking in Cost Management
-
----
-
-## 🛠️ Development
-
-### Local Development Setup
-
-1. **API Development:**
-```bash
-cd api
-npm install
-npm start  # Runs on http://localhost:7071
-```
-
-2. **Frontend Development:**
-```bash
-cd web
-npm install
-npm start  # Runs on http://localhost:3000
-```
-
-3. **Local Database (Optional):**
-```bash
-# Connect to Azure PostgreSQL or use local Docker instance
-docker run -d --name postgres \
-  -e POSTGRES_PASSWORD=yourpassword \
-  -e POSTGRES_DB=asr_dev \
-  -p 5432:5432 \
-  postgres:15
-```
-
----
-
-## 🧪 Testing
-
-### Test the Live Application
-
-1. Open: https://calm-tree-03352ba03.1.azurestaticapps.net
-2. View member directory
-3. Register a new member
-4. Verify the new member appears in the list
-
-### API Testing
-
-```bash
-# Get all members
-curl https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1/members
-
-# Get specific member
-curl https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1/members/{orgId}
-
-# Create member (POST request)
-curl -X POST https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1/members \
-  -H "Content-Type: application/json" \
-  -d '{
-    "legal_name": "Test Company B.V.",
-    "domain": "testcompany.nl",
-    "membership_level": "bronze"
-  }'
-```
-
----
-
-## 🤝 Contributing
-
-This is a demonstration project. For production use cases:
-1. Enable CI/CD pipeline
-2. Add comprehensive test coverage
-3. Implement authentication/authorization
-4. Add rate limiting
-5. Configure custom domain
-
----
-
-## 📝 License
-
-This is a demonstration project for the CTN Association.
-
----
-
-## 👥 Project Team
-
-- **Project Lead:** Ramon de Noronha
-- **Organization:** CTN (Connecting the Netherlands)
-- **Purpose:** Association Service Register Demo
+- Authentication: Azure Entra ID (OAuth2/OIDC)
+- Authorization: Role-based (admin/member)
+- API: JWT validation, CORS configured
+- Storage: Private blob containers (SAS tokens for access)
+- Database: SSL required, parameterized queries
+- Secrets: Azure Function App Settings (not in repo)
 
 ---
 
 ## 🆘 Support
 
-For issues or questions:
-1. Check [DEPLOYMENT_FIXES.md](./DEPLOYMENT_FIXES.md) for known issues
-2. Review [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) troubleshooting section
-3. Contact project team
+### Common Issues
+
+See [PROJECT_REFERENCE.md](./PROJECT_REFERENCE.md#common-issues--solutions) for:
+- Production redirect issues
+- 404 errors on direct URLs
+- Multipart form data parsing
+- Azure Blob Storage access
+- CORS errors
+
+### Getting Help
+
+1. Check [docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md#troubleshooting)
+2. Check [PROJECT_REFERENCE.md](./PROJECT_REFERENCE.md)
+3. Review Azure Function logs
+4. Contact project team
 
 ---
 
-## 📅 Project Timeline
+## 👥 Project Team
 
-- **October 6, 2025:** Initial deployment completed
-- **Status:** ✅ Production ready
-- **Next Steps:** Optional CI/CD and authentication integration
+- **Solution Architect:** Ramon de Noronha
+- **Organization:** CTN (Connecting the Netherlands)
+- **Repository:** Azure DevOps - https://dev.azure.com/ctn-demo/ASR
 
 ---
 
-## 🎉 Achievements
+## 📅 Recent Updates
 
-- ✅ Full-stack application deployed on Azure
-- ✅ 26 infrastructure resources via Terraform
-- ✅ Cost optimized with 75% savings
-- ✅ Production-ready REST API
-- ✅ Modern React frontend
-- ✅ Comprehensive documentation
-- ✅ Critical deployment fixes documented
+**October 12, 2025:**
+- ✅ KvK document verification (85% complete)
+- ✅ Email notifications infrastructure
+- ✅ Dashboard analytics
+- ✅ Documentation restructured
+
+See [docs/ROADMAP.md](./docs/ROADMAP.md) for complete changelog.
 
 ---
 
 **Live Application:** https://calm-tree-03352ba03.1.azurestaticapps.net
 
-**Happy Deploying! 🚀**
+**Target Production Date:** November 1, 2025
