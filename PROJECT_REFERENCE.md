@@ -101,7 +101,7 @@ export POSTGRES_PASSWORD='[REDACTED]'
 
 **1. Commit and Push to Azure DevOps:**
 ```bash
-cd /Users/ramondenoronha/Dev/DIL/repo/ASR
+cd /Users/ramondenoronha/Dev/DIL/ASR-full
 git add .
 git commit -m "Your changes"
 git push
@@ -109,13 +109,13 @@ git push
 
 **2. Deploy API to Azure:**
 ```bash
-cd /Users/ramondenoronha/Dev/DIL/repo/ASR/api
+cd /Users/ramondenoronha/Dev/DIL/ASR-full/api
 func azure functionapp publish func-ctn-demo-asr-dev
 ```
 
 **3. Deploy Frontend (Temporary Local Build):**
 ```bash
-cd /Users/ramondenoronha/Dev/DIL/repo/ASR/web
+cd /Users/ramondenoronha/Dev/DIL/ASR-full/web
 
 # Hide .env.local to prevent override
 mv .env.local .env.local.backup
@@ -150,7 +150,7 @@ git push
 
 ### Frontend Deployment (Automatic via Azure Pipeline - NOT YET AVAILABLE)
 ```bash
-cd ~/Dev/DIL/repo/ASR
+cd /Users/ramondenoronha/Dev/DIL/ASR-full
 git add .
 git commit -m "Your commit message"
 git push origin main
@@ -168,7 +168,7 @@ The command `swa deploy --app-location .` was attempted but SWA CLI requires pre
 
 ### API Deployment (Part of Standard Workflow)
 ```bash
-cd ~/Dev/DIL/repo/ASR/api
+cd /Users/ramondenoronha/Dev/DIL/ASR-full/api
 func azure functionapp publish func-ctn-demo-asr-dev
 ```
 
@@ -199,7 +199,7 @@ psql "host=$POSTGRES_HOST port=$POSTGRES_PORT dbname=$POSTGRES_DATABASE user=$PO
 ### Testing the Pipeline
 ```bash
 # Make a small change to test
-cd ~/Dev/DIL/repo/ASR
+cd /Users/ramondenoronha/Dev/DIL/ASR-full
 echo "# Test deployment" >> web/README.md
 git add .
 git commit -m "Test: trigger Azure Pipeline deployment"
@@ -307,7 +307,7 @@ REACT_APP_API_URL=https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
 
 **Solution:**
 ```bash
-cd ~/Dev/DIL/repo/ASR/api
+cd /Users/ramondenoronha/Dev/DIL/ASR-full/api
 # Edit src/index.ts and add: import './functions/NewFunctionName';
 npm run build
 func azure functionapp publish func-ctn-demo-asr-dev
@@ -316,13 +316,13 @@ func azure functionapp publish func-ctn-demo-asr-dev
 ### Issue: CORS errors when running locally
 **Solution:**
 ```bash
-cd ~/Dev/DIL/repo/ASR/api
+cd /Users/ramondenoronha/Dev/DIL/ASR-full/api
 func start --cors http://localhost:3000
 ```
 
 ## Project Structure
 ```
-repo/ASR/
+ASR-full/
 ├── azure-pipelines.yml     # Auto-deployment configuration
 ├── api/                    # Azure Functions (TypeScript)
 │   ├── src/
@@ -342,8 +342,10 @@ repo/ASR/
 └── infrastructure/         # Bicep templates
 ```
 
-## Recent Changes (2025-10-10)
-- ✅ Moved repository to ~/Dev/DIL/repo/ASR (no iCloud sync)
+## Recent Changes (2025-10-11)
+- ✅ Repository location: /Users/ramondenoronha/Dev/DIL/ASR-full (no iCloud sync)
+- ✅ Added Dashboard component with Recharts analytics (Step 6)
+- ✅ Deployed to production
 - ✅ Fixed authentication redirect loop (.env.local override issue)
 - ✅ Added staticwebapp.config.json for React Router support
 - ✅ Created Azure Pipeline for auto-deployment (NOT GitHub Actions)
@@ -356,7 +358,7 @@ repo/ASR/
 - ⚠️ **CRITICAL: Build ONLY on Azure - NO local npm run build**
 - ⚠️ Source control: Azure DevOps (NOT GitHub Actions)
 - ⚠️ Azure Pipelines NOT yet activated (awaiting parallel jobs)
-- Repository location: ~/Dev/DIL/repo/ASR (not in iCloud)
+- Repository location: /Users/ramondenoronha/Dev/DIL/ASR-full (not in iCloud)
 - Use MacStudio for deployments
 - `.env.local` for local dev only - never committed to git
 - Frontend deployment: Use `swa deploy` (builds on Azure)
