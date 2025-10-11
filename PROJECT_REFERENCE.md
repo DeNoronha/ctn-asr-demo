@@ -32,7 +32,7 @@ Access: https://calm-tree-03352ba03.1.azurestaticapps.net
 ### Technology Stack
 **Current (V1):**
 - Frontend: React + TypeScript
-- Backend: Python (Azure Functions)
+- Backend: Azure Functions + TypeScript
 - Database: PostgreSQL
 - IaC: Bicep
 - CI/CD: Azure DevOps Pipelines
@@ -59,9 +59,11 @@ Access: https://calm-tree-03352ba03.1.azurestaticapps.net
 
 ### Services
 - **Function App:** func-ctn-demo-asr-dev
-- **Static Web App:** calm-tree-03352ba03
+- **Static Web App (ASR):** calm-tree-03352ba03
   - URL: https://calm-tree-03352ba03.1.azurestaticapps.net
   - Deployment Token: d1ec51feb9c93a061372a5fa151c2aa371b799b058087937c62d031bdd1457af01-15d4bfd4-f72a-4eb0-82cc-051069db9ab1003172603352ba03
+- **Static Web App (Member Portal):** ctn-member-portal
+  - Deployment Token: e597cda7728ed30e397d3301a18abcc4d89ab6a67b6ac6477835faf3261b183f01-4dec1d69-71a6-4c4d-9091-bae5673f9ab60031717043b2db03
 - **Database:** psql-ctn-demo-asr-dev.postgres.database.azure.com
 - **API Base URL (Production):** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
 - **API Base URL (Local):** http://localhost:7071/api/v1
@@ -110,8 +112,10 @@ git push
 **2. Deploy API to Azure:**
 ```bash
 cd /Users/ramondenoronha/Dev/DIL/ASR-full/api
-func azure functionapp publish func-ctn-demo-asr-dev
+func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote
 ```
+
+**⚠️ CRITICAL:** Always use `--build remote` flag. Never include OPTIONS in methods array - handle it in function code instead.
 
 **3. Deploy Frontend (Temporary Local Build):**
 ```bash
@@ -169,10 +173,10 @@ The command `swa deploy --app-location .` was attempted but SWA CLI requires pre
 ### API Deployment (Part of Standard Workflow)
 ```bash
 cd /Users/ramondenoronha/Dev/DIL/ASR-full/api
-func azure functionapp publish func-ctn-demo-asr-dev
+func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote
 ```
 
-**Note:** This deploys directly to Azure Function App. The local `npm run build` is automatic.
+**Note:** Always use `--build remote` to build on Azure. Never add OPTIONS to methods array.
 
 ### Database Migration
 ```bash
@@ -303,14 +307,15 @@ REACT_APP_API_URL=https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
 **Solution:** Add `AZURE_STATIC_WEB_APPS_API_TOKEN` as secret variable in Azure Pipeline
 
 ### Issue: New Azure Functions not deploying
-**Problem:** Function not imported in index.ts
+**Problem:** Function not imported in index.ts OR OPTIONS in methods array causes routing conflicts
 
 **Solution:**
 ```bash
 cd /Users/ramondenoronha/Dev/DIL/ASR-full/api
 # Edit src/index.ts and add: import './functions/NewFunctionName';
-npm run build
-func azure functionapp publish func-ctn-demo-asr-dev
+# CRITICAL: Use methods: ['GET'] NOT ['GET', 'OPTIONS']
+# Handle OPTIONS inside the function with if (request.method === 'OPTIONS')
+func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote
 ```
 
 ### Issue: CORS errors when running locally
@@ -353,13 +358,44 @@ ASR-full/
 - ✅ Documented pipeline setup and testing procedures
 - ✅ **PERSISTENT: Azure-only deployment workflow (no local builds)**
 
+## 🎯 CLAUDE'S WORKING METHOD - READ EVERY NEW CONVERSATION
+
+### Ramon's Preferences
+- **NO summaries or MD files** unless explicitly requested or updating existing files
+- **NO lengthy explanations** - brief and concise only
+- Ramon is **NOT a programmer** - developing via Claude (not Claude Code)
+
+### Standard Workflow
+1. **Claude creates/edits code files** directly
+2. **Claude provides bash commands** for Ramon to execute
+3. **Ramon executes commands** and provides feedback
+4. **Claude monitors Chrome Dev Console** during testing
+5. **Iterate** based on feedback and console observations
+
+### What Claude Should Do
+- ✅ Create and edit files directly
+- ✅ Provide ready-to-execute bash commands
+- ✅ Check Chrome Dev Console for errors during testing
+- ✅ Keep responses brief and action-oriented
+- ❌ Don't create summaries unless asked
+- ❌ Don't create documentation unless asked
+- ❌ Don't provide multiple options - pick the best approach
+
+### Communication Style
+- Brief explanations
+- Clear next steps
+- Bash commands ready to copy/paste
+- Focus on solving the immediate problem
+
 ## Notes
 - ⚠️ CHECK THIS FILE AT START OF EVERY NEW CONVERSATION
+- ⚠️ **PROVIDE CONCISE ANSWERS - Next steps only, not all possibilities**
 - ⚠️ **CRITICAL: Build ONLY on Azure - NO local npm run build**
 - ⚠️ Source control: Azure DevOps (NOT GitHub Actions)
 - ⚠️ Azure Pipelines NOT yet activated (awaiting parallel jobs)
 - Repository location: /Users/ramondenoronha/Dev/DIL/ASR-full (not in iCloud)
 - Use MacStudio for deployments
+- Backend: TypeScript Azure Functions (use --typescript flag)
 - `.env.local` for local dev only - never committed to git
 - Frontend deployment: Use `swa deploy` (builds on Azure)
-- API deployment: Use `func azure functionapp publish`
+- API deployment: Use `func azure functionapp publish --typescript`

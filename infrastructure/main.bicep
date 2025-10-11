@@ -37,6 +37,8 @@ var storageAccountName = 'st${projectName}${environment}${uniqueString(subscript
 var appInsightsName = 'appi-${projectName}-${environment}'
 var keyVaultName = 'kv-${projectName}-${environment}'
 var appServicePlanName = 'asp-${projectName}-${environment}'
+var communicationServicesName = 'comm-${projectName}-${environment}'
+var eventGridTopicName = 'evgt-${projectName}-${environment}'
 
 // Tags
 var commonTags = {
@@ -163,6 +165,38 @@ module staticWebApp 'modules/static-web-app.bicep' = {
 }
 
 // ============================================================================
+// Azure Communication Services (Email Notifications)
+// ============================================================================
+module communicationServices 'modules/communication-services.bicep' = {
+  scope: resourceGroup
+  name: 'communication-services-deployment'
+  params: {
+    communicationServicesName: communicationServicesName
+    location: location
+    emailDomainName: 'AzureManagedDomain'
+    tags: commonTags
+  }
+}
+
+// ============================================================================
+// Azure Event Grid (Event Routing)
+// ============================================================================
+module eventGrid 'modules/event-grid.bicep' = {
+  scope: resourceGroup
+  name: 'event-grid-deployment'
+  params: {
+    eventGridTopicName: eventGridTopicName
+    location: location
+    functionAppId: functionApp.outputs.functionAppId
+    webhookUrl: '${functionApp.outputs.functionAppUrl}/api/EventGridHandler'
+    tags: commonTags
+  }
+  dependsOn: [
+    functionApp
+  ]
+}
+
+// ============================================================================
 // Outputs
 // ============================================================================
 output resourceGroupName string = resourceGroup.name
@@ -173,3 +207,7 @@ output functionAppUrl string = functionApp.outputs.functionAppUrl
 output staticWebAppName string = staticWebApp.outputs.staticWebAppName
 output staticWebAppUrl string = staticWebApp.outputs.staticWebAppUrl
 output keyVaultName string = keyVault.outputs.keyVaultName
+output communicationServicesName string = communicationServices.outputs.communicationServicesName
+output communicationServicesSenderAddress string = communicationServices.outputs.senderAddress
+output eventGridTopicName string = eventGrid.outputs.eventGridTopicName
+output eventGridTopicEndpoint string = eventGrid.outputs.eventGridTopicEndpoint

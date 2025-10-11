@@ -18,7 +18,11 @@
     }
   },
   "cors": {
-    "allowedOrigins": ["http://localhost:3000"],
+    "allowedOrigins": [
+      "http://localhost:3000",
+      "https://calm-pebble-043b2db03.1.azurestaticapps.net",
+      "*"
+    ],
     "supportCredentials": false
   }
 }

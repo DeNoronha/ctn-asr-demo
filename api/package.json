@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@azure/functions": "^4.0.0",
+    "@azure/eventgrid": "^5.7.0",
+    "@azure/communication-email": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.11.3",
     "uuid": "^9.0.1"
