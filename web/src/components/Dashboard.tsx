@@ -171,7 +171,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members }) => {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
@@ -240,10 +240,10 @@ const Dashboard: React.FC<DashboardProps> = ({ members }) => {
         <h3>In Partnership With</h3>
         <div className="logos-grid">
           <div className="logo-container">
-            <img src="/assets/logos/portbase-logo.svg" alt="Portbase" />
+            <img src="/assets/logos/portbase.png" alt="Portbase" />
           </div>
           <div className="logo-container">
-            <img src="/assets/logos/contargo-logo.svg" alt="Contargo" />
+            <img src="/assets/logos/contargo.png" alt="Contargo" />
           </div>
         </div>
       </div>
