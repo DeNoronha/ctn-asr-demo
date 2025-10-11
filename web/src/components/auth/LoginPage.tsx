@@ -37,7 +37,7 @@ export const LoginPage: React.FC = () => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <Key size={48} className="login-icon" />
+          <img src="/assets/logos/ctn.png" alt="CTN" className="login-logo" />
           <h1>CTN Association Register</h1>
           <p className="login-subtitle">Secure Authentication Portal</p>
         </div>
@@ -74,6 +74,16 @@ export const LoginPage: React.FC = () => {
         <div className="login-footer">
           <p>Don't have an account?</p>
           <a href="/member-portal/register">Register on Member Portal</a>
+        </div>
+
+        <div className="login-partners">
+          <p>In Partnership With</p>
+          <div className="partner-logos-login">
+            <img src="/assets/logos/portbase.png" alt="Portbase" />
+            <img src="/assets/logos/contargo.png" alt="Contargo" />
+            <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" />
+            <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" />
+          </div>
         </div>
       </div>
     </div>
