@@ -49,7 +49,7 @@ mv .env.local.backup .env.local
 
 ### URLs
 - **Admin Portal:** https://calm-tree-03352ba03.1.azurestaticapps.net
-- **Member Portal:** https://ctn-member-portal.azurestaticapps.net (or check Azure Portal for URL)
+- **Member Portal:** https://calm-pebble-043b2db03.1.azurestaticapps.net
 - **API:** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
 - **Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
 
