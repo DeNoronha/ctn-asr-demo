@@ -249,7 +249,7 @@ const AdminPortal: React.FC = () => {
                 {drawerExpanded ? '◀' : '▶'}
               </Button>
               <img 
-                src="/assets/logos/ctn-logo.svg" 
+                src="/assets/logos/ctn.png" 
                 alt="CTN Logo" 
                 className="header-logo"
               />
