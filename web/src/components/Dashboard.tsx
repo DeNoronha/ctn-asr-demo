@@ -245,6 +245,12 @@ const Dashboard: React.FC<DashboardProps> = ({ members }) => {
           <div className="logo-container">
             <img src="/assets/logos/contargo.png" alt="Contargo" />
           </div>
+          <div className="logo-container">
+            <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" />
+          </div>
+          <div className="logo-container">
+            <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" />
+          </div>
         </div>
       </div>
     </div>
