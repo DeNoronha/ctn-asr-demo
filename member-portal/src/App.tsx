@@ -11,8 +11,15 @@ function App() {
     <div className="app">
       <header className="header">
         <div className="header-content">
-          <h1>CTN Member Portal</h1>
-          <p>Association Member Self-Service</p>
+          <img 
+            src="/assets/logos/ctn-logo.svg" 
+            alt="CTN Logo" 
+            className="header-logo"
+          />
+          <div className="header-text">
+            <h1>Member Portal</h1>
+            <p>Association Member Self-Service</p>
+          </div>
         </div>
       </header>
 
@@ -100,7 +107,16 @@ function App() {
       </main>
 
       <footer className="footer">
-        <p>© 2025 CTN Association Register | <a href="#contact">Contact Support</a></p>
+        <div className="footer-content">
+          <div className="partner-logos">
+            <p>In partnership with:</p>
+            <div className="logos-row">
+              <img src="/assets/logos/portbase-logo.svg" alt="Portbase" />
+              <img src="/assets/logos/contargo-logo.svg" alt="Contargo" />
+            </div>
+          </div>
+          <p className="footer-text">© 2025 CTN Association Register | <a href="#contact">Contact Support</a></p>
+        </div>
       </footer>
     </div>
   );

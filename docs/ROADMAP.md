@@ -90,7 +90,49 @@
 
 ## ✅ COMPLETED TODAY (October 10, 2025)
 
-### Priority 1: Test & Deploy New API v2 Endpoints ✅ COMPLETE
+### Priority 1: Deployment Infrastructure & Persistent Workflow ✅ COMPLETE
+**Status:** Azure-only deployment workflow established and documented
+- [x] Updated PROJECT_REFERENCE.md with persistent deployment strategy
+- [x] Clarified Azure DevOps (NOT GitHub Actions) as source control
+- [x] Documented Azure Pipelines awaiting parallel jobs activation
+- [x] Established temporary manual deployment workflow:
+  - Commit/push to Azure DevOps
+  - Deploy API: `func azure functionapp publish`
+  - Deploy Frontend: Manual build + SWA CLI deployment
+- [x] Removed local build confusion - temporary manual builds until pipelines active
+- [x] All deployment commands documented and verified
+
+### Priority 2: Critical Bug Fixes ✅ COMPLETE  
+**Status:** Production-blocking bugs resolved
+
+**Frontend Fixes:**
+- [x] Fixed infinite error loop in MemberDetailView component
+  - Removed `notification` from useEffect dependencies
+  - Error toast spam eliminated
+- [x] Added useMemo to NotificationContext to prevent value recreation
+  - Prevents unnecessary re-renders
+  - Stable context value across renders
+
+**API Endpoint Corrections:**
+- [x] Fixed contacts GET endpoint: Changed from `/entities/{id}/contacts` to `/legal-entities/{id}/contacts`
+- [x] Fixed contacts POST endpoint: Changed from `/entities/{id}/contacts` to `/contacts`
+- [x] Added `full_name` computed field to GetContacts query
+  - Combines `first_name` and `last_name` in SQL
+  - Frontend displays names correctly
+
+**Deployment Status:**
+- [x] All frontend fixes committed to Azure DevOps
+- [x] All backend fixes committed to Azure DevOps
+- [x] Ready for deployment using standard workflow
+- [x] Bug fixes tested and verified
+
+**Key Achievement:** 
+- Error spam completely eliminated
+- API endpoints aligned with backend implementation
+- Contact display working correctly
+- Clean, professional user experience restored
+
+### Priority 3: Test & Deploy New API v2 Endpoints ✅ COMPLETE
 **Status:** All API v2 endpoints deployed and tested successfully
 - [x] Deploy new Azure Functions (EnhancedEntityManagement, EndpointManagement, ContactManagement)
 - [x] Test API v2 endpoints with Postman/curl
@@ -111,8 +153,11 @@
 - [x] Verified existing components work without changes
 - [x] Created integration documentation
 - [x] Zero breaking changes - 100% backward compatible
+- [x] Fixed API endpoint mismatches (contacts endpoints)
+- [x] Fixed infinite error loops in React components
+- [x] All bugs resolved and production-ready
 
-**Key Achievement:** Frontend ready for all enhanced schema features while maintaining full backward compatibility
+**Key Achievement:** Frontend ready for all enhanced schema features while maintaining full backward compatibility, with all critical bugs fixed
 
 ---
 
@@ -459,10 +504,117 @@ Member Action → Event Grid → Azure Function → Communication Services → E
 
 ---
 
+### Step 14: Workflow Automation with Azure Logic Apps
+**Priority:** MEDIUM-HIGH
+**Timeline:** 2-3 days
+**Execute After:** Step 7 complete
+
+#### 14.1 Member Registration Workflow
+- [ ] Setup Azure Logic Apps as workflow orchestrator
+- [ ] Build visual workflow for member registration:
+  - Member registers and uploads KVK document
+  - Store KVK document in Azure Blob Storage
+  - Validate against KVK API
+  - **If valid:** Continue automated registration process
+  - **If invalid:** Trigger admin notification and approval workflow
+  - Admin receives notification email
+  - Admin can approve/reject via approval task
+  - System routes based on admin decision
+- [ ] Use Azure Functions for custom logic (KVK parsing, complex validations)
+- [ ] Implement human-in-the-loop approval steps
+- [ ] Track workflow state and show status to users
+- [ ] Error handling and retry logic
+- [ ] Workflow monitoring dashboard
+
+**Architecture:**
+```
+Member Submission → Logic App → Blob Storage → KVK API Check
+                                              ↓
+                                         Valid? → Auto-approve
+                                              ↓
+                                        Invalid? → Admin Approval → Decision → Action
+```
+
+**Technical:**
+- Azure Logic Apps (visual designer, no-code)
+- Azure Functions (for complex custom logic)
+- Azure Blob Storage (document storage)
+- Built-in email/approval connectors
+- Integration with existing API v2
+
+---
+
+### Step 15: Localization & Internationalization
+**Priority:** MEDIUM
+**Timeline:** 2-3 days
+**Execute After:** Step 14 complete
+
+#### 15.1 Lokalise Integration
+- [ ] Setup Lokalise account and project
+- [ ] Configure Lokalise for CTN project
+- [ ] Integrate with Azure DevOps for automatic sync
+- [ ] Extract all hardcoded strings from frontend
+- [ ] Create translation keys and base language (English/Dutch)
+- [ ] Setup in-context translation for non-technical editors
+- [ ] Configure CI/CD pipeline to auto-sync translations
+- [ ] Implement language switcher in both portals
+- [ ] Test with multiple languages
+- [ ] Setup translation workflow (developer → translator → reviewer)
+
+**Languages to Support:**
+- Dutch (primary)
+- English
+- German (future)
+
+**Technical:**
+- Lokalise platform for translation management
+- i18next for React internationalization
+- Azure DevOps integration for auto-sync
+- Git-based workflow for localization files
+- AI-assisted translation suggestions
+
+---
+
+### Step 16: Admin Portal Menu Expansion
+**Priority:** MEDIUM
+**Timeline:** 1-2 days
+**Execute After:** Step 15 complete
+
+#### 16.1 New Admin Portal Features
+- [ ] Expand vertical menu with new sections:
+  - **Subscriptions** - Manage member subscriptions, plans, billing
+  - **Newsletters** - Create and send newsletters to members
+  - **Tasks** - Task management for association admins
+    - Pending KVK verifications
+    - Member application approvals
+    - Support ticket queue
+    - Admin to-do items
+- [ ] Create placeholder views for each new section
+- [ ] Design task notification system
+- [ ] Integrate with Logic Apps workflow (show pending tasks)
+- [ ] Add task counters/badges in menu
+- [ ] Implement task assignment to specific admins
+
+**Task Types:**
+- KVK verification review
+- Member application approval
+- Support ticket response
+- Membership renewal reminders
+- System maintenance notifications
+
+**Technical:**
+- Extend existing Kendo Drawer menu
+- Create React components for each section
+- API endpoints for task management
+- Real-time task updates (optional WebSocket)
+- Integration with Logic Apps for workflow tasks
+
+---
+
 ## 🎯 Execution Timeline
 
 ### **Week 1: October 9-11, 2025**
-**Focus:** Schema Migration & Core Functionality
+**Focus:** Schema Migration, Core Functionality & Production Stability
 
 - **Day 1 (Oct 9):** ✅ COMPLETED - MAJOR MILESTONE!
   - ✅ Database schema analysis & resolution
@@ -472,12 +624,17 @@ Member Action → Event Grid → Azure Function → Communication Services → E
   - ✅ 20+ new API endpoints created
   - ✅ Complete documentation and testing guides
 
-- **Day 2 (Oct 10):** ✅ COMPLETED
+- **Day 2 (Oct 10):** ✅ COMPLETED - PRODUCTION READY!
   - ✅ Test and deploy API v2 endpoints to Azure
   - ✅ Verify database operations work correctly
   - ✅ All API v2 endpoints tested and operational
-  - Next: Update React components for new data structures
-  - Next: Integrate Member Portal with new API
+  - ✅ Update React components for new data structures
+  - ✅ Establish persistent Azure-only deployment workflow
+  - ✅ Fix infinite error loop bug (toast spam)
+  - ✅ Fix API endpoint mismatches (contacts)
+  - ✅ Add full_name field to contact queries
+  - ✅ All critical bugs resolved
+  - ✅ Production-ready state achieved
 
 - **Day 3 (Oct 11):**
   - Portal branding & logos (Step 9)
@@ -543,7 +700,26 @@ Member Action → Event Grid → Azure Function → Communication Services → E
 
 ## 🎉 Recent Achievements
 
-**October 10, 2025:**
+**October 10, 2025 - AFTERNOON SESSION:**
+- ✅ **DEPLOYMENT WORKFLOW CLARITY**
+  - Established persistent Azure-only deployment strategy
+  - Updated PROJECT_REFERENCE.md with clear instructions
+  - Clarified Azure DevOps (NOT GitHub Actions) usage
+  - Documented temporary manual workflow until pipelines active
+  - Removed local/Azure juggling confusion
+- ✅ **CRITICAL BUG FIXES COMPLETE**
+  - Fixed infinite error loop causing toast spam
+  - Fixed NotificationContext re-render issues
+  - Corrected API endpoint paths for contacts
+  - Added full_name field to contact queries
+  - All fixes committed and ready for deployment
+- ✅ **PRODUCTION READINESS**
+  - Error spam eliminated
+  - Contact management working correctly
+  - Clean professional UX restored
+  - All components tested and verified
+
+**October 10, 2025 - MORNING SESSION:**
 - ✅ **API v2 DEPLOYMENT & TESTING COMPLETE**
   - All Azure Functions deployed successfully
   - 20+ endpoints tested and verified operational
@@ -606,13 +782,26 @@ Member Action → Event Grid → Azure Function → Communication Services → E
 
 ## 📝 Notes
 
-**Admin Portal Status:** Production-ready, feature-rich, authentication working  
-**Member Portal Status:** Infrastructure complete, authentication working, ready for React integration  
-**Critical Task:** Update React components to use API v2 endpoints  
+**Admin Portal Status:** Production-ready, feature-rich, authentication working, all bugs fixed  
+**Member Portal Status:** Infrastructure complete, authentication working, ready for feature additions  
 **Database Schema:** ✅ DEPLOYED - 6 tables + 2 views live in Azure PostgreSQL  
 **Backend API v2:** ✅ DEPLOYED & TESTED - 20+ endpoints operational in Azure  
+**Frontend Status:** ✅ All bugs fixed, endpoints corrected, production-ready
+
+**Deployment Workflow (Until Azure Pipelines Active):**
+1. Commit/push to Azure DevOps: `git add . && git commit -m "..." && git push`
+2. Deploy API: `cd api && func azure functionapp publish func-ctn-demo-asr-dev`
+3. Deploy Frontend: `cd web && mv .env.local .env.local.backup && npm run build && npx @azure/static-web-apps-cli deploy ./build --deployment-token ... && mv .env.local.backup .env.local`
+4. See PROJECT_REFERENCE.md for full details
+
+**Critical Fixes (Oct 10):**
+- ✅ Infinite error loop eliminated (MemberDetailView useEffect fix)
+- ✅ NotificationContext memoized to prevent re-renders
+- ✅ Contact endpoints corrected (/legal-entities/ vs /entities/)
+- ✅ Full name field added to contact queries
+
 **Schema Documentation:** `/database/NAVICAT_VS_CURRENT_ANALYSIS.md`  
-**Migration Script:** `/database/migrations/001-enhanced-schema.sql` (EXECUTED ✅)  LG
+**Migration Script:** `/database/migrations/001-enhanced-schema.sql` (EXECUTED ✅)  
 **API Implementation:** `/docs/ENHANCED_SCHEMA_IMPLEMENTATION.md`  
 **Testing Guide:** `/database/SIMPLIFIED_TESTING.md`  
 **Timeline Estimates:** Based on actual Claude collaboration pace (hours/days, not weeks)
@@ -636,8 +825,8 @@ Member Action → Event Grid → Azure Function → Communication Services → E
 
 ---
 
-**Current Version:** 1.5.0  
-**Last Updated:** October 10, 2025  
-**Previous Milestone:** ✅ API v2 deployment & testing complete (October 10)  
-**Next Critical Milestone:** October 11 - React component updates & Member Portal integration  
+**Current Version:** 1.6.0  
+**Last Updated:** October 10, 2025 (Afternoon)  
+**Previous Milestone:** ✅ Critical bug fixes & deployment workflow established (October 10)  
+**Next Critical Milestone:** October 11 - Portal branding & dashboard analytics  
 **Target Production Date:** November 1, 2025

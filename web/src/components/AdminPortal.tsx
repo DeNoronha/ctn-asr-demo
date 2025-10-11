@@ -18,6 +18,7 @@ import { EndpointManagement } from './EndpointManagement';
 import UserManagement from './users/UserManagement';
 import AuditLogViewer from './audit/AuditLogViewer';
 import LoadingSpinner from './LoadingSpinner';
+import Dashboard from './Dashboard';
 import { RoleGuard } from '../auth/ProtectedRoute';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAsync } from '../hooks/useAsync';
@@ -98,35 +99,7 @@ const AdminPortal: React.FC = () => {
 
     switch (selectedView) {
       case 'dashboard':
-        return (
-          <div className="dashboard-view">
-            <h2>Dashboard</h2>
-            <div className="stats-grid">
-              <div className="stat-card">
-                <h3>Total Members</h3>
-                <div className="stat-value">{members.length}</div>
-              </div>
-              <div className="stat-card">
-                <h3>Active Members</h3>
-                <div className="stat-value">
-                  {members.filter(m => m.status === 'ACTIVE').length}
-                </div>
-              </div>
-              <div className="stat-card">
-                <h3>Pending Members</h3>
-                <div className="stat-value">
-                  {members.filter(m => m.status === 'PENDING').length}
-                </div>
-              </div>
-              <div className="stat-card">
-                <h3>Premium Members</h3>
-                <div className="stat-value">
-                  {members.filter(m => m.membership_level === 'PREMIUM').length}
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+        return <Dashboard members={members} />;
 
       case 'members':
         return (
@@ -275,7 +248,12 @@ const AdminPortal: React.FC = () => {
               >
                 {drawerExpanded ? '◀' : '▶'}
               </Button>
-              <h1>CTN Association Register</h1>
+              <img 
+                src="/assets/logos/ctn-logo.svg" 
+                alt="CTN Logo" 
+                className="header-logo"
+              />
+              <h1>Association Register</h1>
             </div>
             <div className="header-right">
               {user && (

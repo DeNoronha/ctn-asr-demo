@@ -1,5 +1,69 @@
 /* Admin Portal Styles - CTN Brand */
 
+/* Header Logo */
+.header-logo {
+  height: 36px;
+  width: auto;
+  margin: 0 16px;
+  vertical-align: middle;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.header-left h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Partner Logos Section */
+.partner-logos {
+  margin-top: 40px;
+  padding: 24px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.partner-logos h3 {
+  margin: 0 0 20px 0;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.logos-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.logo-container {
+  padding: 16px 24px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.logo-container:hover {
+  border-color: #0066B3;
+  box-shadow: 0 2px 8px rgba(0, 102, 179, 0.1);
+}
+
+.logo-container img {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
 .user-info {
   display: flex;
   align-items: center;
