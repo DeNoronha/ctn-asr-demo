@@ -48,13 +48,17 @@ mv .env.local.backup .env.local
 ## 🔑 Azure Resources
 
 ### URLs
-- **Frontend:** https://calm-tree-03352ba03.1.azurestaticapps.net
+- **Admin Portal:** https://calm-tree-03352ba03.1.azurestaticapps.net
+- **Member Portal:** https://ctn-member-portal.azurestaticapps.net (or check Azure Portal for URL)
 - **API:** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
 - **Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
 
 ### Key Services
 - **Function App:** func-ctn-demo-asr-dev
-- **Static Web App:** calm-tree-03352ba03
+- **Static Web App (Admin):** calm-tree-03352ba03
+  - Deployment Token: d1ec51feb9c93a061372a5fa151c2aa371b799b058087937c62d031bdd1457af01-15d4bfd4-f72a-4eb0-82cc-051069db9ab1003172603352ba03
+- **Static Web App (Member Portal):** ctn-member-portal
+  - Deployment Token: e597cda7728ed30e397d3301a18abcc4d89ab6a67b6ac6477835faf3261b183f01-4dec1d69-71a6-4c4d-9091-bae5673f9ab60031717043b2db03
 - **Database:** psql-ctn-demo-asr-dev.postgres.database.azure.com
 - **Storage:** stctnasrdev96858 (KvK documents)
 - **Document Intelligence:** doc-intel-ctn-asr-dev
