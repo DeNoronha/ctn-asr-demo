@@ -29,8 +29,8 @@ const LanguageSwitcher: React.FC = () => {
     // Store language preference in localStorage
     localStorage.setItem('ctn-language', language.code);
 
-    // Optionally, reload the page to apply language changes globally
-    // window.location.reload();
+    // Reload the page to apply language changes globally
+    window.location.reload();
   };
 
   const itemRender = (li: React.ReactElement, itemProps: any) => {
