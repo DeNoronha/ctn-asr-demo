@@ -4,7 +4,7 @@ import './functions/GetMember';
 import './functions/GetAuthenticatedMember';
 import './functions/CreateMember';
 import './functions/IssueToken';
-import './functions/EndpointManagement';
+// import './functions/EndpointManagement';  // Disabled - replaced by individual endpoint functions
 import './functions/GetLegalEntity';
 import './functions/UpdateLegalEntity';
 import './functions/GetContacts';
@@ -29,3 +29,23 @@ import './functions/uploadKvkDocument';
 import './functions/getKvkVerificationStatus';
 import './functions/reviewKvkVerification';
 import './functions/getFlaggedEntities';
+
+// Multi-System Endpoint Management
+import './functions/getEndpointsByEntity';
+import './functions/createEndpoint';
+import './functions/updateEndpoint';
+import './functions/issueEndpointToken';
+import './functions/getEndpointTokens';
+
+// API Documentation
+// import './functions/swagger';  // Temporarily disabled - missing openapi.json
+
+// TO DO 7: Admin Portal Expansion (Subscriptions, Newsletters, Tasks)
+import './functions/getSubscriptions';
+import './functions/createSubscription';
+import './functions/updateSubscription';
+import './functions/getNewsletters';
+import './functions/createNewsletter';
+import './functions/getTasks';
+import './functions/createTask';
+import './functions/updateTask';

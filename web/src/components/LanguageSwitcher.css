@@ -1,0 +1,52 @@
+.language-switcher {
+  display: inline-block;
+}
+
+.language-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-flag {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.language-name {
+  font-size: 14px;
+  color: #333;
+}
+
+/* Kendo DropDownList customization */
+.language-switcher .k-dropdown {
+  border-radius: 4px;
+  border: 1px solid #d4d4d4;
+}
+
+.language-switcher .k-dropdown:hover {
+  border-color: #0066cc;
+}
+
+.language-switcher .k-dropdown:focus,
+.language-switcher .k-dropdown.k-state-focused {
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .language-name {
+    color: #e0e0e0;
+  }
+
+  .language-switcher .k-dropdown {
+    background-color: #2d2d2d;
+    border-color: #4d4d4d;
+    color: #e0e0e0;
+  }
+
+  .language-switcher .k-dropdown:hover {
+    border-color: #0066cc;
+  }
+}

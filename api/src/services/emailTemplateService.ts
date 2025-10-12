@@ -1,0 +1,110 @@
+import Handlebars from 'handlebars';
+import * as fs from 'fs';
+import * as path from 'path';
+
+export interface EmailTemplateData {
+  [key: string]: any;
+}
+
+export class EmailTemplateService {
+  private readonly templatesDir: string;
+  private templateCache: Map<string, HandlebarsTemplateDelegate>;
+
+  constructor() {
+    this.templatesDir = path.join(__dirname, '../templates/emails');
+    this.templateCache = new Map();
+    this.registerHelpers();
+  }
+
+  private registerHelpers(): void {
+    // Register custom Handlebars helpers
+    Handlebars.registerHelper('formatDate', (date: Date | string) => {
+      if (!date) return '';
+      const d = typeof date === 'string' ? new Date(date) : date;
+      return d.toLocaleDateString('nl-NL', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    });
+
+    Handlebars.registerHelper('eq', (a: any, b: any) => a === b);
+  }
+
+  async renderTemplate(
+    templateName: string,
+    language: string,
+    data: EmailTemplateData
+  ): Promise<string> {
+    try {
+      // Default to English if language not found
+      const lang = ['en', 'nl', 'de'].includes(language) ? language : 'en';
+
+      // Load layout template
+      const layoutPath = path.join(this.templatesDir, 'layouts/base.hbs');
+      const layoutContent = fs.readFileSync(layoutPath, 'utf-8');
+      const layoutTemplate = Handlebars.compile(layoutContent);
+
+      // Load content template
+      const contentPath = path.join(this.templatesDir, lang, `${templateName}.hbs`);
+
+      // Fallback to English if template doesn't exist in requested language
+      let actualContentPath = contentPath;
+      if (!fs.existsSync(contentPath)) {
+        console.warn(`Template ${templateName} not found for language ${lang}, falling back to English`);
+        actualContentPath = path.join(this.templatesDir, 'en', `${templateName}.hbs`);
+      }
+
+      const contentTemplate = fs.readFileSync(actualContentPath, 'utf-8');
+      const compiledContent = Handlebars.compile(contentTemplate);
+
+      // Render content
+      const renderedContent = compiledContent(data);
+
+      // Render layout with content
+      const html = layoutTemplate({
+        ...data,
+        body: renderedContent,
+        language: lang
+      });
+
+      return html;
+    } catch (error: any) {
+      console.error('Error rendering email template:', error);
+      throw new Error(`Failed to render email template: ${templateName} (${language})`);
+    }
+  }
+
+  /**
+   * Get available templates for a language
+   */
+  getAvailableTemplates(language: string = 'en'): string[] {
+    try {
+      const lang = ['en', 'nl', 'de'].includes(language) ? language : 'en';
+      const langDir = path.join(this.templatesDir, lang);
+
+      if (!fs.existsSync(langDir)) {
+        return [];
+      }
+
+      return fs.readdirSync(langDir)
+        .filter(file => file.endsWith('.hbs'))
+        .map(file => file.replace('.hbs', ''));
+    } catch (error) {
+      console.error('Error listing templates:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Validate that a template exists
+   */
+  templateExists(templateName: string, language: string = 'en'): boolean {
+    const lang = ['en', 'nl', 'de'].includes(language) ? language : 'en';
+    const templatePath = path.join(this.templatesDir, lang, `${templateName}.hbs`);
+    return fs.existsSync(templatePath);
+  }
+}
+
+// Export singleton instance
+export const emailTemplateService = new EmailTemplateService();

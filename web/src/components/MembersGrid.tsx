@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Grid, 
-  GridColumn, 
+import {
+  Grid,
+  GridColumn,
   GridToolbar,
   GridColumnMenuFilter,
   GridColumnMenuSort,
@@ -11,14 +11,17 @@ import { ExcelExport } from '@progress/kendo-react-excel-export';
 import { Input } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
 import { DropDownButton } from '@progress/kendo-react-buttons';
-import { 
-  filterBy, 
-  orderBy, 
-  SortDescriptor, 
-  CompositeFilterDescriptor 
+import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
+import {
+  filterBy,
+  orderBy,
+  SortDescriptor,
+  CompositeFilterDescriptor
 } from '@progress/kendo-data-query';
 import { Member } from '../services/api';
 import { useNotification } from '../contexts/NotificationContext';
+import AdvancedFilter from './AdvancedFilter';
+import { exportToPDF, exportToCSV, performBulkOperation, formatBulkOperationSummary } from '../utils/exportUtils';
 import './MembersGrid.css';
 
 interface MembersGridProps {
@@ -46,6 +49,10 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
   });
   const [searchValue, setSearchValue] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
+  const [showBulkDialog, setShowBulkDialog] = useState(false);
+  const [bulkAction, setBulkAction] = useState<string>('');
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const excelExportRef = useRef<ExcelExport | null>(null);
 
   // Column visibility state
@@ -184,17 +191,99 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
       return;
     }
 
-    switch (action) {
-      case 'export':
-        notification.showInfo(`Exporting ${selectedIds.length} selected members...`);
-        break;
-      case 'token':
-        notification.showInfo(`Issuing tokens for ${selectedIds.length} members...`);
-        break;
-      case 'delete':
-        notification.showWarning(`Delete action for ${selectedIds.length} members (not implemented)`);
-        break;
+    setBulkAction(action);
+    setShowBulkDialog(true);
+  };
+
+  const executeBulkAction = async () => {
+    setIsBulkProcessing(true);
+
+    try {
+      const selectedMembers = gridData.filter(m => selectedIds.includes(m.org_id));
+
+      switch (bulkAction) {
+        case 'export-pdf':
+          const pdfFileName = exportToPDF(selectedMembers, {
+            title: `CTN Members Export (${selectedIds.length} records)`,
+            orientation: 'landscape',
+            includeTimestamp: true
+          });
+          notification.showSuccess(`Exported ${selectedIds.length} members to ${pdfFileName}`);
+          break;
+
+        case 'export-csv':
+          exportToCSV(selectedMembers, `CTN_Members_${new Date().toISOString().split('T')[0]}.csv`);
+          notification.showSuccess(`Exported ${selectedIds.length} members to CSV`);
+          break;
+
+        case 'token':
+          const tokenResult = await performBulkOperation(
+            selectedIds,
+            'token',
+            async (id) => {
+              await onIssueToken(id);
+              return Promise.resolve();
+            }
+          );
+          notification.showSuccess(formatBulkOperationSummary(tokenResult, 'token issuance'));
+
+          if (tokenResult.errors.length > 0) {
+            console.error('Token issuance errors:', tokenResult.errors);
+          }
+          break;
+
+        case 'suspend':
+          notification.showInfo(`Suspend action for ${selectedIds.length} members (requires API implementation)`);
+          break;
+
+        case 'delete':
+          notification.showWarning(`Delete action for ${selectedIds.length} members (requires API implementation)`);
+          break;
+      }
+
+      setSelectedIds([]);
+    } catch (error: any) {
+      notification.showError(`Bulk action failed: ${error.message}`);
+    } finally {
+      setIsBulkProcessing(false);
+      setShowBulkDialog(false);
     }
+  };
+
+  const handlePDFExport = () => {
+    const dataToExport = selectedIds.length > 0
+      ? gridData.filter(m => selectedIds.includes(m.org_id))
+      : gridData;
+
+    const fileName = exportToPDF(dataToExport, {
+      title: selectedIds.length > 0
+        ? `CTN Members Export (${selectedIds.length} selected)`
+        : `CTN Members Export (All ${gridData.length} records)`,
+      orientation: 'landscape',
+      includeTimestamp: true
+    });
+
+    notification.showSuccess(`Exported to ${fileName}`);
+  };
+
+  const handleCSVExport = () => {
+    const dataToExport = selectedIds.length > 0
+      ? gridData.filter(m => selectedIds.includes(m.org_id))
+      : gridData;
+
+    exportToCSV(dataToExport);
+    notification.showSuccess(`Exported ${dataToExport.length} members to CSV`);
+  };
+
+  const handleAdvancedFilterApply = (advancedFilter: CompositeFilterDescriptor) => {
+    setFilter(advancedFilter);
+    setSearchValue(''); // Clear simple search when applying advanced filter
+    notification.showSuccess('Advanced filters applied');
+  };
+
+  const handleAdvancedFilterClear = () => {
+    setFilter({ logic: 'and', filters: [] });
+    notification.showInfo('Filters cleared');
   };
 
   // Column menu
@@ -317,13 +406,71 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
   }));
 
   const bulkActions = [
-    { text: 'Export Selected', icon: 'file-excel', click: () => handleBulkAction('export') },
+    { text: 'Export to PDF', icon: 'file-pdf', click: () => handleBulkAction('export-pdf') },
+    { text: 'Export to CSV', icon: 'file-txt', click: () => handleBulkAction('export-csv') },
     { text: 'Issue Tokens', icon: 'key', click: () => handleBulkAction('token') },
+    { text: 'Suspend Selected', icon: 'pause', click: () => handleBulkAction('suspend') },
     { text: 'Delete Selected', icon: 'trash', click: () => handleBulkAction('delete') },
   ];
 
+  const exportMenuItems = [
+    { text: 'Export to Excel', icon: 'file-excel', click: handleExcelExport },
+    { text: 'Export to PDF', icon: 'file-pdf', click: handlePDFExport },
+    { text: 'Export to CSV', icon: 'file-txt', click: handleCSVExport },
+  ];
+
+  const getBulkActionConfirmation = () => {
+    switch (bulkAction) {
+      case 'export-pdf':
+        return `Export ${selectedIds.length} members to PDF?`;
+      case 'export-csv':
+        return `Export ${selectedIds.length} members to CSV?`;
+      case 'token':
+        return `Issue tokens for ${selectedIds.length} members? This action will generate new BVAD tokens.`;
+      case 'suspend':
+        return `Suspend ${selectedIds.length} members? They will lose access to CTN services.`;
+      case 'delete':
+        return `Delete ${selectedIds.length} members? This action cannot be undone!`;
+      default:
+        return `Perform action on ${selectedIds.length} members?`;
+    }
+  };
+
   return (
     <div className="members-grid-container">
+      {/* Advanced Filter Panel */}
+      {showAdvancedFilter && (
+        <AdvancedFilter
+          onApply={handleAdvancedFilterApply}
+          onClear={handleAdvancedFilterClear}
+        />
+      )}
+
+      {/* Bulk Action Confirmation Dialog */}
+      {showBulkDialog && (
+        <Dialog
+          title="Confirm Bulk Action"
+          onClose={() => setShowBulkDialog(false)}
+          width={500}
+        >
+          <p style={{ margin: '20px', fontSize: '16px' }}>
+            {getBulkActionConfirmation()}
+          </p>
+          <DialogActionsBar>
+            <Button onClick={() => setShowBulkDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              themeColor="primary"
+              onClick={executeBulkAction}
+              disabled={isBulkProcessing}
+            >
+              {isBulkProcessing ? 'Processing...' : 'Confirm'}
+            </Button>
+          </DialogActionsBar>
+        </Dialog>
+      )}
+
       <ExcelExport
         data={selectedIds.length > 0 ? gridData.filter(m => selectedIds.includes(m.org_id)) : gridData}
         fileName="CTN_Members.xlsx"
@@ -352,13 +499,20 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
                   style={{ width: '300px' }}
                 />
                 <Button
+                  themeColor={showAdvancedFilter ? 'primary' : 'base'}
+                  fillMode={showAdvancedFilter ? 'solid' : 'outline'}
+                  onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
+                  icon="filter"
+                >
+                  {showAdvancedFilter ? 'Hide' : 'Advanced'} Filters
+                </Button>
+                <DropDownButton
+                  text="Export"
+                  icon="download"
+                  items={exportMenuItems}
                   themeColor="primary"
                   fillMode="outline"
-                  onClick={handleExcelExport}
-                  icon="file-excel"
-                >
-                  Export to Excel
-                </Button>
+                />
                 {selectedIds.length > 0 && (
                   <DropDownButton
                     text={`Bulk Actions (${selectedIds.length})`}

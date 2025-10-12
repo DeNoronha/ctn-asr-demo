@@ -22,14 +22,41 @@ export class DocumentIntelligenceService {
   }
 
   async extractKvKData(documentUrl: string): Promise<ExtractedKvKData> {
+    if (!documentUrl) {
+      throw new Error('Document URL is required');
+    }
+
     try {
       // Use prebuilt-document model for general document analysis
       const poller = await this.client.beginAnalyzeDocumentFromUrl(
         'prebuilt-document',
-        documentUrl
+        documentUrl,
+        {
+          // Set a reasonable timeout
+          onProgress: (state) => {
+            console.log(`Document analysis progress: ${state.status}`);
+          }
+        }
       );
 
-      const result = await poller.pollUntilDone();
+      // Wait for analysis with timeout (max 5 minutes)
+      const timeoutMs = 5 * 60 * 1000;
+      const startTime = Date.now();
+
+      let result;
+      while (!poller.isDone()) {
+        if (Date.now() - startTime > timeoutMs) {
+          throw new Error('Document analysis timeout exceeded (5 minutes)');
+        }
+        await poller.poll();
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Poll every second
+      }
+
+      result = poller.getResult();
+
+      if (!result) {
+        throw new Error('Document analysis failed to produce results');
+      }
       
       let companyName: string | null = null;
       let kvkNumber: string | null = null;
@@ -93,9 +120,32 @@ export class DocumentIntelligenceService {
         confidence: Math.min(confidence, 1.0),
         rawText,
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Document Intelligence error:', error);
-      throw new Error('Failed to extract data from document');
+
+      // Provide specific error messages
+      if (error.message?.includes('timeout')) {
+        throw new Error('Document analysis timeout - please try again or contact support');
+      }
+
+      if (error.code === 'InvalidRequest') {
+        throw new Error('Invalid document format - please ensure file is a valid PDF');
+      }
+
+      if (error.code === 'InvalidImage') {
+        throw new Error('Document could not be read - please ensure PDF is not corrupted or password-protected');
+      }
+
+      if (error.statusCode === 401 || error.statusCode === 403) {
+        throw new Error('Document Intelligence service authentication failed - please contact administrator');
+      }
+
+      if (error.statusCode === 429) {
+        throw new Error('Service rate limit exceeded - please try again in a few minutes');
+      }
+
+      // Generic error
+      throw new Error(`Failed to extract data from document: ${error.message || 'Unknown error'}`);
     }
   }
 }

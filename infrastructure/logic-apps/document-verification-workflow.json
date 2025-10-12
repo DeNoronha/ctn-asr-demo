@@ -1,0 +1,354 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "$connections": {
+      "defaultValue": {},
+      "type": "Object"
+    },
+    "functionAppBaseUrl": {
+      "defaultValue": "https://fa-ctn-asr-dev.azurewebsites.net",
+      "type": "String"
+    },
+    "adminEmail": {
+      "defaultValue": "admin@ctn.nl",
+      "type": "String"
+    }
+  },
+  "triggers": {
+    "When_blob_is_uploaded": {
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['azureblob']['connectionId']"
+          }
+        },
+        "method": "get",
+        "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('AccountNameFromSettings'))}/triggers/batch/onupdatedfile",
+        "queries": {
+          "folderId": "kvk-documents",
+          "maxFileCount": 10,
+          "checkBothCreatedAndModifiedDateTime": true
+        }
+      },
+      "recurrence": {
+        "frequency": "Minute",
+        "interval": 5
+      },
+      "splitOn": "@triggerBody()"
+    }
+  },
+  "actions": {
+    "Get_Blob_Metadata": {
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['azureblob']['connectionId']"
+          }
+        },
+        "method": "get",
+        "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('AccountNameFromSettings'))}/files/@{encodeURIComponent(encodeURIComponent(triggerBody()?['Path']))}"
+      },
+      "runAfter": {}
+    },
+    "Trigger_Document_Intelligence_Analysis": {
+      "type": "Http",
+      "inputs": {
+        "method": "POST",
+        "uri": "@{parameters('functionAppBaseUrl')}/api/v1/kvk/analyze-document",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "blobUrl": "@{body('Get_Blob_Metadata')?['Path']}",
+          "fileName": "@{body('Get_Blob_Metadata')?['Name']}",
+          "uploadedBy": "@{body('Get_Blob_Metadata')?['Metadata']?['uploadedBy']}",
+          "legalEntityId": "@{body('Get_Blob_Metadata')?['Metadata']?['legalEntityId']}"
+        }
+      },
+      "runAfter": {
+        "Get_Blob_Metadata": [
+          "Succeeded"
+        ]
+      }
+    },
+    "Parse_Analysis_Result": {
+      "type": "ParseJson",
+      "inputs": {
+        "content": "@body('Trigger_Document_Intelligence_Analysis')",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "boolean"
+            },
+            "verificationId": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "kvkNumber": {
+              "type": "string"
+            },
+            "companyName": {
+              "type": "string"
+            },
+            "confidence": {
+              "type": "number"
+            },
+            "requiresManualReview": {
+              "type": "boolean"
+            },
+            "contactEmail": {
+              "type": "string"
+            },
+            "contactName": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "runAfter": {
+        "Trigger_Document_Intelligence_Analysis": [
+          "Succeeded"
+        ]
+      }
+    },
+    "Check_Verification_Status": {
+      "type": "If",
+      "expression": {
+        "and": [
+          {
+            "equals": [
+              "@body('Parse_Analysis_Result')?['success']",
+              true
+            ]
+          },
+          {
+            "equals": [
+              "@body('Parse_Analysis_Result')?['requiresManualReview']",
+              false
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "Auto_Approve_Document": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "@{parameters('functionAppBaseUrl')}/api/v1/kvk/verifications/@{body('Parse_Analysis_Result')?['verificationId']}/approve",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "approvedBy": "System (Auto-approved)",
+              "approvalDate": "@{utcNow()}",
+              "confidence": "@{body('Parse_Analysis_Result')?['confidence']}"
+            }
+          }
+        },
+        "Send_Success_Notification": {
+          "type": "ApiConnection",
+          "inputs": {
+            "host": {
+              "connection": {
+                "name": "@parameters('$connections')['azurecommunicationservices']['connectionId']"
+              }
+            },
+            "method": "post",
+            "body": {
+              "senderAddress": "DoNotReply@ctn.nl",
+              "recipients": {
+                "to": [
+                  {
+                    "address": "@{body('Parse_Analysis_Result')?['contactEmail']}"
+                  }
+                ]
+              },
+              "content": {
+                "subject": "KvK Document Verified Successfully",
+                "html": "<h2>Document Verified</h2><p>Dear @{body('Parse_Analysis_Result')?['contactName']},</p><p>Your KvK document has been successfully verified.</p><div style='background: #d4edda; padding: 15px; border-left: 4px solid #28a745; margin: 20px 0;'><strong>Verification Details:</strong><br>Company: @{body('Parse_Analysis_Result')?['companyName']}<br>KvK Number: @{body('Parse_Analysis_Result')?['kvkNumber']}<br>Status: <span style='color: #28a745; font-weight: bold;'>VERIFIED</span></div><p>Your application is now being processed.</p><p>Best regards,<br>The CTN Team</p>"
+              }
+            },
+            "path": "/emails:send"
+          },
+          "runAfter": {
+            "Auto_Approve_Document": [
+              "Succeeded"
+            ]
+          }
+        }
+      },
+      "else": {
+        "actions": {
+          "Mark_For_Manual_Review": {
+            "type": "Http",
+            "inputs": {
+              "method": "POST",
+              "uri": "@{parameters('functionAppBaseUrl')}/api/v1/kvk/verifications/@{body('Parse_Analysis_Result')?['verificationId']}/flag-review",
+              "headers": {
+                "Content-Type": "application/json"
+              },
+              "body": {
+                "reason": "Low confidence or extraction errors",
+                "flaggedDate": "@{utcNow()}"
+              }
+            }
+          },
+          "Send_Manual_Review_Request": {
+            "type": "ApiConnectionWebhook",
+            "inputs": {
+              "host": {
+                "connection": {
+                  "name": "@parameters('$connections')['office365']['connectionId']"
+                }
+              },
+              "body": {
+                "Message": {
+                  "To": "@parameters('adminEmail')",
+                  "Subject": "KvK Document Requires Manual Review",
+                  "Body": "<h2>Manual Review Required</h2><p>A KvK document requires manual review:</p><ul><li><strong>Company:</strong> @{body('Parse_Analysis_Result')?['companyName']}</li><li><strong>KvK Number:</strong> @{body('Parse_Analysis_Result')?['kvkNumber']}</li><li><strong>Confidence:</strong> @{body('Parse_Analysis_Result')?['confidence']}%</li><li><strong>File:</strong> @{body('Get_Blob_Metadata')?['Name']}</li></ul><p>Please review in the Admin Portal.</p>",
+                  "Importance": "High",
+                  "Options": "Approve, Reject"
+                },
+                "NotificationUrl": "@{listCallbackUrl()}"
+              },
+              "path": "/approvalmail/$subscriptions"
+            },
+            "runAfter": {
+              "Mark_For_Manual_Review": [
+                "Succeeded"
+              ]
+            }
+          },
+          "Handle_Review_Decision": {
+            "type": "Switch",
+            "expression": "@body('Send_Manual_Review_Request')?['SelectedOption']",
+            "cases": {
+              "Approve": {
+                "case": "Approve",
+                "actions": {
+                  "Manual_Approve_Document": {
+                    "type": "Http",
+                    "inputs": {
+                      "method": "POST",
+                      "uri": "@{parameters('functionAppBaseUrl')}/api/v1/kvk/verifications/@{body('Parse_Analysis_Result')?['verificationId']}/approve",
+                      "headers": {
+                        "Content-Type": "application/json"
+                      },
+                      "body": {
+                        "approvedBy": "@{body('Send_Manual_Review_Request')?['responder']}",
+                        "approvalDate": "@{utcNow()}",
+                        "notes": "@{body('Send_Manual_Review_Request')?['comments']}"
+                      }
+                    }
+                  },
+                  "Notify_Applicant_Approved": {
+                    "type": "ApiConnection",
+                    "inputs": {
+                      "host": {
+                        "connection": {
+                          "name": "@parameters('$connections')['azurecommunicationservices']['connectionId']"
+                        }
+                      },
+                      "method": "post",
+                      "body": {
+                        "senderAddress": "DoNotReply@ctn.nl",
+                        "recipients": {
+                          "to": [
+                            {
+                              "address": "@{body('Parse_Analysis_Result')?['contactEmail']}"
+                            }
+                          ]
+                        },
+                        "content": {
+                          "subject": "KvK Document Verified",
+                          "html": "<h2>Document Verified</h2><p>Dear @{body('Parse_Analysis_Result')?['contactName']},</p><p>Your KvK document has been verified and approved.</p><p>Best regards,<br>The CTN Team</p>"
+                        }
+                      },
+                      "path": "/emails:send"
+                    },
+                    "runAfter": {
+                      "Manual_Approve_Document": [
+                        "Succeeded"
+                      ]
+                    }
+                  }
+                }
+              },
+              "Reject": {
+                "case": "Reject",
+                "actions": {
+                  "Reject_Document": {
+                    "type": "Http",
+                    "inputs": {
+                      "method": "POST",
+                      "uri": "@{parameters('functionAppBaseUrl')}/api/v1/kvk/verifications/@{body('Parse_Analysis_Result')?['verificationId']}/reject",
+                      "headers": {
+                        "Content-Type": "application/json"
+                      },
+                      "body": {
+                        "rejectedBy": "@{body('Send_Manual_Review_Request')?['responder']}",
+                        "rejectedDate": "@{utcNow()}",
+                        "reason": "@{body('Send_Manual_Review_Request')?['comments']}"
+                      }
+                    }
+                  },
+                  "Notify_Applicant_Rejected": {
+                    "type": "ApiConnection",
+                    "inputs": {
+                      "host": {
+                        "connection": {
+                          "name": "@parameters('$connections')['azurecommunicationservices']['connectionId']"
+                        }
+                      },
+                      "method": "post",
+                      "body": {
+                        "senderAddress": "DoNotReply@ctn.nl",
+                        "recipients": {
+                          "to": [
+                            {
+                              "address": "@{body('Parse_Analysis_Result')?['contactEmail']}"
+                            }
+                          ]
+                        },
+                        "content": {
+                          "subject": "KvK Document Verification - Action Required",
+                          "html": "<h2>Document Verification Issue</h2><p>Dear @{body('Parse_Analysis_Result')?['contactName']},</p><p>We were unable to verify your KvK document. Please upload a new document or contact support for assistance.</p><p><strong>Reason:</strong> @{body('Send_Manual_Review_Request')?['comments']}</p><p>Best regards,<br>The CTN Team</p>"
+                        }
+                      },
+                      "path": "/emails:send"
+                    },
+                    "runAfter": {
+                      "Reject_Document": [
+                        "Succeeded"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "default": {
+              "actions": {}
+            },
+            "runAfter": {
+              "Send_Manual_Review_Request": [
+                "Succeeded"
+              ]
+            }
+          }
+        }
+      },
+      "runAfter": {
+        "Parse_Analysis_Result": [
+          "Succeeded"
+        ]
+      }
+    }
+  },
+  "outputs": {}
+}

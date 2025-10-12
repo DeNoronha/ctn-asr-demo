@@ -1,5 +1,6 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
+import { BlobStorageService } from '../services/blobStorageService';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -9,6 +10,8 @@ const pool = new Pool({
   password: process.env.POSTGRES_PASSWORD,
   ssl: { rejectUnauthorized: false },
 });
+
+const blobService = new BlobStorageService();
 
 export async function getKvkVerificationStatus(
   request: HttpRequest,
@@ -54,9 +57,21 @@ export async function getKvkVerificationStatus(
       };
     }
 
+    const data = result.rows[0];
+
+    // Generate SAS URL for document if it exists
+    if (data.kvk_document_url) {
+      try {
+        data.kvk_document_url = await blobService.getDocumentSasUrl(data.kvk_document_url, 60);
+      } catch (error) {
+        context.warn('Failed to generate SAS URL for document:', error);
+        // Keep original URL if SAS generation fails
+      }
+    }
+
     return {
       status: 200,
-      jsonBody: result.rows[0],
+      jsonBody: data,
       headers: { 'Access-Control-Allow-Origin': '*' },
     };
 

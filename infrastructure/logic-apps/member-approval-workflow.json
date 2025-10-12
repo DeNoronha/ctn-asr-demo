@@ -1,0 +1,279 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "$connections": {
+      "defaultValue": {},
+      "type": "Object"
+    },
+    "adminApprovalEmail": {
+      "defaultValue": "admin@ctn.nl",
+      "type": "String"
+    },
+    "functionAppBaseUrl": {
+      "defaultValue": "https://fa-ctn-asr-dev.azurewebsites.net",
+      "type": "String"
+    }
+  },
+  "triggers": {
+    "When_an_Event_Grid_event_occurs": {
+      "type": "ApiConnectionWebhook",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['azureeventgrid']['connectionId']"
+          }
+        },
+        "body": {
+          "properties": {
+            "topic": "/subscriptions/{subscription-id}/resourceGroups/rg-ctn-asr-dev/providers/Microsoft.EventGrid/topics/ctn-asr-events",
+            "destination": {
+              "endpointType": "webhook",
+              "properties": {
+                "endpointUrl": "@{listCallbackUrl()}"
+              }
+            },
+            "filter": {
+              "includedEventTypes": [
+                "Member.Application.Created"
+              ]
+            }
+          }
+        },
+        "path": "/subscriptions/@{encodeURIComponent('{subscription-id}')}/providers/@{encodeURIComponent('Microsoft.EventGrid.Topics')}/resource/eventSubscriptions",
+        "queries": {
+          "x-ms-api-version": "2017-06-15-preview"
+        }
+      }
+    }
+  },
+  "actions": {
+    "Parse_Event_Data": {
+      "type": "ParseJson",
+      "inputs": {
+        "content": "@triggerBody()?['data']",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "applicationId": {
+              "type": "string"
+            },
+            "organizationName": {
+              "type": "string"
+            },
+            "kvkNumber": {
+              "type": "string"
+            },
+            "contactName": {
+              "type": "string"
+            },
+            "contactEmail": {
+              "type": "string"
+            },
+            "contactPhone": {
+              "type": "string"
+            },
+            "applicationDate": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "runAfter": {}
+    },
+    "Send_Approval_Email": {
+      "type": "ApiConnectionWebhook",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['office365']['connectionId']"
+          }
+        },
+        "body": {
+          "Message": {
+            "To": "@parameters('adminApprovalEmail')",
+            "Subject": "New CTN Member Application - Approval Required",
+            "Body": "<h2>New Member Application</h2><p>A new membership application requires your review:</p><ul><li><strong>Organization:</strong> @{body('Parse_Event_Data')?['organizationName']}</li><li><strong>KvK Number:</strong> @{body('Parse_Event_Data')?['kvkNumber']}</li><li><strong>Contact:</strong> @{body('Parse_Event_Data')?['contactName']} (@{body('Parse_Event_Data')?['contactEmail']})</li><li><strong>Phone:</strong> @{body('Parse_Event_Data')?['contactPhone']}</li><li><strong>Application Date:</strong> @{body('Parse_Event_Data')?['applicationDate']}</li></ul><p>Please review the application and documents in the Admin Portal.</p>",
+            "Importance": "High",
+            "Options": "Approve, Reject, Request More Information"
+          },
+          "NotificationUrl": "@{listCallbackUrl()}"
+        },
+        "path": "/approvalmail/$subscriptions"
+      },
+      "runAfter": {
+        "Parse_Event_Data": [
+          "Succeeded"
+        ]
+      }
+    },
+    "Check_Approval_Response": {
+      "type": "Switch",
+      "expression": "@body('Send_Approval_Email')?['SelectedOption']",
+      "cases": {
+        "Approve": {
+          "case": "Approve",
+          "actions": {
+            "Call_Activate_Member_API": {
+              "type": "Http",
+              "inputs": {
+                "method": "POST",
+                "uri": "@{parameters('functionAppBaseUrl')}/api/v1/legal-entities/@{body('Parse_Event_Data')?['applicationId']}/activate",
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "body": {
+                  "approvedBy": "@{body('Send_Approval_Email')?['responder']}",
+                  "approvedDate": "@{utcNow()}",
+                  "notes": "@{body('Send_Approval_Email')?['comments']}"
+                }
+              }
+            },
+            "Send_Success_Notification": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azurecommunicationservices']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "body": {
+                  "senderAddress": "DoNotReply@ctn.nl",
+                  "recipients": {
+                    "to": [
+                      {
+                        "address": "@{body('Parse_Event_Data')?['contactEmail']}"
+                      }
+                    ]
+                  },
+                  "content": {
+                    "subject": "Welcome to CTN - Application Approved",
+                    "html": "<h2>Application Approved</h2><p>Dear @{body('Parse_Event_Data')?['contactName']},</p><p>Your CTN membership application has been approved. You can now access the Member Portal.</p><p>Best regards,<br>The CTN Team</p>"
+                  }
+                },
+                "path": "/emails:send"
+              },
+              "runAfter": {
+                "Call_Activate_Member_API": [
+                  "Succeeded"
+                ]
+              }
+            }
+          }
+        },
+        "Reject": {
+          "case": "Reject",
+          "actions": {
+            "Call_Reject_Member_API": {
+              "type": "Http",
+              "inputs": {
+                "method": "POST",
+                "uri": "@{parameters('functionAppBaseUrl')}/api/v1/legal-entities/@{body('Parse_Event_Data')?['applicationId']}/reject",
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "body": {
+                  "rejectedBy": "@{body('Send_Approval_Email')?['responder']}",
+                  "rejectedDate": "@{utcNow()}",
+                  "reason": "@{body('Send_Approval_Email')?['comments']}"
+                }
+              }
+            },
+            "Send_Rejection_Notification": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azurecommunicationservices']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "body": {
+                  "senderAddress": "DoNotReply@ctn.nl",
+                  "recipients": {
+                    "to": [
+                      {
+                        "address": "@{body('Parse_Event_Data')?['contactEmail']}"
+                      }
+                    ]
+                  },
+                  "content": {
+                    "subject": "CTN Application Status Update",
+                    "html": "<h2>Application Update</h2><p>Dear @{body('Parse_Event_Data')?['contactName']},</p><p>Thank you for your interest in CTN. Unfortunately, we are unable to approve your application at this time.</p><p>If you have questions, please contact us at support@ctn.nl.</p><p>Best regards,<br>The CTN Team</p>"
+                  }
+                },
+                "path": "/emails:send"
+              },
+              "runAfter": {
+                "Call_Reject_Member_API": [
+                  "Succeeded"
+                ]
+              }
+            }
+          }
+        },
+        "Request_More_Information": {
+          "case": "Request More Information",
+          "actions": {
+            "Call_Request_Info_API": {
+              "type": "Http",
+              "inputs": {
+                "method": "POST",
+                "uri": "@{parameters('functionAppBaseUrl')}/api/v1/legal-entities/@{body('Parse_Event_Data')?['applicationId']}/request-info",
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "body": {
+                  "requestedBy": "@{body('Send_Approval_Email')?['responder']}",
+                  "requestDate": "@{utcNow()}",
+                  "requestDetails": "@{body('Send_Approval_Email')?['comments']}"
+                }
+              }
+            },
+            "Send_Info_Request_Email": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azurecommunicationservices']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "body": {
+                  "senderAddress": "DoNotReply@ctn.nl",
+                  "recipients": {
+                    "to": [
+                      {
+                        "address": "@{body('Parse_Event_Data')?['contactEmail']}"
+                      }
+                    ]
+                  },
+                  "content": {
+                    "subject": "Additional Information Required - CTN Application",
+                    "html": "<h2>Additional Information Required</h2><p>Dear @{body('Parse_Event_Data')?['contactName']},</p><p>We need additional information to process your CTN membership application:</p><p><strong>Required Information:</strong><br>@{body('Send_Approval_Email')?['comments']}</p><p>Please provide this information through the Member Portal or by contacting support@ctn.nl.</p><p>Best regards,<br>The CTN Team</p>"
+                  }
+                },
+                "path": "/emails:send"
+              },
+              "runAfter": {
+                "Call_Request_Info_API": [
+                  "Succeeded"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "default": {
+        "actions": {}
+      },
+      "runAfter": {
+        "Send_Approval_Email": [
+          "Succeeded"
+        ]
+      }
+    }
+  },
+  "outputs": {}
+}

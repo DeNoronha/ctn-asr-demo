@@ -20,6 +20,9 @@ import AuditLogViewer from './audit/AuditLogViewer';
 import LoadingSpinner from './LoadingSpinner';
 import Dashboard from './Dashboard';
 import { KvkReviewQueue } from './KvkReviewQueue';
+import SubscriptionsGrid from './SubscriptionsGrid';
+import NewslettersGrid from './NewslettersGrid';
+import TasksGrid from './TasksGrid';
 import { RoleGuard } from '../auth/ProtectedRoute';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAsync } from '../hooks/useAsync';
@@ -211,6 +214,27 @@ const AdminPortal: React.FC = () => {
         return (
           <div className="kvk-review-view">
             <KvkReviewQueue />
+          </div>
+        );
+
+      case 'subscriptions':
+        return (
+          <div className="subscriptions-view">
+            <SubscriptionsGrid />
+          </div>
+        );
+
+      case 'newsletters':
+        return (
+          <div className="newsletters-view">
+            <NewslettersGrid />
+          </div>
+        );
+
+      case 'tasks':
+        return (
+          <div className="tasks-view">
+            <TasksGrid />
           </div>
         );
 

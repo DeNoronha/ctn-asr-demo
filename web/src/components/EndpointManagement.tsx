@@ -67,7 +67,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
   const loadEndpoints = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/v1/entities/${legalEntityId}/endpoints`);
+      const response = await fetch(`${API_BASE}/v1/legal-entities/${legalEntityId}/endpoints`);
       const data = await response.json();
       setEndpoints(data);
     } catch (error) {
@@ -80,7 +80,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
   const handleCreateEndpoint = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/v1/entities/${legalEntityId}/endpoints`, {
+      const response = await fetch(`${API_BASE}/v1/legal-entities/${legalEntityId}/endpoints`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

@@ -1,0 +1,862 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "CTN Association Register API",
+    "version": "1.0.0",
+    "description": "API for managing CTN (Connecting the Netherlands) Association Register - A comprehensive system for managing legal entities, member applications, endpoint registrations, and BVAD token management.",
+    "contact": {
+      "name": "CTN Development Team",
+      "email": "support@ctn.nl",
+      "url": "https://ctn.nl"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://ctn.nl/license"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://fa-ctn-asr-dev.azurewebsites.net/api",
+      "description": "Development environment"
+    },
+    {
+      "url": "https://fa-ctn-asr-staging.azurewebsites.net/api",
+      "description": "Staging environment"
+    },
+    {
+      "url": "https://fa-ctn-asr-prod.azurewebsites.net/api",
+      "description": "Production environment"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Legal Entities",
+      "description": "Operations related to legal entity management"
+    },
+    {
+      "name": "Members",
+      "description": "Member account and application management"
+    },
+    {
+      "name": "Endpoints",
+      "description": "Multi-system endpoint registration and management"
+    },
+    {
+      "name": "Tokens",
+      "description": "BVAD token issuance and management"
+    },
+    {
+      "name": "KvK Verification",
+      "description": "KvK document verification and validation"
+    },
+    {
+      "name": "Events",
+      "description": "Event Grid webhook handlers"
+    }
+  ],
+  "paths": {
+    "/v1/legal-entities": {
+      "get": {
+        "tags": ["Legal Entities"],
+        "summary": "Get all legal entities",
+        "description": "Retrieve a list of all legal entities registered in the system",
+        "operationId": "getAllLegalEntities",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LegalEntity"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/v1/legal-entities/{legalEntityId}": {
+      "get": {
+        "tags": ["Legal Entities"],
+        "summary": "Get legal entity by ID",
+        "description": "Retrieve detailed information about a specific legal entity",
+        "operationId": "getLegalEntityById",
+        "parameters": [
+          {
+            "name": "legalEntityId",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the legal entity",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalEntity"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/v1/legal-entities/{legalEntityId}/endpoints": {
+      "get": {
+        "tags": ["Endpoints"],
+        "summary": "Get endpoints for a legal entity",
+        "description": "Retrieve all registered endpoints for a specific legal entity",
+        "operationId": "getEndpointsByEntity",
+        "parameters": [
+          {
+            "name": "legalEntityId",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the legal entity",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Endpoint"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Endpoints"],
+        "summary": "Create a new endpoint",
+        "description": "Register a new endpoint for a legal entity",
+        "operationId": "createEndpoint",
+        "parameters": [
+          {
+            "name": "legalEntityId",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the legal entity",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEndpointRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Endpoint created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Endpoint"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/v1/legal-entities/{legalEntityId}/endpoints/{endpointId}": {
+      "put": {
+        "tags": ["Endpoints"],
+        "summary": "Update an endpoint",
+        "description": "Update an existing endpoint configuration",
+        "operationId": "updateEndpoint",
+        "parameters": [
+          {
+            "name": "legalEntityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "endpointId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEndpointRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Endpoint updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Endpoint"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/v1/endpoints/{endpointId}/tokens": {
+      "get": {
+        "tags": ["Tokens"],
+        "summary": "Get tokens for an endpoint",
+        "description": "Retrieve all tokens associated with a specific endpoint",
+        "operationId": "getEndpointTokens",
+        "parameters": [
+          {
+            "name": "endpointId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Token"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Tokens"],
+        "summary": "Issue a new token",
+        "description": "Issue a new BVAD access token for an endpoint",
+        "operationId": "issueEndpointToken",
+        "parameters": [
+          {
+            "name": "endpointId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Token issued successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/v1/kvk/upload-document": {
+      "post": {
+        "tags": ["KvK Verification"],
+        "summary": "Upload KvK document",
+        "description": "Upload a KvK document for verification",
+        "operationId": "uploadKvkDocument",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "KvK document file (PDF)"
+                  },
+                  "legalEntityId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "kvkNumber": {
+                    "type": "string"
+                  }
+                },
+                "required": ["file", "legalEntityId", "kvkNumber"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Document uploaded and verification started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KvkVerificationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/v1/kvk/verification-status/{verificationId}": {
+      "get": {
+        "tags": ["KvK Verification"],
+        "summary": "Get KvK verification status",
+        "description": "Check the status of a KvK document verification",
+        "operationId": "getKvkVerificationStatus",
+        "parameters": [
+          {
+            "name": "verificationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verification status retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KvkVerificationStatus"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/v1/kvk/flagged-entities": {
+      "get": {
+        "tags": ["KvK Verification"],
+        "summary": "Get flagged entities",
+        "description": "Retrieve all entities flagged for KvK verification review",
+        "operationId": "getFlaggedEntities",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FlaggedEntity"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/EventGridHandler": {
+      "post": {
+        "tags": ["Events"],
+        "summary": "Event Grid webhook handler",
+        "description": "Receives events from Azure Event Grid and triggers email notifications",
+        "operationId": "handleEventGridEvents",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EventGridEvent"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Events processed successfully"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LegalEntity": {
+        "type": "object",
+        "properties": {
+          "legal_entity_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "legal_name": {
+            "type": "string"
+          },
+          "trade_name": {
+            "type": "string"
+          },
+          "kvk_number": {
+            "type": "string"
+          },
+          "entity_type": {
+            "type": "string",
+            "enum": ["BV", "NV", "Vereniging", "Stichting", "Eenmanszaak", "VOF", "CV", "Other"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "PENDING", "SUSPENDED", "TERMINATED"]
+          },
+          "primary_address": {
+            "type": "string"
+          },
+          "postal_code": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "website": {
+            "type": "string",
+            "format": "uri"
+          },
+          "dt_created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dt_modified": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Endpoint": {
+        "type": "object",
+        "properties": {
+          "legal_entity_endpoint_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "legal_entity_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "endpoint_name": {
+            "type": "string"
+          },
+          "endpoint_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "endpoint_description": {
+            "type": "string"
+          },
+          "data_category": {
+            "type": "string"
+          },
+          "endpoint_type": {
+            "type": "string",
+            "enum": ["REST", "SOAP", "GraphQL", "gRPC"]
+          },
+          "authentication_method": {
+            "type": "string",
+            "enum": ["Bearer", "API_Key", "OAuth2", "Basic"]
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "last_connection_test": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_connection_status": {
+            "type": "string"
+          },
+          "dt_created": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateEndpointRequest": {
+        "type": "object",
+        "required": ["endpointName", "endpointUrl", "endpointType", "authenticationMethod"],
+        "properties": {
+          "endpointName": {
+            "type": "string"
+          },
+          "endpointUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "endpointDescription": {
+            "type": "string"
+          },
+          "dataCategory": {
+            "type": "string"
+          },
+          "endpointType": {
+            "type": "string",
+            "enum": ["REST", "SOAP", "GraphQL", "gRPC"]
+          },
+          "authenticationMethod": {
+            "type": "string",
+            "enum": ["Bearer", "API_Key", "OAuth2", "Basic"]
+          }
+        }
+      },
+      "UpdateEndpointRequest": {
+        "type": "object",
+        "properties": {
+          "endpointName": {
+            "type": "string"
+          },
+          "endpointUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "endpointDescription": {
+            "type": "string"
+          },
+          "dataCategory": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Token": {
+        "type": "object",
+        "properties": {
+          "legal_entity_token_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "legal_entity_endpoint_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "token_value": {
+            "type": "string"
+          },
+          "token_type": {
+            "type": "string",
+            "enum": ["BVAD", "API"]
+          },
+          "token_status": {
+            "type": "string",
+            "enum": ["ACTIVE", "EXPIRED", "REVOKED"]
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dt_created": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "IssueTokenRequest": {
+        "type": "object",
+        "required": ["tokenType", "validityPeriodDays"],
+        "properties": {
+          "tokenType": {
+            "type": "string",
+            "enum": ["BVAD", "API"],
+            "default": "BVAD"
+          },
+          "validityPeriodDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 365,
+            "default": 365
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "KvkVerificationResponse": {
+        "type": "object",
+        "properties": {
+          "verificationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PROCESSING", "VERIFIED", "FAILED", "FLAGGED"]
+          },
+          "message": {
+            "type": "string"
+          },
+          "blobUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "KvkVerificationStatus": {
+        "type": "object",
+        "properties": {
+          "kvk_verification_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "legal_entity_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "verification_status": {
+            "type": "string",
+            "enum": ["PENDING", "PROCESSING", "VERIFIED", "FAILED", "FLAGGED"]
+          },
+          "kvk_number_extracted": {
+            "type": "string"
+          },
+          "company_name_extracted": {
+            "type": "string"
+          },
+          "confidence_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "document_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "error_message": {
+            "type": "string"
+          },
+          "flagged_reason": {
+            "type": "string"
+          },
+          "dt_created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dt_verified": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FlaggedEntity": {
+        "type": "object",
+        "properties": {
+          "legal_entity_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "legal_name": {
+            "type": "string"
+          },
+          "kvk_number": {
+            "type": "string"
+          },
+          "flagged_reason": {
+            "type": "string"
+          },
+          "confidence_score": {
+            "type": "number"
+          },
+          "dt_flagged": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "EventGridEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "eventTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad request - Invalid input parameters",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

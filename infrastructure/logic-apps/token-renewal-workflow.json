@@ -1,0 +1,221 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "$connections": {
+      "defaultValue": {},
+      "type": "Object"
+    },
+    "functionAppBaseUrl": {
+      "defaultValue": "https://fa-ctn-asr-dev.azurewebsites.net",
+      "type": "String"
+    },
+    "memberPortalUrl": {
+      "defaultValue": "https://calm-pebble-0b2ffb603-12.westeurope.5.azurestaticapps.net",
+      "type": "String"
+    }
+  },
+  "triggers": {
+    "Recurrence_Daily_Check": {
+      "type": "Recurrence",
+      "recurrence": {
+        "frequency": "Day",
+        "interval": 1,
+        "schedule": {
+          "hours": [
+            "9"
+          ],
+          "minutes": [
+            0
+          ]
+        },
+        "timeZone": "W. Europe Standard Time"
+      }
+    }
+  },
+  "actions": {
+    "Get_Expiring_Tokens": {
+      "type": "Http",
+      "inputs": {
+        "method": "GET",
+        "uri": "@{parameters('functionAppBaseUrl')}/api/v1/tokens/expiring",
+        "queries": {
+          "daysUntilExpiry": "30"
+        }
+      },
+      "runAfter": {}
+    },
+    "Parse_Expiring_Tokens": {
+      "type": "ParseJson",
+      "inputs": {
+        "content": "@body('Get_Expiring_Tokens')",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "tokenId": {
+                "type": "string"
+              },
+              "legalEntityId": {
+                "type": "string"
+              },
+              "organizationName": {
+                "type": "string"
+              },
+              "contactEmail": {
+                "type": "string"
+              },
+              "contactName": {
+                "type": "string"
+              },
+              "endpointName": {
+                "type": "string"
+              },
+              "expiryDate": {
+                "type": "string"
+              },
+              "daysUntilExpiry": {
+                "type": "integer"
+              },
+              "language": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "runAfter": {
+        "Get_Expiring_Tokens": [
+          "Succeeded"
+        ]
+      }
+    },
+    "For_Each_Expiring_Token": {
+      "type": "Foreach",
+      "foreach": "@body('Parse_Expiring_Tokens')",
+      "actions": {
+        "Determine_Urgency": {
+          "type": "If",
+          "expression": {
+            "and": [
+              {
+                "lessOrEquals": [
+                  "@items('For_Each_Expiring_Token')?['daysUntilExpiry']",
+                  7
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "Send_Urgent_Renewal_Notice": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azurecommunicationservices']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "body": {
+                  "senderAddress": "DoNotReply@ctn.nl",
+                  "recipients": {
+                    "to": [
+                      {
+                        "address": "@{items('For_Each_Expiring_Token')?['contactEmail']}"
+                      }
+                    ]
+                  },
+                  "content": {
+                    "subject": "URGENT: BVAD Token Expiring Soon - Action Required",
+                    "html": "<div style='background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-bottom: 20px;'><h2 style='color: #856404;'>⚠️ Urgent: Token Expiring in @{items('For_Each_Expiring_Token')?['daysUntilExpiry']} Days</h2></div><p>Dear @{items('For_Each_Expiring_Token')?['contactName']},</p><p><strong>Your BVAD access token is expiring soon and requires immediate attention.</strong></p><div style='background: #f9f9f9; padding: 15px; border-left: 4px solid #dc3545; margin: 20px 0;'><strong>Token Details:</strong><br>Organization: @{items('For_Each_Expiring_Token')?['organizationName']}<br>Endpoint: @{items('For_Each_Expiring_Token')?['endpointName']}<br>Expires: @{items('For_Each_Expiring_Token')?['expiryDate']}<br>Days Remaining: <span style='color: #dc3545; font-weight: bold;'>@{items('For_Each_Expiring_Token')?['daysUntilExpiry']}</span></div><p><strong>Action Required:</strong> Please renew your token immediately to avoid service interruption.</p><a href='@{parameters('memberPortalUrl')}' style='display: inline-block; background: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 20px 0;'>Renew Token Now</a><p>Best regards,<br>The CTN Team</p>"
+                  }
+                },
+                "path": "/emails:send"
+              }
+            }
+          },
+          "else": {
+            "actions": {
+              "Send_Standard_Renewal_Notice": {
+                "type": "ApiConnection",
+                "inputs": {
+                  "host": {
+                    "connection": {
+                      "name": "@parameters('$connections')['azurecommunicationservices']['connectionId']"
+                    }
+                  },
+                  "method": "post",
+                  "body": {
+                    "senderAddress": "DoNotReply@ctn.nl",
+                    "recipients": {
+                      "to": [
+                        {
+                          "address": "@{items('For_Each_Expiring_Token')?['contactEmail']}"
+                        }
+                      ]
+                    },
+                    "content": {
+                      "subject": "BVAD Token Renewal Reminder",
+                      "html": "<h2>Token Renewal Reminder</h2><p>Dear @{items('For_Each_Expiring_Token')?['contactName']},</p><p>This is a friendly reminder that your BVAD access token will expire soon.</p><div style='background: #f9f9f9; padding: 15px; border-left: 4px solid #0066cc; margin: 20px 0;'><strong>Token Details:</strong><br>Organization: @{items('For_Each_Expiring_Token')?['organizationName']}<br>Endpoint: @{items('For_Each_Expiring_Token')?['endpointName']}<br>Expires: @{items('For_Each_Expiring_Token')?['expiryDate']}<br>Days Remaining: @{items('For_Each_Expiring_Token')?['daysUntilExpiry']}</div><p>To ensure uninterrupted service, please renew your token before the expiration date.</p><a href='@{parameters('memberPortalUrl')}' style='display: inline-block; background: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 20px 0;'>Renew Token</a><p>Best regards,<br>The CTN Team</p>"
+                    }
+                  },
+                  "path": "/emails:send"
+                }
+              }
+            }
+          }
+        },
+        "Log_Notification_Sent": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "@{parameters('functionAppBaseUrl')}/api/v1/tokens/@{items('For_Each_Expiring_Token')?['tokenId']}/notifications",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "notificationType": "expiry_reminder",
+              "sentDate": "@{utcNow()}",
+              "daysUntilExpiry": "@{items('For_Each_Expiring_Token')?['daysUntilExpiry']}"
+            }
+          },
+          "runAfter": {
+            "Determine_Urgency": [
+              "Succeeded"
+            ]
+          }
+        }
+      },
+      "runAfter": {
+        "Parse_Expiring_Tokens": [
+          "Succeeded"
+        ]
+      }
+    },
+    "Send_Daily_Summary_To_Admin": {
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['office365']['connectionId']"
+          }
+        },
+        "method": "post",
+        "body": {
+          "To": "admin@ctn.nl",
+          "Subject": "Daily Token Expiry Summary - @{formatDateTime(utcNow(), 'yyyy-MM-dd')}",
+          "Body": "<h2>Token Expiry Summary</h2><p>Total tokens expiring within 30 days: <strong>@{length(body('Parse_Expiring_Tokens'))}</strong></p><p>Urgent (7 days or less): <strong>@{length(where(body('Parse_Expiring_Tokens'), item => item['daysUntilExpiry'] <= 7))}</strong></p><p>For detailed information, please check the Admin Portal.</p>",
+          "Importance": "Normal"
+        },
+        "path": "/v2/Mail"
+      },
+      "runAfter": {
+        "For_Each_Expiring_Token": [
+          "Succeeded"
+        ]
+      }
+    }
+  },
+  "outputs": {}
+}

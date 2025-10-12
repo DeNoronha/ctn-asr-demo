@@ -49,14 +49,31 @@
   padding: 14px 20px;
   color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   border-left: 3px solid transparent;
+  position: relative;
+}
+
+.drawer-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: linear-gradient(90deg, rgba(255, 140, 0, 0.2), transparent);
+  transition: width 0.3s ease;
 }
 
 .drawer-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
   color: white;
   border-left-color: #ff8c00;
+  transform: translateX(3px);
+}
+
+.drawer-item:hover::before {
+  width: 100%;
 }
 
 .drawer-item.selected {
@@ -82,11 +99,26 @@
   height: 24px;
   flex-shrink: 0;
   color: #00a3e0;
+  transition: all 0.3s ease;
 }
 
-.drawer-item:hover .item-icon,
+.drawer-item:hover .item-icon {
+  color: #ff8c00;
+  transform: scale(1.1) rotate(5deg);
+}
+
 .drawer-item.selected .item-icon {
   color: #ff8c00;
+  animation: iconPulse 2s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 .item-text {

@@ -1,0 +1,80 @@
+import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { Pool } from 'pg';
+
+const pool = new Pool({
+  host: process.env.POSTGRES_HOST,
+  port: parseInt(process.env.POSTGRES_PORT || '5432'),
+  database: process.env.POSTGRES_DATABASE,
+  user: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  ssl: { rejectUnauthorized: false },
+});
+
+export async function getEndpointTokens(
+  request: HttpRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
+
+  if (request.method === 'OPTIONS') {
+    return {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    };
+  }
+
+  try {
+    const endpointId = request.params.endpointId;
+
+    if (!endpointId) {
+      return {
+        status: 400,
+        jsonBody: { error: 'Endpoint ID is required' },
+        headers: { 'Access-Control-Allow-Origin': '*' },
+      };
+    }
+
+    const result = await pool.query(
+      `SELECT
+        endpoint_authorization_id,
+        legal_entity_endpoint_id,
+        token_type,
+        issued_at,
+        expires_at,
+        revoked_at,
+        revocation_reason,
+        is_active,
+        last_used_at,
+        usage_count,
+        issued_by
+       FROM endpoint_authorization
+       WHERE legal_entity_endpoint_id = $1 AND is_deleted = false
+       ORDER BY issued_at DESC`,
+      [endpointId]
+    );
+
+    return {
+      status: 200,
+      jsonBody: result.rows,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    };
+
+  } catch (error: any) {
+    context.error('Error fetching tokens:', error);
+    return {
+      status: 500,
+      jsonBody: { error: 'Failed to fetch tokens' },
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    };
+  }
+}
+
+app.http('getEndpointTokens', {
+  methods: ['GET', 'OPTIONS'],
+  authLevel: 'anonymous',
+  route: 'v1/endpoints/{endpointId}/tokens',
+  handler: getEndpointTokens,
+});

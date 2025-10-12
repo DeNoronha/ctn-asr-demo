@@ -1,13 +1,16 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Key, 
-  Shield, 
+import {
+  LayoutDashboard,
+  Users,
+  Key,
+  Shield,
   FileText,
   BookOpen,
   Plug,
-  FileCheck 
+  FileCheck,
+  CreditCard,
+  Mail,
+  CheckSquare
 } from 'lucide-react';
 import './AdminSidebar.css';
 
@@ -31,6 +34,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
     { text: 'KvK Review Queue', iconComponent: FileCheck, route: 'kvk-review' },
     { text: 'Endpoints', iconComponent: Plug, route: 'endpoints' },
     { text: 'Token Management', iconComponent: Key, route: 'tokens' },
+    { separator: true, text: '' },
+    { text: 'Subscriptions', iconComponent: CreditCard, route: 'subscriptions' },
+    { text: 'Newsletters', iconComponent: Mail, route: 'newsletters' },
+    { text: 'Tasks', iconComponent: CheckSquare, route: 'tasks' },
     { separator: true, text: '' },
     { text: 'User Management', iconComponent: Shield, route: 'settings' },
     { text: 'Audit Logs', iconComponent: FileText, route: 'audit' },

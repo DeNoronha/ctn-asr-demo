@@ -5,33 +5,26 @@
 
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { EmailClient } from "@azure/communication-email";
+import { emailTemplateService } from "../services/emailTemplateService";
 
-// Email templates for different event types
-const EMAIL_TEMPLATES = {
+// Event type to template mapping
+const EVENT_TEMPLATE_MAPPING: Record<string, { templateName: string; subjectKey: string }> = {
   'Member.Application.Created': {
-    subject: 'New Membership Application Received',
-    getBody: (data: any) => `
-      <h2>New Membership Application</h2>
-      <p>A new membership application has been submitted:</p>
-      <ul>
-        <li><strong>Organization:</strong> ${data.organizationName}</li>
-        <li><strong>KvK Number:</strong> ${data.kvkNumber}</li>
-        <li><strong>Contact:</strong> ${data.contactName} (${data.contactEmail})</li>
-      </ul>
-      <p>Please review and approve this application in the Admin Portal.</p>
-    `
+    templateName: 'application-created',
+    subjectKey: 'Application Registered Successfully'
   },
   'Member.Activated': {
-    subject: 'Welcome to CTN - Membership Approved',
-    getBody: (data: any) => `
-      <h2>Welcome to CTN!</h2>
-      <p>Dear ${data.contactName},</p>
-      <p>We are pleased to inform you that your membership application has been approved.</p>
-      <p><strong>Organization:</strong> ${data.organizationName}</p>
-      <p>You can now access the Member Portal and start using CTN services.</p>
-      <p>Best regards,<br>CTN Team</p>
-    `
+    templateName: 'application-activated',
+    subjectKey: 'Application Activated'
   },
+  'Token.Issued': {
+    templateName: 'token-issued',
+    subjectKey: 'New Access Token Issued'
+  }
+};
+
+// Fallback templates for events without dedicated templates
+const FALLBACK_EMAIL_TEMPLATES = {
   'Member.Suspended': {
     subject: 'CTN Membership Suspended',
     getBody: (data: any) => `
@@ -50,18 +43,6 @@ const EMAIL_TEMPLATES = {
       <p>Dear ${data.contactName},</p>
       <p>Your CTN membership has been terminated.</p>
       <p>Thank you for being part of CTN.</p>
-      <p>Best regards,<br>CTN Team</p>
-    `
-  },
-  'Token.Issued': {
-    subject: 'New BVAD Token Issued',
-    getBody: (data: any) => `
-      <h2>BVAD Token Issued</h2>
-      <p>Dear ${data.contactName},</p>
-      <p>A new BVAD token has been issued for your organization.</p>
-      <p><strong>Organization:</strong> ${data.organizationName}</p>
-      <p><strong>Token:</strong> ${data.token}</p>
-      <p>Please keep this token secure and do not share it.</p>
       <p>Best regards,<br>CTN Team</p>
     `
   }
@@ -101,12 +82,6 @@ export async function EventGridHandler(
     // Process each event
     for (const event of events) {
       context.log(`Processing event: ${event.eventType}`);
-      
-      const template = EMAIL_TEMPLATES[event.eventType];
-      if (!template) {
-        context.log(`No template found for event type: ${event.eventType}`);
-        continue;
-      }
 
       const data = event.data;
       const recipientEmail = data.recipientEmail || data.contactEmail;
@@ -116,12 +91,71 @@ export async function EventGridHandler(
         continue;
       }
 
+      // Get language preference (default to 'en')
+      const language = data.language || data.preferredLanguage || 'en';
+
+      let emailSubject: string;
+      let emailBody: string;
+
+      // Check if we have a template for this event type
+      const templateMapping = EVENT_TEMPLATE_MAPPING[event.eventType];
+
+      if (templateMapping) {
+        try {
+          // Use the template service for branded multi-language emails
+          context.log(`Using template: ${templateMapping.templateName} (${language})`);
+
+          // Prepare template data
+          const templateData = {
+            companyName: data.organizationName || data.companyName,
+            contactName: data.contactName,
+            kvkNumber: data.kvkNumber,
+            applicationDate: data.applicationDate || data.createdDate,
+            activatedDate: data.activatedDate || data.activationDate,
+            endpointName: data.endpointName,
+            issuedDate: data.issuedDate || data.createdDate,
+            expiresDate: data.expiresDate || data.expiryDate,
+            portalUrl: process.env.MEMBER_PORTAL_URL || 'https://calm-pebble-0b2ffb603-12.westeurope.5.azurestaticapps.net',
+            subject: templateMapping.subjectKey,
+            ...data // Include all original data
+          };
+
+          emailBody = await emailTemplateService.renderTemplate(
+            templateMapping.templateName,
+            language,
+            templateData
+          );
+          emailSubject = templateMapping.subjectKey;
+
+        } catch (error) {
+          context.error(`Error rendering template ${templateMapping.templateName}:`, error);
+          // Fall back to simple email if template rendering fails
+          const fallback = FALLBACK_EMAIL_TEMPLATES[event.eventType];
+          if (fallback) {
+            emailSubject = fallback.subject;
+            emailBody = fallback.getBody(data);
+          } else {
+            context.log(`No template or fallback found for event type: ${event.eventType}`);
+            continue;
+          }
+        }
+      } else {
+        // Use fallback template for events without dedicated templates
+        const fallback = FALLBACK_EMAIL_TEMPLATES[event.eventType];
+        if (!fallback) {
+          context.log(`No template found for event type: ${event.eventType}`);
+          continue;
+        }
+        emailSubject = fallback.subject;
+        emailBody = fallback.getBody(data);
+      }
+
       // Send email
       const emailMessage = {
         senderAddress: senderAddress,
         content: {
-          subject: template.subject,
-          html: template.getBody(data)
+          subject: emailSubject,
+          html: emailBody
         },
         recipients: {
           to: [{ address: recipientEmail }]
@@ -131,7 +165,7 @@ export async function EventGridHandler(
       context.log(`Sending email to: ${recipientEmail}`);
       const poller = await emailClient.beginSend(emailMessage);
       const result = await poller.pollUntilDone();
-      
+
       context.log(`Email sent successfully. Message ID: ${result.id}`);
     }
 
