@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
+import { DropDownList, DropDownListChangeEvent, ListItemProps } from '@progress/kendo-react-dropdowns';
 import './LanguageSwitcher.css';
 
 interface Language {
@@ -15,45 +15,53 @@ const languages: Language[] = [
   { code: 'de', name: 'Deutsch', flag: '🇩🇪' }
 ];
 
-const LanguageSwitcher: React.FC = () => {
-  const { i18n, t } = useTranslation();
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>(
-    languages.find(lang => lang.code === i18n.language) || languages[0]
-  );
+const DROPDOWN_STYLE = { width: '180px' } as const;
 
-  const handleLanguageChange = (event: any) => {
+const LanguageSwitcher: React.FC = () => {
+  const { i18n } = useTranslation();
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>(() => {
+    // Handle language variants like 'en-US' by taking only the base code
+    const currentLangCode = i18n.language.split('-')[0];
+    return languages.find(lang => lang.code === currentLangCode) || languages[0];
+  });
+
+  const handleLanguageChange = (event: DropDownListChangeEvent) => {
     const language = event.value as Language;
-    setSelectedLanguage(language);
-    i18n.changeLanguage(language.code);
 
     // Store language preference in localStorage
-    localStorage.setItem('ctn-language', language.code);
+    try {
+      localStorage.setItem('ctn-language', language.code);
+    } catch (error) {
+      console.warn('Failed to save language preference:', error);
+    }
 
     // Reload the page to apply language changes globally
     window.location.reload();
   };
 
-  const itemRender = (li: React.ReactElement, itemProps: any) => {
+  const itemRender = (li: React.ReactElement, itemProps: ListItemProps) => {
     const language = itemProps.dataItem as Language;
     return React.cloneElement(li, {},
       <span className="language-item">
-        <span className="language-flag">{language.flag}</span>
+        <span className="language-flag" aria-hidden="true">{language.flag}</span>
         <span className="language-name">{language.name}</span>
       </span>
     );
   };
 
-  const valueRender = (element: React.ReactElement, value: Language) => {
+  const valueRender = (element: React.ReactElement, value: Language | null) => {
+    if (!value) return element;
+
     return React.cloneElement(element, {},
       <span className="language-item">
-        <span className="language-flag">{value.flag}</span>
+        <span className="language-flag" aria-hidden="true">{value.flag}</span>
         <span className="language-name">{value.name}</span>
       </span>
     );
   };
 
   return (
-    <div className="language-switcher">
+    <div className="language-switcher" role="region" aria-label="Language selection">
       <DropDownList
         data={languages}
         textField="name"
@@ -62,7 +70,7 @@ const LanguageSwitcher: React.FC = () => {
         onChange={handleLanguageChange}
         itemRender={itemRender}
         valueRender={valueRender}
-        style={{ width: '180px' }}
+        style={DROPDOWN_STYLE}
       />
     </div>
   );

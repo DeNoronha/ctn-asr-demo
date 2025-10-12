@@ -1,18 +1,12 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { Pool } from 'pg';
 import * as multipart from 'parse-multipart-data';
 import { BlobStorageService } from '../services/blobStorageService';
 import { DocumentIntelligenceService } from '../services/documentIntelligenceService';
 import { KvKService } from '../services/kvkService';
+import { getPool } from '../utils/database';
+import { getRequestId } from '../utils/requestId';
 
-const pool = new Pool({
-  host: process.env.POSTGRES_HOST,
-  port: parseInt(process.env.POSTGRES_PORT || '5432'),
-  database: process.env.POSTGRES_DATABASE,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  ssl: { rejectUnauthorized: false },
-});
+const pool = getPool(); // ✅ SECURITY FIX: Use shared pool with SSL validation
 
 export async function uploadKvkDocument(
   request: HttpRequest,
@@ -89,7 +83,18 @@ export async function uploadKvkDocument(
     }
 
     const bodyBuffer = await request.arrayBuffer();
-    
+
+    // ✅ SECURITY FIX: Validate file size on backend (10MB max)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    if (bodyBuffer.byteLength > MAX_FILE_SIZE) {
+      context.warn(`File size ${bodyBuffer.byteLength} exceeds maximum ${MAX_FILE_SIZE}`);
+      return {
+        status: 413,
+        jsonBody: { error: 'File size exceeds maximum allowed size of 10MB' },
+        headers: { 'Access-Control-Allow-Origin': '*' },
+      };
+    }
+
     // Extra safety check before calling getBoundary
     if (!contentType || typeof contentType !== 'string') {
       context.error('contentType is invalid:', { contentType, type: typeof contentType });
@@ -133,7 +138,7 @@ export async function uploadKvkDocument(
     const parts = multipart.parse(Buffer.from(bodyBuffer), boundary);
 
     const filePart = parts.find(part => part.name === 'file');
-    
+
     if (!filePart || !filePart.data) {
       return {
         status: 400,
@@ -142,8 +147,33 @@ export async function uploadKvkDocument(
       };
     }
 
-    // Validate file type
+    // ✅ SECURITY FIX: Validate file size again (multipart data)
+    if (filePart.data.length > MAX_FILE_SIZE) {
+      context.warn(`File part size ${filePart.data.length} exceeds maximum ${MAX_FILE_SIZE}`);
+      return {
+        status: 413,
+        jsonBody: { error: 'File size exceeds maximum allowed size of 10MB' },
+        headers: { 'Access-Control-Allow-Origin': '*' },
+      };
+    }
+
+    // ✅ SECURITY FIX: Validate file type with magic number check (not just MIME type)
+    const isPdf = filePart.data[0] === 0x25 && // %
+                  filePart.data[1] === 0x50 && // P
+                  filePart.data[2] === 0x44 && // D
+                  filePart.data[3] === 0x46;   // F
+
+    if (!isPdf) {
+      return {
+        status: 400,
+        jsonBody: { error: 'Invalid file format. Only PDF files are allowed.' },
+        headers: { 'Access-Control-Allow-Origin': '*' },
+      };
+    }
+
+    // Also check MIME type
     if (filePart.type !== 'application/pdf') {
+      context.warn(`File MIME type is ${filePart.type}, expected application/pdf`);
       return {
         status: 400,
         jsonBody: { error: 'Only PDF files are allowed' },
