@@ -1,7 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import HttpBackend from 'i18next-http-backend';
 
 // Translation resources
 import enTranslations from './locales/en/translation.json';
@@ -9,9 +8,6 @@ import nlTranslations from './locales/nl/translation.json';
 import deTranslations from './locales/de/translation.json';
 
 i18n
-  // Load translation using http backend
-  // Can be configured to load from API or CDN
-  .use(HttpBackend)
   // Detect user language
   .use(LanguageDetector)
   // Pass the i18n instance to react-i18next
@@ -58,11 +54,6 @@ i18n
 
       // Exclude cache for certain languages
       excludeCacheFor: ['cimode']
-    },
-
-    // Backend options (if loading from external source)
-    backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json'
     },
 
     // React-specific options
