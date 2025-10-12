@@ -10,15 +10,16 @@
 
 1. [Quick Start Commands](#quick-start-commands)
 2. [Development Workflow](#development-workflow)
-3. [API Documentation](#api-documentation)
-4. [Email Templates](#email-templates)
-5. [Localization (i18n)](#localization-i18n)
-6. [Infrastructure Deployment](#infrastructure-deployment)
-7. [Logic Apps Workflows](#logic-apps-workflows)
-8. [Advanced Features](#advanced-features)
-9. [Testing](#testing)
-10. [Troubleshooting](#troubleshooting)
-11. [Azure DevOps Pipelines](#azure-devops-pipelines)
+3. [Claude Code Agents](#claude-code-agents)
+4. [API Documentation](#api-documentation)
+5. [Email Templates](#email-templates)
+6. [Localization (i18n)](#localization-i18n)
+7. [Infrastructure Deployment](#infrastructure-deployment)
+8. [Logic Apps Workflows](#logic-apps-workflows)
+9. [Advanced Features](#advanced-features)
+10. [Testing](#testing)
+11. [Troubleshooting](#troubleshooting)
+12. [Azure DevOps Pipelines](#azure-devops-pipelines)
 
 ---
 
@@ -98,10 +99,207 @@ chore(deps): Upgrade react to v18.3
 2. Implement changes and commit
 3. Run tests: `npm test`
 4. Build both projects: `npm run build`
-5. Create PR with description and testing notes
-6. Wait for CI/CD checks to pass
-7. Request review from team
-8. Merge after approval
+5. **Invoke code-reviewer agent** to review changes
+6. **Invoke security-review agent** if changes involve authentication, data handling, or API endpoints
+7. Create PR with description and testing notes
+8. Wait for CI/CD checks to pass
+9. Request review from team
+10. Merge after approval
+
+---
+
+## 🤖 Claude Code Agents
+
+### Available Specialized Agents
+
+Claude Code provides specialized AI agents that should be invoked **proactively after every code change** to ensure quality, security, and best practices.
+
+#### 1. **commit-code-reviewer** 📝
+
+**When to Use:**
+- After completing any code changes (MANDATORY)
+- Before creating pull requests
+- When refactoring existing code
+- After adding new features or fixing bugs
+
+**What It Does:**
+- Reviews code quality and adherence to best practices
+- Identifies potential bugs and performance issues
+- Checks for code duplication and maintainability
+- Validates TypeScript typing and React patterns
+- Provides specific recommendations with code examples
+
+**Example Usage:**
+```bash
+# After making code changes, invoke automatically
+Claude Code will invoke: commit-code-reviewer agent
+```
+
+**Output:** Comprehensive code review report with actionable recommendations
+
+---
+
+#### 2. **security-review** 🔒
+
+**When to Use (MANDATORY):**
+- After modifying authentication/authorization code
+- When handling user data or sensitive information
+- After changes to API endpoints or database queries
+- When adding file upload functionality
+- After updating dependencies
+- Before ANY production deployment
+
+**What It Does:**
+- Scans for common security vulnerabilities (OWASP Top 10)
+- Checks for SQL injection and XSS vulnerabilities
+- Reviews authentication and authorization implementations
+- Validates input validation and sanitization
+- Checks for exposed secrets or credentials
+- Reviews CORS and security headers configuration
+- Analyzes cryptographic operations
+- Examines infrastructure security (Bicep templates)
+
+**Example Usage:**
+```bash
+# After authentication changes
+Claude Code will invoke: security-review agent
+
+# After API endpoint modifications
+Claude Code will invoke: security-review agent
+```
+
+**Output:** Security assessment report with prioritized findings (Critical/High/Medium/Low)
+
+---
+
+#### 3. **azure-test-engineer** 🧪
+
+**When to Use:**
+- After implementing new features (TDD approach)
+- When test failures occur in Azure DevOps pipelines
+- After modifying existing functionality
+- Before deploying to production
+- When investigating console errors
+
+**What It Does:**
+- Creates comprehensive test cases for new features
+- Follows Test-Driven Development (TDD) principles
+- Integrates with Azure DevOps Test Plans
+- Investigates test failures and console errors
+- Reviews test coverage gaps
+- Generates unit, integration, and E2E tests
+
+**Example Usage:**
+```bash
+# After implementing user authentication
+Claude Code will invoke: azure-test-engineer agent
+
+# When pipeline tests fail
+Claude Code will invoke: azure-test-engineer agent
+```
+
+**Output:** Test cases, test plans, and detailed failure analysis
+
+---
+
+### Agent Invocation Best Practices
+
+#### **Mandatory After Every Code Change:**
+
+```
+1. Make code changes
+2. ✅ Invoke commit-code-reviewer (ALWAYS)
+3. ✅ Invoke security-review (if security-related)
+4. ✅ Invoke azure-test-engineer (if new feature)
+5. Review agent reports
+6. Fix identified issues
+7. Re-run agents if significant changes made
+8. Commit final code
+```
+
+#### **Security-Sensitive Changes Require BOTH:**
+
+```
+Authentication/Authorization changes:
+→ commit-code-reviewer + security-review
+
+Database operations:
+→ commit-code-reviewer + security-review
+
+File uploads:
+→ commit-code-reviewer + security-review
+
+API endpoints:
+→ commit-code-reviewer + security-review + azure-test-engineer
+```
+
+---
+
+### Integration with Development Workflow
+
+**Standard Development Flow:**
+
+```bash
+# 1. Create feature branch
+git checkout -b feature/new-authentication
+
+# 2. Implement changes
+# ... make code changes ...
+
+# 3. MANDATORY: Invoke code reviewer
+# Claude Code automatically invokes: commit-code-reviewer
+
+# 4. MANDATORY: Invoke security reviewer (auth changes)
+# Claude Code automatically invokes: security-review
+
+# 5. Review reports and fix issues
+# ... address findings ...
+
+# 6. Re-run agents after fixes
+# Claude Code re-invokes agents
+
+# 7. Run tests
+npm test
+
+# 8. Build project
+npm run build
+
+# 9. Commit changes
+git add .
+git commit -m "feat(auth): Add new authentication middleware"
+
+# 10. Push and create PR
+git push origin feature/new-authentication
+```
+
+---
+
+### Agent Report Locations
+
+All agent reports are saved in the `docs/` folder:
+
+- **Code Reviews:** `docs/REVIEW_REPORT.md`
+- **Security Scans:** `docs/SECURITY_REPORT.md`
+- **Test Plans:** `docs/TEST_PLAN.md`
+
+**Important:** These reports should be:
+1. Reviewed thoroughly by the development team
+2. Used to track technical debt
+3. Referenced in pull request descriptions
+4. Updated as issues are resolved
+
+---
+
+### Current Project Status
+
+**Latest Code Review:** October 12, 2025
+- **Security Rating:** HIGH RISK (requires immediate fixes)
+- **Code Quality:** MEDIUM
+- **Critical Issues:** 7 (authentication, credentials, CORS)
+- **High Priority:** 12 (rate limiting, validation, logging)
+- **Full Report:** `docs/REVIEW_REPORT.md`
+
+**Action Required:** Address critical security findings before production deployment
 
 ---
 
