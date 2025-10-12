@@ -23,6 +23,7 @@ import { KvkReviewQueue } from './KvkReviewQueue';
 import SubscriptionsGrid from './SubscriptionsGrid';
 import NewslettersGrid from './NewslettersGrid';
 import TasksGrid from './TasksGrid';
+import LanguageSwitcher from './LanguageSwitcher';
 import { RoleGuard } from '../auth/ProtectedRoute';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAsync } from '../hooks/useAsync';
@@ -288,6 +289,7 @@ const AdminPortal: React.FC = () => {
               <h1>Association Register</h1>
             </div>
             <div className="header-right">
+              <LanguageSwitcher />
               {user && (
                 <div className="user-info">
                   <User size={18} />

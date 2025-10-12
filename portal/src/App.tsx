@@ -16,6 +16,7 @@ import { ContactsView } from './components/ContactsView';
 import { EndpointsView } from './components/EndpointsView';
 import { TokensView } from './components/TokensView';
 import { Support } from './components/Support';
+import LanguageSwitcher from './components/LanguageSwitcher';
 
 interface AppContentProps {
   instance: IPublicClientApplication;
@@ -178,9 +179,10 @@ function AppContent({ instance }: AppContentProps) {
             <img src="/assets/logos/ctn small.png" alt="CTN" className="header-ctn-logo" />
             <h1>Member Portal</h1>
           </div>
-          
-          <AuthenticatedTemplate>
-            <div className="header-right">
+
+          <div className="header-right">
+            <LanguageSwitcher />
+            <AuthenticatedTemplate>
               <div className="user-info">
                 <span className="user-name">{accounts[0]?.name || accounts[0]?.username}</span>
                 <Button
@@ -192,8 +194,8 @@ function AppContent({ instance }: AppContentProps) {
                   <LogOut size={16} /> Sign Out
                 </Button>
               </div>
-            </div>
-          </AuthenticatedTemplate>
+            </AuthenticatedTemplate>
+          </div>
         </div>
 
         <AuthenticatedTemplate>

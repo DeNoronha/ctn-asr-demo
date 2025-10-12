@@ -17,8 +17,12 @@
     "@progress/kendo-react-notification": "^12.1.0",
     "@progress/kendo-theme-default": "^12.1.0",
     "ajv": "^8.17.1",
+    "i18next": "^25.6.0",
+    "i18next-browser-languagedetector": "^8.2.0",
+    "lucide-react": "^0.545.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-i18next": "^16.0.0",
     "react-scripts": "5.0.1",
     "typescript": "^4.9.5"
   },
