@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Grid, GridColumn } from '@progress/kendo-react-grid';
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { TextArea } from '@progress/kendo-react-inputs';
+import { Grid, GridColumn } from '@progress/kendo-react-grid';
 import { Loader } from '@progress/kendo-react-indicators';
+import { TextArea } from '@progress/kendo-react-inputs';
 import axios from 'axios';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
 interface FlaggedEntity {
   legal_entity_id: string;
@@ -19,7 +20,10 @@ interface FlaggedEntity {
 export const KvkReviewQueue: React.FC = () => {
   const [entities, setEntities] = useState<FlaggedEntity[]>([]);
   const [loading, setLoading] = useState(true);
-  const [reviewDialog, setReviewDialog] = useState<{ visible: boolean; entity: FlaggedEntity | null }>({
+  const [reviewDialog, setReviewDialog] = useState<{
+    visible: boolean;
+    entity: FlaggedEntity | null;
+  }>({
     visible: false,
     entity: null,
   });
@@ -64,7 +68,9 @@ export const KvkReviewQueue: React.FC = () => {
       );
 
       // Remove from list
-      setEntities(entities.filter(e => e.legal_entity_id !== reviewDialog.entity?.legal_entity_id));
+      setEntities(
+        entities.filter((e) => e.legal_entity_id !== reviewDialog.entity?.legal_entity_id)
+      );
       setReviewDialog({ visible: false, entity: null });
       setReviewNotes('');
     } catch (error) {
@@ -103,11 +109,7 @@ export const KvkReviewQueue: React.FC = () => {
   const ActionCell = (props: any) => {
     return (
       <td>
-        <Button
-          themeColor="primary"
-          size="small"
-          onClick={() => handleReview(props.dataItem)}
-        >
+        <Button themeColor="primary" size="small" onClick={() => handleReview(props.dataItem)}>
           Review
         </Button>
       </td>
@@ -168,7 +170,11 @@ export const KvkReviewQueue: React.FC = () => {
             </div>
 
             <div style={{ marginBottom: '15px' }}>
-              <a href={reviewDialog.entity.kvk_document_url} target="_blank" rel="noopener noreferrer">
+              <a
+                href={reviewDialog.entity.kvk_document_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Button themeColor="info" size="small">
                   View Document
                 </Button>
@@ -176,7 +182,9 @@ export const KvkReviewQueue: React.FC = () => {
             </div>
 
             <div style={{ marginBottom: '15px' }}>
-              <label><strong>Review Notes:</strong></label>
+              <label>
+                <strong>Review Notes:</strong>
+              </label>
               <TextArea
                 value={reviewNotes}
                 onChange={(e) => setReviewNotes(e.value || '')}
@@ -187,18 +195,10 @@ export const KvkReviewQueue: React.FC = () => {
           </div>
 
           <DialogActionsBar>
-            <Button
-              onClick={() => submitReview(false)}
-              disabled={submitting}
-              themeColor="error"
-            >
+            <Button onClick={() => submitReview(false)} disabled={submitting} themeColor="error">
               Reject
             </Button>
-            <Button
-              onClick={() => submitReview(true)}
-              disabled={submitting}
-              themeColor="success"
-            >
+            <Button onClick={() => submitReview(true)} disabled={submitting} themeColor="success">
               Approve
             </Button>
             <Button

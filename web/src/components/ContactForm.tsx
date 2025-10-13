@@ -1,11 +1,11 @@
-// ContactForm.tsx - Form for creating/editing contacts
-import React from 'react';
-import { Form, Field, FormElement, FormRenderProps } from '@progress/kendo-react-form';
-import { Input } from '@progress/kendo-react-inputs';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { Checkbox } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
-import { LegalEntityContact } from '../services/api';
+import { DropDownList } from '@progress/kendo-react-dropdowns';
+import { Field, Form, FormElement, type FormRenderProps } from '@progress/kendo-react-form';
+import { Input } from '@progress/kendo-react-inputs';
+import { Checkbox } from '@progress/kendo-react-inputs';
+// ContactForm.tsx - Form for creating/editing contacts
+import type React from 'react';
+import type { LegalEntityContact } from '../services/api';
 import './ContactForm.css';
 
 interface ContactFormProps {
@@ -54,7 +54,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
       return {
         ...contact,
         first_name: first_name || '',
-        last_name: lastNames.join(' ') || ''
+        last_name: lastNames.join(' ') || '',
       };
     }
     return { contact_type: 'Primary', is_primary: false, first_name: '', last_name: '' };
@@ -68,38 +68,19 @@ export const ContactForm: React.FC<ContactFormProps> = ({
         <FormElement className="contact-form">
           <fieldset className="k-form-fieldset">
             <legend>Contact Type</legend>
-            
-            <Field
-              name="contact_type"
-              label="Type"
-              component={DropDownList}
-              data={contactTypes}
-            />
 
-            <Field
-              name="is_primary"
-              label="Primary Contact"
-              component={Checkbox}
-            />
+            <Field name="contact_type" label="Type" component={DropDownList} data={contactTypes} />
+
+            <Field name="is_primary" label="Primary Contact" component={Checkbox} />
           </fieldset>
 
           <fieldset className="k-form-fieldset">
             <legend>Personal Information</legend>
-            
-            <div className="form-row-group">
-              <Field
-                name="first_name"
-                label="First Name"
-                component={Input}
-                required
-              />
 
-              <Field
-                name="last_name"
-                label="Last Name"
-                component={Input}
-                required
-              />
+            <div className="form-row-group">
+              <Field name="first_name" label="First Name" component={Input} required />
+
+              <Field name="last_name" label="Last Name" component={Input} required />
             </div>
 
             <Field
@@ -112,12 +93,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
             />
 
             <div className="form-row-group">
-              <Field
-                name="phone"
-                label="Phone"
-                component={Input}
-                placeholder="+31 20 123 4567"
-              />
+              <Field name="phone" label="Phone" component={Input} placeholder="+31 20 123 4567" />
 
               <Field
                 name="mobile"
@@ -130,7 +106,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
 
           <fieldset className="k-form-fieldset">
             <legend>Professional Information</legend>
-            
+
             <Field
               name="job_title"
               label="Job Title"
@@ -147,11 +123,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
           </fieldset>
 
           <div className="k-form-buttons">
-            <Button 
-              type="submit" 
-              themeColor="primary"
-              disabled={!formRenderProps.allowSubmit}
-            >
+            <Button type="submit" themeColor="primary" disabled={!formRenderProps.allowSubmit}>
               Save Contact
             </Button>
             <Button type="button" onClick={onCancel}>

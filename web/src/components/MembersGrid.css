@@ -68,16 +68,16 @@
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .toolbar-left {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .toolbar-left > * {
     width: 100%;
   }
-  
+
   .toolbar-stats {
     justify-content: space-between;
     width: 100%;

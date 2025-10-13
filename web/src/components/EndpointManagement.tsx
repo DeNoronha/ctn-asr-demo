@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Grid, GridColumn } from '@progress/kendo-react-grid';
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
-import { Input, TextArea } from '@progress/kendo-react-inputs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
+import { Grid, GridColumn } from '@progress/kendo-react-grid';
+import { Input, TextArea } from '@progress/kendo-react-inputs';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import './EndpointManagement.css';
 
 interface Endpoint {
@@ -36,12 +37,12 @@ const DATA_CATEGORIES = [
   { value: 'WAREHOUSE', label: 'Warehouse' },
   { value: 'TRANSPORT', label: 'Transport' },
   { value: 'FINANCIAL', label: 'Financial' },
-  { value: 'GENERAL', label: 'General' }
+  { value: 'GENERAL', label: 'General' },
 ];
 
-export const EndpointManagement: React.FC<EndpointManagementProps> = ({ 
-  legalEntityId, 
-  legalEntityName 
+export const EndpointManagement: React.FC<EndpointManagementProps> = ({
+  legalEntityId,
+  legalEntityName,
 }) => {
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [loading, setLoading] = useState(false);
@@ -49,16 +50,17 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
   const [showTokenDialog, setShowTokenDialog] = useState(false);
   const [selectedEndpoint, setSelectedEndpoint] = useState<Endpoint | null>(null);
   const [newToken, setNewToken] = useState<Token | null>(null);
-  
+
   const [formData, setFormData] = useState({
     endpoint_name: '',
     endpoint_url: '',
     endpoint_description: '',
     data_category: 'CONTAINER',
-    endpoint_type: 'REST_API'
+    endpoint_type: 'REST_API',
   });
 
-  const API_BASE = process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api';
+  const API_BASE =
+    process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api';
 
   useEffect(() => {
     loadEndpoints();
@@ -83,9 +85,9 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
       const response = await fetch(`${API_BASE}/v1/legal-entities/${legalEntityId}/endpoints`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
-      
+
       if (response.ok) {
         setShowDialog(false);
         setFormData({
@@ -93,7 +95,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
           endpoint_url: '',
           endpoint_description: '',
           data_category: 'CONTAINER',
-          endpoint_type: 'REST_API'
+          endpoint_type: 'REST_API',
         });
         loadEndpoints();
       }
@@ -107,12 +109,15 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
   const handleIssueToken = async (endpoint: Endpoint) => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/v1/endpoints/${endpoint.legal_entity_endpoint_id}/tokens`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
-      });
-      
+      const response = await fetch(
+        `${API_BASE}/v1/endpoints/${endpoint.legal_entity_endpoint_id}/tokens`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        }
+      );
+
       if (response.ok) {
         const token = await response.json();
         setNewToken(token);
@@ -163,27 +168,20 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
           <h2>System Endpoints</h2>
           <p className="entity-name">{legalEntityName}</p>
         </div>
-        <Button
-          themeColor="primary"
-          onClick={() => setShowDialog(true)}
-          disabled={loading}
-        >
+        <Button themeColor="primary" onClick={() => setShowDialog(true)} disabled={loading}>
           + Register New Endpoint
         </Button>
       </div>
 
-      <Grid
-        data={endpoints}
-        style={{ height: '500px' }}
-      >
+      <Grid data={endpoints} style={{ height: '500px' }}>
         <GridColumn field="endpoint_name" title="Endpoint Name" width="250px" />
         <GridColumn field="endpoint_url" title="URL" width="300px" />
         <GridColumn field="data_category" title="Category" width="150px" />
         <GridColumn field="endpoint_type" title="Type" width="120px" />
         <GridColumn field="is_active" title="Status" width="120px" cell={StatusCell} />
-        <GridColumn 
-          field="dt_created" 
-          title="Created" 
+        <GridColumn
+          field="dt_created"
+          title="Created"
           width="180px"
           format="{0:yyyy-MM-dd HH:mm}"
         />
@@ -191,11 +189,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
       </Grid>
 
       {showDialog && (
-        <Dialog
-          title="Register New Endpoint"
-          onClose={() => setShowDialog(false)}
-          width={600}
-        >
+        <Dialog title="Register New Endpoint" onClose={() => setShowDialog(false)} width={600}>
           <div className="endpoint-form">
             <div className="form-field">
               <label>Endpoint Name *</label>
@@ -231,7 +225,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
                 data={DATA_CATEGORIES}
                 textField="label"
                 dataItemKey="value"
-                value={DATA_CATEGORIES.find(c => c.value === formData.data_category)}
+                value={DATA_CATEGORIES.find((c) => c.value === formData.data_category)}
                 onChange={(e) => setFormData({ ...formData, data_category: e.value.value })}
               />
             </div>
@@ -265,10 +259,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
               <label>Token Value:</label>
               <div className="token-value-container">
                 <code className="token-value">{newToken.token_value}</code>
-                <Button
-                  size="small"
-                  onClick={() => copyToClipboard(newToken.token_value)}
-                >
+                <Button size="small" onClick={() => copyToClipboard(newToken.token_value)}>
                   Copy
                 </Button>
               </div>

@@ -3,37 +3,38 @@
  * Main container for authenticated admin interface
  */
 
-import React, { useState, useEffect } from 'react';
-import { DrawerContent } from '@progress/kendo-react-layout';
 import { Button } from '@progress/kendo-react-buttons';
+import { DrawerContent } from '@progress/kendo-react-layout';
 import { LogOut, User } from 'lucide-react';
-import { api, Member } from '../services/api';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
-import { UserRole } from '../auth/authConfig';
-import AdminSidebar, { MenuItem } from './AdminSidebar';
-import MembersGrid from './MembersGrid';
-import MemberForm from './MemberForm';
-import { MemberDetailView } from './MemberDetailView';
-import { EndpointManagement } from './EndpointManagement';
-import UserManagement from './users/UserManagement';
-import AuditLogViewer from './audit/AuditLogViewer';
-import LoadingSpinner from './LoadingSpinner';
-import Dashboard from './Dashboard';
-import { KvkReviewQueue } from './KvkReviewQueue';
-import SubscriptionsGrid from './SubscriptionsGrid';
-import NewslettersGrid from './NewslettersGrid';
-import TasksGrid from './TasksGrid';
-import LanguageSwitcher from './LanguageSwitcher';
 import { RoleGuard } from '../auth/ProtectedRoute';
+import { UserRole } from '../auth/authConfig';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAsync } from '../hooks/useAsync';
-import { MemberFormData } from '../utils/validation';
+import { type Member, api } from '../services/api';
+import type { MemberFormData } from '../utils/validation';
+import AdminSidebar, { type MenuItem } from './AdminSidebar';
+import Dashboard from './Dashboard';
+import { EndpointManagement } from './EndpointManagement';
+import { KvkReviewQueue } from './KvkReviewQueue';
+import LanguageSwitcher from './LanguageSwitcher';
+import LoadingSpinner from './LoadingSpinner';
+import { MemberDetailView } from './MemberDetailView';
+import MemberForm from './MemberForm';
+import MembersGrid from './MembersGrid';
+import NewslettersGrid from './NewslettersGrid';
+import SubscriptionsGrid from './SubscriptionsGrid';
+import TasksGrid from './TasksGrid';
+import AuditLogViewer from './audit/AuditLogViewer';
+import UserManagement from './users/UserManagement';
 import './AdminPortal.css';
 
 const AdminPortal: React.FC = () => {
   const { user, logout } = useAuth();
   const notification = useNotification();
-  
+
   const [members, setMembers] = useState<Member[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [token, setToken] = useState<string>('');
@@ -112,20 +113,14 @@ const AdminPortal: React.FC = () => {
             <div className="view-header">
               <h2>Member Directory</h2>
               <RoleGuard allowedRoles={[UserRole.ASSOCIATION_ADMIN, UserRole.SYSTEM_ADMIN]}>
-                <Button
-                  themeColor="primary"
-                  onClick={() => setShowForm(!showForm)}
-                >
+                <Button themeColor="primary" onClick={() => setShowForm(!showForm)}>
                   {showForm ? 'Cancel' : '+ Register New Member'}
                 </Button>
               </RoleGuard>
             </div>
 
             {showForm && (
-              <MemberForm
-                onSubmit={handleFormSubmit}
-                onCancel={() => setShowForm(false)}
-              />
+              <MemberForm onSubmit={handleFormSubmit} onCancel={() => setShowForm(false)} />
             )}
 
             {!showForm && (
@@ -248,10 +243,18 @@ const AdminPortal: React.FC = () => {
               <p>Welcome to the CTN Association Register administrative interface.</p>
               <h4>Quick Start</h4>
               <ul>
-                <li>Use the <strong>Dashboard</strong> to view key statistics</li>
-                <li>Manage members in the <strong>Members</strong> section</li>
-                <li>Manage system endpoints in the <strong>Endpoints</strong> section</li>
-                <li>Generate and view tokens in <strong>Token Management</strong></li>
+                <li>
+                  Use the <strong>Dashboard</strong> to view key statistics
+                </li>
+                <li>
+                  Manage members in the <strong>Members</strong> section
+                </li>
+                <li>
+                  Manage system endpoints in the <strong>Endpoints</strong> section
+                </li>
+                <li>
+                  Generate and view tokens in <strong>Token Management</strong>
+                </li>
               </ul>
             </div>
           </div>
@@ -281,11 +284,7 @@ const AdminPortal: React.FC = () => {
               >
                 {drawerExpanded ? '◀' : '▶'}
               </Button>
-              <img 
-                src="/assets/logos/ctn.png" 
-                alt="CTN Logo" 
-                className="header-logo"
-              />
+              <img src="/assets/logos/ctn.png" alt="CTN Logo" className="header-logo" />
               <h1>Association Register</h1>
             </div>
             <div className="header-right">
@@ -297,20 +296,14 @@ const AdminPortal: React.FC = () => {
                     <span className="user-name">{user.account.name}</span>
                     <span className="user-role">{user.primaryRole}</span>
                   </div>
-                  <Button
-                    fillMode="flat"
-                    onClick={handleLogout}
-                    title="Sign out"
-                  >
+                  <Button fillMode="flat" onClick={handleLogout} title="Sign out">
                     <LogOut size={16} />
                   </Button>
                 </div>
               )}
             </div>
           </header>
-          <main className="content-area">
-            {renderContent()}
-          </main>
+          <main className="content-area">{renderContent()}</main>
         </div>
       </DrawerContent>
     </div>

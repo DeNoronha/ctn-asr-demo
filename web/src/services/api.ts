@@ -5,12 +5,7 @@
 // =====================================================
 
 import axios from 'axios';
-import { 
-  LegalEntity, 
-  LegalEntityContact, 
-  Member, 
-  apiV2 
-} from './apiV2';
+import { type LegalEntity, type LegalEntityContact, type Member, apiV2 } from './apiV2';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:7071/api/v1';
 
@@ -61,11 +56,16 @@ export const api = {
     return apiV2.getContacts(legalEntityId);
   },
 
-  async createContact(contact: Omit<LegalEntityContact, 'legal_entity_contact_id' | 'dt_created' | 'dt_modified'>): Promise<LegalEntityContact> {
+  async createContact(
+    contact: Omit<LegalEntityContact, 'legal_entity_contact_id' | 'dt_created' | 'dt_modified'>
+  ): Promise<LegalEntityContact> {
     return apiV2.addContact(contact);
   },
 
-  async updateContact(contactId: string, data: Partial<LegalEntityContact>): Promise<LegalEntityContact> {
+  async updateContact(
+    contactId: string,
+    data: Partial<LegalEntityContact>
+  ): Promise<LegalEntityContact> {
     return apiV2.updateContact(contactId, data);
   },
 

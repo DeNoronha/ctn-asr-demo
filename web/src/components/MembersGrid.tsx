@@ -1,27 +1,33 @@
-import React, { useState, useEffect, useRef } from 'react';
 import {
-  Grid,
-  GridColumn,
-  GridToolbar,
-  GridColumnMenuFilter,
-  GridColumnMenuSort,
-  GridColumnMenuCheckboxFilter
-} from '@progress/kendo-react-grid';
-import { ExcelExport } from '@progress/kendo-react-excel-export';
-import { Input } from '@progress/kendo-react-inputs';
+  type CompositeFilterDescriptor,
+  type SortDescriptor,
+  filterBy,
+  orderBy,
+} from '@progress/kendo-data-query';
 import { Button } from '@progress/kendo-react-buttons';
 import { DropDownButton } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
+import { ExcelExport } from '@progress/kendo-react-excel-export';
 import {
-  filterBy,
-  orderBy,
-  SortDescriptor,
-  CompositeFilterDescriptor
-} from '@progress/kendo-data-query';
-import { Member } from '../services/api';
+  Grid,
+  GridColumn,
+  GridColumnMenuCheckboxFilter,
+  GridColumnMenuFilter,
+  GridColumnMenuSort,
+  GridToolbar,
+} from '@progress/kendo-react-grid';
+import { Input } from '@progress/kendo-react-inputs';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
+import type { Member } from '../services/api';
+import {
+  exportToCSV,
+  exportToPDF,
+  formatBulkOperationSummary,
+  performBulkOperation,
+} from '../utils/exportUtils';
 import AdvancedFilter from './AdvancedFilter';
-import { exportToPDF, exportToCSV, performBulkOperation, formatBulkOperationSummary } from '../utils/exportUtils';
 import './MembersGrid.css';
 
 interface MembersGridProps {
@@ -39,13 +45,18 @@ interface ColumnSettings {
   orderIndex: number;
 }
 
-const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onViewDetails, loading = false }) => {
+const MembersGrid: React.FC<MembersGridProps> = ({
+  members,
+  onIssueToken,
+  onViewDetails,
+  loading = false,
+}) => {
   const notification = useNotification();
   const [gridData, setGridData] = useState<Member[]>(members);
   const [sort, setSort] = useState<SortDescriptor[]>([]);
   const [filter, setFilter] = useState<CompositeFilterDescriptor>({
     logic: 'and',
-    filters: []
+    filters: [],
   });
   const [searchValue, setSearchValue] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -71,7 +82,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
   useEffect(() => {
     const savedColumns = localStorage.getItem('gridColumns');
     const savedSort = localStorage.getItem('gridSort');
-    
+
     if (savedColumns) {
       try {
         setColumns(JSON.parse(savedColumns));
@@ -79,7 +90,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
         console.error('Failed to load column settings', e);
       }
     }
-    
+
     if (savedSort) {
       try {
         setSort(JSON.parse(savedSort));
@@ -97,15 +108,15 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
 
   useEffect(() => {
     let data = [...members];
-    
+
     if (filter.filters.length > 0) {
       data = filterBy(data, filter);
     }
-    
+
     if (sort.length > 0) {
       data = orderBy(data, sort);
     }
-    
+
     setGridData(data);
   }, [members, filter, sort]);
 
@@ -122,7 +133,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
           { field: 'domain', operator: 'contains', value },
           { field: 'lei', operator: 'contains', value },
           { field: 'kvk', operator: 'contains', value },
-        ]
+        ],
       });
     } else {
       setFilter({ logic: 'and', filters: [] });
@@ -142,12 +153,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
   };
 
   const toggleColumn = (field: string) => {
-    const updatedColumns = columns.map(col => 
+    const updatedColumns = columns.map((col) =>
       col.field === field ? { ...col, show: !col.show } : col
     );
     setColumns(updatedColumns);
     saveGridState();
-    notification.showInfo(`Column "${columns.find(c => c.field === field)?.title}" ${updatedColumns.find(c => c.field === field)?.show ? 'shown' : 'hidden'}`);
+    notification.showInfo(
+      `Column "${columns.find((c) => c.field === field)?.title}" ${updatedColumns.find((c) => c.field === field)?.show ? 'shown' : 'hidden'}`
+    );
   };
 
   const resetColumns = () => {
@@ -171,7 +184,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
   // Selection handlers
   const handleSelectAll = (e: any) => {
     if (e.target.checked) {
-      setSelectedIds(gridData.map(m => m.org_id));
+      setSelectedIds(gridData.map((m) => m.org_id));
     } else {
       setSelectedIds([]);
     }
@@ -179,7 +192,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
 
   const handleSelectRow = (orgId: string) => {
     if (selectedIds.includes(orgId)) {
-      setSelectedIds(selectedIds.filter(id => id !== orgId));
+      setSelectedIds(selectedIds.filter((id) => id !== orgId));
     } else {
       setSelectedIds([...selectedIds, orgId]);
     }
@@ -199,14 +212,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
     setIsBulkProcessing(true);
 
     try {
-      const selectedMembers = gridData.filter(m => selectedIds.includes(m.org_id));
+      const selectedMembers = gridData.filter((m) => selectedIds.includes(m.org_id));
 
       switch (bulkAction) {
         case 'export-pdf':
           const pdfFileName = exportToPDF(selectedMembers, {
             title: `CTN Members Export (${selectedIds.length} records)`,
             orientation: 'landscape',
-            includeTimestamp: true
+            includeTimestamp: true,
           });
           notification.showSuccess(`Exported ${selectedIds.length} members to ${pdfFileName}`);
           break;
@@ -217,14 +230,10 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
           break;
 
         case 'token':
-          const tokenResult = await performBulkOperation(
-            selectedIds,
-            'token',
-            async (id) => {
-              await onIssueToken(id);
-              return Promise.resolve();
-            }
-          );
+          const tokenResult = await performBulkOperation(selectedIds, 'token', async (id) => {
+            await onIssueToken(id);
+            return Promise.resolve();
+          });
           notification.showSuccess(formatBulkOperationSummary(tokenResult, 'token issuance'));
 
           if (tokenResult.errors.length > 0) {
@@ -233,11 +242,15 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
           break;
 
         case 'suspend':
-          notification.showInfo(`Suspend action for ${selectedIds.length} members (requires API implementation)`);
+          notification.showInfo(
+            `Suspend action for ${selectedIds.length} members (requires API implementation)`
+          );
           break;
 
         case 'delete':
-          notification.showWarning(`Delete action for ${selectedIds.length} members (requires API implementation)`);
+          notification.showWarning(
+            `Delete action for ${selectedIds.length} members (requires API implementation)`
+          );
           break;
       }
 
@@ -251,25 +264,24 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
   };
 
   const handlePDFExport = () => {
-    const dataToExport = selectedIds.length > 0
-      ? gridData.filter(m => selectedIds.includes(m.org_id))
-      : gridData;
+    const dataToExport =
+      selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
 
     const fileName = exportToPDF(dataToExport, {
-      title: selectedIds.length > 0
-        ? `CTN Members Export (${selectedIds.length} selected)`
-        : `CTN Members Export (All ${gridData.length} records)`,
+      title:
+        selectedIds.length > 0
+          ? `CTN Members Export (${selectedIds.length} selected)`
+          : `CTN Members Export (All ${gridData.length} records)`,
       orientation: 'landscape',
-      includeTimestamp: true
+      includeTimestamp: true,
     });
 
     notification.showSuccess(`Exported to ${fileName}`);
   };
 
   const handleCSVExport = () => {
-    const dataToExport = selectedIds.length > 0
-      ? gridData.filter(m => selectedIds.includes(m.org_id))
-      : gridData;
+    const dataToExport =
+      selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
 
     exportToCSV(dataToExport);
     notification.showSuccess(`Exported ${dataToExport.length} members to CSV`);
@@ -299,10 +311,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
   const StatusCell = (props: any) => {
     const getStatusColor = (status: string) => {
       switch (status) {
-        case 'ACTIVE': return '#10b981';
-        case 'PENDING': return '#f59e0b';
-        case 'SUSPENDED': return '#ef4444';
-        default: return '#6b7280';
+        case 'ACTIVE':
+          return '#10b981';
+        case 'PENDING':
+          return '#f59e0b';
+        case 'SUSPENDED':
+          return '#ef4444';
+        default:
+          return '#6b7280';
       }
     };
 
@@ -321,10 +337,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
   const MembershipCell = (props: any) => {
     const getMembershipColor = (level: string) => {
       switch (level) {
-        case 'PREMIUM': return '#8b5cf6';
-        case 'FULL': return '#3b82f6';
-        case 'BASIC': return '#6b7280';
-        default: return '#9ca3af';
+        case 'PREMIUM':
+          return '#8b5cf6';
+        case 'FULL':
+          return '#3b82f6';
+        case 'BASIC':
+          return '#6b7280';
+        default:
+          return '#9ca3af';
       }
     };
 
@@ -341,11 +361,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
   };
 
   const DateCell = (props: any) => {
-    return (
-      <td>
-        {new Date(props.dataItem[props.field || '']).toLocaleDateString()}
-      </td>
-    );
+    return <td>{new Date(props.dataItem[props.field || '']).toLocaleDateString()}</td>;
   };
 
   const SelectionCell = (props: any) => {
@@ -365,25 +381,18 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
     const allSelected = gridData.length > 0 && selectedIds.length === gridData.length;
     return (
       <th>
-        <input
-          type="checkbox"
-          checked={allSelected}
-          onChange={handleSelectAll}
-        />
+        <input type="checkbox" checked={allSelected} onChange={handleSelectAll} />
       </th>
     );
   };
 
   const ActionCell = (props: any) => {
     const isActive = props.dataItem.status === 'ACTIVE';
-    
+
     return (
       <td>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <Button
-            size="small"
-            onClick={() => onViewDetails(props.dataItem)}
-          >
+          <Button size="small" onClick={() => onViewDetails(props.dataItem)}>
             View
           </Button>
           <Button
@@ -399,10 +408,10 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
     );
   };
 
-  const columnMenuItems = columns.map(col => ({
+  const columnMenuItems = columns.map((col) => ({
     text: col.title,
     icon: col.show ? 'check' : '',
-    click: () => toggleColumn(col.field)
+    click: () => toggleColumn(col.field),
   }));
 
   const bulkActions = [
@@ -440,31 +449,16 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
     <div className="members-grid-container">
       {/* Advanced Filter Panel */}
       {showAdvancedFilter && (
-        <AdvancedFilter
-          onApply={handleAdvancedFilterApply}
-          onClear={handleAdvancedFilterClear}
-        />
+        <AdvancedFilter onApply={handleAdvancedFilterApply} onClear={handleAdvancedFilterClear} />
       )}
 
       {/* Bulk Action Confirmation Dialog */}
       {showBulkDialog && (
-        <Dialog
-          title="Confirm Bulk Action"
-          onClose={() => setShowBulkDialog(false)}
-          width={500}
-        >
-          <p style={{ margin: '20px', fontSize: '16px' }}>
-            {getBulkActionConfirmation()}
-          </p>
+        <Dialog title="Confirm Bulk Action" onClose={() => setShowBulkDialog(false)} width={500}>
+          <p style={{ margin: '20px', fontSize: '16px' }}>{getBulkActionConfirmation()}</p>
           <DialogActionsBar>
-            <Button onClick={() => setShowBulkDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              themeColor="primary"
-              onClick={executeBulkAction}
-              disabled={isBulkProcessing}
-            >
+            <Button onClick={() => setShowBulkDialog(false)}>Cancel</Button>
+            <Button themeColor="primary" onClick={executeBulkAction} disabled={isBulkProcessing}>
               {isBulkProcessing ? 'Processing...' : 'Confirm'}
             </Button>
           </DialogActionsBar>
@@ -472,7 +466,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
       )}
 
       <ExcelExport
-        data={selectedIds.length > 0 ? gridData.filter(m => selectedIds.includes(m.org_id)) : gridData}
+        data={
+          selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData
+        }
         fileName="CTN_Members.xlsx"
         ref={excelExportRef}
       >
@@ -520,16 +516,8 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
                     themeColor="info"
                   />
                 )}
-                <DropDownButton
-                  text="Columns"
-                  icon="columns"
-                  items={columnMenuItems}
-                />
-                <Button
-                  fillMode="flat"
-                  onClick={resetColumns}
-                  title="Reset layout"
-                >
+                <DropDownButton text="Columns" icon="columns" items={columnMenuItems} />
+                <Button fillMode="flat" onClick={resetColumns} title="Reset layout">
                   Reset Layout
                 </Button>
               </div>
@@ -540,40 +528,42 @@ const MembersGrid: React.FC<MembersGridProps> = ({ members, onIssueToken, onView
               </div>
             </div>
           </GridToolbar>
-          
-          <GridColumn 
-            field="selected" 
-            width="50px" 
+
+          <GridColumn
+            field="selected"
+            width="50px"
             cell={SelectionCell}
             headerCell={SelectionHeaderCell}
             sortable={false}
             filterable={false}
           />
-          
-          {columns.filter(col => col.show).map(col => {
-            const columnProps: any = {
-              key: col.field,
-              field: col.field,
-              title: col.title,
-              width: col.width,
-              columnMenu: ColumnMenu,
-            };
 
-            if (col.field === 'status') {
-              columnProps.cell = StatusCell;
-            } else if (col.field === 'membership_level') {
-              columnProps.cell = MembershipCell;
-            } else if (col.field === 'created_at') {
-              columnProps.cell = DateCell;
-              columnProps.filter = 'date';
-            }
+          {columns
+            .filter((col) => col.show)
+            .map((col) => {
+              const columnProps: any = {
+                key: col.field,
+                field: col.field,
+                title: col.title,
+                width: col.width,
+                columnMenu: ColumnMenu,
+              };
 
-            return <GridColumn {...columnProps} />;
-          })}
-          
-          <GridColumn 
-            title="Actions" 
-            width="180px" 
+              if (col.field === 'status') {
+                columnProps.cell = StatusCell;
+              } else if (col.field === 'membership_level') {
+                columnProps.cell = MembershipCell;
+              } else if (col.field === 'created_at') {
+                columnProps.cell = DateCell;
+                columnProps.filter = 'date';
+              }
+
+              return <GridColumn {...columnProps} />;
+            })}
+
+          <GridColumn
+            title="Actions"
+            width="180px"
             cell={ActionCell}
             sortable={false}
             filterable={false}

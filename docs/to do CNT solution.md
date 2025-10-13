@@ -4,8 +4,6 @@ implement APIM for rate limiting etc
 
 Implement aikido in the pipeline. 
 
-check if we can use the devops pipeline. 
-
 Check the pipeline YAML file (likely azure-pipelines.yml or similar in the CTN project). Find and remove the Terraform Validate step/task. Keep only the Bicep-related steps. Deploy to Azure. We don't use Terraform, only Bicep. Remove any references to Terraform.
 
 

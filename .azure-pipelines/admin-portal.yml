@@ -33,6 +33,28 @@ steps:
 
   - script: |
       cd web
+      npm run lint
+    displayName: 'Run Biome code quality checks'
+    continueOnError: true
+
+  - script: |
+      cd web
+      npm install -g @aikidosec/cli
+      npm run security:scan || echo "Aikido scan completed with warnings"
+    displayName: 'Run Aikido security scan'
+    continueOnError: true
+
+  - task: PublishTestResults@2
+    displayName: 'Publish Biome results'
+    condition: always()
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: 'web/reports/biome-report.json'
+      failTaskOnFailedTests: false
+    continueOnError: true
+
+  - script: |
+      cd web
       npm run build
     displayName: 'Build React application'
     env:

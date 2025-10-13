@@ -59,7 +59,7 @@ export const validateMemberForm = (data: MemberFormData): ValidationResult => {
 
   return {
     isValid: Object.keys(errors).length === 0,
-    errors
+    errors,
   };
 };
 
@@ -78,7 +78,10 @@ export const formatDomain = (value: string): string => {
 };
 
 export const formatLEI = (value: string): string => {
-  return value.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
+  return value
+    .toUpperCase()
+    .trim()
+    .replace(/[^A-Z0-9]/g, '');
 };
 
 export const formatKVK = (value: string): string => {

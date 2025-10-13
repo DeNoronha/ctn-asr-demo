@@ -1,6 +1,6 @@
+import { Loader, type LoaderSize } from '@progress/kendo-react-indicators';
 // LoadingSpinner.tsx - Reusable loading component
-import React from 'react';
-import { Loader, LoaderSize } from '@progress/kendo-react-indicators';
+import type React from 'react';
 import './LoadingSpinner.css';
 
 interface LoadingSpinnerProps {

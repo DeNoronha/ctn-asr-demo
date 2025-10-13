@@ -3,10 +3,11 @@
  * System Admins can invite new users (Association Admins or Members)
  */
 
-import React, { useState } from 'react';
-import { Dialog } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
+import { Dialog } from '@progress/kendo-react-dialogs';
 import { UserPlus } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { UserRole } from '../../auth/authConfig';
 import './UserManagement.css';
 
@@ -51,11 +52,7 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ onClose, onInvite }
   };
 
   return (
-    <Dialog
-      title="Invite New User"
-      onClose={onClose}
-      className="user-dialog"
-    >
+    <Dialog title="Invite New User" onClose={onClose} className="user-dialog">
       <div className="dialog-content">
         <div className="form-group">
           <label>Email Address *</label>
@@ -82,25 +79,17 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ onClose, onInvite }
 
         <div className="form-group">
           <label>Role *</label>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as UserRole)}
-          >
+          <select value={role} onChange={(e) => setRole(e.target.value as UserRole)}>
             <option value={UserRole.ASSOCIATION_ADMIN}>Association Admin</option>
             <option value={UserRole.MEMBER}>Member</option>
             <option value={UserRole.SYSTEM_ADMIN}>System Admin</option>
           </select>
-          <div className="role-description">
-            {roleDescriptions[role]}
-          </div>
+          <div className="role-description">{roleDescriptions[role]}</div>
         </div>
 
         <div className="dialog-actions">
           <Button onClick={onClose}>Cancel</Button>
-          <Button
-            themeColor="primary"
-            onClick={handleSubmit}
-          >
+          <Button themeColor="primary" onClick={handleSubmit}>
             <UserPlus size={16} style={{ marginRight: 8 }} />
             Send Invitation
           </Button>

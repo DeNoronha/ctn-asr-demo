@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Upload } from '@progress/kendo-react-upload';
 import { Button } from '@progress/kendo-react-buttons';
-import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
 import { Loader } from '@progress/kendo-react-indicators';
+import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
+import { Upload } from '@progress/kendo-react-upload';
 import axios from 'axios';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
 interface KvkVerificationStatus {
   kvk_document_url: string | null;
@@ -29,7 +30,10 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
   const [uploading, setUploading] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<KvkVerificationStatus | null>(null);
   const [loading, setLoading] = useState(true);
-  const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error' | 'info';
+    message: string;
+  } | null>(null);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:7071/api/v1';
 
@@ -97,8 +101,11 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
       );
 
       console.log('Upload response:', response.data);
-      setNotification({ type: 'success', message: 'Document uploaded successfully. Verification in progress...' });
-      
+      setNotification({
+        type: 'success',
+        message: 'Document uploaded successfully. Verification in progress...',
+      });
+
       // Refresh status after a short delay
       setTimeout(() => {
         fetchVerificationStatus();
@@ -110,9 +117,9 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
     } catch (error: any) {
       console.error('Upload failed:', error);
       console.error('Error response:', error.response?.data);
-      setNotification({ 
-        type: 'error', 
-        message: error.response?.data?.error || 'Failed to upload document' 
+      setNotification({
+        type: 'error',
+        message: error.response?.data?.error || 'Failed to upload document',
       });
     } finally {
       setUploading(false);
@@ -129,11 +136,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
 
     const badge = badges[status] || { color: 'info', text: status };
 
-    return (
-      <span className={`k-badge k-badge-${badge.color}`}>
-        {badge.text}
-      </span>
-    );
+    return <span className={`k-badge k-badge-${badge.color}`}>{badge.text}</span>;
   };
 
   const getFlagDescription = (flag: string): string => {
@@ -160,7 +163,9 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
       <h3>KvK Document Verification</h3>
 
       {notification && (
-        <NotificationGroup style={{ right: 0, top: 0, alignItems: 'flex-end', flexWrap: 'wrap-reverse' }}>
+        <NotificationGroup
+          style={{ right: 0, top: 0, alignItems: 'flex-end', flexWrap: 'wrap-reverse' }}
+        >
           <Notification
             type={{ style: notification.type, icon: true }}
             closable={true}
@@ -186,7 +191,8 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
 
           {verificationStatus.kvk_extracted_company_name && (
             <div style={{ marginTop: '10px' }}>
-              <strong>Extracted Company Name:</strong> {verificationStatus.kvk_extracted_company_name}
+              <strong>Extracted Company Name:</strong>{' '}
+              {verificationStatus.kvk_extracted_company_name}
             </div>
           )}
 
@@ -196,21 +202,36 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
             </div>
           )}
 
-          {verificationStatus.kvk_mismatch_flags && verificationStatus.kvk_mismatch_flags.length > 0 && (
-            <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#fff3cd', borderRadius: '4px' }}>
-              <strong>Issues Detected:</strong>
-              <ul style={{ marginTop: '5px', marginBottom: 0 }}>
-                {verificationStatus.kvk_mismatch_flags.map((flag, idx) => (
-                  <li key={idx}>{getFlagDescription(flag)}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {verificationStatus.kvk_mismatch_flags &&
+            verificationStatus.kvk_mismatch_flags.length > 0 && (
+              <div
+                style={{
+                  marginTop: '15px',
+                  padding: '10px',
+                  backgroundColor: '#fff3cd',
+                  borderRadius: '4px',
+                }}
+              >
+                <strong>Issues Detected:</strong>
+                <ul style={{ marginTop: '5px', marginBottom: 0 }}>
+                  {verificationStatus.kvk_mismatch_flags.map((flag, idx) => (
+                    <li key={idx}>{getFlagDescription(flag)}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
           {verificationStatus.kvk_verification_notes && (
             <div style={{ marginTop: '10px' }}>
               <strong>Admin Notes:</strong>
-              <div style={{ padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px', marginTop: '5px' }}>
+              <div
+                style={{
+                  padding: '10px',
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: '4px',
+                  marginTop: '5px',
+                }}
+              >
                 {verificationStatus.kvk_verification_notes}
               </div>
             </div>
@@ -232,11 +253,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
           </div>
 
           <div style={{ marginTop: '10px' }}>
-            <Button
-              themeColor="primary"
-              size="small"
-              onClick={() => setVerificationStatus(null)}
-            >
+            <Button themeColor="primary" size="small" onClick={() => setVerificationStatus(null)}>
               Upload New Document
             </Button>
           </div>
@@ -244,7 +261,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
       ) : (
         <div>
           <p>Upload a KvK (Chamber of Commerce) statement to verify company details.</p>
-          
+
           <Upload
             batch={false}
             multiple={false}

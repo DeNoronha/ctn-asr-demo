@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
 interface EndpointsProps {
   apiBaseUrl: string;
@@ -17,7 +18,11 @@ interface Endpoint {
   last_connection_status: string;
 }
 
-export const Endpoints: React.FC<EndpointsProps> = ({ apiBaseUrl, getAccessToken, legalEntityId }) => {
+export const Endpoints: React.FC<EndpointsProps> = ({
+  apiBaseUrl,
+  getAccessToken,
+  legalEntityId,
+}) => {
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,8 +42,8 @@ export const Endpoints: React.FC<EndpointsProps> = ({ apiBaseUrl, getAccessToken
       const accessToken = await getAccessToken();
       const response = await fetch(`${apiBaseUrl}/entities/${legalEntityId}/endpoints`, {
         headers: {
-          'Authorization': `Bearer ${accessToken}`
-        }
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
 
       if (!response.ok) {
@@ -61,7 +66,7 @@ export const Endpoints: React.FC<EndpointsProps> = ({ apiBaseUrl, getAccessToken
   return (
     <div className="endpoints">
       <h2>API Endpoints</h2>
-      
+
       <div className="endpoints-header">
         <p>Manage your organization's data endpoints for sharing with the CTN network.</p>
         <button onClick={handleAddEndpoint} className="btn-primary">
@@ -70,23 +75,21 @@ export const Endpoints: React.FC<EndpointsProps> = ({ apiBaseUrl, getAccessToken
       </div>
 
       {loading && <div className="loading">Loading endpoints...</div>}
-      
-      {error && (
-        <div className="alert alert-error">
-          {error}
-        </div>
-      )}
+
+      {error && <div className="alert alert-error">{error}</div>}
 
       {!loading && endpoints.length === 0 && (
         <div className="empty-state">
           <p>No endpoints configured yet.</p>
-          <p className="text-muted">Add your first endpoint to start sharing data with the CTN network.</p>
+          <p className="text-muted">
+            Add your first endpoint to start sharing data with the CTN network.
+          </p>
         </div>
       )}
 
       {endpoints.length > 0 && (
         <div className="endpoints-grid">
-          {endpoints.map(endpoint => (
+          {endpoints.map((endpoint) => (
             <div key={endpoint.legal_entity_endpoint_id} className="endpoint-card">
               <div className="endpoint-header">
                 <h3>{endpoint.endpoint_name}</h3>
@@ -113,7 +116,9 @@ export const Endpoints: React.FC<EndpointsProps> = ({ apiBaseUrl, getAccessToken
                 {endpoint.last_connection_status && (
                   <div className="detail-row">
                     <strong>Last Test:</strong>
-                    <span className={`connection-status ${endpoint.last_connection_status.toLowerCase()}`}>
+                    <span
+                      className={`connection-status ${endpoint.last_connection_status.toLowerCase()}`}
+                    >
                       {endpoint.last_connection_status}
                     </span>
                   </div>

@@ -1,6 +1,6 @@
-// ProgressIndicator.tsx - Progress bar for long operations
-import React from 'react';
 import { ProgressBar } from '@progress/kendo-react-progressbars';
+// ProgressIndicator.tsx - Progress bar for long operations
+import type React from 'react';
 import './ProgressIndicator.css';
 
 interface ProgressIndicatorProps {

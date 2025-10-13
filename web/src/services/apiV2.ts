@@ -127,7 +127,7 @@ export interface LegalEntity {
   created_by?: string;
   modified_by?: string;
   is_deleted?: boolean;
-  
+
   // Aggregated fields from view
   identifiers?: LegalEntityIdentifier[];
   contacts?: LegalEntityContact[];
@@ -170,7 +170,7 @@ export const apiV2 = {
   // =====================================================
   // LEGACY ENDPOINTS (V1 - Backward Compatibility)
   // =====================================================
-  
+
   async getMembers(): Promise<Member[]> {
     const response = await axios.get<MembersResponse>(`${API_BASE_URL}/members`);
     return response.data.data;
@@ -187,16 +187,20 @@ export const apiV2 = {
   },
 
   async issueToken(orgId: string): Promise<{ access_token: string }> {
-    const response = await axios.post<TokenResponse>(`${API_BASE_URL}/oauth/token`, { org_id: orgId });
+    const response = await axios.post<TokenResponse>(`${API_BASE_URL}/oauth/token`, {
+      org_id: orgId,
+    });
     return response.data;
   },
 
   // =====================================================
   // LEGAL ENTITY ENDPOINTS (Core Entity Management)
   // =====================================================
-  
+
   async getLegalEntity(legalEntityId: string): Promise<LegalEntity> {
-    const response = await axios.get<LegalEntity>(`${API_BASE_URL}/legal-entities/${legalEntityId}`);
+    const response = await axios.get<LegalEntity>(
+      `${API_BASE_URL}/legal-entities/${legalEntityId}`
+    );
     return response.data;
   },
 
@@ -206,7 +210,10 @@ export const apiV2 = {
   },
 
   async updateLegalEntity(legalEntityId: string, data: Partial<LegalEntity>): Promise<LegalEntity> {
-    const response = await axios.put<LegalEntity>(`${API_BASE_URL}/legal-entities/${legalEntityId}`, data);
+    const response = await axios.put<LegalEntity>(
+      `${API_BASE_URL}/legal-entities/${legalEntityId}`,
+      data
+    );
     return response.data;
   },
 
@@ -222,7 +229,7 @@ export const apiV2 = {
   // =====================================================
   // IDENTIFIER ENDPOINTS (LEI, KVK, etc.)
   // =====================================================
-  
+
   async getIdentifiers(legalEntityId: string): Promise<LegalEntityIdentifier[]> {
     const response = await axios.get<LegalEntityIdentifier[]>(
       `${API_BASE_URL}/entities/${legalEntityId}/identifiers`
@@ -230,7 +237,12 @@ export const apiV2 = {
     return response.data;
   },
 
-  async addIdentifier(identifier: Omit<LegalEntityIdentifier, 'legal_entity_reference_id' | 'dt_created' | 'dt_modified'>): Promise<LegalEntityIdentifier> {
+  async addIdentifier(
+    identifier: Omit<
+      LegalEntityIdentifier,
+      'legal_entity_reference_id' | 'dt_created' | 'dt_modified'
+    >
+  ): Promise<LegalEntityIdentifier> {
     const response = await axios.post<LegalEntityIdentifier>(
       `${API_BASE_URL}/entities/${identifier.legal_entity_id}/identifiers`,
       identifier
@@ -238,7 +250,10 @@ export const apiV2 = {
     return response.data;
   },
 
-  async updateIdentifier(identifierId: string, data: Partial<LegalEntityIdentifier>): Promise<LegalEntityIdentifier> {
+  async updateIdentifier(
+    identifierId: string,
+    data: Partial<LegalEntityIdentifier>
+  ): Promise<LegalEntityIdentifier> {
     const response = await axios.put<LegalEntityIdentifier>(
       `${API_BASE_URL}/identifiers/${identifierId}`,
       data
@@ -260,7 +275,7 @@ export const apiV2 = {
   // =====================================================
   // CONTACT ENDPOINTS
   // =====================================================
-  
+
   async getContacts(legalEntityId: string): Promise<LegalEntityContact[]> {
     const response = await axios.get<LegalEntityContact[]>(
       `${API_BASE_URL}/legal-entities/${legalEntityId}/contacts`
@@ -268,15 +283,17 @@ export const apiV2 = {
     return response.data;
   },
 
-  async addContact(contact: Omit<LegalEntityContact, 'legal_entity_contact_id' | 'dt_created' | 'dt_modified'>): Promise<LegalEntityContact> {
-    const response = await axios.post<LegalEntityContact>(
-      `${API_BASE_URL}/contacts`,
-      contact
-    );
+  async addContact(
+    contact: Omit<LegalEntityContact, 'legal_entity_contact_id' | 'dt_created' | 'dt_modified'>
+  ): Promise<LegalEntityContact> {
+    const response = await axios.post<LegalEntityContact>(`${API_BASE_URL}/contacts`, contact);
     return response.data;
   },
 
-  async updateContact(contactId: string, data: Partial<LegalEntityContact>): Promise<LegalEntityContact> {
+  async updateContact(
+    contactId: string,
+    data: Partial<LegalEntityContact>
+  ): Promise<LegalEntityContact> {
     const response = await axios.put<LegalEntityContact>(
       `${API_BASE_URL}/contacts/${contactId}`,
       data
@@ -291,7 +308,7 @@ export const apiV2 = {
   // =====================================================
   // ENDPOINT ENDPOINTS (Multi-System Support)
   // =====================================================
-  
+
   async getEndpoints(legalEntityId: string): Promise<LegalEntityEndpoint[]> {
     const response = await axios.get<LegalEntityEndpoint[]>(
       `${API_BASE_URL}/entities/${legalEntityId}/endpoints`
@@ -299,7 +316,9 @@ export const apiV2 = {
     return response.data;
   },
 
-  async addEndpoint(endpoint: Omit<LegalEntityEndpoint, 'legal_entity_endpoint_id' | 'dt_created' | 'dt_modified'>): Promise<LegalEntityEndpoint> {
+  async addEndpoint(
+    endpoint: Omit<LegalEntityEndpoint, 'legal_entity_endpoint_id' | 'dt_created' | 'dt_modified'>
+  ): Promise<LegalEntityEndpoint> {
     const response = await axios.post<LegalEntityEndpoint>(
       `${API_BASE_URL}/entities/${endpoint.legal_entity_id}/endpoints`,
       endpoint
@@ -307,7 +326,10 @@ export const apiV2 = {
     return response.data;
   },
 
-  async updateEndpoint(endpointId: string, data: Partial<LegalEntityEndpoint>): Promise<LegalEntityEndpoint> {
+  async updateEndpoint(
+    endpointId: string,
+    data: Partial<LegalEntityEndpoint>
+  ): Promise<LegalEntityEndpoint> {
     const response = await axios.put<LegalEntityEndpoint>(
       `${API_BASE_URL}/endpoints/${endpointId}`,
       data
@@ -319,7 +341,9 @@ export const apiV2 = {
     await axios.delete(`${API_BASE_URL}/endpoints/${endpointId}`);
   },
 
-  async testEndpointConnection(endpointId: string): Promise<{ success: boolean; message?: string; details?: any }> {
+  async testEndpointConnection(
+    endpointId: string
+  ): Promise<{ success: boolean; message?: string; details?: any }> {
     const response = await axios.post<{ success: boolean; message?: string; details?: any }>(
       `${API_BASE_URL}/endpoints/${endpointId}/test`
     );
@@ -337,7 +361,7 @@ export const apiV2 = {
   // =====================================================
   // TOKEN ENDPOINTS (Per-Endpoint Authorization)
   // =====================================================
-  
+
   async getEndpointTokens(endpointId: string): Promise<EndpointAuthorization[]> {
     const response = await axios.get<EndpointAuthorization[]>(
       `${API_BASE_URL}/endpoints/${endpointId}/tokens`
@@ -345,7 +369,10 @@ export const apiV2 = {
     return response.data;
   },
 
-  async issueEndpointToken(endpointId: string, options?: { expires_in_days?: number }): Promise<EndpointAuthorization> {
+  async issueEndpointToken(
+    endpointId: string,
+    options?: { expires_in_days?: number }
+  ): Promise<EndpointAuthorization> {
     const response = await axios.post<EndpointAuthorization>(
       `${API_BASE_URL}/endpoints/${endpointId}/tokens`,
       options
@@ -357,7 +384,9 @@ export const apiV2 = {
     await axios.post(`${API_BASE_URL}/tokens/${tokenId}/revoke`, { reason });
   },
 
-  async getTokenUsageStats(tokenId: string): Promise<{ usage_count: number; last_used_at?: string }> {
+  async getTokenUsageStats(
+    tokenId: string
+  ): Promise<{ usage_count: number; last_used_at?: string }> {
     const response = await axios.get<{ usage_count: number; last_used_at?: string }>(
       `${API_BASE_URL}/tokens/${tokenId}/stats`
     );

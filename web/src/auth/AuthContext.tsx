@@ -3,9 +3,10 @@
  * Manages user authentication state and role-based access
  */
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { PublicClientApplication, AccountInfo } from '@azure/msal-browser';
-import { msalConfig, UserRole, roleHierarchy, portalAccess } from './authConfig';
+import { type AccountInfo, PublicClientApplication } from '@azure/msal-browser';
+import type React from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { type UserRole, msalConfig, portalAccess, roleHierarchy } from './authConfig';
 
 // Initialize MSAL instance
 export const msalInstance = new PublicClientApplication(msalConfig);
@@ -43,7 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const initializeAuth = async () => {
     try {
       await msalInstance.initialize();
-      
+
       // Handle redirect response
       const response = await msalInstance.handleRedirectPromise();
       if (response && response.account) {
@@ -64,19 +65,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadUserRoles = async (account: AccountInfo) => {
     try {
       console.log('Loading user roles for account:', account);
-      
+
       // Extract roles from ID token claims
       const idTokenClaims = account.idTokenClaims as any;
       console.log('ID Token Claims:', idTokenClaims);
-      
+
       const roles = (idTokenClaims?.roles || []) as UserRole[];
       console.log('Extracted roles:', roles);
-      
+
       // Check MFA status from claims
       // TODO: Re-enable strict MFA checking once Conditional Access policy is fully enforced
       const mfaEnabled = true; // Temporarily bypassed - idTokenClaims?.amr?.includes('mfa') || false;
       console.log('MFA enabled:', mfaEnabled, '(bypassed until CA policy active)');
-      
+
       // Get association ID from custom claim
       const associationId = idTokenClaims?.extension_AssociationId;
 
@@ -101,7 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         mfaEnabled,
         associationId,
       });
-      
+
       console.log('User loaded successfully');
     } catch (error) {
       console.error('Error loading user roles:', error);
@@ -149,12 +150,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const canAccessAdminPortal = (): boolean => {
     if (!user) return false;
-    return portalAccess.adminPortal.some(role => user.roles.includes(role));
+    return portalAccess.adminPortal.some((role) => user.roles.includes(role));
   };
 
   const canAccessMemberPortal = (): boolean => {
     if (!user) return false;
-    return portalAccess.memberPortal.some(role => user.roles.includes(role));
+    return portalAccess.memberPortal.some((role) => user.roles.includes(role));
   };
 
   return (

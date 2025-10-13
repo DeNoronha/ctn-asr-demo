@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
-import { ComponentProps, Endpoint } from '../types';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import type { ComponentProps, Endpoint } from '../types';
 
 const endpointTypes = ['REST_API', 'SOAP', 'SFTP', 'FTP', 'OTHER'];
 const dataCategories = ['SHIPMENT', 'TRACKING', 'INVOICE', 'ORDER', 'OTHER'];
@@ -11,7 +12,7 @@ export const EndpointsView: React.FC<ComponentProps> = ({
   apiBaseUrl,
   getAccessToken,
   onNotification,
-  onDataChange
+  onDataChange,
 }) => {
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +24,7 @@ export const EndpointsView: React.FC<ComponentProps> = ({
     endpoint_type: 'REST_API',
     data_category: 'SHIPMENT',
     authentication_method: 'BEARER_TOKEN',
-    is_active: true
+    is_active: true,
   });
 
   useEffect(() => {
@@ -34,14 +35,14 @@ export const EndpointsView: React.FC<ComponentProps> = ({
     setLoading(true);
     try {
       const token = await getAccessToken();
-      
+
       console.log('Loading endpoints from:', `${apiBaseUrl}/member-endpoints`);
-      
+
       const response = await fetch(`${apiBaseUrl}/member-endpoints`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
 
       console.log('Endpoints response status:', response.status);
@@ -70,12 +71,14 @@ export const EndpointsView: React.FC<ComponentProps> = ({
       endpoint_type: 'REST_API',
       data_category: 'SHIPMENT',
       authentication_method: 'BEARER_TOKEN',
-      is_active: true
+      is_active: true,
     });
     setShowDialog(true);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -83,20 +86,20 @@ export const EndpointsView: React.FC<ComponentProps> = ({
     e.preventDefault();
     try {
       const token = await getAccessToken();
-      
+
       console.log('Creating endpoint:', formData);
-      
+
       const response = await fetch(`${apiBaseUrl}/member-endpoints`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       console.log('Response status:', response.status);
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('Error response:', errorData);
@@ -105,7 +108,7 @@ export const EndpointsView: React.FC<ComponentProps> = ({
 
       const responseData = await response.json();
       console.log('Endpoint created:', responseData);
-      
+
       onNotification('Endpoint created successfully', 'success');
       setShowDialog(false);
       await loadEndpoints();
@@ -153,19 +156,25 @@ export const EndpointsView: React.FC<ComponentProps> = ({
               </tr>
             </thead>
             <tbody>
-              {endpoints.map(endpoint => (
+              {endpoints.map((endpoint) => (
                 <tr key={endpoint.legal_entity_endpoint_id}>
-                  <td><strong>{endpoint.endpoint_name}</strong></td>
+                  <td>
+                    <strong>{endpoint.endpoint_name}</strong>
+                  </td>
                   <td style={{ fontSize: '0.85rem' }}>{endpoint.endpoint_url}</td>
                   <td>{endpoint.endpoint_type}</td>
                   <td>{endpoint.data_category || '-'}</td>
                   <td>{endpoint.authentication_method || '-'}</td>
                   <td>
                     {endpoint.last_connection_status ? (
-                      <span className={`status-badge ${endpoint.last_connection_status === 'SUCCESS' ? 'status-active' : 'status-inactive'}`}>
+                      <span
+                        className={`status-badge ${endpoint.last_connection_status === 'SUCCESS' ? 'status-active' : 'status-inactive'}`}
+                      >
                         {endpoint.last_connection_status}
                       </span>
-                    ) : '-'}
+                    ) : (
+                      '-'
+                    )}
                   </td>
                   <td>
                     <span className={endpoint.is_active ? 'status-active' : 'status-inactive'}>
@@ -180,11 +189,7 @@ export const EndpointsView: React.FC<ComponentProps> = ({
       </div>
 
       {showDialog && (
-        <Dialog 
-          title="Add Endpoint" 
-          onClose={() => setShowDialog(false)}
-          width={700}
-        >
+        <Dialog title="Add Endpoint" onClose={() => setShowDialog(false)} width={700}>
           <form onSubmit={handleSubmit} className="simple-form">
             <div className="form-field">
               <label>Endpoint Name *</label>
@@ -229,8 +234,10 @@ export const EndpointsView: React.FC<ComponentProps> = ({
                   required
                   className="form-input"
                 >
-                  {endpointTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
+                  {endpointTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -242,8 +249,10 @@ export const EndpointsView: React.FC<ComponentProps> = ({
                   onChange={handleChange}
                   className="form-input"
                 >
-                  {dataCategories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                  {dataCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -256,8 +265,10 @@ export const EndpointsView: React.FC<ComponentProps> = ({
                 onChange={handleChange}
                 className="form-input"
               >
-                {authMethods.map(method => (
-                  <option key={method} value={method}>{method}</option>
+                {authMethods.map((method) => (
+                  <option key={method} value={method}>
+                    {method}
+                  </option>
                 ))}
               </select>
             </div>

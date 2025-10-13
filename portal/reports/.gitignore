@@ -1,0 +1,7 @@
+# Ignore all files in reports
+*
+
+# Except these
+!.gitignore
+!.gitkeep
+!*-summary.md

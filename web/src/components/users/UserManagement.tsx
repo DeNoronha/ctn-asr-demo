@@ -3,24 +3,25 @@
  * System Admins can view and manage all users
  */
 
-import React, { useState, useEffect } from 'react';
+import { type State, process } from '@progress/kendo-data-query';
+import { Button } from '@progress/kendo-react-buttons';
 import {
   Grid,
   GridColumn,
-  GridSortChangeEvent,
-  GridFilterChangeEvent,
-  GridPageChangeEvent,
+  type GridFilterChangeEvent,
+  type GridPageChangeEvent,
+  type GridSortChangeEvent,
 } from '@progress/kendo-react-grid';
-import { Button } from '@progress/kendo-react-buttons';
-import { process, State } from '@progress/kendo-data-query';
-import { UserPlus, Shield, Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Shield, Trash2, UserPlus } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../auth/AuthContext';
-import { UserRole } from '../../auth/authConfig';
 import { RoleGuard } from '../../auth/ProtectedRoute';
+import { UserRole } from '../../auth/authConfig';
+import { AuditAction, auditLogService } from '../../services/auditLogService';
 import LoadingSpinner from '../LoadingSpinner';
-import InviteUserDialog from './InviteUserDialog';
 import EditUserDialog from './EditUserDialog';
-import { auditLogService, AuditAction } from '../../services/auditLogService';
+import InviteUserDialog from './InviteUserDialog';
 import './UserManagement.css';
 
 interface User {
@@ -113,7 +114,7 @@ const UserManagement: React.FC = () => {
   const handleInviteUser = async (userData: { email: string; name: string; role: UserRole }) => {
     // TODO: Implement actual user invitation via Microsoft Graph API
     console.log('Inviting user:', userData);
-    
+
     // Log the action
     if (currentUser) {
       auditLogService.log({
@@ -127,7 +128,7 @@ const UserManagement: React.FC = () => {
         metadata: { role: userData.role },
       });
     }
-    
+
     setShowInviteDialog(false);
     await loadUsers();
   };
@@ -152,10 +153,10 @@ const UserManagement: React.FC = () => {
   const handleUpdateUser = async (userId: string, updates: Partial<User>) => {
     // TODO: Implement user update via Microsoft Graph API
     console.log('Updating user:', userId, updates);
-    
+
     // Log the action
     if (currentUser) {
-      const user = users.find(u => u.id === userId);
+      const user = users.find((u) => u.id === userId);
       auditLogService.log({
         action: AuditAction.USER_UPDATED,
         userId: currentUser.account.localAccountId,
@@ -168,7 +169,7 @@ const UserManagement: React.FC = () => {
         metadata: updates,
       });
     }
-    
+
     setShowEditDialog(false);
     setSelectedUser(null);
     await loadUsers();
@@ -177,10 +178,10 @@ const UserManagement: React.FC = () => {
   const handleToggleUserStatus = async (userId: string, enabled: boolean) => {
     // TODO: Implement enable/disable user via Microsoft Graph API
     console.log('Toggle user status:', userId, enabled);
-    
+
     // Log the action
     if (currentUser) {
-      const user = users.find(u => u.id === userId);
+      const user = users.find((u) => u.id === userId);
       auditLogService.log({
         action: enabled ? AuditAction.USER_ENABLED : AuditAction.USER_DISABLED,
         userId: currentUser.account.localAccountId,
@@ -192,7 +193,7 @@ const UserManagement: React.FC = () => {
         details: `${enabled ? 'Enabled' : 'Disabled'} user ${user?.name}`,
       });
     }
-    
+
     await loadUsers();
   };
 
@@ -207,16 +208,14 @@ const UserManagement: React.FC = () => {
 
     return (
       <td>
-        <span className={`role-badge ${roleColors[role as UserRole]}`}>
-          {role}
-        </span>
+        <span className={`role-badge ${roleColors[role as UserRole]}`}>{role}</span>
       </td>
     );
   };
 
   const StatusCell = (props: any) => {
     const enabled = props.dataItem.enabled;
-    
+
     return (
       <td>
         <span className={`status-badge status-${enabled ? 'active' : 'disabled'}`}>
@@ -268,10 +267,7 @@ const UserManagement: React.FC = () => {
               <p className="header-description">Manage user access and roles</p>
             </div>
           </div>
-          <Button
-            themeColor="primary"
-            onClick={() => setShowInviteDialog(true)}
-          >
+          <Button themeColor="primary" onClick={() => setShowInviteDialog(true)}>
             <UserPlus size={18} style={{ marginRight: 8 }} />
             Invite User
           </Button>
@@ -285,19 +281,19 @@ const UserManagement: React.FC = () => {
           <div className="stat-item">
             <span className="stat-label">System Admins</span>
             <span className="stat-value">
-              {users.filter(u => u.primaryRole === UserRole.SYSTEM_ADMIN).length}
+              {users.filter((u) => u.primaryRole === UserRole.SYSTEM_ADMIN).length}
             </span>
           </div>
           <div className="stat-item">
             <span className="stat-label">Association Admins</span>
             <span className="stat-value">
-              {users.filter(u => u.primaryRole === UserRole.ASSOCIATION_ADMIN).length}
+              {users.filter((u) => u.primaryRole === UserRole.ASSOCIATION_ADMIN).length}
             </span>
           </div>
           <div className="stat-item">
             <span className="stat-label">Members</span>
             <span className="stat-value">
-              {users.filter(u => u.primaryRole === UserRole.MEMBER).length}
+              {users.filter((u) => u.primaryRole === UserRole.MEMBER).length}
             </span>
           </div>
         </div>
@@ -343,7 +339,13 @@ const UserManagement: React.FC = () => {
               format="{0:dd/MM/yyyy}"
               filter="date"
             />
-            <GridColumn title="Actions" width="120px" cell={ActionsCell} filterable={false} sortable={false} />
+            <GridColumn
+              title="Actions"
+              width="120px"
+              cell={ActionsCell}
+              filterable={false}
+              sortable={false}
+            />
           </Grid>
         )}
 

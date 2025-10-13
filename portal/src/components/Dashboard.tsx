@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { ComponentProps, Contact, Endpoint, Token } from '../types';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import type { ComponentProps, Contact, Endpoint, Token } from '../types';
 
 export const Dashboard: React.FC<ComponentProps> = ({
   apiBaseUrl,
   getAccessToken,
   memberData,
-  onNotification
+  onNotification,
 }) => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
@@ -21,8 +22,8 @@ export const Dashboard: React.FC<ComponentProps> = ({
     try {
       const token = await getAccessToken();
       const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       };
 
       // Load contacts
@@ -54,14 +55,19 @@ export const Dashboard: React.FC<ComponentProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
-      case 'ACTIVE': return 'status-active';
-      case 'PENDING': return 'status-pending';
-      default: return 'status-inactive';
+      case 'ACTIVE':
+        return 'status-active';
+      case 'PENDING':
+        return 'status-pending';
+      default:
+        return 'status-inactive';
     }
   };
 
-  const activeEndpoints = endpoints.filter(e => e.is_active).length;
-  const activeTokens = tokens.filter(t => !t.revoked && new Date(t.expires_at) > new Date()).length;
+  const activeEndpoints = endpoints.filter((e) => e.is_active).length;
+  const activeTokens = tokens.filter(
+    (t) => !t.revoked && new Date(t.expires_at) > new Date()
+  ).length;
 
   if (loading) {
     return (
@@ -96,7 +102,7 @@ export const Dashboard: React.FC<ComponentProps> = ({
           <h3>Contacts</h3>
           <div className="stat-value">{contacts.length}</div>
           <p style={{ marginTop: '0.5rem', color: 'var(--ctn-text-light)', fontSize: '0.9rem' }}>
-            {contacts.filter(c => c.is_active).length} active
+            {contacts.filter((c) => c.is_active).length} active
           </p>
         </div>
 
@@ -170,11 +176,17 @@ export const Dashboard: React.FC<ComponentProps> = ({
             <h3>Recent Endpoints</h3>
           </div>
           <div className="simple-list">
-            {endpoints.slice(0, 5).map(endpoint => (
+            {endpoints.slice(0, 5).map((endpoint) => (
               <div key={endpoint.legal_entity_endpoint_id} className="list-item">
                 <div>
                   <strong>{endpoint.endpoint_name}</strong>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--ctn-text-light)', margin: '0.25rem 0 0 0' }}>
+                  <p
+                    style={{
+                      fontSize: '0.85rem',
+                      color: 'var(--ctn-text-light)',
+                      margin: '0.25rem 0 0 0',
+                    }}
+                  >
                     {endpoint.endpoint_url}
                   </p>
                 </div>

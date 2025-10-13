@@ -10,21 +10,21 @@ export enum AuditAction {
   USER_ENABLED = 'USER_ENABLED',
   USER_DISABLED = 'USER_DISABLED',
   USER_ROLE_CHANGED = 'USER_ROLE_CHANGED',
-  
+
   // Member Management
   MEMBER_CREATED = 'MEMBER_CREATED',
   MEMBER_UPDATED = 'MEMBER_UPDATED',
   MEMBER_DELETED = 'MEMBER_DELETED',
   MEMBER_STATUS_CHANGED = 'MEMBER_STATUS_CHANGED',
-  
+
   // Token Management
   TOKEN_ISSUED = 'TOKEN_ISSUED',
   TOKEN_REVOKED = 'TOKEN_REVOKED',
-  
+
   // Authentication
   USER_LOGIN = 'USER_LOGIN',
   USER_LOGOUT = 'USER_LOGOUT',
-  
+
   // System
   SETTINGS_CHANGED = 'SETTINGS_CHANGED',
   DATA_EXPORTED = 'DATA_EXPORTED',
@@ -78,10 +78,10 @@ class AuditLogService {
     };
 
     this.logs.unshift(logEntry); // Add to beginning for most recent first
-    
+
     // Store in localStorage for persistence (in production, send to API)
     this.persistLogs();
-    
+
     console.log('[AUDIT]', logEntry);
   }
 
@@ -105,23 +105,23 @@ class AuditLogService {
     let filtered = this.logs;
 
     if (filters.userId) {
-      filtered = filtered.filter(log => log.userId === filters.userId);
+      filtered = filtered.filter((log) => log.userId === filters.userId);
     }
 
     if (filters.action) {
-      filtered = filtered.filter(log => log.action === filters.action);
+      filtered = filtered.filter((log) => log.action === filters.action);
     }
 
     if (filters.targetType) {
-      filtered = filtered.filter(log => log.targetType === filters.targetType);
+      filtered = filtered.filter((log) => log.targetType === filters.targetType);
     }
 
     if (filters.startDate) {
-      filtered = filtered.filter(log => log.timestamp >= filters.startDate!);
+      filtered = filtered.filter((log) => log.timestamp >= filters.startDate!);
     }
 
     if (filters.endDate) {
-      filtered = filtered.filter(log => log.timestamp <= filters.endDate!);
+      filtered = filtered.filter((log) => log.timestamp <= filters.endDate!);
     }
 
     return filtered;
@@ -131,13 +131,13 @@ class AuditLogService {
    * Get logs for a specific user
    */
   getUserLogs(userId: string): AuditLog[] {
-    return this.logs.filter(log => log.userId === userId);
+    return this.logs.filter((log) => log.userId === userId);
   }
 
   /**
    * Get recent logs
    */
-  getRecentLogs(count: number = 50): AuditLog[] {
+  getRecentLogs(count = 50): AuditLog[] {
     return this.logs.slice(0, count);
   }
 

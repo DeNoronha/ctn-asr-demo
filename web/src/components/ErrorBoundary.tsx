@@ -1,7 +1,8 @@
-// ErrorBoundary.tsx - Error boundary with retry functionality
-import React, { Component, ReactNode } from 'react';
 import { Button } from '@progress/kendo-react-buttons';
 import { AlertCircle, RefreshCw } from 'lucide-react';
+// ErrorBoundary.tsx - Error boundary with retry functionality
+import type React from 'react';
+import { Component, type ReactNode } from 'react';
 import './ErrorBoundary.css';
 
 interface Props {
@@ -66,17 +67,11 @@ class ErrorBoundary extends Component<Props, State> {
               {this.state.error?.message || 'An unexpected error occurred'}
             </p>
             <div className="error-actions">
-              <Button
-                themeColor="primary"
-                icon="refresh"
-                onClick={this.handleReset}
-              >
+              <Button themeColor="primary" icon="refresh" onClick={this.handleReset}>
                 <RefreshCw size={16} style={{ marginRight: '8px' }} />
                 Try Again
               </Button>
-              <Button onClick={() => window.location.reload()}>
-                Reload Page
-              </Button>
+              <Button onClick={() => window.location.reload()}>Reload Page</Button>
             </div>
             {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
               <details className="error-details">

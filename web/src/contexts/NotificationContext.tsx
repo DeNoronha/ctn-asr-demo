@@ -1,10 +1,8 @@
-// NotificationContext.tsx - Global notification system
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import {
-  Notification,
-  NotificationGroup,
-} from '@progress/kendo-react-notification';
 import { Fade } from '@progress/kendo-react-animation';
+import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
+// NotificationContext.tsx - Global notification system
+import type React from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 export type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
@@ -29,9 +27,7 @@ interface NotificationContextType {
   showInfo: (message: string, title?: string) => void;
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(
-  undefined
-);
+const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const useNotification = () => {
   const context = useContext(NotificationContext);
@@ -41,9 +37,7 @@ export const useNotification = () => {
   return context;
 };
 
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
 
   const removeNotification = useCallback((id: string) => {
@@ -51,12 +45,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const showNotification = useCallback(
-    (
-      type: NotificationType,
-      message: string,
-      title?: string,
-      duration: number = 5000
-    ) => {
+    (type: NotificationType, message: string, title?: string, duration = 5000) => {
       const id = `notification-${Date.now()}-${Math.random()}`;
       const notification: NotificationMessage = {
         id,
@@ -78,28 +67,28 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const showSuccess = useCallback(
-    (message: string, title: string = 'Success') => {
+    (message: string, title = 'Success') => {
       showNotification('success', message, title);
     },
     [showNotification]
   );
 
   const showError = useCallback(
-    (message: string, title: string = 'Error') => {
+    (message: string, title = 'Error') => {
       showNotification('error', message, title, 7000); // Longer for errors
     },
     [showNotification]
   );
 
   const showWarning = useCallback(
-    (message: string, title: string = 'Warning') => {
+    (message: string, title = 'Warning') => {
       showNotification('warning', message, title);
     },
     [showNotification]
   );
 
   const showInfo = useCallback(
-    (message: string, title: string = 'Info') => {
+    (message: string, title = 'Info') => {
       showNotification('info', message, title);
     },
     [showNotification]

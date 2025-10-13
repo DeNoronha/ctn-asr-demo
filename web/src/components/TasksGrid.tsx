@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { Button } from '@progress/kendo-react-buttons';
-import { Dialog } from '@progress/kendo-react-dialogs';
-import { Input, TextArea } from '@progress/kendo-react-inputs';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { DatePicker } from '@progress/kendo-react-dateinputs';
+import { Dialog } from '@progress/kendo-react-dialogs';
+import { DropDownList } from '@progress/kendo-react-dropdowns';
+import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
+import { Input, TextArea } from '@progress/kendo-react-inputs';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import './TasksGrid.css';
 
 interface AdminTask {
@@ -38,7 +39,7 @@ const TasksGrid: React.FC = () => {
     description: '',
     priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
     assigned_to_email: '',
-    due_date: null as Date | null
+    due_date: null as Date | null,
   });
 
   const taskTypeOptions = [
@@ -50,14 +51,14 @@ const TasksGrid: React.FC = () => {
     { text: 'Billing Issue', value: 'billing_issue' },
     { text: 'Compliance Check', value: 'compliance_check' },
     { text: 'Manual Review', value: 'manual_review' },
-    { text: 'Other', value: 'other' }
+    { text: 'Other', value: 'other' },
   ];
 
   const priorityOptions = [
     { text: 'Low', value: 'low' },
     { text: 'Medium', value: 'medium' },
     { text: 'High', value: 'high' },
-    { text: 'Urgent', value: 'urgent' }
+    { text: 'Urgent', value: 'urgent' },
   ];
 
   const statusOptions = [
@@ -65,7 +66,7 @@ const TasksGrid: React.FC = () => {
     { text: 'In Progress', value: 'in_progress' },
     { text: 'Completed', value: 'completed' },
     { text: 'On Hold', value: 'on_hold' },
-    { text: 'Cancelled', value: 'cancelled' }
+    { text: 'Cancelled', value: 'cancelled' },
   ];
 
   useEffect(() => {
@@ -93,8 +94,8 @@ const TasksGrid: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          due_date: formData.due_date ? formData.due_date.toISOString() : undefined
-        })
+          due_date: formData.due_date ? formData.due_date.toISOString() : undefined,
+        }),
       });
 
       if (!response.ok) throw new Error('Failed to create task');
@@ -112,21 +113,18 @@ const TasksGrid: React.FC = () => {
     if (!selectedTask) return;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/v1/admin/tasks/${selectedTask.task_id}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: formData.title,
-            description: formData.description,
-            priority: formData.priority,
-            status: status || selectedTask.status,
-            assigned_to_email: formData.assigned_to_email,
-            due_date: formData.due_date ? formData.due_date.toISOString() : undefined
-          })
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/v1/admin/tasks/${selectedTask.task_id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          priority: formData.priority,
+          status: status || selectedTask.status,
+          assigned_to_email: formData.assigned_to_email,
+          due_date: formData.due_date ? formData.due_date.toISOString() : undefined,
+        }),
+      });
 
       if (!response.ok) throw new Error('Failed to update task');
 
@@ -145,7 +143,7 @@ const TasksGrid: React.FC = () => {
       const response = await fetch(`${API_BASE_URL}/v1/admin/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'completed' })
+        body: JSON.stringify({ status: 'completed' }),
       });
 
       if (!response.ok) throw new Error('Failed to complete task');
@@ -164,7 +162,7 @@ const TasksGrid: React.FC = () => {
       description: '',
       priority: 'medium',
       assigned_to_email: '',
-      due_date: null
+      due_date: null,
     });
   };
 
@@ -176,7 +174,7 @@ const TasksGrid: React.FC = () => {
       description: task.description,
       priority: task.priority,
       assigned_to_email: task.assigned_to_email || '',
-      due_date: task.due_date ? new Date(task.due_date) : null
+      due_date: task.due_date ? new Date(task.due_date) : null,
     });
     setShowEditDialog(true);
   };
@@ -228,19 +226,11 @@ const TasksGrid: React.FC = () => {
     const task = props.dataItem;
     return (
       <td>
-        <Button
-          icon="edit"
-          fillMode="flat"
-          onClick={() => openEditDialog(task)}
-        >
+        <Button icon="edit" fillMode="flat" onClick={() => openEditDialog(task)}>
           Edit
         </Button>
         {task.status !== 'completed' && task.status !== 'cancelled' && (
-          <Button
-            icon="check"
-            fillMode="flat"
-            onClick={() => handleCompleteTask(task.task_id)}
-          >
+          <Button icon="check" fillMode="flat" onClick={() => handleCompleteTask(task.task_id)}>
             Complete
           </Button>
         )}
@@ -249,19 +239,15 @@ const TasksGrid: React.FC = () => {
   };
 
   // Count tasks by status
-  const pendingCount = tasks.filter(t => t.status === 'pending').length;
-  const inProgressCount = tasks.filter(t => t.status === 'in_progress').length;
-  const overdueCount = tasks.filter(t => isOverdue(t)).length;
+  const pendingCount = tasks.filter((t) => t.status === 'pending').length;
+  const inProgressCount = tasks.filter((t) => t.status === 'in_progress').length;
+  const overdueCount = tasks.filter((t) => isOverdue(t)).length;
 
   return (
     <div className="tasks-grid">
       <div className="grid-header">
         <h2>Admin Tasks</h2>
-        <Button
-          icon="plus"
-          themeColor="primary"
-          onClick={() => setShowCreateDialog(true)}
-        >
+        <Button icon="plus" themeColor="primary" onClick={() => setShowCreateDialog(true)}>
           New Task
         </Button>
       </div>
@@ -281,14 +267,9 @@ const TasksGrid: React.FC = () => {
         </div>
       </div>
 
-      <Grid
-        data={tasks}
-        style={{ height: '550px' }}
-      >
+      <Grid data={tasks} style={{ height: '550px' }}>
         <GridToolbar>
-          <span className="grid-toolbar-info">
-            Total Tasks: {tasks.length}
-          </span>
+          <span className="grid-toolbar-info">Total Tasks: {tasks.length}</span>
         </GridToolbar>
 
         <GridColumn field="title" title="Title" width="250px" />
@@ -296,9 +277,7 @@ const TasksGrid: React.FC = () => {
           field="task_type"
           title="Type"
           width="150px"
-          cell={(props) => (
-            <td>{props.dataItem.task_type.replace('_', ' ')}</td>
-          )}
+          cell={(props) => <td>{props.dataItem.task_type.replace('_', ' ')}</td>}
         />
         <GridColumn field="priority" title="Priority" width="100px" cell={PriorityCell} />
         <GridColumn field="status" title="Status" width="120px" cell={StatusCell} />
@@ -306,17 +285,13 @@ const TasksGrid: React.FC = () => {
           field="assigned_to_email"
           title="Assigned To"
           width="200px"
-          cell={(props) => (
-            <td>{props.dataItem.assigned_to_email || 'Unassigned'}</td>
-          )}
+          cell={(props) => <td>{props.dataItem.assigned_to_email || 'Unassigned'}</td>}
         />
         <GridColumn
           field="related_entity_name"
           title="Related Entity"
           width="180px"
-          cell={(props) => (
-            <td>{props.dataItem.related_entity_name || '-'}</td>
-          )}
+          cell={(props) => <td>{props.dataItem.related_entity_name || '-'}</td>}
         />
         <GridColumn field="due_date" title="Due Date" width="130px" cell={DueDateCell} />
         <GridColumn title="Actions" width="220px" cell={ActionsCell} />
@@ -332,7 +307,7 @@ const TasksGrid: React.FC = () => {
                 data={taskTypeOptions}
                 textField="text"
                 dataItemKey="value"
-                value={taskTypeOptions.find(o => o.value === formData.task_type)}
+                value={taskTypeOptions.find((o) => o.value === formData.task_type)}
                 onChange={(e) => setFormData({ ...formData, task_type: e.value.value })}
               />
             </div>
@@ -362,7 +337,7 @@ const TasksGrid: React.FC = () => {
                 data={priorityOptions}
                 textField="text"
                 dataItemKey="value"
-                value={priorityOptions.find(o => o.value === formData.priority)}
+                value={priorityOptions.find((o) => o.value === formData.priority)}
                 onChange={(e) => setFormData({ ...formData, priority: e.value.value })}
               />
             </div>
@@ -422,7 +397,7 @@ const TasksGrid: React.FC = () => {
                 data={priorityOptions}
                 textField="text"
                 dataItemKey="value"
-                value={priorityOptions.find(o => o.value === formData.priority)}
+                value={priorityOptions.find((o) => o.value === formData.priority)}
                 onChange={(e) => setFormData({ ...formData, priority: e.value.value })}
               />
             </div>

@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
-import { ComponentProps, Contact } from '../types';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import type { ComponentProps, Contact } from '../types';
 
 const contactTypes = ['PRIMARY', 'TECHNICAL', 'BILLING', 'LEGAL', 'OTHER'];
 const contactMethods = ['EMAIL', 'PHONE', 'MOBILE'];
@@ -10,7 +11,7 @@ export const ContactsView: React.FC<ComponentProps> = ({
   apiBaseUrl,
   getAccessToken,
   onNotification,
-  onDataChange
+  onDataChange,
 }) => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,9 +30,9 @@ export const ContactsView: React.FC<ComponentProps> = ({
       const token = await getAccessToken();
       const response = await fetch(`${apiBaseUrl}/member-contacts`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
 
       if (response.ok) {
@@ -59,7 +60,7 @@ export const ContactsView: React.FC<ComponentProps> = ({
       job_title: '',
       department: '',
       preferred_contact_method: 'EMAIL',
-      is_primary: false
+      is_primary: false,
     });
     setShowDialog(true);
   };
@@ -79,17 +80,17 @@ export const ContactsView: React.FC<ComponentProps> = ({
     try {
       const token = await getAccessToken();
       const method = editingContact ? 'PUT' : 'POST';
-      const url = editingContact 
+      const url = editingContact
         ? `${apiBaseUrl}/member-contacts/${editingContact.legal_entity_contact_id}`
         : `${apiBaseUrl}/member-contacts`;
 
       const response = await fetch(url, {
         method,
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -146,7 +147,7 @@ export const ContactsView: React.FC<ComponentProps> = ({
               </tr>
             </thead>
             <tbody>
-              {contacts.map(contact => (
+              {contacts.map((contact) => (
                 <tr key={contact.legal_entity_contact_id}>
                   <td>{contact.full_name}</td>
                   <td>{contact.email}</td>
@@ -174,8 +175,8 @@ export const ContactsView: React.FC<ComponentProps> = ({
       </div>
 
       {showDialog && (
-        <Dialog 
-          title={editingContact ? 'Edit Contact' : 'Add Contact'} 
+        <Dialog
+          title={editingContact ? 'Edit Contact' : 'Add Contact'}
           onClose={() => setShowDialog(false)}
           width={600}
         >
@@ -275,8 +276,10 @@ export const ContactsView: React.FC<ComponentProps> = ({
                   onChange={handleChange}
                   className="form-input"
                 >
-                  {contactTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
+                  {contactTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -288,8 +291,10 @@ export const ContactsView: React.FC<ComponentProps> = ({
                   onChange={handleChange}
                   className="form-input"
                 >
-                  {contactMethods.map(method => (
-                    <option key={method} value={method}>{method}</option>
+                  {contactMethods.map((method) => (
+                    <option key={method} value={method}>
+                      {method}
+                    </option>
                   ))}
                 </select>
               </div>

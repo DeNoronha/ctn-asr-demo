@@ -110,7 +110,7 @@
 }
 
 .timeline-item::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 11px;
   top: 32px;
@@ -195,11 +195,11 @@
   .detail-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .detail-actions {
     flex-direction: column;
   }
-  
+
   .detail-actions button {
     width: 100%;
   }

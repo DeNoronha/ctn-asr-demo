@@ -65,27 +65,25 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "lint:report": "biome check . --reporter=json > reports/biome-report.json",
+    "security:scan": "aikido scan --output-file reports/aikido-results.json",
+    "security:summary": "aikido scan --format markdown > reports/aikido-summary.md",
+    "review": "npm run lint:report && npm run security:scan && npm run security:summary",
+    "ci": "biome ci . && npm run security:scan"
   },
   "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "extends": ["react-app", "react-app/jest"]
   },
   "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "production": [">0.2%", "not dead", "not op_mini all"],
+    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
     "@types/axios": "^0.9.36",
     "@types/react-router-dom": "^5.3.3"
   }

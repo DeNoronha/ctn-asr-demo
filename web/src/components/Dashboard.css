@@ -43,7 +43,7 @@
 }
 
 .stat-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   right: 0;
@@ -59,7 +59,7 @@
 }
 
 .stat-card.primary {
-  border-left-color: #0066B3;
+  border-left-color: #0066b3;
 }
 
 .stat-card.success {
@@ -71,7 +71,7 @@
 }
 
 .stat-card.accent {
-  border-left-color: #FF8C00;
+  border-left-color: #ff8c00;
 }
 
 .stat-icon {
@@ -128,7 +128,7 @@
   color: #1e293b;
   font-size: 18px;
   font-weight: 600;
-  border-bottom: 2px solid #0066B3;
+  border-bottom: 2px solid #0066b3;
   padding-bottom: 12px;
 }
 
@@ -204,7 +204,7 @@
 }
 
 .logo-container:hover {
-  border-color: #0066B3;
+  border-color: #0066b3;
   box-shadow: 0 2px 8px rgba(0, 102, 179, 0.1);
 }
 

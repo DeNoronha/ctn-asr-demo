@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
-import { ComponentProps } from '../types';
+import type React from 'react';
+import { useState } from 'react';
+import type { ComponentProps } from '../types';
 
 export const ProfileView: React.FC<ComponentProps> = ({
   apiBaseUrl,
   getAccessToken,
   memberData,
   onNotification,
-  onDataChange
+  onDataChange,
 }) => {
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -19,7 +20,7 @@ export const ProfileView: React.FC<ComponentProps> = ({
     postal_code: '',
     city: '',
     province: '',
-    country_code: ''
+    country_code: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,10 +31,10 @@ export const ProfileView: React.FC<ComponentProps> = ({
       const response = await fetch(`${apiBaseUrl}/member/profile`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {

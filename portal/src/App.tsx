@@ -1,22 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { MsalProvider, AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
-import { IPublicClientApplication } from '@azure/msal-browser';
+import type { IPublicClientApplication } from '@azure/msal-browser';
+import {
+  AuthenticatedTemplate,
+  MsalProvider,
+  UnauthenticatedTemplate,
+  useMsal,
+} from '@azure/msal-react';
+import { Fade } from '@progress/kendo-react-animation';
 import { Button } from '@progress/kendo-react-buttons';
 import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
-import { Fade } from '@progress/kendo-react-animation';
 import { LogOut } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 import './kendoLicense';
 import '@progress/kendo-theme-default/dist/all.css';
 import './App.css';
 
-import { Dashboard } from './components/Dashboard';
-import { ProfileView } from './components/ProfileView';
 import { ContactsView } from './components/ContactsView';
+import { Dashboard } from './components/Dashboard';
 import { EndpointsView } from './components/EndpointsView';
-import { TokensView } from './components/TokensView';
-import { Support } from './components/Support';
 import LanguageSwitcher from './components/LanguageSwitcher';
+import { ProfileView } from './components/ProfileView';
+import { Support } from './components/Support';
+import { TokensView } from './components/TokensView';
 
 interface AppContentProps {
   instance: IPublicClientApplication;
@@ -61,33 +66,36 @@ function AppContent({ instance }: AppContentProps) {
     }
   }, [accounts]);
 
-  const showNotification = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success') => {
+  const showNotification = (
+    message: string,
+    type: 'success' | 'error' | 'warning' | 'info' = 'success'
+  ) => {
     const id = notificationId;
     setNotificationId(id + 1);
-    setNotifications(prev => [...prev, { id, type, message }]);
-    
+    setNotifications((prev) => [...prev, { id, type, message }]);
+
     setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== id));
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
     }, 5000);
   };
 
   const fetchMemberData = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const account = accounts[0];
-      
+
       const tokenResponse = await msal.acquireTokenSilent({
         scopes: [`api://${process.env.REACT_APP_API_CLIENT_ID}/Member.Read`],
-        account: account
+        account: account,
       });
 
       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/member`, {
         headers: {
-          'Authorization': `Bearer ${tokenResponse.accessToken}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${tokenResponse.accessToken}`,
+          'Content-Type': 'application/json',
+        },
       });
 
       if (!response.ok) {
@@ -109,21 +117,28 @@ function AppContent({ instance }: AppContentProps) {
     const account = accounts[0];
     const tokenResponse = await msal.acquireTokenSilent({
       scopes: [`api://${process.env.REACT_APP_API_CLIENT_ID}/Member.Read`],
-      account: account
+      account: account,
     });
     return tokenResponse.accessToken;
   };
 
   const handleLogin = () => {
-    msal.loginPopup({
-      scopes: ['openid', 'profile', 'email', `api://${process.env.REACT_APP_API_CLIENT_ID}/Member.Read`]
-    }).catch(err => {
-      console.error('Login failed:', err);
-    });
+    msal
+      .loginPopup({
+        scopes: [
+          'openid',
+          'profile',
+          'email',
+          `api://${process.env.REACT_APP_API_CLIENT_ID}/Member.Read`,
+        ],
+      })
+      .catch((err) => {
+        console.error('Login failed:', err);
+      });
   };
 
   const handleLogout = () => {
-    msal.logoutPopup().catch(err => {
+    msal.logoutPopup().catch((err) => {
       console.error('Logout failed:', err);
     });
   };
@@ -136,7 +151,7 @@ function AppContent({ instance }: AppContentProps) {
       getAccessToken,
       memberData,
       onNotification: showNotification,
-      onDataChange: fetchMemberData
+      onDataChange: fetchMemberData,
     };
 
     switch (activeTab) {
@@ -160,12 +175,14 @@ function AppContent({ instance }: AppContentProps) {
   return (
     <div className="App">
       <NotificationGroup style={{ right: 20, top: 80, alignItems: 'flex-end', zIndex: 10000 }}>
-        {notifications.map(notification => (
+        {notifications.map((notification) => (
           <Fade key={notification.id} enter exit>
             <Notification
               type={{ style: notification.type, icon: true }}
               closable={true}
-              onClose={() => setNotifications(prev => prev.filter(n => n.id !== notification.id))}
+              onClose={() =>
+                setNotifications((prev) => prev.filter((n) => n.id !== notification.id))
+              }
             >
               <span>{notification.message}</span>
             </Notification>
@@ -201,37 +218,37 @@ function AppContent({ instance }: AppContentProps) {
         <AuthenticatedTemplate>
           {memberData && (
             <nav className="tab-navigation">
-              <button 
+              <button
                 className={`tab-button ${activeTab === 'dashboard' ? 'active' : ''}`}
                 onClick={() => setActiveTab('dashboard')}
               >
                 Dashboard
               </button>
-              <button 
+              <button
                 className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
                 onClick={() => setActiveTab('profile')}
               >
                 Organization Profile
               </button>
-              <button 
+              <button
                 className={`tab-button ${activeTab === 'contacts' ? 'active' : ''}`}
                 onClick={() => setActiveTab('contacts')}
               >
                 Contacts
               </button>
-              <button 
+              <button
                 className={`tab-button ${activeTab === 'endpoints' ? 'active' : ''}`}
                 onClick={() => setActiveTab('endpoints')}
               >
                 Endpoints
               </button>
-              <button 
+              <button
                 className={`tab-button ${activeTab === 'tokens' ? 'active' : ''}`}
                 onClick={() => setActiveTab('tokens')}
               >
                 API Tokens
               </button>
-              <button 
+              <button
                 className={`tab-button ${activeTab === 'support' ? 'active' : ''}`}
                 onClick={() => setActiveTab('support')}
               >
@@ -248,8 +265,8 @@ function AppContent({ instance }: AppContentProps) {
             <div className="welcome-card">
               <h2>Welcome to CTN Member Portal</h2>
               <p>
-                Access your organization's CTN network dashboard, manage contacts, 
-                configure data endpoints, and generate API tokens.
+                Access your organization's CTN network dashboard, manage contacts, configure data
+                endpoints, and generate API tokens.
               </p>
               <Button
                 onClick={handleLogin}
@@ -270,13 +287,11 @@ function AppContent({ instance }: AppContentProps) {
               <p>Loading member data...</p>
             </div>
           )}
-          
+
           {!loading && !error && memberData && (
-            <div className="content-container">
-              {renderTabContent()}
-            </div>
+            <div className="content-container">{renderTabContent()}</div>
           )}
-          
+
           {!loading && !memberData && !error && (
             <div className="empty-state">
               <h3>No Member Data</h3>
@@ -293,10 +308,14 @@ function AppContent({ instance }: AppContentProps) {
             <img src="/assets/logos/DIL.png" alt="Data in Logistics" className="partner-logo-img" />
             <img src="/assets/logos/portbase.png" alt="Portbase" className="partner-logo-img" />
             <img src="/assets/logos/contargo.png" alt="Contargo" className="partner-logo-img" />
-            <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" className="partner-logo-img" />
+            <img
+              src="/assets/logos/Inland Terminals Group.png"
+              alt="Inland Terminals Group"
+              className="partner-logo-img"
+            />
             <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" className="partner-logo-img" />
           </div>
-          
+
           <div className="footer-bottom">
             <p>&copy; 2025 CTN Network. All rights reserved.</p>
           </div>

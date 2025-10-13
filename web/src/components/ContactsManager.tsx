@@ -1,9 +1,10 @@
-// ContactsManager.tsx - Manage contacts for a legal entity
-import React, { useState } from 'react';
-import { Grid, GridColumn, GridCellProps } from '@progress/kendo-react-grid';
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
-import { LegalEntityContact } from '../services/api';
+import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
+// ContactsManager.tsx - Manage contacts for a legal entity
+import type React from 'react';
+import { useState } from 'react';
+import type { LegalEntityContact } from '../services/api';
 import { ContactForm } from './ContactForm';
 import './ContactsManager.css';
 
@@ -33,13 +34,11 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
 
   const handleSaveContact = async (contact: LegalEntityContact) => {
     let updatedContacts: LegalEntityContact[];
-    
+
     if (editingContact) {
       // Update existing
-      updatedContacts = contacts.map(c =>
-        c.legal_entity_contact_id === editingContact.legal_entity_contact_id
-          ? contact
-          : c
+      updatedContacts = contacts.map((c) =>
+        c.legal_entity_contact_id === editingContact.legal_entity_contact_id ? contact : c
       );
     } else {
       // Add new
@@ -52,9 +51,7 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
 
   const handleDeleteContact = async (contactId: string) => {
     if (window.confirm('Are you sure you want to delete this contact?')) {
-      const updatedContacts = contacts.filter(
-        c => c.legal_entity_contact_id !== contactId
-      );
+      const updatedContacts = contacts.filter((c) => c.legal_entity_contact_id !== contactId);
       await onUpdate(updatedContacts);
     }
   };
@@ -68,17 +65,16 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
     };
     const type = props.dataItem.contact_type || 'General';
     const color = types[type] || '#6b7280';
-    
+
     return (
       <td>
-        <span
-          className="contact-type-badge"
-          style={{ backgroundColor: color }}
-        >
+        <span className="contact-type-badge" style={{ backgroundColor: color }}>
           {type}
         </span>
         {props.dataItem.is_primary && (
-          <span className="primary-indicator" title="Primary Contact">★</span>
+          <span className="primary-indicator" title="Primary Contact">
+            ★
+          </span>
         )}
       </td>
     );
@@ -118,8 +114,8 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
         </Button>
       </div>
 
-      <Grid 
-        data={contacts} 
+      <Grid
+        data={contacts}
         style={{ height: '400px', maxHeight: '400px' }}
         className="contacts-grid"
       >
@@ -141,8 +137,8 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
       )}
 
       {showDialog && (
-        <Dialog 
-          title={editingContact ? 'Edit Contact' : 'Add Contact'} 
+        <Dialog
+          title={editingContact ? 'Edit Contact' : 'Add Contact'}
           onClose={() => setShowDialog(false)}
           width={600}
         >

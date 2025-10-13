@@ -1,17 +1,17 @@
-import React from 'react';
 import {
-  LayoutDashboard,
-  Users,
-  Key,
-  Shield,
-  FileText,
   BookOpen,
-  Plug,
-  FileCheck,
+  CheckSquare,
   CreditCard,
+  FileCheck,
+  FileText,
+  Key,
+  LayoutDashboard,
   Mail,
-  CheckSquare
+  Plug,
+  Shield,
+  Users,
 } from 'lucide-react';
+import type React from 'react';
 import './AdminSidebar.css';
 
 export interface MenuItem {

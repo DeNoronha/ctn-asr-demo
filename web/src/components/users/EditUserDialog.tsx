@@ -3,10 +3,11 @@
  * System Admins can edit user roles and status
  */
 
-import React, { useState } from 'react';
-import { Dialog } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
+import { Dialog } from '@progress/kendo-react-dialogs';
 import { Save } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { UserRole } from '../../auth/authConfig';
 import './UserManagement.css';
 
@@ -44,11 +45,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ user, onClose, onUpdate
   };
 
   return (
-    <Dialog
-      title={`Edit User: ${user.name}`}
-      onClose={onClose}
-      className="user-dialog"
-    >
+    <Dialog title={`Edit User: ${user.name}`} onClose={onClose} className="user-dialog">
       <div className="dialog-content">
         <div className="form-group">
           <label>Email</label>
@@ -74,17 +71,12 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ user, onClose, onUpdate
 
         <div className="form-group">
           <label>Role</label>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as UserRole)}
-          >
+          <select value={role} onChange={(e) => setRole(e.target.value as UserRole)}>
             <option value={UserRole.SYSTEM_ADMIN}>System Admin</option>
             <option value={UserRole.ASSOCIATION_ADMIN}>Association Admin</option>
             <option value={UserRole.MEMBER}>Member</option>
           </select>
-          <div className="role-description">
-            {roleDescriptions[role]}
-          </div>
+          <div className="role-description">{roleDescriptions[role]}</div>
         </div>
 
         <div className="form-group">
@@ -97,17 +89,12 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ user, onClose, onUpdate
             />
             Account Enabled
           </label>
-          <p className="help-text">
-            Disabled users cannot log in
-          </p>
+          <p className="help-text">Disabled users cannot log in</p>
         </div>
 
         <div className="dialog-actions">
           <Button onClick={onClose}>Cancel</Button>
-          <Button
-            themeColor="primary"
-            onClick={handleSubmit}
-          >
+          <Button themeColor="primary" onClick={handleSubmit}>
             <Save size={16} style={{ marginRight: 8 }} />
             Save Changes
           </Button>

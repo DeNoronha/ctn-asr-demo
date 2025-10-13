@@ -3,23 +3,24 @@
  * Displays member statistics and visualizations using Recharts
  */
 
-import React, { useMemo } from 'react';
+import type React from 'react';
+import { useMemo } from 'react';
 import {
-  PieChart,
-  Pie,
-  BarChart,
   Bar,
-  LineChart,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
   Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  Cell,
 } from 'recharts';
-import { Member } from '../services/api';
+import type { Member } from '../services/api';
 import './Dashboard.css';
 
 interface DashboardProps {
@@ -54,10 +55,10 @@ const Dashboard: React.FC<DashboardProps> = ({ members }) => {
   // Calculate statistics
   const stats = useMemo(() => {
     const total = members.length;
-    const active = members.filter(m => m.status === 'ACTIVE').length;
-    const pending = members.filter(m => m.status === 'PENDING').length;
-    const suspended = members.filter(m => m.status === 'SUSPENDED').length;
-    const premium = members.filter(m => m.membership_level === 'PREMIUM').length;
+    const active = members.filter((m) => m.status === 'ACTIVE').length;
+    const pending = members.filter((m) => m.status === 'PENDING').length;
+    const suspended = members.filter((m) => m.status === 'SUSPENDED').length;
+    const premium = members.filter((m) => m.membership_level === 'PREMIUM').length;
 
     return {
       total,
@@ -73,7 +74,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members }) => {
   // Status distribution data for Pie Chart
   const statusData = useMemo(() => {
     const statusCounts: Record<string, number> = {};
-    members.forEach(m => {
+    members.forEach((m) => {
       statusCounts[m.status] = (statusCounts[m.status] || 0) + 1;
     });
 
@@ -87,7 +88,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members }) => {
   // Membership level distribution for Bar Chart
   const membershipData = useMemo(() => {
     const levelCounts: Record<string, number> = {};
-    members.forEach(m => {
+    members.forEach((m) => {
       const level = m.membership_level || 'STANDARD';
       levelCounts[level] = (levelCounts[level] || 0) + 1;
     });
@@ -104,8 +105,18 @@ const Dashboard: React.FC<DashboardProps> = ({ members }) => {
     // In production, this would come from actual historical data
     // For now, we'll simulate growth based on creation dates
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
 
     // Simulate cumulative growth

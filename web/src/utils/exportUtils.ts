@@ -5,7 +5,7 @@
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Member } from '../services/api';
+import type { Member } from '../services/api';
 
 export interface ExportOptions {
   title?: string;
@@ -22,14 +22,14 @@ export const exportToPDF = (members: Member[], options: ExportOptions = {}) => {
     title = 'CTN Members Export',
     orientation = 'landscape',
     includeTimestamp = true,
-    columns = ['legal_name', 'org_id', 'domain', 'status', 'membership_level', 'lei', 'kvk']
+    columns = ['legal_name', 'org_id', 'domain', 'status', 'membership_level', 'lei', 'kvk'],
   } = options;
 
   // Create PDF document
   const doc = new jsPDF({
     orientation: orientation,
     unit: 'mm',
-    format: 'a4'
+    format: 'a4',
   });
 
   // Add title
@@ -54,13 +54,13 @@ export const exportToPDF = (members: Member[], options: ExportOptions = {}) => {
     membership_level: 'Membership',
     lei: 'LEI',
     kvk: 'KvK',
-    created_at: 'Joined Date'
+    created_at: 'Joined Date',
   };
 
   // Prepare table data
-  const headers = columns.map(col => columnHeaders[col] || col);
-  const data = members.map(member =>
-    columns.map(col => {
+  const headers = columns.map((col) => columnHeaders[col] || col);
+  const data = members.map((member) =>
+    columns.map((col) => {
       const value = member[col as keyof Member];
       if (col === 'created_at' && value) {
         return new Date(value as string).toLocaleDateString();
@@ -79,13 +79,13 @@ export const exportToPDF = (members: Member[], options: ExportOptions = {}) => {
       fillColor: [0, 51, 102], // CTN blue
       textColor: [255, 255, 255],
       fontStyle: 'bold',
-      fontSize: 10
+      fontSize: 10,
     },
     bodyStyles: {
-      fontSize: 9
+      fontSize: 9,
     },
     alternateRowStyles: {
-      fillColor: [245, 245, 245]
+      fillColor: [245, 245, 245],
     },
     margin: { left: 14, right: 14 },
     didDrawPage: (data) => {
@@ -108,7 +108,7 @@ export const exportToPDF = (members: Member[], options: ExportOptions = {}) => {
         14,
         doc.internal.pageSize.getHeight() - 10
       );
-    }
+    },
   });
 
   // Save PDF
@@ -125,7 +125,7 @@ export const exportMemberDetailToPDF = (member: Member) => {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
-    format: 'a4'
+    format: 'a4',
   });
 
   // Header
@@ -176,7 +176,10 @@ export const exportMemberDetailToPDF = (member: Member) => {
 
   addField('LEI:', member.lei);
   addField('KvK:', member.kvk);
-  addField('Joined Date:', member.created_at ? new Date(member.created_at).toLocaleDateString() : undefined);
+  addField(
+    'Joined Date:',
+    member.created_at ? new Date(member.created_at).toLocaleDateString() : undefined
+  );
 
   // Save PDF
   const fileName = `Member_${member.legal_name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
@@ -202,7 +205,7 @@ export const performBulkOperation = async (
   const result: BulkOperationResult = {
     success: 0,
     failed: 0,
-    errors: []
+    errors: [],
   };
 
   for (const id of memberIds) {
@@ -247,21 +250,23 @@ export const exportToCSV = (members: Member[], filename?: string) => {
     'Membership Level',
     'LEI',
     'KvK',
-    'Joined Date'
+    'Joined Date',
   ];
 
   const csvData = [
     headers.join(','),
-    ...members.map(member => [
-      `"${member.legal_name}"`,
-      member.org_id,
-      member.domain,
-      member.status,
-      member.membership_level,
-      member.lei || '',
-      member.kvk || '',
-      member.created_at ? new Date(member.created_at).toLocaleDateString() : ''
-    ].join(','))
+    ...members.map((member) =>
+      [
+        `"${member.legal_name}"`,
+        member.org_id,
+        member.domain,
+        member.status,
+        member.membership_level,
+        member.lei || '',
+        member.kvk || '',
+        member.created_at ? new Date(member.created_at).toLocaleDateString() : '',
+      ].join(',')
+    ),
   ].join('\n');
 
   const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
@@ -269,7 +274,10 @@ export const exportToCSV = (members: Member[], filename?: string) => {
   const url = URL.createObjectURL(blob);
 
   link.setAttribute('href', url);
-  link.setAttribute('download', filename || `CTN_Members_${new Date().toISOString().split('T')[0]}.csv`);
+  link.setAttribute(
+    'download',
+    filename || `CTN_Members_${new Date().toISOString().split('T')[0]}.csv`
+  );
   link.style.visibility = 'hidden';
 
   document.body.appendChild(link);

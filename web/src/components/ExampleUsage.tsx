@@ -1,6 +1,7 @@
-// ExampleUsage.tsx - Demo of all loading & feedback features
-import React, { useState } from 'react';
 import { Button } from '@progress/kendo-react-buttons';
+// ExampleUsage.tsx - Demo of all loading & feedback features
+import type React from 'react';
+import { useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAsync } from '../hooks/useAsync';
 import LoadingSpinner from './LoadingSpinner';
@@ -18,7 +19,7 @@ const ExampleUsage: React.FC = () => {
 
   const handleSimpleOperation = () => {
     executeSimple(async () => {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       return { success: true };
     });
   };
@@ -29,7 +30,7 @@ const ExampleUsage: React.FC = () => {
     notification.showInfo('Starting long operation...', 'Processing');
 
     for (let i = 0; i <= 100; i += 10) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
       setProgress(i);
     }
 
@@ -65,20 +66,14 @@ const ExampleUsage: React.FC = () => {
           Start Long Operation
         </Button>
         {progress > 0 && (
-          <ProgressIndicator
-            value={progress}
-            label="Processing data..."
-            showPercentage={true}
-          />
+          <ProgressIndicator value={progress} label="Processing data..." showPercentage={true} />
         )}
       </div>
 
       {/* Example 3: All Notification Types */}
       <div style={{ marginBottom: '30px' }}>
         <h3>3. Notification Types</h3>
-        <Button onClick={showNotifications}>
-          Show All Notifications
-        </Button>
+        <Button onClick={showNotifications}>Show All Notifications</Button>
       </div>
 
       {/* Example 4: Loading States */}

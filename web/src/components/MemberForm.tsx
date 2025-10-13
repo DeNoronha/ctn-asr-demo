@@ -1,16 +1,17 @@
-// MemberForm.tsx - Enhanced form with validation
-import React, { useState, useEffect } from 'react';
-import { Input, MaskedTextBox } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
-import { Label, Error, Hint } from '@progress/kendo-react-labels';
+import { Input, MaskedTextBox } from '@progress/kendo-react-inputs';
+import { Error, Hint, Label } from '@progress/kendo-react-labels';
+// MemberForm.tsx - Enhanced form with validation
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
-import { 
-  validateMemberForm, 
-  formatOrgId, 
-  formatDomain, 
-  formatLEI, 
+import {
+  type MemberFormData,
+  formatDomain,
   formatKVK,
-  MemberFormData 
+  formatLEI,
+  formatOrgId,
+  validateMemberForm,
 } from '../utils/validation';
 import './MemberForm.css';
 
@@ -28,10 +29,10 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
       legal_name: '',
       domain: '',
       lei: '',
-      kvk: ''
+      kvk: '',
     }
   );
-  
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,7 +65,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
 
   const handleFieldChange = (field: keyof MemberFormData, value: string) => {
     let formattedValue = value;
-    
+
     // Apply formatting based on field
     switch (field) {
       case 'org_id':
@@ -80,13 +81,13 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
         formattedValue = formatKVK(value);
         break;
     }
-    
-    setFormData(prev => ({ ...prev, [field]: formattedValue }));
+
+    setFormData((prev) => ({ ...prev, [field]: formattedValue }));
     setIsDirty(true);
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[field];
         return newErrors;
@@ -95,36 +96,39 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
   };
 
   const handleBlur = (field: keyof MemberFormData) => {
-    setTouched(prev => ({ ...prev, [field]: true }));
-    
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
     // Validate single field
     const validation = validateMemberForm(formData);
     if (validation.errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: validation.errors[field] }));
+      setErrors((prev) => ({ ...prev, [field]: validation.errors[field] }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Mark all fields as touched
-    const allTouched = Object.keys(formData).reduce((acc, key) => {
-      acc[key] = true;
-      return acc;
-    }, {} as Record<string, boolean>);
+    const allTouched = Object.keys(formData).reduce(
+      (acc, key) => {
+        acc[key] = true;
+        return acc;
+      },
+      {} as Record<string, boolean>
+    );
     setTouched(allTouched);
-    
+
     // Validate
     const validation = validateMemberForm(formData);
-    
+
     if (!validation.isValid) {
       setErrors(validation.errors);
       notification.showError('Please fix the errors before submitting');
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       await onSubmit(formData);
       // Clear draft on successful submit
@@ -139,13 +143,15 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
 
   const handleReset = () => {
     if (isDirty) {
-      if (window.confirm('Are you sure you want to reset the form? Unsaved changes will be lost.')) {
+      if (
+        window.confirm('Are you sure you want to reset the form? Unsaved changes will be lost.')
+      ) {
         setFormData({
           org_id: 'org:',
           legal_name: '',
           domain: '',
           lei: '',
-          kvk: ''
+          kvk: '',
         });
         setErrors({});
         setTouched({});
@@ -171,7 +177,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
       <form onSubmit={handleSubmit} className="member-form">
         <div className="form-section">
           <h3>Organization Details</h3>
-          
+
           <div className="form-field">
             <Label>Organization ID *</Label>
             <Input
@@ -220,7 +226,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
 
         <div className="form-section">
           <h3>Optional Identifiers</h3>
-          
+
           <div className="form-field">
             <Label>LEI (Legal Entity Identifier)</Label>
             <MaskedTextBox
@@ -253,32 +259,19 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
         </div>
 
         <div className="form-actions">
-          <Button
-            type="submit"
-            themeColor="primary"
-            disabled={isSubmitting}
-          >
+          <Button type="submit" themeColor="primary" disabled={isSubmitting}>
             {isSubmitting ? 'Submitting...' : initialData ? 'Update Member' : 'Register Member'}
           </Button>
-          <Button
-            type="button"
-            onClick={handleCancel}
-            disabled={isSubmitting}
-          >
+          <Button type="button" onClick={handleCancel} disabled={isSubmitting}>
             Cancel
           </Button>
           {isDirty && !initialData && (
-            <Button
-              type="button"
-              fillMode="flat"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button type="button" fillMode="flat" onClick={handleReset} disabled={isSubmitting}>
               Reset Form
             </Button>
           )}
         </div>
-        
+
         {isDirty && (
           <div className="form-status">
             <small>💾 Draft auto-saved</small>

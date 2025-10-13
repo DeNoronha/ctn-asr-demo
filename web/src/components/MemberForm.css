@@ -90,11 +90,11 @@
   .member-form-container {
     padding: 16px;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }
-  
+
   .form-actions button {
     width: 100%;
   }

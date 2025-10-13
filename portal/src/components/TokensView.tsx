@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
-import { ComponentProps, Token } from '../types';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import type { ComponentProps, Token } from '../types';
 
 export const TokensView: React.FC<ComponentProps> = ({
   apiBaseUrl,
   getAccessToken,
-  onNotification
+  onNotification,
 }) => {
   const [tokens, setTokens] = useState<Token[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,9 +25,9 @@ export const TokensView: React.FC<ComponentProps> = ({
       const token = await getAccessToken();
       const response = await fetch(`${apiBaseUrl}/member/tokens`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
 
       if (response.ok) {
@@ -48,13 +49,13 @@ export const TokensView: React.FC<ComponentProps> = ({
       const response = await fetch(`${apiBaseUrl}/oauth/token`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           grant_type: 'client_credentials',
-          scope: 'member.read member.write'
-        })
+          scope: 'member.read member.write',
+        }),
       });
 
       if (!response.ok) {
@@ -65,7 +66,7 @@ export const TokensView: React.FC<ComponentProps> = ({
       setNewToken(data.access_token);
       setShowTokenDialog(true);
       onNotification('Token generated successfully', 'success');
-      
+
       setTimeout(() => loadTokens(), 1000);
     } catch (error) {
       onNotification('Failed to generate token', 'error');
@@ -82,13 +83,13 @@ export const TokensView: React.FC<ComponentProps> = ({
   };
 
   const activeTokens = tokens.filter(
-    t => !t.revoked && new Date(t.expires_at) > new Date()
+    (t) => !t.revoked && new Date(t.expires_at) > new Date()
   ).length;
 
   const getTokenStatus = (token: Token) => {
     const isExpired = new Date(token.expires_at) < new Date();
     const isRevoked = token.revoked;
-    
+
     if (isRevoked) return { class: 'status-inactive', text: 'Revoked' };
     if (isExpired) return { class: 'status-inactive', text: 'Expired' };
     return { class: 'status-active', text: 'Active' };
@@ -101,11 +102,7 @@ export const TokensView: React.FC<ComponentProps> = ({
           <h2>API Tokens</h2>
           <p className="page-subtitle">Generate and manage your API authentication tokens</p>
         </div>
-        <Button 
-          themeColor="primary" 
-          onClick={handleGenerateToken}
-          disabled={generating}
-        >
+        <Button themeColor="primary" onClick={handleGenerateToken} disabled={generating}>
           {generating ? 'Generating...' : 'Generate New Token'}
         </Button>
       </div>
@@ -115,8 +112,8 @@ export const TokensView: React.FC<ComponentProps> = ({
           <div>
             <strong>⚠️ Important Security Notice</strong>
             <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>
-              Tokens are only shown once when generated. Copy and store them securely. 
-              Treat tokens like passwords - never share them or commit them to version control.
+              Tokens are only shown once when generated. Copy and store them securely. Treat tokens
+              like passwords - never share them or commit them to version control.
             </p>
           </div>
         </div>
@@ -136,8 +133,8 @@ export const TokensView: React.FC<ComponentProps> = ({
         ) : (
           <>
             <div style={{ padding: '1rem', borderBottom: '1px solid var(--ctn-border)' }}>
-              Total Tokens: <strong>{tokens.length}</strong> | 
-              Active: <strong>{activeTokens}</strong>
+              Total Tokens: <strong>{tokens.length}</strong> | Active:{' '}
+              <strong>{activeTokens}</strong>
             </div>
             <table className="data-table">
               <thead>
@@ -150,14 +147,12 @@ export const TokensView: React.FC<ComponentProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {tokens.map(token => {
+                {tokens.map((token) => {
                   const status = getTokenStatus(token);
                   return (
                     <tr key={token.jti}>
                       <td>
-                        <code style={{ fontSize: '0.85rem' }}>
-                          {token.jti.substring(0, 12)}...
-                        </code>
+                        <code style={{ fontSize: '0.85rem' }}>{token.jti.substring(0, 12)}...</code>
                       </td>
                       <td>{token.token_type}</td>
                       <td>{new Date(token.issued_at).toLocaleString()}</td>
@@ -175,8 +170,8 @@ export const TokensView: React.FC<ComponentProps> = ({
       </div>
 
       {showTokenDialog && (
-        <Dialog 
-          title="Token Generated Successfully" 
+        <Dialog
+          title="Token Generated Successfully"
           onClose={() => {
             setShowTokenDialog(false);
             setNewToken(null);
@@ -189,21 +184,25 @@ export const TokensView: React.FC<ComponentProps> = ({
               You won't be able to see it again. Store it securely.
             </p>
           </div>
-          
-          <div style={{ 
-            background: 'var(--ctn-bg)', 
-            padding: '1rem', 
-            borderRadius: '6px',
-            border: '1px solid var(--ctn-border)',
-            marginBottom: '1rem'
-          }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '0.5rem',
-              fontSize: '0.9rem',
-              fontWeight: 600,
-              color: 'var(--ctn-text)'
-            }}>
+
+          <div
+            style={{
+              background: 'var(--ctn-bg)',
+              padding: '1rem',
+              borderRadius: '6px',
+              border: '1px solid var(--ctn-border)',
+              marginBottom: '1rem',
+            }}
+          >
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                color: 'var(--ctn-text)',
+              }}
+            >
               Access Token:
             </label>
             <textarea
@@ -217,7 +216,7 @@ export const TokensView: React.FC<ComponentProps> = ({
                 padding: '0.5rem',
                 border: '1px solid var(--ctn-border)',
                 borderRadius: '4px',
-                resize: 'vertical'
+                resize: 'vertical',
               }}
             />
           </div>
@@ -226,7 +225,7 @@ export const TokensView: React.FC<ComponentProps> = ({
             <Button onClick={copyToClipboard} themeColor="primary">
               Copy to Clipboard
             </Button>
-            <Button 
+            <Button
               onClick={() => {
                 setShowTokenDialog(false);
                 setNewToken(null);

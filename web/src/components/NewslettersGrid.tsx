@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
-import { Input, TextArea } from '@progress/kendo-react-inputs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
+import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
+import { Input, TextArea } from '@progress/kendo-react-inputs';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import './NewslettersGrid.css';
 
 interface Newsletter {
@@ -38,14 +39,14 @@ const NewslettersGrid: React.FC = () => {
     preview_text: '',
     content: '',
     html_content: '',
-    recipient_filter: 'all' as 'all' | 'by_level' | 'by_status' | 'custom'
+    recipient_filter: 'all' as 'all' | 'by_level' | 'by_status' | 'custom',
   });
 
   const recipientFilterOptions = [
     { text: 'All Members', value: 'all' },
     { text: 'By Membership Level', value: 'by_level' },
     { text: 'By Status', value: 'by_status' },
-    { text: 'Custom List', value: 'custom' }
+    { text: 'Custom List', value: 'custom' },
   ];
 
   useEffect(() => {
@@ -71,7 +72,7 @@ const NewslettersGrid: React.FC = () => {
       // Simple HTML conversion from plain text
       const htmlContent = formData.content
         .split('\n\n')
-        .map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`)
+        .map((para) => `<p>${para.replace(/\n/g, '<br>')}</p>`)
         .join('');
 
       const response = await fetch(`${API_BASE_URL}/v1/newsletters`, {
@@ -79,8 +80,8 @@ const NewslettersGrid: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          html_content: htmlContent
-        })
+          html_content: htmlContent,
+        }),
       });
 
       if (!response.ok) throw new Error('Failed to create newsletter');
@@ -101,7 +102,7 @@ const NewslettersGrid: React.FC = () => {
       preview_text: '',
       content: '',
       html_content: '',
-      recipient_filter: 'all'
+      recipient_filter: 'all',
     });
   };
 
@@ -139,11 +140,7 @@ const NewslettersGrid: React.FC = () => {
     const newsletter = props.dataItem;
     return (
       <td>
-        <Button
-          icon="preview"
-          fillMode="flat"
-          onClick={() => openViewDialog(newsletter)}
-        >
+        <Button icon="preview" fillMode="flat" onClick={() => openViewDialog(newsletter)}>
           View
         </Button>
       </td>
@@ -154,23 +151,14 @@ const NewslettersGrid: React.FC = () => {
     <div className="newsletters-grid">
       <div className="grid-header">
         <h2>Newsletters</h2>
-        <Button
-          icon="email"
-          themeColor="primary"
-          onClick={() => setShowCreateDialog(true)}
-        >
+        <Button icon="email" themeColor="primary" onClick={() => setShowCreateDialog(true)}>
           New Newsletter
         </Button>
       </div>
 
-      <Grid
-        data={newsletters}
-        style={{ height: '600px' }}
-      >
+      <Grid data={newsletters} style={{ height: '600px' }}>
         <GridToolbar>
-          <span className="grid-toolbar-info">
-            Total Newsletters: {newsletters.length}
-          </span>
+          <span className="grid-toolbar-info">Total Newsletters: {newsletters.length}</span>
         </GridToolbar>
 
         <GridColumn field="title" title="Title" width="250px" />
@@ -180,33 +168,25 @@ const NewslettersGrid: React.FC = () => {
           field="recipient_count"
           title="Recipients"
           width="100px"
-          cell={(props) => (
-            <td className="text-center">{props.dataItem.recipient_count || 0}</td>
-          )}
+          cell={(props) => <td className="text-center">{props.dataItem.recipient_count || 0}</td>}
         />
         <GridColumn
           field="open_rate"
           title="Open Rate"
           width="100px"
-          cell={(props) => (
-            <td className="text-center">{calculateOpenRate(props.dataItem)}</td>
-          )}
+          cell={(props) => <td className="text-center">{calculateOpenRate(props.dataItem)}</td>}
         />
         <GridColumn
           field="click_rate"
           title="Click Rate"
           width="100px"
-          cell={(props) => (
-            <td className="text-center">{calculateClickRate(props.dataItem)}</td>
-          )}
+          cell={(props) => <td className="text-center">{calculateClickRate(props.dataItem)}</td>}
         />
         <GridColumn
           field="sent_at"
           title="Sent Date"
           width="120px"
-          cell={(props) => (
-            <td>{formatDate(props.dataItem.sent_at)}</td>
-          )}
+          cell={(props) => <td>{formatDate(props.dataItem.sent_at)}</td>}
         />
         <GridColumn title="Actions" width="150px" cell={ActionsCell} />
       </Grid>
@@ -258,7 +238,7 @@ const NewslettersGrid: React.FC = () => {
                 data={recipientFilterOptions}
                 textField="text"
                 dataItemKey="value"
-                value={recipientFilterOptions.find(o => o.value === formData.recipient_filter)}
+                value={recipientFilterOptions.find((o) => o.value === formData.recipient_filter)}
                 onChange={(e) => setFormData({ ...formData, recipient_filter: e.value.value })}
               />
             </div>
@@ -328,9 +308,7 @@ const NewslettersGrid: React.FC = () => {
 
             <div className="newsletter-content">
               <h4>Content:</h4>
-              <div className="content-preview">
-                {selectedNewsletter.content}
-              </div>
+              <div className="content-preview">{selectedNewsletter.content}</div>
             </div>
           </div>
 

@@ -1,9 +1,9 @@
-// CompanyForm.tsx - Edit company/legal entity information
-import React from 'react';
-import { Form, Field, FormElement, FormRenderProps } from '@progress/kendo-react-form';
-import { Input } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
-import { LegalEntity } from '../services/api';
+import { Field, Form, FormElement, type FormRenderProps } from '@progress/kendo-react-form';
+import { Input } from '@progress/kendo-react-inputs';
+// CompanyForm.tsx - Edit company/legal entity information
+import type React from 'react';
+import type { LegalEntity } from '../services/api';
 import './CompanyForm.css';
 
 interface CompanyFormProps {
@@ -12,11 +12,7 @@ interface CompanyFormProps {
   onCancel: () => void;
 }
 
-export const CompanyForm: React.FC<CompanyFormProps> = ({ 
-  data, 
-  onSave, 
-  onCancel 
-}) => {
+export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel }) => {
   const handleSubmit = async (dataItem: { [name: string]: any }) => {
     await onSave(dataItem as LegalEntity);
   };
@@ -29,13 +25,8 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
         <FormElement className="company-form">
           <fieldset className="k-form-fieldset">
             <legend>Company Information</legend>
-            
-            <Field
-              name="primary_legal_name"
-              label="Legal Name"
-              component={Input}
-              required
-            />
+
+            <Field name="primary_legal_name" label="Legal Name" component={Input} required />
 
             <Field
               name="entity_legal_form"
@@ -77,11 +68,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
                 placeholder="1234 AB"
               />
 
-              <Field
-                name="city"
-                label="City"
-                component={Input}
-              />
+              <Field name="city" label="City" component={Input} />
             </div>
 
             <div className="form-row-group">

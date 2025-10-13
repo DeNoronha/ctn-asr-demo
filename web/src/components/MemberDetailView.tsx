@@ -1,21 +1,19 @@
-
 /**
  * Member Detail View - Full page member details with tabs
  */
 
-
-
-import React, { useState, useEffect } from 'react';
 import { Button } from '@progress/kendo-react-buttons';
 import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
 import { ArrowLeft } from 'lucide-react';
-import { Member, LegalEntity, LegalEntityContact, api } from '../services/api';
-import { EndpointManagement } from './EndpointManagement';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { useNotification } from '../contexts/NotificationContext';
+import { type LegalEntity, type LegalEntityContact, type Member, api } from '../services/api';
 import { CompanyDetails } from './CompanyDetails';
 import { CompanyForm } from './CompanyForm';
 import { ContactsManager } from './ContactsManager';
+import { EndpointManagement } from './EndpointManagement';
 import { KvkDocumentUpload } from './KvkDocumentUpload';
-import { useNotification } from '../contexts/NotificationContext';
 import './MemberDetailView.css';
 
 interface MemberDetailViewProps {
@@ -45,7 +43,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
         try {
           const entity = await api.getLegalEntity(member.legal_entity_id);
           setLegalEntity(entity);
-          
+
           const entityContacts = await api.getContacts(member.legal_entity_id);
           setContacts(entityContacts);
         } catch (error) {
@@ -61,7 +59,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
 
   const handleUpdateCompany = async (data: LegalEntity) => {
     if (!legalEntity) return;
-    
+
     try {
       const updated = await api.updateLegalEntity(legalEntity.legal_entity_id!, data);
       setLegalEntity(updated);
@@ -75,7 +73,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
 
   const handleUpdateContacts = async (updatedContacts: LegalEntityContact[]) => {
     if (!legalEntity) return;
-    
+
     try {
       setContacts(updatedContacts);
       notification.showSuccess('Contacts updated successfully');
@@ -93,10 +91,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
       TERMINATED: '#dc2626',
     };
     return (
-      <span
-        className="status-badge"
-        style={{ backgroundColor: colors[status] || '#6b7280' }}
-      >
+      <span className="status-badge" style={{ backgroundColor: colors[status] || '#6b7280' }}>
         {status}
       </span>
     );
@@ -109,10 +104,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
       BASIC: '#6b7280',
     };
     return (
-      <span
-        className="membership-badge"
-        style={{ backgroundColor: colors[level] || '#9ca3af' }}
-      >
+      <span className="membership-badge" style={{ backgroundColor: colors[level] || '#9ca3af' }}>
         {level}
       </span>
     );
@@ -129,11 +121,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
   return (
     <div className="member-detail-view">
       <div className="detail-header">
-        <Button
-          fillMode="flat"
-          onClick={onBack}
-          className="back-button"
-        >
+        <Button fillMode="flat" onClick={onBack} className="back-button">
           <ArrowLeft size={16} />
           Back to Members
         </Button>
@@ -167,10 +155,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
             ) : legalEntity ? (
               !isEditingCompany ? (
                 <>
-                  <CompanyDetails
-                    company={legalEntity}
-                    onEdit={() => setIsEditingCompany(true)}
-                  />
+                  <CompanyDetails company={legalEntity} onEdit={() => setIsEditingCompany(true)} />
                   <div className="info-section">
                     <h3>Member Information</h3>
                     <div className="info-grid">
@@ -251,10 +236,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
 
         <TabStripTab title="Endpoints">
           <div className="tab-content endpoints-tab">
-            <EndpointManagement
-              legalEntityId={member.org_id}
-              legalEntityName={member.legal_name}
-            />
+            <EndpointManagement legalEntityId={member.org_id} legalEntityName={member.legal_name} />
           </div>
         </TabStripTab>
 
@@ -295,7 +277,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
         <TabStripTab title="KvK Verification">
           <div className="tab-content">
             {legalEntity ? (
-              <KvkDocumentUpload 
+              <KvkDocumentUpload
                 legalEntityId={legalEntity.legal_entity_id!}
                 onVerificationComplete={() => {
                   // Reload legal entity data after verification

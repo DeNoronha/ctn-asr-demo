@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { Button } from '@progress/kendo-react-buttons';
-import { Dialog } from '@progress/kendo-react-dialogs';
-import { Input } from '@progress/kendo-react-inputs';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { DatePicker } from '@progress/kendo-react-dateinputs';
+import { Dialog } from '@progress/kendo-react-dialogs';
+import { DropDownList } from '@progress/kendo-react-dropdowns';
+import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
+import { Input } from '@progress/kendo-react-inputs';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import './SubscriptionsGrid.css';
 
 interface Subscription {
@@ -42,13 +43,13 @@ const SubscriptionsGrid: React.FC = () => {
     currency: 'EUR',
     billing_cycle: 'monthly' as 'monthly' | 'quarterly' | 'yearly',
     trial_period_days: 0,
-    auto_renew: true
+    auto_renew: true,
   });
 
   const billingCycleOptions = [
     { text: 'Monthly', value: 'monthly' },
     { text: 'Quarterly', value: 'quarterly' },
-    { text: 'Yearly', value: 'yearly' }
+    { text: 'Yearly', value: 'yearly' },
   ];
 
   const statusOptions = [
@@ -56,7 +57,7 @@ const SubscriptionsGrid: React.FC = () => {
     { text: 'Cancelled', value: 'cancelled' },
     { text: 'Expired', value: 'expired' },
     { text: 'Suspended', value: 'suspended' },
-    { text: 'Trial', value: 'trial' }
+    { text: 'Trial', value: 'trial' },
   ];
 
   useEffect(() => {
@@ -82,7 +83,7 @@ const SubscriptionsGrid: React.FC = () => {
       const response = await fetch(`${API_BASE_URL}/v1/subscriptions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) throw new Error('Failed to create subscription');
@@ -110,8 +111,8 @@ const SubscriptionsGrid: React.FC = () => {
             plan_description: formData.plan_description,
             price: formData.price,
             billing_cycle: formData.billing_cycle,
-            auto_renew: formData.auto_renew
-          })
+            auto_renew: formData.auto_renew,
+          }),
         }
       );
 
@@ -134,7 +135,7 @@ const SubscriptionsGrid: React.FC = () => {
       const response = await fetch(`${API_BASE_URL}/v1/subscriptions/${subscriptionId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'cancelled' })
+        body: JSON.stringify({ status: 'cancelled' }),
       });
 
       if (!response.ok) throw new Error('Failed to cancel subscription');
@@ -155,7 +156,7 @@ const SubscriptionsGrid: React.FC = () => {
       currency: 'EUR',
       billing_cycle: 'monthly',
       trial_period_days: 0,
-      auto_renew: true
+      auto_renew: true,
     });
   };
 
@@ -169,7 +170,7 @@ const SubscriptionsGrid: React.FC = () => {
       currency: subscription.currency,
       billing_cycle: subscription.billing_cycle,
       trial_period_days: 0,
-      auto_renew: subscription.auto_renew
+      auto_renew: subscription.auto_renew,
     });
     setShowEditDialog(true);
   };
@@ -177,7 +178,7 @@ const SubscriptionsGrid: React.FC = () => {
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('nl-NL', {
       style: 'currency',
-      currency: currency
+      currency: currency,
     }).format(amount);
   };
 
@@ -199,11 +200,7 @@ const SubscriptionsGrid: React.FC = () => {
     const subscription = props.dataItem;
     return (
       <td>
-        <Button
-          icon="edit"
-          fillMode="flat"
-          onClick={() => openEditDialog(subscription)}
-        >
+        <Button icon="edit" fillMode="flat" onClick={() => openEditDialog(subscription)}>
           Edit
         </Button>
         {subscription.status === 'active' && (
@@ -223,23 +220,14 @@ const SubscriptionsGrid: React.FC = () => {
     <div className="subscriptions-grid">
       <div className="grid-header">
         <h2>Subscriptions</h2>
-        <Button
-          icon="plus"
-          themeColor="primary"
-          onClick={() => setShowCreateDialog(true)}
-        >
+        <Button icon="plus" themeColor="primary" onClick={() => setShowCreateDialog(true)}>
           New Subscription
         </Button>
       </div>
 
-      <Grid
-        data={subscriptions}
-        style={{ height: '600px' }}
-      >
+      <Grid data={subscriptions} style={{ height: '600px' }}>
         <GridToolbar>
-          <span className="grid-toolbar-info">
-            Total Subscriptions: {subscriptions.length}
-          </span>
+          <span className="grid-toolbar-info">Total Subscriptions: {subscriptions.length}</span>
         </GridToolbar>
 
         <GridColumn field="org_id" title="Organization ID" width="150px" />
@@ -249,9 +237,7 @@ const SubscriptionsGrid: React.FC = () => {
           field="price"
           title="Price"
           width="120px"
-          cell={(props) => (
-            <td>{formatCurrency(props.dataItem.price, props.dataItem.currency)}</td>
-          )}
+          cell={(props) => <td>{formatCurrency(props.dataItem.price, props.dataItem.currency)}</td>}
         />
         <GridColumn field="billing_cycle" title="Billing Cycle" width="120px" />
         <GridColumn field="status" title="Status" width="100px" cell={StatusCell} />
@@ -271,9 +257,7 @@ const SubscriptionsGrid: React.FC = () => {
           field="auto_renew"
           title="Auto Renew"
           width="100px"
-          cell={(props) => (
-            <td>{props.dataItem.auto_renew ? 'Yes' : 'No'}</td>
-          )}
+          cell={(props) => <td>{props.dataItem.auto_renew ? 'Yes' : 'No'}</td>}
         />
         <GridColumn title="Actions" width="200px" cell={ActionsCell} />
       </Grid>
@@ -314,7 +298,9 @@ const SubscriptionsGrid: React.FC = () => {
               <Input
                 type="number"
                 value={formData.price.toString()}
-                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.value) || 0 })}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: Number.parseFloat(e.value) || 0 })
+                }
               />
             </div>
 
@@ -324,7 +310,7 @@ const SubscriptionsGrid: React.FC = () => {
                 data={billingCycleOptions}
                 textField="text"
                 dataItemKey="value"
-                value={billingCycleOptions.find(o => o.value === formData.billing_cycle)}
+                value={billingCycleOptions.find((o) => o.value === formData.billing_cycle)}
                 onChange={(e) => setFormData({ ...formData, billing_cycle: e.value.value })}
               />
             </div>
@@ -334,7 +320,9 @@ const SubscriptionsGrid: React.FC = () => {
               <Input
                 type="number"
                 value={formData.trial_period_days.toString()}
-                onChange={(e) => setFormData({ ...formData, trial_period_days: parseInt(e.value) || 0 })}
+                onChange={(e) =>
+                  setFormData({ ...formData, trial_period_days: Number.parseInt(e.value) || 0 })
+                }
               />
             </div>
 
@@ -344,8 +332,8 @@ const SubscriptionsGrid: React.FC = () => {
                   type="checkbox"
                   checked={formData.auto_renew}
                   onChange={(e) => setFormData({ ...formData, auto_renew: e.target.checked })}
-                />
-                {' '}Auto Renew
+                />{' '}
+                Auto Renew
               </label>
             </div>
           </div>
@@ -384,7 +372,9 @@ const SubscriptionsGrid: React.FC = () => {
               <Input
                 type="number"
                 value={formData.price.toString()}
-                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.value) || 0 })}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: Number.parseFloat(e.value) || 0 })
+                }
               />
             </div>
 
@@ -394,7 +384,7 @@ const SubscriptionsGrid: React.FC = () => {
                 data={billingCycleOptions}
                 textField="text"
                 dataItemKey="value"
-                value={billingCycleOptions.find(o => o.value === formData.billing_cycle)}
+                value={billingCycleOptions.find((o) => o.value === formData.billing_cycle)}
                 onChange={(e) => setFormData({ ...formData, billing_cycle: e.value.value })}
               />
             </div>
@@ -405,8 +395,8 @@ const SubscriptionsGrid: React.FC = () => {
                   type="checkbox"
                   checked={formData.auto_renew}
                   onChange={(e) => setFormData({ ...formData, auto_renew: e.target.checked })}
-                />
-                {' '}Auto Renew
+                />{' '}
+                Auto Renew
               </label>
             </div>
           </div>

@@ -3,7 +3,7 @@
  * Ensures user is authenticated and has required role before accessing route
  */
 
-import React from 'react';
+import type React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { UserRole } from './authConfig';
@@ -52,8 +52,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Check admin portal access
   if (requireAdminPortalAccess) {
-    const canAccess = user.roles.includes(UserRole.SYSTEM_ADMIN) || 
-                      user.roles.includes(UserRole.ASSOCIATION_ADMIN);
+    const canAccess =
+      user.roles.includes(UserRole.SYSTEM_ADMIN) || user.roles.includes(UserRole.ASSOCIATION_ADMIN);
     if (!canAccess) {
       return <Navigate to="/unauthorized" replace />;
     }
@@ -61,9 +61,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Check member portal access
   if (requireMemberPortalAccess) {
-    const canAccess = user.roles.includes(UserRole.MEMBER) ||
-                      user.roles.includes(UserRole.ASSOCIATION_ADMIN) ||
-                      user.roles.includes(UserRole.SYSTEM_ADMIN);
+    const canAccess =
+      user.roles.includes(UserRole.MEMBER) ||
+      user.roles.includes(UserRole.ASSOCIATION_ADMIN) ||
+      user.roles.includes(UserRole.SYSTEM_ADMIN);
     if (!canAccess) {
       return <Navigate to="/unauthorized" replace />;
     }
@@ -91,7 +92,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
 
   if (!user) return <>{fallback}</>;
 
-  const hasAccess = allowedRoles.some(role => user.roles.includes(role));
+  const hasAccess = allowedRoles.some((role) => user.roles.includes(role));
 
   return hasAccess ? <>{children}</> : <>{fallback}</>;
 };

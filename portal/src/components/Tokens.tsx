@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 
 interface TokensProps {
   apiBaseUrl: string;
@@ -29,13 +30,13 @@ export const Tokens: React.FC<TokensProps> = ({ apiBaseUrl, getAccessToken }) =>
       const response = await fetch(`${apiBaseUrl}/oauth/token`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           grant_type: 'client_credentials',
-          scope: 'member.read member.write'
-        })
+          scope: 'member.read member.write',
+        }),
       });
 
       if (!response.ok) {
@@ -44,7 +45,7 @@ export const Tokens: React.FC<TokensProps> = ({ apiBaseUrl, getAccessToken }) =>
 
       const data = await response.json();
       setNewToken(data.access_token);
-      
+
       // Refresh token list
       await loadTokens();
     } catch (err: any) {
@@ -59,8 +60,8 @@ export const Tokens: React.FC<TokensProps> = ({ apiBaseUrl, getAccessToken }) =>
       const accessToken = await getAccessToken();
       const response = await fetch(`${apiBaseUrl}/tokens`, {
         headers: {
-          'Authorization': `Bearer ${accessToken}`
-        }
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
 
       if (response.ok) {
@@ -81,23 +82,15 @@ export const Tokens: React.FC<TokensProps> = ({ apiBaseUrl, getAccessToken }) =>
   return (
     <div className="tokens">
       <h2>API Tokens</h2>
-      
+
       <div className="tokens-header">
         <p>Generate API tokens to authenticate your systems with the CTN network.</p>
-        <button 
-          onClick={requestToken} 
-          disabled={loading}
-          className="btn-primary"
-        >
+        <button onClick={requestToken} disabled={loading} className="btn-primary">
           {loading ? 'Generating...' : 'Generate New Token'}
         </button>
       </div>
 
-      {error && (
-        <div className="alert alert-error">
-          {error}
-        </div>
-      )}
+      {error && <div className="alert alert-error">{error}</div>}
 
       {newToken && (
         <div className="alert alert-success">
@@ -105,7 +98,9 @@ export const Tokens: React.FC<TokensProps> = ({ apiBaseUrl, getAccessToken }) =>
           <p className="text-warning">⚠️ Copy this token now. You won't be able to see it again!</p>
           <div className="token-display">
             <code>{newToken}</code>
-            <button onClick={copyToken} className="btn-secondary">Copy</button>
+            <button onClick={copyToken} className="btn-secondary">
+              Copy
+            </button>
           </div>
         </div>
       )}
@@ -113,7 +108,9 @@ export const Tokens: React.FC<TokensProps> = ({ apiBaseUrl, getAccessToken }) =>
       <div className="tokens-list">
         <h3>Your Tokens</h3>
         {tokens.length === 0 ? (
-          <p className="text-muted">No tokens generated yet. Click "Generate New Token" to create one.</p>
+          <p className="text-muted">
+            No tokens generated yet. Click "Generate New Token" to create one.
+          </p>
         ) : (
           <table className="tokens-table">
             <thead>
@@ -126,9 +123,11 @@ export const Tokens: React.FC<TokensProps> = ({ apiBaseUrl, getAccessToken }) =>
               </tr>
             </thead>
             <tbody>
-              {tokens.map(token => (
+              {tokens.map((token) => (
                 <tr key={token.jti}>
-                  <td><code>{token.jti.substring(0, 8)}...</code></td>
+                  <td>
+                    <code>{token.jti.substring(0, 8)}...</code>
+                  </td>
                   <td>{token.token_type}</td>
                   <td>{new Date(token.issued_at).toLocaleDateString()}</td>
                   <td>{new Date(token.expires_at).toLocaleDateString()}</td>

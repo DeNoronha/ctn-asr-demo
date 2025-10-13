@@ -1,18 +1,18 @@
 /**
  * Azure Entra ID Authentication Configuration
- * 
+ *
  * User Hierarchy:
  * 1. System Admin - Creates/manages Association Admins
  * 2. Association Admin - Manages association via Admin Portal
  * 3. Member - Self-service via Member Portal
- * 
+ *
  * All users must:
  * - Register on Member Portal first
  * - Have MFA enabled
  * - Be authenticated via Azure Entra ID (cloud-based, not local files)
  */
 
-import { Configuration, PopupRequest } from '@azure/msal-browser';
+import type { Configuration, PopupRequest } from '@azure/msal-browser';
 
 // Azure Entra ID Configuration
 export const msalConfig: Configuration = {
@@ -35,9 +35,7 @@ export const loginRequest: PopupRequest = {
 
 // API scopes for backend calls
 export const apiRequest = {
-  scopes: [
-    `api://${process.env.REACT_APP_AZURE_CLIENT_ID}/access_as_user`,
-  ],
+  scopes: [`api://${process.env.REACT_APP_AZURE_CLIENT_ID}/access_as_user`],
 };
 
 // User Roles (stored in Azure Entra ID App Roles)

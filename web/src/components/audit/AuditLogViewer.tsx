@@ -3,29 +3,30 @@
  * View and filter all system activity logs
  */
 
-import React, { useState, useEffect } from 'react';
+import { type State, process } from '@progress/kendo-data-query';
+import { Button } from '@progress/kendo-react-buttons';
+import { DropDownList } from '@progress/kendo-react-dropdowns';
 import {
   Grid,
   GridColumn,
-  GridSortChangeEvent,
-  GridFilterChangeEvent,
-  GridPageChangeEvent,
+  type GridFilterChangeEvent,
+  type GridPageChangeEvent,
+  type GridSortChangeEvent,
 } from '@progress/kendo-react-grid';
-import { Button } from '@progress/kendo-react-buttons';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { process, State } from '@progress/kendo-data-query';
-import { FileText, Download, RefreshCw } from 'lucide-react';
-import { auditLogService, AuditLog, AuditAction } from '../../services/auditLogService';
+import { Download, FileText, RefreshCw } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../auth/AuthContext';
-import { UserRole } from '../../auth/authConfig';
 import { RoleGuard } from '../../auth/ProtectedRoute';
+import { UserRole } from '../../auth/authConfig';
+import { AuditAction, type AuditLog, auditLogService } from '../../services/auditLogService';
 import './AuditLogViewer.css';
 
 const AuditLogViewer: React.FC = () => {
   const { user } = useAuth();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(false);
-  
+
   // Filters
   const [selectedAction, setSelectedAction] = useState<string>('All');
   const [selectedTargetType, setSelectedTargetType] = useState<string>('All');
@@ -64,11 +65,11 @@ const AuditLogViewer: React.FC = () => {
     let filtered = [...logs];
 
     if (selectedAction !== 'All') {
-      filtered = filtered.filter(log => log.action === selectedAction);
+      filtered = filtered.filter((log) => log.action === selectedAction);
     }
 
     if (selectedTargetType !== 'All') {
-      filtered = filtered.filter(log => log.targetType === selectedTargetType);
+      filtered = filtered.filter((log) => log.targetType === selectedTargetType);
     }
 
     const processed = process(filtered, dataState);
@@ -107,9 +108,9 @@ const AuditLogViewer: React.FC = () => {
 
   const RoleCell = (props: any) => {
     const roleClasses: Record<string, string> = {
-      'SystemAdmin': 'role-system-admin',
-      'AssociationAdmin': 'role-association-admin',
-      'Member': 'role-member',
+      SystemAdmin: 'role-system-admin',
+      AssociationAdmin: 'role-association-admin',
+      Member: 'role-member',
     };
 
     const role = props.dataItem.userRole;
@@ -117,9 +118,7 @@ const AuditLogViewer: React.FC = () => {
 
     return (
       <td>
-        <span className={`role-badge ${roleClass}`}>
-          {role}
-        </span>
+        <span className={`role-badge ${roleClass}`}>{role}</span>
       </td>
     );
   };
@@ -181,17 +180,11 @@ const AuditLogViewer: React.FC = () => {
             </div>
           </div>
           <div className="header-actions">
-            <Button
-              onClick={loadLogs}
-              fillMode="outline"
-            >
+            <Button onClick={loadLogs} fillMode="outline">
               <RefreshCw size={18} style={{ marginRight: 8 }} />
               Refresh
             </Button>
-            <Button
-              themeColor="primary"
-              onClick={handleExport}
-            >
+            <Button themeColor="primary" onClick={handleExport}>
               <Download size={18} style={{ marginRight: 8 }} />
               Export Logs
             </Button>
@@ -210,11 +203,13 @@ const AuditLogViewer: React.FC = () => {
           <div className="stat-item">
             <span className="stat-label">Today</span>
             <span className="stat-value">
-              {logs.filter(l => {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                return l.timestamp >= today;
-              }).length}
+              {
+                logs.filter((l) => {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  return l.timestamp >= today;
+                }).length
+              }
             </span>
           </div>
         </div>
@@ -237,10 +232,7 @@ const AuditLogViewer: React.FC = () => {
             />
           </div>
           <div className="filter-actions">
-            <Button
-              onClick={handleClearFilters}
-              fillMode="flat"
-            >
+            <Button onClick={handleClearFilters} fillMode="flat">
               Clear Filters
             </Button>
           </div>
@@ -273,33 +265,11 @@ const AuditLogViewer: React.FC = () => {
             format="{0:dd/MM/yyyy HH:mm:ss}"
             filter="date"
           />
-          <GridColumn
-            field="action"
-            title="Action"
-            width="200px"
-            cell={ActionCell}
-          />
-          <GridColumn
-            field="userName"
-            title="User"
-            width="180px"
-          />
-          <GridColumn
-            field="userRole"
-            title="Role"
-            width="150px"
-            cell={RoleCell}
-          />
-          <GridColumn
-            field="details"
-            title="Details"
-            cell={DetailsCell}
-          />
-          <GridColumn
-            field="targetType"
-            title="Target Type"
-            width="120px"
-          />
+          <GridColumn field="action" title="Action" width="200px" cell={ActionCell} />
+          <GridColumn field="userName" title="User" width="180px" />
+          <GridColumn field="userRole" title="Role" width="150px" cell={RoleCell} />
+          <GridColumn field="details" title="Details" cell={DetailsCell} />
+          <GridColumn field="targetType" title="Target Type" width="120px" />
         </Grid>
       </div>
     </RoleGuard>

@@ -1,16 +1,17 @@
-// MemberDetailDialog.tsx - Modal for member details and editing
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
+import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
-import { Member, LegalEntity, LegalEntityContact, api } from '../services/api';
-import MemberForm from './MemberForm';
-import { EndpointManagement } from './EndpointManagement';
+// MemberDetailDialog.tsx - Modal for member details and editing
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { useNotification } from '../contexts/NotificationContext';
+import { type LegalEntity, type LegalEntityContact, type Member, api } from '../services/api';
+import type { MemberFormData } from '../utils/validation';
 import { CompanyDetails } from './CompanyDetails';
 import { CompanyForm } from './CompanyForm';
 import { ContactsManager } from './ContactsManager';
-import { MemberFormData } from '../utils/validation';
-import { useNotification } from '../contexts/NotificationContext';
+import { EndpointManagement } from './EndpointManagement';
+import MemberForm from './MemberForm';
 import './MemberDetailDialog.css';
 
 interface MemberDetailDialogProps {
@@ -29,7 +30,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
   const [selected, setSelected] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
-  
+
   // MOCK DATA - Create default legal entity and contacts
   const mockLegalEntity: LegalEntity = {
     legal_entity_id: member.legal_entity_id || 'mock-entity-id',
@@ -121,10 +122,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
       SUSPENDED: '#ef4444',
     };
     return (
-      <span
-        className="detail-badge"
-        style={{ backgroundColor: colors[status] || '#6b7280' }}
-      >
+      <span className="detail-badge" style={{ backgroundColor: colors[status] || '#6b7280' }}>
         {status}
       </span>
     );
@@ -137,10 +135,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
       BASIC: '#6b7280',
     };
     return (
-      <span
-        className="detail-badge"
-        style={{ backgroundColor: colors[level] || '#9ca3af' }}
-      >
+      <span className="detail-badge" style={{ backgroundColor: colors[level] || '#9ca3af' }}>
         {level}
       </span>
     );
@@ -250,10 +245,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
         <TabStripTab title="Company">
           <div className="detail-content">
             {!isEditingCompany ? (
-              <CompanyDetails
-                company={legalEntity}
-                onEdit={() => setIsEditingCompany(true)}
-              />
+              <CompanyDetails company={legalEntity} onEdit={() => setIsEditingCompany(true)} />
             ) : (
               <CompanyForm
                 data={legalEntity}
@@ -276,10 +268,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
 
         <TabStripTab title="Endpoints">
           <div className="detail-content">
-            <EndpointManagement
-              legalEntityId={member.org_id}
-              legalEntityName={member.legal_name}
-            />
+            <EndpointManagement legalEntityId={member.org_id} legalEntityName={member.legal_name} />
           </div>
         </TabStripTab>
 

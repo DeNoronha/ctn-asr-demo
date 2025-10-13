@@ -3,11 +3,11 @@
  * Azure Entra ID authentication with MFA requirement notice
  */
 
+import { Button } from '@progress/kendo-react-buttons';
+import { AlertCircle, Key, Shield } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@progress/kendo-react-buttons';
 import { useAuth } from '../../auth/AuthContext';
-import { Key, Shield, AlertCircle } from 'lucide-react';
 import './LoginPage.css';
 
 export const LoginPage: React.FC = () => {

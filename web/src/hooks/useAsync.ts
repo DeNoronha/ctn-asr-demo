@@ -1,5 +1,5 @@
 // useAsync.ts - Hook for managing async operations with loading/error states
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 
 interface UseAsyncOptions {
@@ -37,9 +37,7 @@ export const useAsync = <T = any>(options: UseAsyncOptions = {}) => {
         setError(error);
 
         if (options.showErrorNotification !== false) {
-          notification.showError(
-            options.errorMessage || error.message || 'Operation failed'
-          );
+          notification.showError(options.errorMessage || error.message || 'Operation failed');
         }
 
         options.onError?.(error);
