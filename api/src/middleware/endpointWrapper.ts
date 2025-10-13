@@ -6,6 +6,7 @@
 import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { authenticate, AuthenticatedRequest as AuthRequest } from './auth';
 import { Permission, requirePermissions, requireRoles, UserRole } from './rbac';
+import { applySecurityHeaders } from './securityHeaders';
 
 // Re-export AuthenticatedRequest for convenience
 export type AuthenticatedRequest = AuthRequest;
@@ -206,7 +207,7 @@ export function wrapEndpoint(
       }
 
       // Call the actual handler
-      const response = await handler(authenticatedRequest, context);
+      let response = await handler(authenticatedRequest, context);
 
       // Add CORS headers to response
       if (enableCors) {
@@ -218,6 +219,9 @@ export function wrapEndpoint(
         };
       }
 
+      // Apply security headers
+      response = applySecurityHeaders(response);
+
       const duration = Date.now() - startTime;
       context.log(`${request.method} ${request.url} - Completed (${duration}ms)`);
 
@@ -226,7 +230,7 @@ export function wrapEndpoint(
       const duration = Date.now() - startTime;
       context.error(`${request.method} ${request.url} - Error (${duration}ms):`, error);
 
-      const errorResponse = {
+      let errorResponse: HttpResponseInit = {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -245,6 +249,9 @@ export function wrapEndpoint(
           ...corsHeaders,
         };
       }
+
+      // Apply security headers to error response
+      errorResponse = applySecurityHeaders(errorResponse);
 
       return errorResponse;
     }
