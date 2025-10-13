@@ -7,6 +7,8 @@ import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functio
 import { authenticate, AuthenticatedRequest as AuthRequest } from './auth';
 import { Permission, requirePermissions, requireRoles, UserRole } from './rbac';
 import { applySecurityHeaders } from './securityHeaders';
+import { enforceHttps, addHttpsSecurityHeaders } from './httpsEnforcement';
+import { handleError } from '../utils/errors';
 
 // Re-export AuthenticatedRequest for convenience
 export type AuthenticatedRequest = AuthRequest;
@@ -110,6 +112,24 @@ export function wrapEndpoint(
           status: 204,
           headers: getCorsHeaders(origin, allowedOrigins),
         };
+      }
+
+      // Enforce HTTPS in production
+      const httpsCheck = enforceHttps(request, context);
+      if (httpsCheck) {
+        // HTTPS required but not used - return 403
+        if (enableCors) {
+          const origin = request.headers.get('origin');
+          const corsHeaders = getCorsHeaders(origin, allowedOrigins);
+          return {
+            ...httpsCheck,
+            headers: {
+              ...(httpsCheck.headers || {}),
+              ...corsHeaders,
+            },
+          };
+        }
+        return httpsCheck;
       }
 
       // Apply authentication if required
@@ -222,6 +242,9 @@ export function wrapEndpoint(
       // Apply security headers
       response = applySecurityHeaders(response);
 
+      // Add HTTPS security headers
+      response = addHttpsSecurityHeaders(response);
+
       const duration = Date.now() - startTime;
       context.log(`${request.method} ${request.url} - Completed (${duration}ms)`);
 
@@ -230,15 +253,9 @@ export function wrapEndpoint(
       const duration = Date.now() - startTime;
       context.error(`${request.method} ${request.url} - Error (${duration}ms):`, error);
 
-      let errorResponse: HttpResponseInit = {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          error: 'internal_server_error',
-          error_description:
-            error instanceof Error ? error.message : 'An unexpected error occurred',
-        }),
-      };
+      // Use standardized error handling
+      const requestId = request.headers.get('x-request-id') || undefined;
+      let errorResponse = handleError(error, context, requestId);
 
       // Add CORS headers to error response
       if (enableCors) {
@@ -252,6 +269,9 @@ export function wrapEndpoint(
 
       // Apply security headers to error response
       errorResponse = applySecurityHeaders(errorResponse);
+
+      // Add HTTPS security headers
+      errorResponse = addHttpsSecurityHeaders(errorResponse);
 
       return errorResponse;
     }

@@ -1,15 +1,6 @@
 import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { Pool } from 'pg';
 import { authenticatedEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
-
-const pool = new Pool({
-  host: process.env.POSTGRES_HOST,
-  port: parseInt(process.env.POSTGRES_PORT || '5432'),
-  database: process.env.POSTGRES_DATABASE,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  ssl: { rejectUnauthorized: true }, // SSL validation enabled
-});
+import { getPool } from '../utils/database';
 
 async function handler(
   request: AuthenticatedRequest,
@@ -18,6 +9,7 @@ async function handler(
   context.log('GetAuthenticatedMember function triggered');
 
   try {
+    const pool = getPool();
     // User info is already validated by middleware
     const userEmail = request.userEmail;
     const userId = request.userId;

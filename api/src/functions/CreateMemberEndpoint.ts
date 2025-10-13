@@ -1,22 +1,14 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { Pool } from 'pg';
 import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { Permission } from '../middleware/rbac';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
-
-const pool = new Pool({
-  host: process.env.POSTGRES_HOST,
-  port: parseInt(process.env.POSTGRES_PORT || '5432'),
-  database: process.env.POSTGRES_DATABASE,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  ssl: { rejectUnauthorized: false }
-});
+import { getPool } from '../utils/database';
 
 async function handler(request: AuthenticatedRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log('CreateMemberEndpoint function triggered');
 
   try {
+    const pool = getPool();
     const userEmail = request.userEmail;
 
     // Get member's legal_entity_id and org_id

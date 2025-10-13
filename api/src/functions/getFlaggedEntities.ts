@@ -1,16 +1,7 @@
 import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { Pool } from 'pg';
 import { BlobStorageService } from '../services/blobStorageService';
 import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
-
-const pool = new Pool({
-  host: process.env.POSTGRES_HOST,
-  port: parseInt(process.env.POSTGRES_PORT || '5432'),
-  database: process.env.POSTGRES_DATABASE,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  ssl: { rejectUnauthorized: false },
-});
+import { getPool } from '../utils/database';
 
 const blobService = new BlobStorageService();
 
@@ -20,6 +11,7 @@ async function handler(
 ): Promise<HttpResponseInit> {
 
   try {
+    const pool = getPool();
     const result = await pool.query(
       `SELECT
         legal_entity_id,

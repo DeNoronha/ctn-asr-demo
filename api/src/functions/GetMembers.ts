@@ -1,15 +1,6 @@
 import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { Pool } from 'pg';
 import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
-
-const pool = new Pool({
-  host: process.env.POSTGRES_HOST,
-  port: parseInt(process.env.POSTGRES_PORT || '5432'),
-  database: process.env.POSTGRES_DATABASE,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  ssl: { rejectUnauthorized: false }
-});
+import { getPool } from '../utils/database';
 
 async function handler(
   request: AuthenticatedRequest,
@@ -18,6 +9,7 @@ async function handler(
   context.log('GetMembers function triggered');
 
   try {
+    const pool = getPool();
     const result = await pool.query(
       'SELECT org_id, legal_name, lei, kvk, domain, status, membership_level, created_at, legal_entity_id FROM members ORDER BY created_at DESC'
     );

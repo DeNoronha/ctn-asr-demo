@@ -1,21 +1,13 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { Pool } from 'pg';
 import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { Permission, hasAnyRole, UserRole } from '../middleware/rbac';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
+import { getPool } from '../utils/database';
 import * as crypto from 'crypto';
-
-const pool = new Pool({
-  host: process.env.POSTGRES_HOST,
-  port: parseInt(process.env.POSTGRES_PORT || '5432'),
-  database: process.env.POSTGRES_DATABASE,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  ssl: { rejectUnauthorized: false },
-});
 
 // List endpoints for entity
 async function listEndpointsHandler(request: AuthenticatedRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  const pool = getPool();
   const legal_entity_id = request.params.legal_entity_id;
 
   if (!legal_entity_id) {
@@ -160,6 +152,7 @@ app.http('ListEndpoints', {
 
 // Create endpoint
 async function createEndpointHandler(request: AuthenticatedRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  const pool = getPool();
   const legal_entity_id = request.params.legal_entity_id;
 
   if (!legal_entity_id) {
@@ -313,6 +306,7 @@ app.http('CreateEndpoint', {
 
 // Issue token for endpoint
 async function issueTokenHandler(request: AuthenticatedRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  const pool = getPool();
   const endpoint_id = request.params.endpoint_id;
 
   if (!endpoint_id) {
