@@ -75,6 +75,26 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit 
           </div>
         </div>
 
+        {company.identifiers && company.identifiers.length > 0 && (
+          <div className="detail-section">
+            <h4>Legal Identifiers</h4>
+            {company.identifiers.map((identifier) => (
+              <div key={identifier.legal_entity_reference_id} className="detail-row identifier-row">
+                <label>
+                  {identifier.identifier_type}
+                  {identifier.country_code && ` (${identifier.country_code})`}:
+                </label>
+                <div className="identifier-info">
+                  <span className="identifier-value">{identifier.identifier_value}</span>
+                  {identifier.registry_name && (
+                    <span className="registry-name">{identifier.registry_name}</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {company.dt_modified && (
           <div className="detail-section">
             <h4>Record Information</h4>

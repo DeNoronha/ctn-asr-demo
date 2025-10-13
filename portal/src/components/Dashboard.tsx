@@ -141,23 +141,30 @@ export const Dashboard: React.FC<ComponentProps> = ({
               <strong>Domain:</strong>
               <span>{memberData.domain}</span>
             </div>
-            {memberData.lei && (
-              <div className="info-item">
-                <strong>LEI:</strong>
-                <span>{memberData.lei}</span>
-              </div>
-            )}
-            {memberData.kvk && (
-              <div className="info-item">
-                <strong>KVK:</strong>
-                <span>{memberData.kvk}</span>
-              </div>
-            )}
             <div className="info-item">
               <strong>Member Since:</strong>
               <span>{new Date(memberData.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
+
+          {memberData.registryIdentifiers && memberData.registryIdentifiers.length > 0 && (
+            <>
+              <div className="card-header" style={{ marginTop: '1rem', paddingTop: '1rem' }}>
+                <h4 style={{ fontSize: '0.95rem', margin: 0 }}>Registry Identifiers</h4>
+              </div>
+              <div className="info-grid">
+                {memberData.registryIdentifiers.slice(0, 4).map((identifier, index) => (
+                  <div key={index} className="info-item">
+                    <strong>
+                      {identifier.identifierType}
+                      {identifier.countryCode && ` (${identifier.countryCode})`}:
+                    </strong>
+                    <span>{identifier.identifierValue}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         <div className="card">

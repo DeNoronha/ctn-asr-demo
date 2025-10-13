@@ -107,6 +107,28 @@ curl https://func-ctn-demo-asr-dev.azurewebsites.net/.well-known/jwks
     "legal_name": "Van Berkel Logistics B.V.",
     "kvk": "17187159",
     "lei": "724500F1QBVV6D4V0T23",
+    "euid": "NL.17187159",
+    "country_code": "NL",
+    "registry_identifiers": [
+      {
+        "type": "KVK",
+        "value": "17187159",
+        "countryCode": "NL",
+        "registryName": "Kamer van Koophandel"
+      },
+      {
+        "type": "LEI",
+        "value": "724500F1QBVV6D4V0T23",
+        "countryCode": null,
+        "registryName": "Global LEI System"
+      },
+      {
+        "type": "EUID",
+        "value": "NL.17187159",
+        "countryCode": "NL",
+        "registryName": "European Unique Identifier"
+      }
+    ],
     "status": "ACTIVE"
   },
   "jti": "a1b2c3d4e5f6..."
@@ -234,8 +256,12 @@ All custom claims use the namespace: `https://schemas.connectedtradenetwork.org/
 #### Legal Entity Claims
 - `legal_entity/name`: Legal name of the organization
 - `legal_entity/domain`: Primary domain
+- `legal_entity/country_code`: ISO 3166-1 alpha-2 country code (e.g., "NL", "DE", "BE")
 - `legal_entity/registry/kvk`: KvK number (if applicable)
 - `legal_entity/registry/lei`: LEI (if applicable)
+- `legal_entity/registry/euid`: European Unique Identifier (if applicable)
+- `legal_entity/registry/{type}`: Additional registry identifiers (e.g., HRB for Germany, SIREN for France)
+  - Each includes: `value`, `country_code`, `registry_name`
 - `legal_entity/bdi_connector_endpoint_uri`: BDI connector URL
 - `legal_entity/bdi_connector_endpoint_authentication_method`: Auth method
 
@@ -363,6 +389,152 @@ Authorized external systems that can access BDI APIs.
 - `keycloak_client_id` - Keycloak client for auth
 - `allowed_operations` - Array of allowed operations
 - `is_active`, `is_approved` - Status flags
+
+### company_registries
+Reference table for known Chambers of Commerce and company registries worldwide.
+
+**Key Columns:**
+- `registry_id` (UUID, PK)
+- `registry_code` - Unique code (e.g., "KVK", "IHK_BERLIN", "COMPANIES_HOUSE")
+- `registry_name` - Full name
+- `country_code` - ISO 3166-1 alpha-2
+- `registry_type` - chamber_of_commerce, companies_registry, tax_authority
+- `jurisdiction` - Region/state if applicable (e.g., "Berlin", "Noord-Holland")
+- `verification_url` - URL pattern for verification (use {identifier} placeholder)
+- `identifier_pattern` - Regex pattern for validation
+- `supports_api_lookup` - Boolean
+
+**Supported Registries:**
+- Netherlands: KvK (Kamer van Koophandel)
+- Germany: IHK Berlin, IHK Munich, Handelsregister (HRA/HRB)
+- Belgium: KBO/BCE (Kruispuntbank van Ondernemingen)
+- France: SIREN (9 digits), SIRET (14 digits)
+- UK: Companies House
+- EU: EUID (European Unique Identifier)
+- Global: LEI (Legal Entity Identifier)
+
+### legal_entity_number
+Extended to support international company registrations.
+
+**New Columns (Migration 012):**
+- `registry_name` - Name of the issuing registry/chamber (e.g., "IHK Berlin", "KvK")
+- `registry_url` - URL to the registry for verification purposes
+- `country_code` - ISO 3166-1 alpha-2 country code
+
+**Indexes:**
+- `idx_legal_entity_number_country` - For country-specific queries
+- `idx_legal_entity_number_type_country` - Composite index for type + country queries
+
+---
+
+## International Registry Support
+
+The CTN ASR supports company registrations from Chambers of Commerce worldwide, not just Dutch KvK numbers.
+
+### Supported Identifier Types
+
+| Type | Description | Country | Format | Example |
+|------|-------------|---------|--------|---------|
+| **KVK** | Kamer van Koophandel | NL | 8 digits | 17187159 |
+| **EUID** | European Unique Identifier | EU | CC.identifier | NL.17187159 |
+| **LEI** | Legal Entity Identifier | Global | 20 alphanumeric | 724500F1QBVV6D4V0T23 |
+| **HRB** | Handelsregister B (corporations) | DE | HRB + digits | HRB 123456 B |
+| **HRA** | Handelsregister A (partnerships) | DE | HRA + digits | HRA 98765 |
+| **KBO** | Kruispuntbank van Ondernemingen | BE | 10 digits | 0123456789 |
+| **BCE** | Banque-Carrefour des Entreprises | BE | 10 digits | 0123456789 |
+| **SIREN** | Système d'Identification | FR | 9 digits | 123456789 |
+| **SIRET** | SIREN + établissement | FR | 14 digits | 12345678901234 |
+| **CRN** | Company Registration Number | GB | 8 characters | 12345678 or SC123456 |
+| **EORI** | Economic Operators Registration | EU | CC + identifier | NL123456789 |
+
+### Example: German Company
+
+A German company registered with IHK Berlin might have multiple identifiers:
+
+```json
+{
+  "registry_identifiers": [
+    {
+      "type": "HRB",
+      "value": "HRB 123456 B",
+      "countryCode": "DE",
+      "registryName": "IHK Berlin"
+    },
+    {
+      "type": "LEI",
+      "value": "529900T8BM49AURSDO55",
+      "countryCode": null,
+      "registryName": "Global LEI System"
+    },
+    {
+      "type": "EUID",
+      "value": "DE.HRB123456B",
+      "countryCode": "DE",
+      "registryName": "European Unique Identifier"
+    }
+  ]
+}
+```
+
+### BVAD Token Example (International Company)
+
+For a German company, the BVAD token includes all registry identifiers:
+
+```json
+{
+  "iss": "https://www.connectedtradenetwork.org",
+  "sub": "https://example-logistics.de",
+  "https://schemas.connectedtradenetwork.org/claims/legal_entity/name": "Example Logistics GmbH",
+  "https://schemas.connectedtradenetwork.org/claims/legal_entity/country_code": "DE",
+  "https://schemas.connectedtradenetwork.org/claims/legal_entity/registry/hrb": {
+    "value": "HRB 123456 B",
+    "country_code": "DE",
+    "registry_name": "IHK Berlin"
+  },
+  "https://schemas.connectedtradenetwork.org/claims/legal_entity/registry/lei": {
+    "value": "529900T8BM49AURSDO55",
+    "country_code": null,
+    "registry_name": "Global LEI System"
+  },
+  "https://schemas.connectedtradenetwork.org/claims/legal_entity/registry/euid": {
+    "value": "DE.HRB123456B",
+    "country_code": "DE",
+    "registry_name": "European Unique Identifier"
+  }
+}
+```
+
+### Adding New Registries
+
+To add support for a new Chamber of Commerce or registry:
+
+```sql
+INSERT INTO company_registries (
+  registry_code,
+  registry_name,
+  country_code,
+  registry_type,
+  jurisdiction,
+  registry_url,
+  verification_url,
+  identifier_pattern,
+  identifier_example,
+  supports_api_lookup,
+  notes
+) VALUES (
+  'IHK_FRANKFURT',
+  'IHK Frankfurt am Main',
+  'DE',
+  'chamber_of_commerce',
+  'Frankfurt',
+  'https://www.frankfurt-main.ihk.de',
+  'https://www.unternehmensregister.de/ureg/search1.2.html?submitaction=language&language=en',
+  '^HRB\\s?\\d{1,6}(\\s?[A-Z]{1,3})?$',
+  'HRB 123456',
+  false,
+  'Frankfurt regional chamber'
+);
+```
 
 ---
 

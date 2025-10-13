@@ -70,51 +70,87 @@ export const ProfileView: React.FC<ComponentProps> = ({
       </div>
 
       {!editMode ? (
-        <div className="card">
-          <div className="card-header">
-            <h3>Organization Details</h3>
-          </div>
-          <div className="info-grid">
-            <div className="info-item">
-              <strong>Legal Name:</strong>
-              <span>{memberData.legalName}</span>
+        <>
+          <div className="card">
+            <div className="card-header">
+              <h3>Organization Details</h3>
             </div>
-            <div className="info-item">
-              <strong>Organization ID:</strong>
-              <span>{memberData.organizationId}</span>
-            </div>
-            <div className="info-item">
-              <strong>Domain:</strong>
-              <span>{memberData.domain}</span>
-            </div>
-            <div className="info-item">
-              <strong>Status:</strong>
-              <span className={`status-badge status-${memberData.status.toLowerCase()}`}>
-                {memberData.status}
-              </span>
-            </div>
-            <div className="info-item">
-              <strong>Membership Level:</strong>
-              <span>{memberData.membershipLevel || 'Basic'}</span>
-            </div>
-            {memberData.lei && (
+            <div className="info-grid">
               <div className="info-item">
-                <strong>LEI:</strong>
-                <span>{memberData.lei}</span>
+                <strong>Legal Name:</strong>
+                <span>{memberData.legalName}</span>
               </div>
-            )}
-            {memberData.kvk && (
               <div className="info-item">
-                <strong>KVK:</strong>
-                <span>{memberData.kvk}</span>
+                <strong>Organization ID:</strong>
+                <span>{memberData.organizationId}</span>
               </div>
-            )}
-            <div className="info-item">
-              <strong>Member Since:</strong>
-              <span>{new Date(memberData.createdAt).toLocaleDateString()}</span>
+              <div className="info-item">
+                <strong>Domain:</strong>
+                <span>{memberData.domain}</span>
+              </div>
+              <div className="info-item">
+                <strong>Status:</strong>
+                <span className={`status-badge status-${memberData.status.toLowerCase()}`}>
+                  {memberData.status}
+                </span>
+              </div>
+              <div className="info-item">
+                <strong>Membership Level:</strong>
+                <span>{memberData.membershipLevel || 'Basic'}</span>
+              </div>
+              <div className="info-item">
+                <strong>Member Since:</strong>
+                <span>{new Date(memberData.createdAt).toLocaleDateString()}</span>
+              </div>
             </div>
           </div>
-        </div>
+
+          {memberData.registryIdentifiers && memberData.registryIdentifiers.length > 0 && (
+            <div className="card" style={{ marginTop: '1.5rem' }}>
+              <div className="card-header">
+                <h3>Registry Identifiers</h3>
+              </div>
+              <div className="registry-identifiers">
+                {memberData.registryIdentifiers.map((identifier, index) => (
+                  <div key={index} className="registry-item">
+                    <div className="registry-header">
+                      <div className="registry-type-badge">
+                        {identifier.identifierType}
+                        {identifier.countryCode && (
+                          <span className="country-flag"> {identifier.countryCode}</span>
+                        )}
+                      </div>
+                      {identifier.validationStatus && (
+                        <span
+                          className={`status-badge status-${identifier.validationStatus.toLowerCase()}`}
+                          style={{ fontSize: '0.75rem' }}
+                        >
+                          {identifier.validationStatus}
+                        </span>
+                      )}
+                    </div>
+                    <div className="registry-value">{identifier.identifierValue}</div>
+                    {identifier.registryName && (
+                      <div className="registry-name">{identifier.registryName}</div>
+                    )}
+                    {identifier.registryUrl && (
+                      <div className="registry-link">
+                        <a
+                          href={identifier.registryUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="k-link"
+                        >
+                          View in Registry
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       ) : (
         <Dialog title="Edit Profile" onClose={() => setEditMode(false)} width={600}>
           <form onSubmit={handleSubmit} className="simple-form">

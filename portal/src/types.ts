@@ -1,3 +1,12 @@
+export interface RegistryIdentifier {
+  identifierType: string;
+  identifierValue: string;
+  countryCode?: string;
+  registryName?: string;
+  registryUrl?: string;
+  validationStatus?: string;
+}
+
 export interface MemberData {
   organizationId: string;
   legalName: string;
@@ -12,6 +21,7 @@ export interface MemberData {
   contactName?: string;
   email?: string;
   jobTitle?: string;
+  registryIdentifiers?: RegistryIdentifier[];
 }
 
 export interface Contact {

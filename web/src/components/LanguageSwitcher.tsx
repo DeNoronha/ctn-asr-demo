@@ -31,6 +31,7 @@ const LanguageSwitcher: React.FC = () => {
 
   const handleLanguageChange = (event: DropDownListChangeEvent) => {
     const language = event.value as Language;
+    setSelectedLanguage(language);
 
     // Store language preference in localStorage
     try {
@@ -39,8 +40,8 @@ const LanguageSwitcher: React.FC = () => {
       console.warn('Failed to save language preference:', error);
     }
 
-    // Reload the page to apply language changes globally
-    window.location.reload();
+    // Change language without reloading the page
+    i18n.changeLanguage(language.code);
   };
 
   const itemRender = (li: React.ReactElement, itemProps: ListItemProps) => {

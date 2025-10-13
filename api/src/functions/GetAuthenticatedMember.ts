@@ -30,6 +30,7 @@ async function handler(
         m.created_at as "createdAt",
         le.primary_legal_name as "entityName",
         le.entity_legal_form as "entityType",
+        le.legal_entity_id as "legalEntityId",
         c.full_name as "contactName",
         c.email,
         c.job_title as "jobTitle"
@@ -57,7 +58,8 @@ async function handler(
           m.membership_level as "membershipLevel",
           m.created_at as "createdAt",
           le.primary_legal_name as "entityName",
-          le.entity_legal_form as "entityType"
+          le.entity_legal_form as "entityType",
+          le.legal_entity_id as "legalEntityId"
         FROM members m
         LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
         WHERE m.domain = $1
@@ -65,6 +67,35 @@ async function handler(
       `,
         [emailDomain]
       );
+    }
+
+    // Fetch registry identifiers if we found a member
+    if (result.rows.length > 0 && result.rows[0].legalEntityId) {
+      const identifiersResult = await pool.query(
+        `
+        SELECT
+          len.identifier_type as "identifierType",
+          len.identifier_value as "identifierValue",
+          len.country_code as "countryCode",
+          len.registry_name as "registryName",
+          len.registry_url as "registryUrl",
+          len.validation_status as "validationStatus"
+        FROM legal_entity_number len
+        WHERE len.legal_entity_id = $1
+          AND (len.is_deleted = false OR len.is_deleted IS NULL)
+        ORDER BY
+          CASE len.identifier_type
+            WHEN 'LEI' THEN 1
+            WHEN 'EUID' THEN 2
+            WHEN 'KVK' THEN 3
+            ELSE 4
+          END,
+          len.identifier_type
+      `,
+        [result.rows[0].legalEntityId]
+      );
+
+      result.rows[0].registryIdentifiers = identifiersResult.rows;
     }
 
     if (result.rows.length === 0) {

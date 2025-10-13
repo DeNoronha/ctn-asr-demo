@@ -8,7 +8,7 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/fu
 import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { Permission } from '../middleware/rbac';
 import { getPool } from '../utils/database';
-import { generateBvad } from '../services/bdiJwtService';
+import { generateBvad, RegistryIdentifier } from '../services/bdiJwtService';
 import crypto from 'crypto';
 
 async function handler(
@@ -112,6 +112,55 @@ async function handler(
 
     const member = result.rows[0];
 
+    // Fetch all registry identifiers for this legal entity
+    let registryIdentifiers: RegistryIdentifier[] = [];
+    let primaryCountryCode: string | undefined;
+    let euidValue: string | undefined;
+
+    if (member.legal_entity_id) {
+      const registryQuery = await pool.query(
+        `
+        SELECT
+          len.identifier_type,
+          len.identifier_value,
+          len.country_code,
+          len.registry_name,
+          len.registry_url
+        FROM legal_entity_number len
+        WHERE len.legal_entity_id = $1
+          AND (len.is_deleted IS NULL OR len.is_deleted = false)
+        ORDER BY
+          CASE
+            WHEN len.identifier_type = 'KVK' THEN 1
+            WHEN len.identifier_type = 'LEI' THEN 2
+            WHEN len.identifier_type = 'EUID' THEN 3
+            ELSE 4
+          END
+      `,
+        [member.legal_entity_id]
+      );
+
+      if (registryQuery.rows.length > 0) {
+        // Extract primary country code from the first identifier
+        primaryCountryCode = registryQuery.rows[0].country_code;
+
+        // Build registryIdentifiers array
+        for (const row of registryQuery.rows) {
+          // Handle EUID separately
+          if (row.identifier_type === 'EUID') {
+            euidValue = row.identifier_value;
+          }
+
+          registryIdentifiers.push({
+            type: row.identifier_type,
+            value: row.identifier_value,
+            countryCode: row.country_code,
+            registryName: row.registry_name,
+          });
+        }
+      }
+    }
+
     // Check if member is in good standing
     if (member.status !== 'ACTIVE' && member.status !== 'APPROVED') {
       return {
@@ -147,12 +196,15 @@ async function handler(
       };
     }
 
-    // Generate BVAD token
+    // Generate BVAD token with all registry identifiers
     const bvadToken = generateBvad({
       memberDomain: member.domain,
       legalName: member.legal_name,
       kvk: member.kvk,
       lei: member.lei,
+      euid: euidValue,
+      countryCode: primaryCountryCode,
+      registryIdentifiers: registryIdentifiers.length > 0 ? registryIdentifiers : undefined,
       status: member.status,
       complianceChecked,
       complianceLastChecked,
@@ -217,6 +269,9 @@ async function handler(
           legal_name: member.legal_name,
           kvk: member.kvk,
           lei: member.lei,
+          euid: euidValue,
+          country_code: primaryCountryCode,
+          registry_identifiers: registryIdentifiers,
           status: member.status,
         },
         jti,

@@ -1,6 +1,33 @@
 import axios from 'axios';
+import { msalInstance } from '../auth/AuthContext';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:7071/api/v1';
+
+// Helper function to get access token
+async function getAccessToken(): Promise<string | null> {
+  try {
+    const accounts = msalInstance.getAllAccounts();
+    if (accounts.length > 0) {
+      const response = await msalInstance.acquireTokenSilent({
+        scopes: ['User.Read'],
+        account: accounts[0],
+      });
+      return response.accessToken;
+    }
+  } catch (error) {
+    console.error('Failed to acquire token:', error);
+  }
+  return null;
+}
+
+// Create axios instance with authentication
+async function getAuthenticatedAxios() {
+  const token = await getAccessToken();
+  return axios.create({
+    baseURL: API_BASE_URL,
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+}
 
 // =====================================================
 // TYPE DEFINITIONS (Enhanced Schema)
@@ -20,9 +47,11 @@ export interface PartyReference {
 export interface LegalEntityIdentifier {
   legal_entity_reference_id?: string;
   legal_entity_id: string;
-  identifier_type: 'LEI' | 'KVK' | 'EORI' | 'VAT' | 'DUNS' | 'OTHER';
+  identifier_type: 'LEI' | 'KVK' | 'EORI' | 'VAT' | 'DUNS' | 'EUID' | 'HRB' | 'HRA' | 'KBO' | 'SIREN' | 'SIRET' | 'CRN' | 'OTHER';
   identifier_value: string;
   country_code?: string;
+  registry_name?: string;
+  registry_url?: string;
   valid_from?: string;
   valid_to?: string;
   issued_by?: string;
@@ -172,12 +201,14 @@ export const apiV2 = {
   // =====================================================
 
   async getMembers(): Promise<Member[]> {
-    const response = await axios.get<MembersResponse>(`${API_BASE_URL}/members`);
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get<MembersResponse>(`/members`);
     return response.data.data;
   },
 
   async getMember(orgId: string): Promise<Member> {
-    const response = await axios.get<Member>(`${API_BASE_URL}/members/${orgId}`);
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get<Member>(`/members/${orgId}`);
     return response.data;
   },
 
@@ -198,8 +229,9 @@ export const apiV2 = {
   // =====================================================
 
   async getLegalEntity(legalEntityId: string): Promise<LegalEntity> {
-    const response = await axios.get<LegalEntity>(
-      `${API_BASE_URL}/legal-entities/${legalEntityId}`
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get<LegalEntity>(
+      `/legal-entities/${legalEntityId}`
     );
     return response.data;
   },

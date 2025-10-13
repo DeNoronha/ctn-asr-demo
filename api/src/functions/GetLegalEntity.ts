@@ -47,6 +47,21 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
         };
       }
 
+      // Fetch identifiers for this entity
+      const identifiersResult = await pool.query(
+        `SELECT legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
+                country_code, registry_name, registry_url, valid_from, valid_to, issued_by,
+                validated_by, validation_status, validation_date, verification_document_url,
+                verification_notes, dt_created, dt_modified, created_by, modified_by, is_deleted
+         FROM legal_entity_number
+         WHERE legal_entity_id = $1 AND (is_deleted IS NULL OR is_deleted = FALSE)
+         ORDER BY dt_created DESC`,
+        [legalEntityId]
+      );
+
+      const entity = result.rows[0];
+      entity.identifiers = identifiersResult.rows;
+
       // Log successful access
       await logAuditEvent({
         event_type: AuditEventType.ACCESS_GRANTED,
@@ -66,7 +81,7 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
 
       return {
         status: 200,
-        jsonBody: result.rows[0]
+        jsonBody: entity
       };
     }
 
@@ -112,6 +127,21 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
       };
     }
 
+    // Fetch identifiers for this entity
+    const identifiersResult = await pool.query(
+      `SELECT legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
+              country_code, registry_name, registry_url, valid_from, valid_to, issued_by,
+              validated_by, validation_status, validation_date, verification_document_url,
+              verification_notes, dt_created, dt_modified, created_by, modified_by, is_deleted
+       FROM legal_entity_number
+       WHERE legal_entity_id = $1 AND (is_deleted IS NULL OR is_deleted = FALSE)
+       ORDER BY dt_created DESC`,
+      [legalEntityId]
+    );
+
+    const entity = result.rows[0];
+    entity.identifiers = identifiersResult.rows;
+
     // Log successful access
     await logAuditEvent({
       event_type: AuditEventType.ACCESS_GRANTED,
@@ -130,7 +160,7 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
 
     return {
       status: 200,
-      jsonBody: result.rows[0]
+      jsonBody: entity
     };
   } catch (error) {
     context.error('Error fetching legal entity:', error);

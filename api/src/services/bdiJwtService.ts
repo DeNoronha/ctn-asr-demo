@@ -100,6 +100,16 @@ export interface BvadClaims {
 }
 
 /**
+ * Registry Identifier Interface
+ */
+export interface RegistryIdentifier {
+  type: string; // KVK, LEI, EUID, HRB, SIREN, etc.
+  value: string;
+  countryCode?: string; // ISO 3166-1 alpha-2
+  registryName?: string; // e.g., "IHK Berlin", "KvK"
+}
+
+/**
  * Generate BVAD token for a member
  */
 export function generateBvad(memberData: {
@@ -107,6 +117,9 @@ export function generateBvad(memberData: {
   legalName: string;
   kvk?: string;
   lei?: string;
+  euid?: string; // European Unique Identifier
+  registryIdentifiers?: RegistryIdentifier[]; // Additional/alternative identifiers
+  countryCode?: string; // Primary country of registration
   status: string;
   complianceChecked: boolean;
   complianceLastChecked?: Date;
@@ -146,12 +159,36 @@ export function generateBvad(memberData: {
     [buildBdiClaim('legal_entity', 'domain')]: memberData.memberDomain,
   };
 
+  // Add primary country code if present
+  if (memberData.countryCode) {
+    claims[buildBdiClaim('legal_entity', 'country_code')] = memberData.countryCode;
+  }
+
   // Add registry identifiers if present
   if (memberData.kvk) {
     claims[buildBdiClaim('legal_entity', 'registry/kvk')] = memberData.kvk;
   }
   if (memberData.lei) {
     claims[buildBdiClaim('legal_entity', 'registry/lei')] = memberData.lei;
+  }
+  if (memberData.euid) {
+    claims[buildBdiClaim('legal_entity', 'registry/euid')] = memberData.euid;
+  }
+
+  // Add additional registry identifiers
+  if (memberData.registryIdentifiers && memberData.registryIdentifiers.length > 0) {
+    memberData.registryIdentifiers.forEach((identifier) => {
+      // Use normalized type for claim (lowercase, replace spaces with underscores)
+      const claimType = identifier.type.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const claimKey = buildBdiClaim('legal_entity', `registry/${claimType}`);
+
+      // Store as object with full details
+      claims[claimKey] = {
+        value: identifier.value,
+        country_code: identifier.countryCode,
+        registry_name: identifier.registryName,
+      };
+    });
   }
 
   // Add BDI connector info if present

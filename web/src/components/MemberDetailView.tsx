@@ -218,19 +218,61 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
 
         <TabStripTab title="Identifiers">
           <div className="tab-content">
-            <div className="info-section">
-              <h3>Legal Identifiers</h3>
-              <div className="info-grid">
-                <div className="info-field">
-                  <label>KvK Number</label>
-                  <span className="identifier">{member.kvk || 'Not provided'}</span>
-                </div>
-                <div className="info-field">
-                  <label>LEI</label>
-                  <span className="identifier">{member.lei || 'Not provided'}</span>
+            {loading ? (
+              <div className="loading-state">Loading identifiers...</div>
+            ) : legalEntity?.identifiers && legalEntity.identifiers.length > 0 ? (
+              <div className="info-section">
+                <h3>Legal Identifiers</h3>
+                <div className="identifiers-list">
+                  {legalEntity.identifiers.map((identifier) => (
+                    <div key={identifier.legal_entity_reference_id} className="identifier-card">
+                      <div className="identifier-header">
+                        <span className="identifier-type-badge">{identifier.identifier_type}</span>
+                        {identifier.country_code && (
+                          <span className="country-badge">{identifier.country_code}</span>
+                        )}
+                        {identifier.validation_status && (
+                          <span className={`validation-badge validation-${identifier.validation_status.toLowerCase()}`}>
+                            {identifier.validation_status}
+                          </span>
+                        )}
+                      </div>
+                      <div className="identifier-details">
+                        <div className="identifier-row">
+                          <label>Identifier Value:</label>
+                          <span className="identifier-value">{identifier.identifier_value}</span>
+                        </div>
+                        {identifier.registry_name && (
+                          <div className="identifier-row">
+                            <label>Registry:</label>
+                            <span>{identifier.registry_name}</span>
+                          </div>
+                        )}
+                        {identifier.registry_url && (
+                          <div className="identifier-row">
+                            <label>Registry URL:</label>
+                            <a href={identifier.registry_url} target="_blank" rel="noopener noreferrer">
+                              {identifier.registry_url}
+                            </a>
+                          </div>
+                        )}
+                        {identifier.issued_by && (
+                          <div className="identifier-row">
+                            <label>Issued By:</label>
+                            <span>{identifier.issued_by}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="info-section">
+                <h3>Legal Identifiers</h3>
+                <p className="empty-message">No identifiers registered for this entity</p>
+              </div>
+            )}
           </div>
         </TabStripTab>
 
