@@ -22,15 +22,15 @@ review_project() {
     echo "✓ Biome checks passed for $project_name"
   fi
 
-  echo -e "\nRunning Aikido security scan..."
-  npm run security:scan 2>/dev/null
+  echo -e "\nRunning npm security audit..."
+  npm run security:audit 2>/dev/null
   if [ $? -ne 0 ]; then
-    echo "⚠ Aikido scan incomplete (CLI may not be installed)"
+    echo "⚠ Security audit found vulnerabilities in $project_name"
   else
-    echo "✓ Aikido scan completed for $project_name"
+    echo "✓ Security audit completed for $project_name"
   fi
 
-  echo -e "\nGenerating summary..."
+  echo -e "\nGenerating security summary..."
   npm run security:summary 2>/dev/null
 
   cd - > /dev/null

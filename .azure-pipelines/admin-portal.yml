@@ -39,18 +39,19 @@ steps:
 
   - script: |
       cd web
-      npm install -g @aikidosec/cli
-      npm run security:scan || echo "Aikido scan completed with warnings"
-    displayName: 'Run Aikido security scan'
+      npm audit --audit-level=moderate || echo "Security vulnerabilities found - review required"
+      npm run security:audit
+      npm run security:summary
+    displayName: 'Run npm security audit'
     continueOnError: true
 
-  - task: PublishTestResults@2
-    displayName: 'Publish Biome results'
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish security reports'
     condition: always()
     inputs:
-      testResultsFormat: 'JUnit'
-      testResultsFiles: 'web/reports/biome-report.json'
-      failTaskOnFailedTests: false
+      targetPath: 'web/reports'
+      artifact: 'security-reports-admin'
+      publishLocation: 'pipeline'
     continueOnError: true
 
   - script: |

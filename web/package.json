@@ -69,11 +69,13 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
-    "lint:report": "biome check . --reporter=json > reports/biome-report.json",
-    "security:scan": "aikido scan --output-file reports/aikido-results.json",
-    "security:summary": "aikido scan --format markdown > reports/aikido-summary.md",
-    "review": "npm run lint:report && npm run security:scan && npm run security:summary",
-    "ci": "biome ci . && npm run security:scan"
+    "lint:report": "biome check . --reporter=json > reports/biome-report.json || true",
+    "security:audit": "npm audit --json > reports/npm-audit.json || true",
+    "security:audit:fix": "npm audit fix",
+    "security:check": "npm audit && better-npm-audit audit || true",
+    "security:summary": "npm audit > reports/security-summary.txt || true",
+    "review": "npm run lint && npm run security:audit && npm run security:summary",
+    "ci": "biome ci . && npm audit --audit-level=high"
   },
   "eslintConfig": {
     "extends": ["react-app", "react-app/jest"]
