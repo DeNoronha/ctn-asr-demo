@@ -57,7 +57,7 @@ import './functions/swagger';
 // Health Check
 import './functions/healthCheck';
 
-// TO DO 7: Admin Portal Expansion (Subscriptions, Newsletters, Tasks)
+// Admin Portal Expansion (Subscriptions, Newsletters, Tasks)
 import './functions/getSubscriptions';
 import './functions/createSubscription';
 import './functions/updateSubscription';
@@ -66,3 +66,8 @@ import './functions/createNewsletter';
 import './functions/getTasks';
 import './functions/createTask';
 import './functions/updateTask';
+
+// BDI Integration (BVAD & BVOD)
+import './functions/bdiJwks';
+import './functions/generateBvad';
+import './functions/validateBvod';
