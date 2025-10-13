@@ -109,9 +109,72 @@ module messaging './modules/messaging.bicep' = {
   }
 }
 
+// Deploy API Management
+module apiManagement './modules/api-management.bicep' = {
+  name: 'api-management-deployment'
+  scope: resourceGroup
+  params: {
+    environment: environment
+    location: location
+    resourcePrefix: resourcePrefix
+    tags: tags
+    backendApiUrl: 'https://${functionApp.outputs.functionAppHostName}/api'
+    publisherEmail: 'admin@ctn-network.org'
+    publisherName: 'CTN Network'
+  }
+}
+
+// Optional: Deploy secrets to Key Vault (only when secrets are provided)
+@description('Enable Key Vault secrets deployment (set to true when providing secrets)')
+param enableSecretsDeployment bool = false
+
+@description('Aikido CI API Key')
+@secure()
+param aikidoCiApiKey string = ''
+
+@description('Admin Portal Deploy Token')
+@secure()
+param adminPortalDeployToken string = ''
+
+@description('Member Portal Deploy Token')
+@secure()
+param memberPortalDeployToken string = ''
+
+module keyVaultSecrets './modules/key-vault-secrets.bicep' = if (enableSecretsDeployment) {
+  name: 'key-vault-secrets-deployment'
+  scope: resourceGroup
+  params: {
+    keyVaultName: coreInfrastructure.outputs.keyVaultName
+    aikidoCiApiKey: aikidoCiApiKey
+    adminPortalDeployToken: adminPortalDeployToken
+    memberPortalDeployToken: memberPortalDeployToken
+    databaseAdminPassword: databaseAdminPassword
+    enableSecretCreation: true
+  }
+  dependsOn: [
+    coreInfrastructure
+    database
+  ]
+}
+
+// Grant Function App access to Key Vault secrets
+resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(resourceGroup.id, functionApp.outputs.functionAppPrincipalId, 'Key Vault Secrets User')
+  scope: resourceGroup
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6') // Key Vault Secrets User
+    principalId: functionApp.outputs.functionAppPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 // Outputs
 output resourceGroupName string = resourceGroup.name
 output functionAppName string = functionApp.outputs.functionAppName
+output functionAppUrl string = 'https://${functionApp.outputs.functionAppHostName}'
 output staticWebAppName string = staticWebApps.outputs.adminPortalName
 output memberPortalName string = staticWebApps.outputs.memberPortalName
 output databaseServerName string = database.outputs.serverName
+output keyVaultName string = coreInfrastructure.outputs.keyVaultName
+output apimGatewayUrl string = apiManagement.outputs.apimGatewayUrl
+output apimName string = apiManagement.outputs.apimName

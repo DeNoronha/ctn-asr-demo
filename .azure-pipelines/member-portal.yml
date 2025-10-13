@@ -13,9 +13,20 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: ctn-demo-variables
+  # Key Vault configuration
+  keyVaultName: 'kvctnasrdev' # Update based on environment
+  azureSubscription: 'Azure-CTN-ASR-ServiceConnection' # Azure service connection name
 
 steps:
+  # Fetch secrets from Azure Key Vault
+  - task: AzureKeyVault@2
+    displayName: 'Fetch secrets from Key Vault'
+    inputs:
+      azureSubscription: $(azureSubscription)
+      KeyVaultName: $(keyVaultName)
+      SecretsFilter: 'AIKIDO-CI-API-KEY,AZURE-STATIC-WEB-APPS-API-TOKEN-MEMBER'
+      RunAsPreJob: true
+
   - task: NodeTool@0
     displayName: 'Install Node.js 18.x'
     inputs:
@@ -47,7 +58,7 @@ steps:
 
   - script: |
       npm install -g @aikidosec/ci-api-client
-      aikido-api-client apikey $(AIKIDO_CI_API_KEY)
+      aikido-api-client apikey $(AIKIDO-CI-API-KEY)
     displayName: 'Install Aikido CI client'
     continueOnError: true
 
@@ -65,7 +76,7 @@ steps:
         --fail-on-secrets-scan || echo "Aikido scan completed with findings"
     displayName: 'Run Aikido Security scan'
     env:
-      AIKIDO_CI_API_KEY: $(AIKIDO_CI_API_KEY)
+      AIKIDO_CI_API_KEY: $(AIKIDO-CI-API-KEY)
     continueOnError: true
 
   - task: PublishPipelineArtifact@1
@@ -94,4 +105,4 @@ steps:
     inputs:
       app_location: 'portal/build'
       skip_app_build: true
-      azure_static_web_apps_api_token: $(AZURE_STATIC_WEB_APPS_API_TOKEN_MEMBER)
+      azure_static_web_apps_api_token: $(AZURE-STATIC-WEB-APPS-API-TOKEN-MEMBER)
