@@ -1,126 +1,141 @@
 # 🗺️ CTN ASR Roadmap
 
-**Version:** 2.0.0 | **Updated:** October 12, 2025 (Night Update - Major Release)
+**Version:** 3.0.0 | **Updated:** October 13, 2025 (Action Items Consolidation)
 
 ---
 
-## 🚨 TO DO
+## 📊 Summary
 
-### ~~To Do 1: KvK Document Verification - Complete Implementation (HIGH)~~ ✅ COMPLETED
-- [x] PDF upload for KvK statement
-- [x] Extract company name and KvK number
-- [x] Validate against KvK API
-- [x] Flag suspicious cases (bankrupt, dissolved, mismatch)
-- [x] Admin review queue
-- [x] Azure Blob Storage with private access
-- [x] Multipart file upload working
-- [x] **SAS token generation for secure document viewing** (Completed Oct 12)
-- [x] **Comprehensive error handling with specific error messages** (Completed Oct 12)
-- [x] **KvK API key documentation and configuration guide** (Completed Oct 12)
-- **Note:** Real-world testing with actual KvK API key pending (KvK website maintenance until Monday)
+**Total Pending Actions:** 50 items across 14 categories
+- 🔴 **High Priority:** 18 actions (Security & Production Blockers) - **17-23 days estimated**
+- 🟡 **Medium Priority:** 20 actions (Post-Launch Enhancements) - **17-21 days estimated**
+- 🟢 **Low Priority:** 12 actions (Technical Debt & Future) - **9-12 days estimated**
 
-### ~~To Do 2: Multi-System Endpoint Management (MEDIUM-HIGH)~~ ✅ COMPLETED
-- [x] Database schema for multi-endpoint support (Already exists in migration 001)
-- [x] UI for members to register multiple systems/endpoints (Completed Oct 12)
-- [x] Generate separate BVAD tokens per endpoint (Completed Oct 12)
-- [x] Enable/disable endpoints independently (Completed Oct 12)
-- [x] Backend APIs created:
-  - `GET /v1/legal-entities/{id}/endpoints` - List endpoints
-  - `POST /v1/legal-entities/{id}/endpoints` - Create endpoint
-  - `PUT /v1/endpoints/{id}` - Update endpoint
-  - `POST /v1/endpoints/{id}/tokens` - Issue token
-  - `GET /v1/endpoints/{id}/tokens` - List tokens
-- **Note:** Track endpoint usage per system can be implemented via API gateway analytics
+**Completed Actions:** 18 major milestones (See [docs/COMPLETED_ACTIONS.md](./COMPLETED_ACTIONS.md))
 
-### ~~To Do 3: Email Template Management (MEDIUM)~~ ✅ COMPLETED
-- [x] Installed Handlebars templating engine
-- [x] Created email template directory structure with layouts
-- [x] Created base.hbs layout with CTN branding (gradient header #003366→#0066cc)
-- [x] Created EmailTemplateService with multi-language support, template caching, fallback to English
-- [x] Created 9 email templates (3 types × 3 languages: EN, NL, DE)
-  - application-created.hbs
-  - application-activated.hbs
-  - token-issued.hbs
-- [x] Updated EventGridHandler to use EmailTemplateService with language detection
-- [x] Build passed successfully
-- **Implementation Time:** 3 days (Completed Oct 12)
+**Total Estimated Effort for Pending Items:** 43-56 days
 
-### ~~To Do 4: Workflow Automation with Logic Apps (MEDIUM-HIGH)~~ ✅ COMPLETED
-- [x] Created 3 comprehensive Logic Apps workflow definitions:
-  - member-approval-workflow.json (Approve/Reject/Request More Info)
-  - token-renewal-workflow.json (Daily monitoring at 9 AM, differentiated urgent/standard notifications)
-  - document-verification-workflow.json (Auto-approval + manual review for flagged documents)
-- [x] Created comprehensive README.md with deployment documentation
-- [x] Event Grid integration configured
-- [x] Human-in-the-loop approval steps with adaptive cards
-- [x] Error handling and notification flows
-- **Implementation Time:** 5 days (Completed Oct 12)
+---
 
-### ~~To Do 5: Polish Advanced Features (MEDIUM)~~ ✅ COMPLETED
-- [x] Advanced search & filtering with AdvancedFilter component
-  - Multi-criteria filtering with AND/OR logic
-  - Support for text, date, and select fields
-  - 5+ operators per field type
-- [x] Bulk operations complete implementation
-  - Multi-select with checkboxes
-  - Bulk actions: Export (PDF/CSV), Issue Tokens, Suspend, Delete
-  - Confirmation dialogs with progress indicators
-- [x] PDF export with jsPDF and jspdf-autotable
-  - Professional CTN-branded exports
-  - Landscape/portrait orientation
-  - Page numbers and timestamps
-- [x] CSV export functionality
-- [x] Export utilities module created
-- [x] Build passed successfully
-- **Implementation Time:** 4 days (Completed Oct 12)
+## 🚨 PENDING ACTIONS (Ordered by Priority)
 
-### ~~To Do 6: Localization (i18n) (MEDIUM)~~ ✅ COMPLETED
-- [x] Installed react-i18next, i18next, i18next-browser-languagedetector, i18next-http-backend
-- [x] Created i18n.ts configuration with automatic language detection
-- [x] Created comprehensive translation files with 180+ keys each:
-  - en/translation.json (English - master)
-  - nl/translation.json (Dutch - complete translations)
-  - de/translation.json (German - complete translations)
-- [x] Implemented LanguageSwitcher component with flag icons
-- [x] Language caching in localStorage with persistent selection
-- [x] Default to Dutch (nl) for CTN with English fallback
-- [x] Created comprehensive LOKALISE_INTEGRATION.md (400+ lines) covering:
-  - Complete Lokalise setup and configuration
-  - CI/CD integration (Azure DevOps + GitHub Actions)
-  - Developer workflow, QA processes, professional translation services
-- [x] Build passed successfully
-- **Implementation Time:** 5 days (Completed Oct 12)
+### 🔴 HIGH PRIORITY (Security & Production Blockers)
 
-### ~~To Do 7: Admin Portal Menu Expansion (MEDIUM)~~ ✅ COMPLETED
-- [x] Subscriptions section (billing, plans, invoices)
-- [x] Newsletters section (campaigns, templates, analytics)
-- [x] Tasks section (verifications, approvals, tickets, assignments)
-- [x] Database migration 008 with 6 tables and 3 views
-- [x] SubscriptionService, NewsletterService, TaskService (3 comprehensive services)
-- [x] 8 new API endpoints (GET/POST/PUT for Subscriptions, Newsletters, Tasks)
-- [x] SubscriptionsGrid React component with CRUD operations
-- [x] NewslettersGrid React component with stats and analytics
-- [x] TasksGrid React component with priority management
-- [x] Menu items added to AdminSidebar (Subscriptions, Newsletters, Tasks icons)
-- [x] Routes integrated in AdminPortal
-- **Implementation Time:** 7 days (Completed Oct 12)
+#### 1. Authentication & Authorization (CRITICAL)
+- [ ] **Issue #1:** Implement Azure AD JWT authentication on ALL API endpoints
+- [ ] **Issue #5:** Implement JWT token validation with signature verification
+- [ ] **Issue #6:** Add authentication to file upload endpoint
+- [ ] **Issue #4:** Configure strong JWT secret (remove 'demo-secret' fallback)
+- [ ] **Implement RBAC:** Add role-based access control for admin vs member access
+- **Estimated Effort:** 5-7 days
+- **Security Impact:** CRITICAL - Prevents unauthorized API access
 
-### ~~To Do 8: Portal Branding Polish (LOW)~~ ✅ COMPLETED
-- [x] Verified logos display correctly in all browsers
-- [x] Added smooth hover effects and animations (CSS transitions)
-- [x] Enhanced sidebar with gradient overlays and icon animations
-- [x] Icon rotation and scale on hover
-- [x] Pulse animation on selected menu items
-- [x] Responsive logo sizing ensured
-- **Implementation Time:** 2 days (Completed Oct 12)
+#### 2. Security Hardening (CRITICAL)
+- [ ] **Issue #2:** Remove exposed credentials from Git history and rotate all secrets
+- [ ] **Issue #3:** Verify wildcard CORS removal (already partially fixed)
+- [ ] **Issue #7:** Enable SSL certificate validation for database connections
+- [ ] **Issue #15:** Move all secrets to Azure Key Vault
+- [ ] **Issue #16:** Enforce HTTPS in production (validate on startup)
+- **Estimated Effort:** 3-4 days
+- **Security Impact:** CRITICAL - Prevents credential exposure and MITM attacks
 
-### To Do 9: Future Features (LOW) 📋 Documented
+#### 3. API Security Enhancements (HIGH)
+- [ ] **Issue #8:** Implement rate limiting (consider Azure API Management)
+- [ ] **Issue #9:** Add comprehensive input validation using Joi or Zod
+- [ ] **Issue #13:** Add dependency vulnerability scanning (npm audit, Snyk, or Aikido)
+- [ ] **Issue #14:** Configure Content Security Policy headers
+- [ ] **Issue #18:** Add EventGrid handler signature validation
+- **Estimated Effort:** 4-5 days
+- **Security Impact:** HIGH - Prevents DoS attacks and invalid data
+
+#### 4. Operational Requirements (HIGH)
+- [ ] **Issue #10:** Implement audit logging for all sensitive operations
+- [ ] **Issue #11:** Standardize error handling across all endpoints
+- [ ] **Issue #17:** Optimize database connection pooling (partially done)
+- [ ] **Database Migration 008:** Apply to production database
+- [ ] **KvK API Configuration:** Configure API key in Function App Settings
+- **Estimated Effort:** 3-4 days
+- **Impact:** HIGH - Required for compliance and production readiness
+
+#### 5. Code Quality Improvements (HIGH)
+- [ ] **Language Switcher:** Refactor to remove page reload (improve UX)
+- [ ] **TypeScript:** Remove 'any' types and improve type safety
+- [ ] **Backend Validation:** Complete file size and type validation
+- **Estimated Effort:** 2-3 days
+- **Impact:** HIGH - Better user experience and code maintainability
+
+---
+
+### 🟡 MEDIUM PRIORITY (Post-Launch Enhancements)
+
+#### 6. API Documentation & Monitoring
+- [ ] **Issue #22:** Enable and configure Swagger/OpenAPI documentation
+- [ ] **Issue #24:** Add health check endpoint for monitoring
+- [ ] **Issue #29:** Implement custom monitoring/telemetry with Application Insights
+- [ ] **Issue #31:** Implement request ID tracking across all endpoints (partially done)
+- **Estimated Effort:** 3-4 days
+
+#### 7. Database & Performance Optimizations
+- [ ] **Issue #21:** Add transaction support for multi-step operations
+- [ ] **Issue #26:** Implement pagination on all list endpoints
+- [ ] **Issue #28:** Add missing database indexes for frequently queried columns
+- [ ] **Issue #34:** Define and implement data retention policy (GDPR compliance)
+- **Estimated Effort:** 4-5 days
+
+#### 8. API Improvements
+- [ ] **Issue #20:** Define comprehensive API versioning strategy
+- [ ] **Issue #23:** Improve language detection in email service
+- [ ] **Issue #25:** Remove hardcoded URLs (use environment variables everywhere)
+- [ ] **Issue #27:** Configure timeouts for all external API calls
+- [ ] **Issue #32:** Standardize naming conventions (snake_case vs camelCase)
+- [ ] **Issue #33:** Handle locale/timezone consistently across frontend and backend
+- **Estimated Effort:** 3-4 days
+
+#### 9. Testing & Quality Assurance
+- [ ] **Integration Tests:** Add E2E tests with Playwright for critical user flows
+- [ ] **Performance Testing:** Implement code splitting and lazy loading
+- [ ] **Unit Tests:** Add comprehensive unit tests for services and utilities
+- **Estimated Effort:** 5-6 days
+
+#### 10. Frontend Enhancements
+- [ ] **Issue #30:** Expand error boundaries throughout the application
+- [ ] **Performance Optimization:** Code splitting, lazy loading, bundle optimization
+- **Estimated Effort:** 2-3 days
+
+---
+
+### 🟢 LOW PRIORITY (Technical Debt & Future Features)
+
+#### 11. Code Quality & Standards
+- [ ] **Issue #35:** Refactor code duplication in API functions
+- [ ] **Issue #36:** Enable TypeScript strict mode
+- [ ] **Issue #37:** Add unit tests for all services and utilities
+- [ ] **Issue #38:** Replace console.log with proper logging
+- [ ] **Issue #39:** Replace magic numbers with named constants
+- [ ] **Issue #40:** Fix empty catch blocks (always log errors)
+- [ ] **Issue #42:** Standardize HTTP status codes across all endpoints
+- **Estimated Effort:** 4-5 days
+
+#### 12. Testing Infrastructure
+- [ ] **Issue #41:** Add E2E tests with Playwright or Cypress
+- [ ] **Additional Test Coverage:** Increase unit and integration test coverage
+- **Estimated Effort:** 3-4 days
+
+#### 13. Accessibility (a11y)
+- [ ] Add ARIA labels to all interactive elements
+- [ ] Ensure keyboard navigation works throughout the application
+- [ ] Test with screen readers
+- [ ] Run axe or WAVE accessibility audits
+- **Estimated Effort:** 2-3 days
+
+#### 14. Future Features (Documentation Only)
 **See:** [docs/IMPLEMENTATION_PLAN_TODO_3-9.md](./IMPLEMENTATION_PLAN_TODO_3-9.md#to-do-9-future-features-documentation)
 - [ ] Real-time & Collaboration (Azure SignalR, WebSocket)
 - [ ] Advanced Analytics (Azure Synapse, Power BI, ML models)
-- [ ] Integration & Automation (Accounting, CRM, API marketplace)
-- [ ] Mobile Applications (React Native/Flutter)
+- [ ] Integration & Automation (Accounting systems, CRM, API marketplace)
+- [ ] Mobile Applications (React Native or Flutter)
 - **Status:** Architecture and design documentation complete
+- **Estimated Effort:** Future roadmap items (not prioritized)
 
 ---
 

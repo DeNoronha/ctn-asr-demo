@@ -7,13 +7,6 @@ yarn-error.log*
 dist/
 build/
 
-# Terraform
-.terraform/
-*.tfstate
-*.tfstate.*
-*.tfvars
-.terraform.lock.hcl
-
 # Azure
 .azure-pipelines/variables.secret.yml
 

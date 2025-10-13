@@ -7,18 +7,22 @@ Association Register demonstration for the Connected Trade Network initiative.
 ```
 ASR/
 ├── .azure-pipelines/       # CI/CD pipeline definitions
-│   └── terraform.yml       # Infrastructure deployment pipeline
-├── backend/                # Azure Functions (Node.js/TypeScript)
+│   └── bicep-infrastructure.yml  # Infrastructure deployment pipeline
+├── api/                    # Azure Functions (Node.js/TypeScript)
 │   ├── src/               # Function source code
 │   └── tests/             # Unit tests
-├── frontend/              # React Static Web App
+├── web/                   # Admin Portal (React)
 │   ├── src/               # React components
 │   └── public/            # Static assets
-├── infrastructure/        # Terraform IaC
-│   ├── main.tf           # Main infrastructure
-│   ├── variables.tf      # Variable definitions
-│   ├── outputs.tf        # Output values
-│   └── runbooks/         # PowerShell automation scripts
+├── portal/                # Member Portal (React)
+│   ├── src/               # React components
+│   └── public/            # Static assets
+├── infrastructure/        # Bicep IaC
+│   └── bicep/            # Bicep templates
+│       ├── main.bicep    # Main orchestration
+│       ├── modules/      # Modular Bicep files
+│       ├── parameters.dev.json
+│       └── parameters.prod.json
 └── docs/                 # Documentation
 ```
 
@@ -47,7 +51,7 @@ ASR/
 ### Prerequisites
 
 - Azure CLI installed
-- Terraform installed
+- Bicep CLI installed (included with Azure CLI)
 - Azure DevOps project configured
 - Service connection: `azure-ctn-demo`
 - Variable group: `ctn-demo-variables`
@@ -56,20 +60,29 @@ ASR/
 
 ```bash
 # Navigate to infrastructure directory
-cd infrastructure
+cd infrastructure/bicep
 
-# Initialize Terraform
-terraform init
+# Validate Bicep template
+az bicep build --file main.bicep
 
-# Plan deployment
-terraform plan -out=tfplan
+# Preview changes (What-If)
+az deployment sub what-if \
+  --location westeurope \
+  --template-file main.bicep \
+  --parameters parameters.dev.json \
+  --parameters databaseAdminPassword='YourSecurePassword123!'
 
-# Apply deployment
-terraform apply tfplan
+# Deploy infrastructure
+az deployment sub create \
+  --location westeurope \
+  --template-file main.bicep \
+  --parameters parameters.dev.json \
+  --parameters databaseAdminPassword='YourSecurePassword123!' \
+  --name ctn-asr-dev-deployment
 ```
 
 Or use Azure DevOps pipeline:
-- Push to `main` branch
+- Push to `main` branch (infrastructure/bicep/* changes)
 - Pipeline automatically validates and deploys
 
 ## Auto-Shutdown Schedule
@@ -131,9 +144,8 @@ Stored in Azure DevOps Variable Group: `ctn-demo-variables`
 Key variables:
 - `AZURE_SUBSCRIPTION_ID`
 - `AZURE_LOCATION`
-- `PROJECT_PREFIX`
-- `ENVIRONMENT`
-- `TF_STATE_*` variables
+- `DATABASE_ADMIN_PASSWORD` (for dev)
+- `DATABASE_ADMIN_PASSWORD_PROD` (for production)
 
 ## Documentation
 

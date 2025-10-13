@@ -1,0 +1,198 @@
+# Bicep Infrastructure Deployment Pipeline
+# Deploys Azure resources for CTN Demo ASR using Bicep templates
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - infrastructure/bicep/*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: ctn-demo-variables
+  - name: workingDirectory
+    value: '$(System.DefaultWorkingDirectory)/infrastructure/bicep'
+  - name: azureSubscription
+    value: 'azure-ctn-demo'
+  - name: resourceGroupName
+    value: 'rg-ctn-demo-asr-dev'
+  - name: location
+    value: 'westeurope'
+
+stages:
+  - stage: Validate
+    displayName: 'Validate Bicep Templates'
+    jobs:
+      - job: ValidateBicep
+        displayName: 'Bicep Validation'
+        steps:
+          - task: AzureCLI@2
+            displayName: 'Install Bicep CLI'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az bicep install
+                az bicep version
+
+          - task: AzureCLI@2
+            displayName: 'Bicep Build (Validate Syntax)'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              workingDirectory: '$(workingDirectory)'
+              inlineScript: |
+                echo "Building Bicep template..."
+                az bicep build --file main.bicep
+                echo "✅ Bicep syntax validation passed"
+
+          - task: AzureCLI@2
+            displayName: 'Bicep What-If Analysis (Dev)'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              workingDirectory: '$(workingDirectory)'
+              inlineScript: |
+                echo "Running What-If analysis for development environment..."
+                az deployment sub what-if \
+                  --location $(location) \
+                  --template-file main.bicep \
+                  --parameters parameters.dev.json \
+                  --parameters databaseAdminPassword='$(DATABASE_ADMIN_PASSWORD)'
+            continueOnError: true
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Bicep Templates'
+            inputs:
+              targetPath: '$(workingDirectory)'
+              artifact: 'bicep-templates'
+              publishLocation: 'pipeline'
+
+  - stage: DeployDev
+    displayName: 'Deploy to Development'
+    dependsOn: Validate
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: DeployInfrastructureDev
+        displayName: 'Deploy Bicep to Dev'
+        environment: 'ctn-demo-asr-dev'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadPipelineArtifact@2
+                  displayName: 'Download Bicep Templates'
+                  inputs:
+                    artifactName: 'bicep-templates'
+                    targetPath: '$(Pipeline.Workspace)/bicep'
+
+                - task: AzureCLI@2
+                  displayName: 'Create Resource Group (if not exists)'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      az group create \
+                        --name $(resourceGroupName) \
+                        --location $(location) \
+                        --tags Environment=Development Project=CTN-ASR
+
+                - task: AzureCLI@2
+                  displayName: 'Deploy Bicep Template (Dev)'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    workingDirectory: '$(Pipeline.Workspace)/bicep'
+                    inlineScript: |
+                      echo "Deploying Bicep template to Development environment..."
+                      az deployment sub create \
+                        --location $(location) \
+                        --template-file main.bicep \
+                        --parameters parameters.dev.json \
+                        --parameters databaseAdminPassword='$(DATABASE_ADMIN_PASSWORD)' \
+                        --name "ctn-asr-dev-$(Build.BuildNumber)" \
+                        --verbose
+
+                      echo "✅ Deployment completed successfully"
+
+                - task: AzureCLI@2
+                  displayName: 'Get Deployment Outputs'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      echo "Retrieving deployment outputs..."
+                      az deployment sub show \
+                        --name "ctn-asr-dev-$(Build.BuildNumber)" \
+                        --query properties.outputs
+
+  - stage: DeployProd
+    displayName: 'Deploy to Production'
+    dependsOn: DeployDev
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: DeployInfrastructureProd
+        displayName: 'Deploy Bicep to Production'
+        environment: 'ctn-demo-asr-prod'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadPipelineArtifact@2
+                  displayName: 'Download Bicep Templates'
+                  inputs:
+                    artifactName: 'bicep-templates'
+                    targetPath: '$(Pipeline.Workspace)/bicep'
+
+                - task: AzureCLI@2
+                  displayName: 'Create Resource Group (if not exists)'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      az group create \
+                        --name rg-ctn-demo-asr-prod \
+                        --location $(location) \
+                        --tags Environment=Production Project=CTN-ASR
+
+                - task: AzureCLI@2
+                  displayName: 'Deploy Bicep Template (Production)'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    workingDirectory: '$(Pipeline.Workspace)/bicep'
+                    inlineScript: |
+                      echo "Deploying Bicep template to Production environment..."
+                      az deployment sub create \
+                        --location $(location) \
+                        --template-file main.bicep \
+                        --parameters parameters.prod.json \
+                        --parameters databaseAdminPassword='$(DATABASE_ADMIN_PASSWORD_PROD)' \
+                        --name "ctn-asr-prod-$(Build.BuildNumber)" \
+                        --verbose
+
+                      echo "✅ Production deployment completed successfully"
+
+                - task: AzureCLI@2
+                  displayName: 'Get Deployment Outputs (Production)'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      echo "Retrieving deployment outputs..."
+                      az deployment sub show \
+                        --name "ctn-asr-prod-$(Build.BuildNumber)" \
+                        --query properties.outputs

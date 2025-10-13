@@ -100,7 +100,7 @@ chore(deps): Upgrade react to v18.3
 3. Run tests: `npm test`
 4. Build both projects: `npm run build`
 5. **Invoke code-reviewer agent** to review changes
-6. **Invoke security-review agent** if changes involve authentication, data handling, or API endpoints
+6. **Invoke Security Analyst (SA) agent** if changes involve authentication, data handling, or API endpoints
 7. Create PR with description and testing notes
 8. Wait for CI/CD checks to pass
 9. Request review from team
@@ -114,7 +114,7 @@ chore(deps): Upgrade react to v18.3
 
 Claude Code provides specialized AI agents that should be invoked **proactively after every code change** to ensure quality, security, and best practices.
 
-#### 1. **commit-code-reviewer** 📝
+#### 1. **Code Reviewer (CR)** 📝
 
 **When to Use:**
 - After completing any code changes (MANDATORY)
@@ -132,14 +132,14 @@ Claude Code provides specialized AI agents that should be invoked **proactively 
 **Example Usage:**
 ```bash
 # After making code changes, invoke automatically
-Claude Code will invoke: commit-code-reviewer agent
+Claude Code will invoke: Code Reviewer (CR) agent
 ```
 
 **Output:** Comprehensive code review report with actionable recommendations
 
 ---
 
-#### 2. **security-review** 🔒
+#### 2. **Security Analyst (SA)** 🔒
 
 **When to Use (MANDATORY):**
 - After modifying authentication/authorization code
@@ -162,17 +162,17 @@ Claude Code will invoke: commit-code-reviewer agent
 **Example Usage:**
 ```bash
 # After authentication changes
-Claude Code will invoke: security-review agent
+Claude Code will invoke: Security Analyst (SA) agent
 
 # After API endpoint modifications
-Claude Code will invoke: security-review agent
+Claude Code will invoke: Security Analyst (SA) agent
 ```
 
 **Output:** Security assessment report with prioritized findings (Critical/High/Medium/Low)
 
 ---
 
-#### 3. **azure-test-engineer** 🧪
+#### 3. **Test Engineer (TE)** 🧪
 
 **When to Use:**
 - After implementing new features (TDD approach)
@@ -192,10 +192,10 @@ Claude Code will invoke: security-review agent
 **Example Usage:**
 ```bash
 # After implementing user authentication
-Claude Code will invoke: azure-test-engineer agent
+Claude Code will invoke: Test Engineer (TE) agent
 
 # When pipeline tests fail
-Claude Code will invoke: azure-test-engineer agent
+Claude Code will invoke: Test Engineer (TE) agent
 ```
 
 **Output:** Test cases, test plans, and detailed failure analysis
@@ -208,9 +208,9 @@ Claude Code will invoke: azure-test-engineer agent
 
 ```
 1. Make code changes
-2. ✅ Invoke commit-code-reviewer (ALWAYS)
-3. ✅ Invoke security-review (if security-related)
-4. ✅ Invoke azure-test-engineer (if new feature)
+2. ✅ Invoke Code Reviewer (CR) (ALWAYS)
+3. ✅ Invoke Security Analyst (SA) (if security-related)
+4. ✅ Invoke Test Engineer (TE) (if new feature)
 5. Review agent reports
 6. Fix identified issues
 7. Re-run agents if significant changes made
@@ -221,16 +221,16 @@ Claude Code will invoke: azure-test-engineer agent
 
 ```
 Authentication/Authorization changes:
-→ commit-code-reviewer + security-review
+→ Code Reviewer (CR) + Security Analyst (SA)
 
 Database operations:
-→ commit-code-reviewer + security-review
+→ Code Reviewer (CR) + Security Analyst (SA)
 
 File uploads:
-→ commit-code-reviewer + security-review
+→ Code Reviewer (CR) + Security Analyst (SA)
 
 API endpoints:
-→ commit-code-reviewer + security-review + azure-test-engineer
+→ Code Reviewer (CR) + Security Analyst (SA) + Test Engineer (TE)
 ```
 
 ---
@@ -247,10 +247,10 @@ git checkout -b feature/new-authentication
 # ... make code changes ...
 
 # 3. MANDATORY: Invoke code reviewer
-# Claude Code automatically invokes: commit-code-reviewer
+# Claude Code automatically invokes: Code Reviewer (CR)
 
 # 4. MANDATORY: Invoke security reviewer (auth changes)
-# Claude Code automatically invokes: security-review
+# Claude Code automatically invokes: Security Analyst (SA)
 
 # 5. Review reports and fix issues
 # ... address findings ...
