@@ -1,5 +1,6 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { Pool } from 'pg';
+import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -10,9 +11,12 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-export async function GetMember(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function handler(
+  request: AuthenticatedRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
   const orgId = request.params.orgId;
-  
+
   if (!orgId) {
     return {
       status: 400,
@@ -22,9 +26,9 @@ export async function GetMember(request: HttpRequest, context: InvocationContext
 
   try {
     const result = await pool.query(
-      `SELECT org_id, legal_name, lei, kvk, domain, status, membership_level, 
-              created_at, metadata, legal_entity_id 
-       FROM members 
+      `SELECT org_id, legal_name, lei, kvk, domain, status, membership_level,
+              created_at, metadata, legal_entity_id
+       FROM members
        WHERE org_id = $1`,
       [orgId]
     );
@@ -51,8 +55,8 @@ export async function GetMember(request: HttpRequest, context: InvocationContext
 }
 
 app.http('GetMember', {
-  methods: ['GET'],
+  methods: ['GET', 'OPTIONS'],
   route: 'v1/members/{orgId}',
   authLevel: 'anonymous',
-  handler: GetMember
+  handler: adminEndpoint(handler)
 });

@@ -1,5 +1,6 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
+import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -10,21 +11,10 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-export async function getEndpointTokens(
-  request: HttpRequest,
+async function handler(
+  request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    };
-  }
 
   try {
     const endpointId = request.params.endpointId;
@@ -33,7 +23,6 @@ export async function getEndpointTokens(
       return {
         status: 400,
         jsonBody: { error: 'Endpoint ID is required' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
@@ -59,7 +48,6 @@ export async function getEndpointTokens(
     return {
       status: 200,
       jsonBody: result.rows,
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
 
   } catch (error: any) {
@@ -67,7 +55,6 @@ export async function getEndpointTokens(
     return {
       status: 500,
       jsonBody: { error: 'Failed to fetch tokens' },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
   }
 }
@@ -76,5 +63,5 @@ app.http('getEndpointTokens', {
   methods: ['GET', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/endpoints/{endpointId}/tokens',
-  handler: getEndpointTokens,
+  handler: memberEndpoint(handler),
 });

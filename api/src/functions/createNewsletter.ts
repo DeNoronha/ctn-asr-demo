@@ -1,6 +1,7 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
 import { NewsletterService, CreateNewsletterInput } from '../services/newsletterService';
+import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -11,21 +12,10 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-export async function createNewsletter(
-  request: HttpRequest,
+async function handler(
+  request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    };
-  }
 
   try {
     const input: CreateNewsletterInput = await request.json() as CreateNewsletterInput;
@@ -37,7 +27,6 @@ export async function createNewsletter(
         jsonBody: {
           error: 'Missing required fields: title, subject_line, content, html_content'
         },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
@@ -47,7 +36,6 @@ export async function createNewsletter(
     return {
       status: 201,
       jsonBody: newsletter,
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
 
   } catch (error: any) {
@@ -55,7 +43,6 @@ export async function createNewsletter(
     return {
       status: 500,
       jsonBody: { error: 'Failed to create newsletter', message: error.message },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
   }
 }
@@ -64,5 +51,5 @@ app.http('createNewsletter', {
   methods: ['POST', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/newsletters',
-  handler: createNewsletter,
+  handler: adminEndpoint(handler),
 });

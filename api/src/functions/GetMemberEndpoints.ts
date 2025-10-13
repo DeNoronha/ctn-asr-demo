@@ -1,5 +1,6 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { Pool } from 'pg';
+import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -10,30 +11,14 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-export async function GetMemberEndpoints(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function handler(
+  request: AuthenticatedRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
   context.log('GetMemberEndpoints function triggered');
 
-  // Handle OPTIONS preflight
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-      }
-    };
-  }
-
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return { status: 401, body: JSON.stringify({ error: 'Missing or invalid authorization header' }) };
-    }
-
-    const token = authHeader.substring(7);
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-    const userEmail = payload.email || payload.preferred_username || payload.upn;
+    const userEmail = request.userEmail;
 
     // Get member's legal_entity_id
     const memberResult = await pool.query(`
@@ -52,7 +37,7 @@ export async function GetMemberEndpoints(request: HttpRequest, context: Invocati
 
     // Get all endpoints for this member's legal entity
     const result = await pool.query(`
-      SELECT 
+      SELECT
         legal_entity_endpoint_id,
         legal_entity_id,
         endpoint_name,
@@ -77,7 +62,6 @@ export async function GetMemberEndpoints(request: HttpRequest, context: Invocati
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
       },
       body: JSON.stringify({
         endpoints: result.rows
@@ -93,8 +77,8 @@ export async function GetMemberEndpoints(request: HttpRequest, context: Invocati
 }
 
 app.http('GetMemberEndpoints', {
-  methods: ['GET'],
+  methods: ['GET', 'OPTIONS'],
   route: 'v1/member-endpoints',
   authLevel: 'anonymous',
-  handler: GetMemberEndpoints
+  handler: memberEndpoint(handler)
 });

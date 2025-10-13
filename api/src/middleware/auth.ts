@@ -69,6 +69,7 @@ export interface AuthenticatedRequest {
   // Optional body access methods
   text?: () => Promise<string>;
   json?: () => Promise<any>;
+  arrayBuffer?: () => Promise<ArrayBuffer>;
 
   // Custom authentication properties
   user?: JwtPayload;
@@ -207,6 +208,7 @@ export async function authenticate(
       params: request.params,
       text: request.text,
       json: request.json,
+      arrayBuffer: request.arrayBuffer,
       user: payload,
       userId: payload.oid || payload.sub,
       userEmail: payload.email || payload.preferred_username || payload.upn,
@@ -265,6 +267,7 @@ export async function optionalAuthenticate(
     params: request.params,
     text: request.text,
     json: request.json,
+    arrayBuffer: request.arrayBuffer,
   };
 
   return anonymousRequest;

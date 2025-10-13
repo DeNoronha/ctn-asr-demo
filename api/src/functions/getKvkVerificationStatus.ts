@@ -1,6 +1,7 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
 import { BlobStorageService } from '../services/blobStorageService';
+import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -13,27 +14,16 @@ const pool = new Pool({
 
 const blobService = new BlobStorageService();
 
-export async function getKvkVerificationStatus(
-  request: HttpRequest,
+async function handler(
+  request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    };
-  }
 
   try {
     const legalEntityId = request.params.legalEntityId;
 
     const result = await pool.query(
-      `SELECT 
+      `SELECT
         kvk_document_url,
         kvk_verification_status,
         kvk_verified_at,
@@ -53,7 +43,6 @@ export async function getKvkVerificationStatus(
       return {
         status: 404,
         jsonBody: { error: 'Legal entity not found' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
@@ -72,7 +61,6 @@ export async function getKvkVerificationStatus(
     return {
       status: 200,
       jsonBody: data,
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
 
   } catch (error: any) {
@@ -80,7 +68,6 @@ export async function getKvkVerificationStatus(
     return {
       status: 500,
       jsonBody: { error: 'Failed to get verification status' },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
   }
 }
@@ -89,5 +76,5 @@ app.http('getKvkVerificationStatus', {
   methods: ['GET', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/legal-entities/{legalEntityId}/kvk-verification',
-  handler: getKvkVerificationStatus,
+  handler: memberEndpoint(handler),
 });

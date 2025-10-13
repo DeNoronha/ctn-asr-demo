@@ -1,6 +1,7 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
 import { SubscriptionService } from '../services/subscriptionService';
+import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -11,21 +12,10 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-export async function getSubscriptions(
-  request: HttpRequest,
+async function handler(
+  request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    };
-  }
 
   try {
     const subscriptionService = new SubscriptionService(pool);
@@ -43,7 +33,6 @@ export async function getSubscriptions(
     return {
       status: 200,
       jsonBody: subscriptions,
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
 
   } catch (error: any) {
@@ -51,7 +40,6 @@ export async function getSubscriptions(
     return {
       status: 500,
       jsonBody: { error: 'Failed to fetch subscriptions', message: error.message },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
   }
 }
@@ -60,5 +48,5 @@ app.http('getSubscriptions', {
   methods: ['GET', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/subscriptions',
-  handler: getSubscriptions,
+  handler: adminEndpoint(handler),
 });

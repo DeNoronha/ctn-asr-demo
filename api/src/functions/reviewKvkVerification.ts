@@ -1,5 +1,6 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
+import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -10,21 +11,10 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-export async function reviewKvkVerification(
-  request: HttpRequest,
+async function handler(
+  request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'PUT, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    };
-  }
 
   try {
     const legalEntityId = request.params.legalEntityId;
@@ -36,7 +26,6 @@ export async function reviewKvkVerification(
       return {
         status: 400,
         jsonBody: { error: 'Invalid status. Must be "verified" or "failed"' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
@@ -69,7 +58,6 @@ export async function reviewKvkVerification(
     return {
       status: 200,
       jsonBody: { message: 'Verification reviewed successfully', status },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
 
   } catch (error: any) {
@@ -77,7 +65,6 @@ export async function reviewKvkVerification(
     return {
       status: 500,
       jsonBody: { error: 'Failed to review verification' },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
   }
 }
@@ -86,5 +73,5 @@ app.http('reviewKvkVerification', {
   methods: ['PUT', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/legal-entities/{legalEntityId}/kvk-verification/review',
-  handler: reviewKvkVerification,
+  handler: adminEndpoint(handler),
 });

@@ -1,5 +1,6 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { Pool } from 'pg';
+import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -10,9 +11,12 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-export async function UpdateContact(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function handler(
+  request: AuthenticatedRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
   const contactId = request.params.contactId;
-  
+
   if (!contactId) {
     return {
       status: 400,
@@ -22,9 +26,9 @@ export async function UpdateContact(request: HttpRequest, context: InvocationCon
 
   try {
     const body = await request.json() as any;
-    
+
     const result = await pool.query(
-      `UPDATE legal_entity_contact 
+      `UPDATE legal_entity_contact
        SET contact_type = COALESCE($1, contact_type),
            first_name = COALESCE($2, first_name),
            last_name = COALESCE($3, last_name),
@@ -48,7 +52,7 @@ export async function UpdateContact(request: HttpRequest, context: InvocationCon
         body.job_title,
         body.department,
         body.is_primary,
-        body.modified_by || 'system',
+        request.userEmail || 'system',
         contactId
       ]
     );
@@ -75,8 +79,8 @@ export async function UpdateContact(request: HttpRequest, context: InvocationCon
 }
 
 app.http('UpdateContact', {
-  methods: ['PUT'],
+  methods: ['PUT', 'OPTIONS'],
   route: 'v1/contacts/{contactId}',
   authLevel: 'anonymous',
-  handler: UpdateContact
+  handler: memberEndpoint(handler)
 });

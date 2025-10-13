@@ -1,6 +1,7 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
 import { BlobStorageService } from '../services/blobStorageService';
+import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -13,21 +14,10 @@ const pool = new Pool({
 
 const blobService = new BlobStorageService();
 
-export async function getFlaggedEntities(
-  request: HttpRequest,
+async function handler(
+  request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    };
-  }
 
   try {
     const result = await pool.query(
@@ -63,7 +53,6 @@ export async function getFlaggedEntities(
     return {
       status: 200,
       jsonBody: entitiesWithSasUrls,
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
 
   } catch (error: any) {
@@ -71,7 +60,6 @@ export async function getFlaggedEntities(
     return {
       status: 500,
       jsonBody: { error: 'Failed to fetch flagged entities' },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
   }
 }
@@ -80,5 +68,5 @@ app.http('getFlaggedEntities', {
   methods: ['GET', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/kvk-verification/flagged',
-  handler: getFlaggedEntities,
+  handler: adminEndpoint(handler),
 });

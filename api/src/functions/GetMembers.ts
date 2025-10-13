@@ -1,5 +1,6 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { Pool } from 'pg';
+import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -10,7 +11,10 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-export async function GetMembers(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function handler(
+  request: AuthenticatedRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
   context.log('GetMembers function triggered');
 
   try {
@@ -36,8 +40,8 @@ export async function GetMembers(request: HttpRequest, context: InvocationContex
 }
 
 app.http('GetMembers', {
-  methods: ['GET'],
+  methods: ['GET', 'OPTIONS'],
   route: 'v1/members',
   authLevel: 'anonymous',
-  handler: GetMembers
+  handler: adminEndpoint(handler)
 });

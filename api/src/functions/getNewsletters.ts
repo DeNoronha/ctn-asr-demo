@@ -1,6 +1,7 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
 import { NewsletterService } from '../services/newsletterService';
+import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -11,21 +12,10 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-export async function getNewsletters(
-  request: HttpRequest,
+async function handler(
+  request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    };
-  }
 
   try {
     const newsletterService = new NewsletterService(pool);
@@ -40,7 +30,6 @@ export async function getNewsletters(
     return {
       status: 200,
       jsonBody: newsletters,
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
 
   } catch (error: any) {
@@ -48,7 +37,6 @@ export async function getNewsletters(
     return {
       status: 500,
       jsonBody: { error: 'Failed to fetch newsletters', message: error.message },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
   }
 }
@@ -57,5 +45,5 @@ app.http('getNewsletters', {
   methods: ['GET', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/newsletters',
-  handler: getNewsletters,
+  handler: adminEndpoint(handler),
 });

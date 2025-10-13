@@ -1,6 +1,7 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
 import { SubscriptionService, UpdateSubscriptionInput } from '../services/subscriptionService';
+import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -11,21 +12,10 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-export async function updateSubscription(
-  request: HttpRequest,
+async function handler(
+  request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'PUT, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    };
-  }
 
   try {
     const subscriptionId = request.params.subscriptionId;
@@ -34,7 +24,6 @@ export async function updateSubscription(
       return {
         status: 400,
         jsonBody: { error: 'Subscription ID is required' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
@@ -46,7 +35,6 @@ export async function updateSubscription(
     return {
       status: 200,
       jsonBody: subscription,
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
 
   } catch (error: any) {
@@ -56,14 +44,12 @@ export async function updateSubscription(
       return {
         status: 404,
         jsonBody: { error: 'Subscription not found' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
     return {
       status: 500,
       jsonBody: { error: 'Failed to update subscription', message: error.message },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
   }
 }
@@ -72,5 +58,5 @@ app.http('updateSubscription', {
   methods: ['PUT', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/subscriptions/{subscriptionId}',
-  handler: updateSubscription,
+  handler: adminEndpoint(handler),
 });

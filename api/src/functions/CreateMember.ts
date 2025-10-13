@@ -1,5 +1,6 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { Pool } from 'pg';
+import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -10,16 +11,19 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-export async function CreateMember(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function handler(
+  request: AuthenticatedRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
   try {
     const body = await request.json() as any;
-    
+
     // Validate required fields
     if (!body.org_id || !body.legal_name || !body.domain) {
       return {
         status: 400,
-        body: JSON.stringify({ 
-          error: 'Missing required fields: org_id, legal_name, domain' 
+        body: JSON.stringify({
+          error: 'Missing required fields: org_id, legal_name, domain'
         })
       };
     }
@@ -48,7 +52,7 @@ export async function CreateMember(request: HttpRequest, context: InvocationCont
     };
   } catch (error: any) {
     context.error('Error creating member:', error);
-    
+
     // Handle duplicate org_id
     if (error.code === '23505') {
       return {
@@ -56,7 +60,7 @@ export async function CreateMember(request: HttpRequest, context: InvocationCont
         body: JSON.stringify({ error: 'Member with this org_id already exists' })
       };
     }
-    
+
     return {
       status: 500,
       body: JSON.stringify({ error: 'Failed to create member' })
@@ -65,8 +69,8 @@ export async function CreateMember(request: HttpRequest, context: InvocationCont
 }
 
 app.http('CreateMember', {
-  methods: ['POST'],
+  methods: ['POST', 'OPTIONS'],
   route: 'v1/members',
   authLevel: 'anonymous',
-  handler: CreateMember
+  handler: adminEndpoint(handler)
 });

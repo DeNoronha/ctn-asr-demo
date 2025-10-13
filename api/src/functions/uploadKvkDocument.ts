@@ -1,30 +1,19 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import * as multipart from 'parse-multipart-data';
 import { BlobStorageService } from '../services/blobStorageService';
 import { DocumentIntelligenceService } from '../services/documentIntelligenceService';
 import { KvKService } from '../services/kvkService';
 import { getPool } from '../utils/database';
 import { getRequestId } from '../utils/requestId';
+import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = getPool(); // ✅ SECURITY FIX: Use shared pool with SSL validation
 
-export async function uploadKvkDocument(
-  request: HttpRequest,
+async function handler(
+  request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
   context.log('KvK Document Upload requested');
-
-  // CORS preflight
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    };
-  }
 
   try {
     const legalEntityId = request.params.legalEntityId;
@@ -33,7 +22,6 @@ export async function uploadKvkDocument(
       return {
         status: 400,
         jsonBody: { error: 'Legal entity ID is required' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
@@ -285,7 +273,6 @@ export async function uploadKvkDocument(
         documentUrl: blobUrl,
         legalEntityId,
       },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
 
   } catch (error: any) {
@@ -293,7 +280,6 @@ export async function uploadKvkDocument(
     return {
       status: 500,
       jsonBody: { error: 'Failed to upload document', details: error.message },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
   }
 }
@@ -302,5 +288,5 @@ app.http('uploadKvkDocument', {
   methods: ['POST', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/legal-entities/{legalEntityId}/kvk-document',
-  handler: uploadKvkDocument,
+  handler: memberEndpoint(handler),
 });

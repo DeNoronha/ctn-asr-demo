@@ -1,5 +1,6 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
+import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -10,21 +11,10 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-export async function updateEndpoint(
-  request: HttpRequest,
+async function handler(
+  request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'PUT, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    };
-  }
 
   try {
     const endpointId = request.params.endpointId;
@@ -34,7 +24,6 @@ export async function updateEndpoint(
       return {
         status: 400,
         jsonBody: { error: 'Endpoint ID is required' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
@@ -62,7 +51,7 @@ export async function updateEndpoint(
         body.is_active,
         body.is_active,
         body.deactivation_reason || null,
-        body.modified_by || 'SYSTEM',
+        request.userEmail || 'SYSTEM',
         endpointId
       ]
     );
@@ -71,14 +60,12 @@ export async function updateEndpoint(
       return {
         status: 404,
         jsonBody: { error: 'Endpoint not found' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
     return {
       status: 200,
       jsonBody: result.rows[0],
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
 
   } catch (error: any) {
@@ -86,7 +73,6 @@ export async function updateEndpoint(
     return {
       status: 500,
       jsonBody: { error: 'Failed to update endpoint' },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
   }
 }
@@ -95,5 +81,5 @@ app.http('updateEndpoint', {
   methods: ['PUT', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/endpoints/{endpointId}',
-  handler: updateEndpoint,
+  handler: memberEndpoint(handler),
 });

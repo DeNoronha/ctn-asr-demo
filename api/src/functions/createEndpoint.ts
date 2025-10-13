@@ -1,5 +1,6 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
+import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -10,21 +11,10 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-export async function createEndpoint(
-  request: HttpRequest,
+async function handler(
+  request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    };
-  }
 
   try {
     const legalEntityId = request.params.legalEntityId;
@@ -34,7 +24,6 @@ export async function createEndpoint(
       return {
         status: 400,
         jsonBody: { error: 'Legal entity ID is required' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
@@ -43,7 +32,6 @@ export async function createEndpoint(
       return {
         status: 400,
         jsonBody: { error: 'Endpoint name is required' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
@@ -57,7 +45,6 @@ export async function createEndpoint(
       return {
         status: 404,
         jsonBody: { error: 'Legal entity not found' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
@@ -86,7 +73,7 @@ export async function createEndpoint(
         body.authentication_method || 'TOKEN',
         body.is_active !== undefined ? body.is_active : true,
         body.is_active !== false ? new Date() : null,
-        body.created_by || 'SYSTEM'
+        request.userEmail || 'SYSTEM'
       ]
     );
 
@@ -101,14 +88,13 @@ export async function createEndpoint(
         result.rows[0].legal_entity_endpoint_id,
         'CREATE',
         'SUCCESS',
-        JSON.stringify({ endpoint_name: body.endpoint_name })
+        JSON.stringify({ endpoint_name: body.endpoint_name, created_by: request.userEmail })
       ]
     );
 
     return {
       status: 201,
       jsonBody: result.rows[0],
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
 
   } catch (error: any) {
@@ -116,7 +102,6 @@ export async function createEndpoint(
     return {
       status: 500,
       jsonBody: { error: 'Failed to create endpoint', details: error.message },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
   }
 }
@@ -125,5 +110,5 @@ app.http('createEndpoint', {
   methods: ['POST', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/legal-entities/{legalEntityId}/endpoints',
-  handler: createEndpoint,
+  handler: memberEndpoint(handler),
 });

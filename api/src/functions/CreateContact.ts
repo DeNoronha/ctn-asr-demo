@@ -1,5 +1,6 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { Pool } from 'pg';
+import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -10,10 +11,13 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-export async function CreateContact(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function handler(
+  request: AuthenticatedRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
   try {
     const body = await request.json() as any;
-    
+
     if (!body.legal_entity_id || !body.email) {
       return {
         status: 400,
@@ -22,8 +26,8 @@ export async function CreateContact(request: HttpRequest, context: InvocationCon
     }
 
     const result = await pool.query(
-      `INSERT INTO legal_entity_contact 
-       (legal_entity_id, contact_type, first_name, last_name, email, phone, mobile, 
+      `INSERT INTO legal_entity_contact
+       (legal_entity_id, contact_type, first_name, last_name, email, phone, mobile,
         job_title, department, is_primary, created_by, dt_created, dt_modified)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
        RETURNING *`,
@@ -38,7 +42,7 @@ export async function CreateContact(request: HttpRequest, context: InvocationCon
         body.job_title,
         body.department,
         body.is_primary || false,
-        body.created_by || 'system'
+        request.userEmail || 'system'
       ]
     );
 
@@ -57,8 +61,8 @@ export async function CreateContact(request: HttpRequest, context: InvocationCon
 }
 
 app.http('CreateContact', {
-  methods: ['POST'],
+  methods: ['POST', 'OPTIONS'],
   route: 'v1/contacts',
   authLevel: 'anonymous',
-  handler: CreateContact
+  handler: memberEndpoint(handler)
 });

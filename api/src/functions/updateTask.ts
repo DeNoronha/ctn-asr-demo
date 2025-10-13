@@ -1,6 +1,7 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
 import { TaskService, UpdateTaskInput } from '../services/taskService';
+import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -11,21 +12,10 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-export async function updateTask(
-  request: HttpRequest,
+async function handler(
+  request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'PUT, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    };
-  }
 
   try {
     const taskId = request.params.taskId;
@@ -34,7 +24,6 @@ export async function updateTask(
       return {
         status: 400,
         jsonBody: { error: 'Task ID is required' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
@@ -46,7 +35,6 @@ export async function updateTask(
     return {
       status: 200,
       jsonBody: task,
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
 
   } catch (error: any) {
@@ -56,14 +44,12 @@ export async function updateTask(
       return {
         status: 404,
         jsonBody: { error: 'Task not found' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
     return {
       status: 500,
       jsonBody: { error: 'Failed to update task', message: error.message },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
   }
 }
@@ -72,5 +58,5 @@ app.http('updateTask', {
   methods: ['PUT', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/admin/tasks/{taskId}',
-  handler: updateTask,
+  handler: adminEndpoint(handler),
 });

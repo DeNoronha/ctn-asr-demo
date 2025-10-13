@@ -1,7 +1,8 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
 import { v4 as uuidv4 } from 'uuid';
 import * as crypto from 'crypto';
+import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -12,21 +13,10 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-export async function issueEndpointToken(
-  request: HttpRequest,
+async function handler(
+  request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    };
-  }
 
   try {
     const endpointId = request.params.endpointId;
@@ -36,7 +26,6 @@ export async function issueEndpointToken(
       return {
         status: 400,
         jsonBody: { error: 'Endpoint ID is required' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
@@ -55,7 +44,6 @@ export async function issueEndpointToken(
       return {
         status: 404,
         jsonBody: { error: 'Endpoint not found or inactive' },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
@@ -88,7 +76,7 @@ export async function issueEndpointToken(
         'BVAD',
         tokenHash,
         expiresAt,
-        body.issued_by || 'SYSTEM'
+        request.userEmail || 'SYSTEM'
       ]
     );
 
@@ -105,7 +93,8 @@ export async function issueEndpointToken(
         'SUCCESS',
         JSON.stringify({
           endpoint_name: endpoint.endpoint_name,
-          company_name: endpoint.primary_legal_name
+          company_name: endpoint.primary_legal_name,
+          issued_by: request.userEmail
         })
       ]
     );
@@ -120,7 +109,6 @@ export async function issueEndpointToken(
         endpoint_name: endpoint.endpoint_name,
         message: 'Token issued successfully. Please store it securely as it cannot be retrieved again.'
       },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
 
   } catch (error: any) {
@@ -128,7 +116,6 @@ export async function issueEndpointToken(
     return {
       status: 500,
       jsonBody: { error: 'Failed to issue token' },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
   }
 }
@@ -137,5 +124,5 @@ app.http('issueEndpointToken', {
   methods: ['POST', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/endpoints/{endpointId}/tokens',
-  handler: issueEndpointToken,
+  handler: memberEndpoint(handler),
 });

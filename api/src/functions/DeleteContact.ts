@@ -1,5 +1,6 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { Pool } from 'pg';
+import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -10,9 +11,12 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-export async function DeleteContact(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function handler(
+  request: AuthenticatedRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
   const contactId = request.params.contactId;
-  
+
   if (!contactId) {
     return {
       status: 400,
@@ -23,7 +27,7 @@ export async function DeleteContact(request: HttpRequest, context: InvocationCon
   try {
     // Soft delete
     const result = await pool.query(
-      `UPDATE legal_entity_contact 
+      `UPDATE legal_entity_contact
        SET is_deleted = TRUE, dt_modified = CURRENT_TIMESTAMP
        WHERE legal_entity_contact_id = $1
        RETURNING legal_entity_contact_id`,
@@ -51,8 +55,8 @@ export async function DeleteContact(request: HttpRequest, context: InvocationCon
 }
 
 app.http('DeleteContact', {
-  methods: ['DELETE'],
+  methods: ['DELETE', 'OPTIONS'],
   route: 'v1/contacts/{contactId}',
   authLevel: 'anonymous',
-  handler: DeleteContact
+  handler: memberEndpoint(handler)
 });

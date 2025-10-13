@@ -1,6 +1,7 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
 import { TaskService, CreateTaskInput } from '../services/taskService';
+import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -11,21 +12,10 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-export async function createTask(
-  request: HttpRequest,
+async function handler(
+  request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-
-  if (request.method === 'OPTIONS') {
-    return {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    };
-  }
 
   try {
     const input: CreateTaskInput = await request.json() as CreateTaskInput;
@@ -37,7 +27,6 @@ export async function createTask(
         jsonBody: {
           error: 'Missing required fields: task_type, title, description'
         },
-        headers: { 'Access-Control-Allow-Origin': '*' },
       };
     }
 
@@ -47,7 +36,6 @@ export async function createTask(
     return {
       status: 201,
       jsonBody: task,
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
 
   } catch (error: any) {
@@ -55,7 +43,6 @@ export async function createTask(
     return {
       status: 500,
       jsonBody: { error: 'Failed to create task', message: error.message },
-      headers: { 'Access-Control-Allow-Origin': '*' },
     };
   }
 }
@@ -64,5 +51,5 @@ app.http('createTask', {
   methods: ['POST', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/admin/tasks',
-  handler: createTask,
+  handler: adminEndpoint(handler),
 });
