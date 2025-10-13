@@ -10,7 +10,8 @@ trigger:
       - web/*
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: 'Default'  # Use self-hosted agent pool
+  # vmImage: 'ubuntu-latest'  # Commented out - requires MS-hosted parallelism
 
 variables:
   - group: ctn-demo-variables  # Reference variable group
