@@ -53,7 +53,7 @@ REACT_APP_API_URL=http://localhost:7071/api/v1
     "POSTGRES_PORT": "5432",
     "POSTGRES_DATABASE": "asr_dev",
     "POSTGRES_USER": "asradmin",
-    "POSTGRES_PASSWORD": "[REDACTED]",
+    "POSTGRES_PASSWORD": "<YOUR_POSTGRES_PASSWORD>",
     "AZURE_STORAGE_CONNECTION_STRING": "<from Azure Portal>",
     "DOCUMENT_INTELLIGENCE_ENDPOINT": "<from Azure Portal>",
     "DOCUMENT_INTELLIGENCE_KEY": "<from Azure Portal>",
@@ -136,7 +136,7 @@ git push
 Apply migrations to database:
 
 ```bash
-psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com port=5432 dbname=asr_dev user=asradmin password=[REDACTED] sslmode=require" -f database/migrations/XXX_migration_name.sql
+psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com port=5432 dbname=asr_dev user=asradmin password=<YOUR_POSTGRES_PASSWORD> sslmode=require" -f database/migrations/XXX_migration_name.sql
 ```
 
 Or use Azure Data Studio to run migration files.

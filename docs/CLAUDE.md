@@ -1206,7 +1206,7 @@ az functionapp deployment list-publishing-profiles \
 - Port: 5432
 - Database: asr_dev
 - User: asradmin
-- Password: [REDACTED]
+- Password: **(stored in Azure Key Vault / local.settings.json)**
 
 **Storage Account:** stctnasrdev96858 (KvK documents)
 **Document Intelligence:** doc-intel-ctn-asr-dev

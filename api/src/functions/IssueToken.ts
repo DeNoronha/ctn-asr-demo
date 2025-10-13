@@ -66,7 +66,16 @@ export async function IssueToken(request: HttpRequest, context: InvocationContex
     };
 
     // Sign the token
-    const token = jwt.sign(payload, process.env.JWT_SECRET || 'demo-secret', {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      context.error('JWT_SECRET environment variable is not configured');
+      return {
+        status: 500,
+        body: JSON.stringify({ error: 'Server configuration error: JWT secret not configured' })
+      };
+    }
+
+    const token = jwt.sign(payload, jwtSecret, {
       algorithm: 'HS256'
     });
 

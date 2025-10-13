@@ -31,7 +31,7 @@ az postgres flexible-server firewall-rule create \
   --end-ip-address YOUR_IP
 
 # Run migration:
-PGPASSWORD='[REDACTED]' psql \
+PGPASSWORD='<YOUR_POSTGRES_PASSWORD>' psql \
   -h psql-ctn-demo-asr-dev.postgres.database.azure.com \
   -U asradmin \
   -d asr_dev \

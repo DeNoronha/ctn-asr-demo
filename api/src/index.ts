@@ -1,3 +1,17 @@
+// ========================================
+// Azure Functions App Entry Point
+// ========================================
+
+// Startup validation - ensures all required secrets are configured
+import { enforceStartupValidation } from './utils/startupValidation';
+
+try {
+  enforceStartupValidation();
+} catch (error) {
+  console.error('Failed to start API:', error);
+  throw error; // Fail fast if validation fails
+}
+
 // Import all functions to register them with Azure Functions runtime
 import './functions/GetMembers';
 import './functions/GetMember';

@@ -79,7 +79,7 @@ curl -X POST http://localhost:7071/api/v1/endpoints/{endpointId}/tokens
 
 **3. Test Database Connectivity:**
 ```bash
-psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com port=5432 dbname=asr_dev user=asradmin password=[REDACTED] sslmode=require"
+psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com port=5432 dbname=asr_dev user=asradmin password=<YOUR_POSTGRES_PASSWORD> sslmode=require"
 ```
 
 Run sample queries:

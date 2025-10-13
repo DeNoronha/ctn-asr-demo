@@ -16,6 +16,13 @@ build/
 .env.production
 *.local
 
+# Azure Functions local settings (contains secrets)
+local.settings.json
+api/local.settings.json
+
+# Claude Code local settings (may contain sensitive data)
+.claude/settings.local.json
+
 # IDE
 .idea/
 *.swp
