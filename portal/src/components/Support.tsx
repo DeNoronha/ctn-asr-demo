@@ -37,22 +37,22 @@ export const Support: React.FC = () => {
           </p>
           <ul className="simple-list">
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer">
+              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
                 Getting Started Guide
               </a>
             </li>
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer">
+              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
                 API Documentation
               </a>
             </li>
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer">
+              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
                 Integration Examples
               </a>
             </li>
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer">
+              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
                 Troubleshooting Guide
               </a>
             </li>
@@ -68,22 +68,22 @@ export const Support: React.FC = () => {
           </p>
           <ul className="simple-list">
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer">
+              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
                 Member Forum
               </a>
             </li>
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer">
+              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
                 Technical Blog
               </a>
             </li>
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer">
+              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
                 Webinars & Events
               </a>
             </li>
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer">
+              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
                 Release Notes
               </a>
             </li>
@@ -119,7 +119,7 @@ export const Support: React.FC = () => {
             Last updated: Just now
           </p>
           <a
-            href="#"
+            href="javascript:void(0)"
             target="_blank"
             rel="noopener noreferrer"
             style={{

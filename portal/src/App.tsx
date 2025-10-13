@@ -219,36 +219,42 @@ function AppContent({ instance }: AppContentProps) {
           {memberData && (
             <nav className="tab-navigation">
               <button
+                type="button"
                 className={`tab-button ${activeTab === 'dashboard' ? 'active' : ''}`}
                 onClick={() => setActiveTab('dashboard')}
               >
                 Dashboard
               </button>
               <button
+                type="button"
                 className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
                 onClick={() => setActiveTab('profile')}
               >
                 Organization Profile
               </button>
               <button
+                type="button"
                 className={`tab-button ${activeTab === 'contacts' ? 'active' : ''}`}
                 onClick={() => setActiveTab('contacts')}
               >
                 Contacts
               </button>
               <button
+                type="button"
                 className={`tab-button ${activeTab === 'endpoints' ? 'active' : ''}`}
                 onClick={() => setActiveTab('endpoints')}
               >
                 Endpoints
               </button>
               <button
+                type="button"
                 className={`tab-button ${activeTab === 'tokens' ? 'active' : ''}`}
                 onClick={() => setActiveTab('tokens')}
               >
                 API Tokens
               </button>
               <button
+                type="button"
                 className={`tab-button ${activeTab === 'support' ? 'active' : ''}`}
                 onClick={() => setActiveTab('support')}
               >

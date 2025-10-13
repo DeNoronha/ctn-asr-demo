@@ -69,7 +69,7 @@ export const Endpoints: React.FC<EndpointsProps> = ({
 
       <div className="endpoints-header">
         <p>Manage your organization's data endpoints for sharing with the CTN network.</p>
-        <button onClick={handleAddEndpoint} className="btn-primary">
+        <button type="button" onClick={handleAddEndpoint} className="btn-primary">
           Add New Endpoint
         </button>
       </div>
@@ -125,9 +125,15 @@ export const Endpoints: React.FC<EndpointsProps> = ({
                 )}
               </div>
               <div className="endpoint-actions">
-                <button className="btn-secondary">Test Connection</button>
-                <button className="btn-secondary">Edit</button>
-                <button className="btn-danger">Delete</button>
+                <button type="button" className="btn-secondary">
+                  Test Connection
+                </button>
+                <button type="button" className="btn-secondary">
+                  Edit
+                </button>
+                <button type="button" className="btn-danger">
+                  Delete
+                </button>
               </div>
             </div>
           ))}
@@ -139,7 +145,7 @@ export const Endpoints: React.FC<EndpointsProps> = ({
           <div className="modal-content">
             <h3>Add New Endpoint</h3>
             <p className="text-muted">Endpoint creation form coming soon...</p>
-            <button onClick={() => setShowAddForm(false)} className="btn-secondary">
+            <button type="button" onClick={() => setShowAddForm(false)} className="btn-secondary">
               Close
             </button>
           </div>

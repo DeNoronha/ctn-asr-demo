@@ -119,9 +119,10 @@ export const ProfileView: React.FC<ComponentProps> = ({
         <Dialog title="Edit Profile" onClose={() => setEditMode(false)} width={600}>
           <form onSubmit={handleSubmit} className="simple-form">
             <div className="form-field">
-              <label>Domain</label>
+              <label htmlFor="domain">Domain</label>
               <input
                 type="text"
+                id="domain"
                 name="domain"
                 value={formData.domain}
                 onChange={handleChange}
@@ -129,9 +130,10 @@ export const ProfileView: React.FC<ComponentProps> = ({
               />
             </div>
             <div className="form-field">
-              <label>Address Line 1</label>
+              <label htmlFor="address_line1">Address Line 1</label>
               <input
                 type="text"
+                id="address_line1"
                 name="address_line1"
                 value={formData.address_line1}
                 onChange={handleChange}
@@ -139,9 +141,10 @@ export const ProfileView: React.FC<ComponentProps> = ({
               />
             </div>
             <div className="form-field">
-              <label>Address Line 2</label>
+              <label htmlFor="address_line2">Address Line 2</label>
               <input
                 type="text"
+                id="address_line2"
                 name="address_line2"
                 value={formData.address_line2}
                 onChange={handleChange}
@@ -150,9 +153,10 @@ export const ProfileView: React.FC<ComponentProps> = ({
             </div>
             <div className="form-row">
               <div className="form-field">
-                <label>Postal Code</label>
+                <label htmlFor="postal_code">Postal Code</label>
                 <input
                   type="text"
+                  id="postal_code"
                   name="postal_code"
                   value={formData.postal_code}
                   onChange={handleChange}
@@ -160,9 +164,10 @@ export const ProfileView: React.FC<ComponentProps> = ({
                 />
               </div>
               <div className="form-field">
-                <label>City</label>
+                <label htmlFor="city">City</label>
                 <input
                   type="text"
+                  id="city"
                   name="city"
                   value={formData.city}
                   onChange={handleChange}
@@ -171,9 +176,10 @@ export const ProfileView: React.FC<ComponentProps> = ({
               </div>
             </div>
             <div className="form-field">
-              <label>Province/State</label>
+              <label htmlFor="province">Province/State</label>
               <input
                 type="text"
+                id="province"
                 name="province"
                 value={formData.province}
                 onChange={handleChange}
@@ -181,9 +187,10 @@ export const ProfileView: React.FC<ComponentProps> = ({
               />
             </div>
             <div className="form-field">
-              <label>Country Code (2 letters)</label>
+              <label htmlFor="country_code">Country Code (2 letters)</label>
               <input
                 type="text"
+                id="country_code"
                 name="country_code"
                 value={formData.country_code}
                 onChange={handleChange}

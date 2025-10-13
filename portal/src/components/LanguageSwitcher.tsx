@@ -23,7 +23,7 @@ const DROPDOWN_STYLE = { width: '180px' } as const;
 
 const LanguageSwitcher: React.FC = () => {
   const { i18n } = useTranslation();
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>(() => {
+  const [selectedLanguage] = useState<Language>(() => {
     // Handle language variants like 'en-US' by taking only the base code
     const currentLangCode = i18n.language.split('-')[0];
     return languages.find((lang) => lang.code === currentLangCode) || languages[0];

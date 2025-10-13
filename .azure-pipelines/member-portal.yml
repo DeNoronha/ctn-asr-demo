@@ -53,8 +53,12 @@ steps:
 
   - script: |
       cd portal
-      BASE_COMMIT=$(git rev-parse origin/main)
+      # Fetch origin to ensure we have the reference
+      git fetch origin main --depth=50
+      # Use the commit before HEAD as base (for comparing current changes)
+      BASE_COMMIT=$(git rev-parse HEAD~1)
       HEAD_COMMIT=$(git rev-parse HEAD)
+      echo "Scanning commits: $BASE_COMMIT -> $HEAD_COMMIT"
       aikido-api-client scan 1094319 $BASE_COMMIT $HEAD_COMMIT main \
         --minimum-severity-level MEDIUM \
         --fail-on-sast-scan \
