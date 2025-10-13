@@ -6,6 +6,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { EmailClient } from "@azure/communication-email";
 import { emailTemplateService } from "../services/emailTemplateService";
+import { withEventGridValidation, validateEventGridSchema } from "../middleware/eventGridValidation";
 
 // Event type to template mapping
 const EVENT_TEMPLATE_MAPPING: Record<string, { templateName: string; subjectKey: string }> = {
@@ -82,6 +83,13 @@ export async function EventGridHandler(
     // Process each event
     for (const event of events) {
       context.log(`Processing event: ${event.eventType}`);
+
+      // Validate event schema
+      const schemaValidation = validateEventGridSchema(event);
+      if (!schemaValidation.valid) {
+        context.error(`Invalid event schema: ${schemaValidation.error}`);
+        continue;
+      }
 
       const data = event.data;
       const recipientEmail = data.recipientEmail || data.contactEmail;
@@ -186,5 +194,5 @@ export async function EventGridHandler(
 app.http('EventGridHandler', {
   methods: ['POST'],
   authLevel: 'anonymous',
-  handler: EventGridHandler
+  handler: withEventGridValidation(EventGridHandler)
 });
