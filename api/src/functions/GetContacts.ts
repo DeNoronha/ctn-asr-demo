@@ -3,6 +3,7 @@ import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrappe
 import { Permission, hasAnyRole, UserRole } from '../middleware/rbac';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { getPool } from '../utils/database';
+import { getPaginationParams, executePaginatedQuery } from '../utils/pagination';
 
 async function handler(request: AuthenticatedRequest, context: InvocationContext): Promise<HttpResponseInit> {
   const pool = getPool();
@@ -27,19 +28,21 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
   try {
     const userEmail = request.userEmail;
     const userRoles = request.userRoles || [];
+    const pagination = getPaginationParams(request);
 
     // Admin can read contacts for any entity
     if (hasAnyRole(request, [UserRole.SYSTEM_ADMIN, UserRole.ASSOCIATION_ADMIN])) {
-      const result = await pool.query(
-        `SELECT legal_entity_contact_id, legal_entity_id, dt_created, dt_modified,
+      const baseQuery = `
+        SELECT legal_entity_contact_id, legal_entity_id, dt_created, dt_modified,
                 created_by, modified_by, is_deleted, contact_type, first_name, last_name,
                 email, phone, mobile, job_title, department, is_primary,
                 CONCAT(first_name, ' ', last_name) as full_name
          FROM legal_entity_contact
          WHERE legal_entity_id = $1 AND (is_deleted IS NULL OR is_deleted = FALSE)
-         ORDER BY is_primary DESC, last_name, first_name`,
-        [legalEntityId]
-      );
+         ORDER BY is_primary DESC, last_name, first_name
+      `;
+
+      const result = await executePaginatedQuery(pool, baseQuery, [legalEntityId], pagination);
 
       // Log successful access
       await logAuditEvent({
@@ -55,12 +58,12 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
         resource_type: 'legal_entity_contact',
         resource_id: legalEntityId,
         action: 'read',
-        details: { admin_access: true, count: result.rows.length }
+        details: { admin_access: true, count: result.pagination.totalItems }
       }, context);
 
       return {
         status: 200,
-        jsonBody: result.rows
+        jsonBody: result
       };
     }
 
@@ -103,17 +106,18 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
       };
     }
 
-    // Return contacts
-    const result = await pool.query(
-      `SELECT legal_entity_contact_id, legal_entity_id, dt_created, dt_modified,
+    // Return contacts with pagination
+    const baseQuery = `
+      SELECT legal_entity_contact_id, legal_entity_id, dt_created, dt_modified,
               created_by, modified_by, is_deleted, contact_type, first_name, last_name,
               email, phone, mobile, job_title, department, is_primary,
               CONCAT(first_name, ' ', last_name) as full_name
        FROM legal_entity_contact
        WHERE legal_entity_id = $1 AND (is_deleted IS NULL OR is_deleted = FALSE)
-       ORDER BY is_primary DESC, last_name, first_name`,
-      [legalEntityId]
-    );
+       ORDER BY is_primary DESC, last_name, first_name
+    `;
+
+    const result = await executePaginatedQuery(pool, baseQuery, [legalEntityId], pagination);
 
     // Log successful access
     await logAuditEvent({
@@ -129,12 +133,12 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
       resource_type: 'legal_entity_contact',
       resource_id: legalEntityId,
       action: 'read',
-      details: { count: result.rows.length }
+      details: { count: result.pagination.totalItems }
     }, context);
 
     return {
       status: 200,
-      jsonBody: result.rows
+      jsonBody: result
     };
   } catch (error) {
     context.error('Error fetching contacts:', error);
