@@ -45,6 +45,25 @@ steps:
     displayName: 'Run npm security audit'
     continueOnError: true
 
+  - script: |
+      npm install -g @aikidosec/ci-api-client
+      aikido-api-client apikey $(AIKIDO_CI_API_KEY)
+    displayName: 'Install Aikido CI client'
+    continueOnError: true
+
+  - script: |
+      cd web
+      BASE_COMMIT=$(git rev-parse origin/main)
+      HEAD_COMMIT=$(git rev-parse HEAD)
+      aikido-api-client scan 1094319 $BASE_COMMIT $HEAD_COMMIT main \
+        --minimum-severity-level MEDIUM \
+        --fail-on-sast-scan \
+        --fail-on-secrets-scan || echo "Aikido scan completed with findings"
+    displayName: 'Run Aikido Security scan'
+    env:
+      AIKIDO_CI_API_KEY: $(AIKIDO_CI_API_KEY)
+    continueOnError: true
+
   - task: PublishPipelineArtifact@1
     displayName: 'Publish security reports'
     condition: always()
