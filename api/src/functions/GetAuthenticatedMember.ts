@@ -1,5 +1,6 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { Pool } from 'pg';
+import { authenticatedEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -7,50 +8,25 @@ const pool = new Pool({
   database: process.env.POSTGRES_DATABASE,
   user: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: true }, // SSL validation enabled
 });
 
-export async function GetAuthenticatedMember(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function handler(
+  request: AuthenticatedRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
   context.log('GetAuthenticatedMember function triggered');
 
   try {
-    // Extract user identity from Azure AD token
-    const authHeader = request.headers.get('authorization');
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return {
-        status: 401,
-        body: JSON.stringify({ error: 'Missing or invalid authorization header' })
-      };
-    }
+    // User info is already validated by middleware
+    const userEmail = request.userEmail;
+    const userId = request.userId;
 
-    // Parse the JWT token to get user claims
-    const token = authHeader.substring(7);
-    const tokenParts = token.split('.');
-    
-    if (tokenParts.length !== 3) {
-      return {
-        status: 401,
-        body: JSON.stringify({ error: 'Invalid token format' })
-      };
-    }
-
-    // Decode the payload (second part of JWT)
-    const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString());
-    const userObjectId = payload.oid || payload.sub;
-    const userEmail = payload.email || payload.preferred_username || payload.upn;
-
-    if (!userObjectId && !userEmail) {
-      return {
-        status: 401,
-        body: JSON.stringify({ error: 'Unable to identify user from token' })
-      };
-    }
-
-    context.log(`Authenticated user: ${userEmail} (${userObjectId})`);
+    context.log(`Fetching member data for user: ${userEmail} (${userId})`);
 
     // Query member data based on user's email
-    let result = await pool.query(`
+    let result = await pool.query(
+      `
       SELECT DISTINCT
         m.org_id as "organizationId",
         m.legal_name as "legalName",
@@ -70,13 +46,16 @@ export async function GetAuthenticatedMember(request: HttpRequest, context: Invo
       LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
       WHERE c.email = $1 AND c.is_active = true
       LIMIT 1
-    `, [userEmail]);
+    `,
+      [userEmail]
+    );
 
     // If no result, try matching by domain from email
     if (result.rows.length === 0 && userEmail) {
       const emailDomain = userEmail.split('@')[1];
-      result = await pool.query(`
-        SELECT 
+      result = await pool.query(
+        `
+        SELECT
           m.org_id as "organizationId",
           m.legal_name as "legalName",
           m.lei,
@@ -91,44 +70,47 @@ export async function GetAuthenticatedMember(request: HttpRequest, context: Invo
         LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
         WHERE m.domain = $1
         LIMIT 1
-      `, [emailDomain]);
+      `,
+        [emailDomain]
+      );
     }
 
     if (result.rows.length === 0) {
       return {
         status: 404,
-        body: JSON.stringify({ 
-          error: 'No member data found for this user',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          error: 'not_found',
+          error_description: 'No member data found for this user',
           email: userEmail,
-          objectId: userObjectId
-        })
+          userId: userId,
+        }),
       };
     }
 
     return {
       status: 200,
-      headers: { 
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type,Authorization'
-      },
-      body: JSON.stringify(result.rows[0])
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(result.rows[0]),
     };
   } catch (error) {
     context.error('Error fetching authenticated member:', error);
     return {
       status: 500,
-      body: JSON.stringify({ 
-        error: 'Failed to fetch member data',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        error: 'internal_server_error',
+        error_description: 'Failed to fetch member data',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      }),
     };
   }
 }
 
+// Register the endpoint with authentication
 app.http('GetAuthenticatedMember', {
   methods: ['GET', 'OPTIONS'],
   route: 'v1/member',
   authLevel: 'anonymous',
-  handler: GetAuthenticatedMember
+  handler: authenticatedEndpoint(handler),
 });
