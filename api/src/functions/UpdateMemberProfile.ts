@@ -1,5 +1,8 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { Pool } from 'pg';
+import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
+import { Permission } from '../middleware/rbac';
+import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -10,29 +13,11 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-export async function UpdateMemberProfile(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function handler(request: AuthenticatedRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log('UpdateMemberProfile function triggered');
 
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return {
-        status: 401,
-        body: JSON.stringify({ error: 'Missing or invalid authorization header' })
-      };
-    }
-
-    // Get user from token
-    const token = authHeader.substring(7);
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-    const userEmail = payload.email || payload.preferred_username || payload.upn;
-
-    if (!userEmail) {
-      return {
-        status: 401,
-        body: JSON.stringify({ error: 'Unable to identify user from token' })
-      };
-    }
+    const userEmail = request.userEmail;
 
     // Get member's org_id
     const memberResult = await pool.query(`
@@ -45,9 +30,26 @@ export async function UpdateMemberProfile(request: HttpRequest, context: Invocat
     `, [userEmail]);
 
     if (memberResult.rows.length === 0) {
+      await logAuditEvent({
+        event_type: AuditEventType.MEMBER_UPDATED,
+        severity: AuditSeverity.WARNING,
+        result: 'failure',
+        user_id: request.userId,
+        user_email: request.userEmail,
+        ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
+        user_agent: request.headers.get('user-agent') || undefined,
+        request_path: request.url,
+        request_method: request.method,
+        resource_type: 'member',
+        resource_id: userEmail,
+        action: 'update',
+        details: { reason: 'member_not_found' },
+        error_message: 'Member not found'
+      }, context);
+
       return {
         status: 404,
-        body: JSON.stringify({ error: 'Member not found' })
+        jsonBody: { error: 'Member not found' }
       };
     }
 
@@ -77,7 +79,7 @@ export async function UpdateMemberProfile(request: HttpRequest, context: Invocat
         memberValues.push(org_id);
 
         await pool.query(`
-          UPDATE members 
+          UPDATE members
           SET ${memberUpdates.join(', ')}
           WHERE org_id = $${paramIndex}
         `, memberValues);
@@ -120,27 +122,34 @@ export async function UpdateMemberProfile(request: HttpRequest, context: Invocat
         leValues.push(legal_entity_id);
 
         await pool.query(`
-          UPDATE legal_entity 
+          UPDATE legal_entity
           SET ${leUpdates.join(', ')}
           WHERE legal_entity_id = $${paramIndex}
         `, leValues);
       }
 
-      // Log audit event
-      await pool.query(`
-        INSERT INTO audit_logs (event_type, actor_org_id, resource_type, resource_id, action, result, metadata)
-        VALUES ('MEMBER_PROFILE_UPDATE', $1, 'MEMBER', $2, 'UPDATE', 'SUCCESS', $3)
-      `, [org_id, org_id, JSON.stringify({ updated_by: userEmail, changes: updateData })]);
+      // Log audit event using the new audit system
+      await logAuditEvent({
+        event_type: AuditEventType.MEMBER_UPDATED,
+        severity: AuditSeverity.INFO,
+        result: 'success',
+        user_id: request.userId,
+        user_email: request.userEmail,
+        ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
+        user_agent: request.headers.get('user-agent') || undefined,
+        request_path: request.url,
+        request_method: request.method,
+        resource_type: 'member',
+        resource_id: org_id,
+        action: 'update',
+        details: { updated_by: userEmail, changes: updateData }
+      }, context);
 
       await pool.query('COMMIT');
 
       return {
         status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ message: 'Profile updated successfully' })
+        jsonBody: { message: 'Profile updated successfully' }
       };
     } catch (error) {
       await pool.query('ROLLBACK');
@@ -148,12 +157,30 @@ export async function UpdateMemberProfile(request: HttpRequest, context: Invocat
     }
   } catch (error) {
     context.error('Error updating member profile:', error);
+
+    await logAuditEvent({
+      event_type: AuditEventType.MEMBER_UPDATED,
+      severity: AuditSeverity.ERROR,
+      result: 'failure',
+      user_id: request.userId,
+      user_email: request.userEmail,
+      ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
+      user_agent: request.headers.get('user-agent') || undefined,
+      request_path: request.url,
+      request_method: request.method,
+      resource_type: 'member',
+      resource_id: request.userEmail || 'unknown',
+      action: 'update',
+      error_message: error instanceof Error ? error.message : 'Unknown error',
+      details: { error: error instanceof Error ? error.message : 'Unknown error' }
+    }, context);
+
     return {
       status: 500,
-      body: JSON.stringify({
+      jsonBody: {
         error: 'Failed to update profile',
         details: error instanceof Error ? error.message : 'Unknown error'
-      })
+      }
     };
   }
 }
@@ -162,5 +189,9 @@ app.http('UpdateMemberProfile', {
   methods: ['PUT', 'OPTIONS'],
   route: 'v1/member/profile',
   authLevel: 'anonymous',
-  handler: UpdateMemberProfile
+  handler: wrapEndpoint(handler, {
+    requireAuth: true,
+    requiredPermissions: [Permission.UPDATE_OWN_ENTITY],
+    requireAllPermissions: true
+  })
 });

@@ -1,5 +1,8 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { Pool } from 'pg';
+import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
+import { Permission } from '../middleware/rbac';
+import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -10,22 +13,27 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-export async function UpdateMemberContact(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function handler(request: AuthenticatedRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log('UpdateMemberContact function triggered');
 
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return { status: 401, body: JSON.stringify({ error: 'Missing or invalid authorization header' }) };
+    const userEmail = request.userEmail;
+    const contactId = request.params.contactId;
+
+    if (!contactId) {
+      return {
+        status: 400,
+        jsonBody: { error: 'Contact ID is required' }
+      };
     }
 
-    const token = authHeader.substring(7);
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-    const userEmail = payload.email || payload.preferred_username || payload.upn;
-
-    const contactId = request.params.contactId;
-    if (!contactId) {
-      return { status: 400, body: JSON.stringify({ error: 'Contact ID is required' }) };
+    // Validate UUID format
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(contactId);
+    if (!isUUID) {
+      return {
+        status: 400,
+        jsonBody: { error: 'Invalid UUID format' }
+      };
     }
 
     // Verify this contact belongs to the user's organization
@@ -39,7 +47,29 @@ export async function UpdateMemberContact(request: HttpRequest, context: Invocat
     `, [contactId, userEmail]);
 
     if (verifyResult.rows.length === 0) {
-      return { status: 403, body: JSON.stringify({ error: 'Not authorized to update this contact' }) };
+      await logAuditEvent({
+        event_type: AuditEventType.ACCESS_DENIED,
+        severity: AuditSeverity.WARNING,
+        result: 'failure',
+        user_id: request.userId,
+        user_email: request.userEmail,
+        ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
+        user_agent: request.headers.get('user-agent') || undefined,
+        request_path: request.url,
+        request_method: request.method,
+        resource_type: 'legal_entity_contact',
+        resource_id: contactId,
+        action: 'update',
+        details: { reason: 'ownership_check_failed' },
+        error_message: 'User does not have permission to update this contact'
+      }, context);
+
+      context.warn(`IDOR attempt: User ${userEmail} tried to update contact ${contactId}`);
+
+      return {
+        status: 403,
+        jsonBody: { error: 'Not authorized to update this contact' }
+      };
     }
 
     const { org_id } = verifyResult.rows[0];
@@ -92,30 +122,55 @@ export async function UpdateMemberContact(request: HttpRequest, context: Invocat
     values.push(contactId);
 
     await pool.query(`
-      UPDATE legal_entity_contact 
+      UPDATE legal_entity_contact
       SET ${updates.join(', ')}
       WHERE legal_entity_contact_id = $${paramIndex}
     `, values);
 
     // Log audit event
-    await pool.query(`
-      INSERT INTO audit_logs (event_type, actor_org_id, resource_type, resource_id, action, result, metadata)
-      VALUES ('CONTACT_UPDATE', $1, 'CONTACT', $2, 'UPDATE', 'SUCCESS', $3)
-    `, [org_id, contactId, JSON.stringify({ updated_by: userEmail, changes: updateData })]);
+    await logAuditEvent({
+      event_type: AuditEventType.CONTACT_UPDATED,
+      severity: AuditSeverity.INFO,
+      result: 'success',
+      user_id: request.userId,
+      user_email: request.userEmail,
+      ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
+      user_agent: request.headers.get('user-agent') || undefined,
+      request_path: request.url,
+      request_method: request.method,
+      resource_type: 'legal_entity_contact',
+      resource_id: contactId,
+      action: 'update',
+      details: { updated_by: userEmail, changes: updateData, org_id }
+    }, context);
 
     return {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
-      body: JSON.stringify({ message: 'Contact updated successfully' })
+      jsonBody: { message: 'Contact updated successfully' }
     };
   } catch (error) {
     context.error('Error updating contact:', error);
+
+    await logAuditEvent({
+      event_type: AuditEventType.CONTACT_UPDATED,
+      severity: AuditSeverity.ERROR,
+      result: 'failure',
+      user_id: request.userId,
+      user_email: request.userEmail,
+      ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
+      user_agent: request.headers.get('user-agent') || undefined,
+      request_path: request.url,
+      request_method: request.method,
+      resource_type: 'legal_entity_contact',
+      resource_id: request.params.contactId || 'unknown',
+      action: 'update',
+      error_message: error instanceof Error ? error.message : 'Unknown error',
+      details: { error: error instanceof Error ? error.message : 'Unknown error' }
+    }, context);
+
     return {
       status: 500,
-      body: JSON.stringify({ error: 'Failed to update contact' })
+      jsonBody: { error: 'Failed to update contact' }
     };
   }
 }
@@ -124,5 +179,9 @@ app.http('UpdateMemberContact', {
   methods: ['PUT', 'OPTIONS'],
   route: 'v1/member/contacts/{contactId}',
   authLevel: 'anonymous',
-  handler: UpdateMemberContact
+  handler: wrapEndpoint(handler, {
+    requireAuth: true,
+    requiredPermissions: [Permission.UPDATE_OWN_ENTITY],
+    requireAllPermissions: true
+  })
 });
