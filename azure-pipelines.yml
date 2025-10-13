@@ -1,3 +1,6 @@
+# Admin Portal - CI/CD Pipeline
+# Triggers on changes to web/* directory
+
 trigger:
   branches:
     include:
@@ -10,38 +13,81 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
+  - group: ctn-demo-variables  # Reference variable group
   # Production environment variables
-  REACT_APP_AZURE_CLIENT_ID: 'd3037c11-a541-4f21-8862-8079137a0cde'
-  REACT_APP_AZURE_TENANT_ID: '598664e7-725c-4daa-bd1f-89c4ada717ff'
-  REACT_APP_REDIRECT_URI: 'https://calm-tree-03352ba03.1.azurestaticapps.net'
-  REACT_APP_API_URL: 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1'
+  - name: REACT_APP_AZURE_CLIENT_ID
+    value: 'd3037c11-a541-4f21-8862-8079137a0cde'
+  - name: REACT_APP_AZURE_TENANT_ID
+    value: '598664e7-725c-4daa-bd1f-89c4ada717ff'
+  - name: REACT_APP_REDIRECT_URI
+    value: 'https://calm-tree-03352ba03.1.azurestaticapps.net'
+  - name: REACT_APP_API_URL
+    value: 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1'
+  - name: workingDirectory
+    value: '$(System.DefaultWorkingDirectory)/web'
 
-steps:
-  - task: NodeTool@0
-    displayName: 'Install Node.js'
-    inputs:
-      versionSpec: '18.x'
+stages:
+  - stage: Build
+    displayName: 'Build Admin Portal'
+    jobs:
+      - job: BuildJob
+        displayName: 'Build React App'
+        steps:
+          - task: NodeTool@0
+            displayName: 'Install Node.js 18.x'
+            inputs:
+              versionSpec: '18.x'
 
-  - script: |
-      cd web
-      npm ci
-    displayName: 'Install dependencies'
+          - script: |
+              node --version
+              npm --version
+            displayName: 'Display Node and NPM versions'
 
-  - script: |
-      cd web
-      npm run build
-    displayName: 'Build React application'
-    env:
-      CI: false
-      NODE_ENV: production
-      REACT_APP_AZURE_CLIENT_ID: $(REACT_APP_AZURE_CLIENT_ID)
-      REACT_APP_AZURE_TENANT_ID: $(REACT_APP_AZURE_TENANT_ID)
-      REACT_APP_REDIRECT_URI: $(REACT_APP_REDIRECT_URI)
-      REACT_APP_API_URL: $(REACT_APP_API_URL)
+          - script: |
+              cd $(workingDirectory)
+              npm ci
+            displayName: 'Install dependencies (npm ci)'
 
-  - task: AzureStaticWebApp@0
-    displayName: 'Deploy to Azure Static Web Apps'
-    inputs:
-      app_location: '/web/build'
-      skip_app_build: true
-      azure_static_web_apps_api_token: $(AZURE_STATIC_WEB_APPS_API_TOKEN)
+          - script: |
+              cd $(workingDirectory)
+              npm run build
+            displayName: 'Build React application'
+            env:
+              CI: false
+              NODE_ENV: production
+              REACT_APP_AZURE_CLIENT_ID: $(REACT_APP_AZURE_CLIENT_ID)
+              REACT_APP_AZURE_TENANT_ID: $(REACT_APP_AZURE_TENANT_ID)
+              REACT_APP_REDIRECT_URI: $(REACT_APP_REDIRECT_URI)
+              REACT_APP_API_URL: $(REACT_APP_API_URL)
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Build Artifacts'
+            inputs:
+              targetPath: '$(workingDirectory)/build'
+              artifact: 'admin-portal-build'
+              publishLocation: 'pipeline'
+
+  - stage: Deploy
+    displayName: 'Deploy to Azure'
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - deployment: DeployJob
+        displayName: 'Deploy to Static Web App'
+        environment: 'ctn-demo-asr-dev'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadPipelineArtifact@2
+                  displayName: 'Download Build Artifacts'
+                  inputs:
+                    artifactName: 'admin-portal-build'
+                    targetPath: '$(Pipeline.Workspace)/build'
+
+                - task: AzureStaticWebApp@0
+                  displayName: 'Deploy to Azure Static Web Apps'
+                  inputs:
+                    app_location: '$(Pipeline.Workspace)/build'
+                    skip_app_build: true
+                    azure_static_web_apps_api_token: $(AZURE_STATIC_WEB_APPS_API_TOKEN)
