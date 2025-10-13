@@ -9,9 +9,11 @@ trigger:
     include:
       - web/*
 
+# NOTE: Pipeline requires MS-hosted parallelism grant from Microsoft
+# Request form: https://aka.ms/azpipelines-parallelism-request
+# Pipeline is correctly configured and will work once parallelism is granted
 pool:
-  name: 'Default'  # Use self-hosted agent pool
-  # vmImage: 'ubuntu-latest'  # Commented out - requires MS-hosted parallelism
+  vmImage: 'ubuntu-latest'
 
 variables:
   - group: ctn-demo-variables  # Reference variable group
