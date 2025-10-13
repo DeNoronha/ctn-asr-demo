@@ -46,8 +46,7 @@ async function handler(
     if (!contentType) contentType = request.headers.get('Content-type');
     if (!contentType) contentType = request.headers.get('CONTENT-TYPE');
     
-    context.log('Content-Type header:', contentType);
-    context.log('All headers:', JSON.stringify(Object.fromEntries(request.headers.entries())));
+    context.log('Content-Type:', contentType, 'File upload requested');
     
     if (!contentType) {
       context.error('No content-type header found');
