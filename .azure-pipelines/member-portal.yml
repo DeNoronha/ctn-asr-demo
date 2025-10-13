@@ -14,7 +14,7 @@ pool:
 
 variables:
   # Key Vault configuration
-  keyVaultName: 'kvctnasrdev' # Update based on environment
+  keyVaultName: 'kv-ctn-demo-asr-dev' # Update based on environment
   azureSubscription: 'Azure-CTN-ASR-ServiceConnection' # Azure service connection name
 
 steps:
