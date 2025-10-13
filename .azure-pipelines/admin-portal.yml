@@ -48,7 +48,7 @@ stages:
 
           - script: |
               cd $(workingDirectory)
-              npm ci
+              npm ci --legacy-peer-deps
             displayName: 'Install dependencies (npm ci)'
 
           - script: |
