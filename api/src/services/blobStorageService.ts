@@ -4,6 +4,7 @@ import {
   generateBlobSASQueryParameters,
   StorageSharedKeyCredential
 } from '@azure/storage-blob';
+import { TIMEOUT_CONFIG, createTimeoutSignal } from '../utils/timeoutConfig';
 
 export class BlobStorageService {
   private blobServiceClient: BlobServiceClient;
@@ -34,15 +35,17 @@ export class BlobStorageService {
     contentType: string
   ): Promise<string> {
     const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
-    
+
     // Ensure container exists with private access (no public access)
-    await containerClient.createIfNotExists();
+    await containerClient.createIfNotExists({
+      abortSignal: createTimeoutSignal(TIMEOUT_CONFIG.BLOB_STORAGE_MS)
+    });
 
     // Create unique blob name
     const blobName = `${legalEntityId}/${Date.now()}-${fileName}`;
     const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
-    // Upload with metadata
+    // Upload with metadata and timeout
     await blockBlobClient.upload(fileBuffer, fileBuffer.length, {
       blobHTTPHeaders: {
         blobContentType: contentType,
@@ -51,6 +54,7 @@ export class BlobStorageService {
         legalEntityId: legalEntityId,
         uploadedAt: new Date().toISOString(),
       },
+      abortSignal: createTimeoutSignal(TIMEOUT_CONFIG.BLOB_STORAGE_MS)
     });
 
     return blockBlobClient.url;
@@ -60,11 +64,13 @@ export class BlobStorageService {
     const url = new URL(blobUrl);
     const pathParts = url.pathname.split('/');
     const blobName = pathParts.slice(2).join('/'); // Remove /container-name/
-    
+
     const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
     const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-    
-    await blockBlobClient.deleteIfExists();
+
+    await blockBlobClient.deleteIfExists({
+      abortSignal: createTimeoutSignal(TIMEOUT_CONFIG.BLOB_STORAGE_MS)
+    });
   }
 
   async getDocumentSasUrl(blobUrl: string, expiryMinutes: number = 60): Promise<string> {

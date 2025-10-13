@@ -1,4 +1,5 @@
 import { DocumentAnalysisClient, AzureKeyCredential } from '@azure/ai-form-recognizer';
+import { TIMEOUT_CONFIG, withTimeout } from '../utils/timeoutConfig';
 
 interface ExtractedKvKData {
   companyName: string | null;
@@ -27,32 +28,28 @@ export class DocumentIntelligenceService {
     }
 
     try {
-      // Use prebuilt-document model for general document analysis
-      const poller = await this.client.beginAnalyzeDocumentFromUrl(
-        'prebuilt-document',
-        documentUrl,
-        {
-          // Set a reasonable timeout
-          onProgress: (state) => {
-            console.log(`Document analysis progress: ${state.status}`);
+      // Use prebuilt-document model for general document analysis with timeout
+      const analysisPromise = (async () => {
+        const poller = await this.client.beginAnalyzeDocumentFromUrl(
+          'prebuilt-document',
+          documentUrl,
+          {
+            onProgress: (state) => {
+              console.log(`Document analysis progress: ${state.status}`);
+            }
           }
-        }
+        );
+
+        // Wait for analysis to complete
+        return await poller.pollUntilDone();
+      })();
+
+      // Wrap with timeout
+      const result = await withTimeout(
+        analysisPromise,
+        TIMEOUT_CONFIG.DOCUMENT_INTELLIGENCE_MS,
+        `Document analysis timeout exceeded (${TIMEOUT_CONFIG.DOCUMENT_INTELLIGENCE_MS / 1000} seconds)`
       );
-
-      // Wait for analysis with timeout (max 5 minutes)
-      const timeoutMs = 5 * 60 * 1000;
-      const startTime = Date.now();
-
-      let result;
-      while (!poller.isDone()) {
-        if (Date.now() - startTime > timeoutMs) {
-          throw new Error('Document analysis timeout exceeded (5 minutes)');
-        }
-        await poller.poll();
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Poll every second
-      }
-
-      result = poller.getResult();
 
       if (!result) {
         throw new Error('Document analysis failed to produce results');

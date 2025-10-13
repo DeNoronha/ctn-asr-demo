@@ -7,6 +7,7 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/fu
 import { EmailClient } from "@azure/communication-email";
 import { emailTemplateService } from "../services/emailTemplateService";
 import { withEventGridValidation, validateEventGridSchema } from "../middleware/eventGridValidation";
+import { TIMEOUT_CONFIG, withTimeout } from "../utils/timeoutConfig";
 
 // Event type to template mapping
 const EVENT_TEMPLATE_MAPPING: Record<string, { templateName: string; subjectKey: string }> = {
@@ -171,8 +172,16 @@ export async function EventGridHandler(
       };
 
       context.log(`Sending email to: ${recipientEmail}`);
-      const poller = await emailClient.beginSend(emailMessage);
-      const result = await poller.pollUntilDone();
+
+      // Send email with timeout
+      const result = await withTimeout(
+        (async () => {
+          const poller = await emailClient.beginSend(emailMessage);
+          return await poller.pollUntilDone();
+        })(),
+        TIMEOUT_CONFIG.COMMUNICATION_SERVICES_MS,
+        `Email sending timeout exceeded (${TIMEOUT_CONFIG.COMMUNICATION_SERVICES_MS / 1000} seconds)`
+      );
 
       context.log(`Email sent successfully. Message ID: ${result.id}`);
     }

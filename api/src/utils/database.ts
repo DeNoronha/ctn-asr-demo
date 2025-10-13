@@ -8,6 +8,9 @@ let pool: Pool | null = null;
  */
 export function getPool(): Pool {
   if (!pool) {
+    // Query timeout in milliseconds (default: 30 seconds)
+    const queryTimeout = parseInt(process.env.DATABASE_QUERY_TIMEOUT_MS || '30000');
+
     pool = new Pool({
       host: process.env.POSTGRES_HOST,
       port: parseInt(process.env.POSTGRES_PORT || '5432'),
@@ -22,7 +25,10 @@ export function getPool(): Pool {
       min: 5, // Minimum pool size
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 10000,
-      allowExitOnIdle: false
+      allowExitOnIdle: false,
+      // Query timeout - prevent long-running queries from hanging
+      statement_timeout: queryTimeout,
+      query_timeout: queryTimeout,
     });
 
     // Handle pool errors

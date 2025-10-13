@@ -9,6 +9,7 @@ import { Permission, requirePermissions, requireRoles, UserRole } from './rbac';
 import { applySecurityHeaders } from './securityHeaders';
 import { enforceHttps, addHttpsSecurityHeaders } from './httpsEnforcement';
 import { handleError } from '../utils/errors';
+import { getRequestId } from '../utils/requestId';
 
 // Re-export AuthenticatedRequest for convenience
 export type AuthenticatedRequest = AuthRequest;
@@ -102,7 +103,10 @@ export function wrapEndpoint(
     context: InvocationContext
   ): Promise<HttpResponseInit> => {
     const startTime = Date.now();
-    context.log(`${request.method} ${request.url} - Processing started`);
+
+    // Generate or extract request ID for tracking
+    const requestId = getRequestId(request);
+    context.log(`[${requestId}] ${request.method} ${request.url} - Processing started`);
 
     try {
       // Handle CORS preflight
@@ -110,7 +114,10 @@ export function wrapEndpoint(
         const origin = request.headers.get('origin');
         return {
           status: 204,
-          headers: getCorsHeaders(origin, allowedOrigins),
+          headers: {
+            ...getCorsHeaders(origin, allowedOrigins),
+            'X-Request-ID': requestId
+          },
         };
       }
 
@@ -126,10 +133,17 @@ export function wrapEndpoint(
             headers: {
               ...(httpsCheck.headers || {}),
               ...corsHeaders,
+              'X-Request-ID': requestId
             },
           };
         }
-        return httpsCheck;
+        return {
+          ...httpsCheck,
+          headers: {
+            ...(httpsCheck.headers || {}),
+            'X-Request-ID': requestId
+          }
+        };
       }
 
       // Apply authentication if required
@@ -140,12 +154,12 @@ export function wrapEndpoint(
 
         if (!authResult.success) {
           const duration = Date.now() - startTime;
-          context.warn(`Authentication failed (${duration}ms)`);
+          context.warn(`[${requestId}] Authentication failed (${duration}ms)`);
 
           // Type guard: authResult is the failure type here
           const errorResponse = (authResult as { success: false; response: any }).response;
 
-          // Add CORS headers to error response
+          // Add CORS headers and request ID to error response
           if (enableCors) {
             const origin = request.headers.get('origin');
             const corsHeaders = getCorsHeaders(origin, allowedOrigins);
@@ -154,11 +168,18 @@ export function wrapEndpoint(
               headers: {
                 ...(errorResponse?.headers || {}),
                 ...corsHeaders,
+                'X-Request-ID': requestId
               },
             };
           }
 
-          return errorResponse || { status: 401, body: 'Unauthorized' };
+          return {
+            ...(errorResponse || { status: 401, body: 'Unauthorized' }),
+            headers: {
+              ...(errorResponse?.headers || {}),
+              'X-Request-ID': requestId
+            }
+          };
         }
 
         authenticatedRequest = authResult.request;
@@ -181,7 +202,7 @@ export function wrapEndpoint(
 
         if (!roleCheck.authorized && roleCheck.response) {
           const duration = Date.now() - startTime;
-          context.warn(`Authorization failed - roles (${duration}ms)`);
+          context.warn(`[${requestId}] Authorization failed - roles (${duration}ms)`);
 
           if (enableCors) {
             const origin = request.headers.get('origin');
@@ -191,11 +212,18 @@ export function wrapEndpoint(
               headers: {
                 ...(roleCheck.response.headers || {}),
                 ...corsHeaders,
+                'X-Request-ID': requestId
               },
             };
           }
 
-          return roleCheck.response;
+          return {
+            ...roleCheck.response,
+            headers: {
+              ...(roleCheck.response.headers || {}),
+              'X-Request-ID': requestId
+            }
+          };
         }
       }
 
@@ -208,7 +236,7 @@ export function wrapEndpoint(
 
         if (!permissionCheck.authorized && permissionCheck.response) {
           const duration = Date.now() - startTime;
-          context.warn(`Authorization failed - permissions (${duration}ms)`);
+          context.warn(`[${requestId}] Authorization failed - permissions (${duration}ms)`);
 
           if (enableCors) {
             const origin = request.headers.get('origin');
@@ -218,11 +246,18 @@ export function wrapEndpoint(
               headers: {
                 ...(permissionCheck.response.headers || {}),
                 ...corsHeaders,
+                'X-Request-ID': requestId
               },
             };
           }
 
-          return permissionCheck.response;
+          return {
+            ...permissionCheck.response,
+            headers: {
+              ...(permissionCheck.response.headers || {}),
+              'X-Request-ID': requestId
+            }
+          };
         }
       }
 
@@ -239,6 +274,12 @@ export function wrapEndpoint(
         };
       }
 
+      // Add request ID to response
+      response.headers = {
+        ...response.headers,
+        'X-Request-ID': requestId
+      };
+
       // Apply security headers
       response = applySecurityHeaders(response);
 
@@ -246,15 +287,14 @@ export function wrapEndpoint(
       response = addHttpsSecurityHeaders(response);
 
       const duration = Date.now() - startTime;
-      context.log(`${request.method} ${request.url} - Completed (${duration}ms)`);
+      context.log(`[${requestId}] ${request.method} ${request.url} - Completed (${duration}ms)`);
 
       return response;
     } catch (error) {
       const duration = Date.now() - startTime;
-      context.error(`${request.method} ${request.url} - Error (${duration}ms):`, error);
+      context.error(`[${requestId}] ${request.method} ${request.url} - Error (${duration}ms):`, error);
 
       // Use standardized error handling
-      const requestId = request.headers.get('x-request-id') || undefined;
       let errorResponse = handleError(error, context, requestId);
 
       // Add CORS headers to error response

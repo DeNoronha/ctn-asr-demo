@@ -52,7 +52,10 @@ import './functions/issueEndpointToken';
 import './functions/getEndpointTokens';
 
 // API Documentation
-// import './functions/swagger';  // Temporarily disabled - missing openapi.json
+import './functions/swagger';
+
+// Health Check
+import './functions/healthCheck';
 
 // TO DO 7: Admin Portal Expansion (Subscriptions, Newsletters, Tasks)
 import './functions/getSubscriptions';
