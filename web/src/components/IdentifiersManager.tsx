@@ -8,6 +8,7 @@ import type React from 'react';
 import { useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
+import { formatDate } from '../utils/dateUtils';
 import './IdentifiersManager.css';
 
 interface IdentifiersManagerProps {
@@ -298,11 +299,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     const value = dataItem[field];
     return (
       <td>
-        {value ? new Date(value).toLocaleDateString('nl-NL', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        }) : '-'}
+        {value ? formatDate(value) : '-'}
       </td>
     );
   };

@@ -8,6 +8,7 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import type { LegalEntityIdentifier } from '../services/apiV2';
+import { formatDateTime } from '../utils/dateUtils';
 import './IdentifierVerificationManager.css';
 
 interface VerificationRecord {
@@ -154,15 +155,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
     const value = dataItem[field];
     return (
       <td>
-        {value
-          ? new Date(value).toLocaleDateString('nl-NL', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            })
-          : '-'}
+        {value ? formatDateTime(value) : '-'}
       </td>
     );
   };

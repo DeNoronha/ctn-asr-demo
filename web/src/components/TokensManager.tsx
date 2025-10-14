@@ -5,6 +5,7 @@ import { CheckCircle, XCircle, AlertTriangle, Copy, Trash2 } from 'lucide-react'
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
+import { formatDate } from '../utils/dateUtils';
 import './TokensManager.css';
 
 interface Endpoint {
@@ -168,14 +169,9 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
 
     if (!value) return <td>-</td>;
 
-    const date = new Date(value);
     return (
       <td>
-        {date.toLocaleDateString('nl-NL', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        })}
+        {formatDate(value)}
       </td>
     );
   };

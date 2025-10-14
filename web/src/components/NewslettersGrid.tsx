@@ -5,6 +5,7 @@ import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { Input, TextArea } from '@progress/kendo-react-inputs';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { formatDate } from '../utils/dateUtils';
 import './NewslettersGrid.css';
 
 interface Newsletter {
@@ -111,9 +112,9 @@ const NewslettersGrid: React.FC = () => {
     setShowViewDialog(true);
   };
 
-  const formatDate = (dateString?: string) => {
+  const formatNewsletterDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('nl-NL');
+    return formatDate(dateString);
   };
 
   const calculateOpenRate = (newsletter: Newsletter) => {
@@ -186,7 +187,7 @@ const NewslettersGrid: React.FC = () => {
           field="sent_at"
           title="Sent Date"
           width="120px"
-          cell={(props) => <td>{formatDate(props.dataItem.sent_at)}</td>}
+          cell={(props) => <td>{formatNewsletterDate(props.dataItem.sent_at)}</td>}
         />
         <GridColumn title="Actions" width="150px" cell={ActionsCell} />
       </Grid>
@@ -277,7 +278,7 @@ const NewslettersGrid: React.FC = () => {
                 <strong>Recipients:</strong> {selectedNewsletter.recipient_count}
               </div>
               <div className="meta-item">
-                <strong>Sent:</strong> {formatDate(selectedNewsletter.sent_at)}
+                <strong>Sent:</strong> {formatNewsletterDate(selectedNewsletter.sent_at)}
               </div>
             </div>
 

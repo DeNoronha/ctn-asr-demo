@@ -6,6 +6,7 @@ import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { Input } from '@progress/kendo-react-inputs';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { formatDate as formatDateUtil, formatCurrency as formatCurrencyUtil } from '../utils/dateUtils';
 import './SubscriptionsGrid.css';
 
 interface Subscription {
@@ -176,14 +177,11 @@ const SubscriptionsGrid: React.FC = () => {
   };
 
   const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('nl-NL', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
+    return formatCurrencyUtil(amount, currency);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('nl-NL');
+  const formatSubscriptionDate = (dateString: string) => {
+    return formatDateUtil(dateString);
   };
 
   const StatusCell = (props: any) => {
@@ -248,7 +246,7 @@ const SubscriptionsGrid: React.FC = () => {
           cell={(props) => (
             <td>
               {props.dataItem.next_billing_date
-                ? formatDate(props.dataItem.next_billing_date)
+                ? formatSubscriptionDate(props.dataItem.next_billing_date)
                 : 'N/A'}
             </td>
           )}

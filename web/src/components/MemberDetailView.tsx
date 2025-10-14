@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntity, type LegalEntityContact, type Member, api } from '../services/api';
 import { type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
+import { formatDate } from '../utils/dateUtils';
 import { CompanyDetails } from './CompanyDetails';
 import { CompanyForm } from './CompanyForm';
 import { ContactsManager } from './ContactsManager';
@@ -130,14 +131,6 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
         {level}
       </span>
     );
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('nl-NL', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
   };
 
   return (

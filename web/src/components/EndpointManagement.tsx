@@ -6,6 +6,7 @@ import { Input, TextArea } from '@progress/kendo-react-inputs';
 import { Plus } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { useNotification } from '../contexts/NotificationContext';
 import './EndpointManagement.css';
 
 interface Endpoint {
@@ -51,6 +52,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
   const [showTokenDialog, setShowTokenDialog] = useState(false);
   const [selectedEndpoint, setSelectedEndpoint] = useState<Endpoint | null>(null);
   const [newToken, setNewToken] = useState<Token | null>(null);
+  const notification = useNotification();
 
   const [formData, setFormData] = useState({
     endpoint_name: '',
@@ -134,7 +136,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    alert('Token copied to clipboard!');
+    notification.showSuccess('Token copied to clipboard');
   };
 
   const StatusCell = (props: any) => {

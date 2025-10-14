@@ -6,6 +6,7 @@ import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { Input, TextArea } from '@progress/kendo-react-inputs';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { formatDate } from '../utils/dateUtils';
 import './TasksGrid.css';
 
 interface AdminTask {
@@ -179,9 +180,9 @@ const TasksGrid: React.FC = () => {
     setShowEditDialog(true);
   };
 
-  const formatDate = (dateString?: string) => {
+  const formatTaskDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('nl-NL');
+    return formatDate(dateString);
   };
 
   const isOverdue = (task: AdminTask) => {
@@ -216,7 +217,7 @@ const TasksGrid: React.FC = () => {
     const overdue = isOverdue(task);
     return (
       <td className={overdue ? 'overdue-date' : ''}>
-        {formatDate(task.due_date)}
+        {formatTaskDate(task.due_date)}
         {overdue && <span className="overdue-badge">OVERDUE</span>}
       </td>
     );
