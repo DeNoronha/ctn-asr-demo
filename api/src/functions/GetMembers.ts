@@ -37,7 +37,7 @@ async function handler(
 
 app.http('GetMembers', {
   methods: ['GET', 'OPTIONS'],
-  route: 'v1/members',
+  route: 'v1/all-members',
   authLevel: 'anonymous',
   handler: adminEndpoint(handler)
 });

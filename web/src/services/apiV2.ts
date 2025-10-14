@@ -202,7 +202,7 @@ export const apiV2 = {
 
   async getMembers(): Promise<Member[]> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.get<MembersResponse>(`/members`);
+    const response = await axiosInstance.get<MembersResponse>(`/all-members`);
     return response.data.data;
   },
 
