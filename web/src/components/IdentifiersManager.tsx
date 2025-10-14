@@ -3,13 +3,14 @@ import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Input } from '@progress/kendo-react-inputs';
 import { Grid, GridColumn } from '@progress/kendo-react-grid';
-import { Pencil, Plus, Trash2, CheckCircle, XCircle, AlertCircle, FileCheck } from 'lucide-react';
+import { Pencil, Plus, Trash2, CheckCircle, XCircle, AlertCircle, FileCheck, AlertTriangle } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
 import { EmptyState } from './EmptyState';
+import { ConfirmDialog } from './ConfirmDialog';
 import './IdentifiersManager.css';
 
 interface IdentifiersManagerProps {
@@ -180,6 +181,8 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
   );
   const [validationError, setValidationError] = useState<string>('');
   const [isValidIdentifier, setIsValidIdentifier] = useState<boolean>(true);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [identifierToDelete, setIdentifierToDelete] = useState<LegalEntityIdentifier | null>(null);
   const notification = useNotification();
 
   // Validate identifier value based on type
@@ -290,17 +293,20 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     }
   };
 
-  const handleDelete = async (identifier: LegalEntityIdentifier) => {
-    if (!window.confirm(`Are you sure you want to delete the ${identifier.identifier_type} identifier?`)) {
-      return;
-    }
+  const handleDeleteClick = (identifier: LegalEntityIdentifier) => {
+    setIdentifierToDelete(identifier);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!identifierToDelete) return;
 
     try {
-      if (identifier.legal_entity_reference_id) {
-        await apiV2.deleteIdentifier(identifier.legal_entity_reference_id);
+      if (identifierToDelete.legal_entity_reference_id) {
+        await apiV2.deleteIdentifier(identifierToDelete.legal_entity_reference_id);
       }
       const updated = identifiers.filter(
-        (i) => i.legal_entity_reference_id !== identifier.legal_entity_reference_id
+        (i) => i.legal_entity_reference_id !== identifierToDelete.legal_entity_reference_id
       );
       onUpdate(updated);
       notification.showSuccess('Identifier deleted successfully');
@@ -409,7 +415,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
           size="small"
           title="Delete identifier"
           aria-label={`Delete ${props.dataItem.identifier_type} identifier`}
-          onClick={() => handleDelete(props.dataItem)}
+          onClick={() => handleDeleteClick(props.dataItem)}
         >
           <Trash2 size={16} />
         </Button>
@@ -588,6 +594,17 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
           </DialogActionsBar>
         </Dialog>
       )}
+
+      <ConfirmDialog
+        isOpen={deleteConfirmOpen}
+        title="Delete Identifier"
+        message={`Are you sure you want to delete the ${identifierToDelete?.identifier_type} identifier "${identifierToDelete?.identifier_value}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        confirmTheme="error"
+        icon={<AlertTriangle size={24} />}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteConfirmOpen(false)}
+      />
     </div>
   );
 };

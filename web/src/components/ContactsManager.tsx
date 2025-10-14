@@ -1,12 +1,13 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-import { Plus, Pencil, Trash2, Users } from 'lucide-react';
+import { Plus, Pencil, Trash2, Users, AlertTriangle } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import type { LegalEntityContact } from '../services/api';
 import { ContactForm } from './ContactForm';
 import { EmptyState } from './EmptyState';
+import { ConfirmDialog } from './ConfirmDialog';
 import './ContactsManager.css';
 
 interface ContactsManagerProps {
@@ -22,6 +23,8 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
 }) => {
   const [showDialog, setShowDialog] = useState(false);
   const [editingContact, setEditingContact] = useState<LegalEntityContact | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [contactToDelete, setContactToDelete] = useState<LegalEntityContact | null>(null);
 
   const handleAddContact = () => {
     setEditingContact(null);
@@ -50,11 +53,17 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
     setShowDialog(false);
   };
 
-  const handleDeleteContact = async (contactId: string) => {
-    if (window.confirm('Are you sure you want to delete this contact?')) {
-      const updatedContacts = contacts.filter((c) => c.legal_entity_contact_id !== contactId);
-      await onUpdate(updatedContacts);
-    }
+  const handleDeleteClick = (contact: LegalEntityContact) => {
+    setContactToDelete(contact);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!contactToDelete) return;
+    const updatedContacts = contacts.filter(
+      (c) => c.legal_entity_contact_id !== contactToDelete.legal_entity_contact_id
+    );
+    await onUpdate(updatedContacts);
   };
 
   const ContactTypeCell = (props: GridCellProps) => {
@@ -103,7 +112,7 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
             size="small"
             title="Delete contact"
             aria-label={`Delete ${props.dataItem.full_name}`}
-            onClick={() => handleDeleteContact(props.dataItem.legal_entity_contact_id)}
+            onClick={() => handleDeleteClick(props.dataItem)}
           >
             <Trash2 size={16} />
           </Button>
@@ -157,6 +166,17 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
           />
         </Dialog>
       )}
+
+      <ConfirmDialog
+        isOpen={deleteConfirmOpen}
+        title="Delete Contact"
+        message={`Are you sure you want to delete ${contactToDelete?.full_name || 'this contact'}? This action cannot be undone.`}
+        confirmLabel="Delete"
+        confirmTheme="error"
+        icon={<AlertTriangle size={24} />}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteConfirmOpen(false)}
+      />
     </div>
   );
 };

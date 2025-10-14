@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { formatDate } from '../utils/dateUtils';
 import { EmptyState } from './EmptyState';
+import { ConfirmDialog } from './ConfirmDialog';
 import './TokensManager.css';
 
 interface Endpoint {
@@ -47,6 +48,8 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
   const [tokens, setTokens] = useState<Token[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedEndpoint, setSelectedEndpoint] = useState<string | null>(null);
+  const [revokeConfirmOpen, setRevokeConfirmOpen] = useState(false);
+  const [tokenToRevoke, setTokenToRevoke] = useState<Token | null>(null);
   const notification = useNotification();
 
   useEffect(() => {
@@ -88,14 +91,17 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
     }
   };
 
-  const handleRevoke = async (token: Token) => {
-    if (!window.confirm(`Are you sure you want to revoke this token for ${token.endpoint_name}?`)) {
-      return;
-    }
+  const handleRevokeClick = (token: Token) => {
+    setTokenToRevoke(token);
+    setRevokeConfirmOpen(true);
+  };
+
+  const handleRevokeConfirm = async () => {
+    if (!tokenToRevoke) return;
 
     try {
       const response = await fetch(
-        `${API_BASE}/v1/tokens/${token.endpoint_authorization_id}/revoke`,
+        `${API_BASE}/v1/tokens/${tokenToRevoke.endpoint_authorization_id}/revoke`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -200,7 +206,7 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
           size="small"
           title="Revoke token"
           aria-label="Revoke token"
-          onClick={() => handleRevoke(token)}
+          onClick={() => handleRevokeClick(token)}
           disabled={!!token.revoked_at}
         >
           <Trash2 size={16} />
@@ -290,6 +296,17 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={revokeConfirmOpen}
+        title="Revoke Token"
+        message={`Are you sure you want to revoke the token for ${tokenToRevoke?.endpoint_name}? The member will immediately lose access to the API endpoint. This action cannot be undone.`}
+        confirmLabel="Revoke"
+        confirmTheme="error"
+        icon={<AlertTriangle size={24} />}
+        onConfirm={handleRevokeConfirm}
+        onCancel={() => setRevokeConfirmOpen(false)}
+      />
     </div>
   );
 };
