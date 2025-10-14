@@ -15,7 +15,7 @@ import { CompanyForm } from './CompanyForm';
 import { ContactsManager } from './ContactsManager';
 import { EndpointManagement } from './EndpointManagement';
 import { IdentifiersManager } from './IdentifiersManager';
-import { KvkDocumentUpload } from './KvkDocumentUpload';
+import { IdentifierVerificationManager } from './IdentifierVerificationManager';
 import { TokensManager } from './TokensManager';
 import './MemberDetailView.css';
 
@@ -283,12 +283,13 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           </div>
         </TabStripTab>
 
-        <TabStripTab title="KvK Verification">
+        <TabStripTab title="Document Verification">
           <div className="tab-content">
             {legalEntity ? (
-              <KvkDocumentUpload
+              <IdentifierVerificationManager
                 legalEntityId={legalEntity.legal_entity_id!}
-                onVerificationComplete={() => {
+                identifiers={identifiers}
+                onUpdate={() => {
                   // Reload legal entity data after verification
                   if (member.legal_entity_id) {
                     api.getLegalEntity(member.legal_entity_id).then(setLegalEntity);
@@ -297,7 +298,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
               />
             ) : (
               <div className="info-section">
-                <h3>KvK Document Verification</h3>
+                <h3>Document Verification</h3>
                 <p className="empty-message">No company linked to this member</p>
               </div>
             )}
