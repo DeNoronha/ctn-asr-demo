@@ -317,9 +317,9 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
       {identifiers.length > 0 ? (
         <Grid data={identifiers} style={{ height: '450px' }}>
           <GridColumn field="identifier_type" title="Type" width="100px" />
-          <GridColumn field="identifier_value" title="Identifier Value" width="200px" />
+          <GridColumn field="identifier_value" title="Identifier Value" width="180px" minResizableWidth={120} />
           <GridColumn field="country_code" title="Country" width="100px" />
-          <GridColumn field="registry_name" title="Registry" width="180px" />
+          <GridColumn field="registry_name" title="Registry" width="220px" minResizableWidth={150} />
           <GridColumn
             field="validation_status"
             title="Status"
@@ -329,13 +329,13 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
           <GridColumn
             field="validation_date"
             title="Last Verified"
-            width="130px"
+            width="140px"
             cell={DateCell}
           />
           <GridColumn
             field="dt_modified"
             title="Last Edited"
-            width="130px"
+            width="140px"
             cell={DateCell}
           />
           <GridColumn

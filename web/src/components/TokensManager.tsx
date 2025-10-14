@@ -263,12 +263,12 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
             </div>
           </GridToolbar>
 
-          <GridColumn field="endpoint_name" title="Endpoint" width="200px" />
+          <GridColumn field="endpoint_name" title="Endpoint" width="250px" minResizableWidth={150} />
           <GridColumn field="token_type" title="Type" width="100px" />
-          <GridColumn field="issued_at" title="Issued" width="120px" cell={DateCell} />
-          <GridColumn field="expires_at" title="Expires" width="120px" cell={DateCell} />
+          <GridColumn field="issued_at" title="Issued" width="130px" cell={DateCell} />
+          <GridColumn field="expires_at" title="Expires" width="130px" cell={DateCell} />
           <GridColumn field="status" title="Status" width="160px" cell={StatusCell} />
-          <GridColumn field="last_used_at" title="Last Used" width="120px" cell={DateCell} />
+          <GridColumn field="last_used_at" title="Last Used" width="130px" cell={DateCell} />
           <GridColumn field="usage_count" title="Usage" width="80px" />
           <GridColumn title="Actions" width="120px" cell={ActionsCell} headerClassName="center-header" />
         </Grid>

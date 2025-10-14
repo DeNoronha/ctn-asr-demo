@@ -3,6 +3,7 @@
  */
 
 import { Button } from '@progress/kendo-react-buttons';
+import { Loader } from '@progress/kendo-react-indicators';
 import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
 import { ArrowLeft } from 'lucide-react';
 import type React from 'react';
@@ -157,7 +158,10 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
         <TabStripTab title="Company Details">
           <div className="tab-content">
             {loading ? (
-              <div className="loading-state">Loading company information...</div>
+              <div className="loading-state">
+                <Loader size="medium" />
+                <span>Loading company information...</span>
+              </div>
             ) : legalEntity ? (
               !isEditingCompany ? (
                 <>
@@ -225,7 +229,10 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
         <TabStripTab title="Identifiers">
           <div className="tab-content">
             {loading ? (
-              <div className="loading-state">Loading identifiers...</div>
+              <div className="loading-state">
+                <Loader size="medium" />
+                <span>Loading identifiers...</span>
+              </div>
             ) : legalEntity ? (
               <IdentifiersManager
                 legalEntityId={member.legal_entity_id!}
@@ -260,7 +267,10 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
         <TabStripTab title="Contacts">
           <div className="tab-content">
             {loading ? (
-              <div className="loading-state">Loading contacts...</div>
+              <div className="loading-state">
+                <Loader size="medium" />
+                <span>Loading contacts...</span>
+              </div>
             ) : legalEntity ? (
               <ContactsManager
                 legalEntityId={legalEntity.legal_entity_id!}

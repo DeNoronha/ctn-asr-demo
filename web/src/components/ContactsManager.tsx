@@ -128,10 +128,10 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
           className="contacts-grid"
         >
           <GridColumn field="contact_type" title="Type" width="140px" cell={ContactTypeCell} />
-          <GridColumn field="name" title="Name" width="180px" cell={NameCell} />
-          <GridColumn field="email" title="Email" width="220px" />
+          <GridColumn field="name" title="Name" width="180px" cell={NameCell} minResizableWidth={120} />
+          <GridColumn field="email" title="Email" width="260px" minResizableWidth={200} />
           <GridColumn field="phone" title="Phone" width="140px" />
-          <GridColumn field="job_title" title="Job Title" width="160px" />
+          <GridColumn field="job_title" title="Job Title" width="180px" minResizableWidth={120} />
           <GridColumn width="100px" title="Actions" cell={ActionsCell} />
         </Grid>
       ) : (

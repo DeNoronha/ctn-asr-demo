@@ -213,3 +213,18 @@
 .identifier-row a:hover {
   text-decoration: underline;
 }
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 40px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.loading-state span {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
