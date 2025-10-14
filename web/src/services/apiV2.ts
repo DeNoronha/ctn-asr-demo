@@ -215,12 +215,14 @@ export const apiV2 = {
   },
 
   async createMember(member: Partial<Member>): Promise<Member> {
-    const response = await axios.post<Member>(`${API_BASE_URL}/members`, member);
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.post<Member>(`/members`, member);
     return response.data;
   },
 
   async issueToken(orgId: string): Promise<{ access_token: string }> {
-    const response = await axios.post<TokenResponse>(`${API_BASE_URL}/oauth/token`, {
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.post<TokenResponse>(`/oauth/token`, {
       org_id: orgId,
     });
     return response.data;
@@ -239,24 +241,28 @@ export const apiV2 = {
   },
 
   async createLegalEntity(entity: Partial<LegalEntity>): Promise<LegalEntity> {
-    const response = await axios.post<LegalEntity>(`${API_BASE_URL}/legal-entities`, entity);
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.post<LegalEntity>(`/legal-entities`, entity);
     return response.data;
   },
 
   async updateLegalEntity(legalEntityId: string, data: Partial<LegalEntity>): Promise<LegalEntity> {
-    const response = await axios.put<LegalEntity>(
-      `${API_BASE_URL}/legal-entities/${legalEntityId}`,
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.put<LegalEntity>(
+      `/legal-entities/${legalEntityId}`,
       data
     );
     return response.data;
   },
 
   async deleteLegalEntity(legalEntityId: string): Promise<void> {
-    await axios.delete(`${API_BASE_URL}/legal-entities/${legalEntityId}`);
+    const axiosInstance = await getAuthenticatedAxios();
+    await axiosInstance.delete(`/legal-entities/${legalEntityId}`);
   },
 
   async listLegalEntities(): Promise<LegalEntity[]> {
-    const response = await axios.get<LegalEntity[]>(`${API_BASE_URL}/legal-entities`);
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get<LegalEntity[]>(`/legal-entities`);
     return response.data;
   },
 
@@ -265,8 +271,9 @@ export const apiV2 = {
   // =====================================================
 
   async getIdentifiers(legalEntityId: string): Promise<LegalEntityIdentifier[]> {
-    const response = await axios.get<LegalEntityIdentifier[]>(
-      `${API_BASE_URL}/entities/${legalEntityId}/identifiers`
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get<LegalEntityIdentifier[]>(
+      `/entities/${legalEntityId}/identifiers`
     );
     return response.data;
   },
@@ -277,8 +284,9 @@ export const apiV2 = {
       'legal_entity_reference_id' | 'dt_created' | 'dt_modified'
     >
   ): Promise<LegalEntityIdentifier> {
-    const response = await axios.post<LegalEntityIdentifier>(
-      `${API_BASE_URL}/entities/${identifier.legal_entity_id}/identifiers`,
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.post<LegalEntityIdentifier>(
+      `/entities/${identifier.legal_entity_id}/identifiers`,
       identifier
     );
     return response.data;
@@ -288,20 +296,23 @@ export const apiV2 = {
     identifierId: string,
     data: Partial<LegalEntityIdentifier>
   ): Promise<LegalEntityIdentifier> {
-    const response = await axios.put<LegalEntityIdentifier>(
-      `${API_BASE_URL}/identifiers/${identifierId}`,
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.put<LegalEntityIdentifier>(
+      `/identifiers/${identifierId}`,
       data
     );
     return response.data;
   },
 
   async deleteIdentifier(identifierId: string): Promise<void> {
-    await axios.delete(`${API_BASE_URL}/identifiers/${identifierId}`);
+    const axiosInstance = await getAuthenticatedAxios();
+    await axiosInstance.delete(`/identifiers/${identifierId}`);
   },
 
   async validateIdentifier(identifierId: string): Promise<{ valid: boolean; details?: any }> {
-    const response = await axios.post<{ valid: boolean; details?: any }>(
-      `${API_BASE_URL}/identifiers/${identifierId}/validate`
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.post<{ valid: boolean; details?: any }>(
+      `/identifiers/${identifierId}/validate`
     );
     return response.data;
   },
@@ -311,8 +322,9 @@ export const apiV2 = {
   // =====================================================
 
   async getContacts(legalEntityId: string): Promise<LegalEntityContact[]> {
-    const response = await axios.get<LegalEntityContact[]>(
-      `${API_BASE_URL}/legal-entities/${legalEntityId}/contacts`
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get<LegalEntityContact[]>(
+      `/legal-entities/${legalEntityId}/contacts`
     );
     return response.data;
   },
@@ -320,7 +332,8 @@ export const apiV2 = {
   async addContact(
     contact: Omit<LegalEntityContact, 'legal_entity_contact_id' | 'dt_created' | 'dt_modified'>
   ): Promise<LegalEntityContact> {
-    const response = await axios.post<LegalEntityContact>(`${API_BASE_URL}/contacts`, contact);
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.post<LegalEntityContact>(`/contacts`, contact);
     return response.data;
   },
 
@@ -328,15 +341,17 @@ export const apiV2 = {
     contactId: string,
     data: Partial<LegalEntityContact>
   ): Promise<LegalEntityContact> {
-    const response = await axios.put<LegalEntityContact>(
-      `${API_BASE_URL}/contacts/${contactId}`,
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.put<LegalEntityContact>(
+      `/contacts/${contactId}`,
       data
     );
     return response.data;
   },
 
   async deleteContact(contactId: string): Promise<void> {
-    await axios.delete(`${API_BASE_URL}/contacts/${contactId}`);
+    const axiosInstance = await getAuthenticatedAxios();
+    await axiosInstance.delete(`/contacts/${contactId}`);
   },
 
   // =====================================================
@@ -344,8 +359,9 @@ export const apiV2 = {
   // =====================================================
 
   async getEndpoints(legalEntityId: string): Promise<LegalEntityEndpoint[]> {
-    const response = await axios.get<LegalEntityEndpoint[]>(
-      `${API_BASE_URL}/entities/${legalEntityId}/endpoints`
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get<LegalEntityEndpoint[]>(
+      `/entities/${legalEntityId}/endpoints`
     );
     return response.data;
   },
@@ -353,8 +369,9 @@ export const apiV2 = {
   async addEndpoint(
     endpoint: Omit<LegalEntityEndpoint, 'legal_entity_endpoint_id' | 'dt_created' | 'dt_modified'>
   ): Promise<LegalEntityEndpoint> {
-    const response = await axios.post<LegalEntityEndpoint>(
-      `${API_BASE_URL}/entities/${endpoint.legal_entity_id}/endpoints`,
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.post<LegalEntityEndpoint>(
+      `/entities/${endpoint.legal_entity_id}/endpoints`,
       endpoint
     );
     return response.data;
@@ -364,29 +381,33 @@ export const apiV2 = {
     endpointId: string,
     data: Partial<LegalEntityEndpoint>
   ): Promise<LegalEntityEndpoint> {
-    const response = await axios.put<LegalEntityEndpoint>(
-      `${API_BASE_URL}/endpoints/${endpointId}`,
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.put<LegalEntityEndpoint>(
+      `/endpoints/${endpointId}`,
       data
     );
     return response.data;
   },
 
   async deleteEndpoint(endpointId: string): Promise<void> {
-    await axios.delete(`${API_BASE_URL}/endpoints/${endpointId}`);
+    const axiosInstance = await getAuthenticatedAxios();
+    await axiosInstance.delete(`/endpoints/${endpointId}`);
   },
 
   async testEndpointConnection(
     endpointId: string
   ): Promise<{ success: boolean; message?: string; details?: any }> {
-    const response = await axios.post<{ success: boolean; message?: string; details?: any }>(
-      `${API_BASE_URL}/endpoints/${endpointId}/test`
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.post<{ success: boolean; message?: string; details?: any }>(
+      `/endpoints/${endpointId}/test`
     );
     return response.data;
   },
 
   async toggleEndpoint(endpointId: string, isActive: boolean): Promise<LegalEntityEndpoint> {
-    const response = await axios.patch<LegalEntityEndpoint>(
-      `${API_BASE_URL}/endpoints/${endpointId}/toggle`,
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.patch<LegalEntityEndpoint>(
+      `/endpoints/${endpointId}/toggle`,
       { is_active: isActive }
     );
     return response.data;
@@ -397,8 +418,9 @@ export const apiV2 = {
   // =====================================================
 
   async getEndpointTokens(endpointId: string): Promise<EndpointAuthorization[]> {
-    const response = await axios.get<EndpointAuthorization[]>(
-      `${API_BASE_URL}/endpoints/${endpointId}/tokens`
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get<EndpointAuthorization[]>(
+      `/endpoints/${endpointId}/tokens`
     );
     return response.data;
   },
@@ -407,22 +429,25 @@ export const apiV2 = {
     endpointId: string,
     options?: { expires_in_days?: number }
   ): Promise<EndpointAuthorization> {
-    const response = await axios.post<EndpointAuthorization>(
-      `${API_BASE_URL}/endpoints/${endpointId}/tokens`,
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.post<EndpointAuthorization>(
+      `/endpoints/${endpointId}/tokens`,
       options
     );
     return response.data;
   },
 
   async revokeEndpointToken(tokenId: string, reason?: string): Promise<void> {
-    await axios.post(`${API_BASE_URL}/tokens/${tokenId}/revoke`, { reason });
+    const axiosInstance = await getAuthenticatedAxios();
+    await axiosInstance.post(`/tokens/${tokenId}/revoke`, { reason });
   },
 
   async getTokenUsageStats(
     tokenId: string
   ): Promise<{ usage_count: number; last_used_at?: string }> {
-    const response = await axios.get<{ usage_count: number; last_used_at?: string }>(
-      `${API_BASE_URL}/tokens/${tokenId}/stats`
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get<{ usage_count: number; last_used_at?: string }>(
+      `/tokens/${tokenId}/stats`
     );
     return response.data;
   },
