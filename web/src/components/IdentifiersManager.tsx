@@ -16,11 +16,88 @@ interface IdentifiersManagerProps {
   onUpdate: (identifiers: LegalEntityIdentifier[]) => void;
 }
 
-const IDENTIFIER_TYPES = [
+const ALL_IDENTIFIER_TYPES = [
   'LEI', 'KVK', 'EORI', 'VAT', 'DUNS', 'EUID', 'HRB', 'HRA', 'KBO', 'SIREN', 'SIRET', 'CRN', 'OTHER'
 ];
 
 const VALIDATION_STATUSES = ['PENDING', 'VALIDATED', 'FAILED', 'EXPIRED'];
+
+// Mapping of country codes to applicable identifier types
+const COUNTRY_IDENTIFIER_MAP: Record<string, string[]> = {
+  'NL': ['KVK', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'DE': ['HRB', 'HRA', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'BE': ['KBO', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'FR': ['SIREN', 'SIRET', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'GB': ['CRN', 'EORI', 'VAT', 'LEI', 'DUNS'],
+  'UK': ['CRN', 'EORI', 'VAT', 'LEI', 'DUNS'],
+  'US': ['DUNS', 'LEI'],
+  'LU': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'AT': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'IT': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'ES': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'PT': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'DK': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'SE': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'NO': ['EORI', 'VAT', 'LEI', 'DUNS'],
+  'CH': ['EORI', 'VAT', 'LEI', 'DUNS'],
+  'PL': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'CZ': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'IE': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'FI': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  'default': ['LEI', 'DUNS', 'EORI', 'VAT', 'OTHER'],
+};
+
+// Mapping of identifier types to registry information
+const REGISTRY_INFO: Record<string, { name: string; url: string }> = {
+  'LEI': {
+    name: 'Global Legal Entity Identifier Foundation (GLEIF)',
+    url: 'https://search.gleif.org/',
+  },
+  'KVK': {
+    name: 'Dutch Chamber of Commerce (Kamer van Koophandel)',
+    url: 'https://www.kvk.nl/',
+  },
+  'EORI': {
+    name: 'European Commission - EORI System',
+    url: 'https://ec.europa.eu/taxation_customs/dds2/eos/eori_validation.jsp',
+  },
+  'VAT': {
+    name: 'European Commission - VIES VAT Number Validation',
+    url: 'https://ec.europa.eu/taxation_customs/vies/',
+  },
+  'DUNS': {
+    name: 'Dun & Bradstreet',
+    url: 'https://www.dnb.com/',
+  },
+  'EUID': {
+    name: 'European Unique Identifier',
+    url: 'https://e-justice.europa.eu/489/EN/business_registers',
+  },
+  'HRB': {
+    name: 'German Commercial Register (Handelsregister Teil B)',
+    url: 'https://www.handelsregister.de/',
+  },
+  'HRA': {
+    name: 'German Commercial Register (Handelsregister Teil A)',
+    url: 'https://www.handelsregister.de/',
+  },
+  'KBO': {
+    name: 'Belgian Crossroads Bank for Enterprises (KBO/BCE)',
+    url: 'https://kbopub.economie.fgov.be/',
+  },
+  'SIREN': {
+    name: 'French Business Registry - SIREN',
+    url: 'https://www.sirene.fr/',
+  },
+  'SIRET': {
+    name: 'French Business Registry - SIRET',
+    url: 'https://www.sirene.fr/',
+  },
+  'CRN': {
+    name: 'UK Companies House - Company Registration Number',
+    url: 'https://find-and-update.company-information.service.gov.uk/',
+  },
+};
 
 export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
   legalEntityId,
@@ -30,24 +107,67 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingIdentifier, setEditingIdentifier] = useState<LegalEntityIdentifier | null>(null);
   const [formData, setFormData] = useState<Partial<LegalEntityIdentifier>>({
-    identifier_type: 'LEI',
     validation_status: 'PENDING',
   });
+  const [availableIdentifierTypes, setAvailableIdentifierTypes] = useState<string[]>(
+    COUNTRY_IDENTIFIER_MAP.default
+  );
   const notification = useNotification();
 
   const handleAdd = () => {
     setEditingIdentifier(null);
     setFormData({
-      identifier_type: 'LEI',
       validation_status: 'PENDING',
     });
+    setAvailableIdentifierTypes(COUNTRY_IDENTIFIER_MAP.default);
     setIsDialogOpen(true);
   };
 
   const handleEdit = (identifier: LegalEntityIdentifier) => {
     setEditingIdentifier(identifier);
     setFormData(identifier);
+    // Set available identifier types based on country code
+    if (identifier.country_code) {
+      const types = COUNTRY_IDENTIFIER_MAP[identifier.country_code.toUpperCase()] || COUNTRY_IDENTIFIER_MAP.default;
+      setAvailableIdentifierTypes(types);
+    } else {
+      setAvailableIdentifierTypes(COUNTRY_IDENTIFIER_MAP.default);
+    }
     setIsDialogOpen(true);
+  };
+
+  // Handle country code change - filter identifier types
+  const handleCountryCodeChange = (countryCode: string) => {
+    const upperCode = countryCode.toUpperCase();
+    const types = COUNTRY_IDENTIFIER_MAP[upperCode] || COUNTRY_IDENTIFIER_MAP.default;
+    setAvailableIdentifierTypes(types);
+
+    // Clear identifier type if it's not available for the new country
+    if (formData.identifier_type && !types.includes(formData.identifier_type)) {
+      setFormData({
+        ...formData,
+        country_code: countryCode,
+        identifier_type: undefined,
+        registry_name: undefined,
+        registry_url: undefined,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        country_code: countryCode,
+      });
+    }
+  };
+
+  // Handle identifier type change - auto-populate registry info
+  const handleIdentifierTypeChange = (type: string) => {
+    const registryInfo = REGISTRY_INFO[type];
+    setFormData({
+      ...formData,
+      identifier_type: type as LegalEntityIdentifier['identifier_type'],
+      registry_name: registryInfo?.name || formData.registry_name,
+      registry_url: registryInfo?.url || formData.registry_url,
+    });
   };
 
   const handleDelete = async (identifier: LegalEntityIdentifier) => {
@@ -120,9 +240,9 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     setIsDialogOpen(false);
     setEditingIdentifier(null);
     setFormData({
-      identifier_type: 'LEI',
       validation_status: 'PENDING',
     });
+    setAvailableIdentifierTypes(COUNTRY_IDENTIFIER_MAP.default);
   };
 
   const getValidationBadge = (status?: string) => {
@@ -246,12 +366,27 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
         >
           <div className="identifier-form">
             <div className="form-field">
+              <label>Country Code *</label>
+              <Input
+                value={formData.country_code || ''}
+                onChange={(e) => handleCountryCodeChange(e.value)}
+                placeholder="e.g., NL, DE, BE, FR, GB"
+                maxLength={2}
+              />
+              <span className="field-hint">Enter country code first to see applicable identifier types</span>
+            </div>
+
+            <div className="form-field">
               <label>Identifier Type *</label>
               <DropDownList
-                data={IDENTIFIER_TYPES}
+                data={availableIdentifierTypes}
                 value={formData.identifier_type}
-                onChange={(e) => setFormData({ ...formData, identifier_type: e.value })}
+                onChange={(e) => handleIdentifierTypeChange(e.value)}
+                disabled={!formData.country_code}
               />
+              {!formData.country_code && (
+                <span className="field-hint">Please enter country code first</span>
+              )}
             </div>
 
             <div className="form-field">
@@ -264,22 +399,13 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
             </div>
 
             <div className="form-field">
-              <label>Country Code</label>
-              <Input
-                value={formData.country_code || ''}
-                onChange={(e) => setFormData({ ...formData, country_code: e.value })}
-                placeholder="e.g., NL, DE, BE"
-                maxLength={2}
-              />
-            </div>
-
-            <div className="form-field">
               <label>Registry Name</label>
               <Input
                 value={formData.registry_name || ''}
                 onChange={(e) => setFormData({ ...formData, registry_name: e.value })}
-                placeholder="e.g., Dutch Chamber of Commerce"
+                placeholder="Auto-populated based on identifier type"
               />
+              <span className="field-hint">Auto-populated when identifier type is selected</span>
             </div>
 
             <div className="form-field">
@@ -287,8 +413,9 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
               <Input
                 value={formData.registry_url || ''}
                 onChange={(e) => setFormData({ ...formData, registry_url: e.value })}
-                placeholder="https://..."
+                placeholder="Auto-populated based on identifier type"
               />
+              <span className="field-hint">Auto-populated when identifier type is selected</span>
             </div>
 
             <div className="form-field">
