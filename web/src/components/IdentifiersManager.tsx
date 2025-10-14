@@ -3,12 +3,13 @@ import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Input } from '@progress/kendo-react-inputs';
 import { Grid, GridColumn } from '@progress/kendo-react-grid';
-import { Pencil, Plus, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Pencil, Plus, Trash2, CheckCircle, XCircle, AlertCircle, FileCheck } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
+import { EmptyState } from './EmptyState';
 import './IdentifiersManager.css';
 
 interface IdentifiersManagerProps {
@@ -476,9 +477,11 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
           />
         </Grid>
       ) : (
-        <div className="empty-state">
-          <p>No identifiers registered yet</p>
-        </div>
+        <EmptyState
+          icon={<FileCheck size={48} />}
+          message="No identifiers registered yet"
+          hint="Add legal identifiers like KVK, LEI, or EORI numbers to verify this member's identity"
+        />
       )}
 
       {isDialogOpen && (

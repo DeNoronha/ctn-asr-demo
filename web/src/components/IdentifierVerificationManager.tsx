@@ -3,12 +3,13 @@ import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Loader } from '@progress/kendo-react-indicators';
 import { Grid, GridColumn } from '@progress/kendo-react-grid';
 import { Upload } from '@progress/kendo-react-upload';
-import { CheckCircle, XCircle, AlertTriangle, FileText } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, FileText, FolderOpen } from 'lucide-react';
 import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import type { LegalEntityIdentifier } from '../services/apiV2';
 import { formatDateTime } from '../utils/dateUtils';
+import { EmptyState } from './EmptyState';
 import './IdentifierVerificationManager.css';
 
 interface VerificationRecord {
@@ -187,10 +188,11 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
       </div>
 
       {identifiers.length === 0 ? (
-        <div className="empty-state">
-          <p>No identifiers registered yet</p>
-          <p className="hint">Add identifiers in the Identifiers tab to enable document verification</p>
-        </div>
+        <EmptyState
+          icon={<FileText size={48} />}
+          message="No identifiers registered yet"
+          hint="Add identifiers in the Identifiers tab to enable document verification"
+        />
       ) : (
         <>
           <div className="verification-upload-section">
@@ -283,9 +285,12 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
                 <GridColumn title="Actions" width="100px" cell={ActionsCell} />
               </Grid>
             ) : (
-              <div className="empty-state-small">
-                <p>No verification records yet</p>
-              </div>
+              <EmptyState
+                icon={<FolderOpen size={32} />}
+                message="No verification records yet"
+                hint="Upload documents to verify identifiers"
+                size="small"
+              />
             )}
           </div>
         </>

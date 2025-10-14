@@ -1,11 +1,12 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Users } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import type { LegalEntityContact } from '../services/api';
 import { ContactForm } from './ContactForm';
+import { EmptyState } from './EmptyState';
 import './ContactsManager.css';
 
 interface ContactsManagerProps {
@@ -135,9 +136,11 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
           <GridColumn width="100px" title="Actions" cell={ActionsCell} />
         </Grid>
       ) : (
-        <div className="empty-state">
-          <p>No contacts added yet</p>
-        </div>
+        <EmptyState
+          icon={<Users size={48} />}
+          message="No contacts added yet"
+          hint="Add contacts to maintain communication channels with this member"
+        />
       )}
 
       {showDialog && (

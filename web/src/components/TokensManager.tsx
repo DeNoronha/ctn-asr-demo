@@ -1,11 +1,12 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { CheckCircle, XCircle, AlertTriangle, Copy, Trash2 } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Copy, Trash2, Key } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { formatDate } from '../utils/dateUtils';
+import { EmptyState } from './EmptyState';
 import './TokensManager.css';
 
 interface Endpoint {
@@ -273,12 +274,11 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
           <GridColumn title="Actions" width="120px" cell={ActionsCell} headerClassName="center-header" />
         </Grid>
       ) : (
-        <div className="empty-state">
-          <p>No tokens issued yet</p>
-          <p className="empty-hint">
-            Tokens are issued per endpoint. Go to the Endpoints tab to register systems and issue tokens.
-          </p>
-        </div>
+        <EmptyState
+          icon={<Key size={48} />}
+          message="No tokens issued yet"
+          hint="Tokens are issued per endpoint. Go to the Endpoints tab to register systems and issue tokens."
+        />
       )}
 
       {endpoints.length === 0 && (
