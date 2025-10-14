@@ -154,9 +154,21 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 ## Recently Completed (October 14, 2025)
 
 ### CRITICAL Fixes
+- ✅ **Fixed Azure Functions Headers private member access error** - Comprehensive fix for "Cannot read private member" error
+  - Fixed requestId.ts (called first in middleware chain) - **MOST CRITICAL FIX**
+  - Fixed endpointWrapper.ts (8 locations for CORS handling)
+  - Fixed auth.ts (authorization header extraction)
+  - Fixed all identifier function handlers (15 locations total)
+  - **Result:** All identifier CRUD operations now work correctly (201 Created responses)
+- ✅ **Implemented complete identifier CRUD backend** - 4 new Azure Functions
+  - GetIdentifiers: Retrieve all identifiers for an entity
+  - CreateIdentifier: Add new identifiers with validation
+  - UpdateIdentifier: Update existing identifiers
+  - DeleteIdentifier: Soft delete identifiers
+  - Full audit logging, RBAC permissions, error handling
+- ✅ **Fixed double /v1/v1/ URL bug** - 4 frontend files updated to prevent path duplication
 - ✅ **Fixed authentication on all apiV2 endpoints** - All CRUD operations (identifiers, contacts, endpoints, tokens) now authenticated correctly
 - ✅ **Implemented user locale detection for date formatting** - No more hardcoded nl-NL, uses browser locale (navigator.language)
-- ✅ **Resolved KVK identifier 404 errors** - Users can now successfully add identifiers
 
 ### HIGH Priority UI/UX Improvements (8 hours completed)
 - ✅ **H1: Consistent loading states** (1h) - Added Kendo Loader components with descriptive text across all tabs
