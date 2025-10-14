@@ -66,16 +66,17 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const excelExportRef = useRef<ExcelExport | null>(null);
 
-  // Column visibility state
+  // Column visibility state - Default shows: Legal Name, Status, LEI, EUID, KVK, Actions
   const [columns, setColumns] = useState<ColumnSettings[]>([
     { field: 'legal_name', title: 'Legal Name', show: true, width: '200px', orderIndex: 0 },
-    { field: 'org_id', title: 'Organization ID', show: true, width: '180px', orderIndex: 1 },
-    { field: 'domain', title: 'Domain', show: true, width: '150px', orderIndex: 2 },
-    { field: 'status', title: 'Status', show: true, width: '120px', orderIndex: 3 },
-    { field: 'membership_level', title: 'Membership', show: true, width: '120px', orderIndex: 4 },
-    { field: 'lei', title: 'LEI', show: true, width: '150px', orderIndex: 5 },
-    { field: 'kvk', title: 'KVK', show: true, width: '120px', orderIndex: 6 },
-    { field: 'created_at', title: 'Joined', show: true, width: '120px', orderIndex: 7 },
+    { field: 'status', title: 'Status', show: true, width: '120px', orderIndex: 1 },
+    { field: 'lei', title: 'LEI', show: true, width: '150px', orderIndex: 2 },
+    { field: 'euid', title: 'EUID', show: true, width: '150px', orderIndex: 3 },
+    { field: 'kvk', title: 'KVK', show: true, width: '120px', orderIndex: 4 },
+    { field: 'org_id', title: 'Organization ID', show: false, width: '180px', orderIndex: 5 },
+    { field: 'domain', title: 'Domain', show: false, width: '150px', orderIndex: 6 },
+    { field: 'membership_level', title: 'Membership', show: false, width: '120px', orderIndex: 7 },
+    { field: 'created_at', title: 'Joined', show: false, width: '120px', orderIndex: 8 },
   ]);
 
   // Load saved grid state from localStorage
@@ -132,6 +133,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           { field: 'org_id', operator: 'contains', value },
           { field: 'domain', operator: 'contains', value },
           { field: 'lei', operator: 'contains', value },
+          { field: 'euid', operator: 'contains', value },
           { field: 'kvk', operator: 'contains', value },
         ],
       });
@@ -166,13 +168,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   const resetColumns = () => {
     const defaultColumns: ColumnSettings[] = [
       { field: 'legal_name', title: 'Legal Name', show: true, width: '200px', orderIndex: 0 },
-      { field: 'org_id', title: 'Organization ID', show: true, width: '180px', orderIndex: 1 },
-      { field: 'domain', title: 'Domain', show: true, width: '150px', orderIndex: 2 },
-      { field: 'status', title: 'Status', show: true, width: '120px', orderIndex: 3 },
-      { field: 'membership_level', title: 'Membership', show: true, width: '120px', orderIndex: 4 },
-      { field: 'lei', title: 'LEI', show: true, width: '150px', orderIndex: 5 },
-      { field: 'kvk', title: 'KVK', show: true, width: '120px', orderIndex: 6 },
-      { field: 'created_at', title: 'Joined', show: true, width: '120px', orderIndex: 7 },
+      { field: 'status', title: 'Status', show: true, width: '120px', orderIndex: 1 },
+      { field: 'lei', title: 'LEI', show: true, width: '150px', orderIndex: 2 },
+      { field: 'euid', title: 'EUID', show: true, width: '150px', orderIndex: 3 },
+      { field: 'kvk', title: 'KVK', show: true, width: '120px', orderIndex: 4 },
+      { field: 'org_id', title: 'Organization ID', show: false, width: '180px', orderIndex: 5 },
+      { field: 'domain', title: 'Domain', show: false, width: '150px', orderIndex: 6 },
+      { field: 'membership_level', title: 'Membership', show: false, width: '120px', orderIndex: 7 },
+      { field: 'created_at', title: 'Joined', show: false, width: '120px', orderIndex: 8 },
     ];
     setColumns(defaultColumns);
     setSort([]);

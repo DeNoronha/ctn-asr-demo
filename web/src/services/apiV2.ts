@@ -170,6 +170,7 @@ export interface Member {
   legal_name: string;
   lei?: string;
   kvk?: string;
+  euid?: string;
   domain: string;
   status: string;
   membership_level: string;
