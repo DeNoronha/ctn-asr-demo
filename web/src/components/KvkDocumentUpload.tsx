@@ -141,17 +141,28 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
 
   const getFlagDescription = (flag: string): string => {
     const descriptions: { [key: string]: string } = {
+      // Entered vs Extracted comparison flags
+      entered_kvk_mismatch: 'Entered KvK number does not match extracted number from document',
+      entered_name_mismatch: 'Entered company name does not match extracted name from document',
+
+      // KvK API validation flags
       company_name_mismatch: 'Company name does not match KvK registry',
-      kvk_number_mismatch: 'KvK number mismatch',
-      bankrupt: 'Company is bankrupt',
-      dissolved: 'Company is dissolved',
+      kvk_number_mismatch: 'KvK number mismatch with registry',
+      bankrupt: 'Company is bankrupt according to KvK',
+      dissolved: 'Company is dissolved according to KvK',
       kvk_number_not_found: 'KvK number not found in registry',
+
+      // Processing flags
       extraction_failed: 'Failed to extract data from document',
       processing_error: 'Error processing document',
       api_error: 'KvK API error',
     };
 
     return descriptions[flag] || flag;
+  };
+
+  const isEnteredDataMismatch = (flag: string): boolean => {
+    return flag === 'entered_kvk_mismatch' || flag === 'entered_name_mismatch';
   };
 
   if (loading) {
@@ -208,16 +219,51 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                 style={{
                   marginTop: '15px',
                   padding: '10px',
-                  backgroundColor: '#fff3cd',
+                  backgroundColor: verificationStatus.kvk_mismatch_flags.some(isEnteredDataMismatch)
+                    ? '#ffe5e5' // Red tint for entered data mismatches
+                    : '#fff3cd', // Yellow for other issues
                   borderRadius: '4px',
+                  border: verificationStatus.kvk_mismatch_flags.some(isEnteredDataMismatch)
+                    ? '2px solid #ff9999'
+                    : '1px solid #ffc107',
                 }}
               >
-                <strong>Issues Detected:</strong>
+                <strong>
+                  {verificationStatus.kvk_mismatch_flags.some(isEnteredDataMismatch)
+                    ? '⚠️ Entered Data Mismatch Detected:'
+                    : 'Issues Detected:'}
+                </strong>
                 <ul style={{ marginTop: '5px', marginBottom: 0 }}>
                   {verificationStatus.kvk_mismatch_flags.map((flag, idx) => (
-                    <li key={idx}>{getFlagDescription(flag)}</li>
+                    <li
+                      key={idx}
+                      style={{
+                        fontWeight: isEnteredDataMismatch(flag) ? 'bold' : 'normal',
+                        color: isEnteredDataMismatch(flag) ? '#d32f2f' : 'inherit',
+                      }}
+                    >
+                      {getFlagDescription(flag)}
+                    </li>
                   ))}
                 </ul>
+                {verificationStatus.kvk_mismatch_flags.some(isEnteredDataMismatch) && (
+                  <div
+                    style={{
+                      marginTop: '10px',
+                      padding: '8px',
+                      backgroundColor: 'white',
+                      borderRadius: '4px',
+                      fontSize: '0.9em',
+                    }}
+                  >
+                    <strong>ℹ️ What this means:</strong>
+                    <p style={{ margin: '5px 0 0 0' }}>
+                      The KvK number or company name you entered manually does not match what was
+                      extracted from the uploaded document. Please verify the information is correct
+                      or contact an administrator for review.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 

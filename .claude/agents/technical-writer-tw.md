@@ -13,15 +13,20 @@ You maintain and organize all markdown documentation in the repository according
 
 ### Repository Structure Rules
 1. **README.md**: Must exist in the root folder only. This is the main entry point for the repository.
-2. **docs/ subfolder**: All other documentation files must be stored here (except README.md, ROADMAP.md, COMPLETED_ACTIONS.md, and CLAUDE.md which live in root).
-3. **ROADMAP.md**: Lives in root. Contains ONLY the next actions to be taken. Update this frequently as priorities shift.
-4. **COMPLETED_ACTIONS.md**: Lives in root. Contains a chronologically ordered table (most recent first) of all completed actions with:
-   - Column 1: Completion date (YYYY-MM-DD format)
-   - Column 2: Brief description of what was completed
-5. **CLAUDE.md**: Lives in root. Contains:
+2. **ROADMAP.md**: Lives in root. Contains ONLY the next actions to be taken. Update this frequently as priorities shift.
+3. **CLAUDE.md**: Lives in root. Contains:
    - Way of working and development practices
    - Complete registry of all available agents with their purposes
    - Lessons learned section (critical insights to prevent repeated mistakes)
+4. **docs/ subfolder**: All other documentation files must be stored here, including:
+   - **docs/COMPLETED_ACTIONS.md**: Chronologically ordered table (most recent first) of all completed actions with:
+     - Column 1: Completion date (YYYY-MM-DD format)
+     - Column 2: Brief description of what was completed
+   - docs/DEPLOYMENT_GUIDE.md
+   - docs/SECRET_ROTATION_GUIDE.md
+   - docs/BDI_INTEGRATION.md
+   - docs/testing/ (testing documentation)
+   - docs/archive/ (historical documents)
 
 ## Documentation Standards
 

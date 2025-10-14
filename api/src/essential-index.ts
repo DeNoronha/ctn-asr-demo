@@ -35,6 +35,9 @@ import './functions/getEndpointTokens';
 
 // KvK verification
 import './functions/getFlaggedEntities';
+import './functions/uploadKvkDocument';
+import './functions/getKvkVerificationStatus';
+import './functions/reviewKvkVerification';
 
 // Diagnostics
 import './functions/DiagnosticCheck';
