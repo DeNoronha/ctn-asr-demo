@@ -9,24 +9,6 @@ Full-stack application for managing CTN member organizations, endpoints, tokens,
 - Azure CLI
 - Access to Azure subscription
 
-### Local Development
-
-```bash
-# Install dependencies
-cd api && npm install
-cd ../web && npm install
-
-# Terminal 1 - API
-cd api
-func start --cors http://localhost:3000
-
-# Terminal 2 - Frontend
-cd web
-npm start
-```
-
-Access: http://localhost:3000
-
 ### Deploy to Production
 
 ```bash
@@ -55,9 +37,10 @@ mv .env.local.backup .env.local
 
 ## Essential Documentation
 
+- **[ROADMAP.md](./ROADMAP.md)** - Next actions and priorities
+- **[CLAUDE.md](./CLAUDE.md)** - Way of working, agent registry, lessons learned
 - **[docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)** - Deployment instructions
 - **[docs/SECRET_ROTATION_GUIDE.md](./docs/SECRET_ROTATION_GUIDE.md)** - Security and secret management
-- **[docs/ROADMAP.md](./docs/ROADMAP.md)** - Remaining tasks
 
 ## Common Commands
 

@@ -6,54 +6,6 @@
 - Azure CLI (logged in)
 - Access to Azure subscription
 
-## Local Development
-
-### 1. Install Dependencies
-
-```bash
-cd api && npm install
-cd ../web && npm install
-```
-
-### 2. Configure Environment
-
-**Frontend** (`web/.env.local`):
-```env
-REACT_APP_AZURE_CLIENT_ID=d3037c11-a541-4f21-8862-8079137a0cde
-REACT_APP_AZURE_TENANT_ID=598664e7-725c-4daa-bd1f-89c4ada717ff
-REACT_APP_REDIRECT_URI=http://localhost:3000
-REACT_APP_API_URL=http://localhost:7071/api/v1
-```
-
-**Backend** (`api/local.settings.json`):
-```json
-{
-  "IsEncrypted": false,
-  "Values": {
-    "FUNCTIONS_WORKER_RUNTIME": "node",
-    "POSTGRES_HOST": "psql-ctn-demo-asr-dev.postgres.database.azure.com",
-    "POSTGRES_PORT": "5432",
-    "POSTGRES_DATABASE": "asr_dev",
-    "POSTGRES_USER": "asradmin",
-    "POSTGRES_PASSWORD": "<YOUR_PASSWORD>"
-  }
-}
-```
-
-### 3. Run Locally
-
-```bash
-# Terminal 1 - Backend
-cd api
-func start --cors http://localhost:3000
-
-# Terminal 2 - Frontend
-cd web
-npm start
-```
-
-Access: http://localhost:3000
-
 ## Production Deployment
 
 ### Deploy API
@@ -124,9 +76,6 @@ File: `web/public/staticwebapp.config.json` (required for React Router)
 ```
 
 ## Troubleshooting
-
-### Production redirects to localhost
-**Solution:** Hide `.env.local` before building
 
 ### 404 on direct URL navigation
 **Solution:** Ensure `staticwebapp.config.json` exists in `web/public/`

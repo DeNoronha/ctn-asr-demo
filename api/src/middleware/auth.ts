@@ -90,11 +90,12 @@ export async function validateJwtToken(
 ): Promise<JwtPayload> {
   return new Promise((resolve, reject) => {
     // Verify token with Azure AD public key
+    // Note: We skip audience validation in jwt.verify and do it manually
+    // to support multiple audience formats
     jwt.verify(
       token,
       getKey,
       {
-        audience: `api://${AZURE_AD_CLIENT_ID}`,
         issuer: `https://login.microsoftonline.com/${AZURE_AD_TENANT_ID}/v2.0`,
         algorithms: ['RS256'],
       },
@@ -111,6 +112,19 @@ export async function validateJwtToken(
         }
 
         const payload = decoded as JwtPayload;
+
+        // Manual audience validation - accept multiple formats
+        const validAudiences = [
+          `api://${AZURE_AD_CLIENT_ID}`,  // Application ID URI format
+          AZURE_AD_CLIENT_ID,              // Client ID only
+          `${AZURE_AD_CLIENT_ID}`,         // Alternative format
+        ];
+
+        if (!validAudiences.includes(payload.aud)) {
+          context.error(`Audience validation failed. Expected one of: ${validAudiences.join(', ')}, got: ${payload.aud}`);
+          reject(new Error(`jwt audience invalid. expected: api://${AZURE_AD_CLIENT_ID}`));
+          return;
+        }
 
         // Additional validation
         if (!payload.oid && !payload.sub) {

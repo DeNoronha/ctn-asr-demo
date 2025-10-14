@@ -1,0 +1,143 @@
+# Azure DevOps Pipeline for Playwright E2E Tests
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    include:
+      - web/*
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    include:
+      - web/*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: playwright-secrets  # Create this variable group in Azure DevOps
+  - name: workingDirectory
+    value: 'web'
+  - name: nodeVersion
+    value: '20.x'
+
+stages:
+  - stage: Test
+    displayName: 'E2E Testing'
+    jobs:
+      - job: PlaywrightTests
+        displayName: 'Run Playwright Tests'
+        timeoutInMinutes: 30
+
+        steps:
+          - task: NodeTool@0
+            displayName: 'Setup Node.js'
+            inputs:
+              versionSpec: $(nodeVersion)
+
+          - script: |
+              npm ci --legacy-peer-deps
+            displayName: 'Install dependencies'
+            workingDirectory: $(workingDirectory)
+
+          - script: |
+              npx playwright install --with-deps chromium
+            displayName: 'Install Playwright browsers'
+            workingDirectory: $(workingDirectory)
+
+          - script: |
+              mkdir -p playwright/.auth
+            displayName: 'Create auth directory'
+            workingDirectory: $(workingDirectory)
+
+          - task: DownloadSecureFile@1
+            name: authState
+            displayName: 'Download auth state'
+            inputs:
+              secureFile: 'playwright-auth.json'
+            condition: succeededOrFailed()
+            continueOnError: true
+
+          - script: |
+              if [ -f "$(authState.secureFilePath)" ]; then
+                cp "$(authState.secureFilePath)" playwright/.auth/user.json
+                echo "✅ Authentication state loaded"
+              else
+                echo "⚠️ No authentication state found - tests may fail"
+              fi
+            displayName: 'Setup auth state'
+            workingDirectory: $(workingDirectory)
+
+          - script: |
+              npm run test:e2e
+            displayName: 'Run Playwright tests'
+            workingDirectory: $(workingDirectory)
+            env:
+              CI: true
+              PLAYWRIGHT_BASE_URL: $(PlaywrightBaseURL)
+            continueOnError: true
+
+          - task: PublishTestResults@2
+            displayName: 'Publish test results'
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/playwright-report/results.xml'
+              mergeTestResults: true
+              failTaskOnFailedTests: true
+            condition: succeededOrFailed()
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish HTML report'
+            inputs:
+              targetPath: '$(workingDirectory)/playwright-report'
+              artifact: 'playwright-report'
+              publishLocation: 'pipeline'
+            condition: succeededOrFailed()
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish failure screenshots'
+            inputs:
+              targetPath: '$(workingDirectory)/test-results'
+              artifact: 'playwright-screenshots'
+              publishLocation: 'pipeline'
+            condition: failed()
+
+  - stage: Report
+    displayName: 'Test Reporting'
+    dependsOn: Test
+    condition: always()
+    jobs:
+      - job: PublishResults
+        displayName: 'Publish test summary'
+        steps:
+          - script: |
+              echo "Playwright test execution completed"
+              echo "View detailed report in pipeline artifacts"
+            displayName: 'Summary'
+
+# Setup Instructions:
+#
+# 1. Create Variable Group in Azure DevOps:
+#    Library → Variable Groups → + Variable group
+#    Name: playwright-secrets
+#    Variables:
+#      - PlaywrightBaseURL: https://calm-tree-03352ba03.1.azurestaticapps.net
+#
+# 2. Upload Auth State as Secure File:
+#    Pipelines → Library → Secure files → + Secure file
+#    Upload: playwright/.auth/user.json (captured locally)
+#    Name it: playwright-auth.json
+#    Authorize for all pipelines
+#
+# 3. Grant Permissions:
+#    Ensure service connection has access to variable group
+#
+# 4. Enable Pipeline:
+#    Pipelines → New pipeline → Select this YAML file
