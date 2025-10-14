@@ -19,6 +19,74 @@ interface IdentifiersManagerProps {
 
 const VALIDATION_STATUSES = ['PENDING', 'VALIDATED', 'FAILED', 'EXPIRED'];
 
+// Validation rules and format examples for identifier types
+const IDENTIFIER_VALIDATION: Record<string, {
+  pattern: RegExp;
+  example: string;
+  description: string;
+}> = {
+  'KVK': {
+    pattern: /^\d{8}$/,
+    example: '12345678',
+    description: '8 digits',
+  },
+  'LEI': {
+    pattern: /^[A-Z0-9]{20}$/,
+    example: '724500VKKSH9QOLTFR81',
+    description: '20 alphanumeric characters',
+  },
+  'EORI': {
+    pattern: /^[A-Z]{2}[A-Z0-9]{1,15}$/,
+    example: 'NL123456789012',
+    description: 'Country code + up to 15 alphanumeric',
+  },
+  'VAT': {
+    pattern: /^[A-Z]{2}[A-Z0-9]{2,13}$/,
+    example: 'NL123456789B01',
+    description: 'Country code + 2-13 alphanumeric',
+  },
+  'DUNS': {
+    pattern: /^\d{9}$/,
+    example: '123456789',
+    description: '9 digits',
+  },
+  'EUID': {
+    pattern: /^[A-Z]{2}\.[A-Z0-9.]{1,50}$/,
+    example: 'NL.12345678.0001',
+    description: 'Country code + identifier',
+  },
+  'HRB': {
+    pattern: /^HRB\s?\d{1,6}$/i,
+    example: 'HRB 12345',
+    description: 'HRB + 1-6 digits',
+  },
+  'HRA': {
+    pattern: /^HRA\s?\d{1,6}$/i,
+    example: 'HRA 12345',
+    description: 'HRA + 1-6 digits',
+  },
+  'KBO': {
+    pattern: /^\d{10}$/,
+    example: '0123456789',
+    description: '10 digits',
+  },
+  'SIREN': {
+    pattern: /^\d{9}$/,
+    example: '123456789',
+    description: '9 digits',
+  },
+  'SIRET': {
+    pattern: /^\d{14}$/,
+    example: '12345678901234',
+    description: '14 digits',
+  },
+  'CRN': {
+    pattern: /^[A-Z0-9]{8}$/,
+    example: 'AB123456',
+    description: '8 alphanumeric characters',
+  },
+};
+
 // Mapping of country codes to applicable identifier types
 const COUNTRY_IDENTIFIER_MAP: Record<string, string[]> = {
   'NL': ['KVK', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
@@ -109,7 +177,41 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
   const [availableIdentifierTypes, setAvailableIdentifierTypes] = useState<string[]>(
     COUNTRY_IDENTIFIER_MAP.default
   );
+  const [validationError, setValidationError] = useState<string>('');
+  const [isValidIdentifier, setIsValidIdentifier] = useState<boolean>(true);
   const notification = useNotification();
+
+  // Validate identifier value based on type
+  const validateIdentifierValue = (type: string | undefined, value: string): boolean => {
+    if (!type || !value) {
+      setValidationError('');
+      setIsValidIdentifier(true);
+      return true;
+    }
+
+    const validation = IDENTIFIER_VALIDATION[type];
+    if (!validation) {
+      // No validation rule for this type (e.g., OTHER)
+      setValidationError('');
+      setIsValidIdentifier(true);
+      return true;
+    }
+
+    const trimmedValue = value.trim().toUpperCase();
+    const isValid = validation.pattern.test(trimmedValue);
+
+    if (!isValid) {
+      setValidationError(
+        `Invalid format. Expected: ${validation.description}. Example: ${validation.example}`
+      );
+      setIsValidIdentifier(false);
+    } else {
+      setValidationError('');
+      setIsValidIdentifier(true);
+    }
+
+    return isValid;
+  };
 
   const handleAdd = () => {
     setEditingIdentifier(null);
@@ -117,6 +219,8 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
       validation_status: 'PENDING',
     });
     setAvailableIdentifierTypes(COUNTRY_IDENTIFIER_MAP.default);
+    setValidationError('');
+    setIsValidIdentifier(true);
     setIsDialogOpen(true);
   };
 
@@ -130,6 +234,8 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     } else {
       setAvailableIdentifierTypes(COUNTRY_IDENTIFIER_MAP.default);
     }
+    // Validate existing identifier
+    validateIdentifierValue(identifier.identifier_type, identifier.identifier_value || '');
     setIsDialogOpen(true);
   };
 
@@ -165,6 +271,22 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
       registry_name: registryInfo?.name || formData.registry_name,
       registry_url: registryInfo?.url || formData.registry_url,
     });
+    // Re-validate with new type
+    if (formData.identifier_value) {
+      validateIdentifierValue(type, formData.identifier_value);
+    }
+  };
+
+  // Handle identifier value change with validation
+  const handleIdentifierValueChange = (value: string) => {
+    setFormData({
+      ...formData,
+      identifier_value: value,
+    });
+    // Validate as user types
+    if (formData.identifier_type) {
+      validateIdentifierValue(formData.identifier_type, value);
+    }
   };
 
   const handleDelete = async (identifier: LegalEntityIdentifier) => {
@@ -190,6 +312,12 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
   const handleSave = async () => {
     if (!formData.identifier_type || !formData.identifier_value) {
       notification.showError('Please fill in all required fields');
+      return;
+    }
+
+    // Check validation before saving
+    if (!isValidIdentifier) {
+      notification.showError('Please fix validation errors before saving');
       return;
     }
 
@@ -240,6 +368,8 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
       validation_status: 'PENDING',
     });
     setAvailableIdentifierTypes(COUNTRY_IDENTIFIER_MAP.default);
+    setValidationError('');
+    setIsValidIdentifier(true);
   };
 
   const getValidationBadge = (status?: string) => {
@@ -386,9 +516,22 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
               <label>Identifier Value *</label>
               <Input
                 value={formData.identifier_value || ''}
-                onChange={(e) => setFormData({ ...formData, identifier_value: e.value })}
+                onChange={(e) => handleIdentifierValueChange(e.value)}
                 placeholder="Enter identifier value"
+                className={validationError ? 'input-error' : isValidIdentifier && formData.identifier_value ? 'input-success' : ''}
               />
+              {formData.identifier_type && IDENTIFIER_VALIDATION[formData.identifier_type] && (
+                <span className="field-hint validation-hint">
+                  Format: {IDENTIFIER_VALIDATION[formData.identifier_type].description}
+                  {' '}(e.g., {IDENTIFIER_VALIDATION[formData.identifier_type].example})
+                </span>
+              )}
+              {validationError && (
+                <span className="field-error">{validationError}</span>
+              )}
+              {isValidIdentifier && formData.identifier_value && formData.identifier_type && (
+                <span className="field-success">✓ Valid format</span>
+              )}
             </div>
 
             <div className="form-field">
@@ -432,7 +575,11 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
 
           <DialogActionsBar>
             <Button onClick={handleCancel}>Cancel</Button>
-            <Button themeColor="primary" onClick={handleSave}>
+            <Button
+              themeColor="primary"
+              onClick={handleSave}
+              disabled={!isValidIdentifier || !formData.identifier_type || !formData.identifier_value}
+            >
               {editingIdentifier ? 'Update' : 'Add'}
             </Button>
           </DialogActionsBar>
