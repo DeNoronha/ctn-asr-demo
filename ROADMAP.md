@@ -8,12 +8,14 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 ## CRITICAL - Security (Do First)
 
-- [ ] **Rotate PostgreSQL password** - Currently exposed in Git history
+- [ ] Fix Biome code quality checks
 - [ ] **Clean Git history** - Remove exposed credentials using git-filter-repo
 - [ ] **Move all secrets to Azure Key Vault** - PostgreSQL, JWT, Storage, Event Grid keys
 - [ ] **Generate strong JWT secret** - Replace any demo/default secrets
 - [ ] **Audit database access logs** - Check for unauthorized access (last 30 days)
 - [ ] **Set up secret rotation schedule** - Document and calendar quarterly rotations
+- [ ] **Rotate PostgreSQL password** - Currently exposed in Git history
+- [ ] Use case: If I upload a KvK Statement I want the solution to check if the entered KvK Identifier and Company Name by the administrator or member is actually the same as on the uploaded form. We already have included Azure Intellegent Document Processing to the solution. I want to see the validation result in the admin portal. Both in the member screens as in the Validation Menu (currently still named as KvK Review Queue). This validation is just a simple input checker. The validation against the KVK API is a next step, which is awaiting receiving an API key. This is a long-running task. Work autonomously through all steps. You are allowed to execute bash and az commands (e.g. npm build etc.). Use subagents often and when appropriate. Run tests frequently using the TE agent. If you encounter blockers, document them and propose solutions. While your are working autonomously be concise, give me clear and simple instructions if you require a decision. Invoke the TW agent once completed.  
 
 ---
 

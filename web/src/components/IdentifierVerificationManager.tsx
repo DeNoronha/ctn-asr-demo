@@ -43,7 +43,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
   const [loading, setLoading] = useState(false);
   const notification = useNotification();
 
-  const API_BASE = process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api';
+  const API_BASE = process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
 
   // Load verification records
   useEffect(() => {

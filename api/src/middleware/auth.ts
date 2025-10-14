@@ -150,8 +150,14 @@ export async function authenticate(
   context: InvocationContext
 ): Promise<{ success: true; request: AuthenticatedRequest } | { success: false; response: any }> {
   try {
-    // Extract Authorization header
-    const authHeader = request.headers.get('authorization');
+    // Extract Authorization header (with try-catch for header access)
+    let authHeader: string | null = null;
+    try {
+      authHeader = request.headers.get('authorization');
+    } catch (error) {
+      context.warn('Failed to extract authorization header:', error);
+      authHeader = null;
+    }
 
     if (!authHeader) {
       context.warn('Missing Authorization header');

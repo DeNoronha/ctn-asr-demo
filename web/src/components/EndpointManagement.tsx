@@ -63,7 +63,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
   });
 
   const API_BASE =
-    process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api';
+    process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
 
   useEffect(() => {
     loadEndpoints();
@@ -72,7 +72,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
   const loadEndpoints = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/v1/legal-entities/${legalEntityId}/endpoints`);
+      const response = await fetch(`${API_BASE}/legal-entities/${legalEntityId}/endpoints`);
       const data = await response.json();
       setEndpoints(data);
     } catch (error) {
@@ -85,7 +85,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
   const handleCreateEndpoint = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/v1/legal-entities/${legalEntityId}/endpoints`, {
+      const response = await fetch(`${API_BASE}/legal-entities/${legalEntityId}/endpoints`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -113,7 +113,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
     setLoading(true);
     try {
       const response = await fetch(
-        `${API_BASE}/v1/endpoints/${endpoint.legal_entity_endpoint_id}/tokens`,
+        `${API_BASE}/endpoints/${endpoint.legal_entity_endpoint_id}/tokens`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

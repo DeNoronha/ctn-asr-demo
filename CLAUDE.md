@@ -97,6 +97,111 @@ psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com port=5432 \
 - Run tests if available
 - Review `git status` and `git diff`
 
+### Agent Invocation Workflow
+
+**When to Invoke Agents:**
+
+1. **When Bugs Are Encountered (IMMEDIATE):**
+   - Test Engineer (TE) - Autonomously investigate and fix bugs using Playwright
+   - TE will reproduce bug, capture errors, create failing test, propose fix
+   - No need to manually check console logs or debug yourself
+
+2. **After Significant Code Changes:**
+   - Code Reviewer (CR) - Review code quality and best practices
+   - Security Analyst (SA) - Check for security vulnerabilities
+   - Technical Writer (TW) - Update documentation
+
+3. **After UI/UX Changes:**
+   - Design Analyst (DA) - Review interface design and accessibility
+   - Technical Writer (TW) - Update UI documentation
+
+4. **After Completing Features:**
+   - Test Engineer (TE) - Create E2E tests for new functionality
+   - Code Reviewer (CR) - Final code quality check
+   - Technical Writer (TW) - Update feature documentation and COMPLETED_ACTIONS.md
+
+5. **Before Pull Requests:**
+   - Security Analyst (SA) - Security validation
+   - Code Reviewer (CR) - Code quality review
+   - Test Engineer (TE) - Ensure test coverage
+
+6. **Before Major Releases:**
+   - Test Engineer (TE) - Run full regression test suite
+   - Security Analyst (SA) - Security audit
+   - Design Analyst (DA) - UX/UI review
+
+7. **Documentation Updates:**
+   - Technical Writer (TW) - For any documentation changes, structure audits, or completed action tracking
+
+**Agent Invocation Checklist:**
+- [ ] **When encountering bugs** → Invoke TE (autonomous bug investigation with Playwright)
+- [ ] After completing a feature → Invoke TE (tests), CR (review), TW (docs)
+- [ ] After UI changes → Invoke DA (design review), TW (docs)
+- [ ] Before committing security-sensitive code → Invoke SA (security)
+- [ ] Before pull requests → Invoke CR (code), SA (security)
+- [ ] After major work session → Invoke TW (update COMPLETED_ACTIONS.md)
+- [ ] Before major release → Invoke TE (regression), SA (audit), DA (UX review)
+
+### Technical Writer (TW) Agent Workflow - MANDATORY
+
+**CRITICAL:** The Technical Writer (TW) agent MUST be invoked automatically after completing ANY task from ROADMAP.md.
+
+**TW Agent Responsibilities (Every Invocation):**
+
+1. **Move Completed Tasks:**
+   - Identify completed tasks from ROADMAP.md
+   - Move them to `docs/COMPLETED_ACTIONS.md` with today's date
+   - Maintain chronological order (most recent first)
+   - Use concise, clear descriptions
+
+2. **Re-evaluate Priorities:**
+   - Review remaining tasks in ROADMAP.md
+   - Re-assess priorities based on:
+     - Security risks (CRITICAL)
+     - Production stability (HIGH)
+     - Code quality impact (MEDIUM)
+     - Future enhancements (LOW)
+   - Reorganize ROADMAP.md if priorities have shifted
+   - Update "Last Updated" date
+
+3. **Verify Repository Structure:**
+   - **Root folder MUST contain ONLY 3 files:**
+     - `README.md` - Main entry point
+     - `CLAUDE.md` - Way of working (this file)
+     - `ROADMAP.md` - Pending actions
+   - **ALL other markdown files MUST be in `docs/` folder:**
+     - `docs/COMPLETED_ACTIONS.md` - Historical record
+     - `docs/DEPLOYMENT_GUIDE.md`
+     - `docs/SECRET_ROTATION_GUIDE.md`
+     - `docs/BDI_INTEGRATION.md`
+     - `docs/testing/` - Testing documentation
+     - `docs/archive/` - Historical documents
+   - Move any misplaced files immediately
+
+4. **Update Documentation:**
+   - Ensure all cross-references are correct
+   - Update links if files were moved
+   - Verify markdown formatting is clean
+
+**When to Invoke TW (Automatically):**
+- ✅ **ALWAYS** after marking a ROADMAP.md task as complete
+- ✅ **ALWAYS** after a significant work session ends
+- ✅ **ALWAYS** when asked to "update documentation"
+- ✅ **ALWAYS** before committing changes
+
+**TW Invocation Pattern:**
+```
+User: "I've completed [task from ROADMAP.md]"
+Assistant: "Great! Let me invoke the Technical Writer (TW) agent to:
+1. Move this completed task to docs/COMPLETED_ACTIONS.md
+2. Re-evaluate remaining task priorities
+3. Verify repository structure
+4. Update documentation links"
+```
+
+**One-Person Operation Note:**
+Since this is a one-person project, the TW agent serves as your persistent memory and organizational assistant. It ensures nothing is forgotten and the repository stays clean and organized.
+
 ---
 
 ## Agent Registry
@@ -165,46 +270,70 @@ psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com port=5432 \
 
 ---
 
-### Test Engineer (TE)
+### Test Engineer (TE) - Bug Hunter & Test Automation
 **File:** `.claude/agents/test-engineer-te.md`
 **Color:** Purple
 **Model:** Sonnet
 
-**Purpose:** Creates and manages Playwright automated tests
+**Purpose:** Creates and manages Playwright automated tests, autonomously investigates and fixes bugs
 
 **When to Use:**
+- ✅ **When bugs are encountered** - Invoke TE to investigate autonomously using Playwright
 - After implementing new features
 - Before major releases (regression testing)
 - When test failures occur
 - For TDD (write tests before implementation)
 
+**Bug Investigation Workflow:**
+When a bug is reported, the TE agent will:
+1. Use Playwright to reproduce the bug (headed mode, console logging, network inspection)
+2. Capture browser console errors, failed network requests, and stack traces
+3. Create a failing test that reproduces the issue
+4. Analyze the root cause using Playwright's debugging tools
+5. Propose fix with test coverage
+6. Verify fix with test suite
+7. Document the bug and resolution
+
 **Capabilities:**
+- Autonomous bug investigation using Playwright debugging tools
+- Captures console errors, network failures, and visual regressions
+- Creates failing tests that reproduce bugs before fixing
 - Builds ever-growing test library in `web/e2e/` directory
 - Creates Playwright tests with TypeScript
 - Executes tests across browsers, monitors console errors
 - Integrates with Azure DevOps test management
 - Performs regression testing before major releases
 
+**You don't need to check console logs yourself** - the TE agent handles all debugging autonomously.
+
 ---
 
-### Technical Writer (TW)
+### Technical Writer (TW) - Documentation Gatekeeper
 **File:** `.claude/agents/technical-writer-tw.md`
 **Color:** Cyan
 **Model:** Sonnet
 
-**Purpose:** Maintains and organizes repository documentation
+**Purpose:** Maintains and organizes repository documentation, tracks completed actions, manages ROADMAP.md priorities
 
-**When to Use:**
-- After completing features (document changes)
-- When documentation is outdated
-- For cleaning up misplaced documentation files
-- When updating ROADMAP.md or COMPLETED_ACTIONS.md
+**When to Use (AUTOMATIC):**
+- ✅ **ALWAYS** after completing ANY ROADMAP.md task
+- ✅ **ALWAYS** after significant work sessions
+- ✅ **ALWAYS** when documentation needs updating
+- ✅ **ALWAYS** before committing changes
+
+**Primary Responsibilities:**
+1. Move completed tasks from ROADMAP.md to `docs/COMPLETED_ACTIONS.md`
+2. Re-evaluate and reorganize ROADMAP.md priorities
+3. Enforce root folder structure (only 3 files: README.md, CLAUDE.md, ROADMAP.md)
+4. Maintain clean `docs/` folder organization
+5. Update documentation cross-references
 
 **Capabilities:**
-- Manages documentation structure (README.md, ROADMAP.md, COMPLETED_ACTIONS.md, CLAUDE.md)
-- Organizes `docs/` folder
-- Updates agent registry and lessons learned
-- Creates clear, concise technical documentation with Mermaid diagrams
+- Tracks completed actions with dates
+- Manages ROADMAP.md priorities (CRITICAL → HIGH → MEDIUM → LOW)
+- Enforces repository structure rules
+- Creates clear, concise technical documentation
+- Verifies all markdown files are in correct locations
 
 ---
 
@@ -296,13 +425,13 @@ The **Connected Trade Network Association Register (ASR)** is a member managemen
 
 ## Documentation Structure
 
-### Root Files (Governance)
-- **README.md** - Main entry point
-- **ROADMAP.md** - Next actions only (pending tasks)
-- **COMPLETED_ACTIONS.md** - Historical record of completed work
+### Root Files (ONLY 3 Files Allowed)
+- **README.md** - Main entry point for the repository
+- **ROADMAP.md** - ALL pending actions (single source of truth)
 - **CLAUDE.md** - This file (way of working, agent registry, lessons learned)
 
-### docs/ Folder (Technical Documentation)
+### docs/ Folder (ALL Other Documentation)
+- `COMPLETED_ACTIONS.md` - Historical record of completed work (moved from root)
 - `DEPLOYMENT_GUIDE.md` - Deployment procedures
 - `SECRET_ROTATION_GUIDE.md` - Security practices
 - `BDI_INTEGRATION.md` - BDI/BVAD/BVOD documentation

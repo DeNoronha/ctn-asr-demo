@@ -19,10 +19,25 @@ import './functions/GetContacts';
 import './functions/CreateContact';
 import './functions/UpdateContact';
 import './functions/DeleteContact';
+import './functions/GetIdentifiers';
+import './functions/CreateIdentifier';
+import './functions/UpdateIdentifier';
+import './functions/DeleteIdentifier';
 import './functions/CreateMember';
 import './functions/IssueToken';
 
+// Endpoint management
+import './functions/getEndpointsByEntity';
+import './functions/createEndpoint';
+import './functions/updateEndpoint';
+import './functions/issueEndpointToken';
+import './functions/getEndpointTokens';
+
 // KvK verification
 import './functions/getFlaggedEntities';
+
+// Diagnostics
+import './functions/DiagnosticCheck';
+import './functions/CreateIdentifierSimple';
 
 console.log('✓ Essential functions loaded');

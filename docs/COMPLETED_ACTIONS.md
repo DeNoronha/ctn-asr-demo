@@ -4,6 +4,17 @@ This file tracks all completed work in chronological order (most recent first).
 
 | Date | Description |
 |------|-------------|
+| 2025-10-14 | Added TE agent as autonomous bug hunter - uses Playwright to investigate and fix bugs without manual console debugging |
+| 2025-10-14 | Cleaned root folder - moved RELEASE_INSTRUCTIONS.md and STABLE_RELEASE_INFO.md to docs/ |
+| 2025-10-14 | Established TW agent as automatic gatekeeper - invoked after every completed task to track progress and manage priorities |
+| 2025-10-14 | Moved COMPLETED_ACTIONS.md to docs/ - root folder now contains ONLY 3 files (README.md, CLAUDE.md, ROADMAP.md) |
+| 2025-10-14 | Added TW agent workflow to CLAUDE.md - automatic invocation, priority re-evaluation, structure verification |
+| 2025-10-14 | Consolidated all pending tasks into single ROADMAP.md organized by priority (CRITICAL, HIGH, MEDIUM, LOW) |
+| 2025-10-14 | Added agent invocation workflow to CLAUDE.md with checklist for when to invoke each agent |
+| 2025-10-14 | Removed all localhost references from documentation - everything deploys to Azure |
+| 2025-10-14 | Audited archive documents and added 21 historical completed actions (Oct 7-10) to tracking |
+| 2025-10-14 | Reorganized documentation structure - moved files to proper locations, archived status reports |
+| 2025-10-14 | Created comprehensive CLAUDE.md and ROADMAP.md as single sources of truth |
 | 2025-10-14 | Genericized document verification - supports all identifier types (LEI, KVK, EORI, HRB, etc.) not just KvK |
 | 2025-10-14 | Created IdentifierVerificationManager with identifier selection dropdown and verification history grid |
 | 2025-10-14 | Renamed "KvK Verification" tab to "Document Verification" for international applicability |

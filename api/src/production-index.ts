@@ -31,6 +31,12 @@ import './functions/CreateContact';
 import './functions/UpdateContact';
 import './functions/DeleteContact';
 
+// Admin portal - Identifier management
+import './functions/GetIdentifiers';
+import './functions/CreateIdentifier';
+import './functions/UpdateIdentifier';
+import './functions/DeleteIdentifier';
+
 // Admin portal - KvK verification
 import './functions/uploadKvkDocument';
 import './functions/getKvkVerificationStatus';

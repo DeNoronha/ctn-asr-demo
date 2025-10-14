@@ -39,6 +39,7 @@ mv .env.local.backup .env.local
 
 - **[ROADMAP.md](./ROADMAP.md)** - Next actions and priorities
 - **[CLAUDE.md](./CLAUDE.md)** - Way of working, agent registry, lessons learned
+- **[docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md)** - Historical record of completed work
 - **[docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)** - Deployment instructions
 - **[docs/SECRET_ROTATION_GUIDE.md](./docs/SECRET_ROTATION_GUIDE.md)** - Security and secret management
 

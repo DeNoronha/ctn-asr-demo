@@ -38,7 +38,7 @@ interface TokensManagerProps {
   onIssueToken: (orgId: string) => Promise<void>;
 }
 
-const API_BASE = process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api';
+const API_BASE = process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
 
 export const TokensManager: React.FC<TokensManagerProps> = ({
   legalEntityId,
@@ -65,7 +65,7 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
       for (const endpoint of endpoints) {
         try {
           const response = await fetch(
-            `${API_BASE}/v1/endpoints/${endpoint.legal_entity_endpoint_id}/tokens`
+            `${API_BASE}/endpoints/${endpoint.legal_entity_endpoint_id}/tokens`
           );
           if (response.ok) {
             const endpointTokens = await response.json();
@@ -101,7 +101,7 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
 
     try {
       const response = await fetch(
-        `${API_BASE}/v1/tokens/${tokenToRevoke.endpoint_authorization_id}/revoke`,
+        `${API_BASE}/tokens/${tokenToRevoke.endpoint_authorization_id}/revoke`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

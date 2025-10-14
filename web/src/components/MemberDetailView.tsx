@@ -64,8 +64,8 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           setIdentifiers(entityIdentifiers);
 
           // Load endpoints
-          const API_BASE = process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api';
-          const endpointsResponse = await fetch(`${API_BASE}/v1/legal-entities/${member.legal_entity_id}/endpoints`);
+          const API_BASE = process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
+          const endpointsResponse = await fetch(`${API_BASE}/legal-entities/${member.legal_entity_id}/endpoints`);
           if (endpointsResponse.ok) {
             const endpointsData = await endpointsResponse.json();
             setEndpoints(endpointsData);
