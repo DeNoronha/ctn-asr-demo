@@ -16,7 +16,14 @@ import { ContactsManager } from './ContactsManager';
 import { EndpointManagement } from './EndpointManagement';
 import { IdentifiersManager } from './IdentifiersManager';
 import { KvkDocumentUpload } from './KvkDocumentUpload';
+import { TokensManager } from './TokensManager';
 import './MemberDetailView.css';
+
+interface Endpoint {
+  legal_entity_endpoint_id: string;
+  endpoint_name: string;
+  data_category: string;
+}
 
 interface MemberDetailViewProps {
   member: Member;
@@ -35,10 +42,11 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
   const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(null);
   const [contacts, setContacts] = useState<LegalEntityContact[]>([]);
   const [identifiers, setIdentifiers] = useState<LegalEntityIdentifier[]>([]);
+  const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [loading, setLoading] = useState(false);
   const notification = useNotification();
 
-  // Load legal entity, contacts, and identifiers
+  // Load legal entity, contacts, identifiers, and endpoints
   useEffect(() => {
     const loadData = async () => {
       if (member.legal_entity_id) {
@@ -52,6 +60,14 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
 
           const entityIdentifiers = await apiV2.getIdentifiers(member.legal_entity_id);
           setIdentifiers(entityIdentifiers);
+
+          // Load endpoints
+          const API_BASE = process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api';
+          const endpointsResponse = await fetch(`${API_BASE}/v1/legal-entities/${member.legal_entity_id}/endpoints`);
+          if (endpointsResponse.ok) {
+            const endpointsData = await endpointsResponse.json();
+            setEndpoints(endpointsData);
+          }
         } catch (error) {
           console.error('Failed to load legal entity data:', error);
           notification.showError('Failed to load company information');
@@ -240,16 +256,11 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
 
         <TabStripTab title="Tokens">
           <div className="tab-content">
-            <div className="info-section">
-              <h3>Token Management</h3>
-              <Button
-                themeColor="primary"
-                onClick={() => onIssueToken(member.org_id)}
-                disabled={member.status !== 'ACTIVE'}
-              >
-                Issue New Token
-              </Button>
-            </div>
+            <TokensManager
+              legalEntityId={member.org_id}
+              endpoints={endpoints}
+              onIssueToken={onIssueToken}
+            />
           </div>
         </TabStripTab>
 

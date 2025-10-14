@@ -2,7 +2,7 @@ import { Button } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Input } from '@progress/kendo-react-inputs';
-import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
+import { Grid, GridColumn } from '@progress/kendo-react-grid';
 import { Pencil, Plus, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
@@ -15,10 +15,6 @@ interface IdentifiersManagerProps {
   identifiers: LegalEntityIdentifier[];
   onUpdate: (identifiers: LegalEntityIdentifier[]) => void;
 }
-
-const ALL_IDENTIFIER_TYPES = [
-  'LEI', 'KVK', 'EORI', 'VAT', 'DUNS', 'EUID', 'HRB', 'HRA', 'KBO', 'SIREN', 'SIRET', 'CRN', 'OTHER'
-];
 
 const VALIDATION_STATUSES = ['PENDING', 'VALIDATED', 'FAILED', 'EXPIRED'];
 
@@ -270,7 +266,8 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
         <Button
           fillMode="flat"
           size="small"
-          title="Edit"
+          title="Edit identifier"
+          aria-label={`Edit ${props.dataItem.identifier_type} identifier`}
           onClick={() => handleEdit(props.dataItem)}
         >
           <Pencil size={16} />
@@ -278,7 +275,8 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
         <Button
           fillMode="flat"
           size="small"
-          title="Delete"
+          title="Delete identifier"
+          aria-label={`Delete ${props.dataItem.identifier_type} identifier`}
           onClick={() => handleDelete(props.dataItem)}
         >
           <Trash2 size={16} />
@@ -311,50 +309,48 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
 
   return (
     <div className="identifiers-manager">
-      <Grid data={identifiers} style={{ height: '450px' }}>
-        <GridToolbar>
-          <Button themeColor="primary" onClick={handleAdd}>
-            <Plus size={16} />
-            Add Identifier
-          </Button>
-        </GridToolbar>
-        <GridColumn field="identifier_type" title="Type" width="100px" />
-        <GridColumn field="identifier_value" title="Identifier Value" width="200px" />
-        <GridColumn field="country_code" title="Country" width="100px" />
-        <GridColumn field="registry_name" title="Registry" width="180px" />
-        <GridColumn
-          field="validation_status"
-          title="Status"
-          width="140px"
-          cell={ValidationCell}
-        />
-        <GridColumn
-          field="validation_date"
-          title="Last Verified"
-          width="130px"
-          cell={DateCell}
-        />
-        <GridColumn
-          field="dt_modified"
-          title="Last Edited"
-          width="130px"
-          cell={DateCell}
-        />
-        <GridColumn
-          title="Actions"
-          width="120px"
-          cell={ActionsCell}
-          headerClassName="center-header"
-        />
-      </Grid>
+      <div className="section-header">
+        <h3>Legal Identifiers</h3>
+        <Button themeColor="primary" onClick={handleAdd}>
+          <Plus size={16} />
+          Add Identifier
+        </Button>
+      </div>
 
-      {identifiers.length === 0 && (
+      {identifiers.length > 0 ? (
+        <Grid data={identifiers} style={{ height: '450px' }}>
+          <GridColumn field="identifier_type" title="Type" width="100px" />
+          <GridColumn field="identifier_value" title="Identifier Value" width="200px" />
+          <GridColumn field="country_code" title="Country" width="100px" />
+          <GridColumn field="registry_name" title="Registry" width="180px" />
+          <GridColumn
+            field="validation_status"
+            title="Status"
+            width="140px"
+            cell={ValidationCell}
+          />
+          <GridColumn
+            field="validation_date"
+            title="Last Verified"
+            width="130px"
+            cell={DateCell}
+          />
+          <GridColumn
+            field="dt_modified"
+            title="Last Edited"
+            width="130px"
+            cell={DateCell}
+          />
+          <GridColumn
+            title="Actions"
+            width="120px"
+            cell={ActionsCell}
+            headerClassName="center-header"
+          />
+        </Grid>
+      ) : (
         <div className="empty-state">
           <p>No identifiers registered yet</p>
-          <Button themeColor="primary" onClick={handleAdd}>
-            <Plus size={16} />
-            Add First Identifier
-          </Button>
         </div>
       )}
 

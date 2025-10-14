@@ -1,7 +1,7 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-// ContactsManager.tsx - Manage contacts for a legal entity
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import type { LegalEntityContact } from '../services/api';
@@ -89,17 +89,23 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
       <td>
         <div className="action-buttons">
           <Button
-            icon="edit"
             fillMode="flat"
-            title="Edit"
+            size="small"
+            title="Edit contact"
+            aria-label={`Edit ${props.dataItem.full_name}`}
             onClick={() => handleEditContact(props.dataItem)}
-          />
+          >
+            <Pencil size={16} />
+          </Button>
           <Button
-            icon="delete"
             fillMode="flat"
-            title="Delete"
+            size="small"
+            title="Delete contact"
+            aria-label={`Delete ${props.dataItem.full_name}`}
             onClick={() => handleDeleteContact(props.dataItem.legal_entity_contact_id)}
-          />
+          >
+            <Trash2 size={16} />
+          </Button>
         </div>
       </td>
     );
@@ -109,30 +115,28 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
     <div className="contacts-manager">
       <div className="section-header">
         <h3>Contacts ({contacts.length})</h3>
-        <Button themeColor="primary" icon="plus" onClick={handleAddContact}>
+        <Button themeColor="primary" onClick={handleAddContact}>
+          <Plus size={16} />
           Add Contact
         </Button>
       </div>
 
-      <Grid
-        data={contacts}
-        style={{ height: '400px', maxHeight: '400px' }}
-        className="contacts-grid"
-      >
-        <GridColumn field="contact_type" title="Type" width="140px" cell={ContactTypeCell} />
-        <GridColumn field="name" title="Name" width="180px" cell={NameCell} />
-        <GridColumn field="email" title="Email" width="220px" />
-        <GridColumn field="phone" title="Phone" width="140px" />
-        <GridColumn field="job_title" title="Job Title" width="160px" />
-        <GridColumn width="100px" title="Actions" cell={ActionsCell} />
-      </Grid>
-
-      {contacts.length === 0 && (
+      {contacts.length > 0 ? (
+        <Grid
+          data={contacts}
+          style={{ height: '400px', maxHeight: '400px' }}
+          className="contacts-grid"
+        >
+          <GridColumn field="contact_type" title="Type" width="140px" cell={ContactTypeCell} />
+          <GridColumn field="name" title="Name" width="180px" cell={NameCell} />
+          <GridColumn field="email" title="Email" width="220px" />
+          <GridColumn field="phone" title="Phone" width="140px" />
+          <GridColumn field="job_title" title="Job Title" width="160px" />
+          <GridColumn width="100px" title="Actions" cell={ActionsCell} />
+        </Grid>
+      ) : (
         <div className="empty-state">
-          <p>No contacts added yet.</p>
-          <Button themeColor="primary" onClick={handleAddContact}>
-            Add First Contact
-          </Button>
+          <p>No contacts added yet</p>
         </div>
       )}
 

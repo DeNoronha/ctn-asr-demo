@@ -3,6 +3,7 @@ import { Dialog } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Grid, GridColumn } from '@progress/kendo-react-grid';
 import { Input, TextArea } from '@progress/kendo-react-inputs';
+import { Plus } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import './EndpointManagement.css';
@@ -152,6 +153,8 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
         <Button
           themeColor="primary"
           size="small"
+          title="Issue token for this endpoint"
+          aria-label={`Issue token for ${props.dataItem.endpoint_name}`}
           onClick={() => handleIssueToken(props.dataItem)}
           disabled={loading}
         >
@@ -169,7 +172,8 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
           <p className="entity-name">{legalEntityName}</p>
         </div>
         <Button themeColor="primary" onClick={() => setShowDialog(true)} disabled={loading}>
-          + Register New Endpoint
+          <Plus size={16} />
+          Register Endpoint
         </Button>
       </div>
 

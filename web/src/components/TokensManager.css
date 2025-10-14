@@ -1,0 +1,169 @@
+.tokens-manager {
+  padding: 20px;
+}
+
+.tokens-header {
+  margin-bottom: 20px;
+}
+
+.tokens-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+  color: #1f2937;
+}
+
+.tokens-description {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.toolbar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 8px 0;
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-section label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.stats-section {
+  display: flex;
+  gap: 12px;
+}
+
+.stat-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.stat-badge.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.token-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.token-status-badge.active {
+  background-color: #10b981;
+}
+
+.token-status-badge.expiring {
+  background-color: #f59e0b;
+}
+
+.token-status-badge.expired {
+  background-color: #ef4444;
+}
+
+.token-status-badge.revoked {
+  background-color: #6b7280;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.actions-cell button {
+  padding: 4px 8px;
+  color: #6b7280;
+  transition: color 0.2s;
+}
+
+.actions-cell button:hover:not(:disabled) {
+  color: #3b82f6;
+}
+
+.actions-cell button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: #f9fafb;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.empty-state p {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0 0 8px 0;
+}
+
+.empty-hint {
+  font-size: 0.875rem !important;
+  color: #9ca3af !important;
+  font-style: italic;
+}
+
+.warning-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  margin-top: 20px;
+  color: #92400e;
+}
+
+.warning-message svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.warning-message strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.warning-message p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.center-header {
+  text-align: center;
+}
+
+.tokens-manager .k-grid {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
