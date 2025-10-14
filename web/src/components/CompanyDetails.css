@@ -23,6 +23,18 @@
   gap: 24px;
 }
 
+.detail-grid-columns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.detail-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
 .detail-section {
   background: #f9fafb;
   padding: 16px;

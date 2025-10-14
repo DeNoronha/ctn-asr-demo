@@ -9,10 +9,12 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntity, type LegalEntityContact, type Member, api } from '../services/api';
+import { type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { CompanyDetails } from './CompanyDetails';
 import { CompanyForm } from './CompanyForm';
 import { ContactsManager } from './ContactsManager';
 import { EndpointManagement } from './EndpointManagement';
+import { IdentifiersManager } from './IdentifiersManager';
 import { KvkDocumentUpload } from './KvkDocumentUpload';
 import './MemberDetailView.css';
 
@@ -32,10 +34,11 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(null);
   const [contacts, setContacts] = useState<LegalEntityContact[]>([]);
+  const [identifiers, setIdentifiers] = useState<LegalEntityIdentifier[]>([]);
   const [loading, setLoading] = useState(false);
   const notification = useNotification();
 
-  // Load legal entity and contacts
+  // Load legal entity, contacts, and identifiers
   useEffect(() => {
     const loadData = async () => {
       if (member.legal_entity_id) {
@@ -46,6 +49,9 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
 
           const entityContacts = await api.getContacts(member.legal_entity_id);
           setContacts(entityContacts);
+
+          const entityIdentifiers = await apiV2.getIdentifiers(member.legal_entity_id);
+          setIdentifiers(entityIdentifiers);
         } catch (error) {
           console.error('Failed to load legal entity data:', error);
           notification.showError('Failed to load company information');
@@ -121,7 +127,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
   return (
     <div className="member-detail-view">
       <div className="detail-header">
-        <Button fillMode="flat" onClick={onBack} className="back-button">
+        <Button themeColor="secondary" onClick={onBack} className="back-button">
           <ArrowLeft size={16} />
           Back to Members
         </Button>
@@ -131,15 +137,6 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
             {getStatusBadge(member.status)}
             {getMembershipBadge(member.membership_level)}
           </div>
-        </div>
-        <div className="header-actions">
-          <Button
-            themeColor="primary"
-            onClick={() => onIssueToken(member.org_id)}
-            disabled={member.status !== 'ACTIVE'}
-          >
-            Issue Token
-          </Button>
         </div>
       </div>
 
@@ -220,57 +217,16 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           <div className="tab-content">
             {loading ? (
               <div className="loading-state">Loading identifiers...</div>
-            ) : legalEntity?.identifiers && legalEntity.identifiers.length > 0 ? (
-              <div className="info-section">
-                <h3>Legal Identifiers</h3>
-                <div className="identifiers-list">
-                  {legalEntity.identifiers.map((identifier) => (
-                    <div key={identifier.legal_entity_reference_id} className="identifier-card">
-                      <div className="identifier-header">
-                        <span className="identifier-type-badge">{identifier.identifier_type}</span>
-                        {identifier.country_code && (
-                          <span className="country-badge">{identifier.country_code}</span>
-                        )}
-                        {identifier.validation_status && (
-                          <span className={`validation-badge validation-${identifier.validation_status.toLowerCase()}`}>
-                            {identifier.validation_status}
-                          </span>
-                        )}
-                      </div>
-                      <div className="identifier-details">
-                        <div className="identifier-row">
-                          <label>Identifier Value:</label>
-                          <span className="identifier-value">{identifier.identifier_value}</span>
-                        </div>
-                        {identifier.registry_name && (
-                          <div className="identifier-row">
-                            <label>Registry:</label>
-                            <span>{identifier.registry_name}</span>
-                          </div>
-                        )}
-                        {identifier.registry_url && (
-                          <div className="identifier-row">
-                            <label>Registry URL:</label>
-                            <a href={identifier.registry_url} target="_blank" rel="noopener noreferrer">
-                              {identifier.registry_url}
-                            </a>
-                          </div>
-                        )}
-                        {identifier.issued_by && (
-                          <div className="identifier-row">
-                            <label>Issued By:</label>
-                            <span>{identifier.issued_by}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            ) : legalEntity ? (
+              <IdentifiersManager
+                legalEntityId={member.legal_entity_id!}
+                identifiers={identifiers}
+                onUpdate={setIdentifiers}
+              />
             ) : (
               <div className="info-section">
                 <h3>Legal Identifiers</h3>
-                <p className="empty-message">No identifiers registered for this entity</p>
+                <p className="empty-message">No company linked to this member</p>
               </div>
             )}
           </div>
