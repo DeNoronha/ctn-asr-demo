@@ -8,8 +8,9 @@ async function getAccessToken(): Promise<string | null> {
   try {
     const accounts = msalInstance.getAllAccounts();
     if (accounts.length > 0) {
+      const clientId = process.env.REACT_APP_AZURE_CLIENT_ID;
       const response = await msalInstance.acquireTokenSilent({
-        scopes: ['User.Read'],
+        scopes: [`api://${clientId}/access_as_user`],
         account: accounts[0],
       });
       return response.accessToken;
