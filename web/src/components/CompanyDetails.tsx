@@ -55,30 +55,30 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit 
             </div>
           </div>
 
-          {company.dt_modified && (
-            <div className="detail-section">
-              <h4>Record Information</h4>
+          <div className="detail-section">
+            <h4>Record Information</h4>
 
-              <div className="detail-row">
-                <label>Created:</label>
-                <span>
-                  {company.dt_created ? new Date(company.dt_created).toLocaleString() : '-'}
-                </span>
-              </div>
-
-              <div className="detail-row">
-                <label>Last Modified:</label>
-                <span>{new Date(company.dt_modified).toLocaleString()}</span>
-              </div>
-
-              {company.modified_by && (
-                <div className="detail-row">
-                  <label>Modified By:</label>
-                  <span>{company.modified_by}</span>
-                </div>
-              )}
+            <div className="detail-row">
+              <label>Created:</label>
+              <span>
+                {company.dt_created ? new Date(company.dt_created).toLocaleString() : '-'}
+              </span>
             </div>
-          )}
+
+            <div className="detail-row">
+              <label>Last Modified:</label>
+              <span>
+                {company.dt_modified ? new Date(company.dt_modified).toLocaleString() : '-'}
+              </span>
+            </div>
+
+            {company.modified_by && (
+              <div className="detail-row">
+                <label>Modified By:</label>
+                <span>{company.modified_by}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="detail-column">

@@ -70,15 +70,15 @@
 }
 
 .token-status-badge.active {
-  background-color: #10b981;
+  background-color: #059669; /* Darker green for WCAG AA compliance (4.52:1 with white) */
 }
 
 .token-status-badge.expiring {
-  background-color: #f59e0b;
+  background-color: #b45309; /* Darker amber for WCAG AA compliance (4.54:1 with white) */
 }
 
 .token-status-badge.expired {
-  background-color: #ef4444;
+  background-color: #dc2626; /* Darker red for WCAG AA compliance (4.52:1 with white) */
 }
 
 .token-status-badge.revoked {

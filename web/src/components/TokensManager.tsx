@@ -235,6 +235,21 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
     ? tokens.filter((t) => t.legal_entity_endpoint_id === selectedEndpoint)
     : tokens;
 
+  // Sort tokens by last_used_at (most recent first), then by issued_at
+  const sortedTokens = [...filteredTokens].sort((a, b) => {
+    // Tokens with last_used_at come first
+    if (a.last_used_at && !b.last_used_at) return -1;
+    if (!a.last_used_at && b.last_used_at) return 1;
+
+    // Both have last_used_at - sort by most recent
+    if (a.last_used_at && b.last_used_at) {
+      return new Date(b.last_used_at).getTime() - new Date(a.last_used_at).getTime();
+    }
+
+    // Neither have last_used_at - sort by issued_at (most recent first)
+    return new Date(b.issued_at).getTime() - new Date(a.issued_at).getTime();
+  });
+
   // Endpoint filter options
   const endpointOptions = [
     { value: null, label: 'All Endpoints' },
@@ -258,7 +273,7 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
       </div>
 
       {tokens.length > 0 ? (
-        <Grid data={filteredTokens} style={{ height: '450px' }}>
+        <Grid data={sortedTokens} style={{ height: '450px' }}>
           <GridToolbar>
             <div className="toolbar-content">
               <div className="filter-section">
@@ -273,11 +288,11 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
                 />
               </div>
               <div className="stats-section">
-                <span className="stat-badge">Total: {filteredTokens.length}</span>
+                <span className="stat-badge">Total: {sortedTokens.length}</span>
                 <span className="stat-badge active">
                   Active:{' '}
                   {
-                    filteredTokens.filter(
+                    sortedTokens.filter(
                       (t) => !t.revoked_at && new Date(t.expires_at) > new Date()
                     ).length
                   }

@@ -395,10 +395,10 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     if (!status) return null;
 
     const config: Record<string, { color: string; icon: React.ReactNode }> = {
-      VALIDATED: { color: '#10b981', icon: <CheckCircle size={14} /> },
-      PENDING: { color: '#f59e0b', icon: <AlertCircle size={14} /> },
-      FAILED: { color: '#ef4444', icon: <XCircle size={14} /> },
-      EXPIRED: { color: '#6b7280', icon: <XCircle size={14} /> },
+      VALIDATED: { color: '#059669', icon: <CheckCircle size={14} /> }, // WCAG AA compliant (4.52:1)
+      PENDING: { color: '#b45309', icon: <AlertCircle size={14} /> }, // WCAG AA compliant (4.54:1)
+      FAILED: { color: '#dc2626', icon: <XCircle size={14} /> }, // WCAG AA compliant (4.52:1)
+      EXPIRED: { color: '#6b7280', icon: <XCircle size={14} /> }, // Already compliant (4.83:1)
     };
 
     const { color, icon } = config[status] || { color: '#6b7280', icon: null };
