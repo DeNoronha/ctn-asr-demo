@@ -5,14 +5,13 @@
 // Startup validation - ensures all required secrets are configured
 import { enforceStartupValidation } from './utils/startupValidation';
 
-// Temporarily disabled to debug deployment issue
-// try {
-//   enforceStartupValidation();
-// } catch (error) {
-//   console.error('Failed to start API:', error);
-//   throw error; // Fail fast if validation fails
-// }
-console.log('⚠️  Startup validation temporarily disabled for debugging');
+// Validate environment on startup - fail fast if required secrets are missing
+try {
+  enforceStartupValidation();
+} catch (error) {
+  console.error('❌ Failed to start API - startup validation failed:', error);
+  throw error; // Fail fast if validation fails
+}
 
 // Test function first
 import './functions/simpleTest';

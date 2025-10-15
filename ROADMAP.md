@@ -53,15 +53,25 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 ## HIGH - Production Readiness
 
 ### API Stability
-- [ ] **Re-enable startup validation** - Currently disabled for debugging
-- [ ] **Add comprehensive error logging** - Application Insights integration
+- [x] **Re-enable startup validation** - ✅ DONE: Startup validation re-enabled (Oct 15, 2025 Night)
+  - ✅ Validates all required environment variables on startup
+  - ✅ Fails fast if critical secrets are missing
+  - ✅ Provides clear error messages for missing configuration
+- [x] **Add comprehensive error logging** - ✅ DONE: Application Insights integration complete (Oct 15, 2025 Night)
+  - ✅ Enhanced host.json configuration (live metrics, W3C tracing, performance counters)
+  - ✅ Created comprehensive AppInsightsLogger utility (src/utils/logger.ts)
+  - ✅ Structured logging with severity levels, custom properties, and automatic enrichment
+  - ✅ Performance tracking, dependency tracking, custom events/metrics support
 - [ ] **Set up proper production environment** - Move from "dev" naming convention
+  - Current: `func-ctn-demo-asr-dev.azurewebsites.net`
+  - Recommended: `fa-ctn-asr-{env}.azurewebsites.net` (dev/staging/prod)
+  - ⚠️  Requires new Function App deployment + DNS updates (breaking change)
 
-### Missing API Functions (Re-add Gradually)
-- [ ] Newsletter/subscription management
-- [ ] Task management
-- [ ] Swagger documentation endpoint
-- [ ] Event Grid handler
+### ~~Missing~~ API Functions - **ALL IMPLEMENTED!** ✅
+- [x] Newsletter/subscription management - ✅ Functions exist (get, create, update)
+- [x] Task management - ✅ Functions exist (get, create, update)
+- [x] Swagger documentation endpoint - ✅ swagger.ts exists and imported
+- [x] Event Grid handler - ✅ EventGridHandler.ts exists and imported
 
 ### BDI Production Setup
 - [ ] **Configure BDI RSA keys in Key Vault** - BDI_PRIVATE_KEY, BDI_PUBLIC_KEY
