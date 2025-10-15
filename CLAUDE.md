@@ -104,9 +104,24 @@ Assistant: "Deployed. Should I invoke TE agent? Yes/No"
 ### Testing Requirements
 
 **Test Strategy:**
+- **API Tests (FIRST):** Direct curl tests BEFORE UI testing
 - **Unit Tests:** Required for critical business logic
 - **E2E Tests:** Playwright for critical user journeys
 - **Manual Testing:** Required before production deployment
+
+**API Testing with curl - MANDATORY FIRST STEP:**
+- **Test API endpoints BEFORE testing UI** to isolate issues
+- Use curl to test:
+  - Create operations (POST): Add KvK number, create contact, add member
+  - Read operations (GET): List identifiers, get member details
+  - Update operations (PUT): Change address, update identifier
+  - Delete operations (DELETE): Clean up test data
+- **Test pattern:**
+  1. Create test data (save IDs from responses)
+  2. Verify operations work via API
+  3. Clean up: Delete all created test data
+- **API tests catch 404/500 errors early** before UI testing
+- Example test script: `api/tests/api-smoke-test.sh`
 
 **E2E Testing with Playwright:**
 - Test files located in `web/e2e/`
@@ -114,6 +129,7 @@ Assistant: "Deployed. Should I invoke TE agent? Yes/No"
 - Run in CI: Azure DevOps pipeline
 - Test coverage builds incrementally with each release
 - See `PLAYWRIGHT_SETUP.md` for setup instructions
+- **ONLY run after API tests pass** - don't waste time on UI if API is broken
 
 ### Deployment Procedures
 
@@ -473,37 +489,66 @@ Since this is a one-person project, the TW agent serves as your persistent memor
 **Color:** Purple
 **Model:** Sonnet
 
-**Purpose:** Creates and manages Playwright automated tests, autonomously investigates and fixes bugs
+**Purpose:** Creates API tests (curl) and UI tests (Playwright), autonomously investigates and fixes bugs
 
 **When to Use:**
-- ✅ **When bugs are encountered** - Invoke TE to investigate autonomously using Playwright
+- ✅ **When bugs are encountered** - Invoke TE to investigate autonomously
+- ✅ **After deployment** - Run API tests FIRST, then UI tests
 - After implementing new features
 - Before major releases (regression testing)
 - When test failures occur
 - For TDD (write tests before implementation)
 
+**Testing Workflow (MANDATORY ORDER):**
+1. **API Tests FIRST (curl-based)**
+   - Test all CRUD operations directly via API
+   - Create test data, verify operations, clean up
+   - Example: Add KvK number → Get identifier → Update metadata → Delete identifier
+   - Saves test data IDs for cleanup phase
+   - Catches 404/500 errors before UI testing
+   - Creates reusable test scripts in `api/tests/`
+
+2. **UI Tests SECOND (Playwright)**
+   - Only run after API tests pass
+   - Tests user workflows through browser
+   - Verifies UI correctly calls API endpoints
+   - Builds test battery in `web/e2e/`
+
 **Bug Investigation Workflow:**
 When a bug is reported, the TE agent will:
-1. Use Playwright to reproduce the bug (headed mode, console logging, network inspection)
-2. Capture browser console errors, failed network requests, and stack traces
-3. Create a failing test that reproduces the issue
-4. Analyze the root cause using Playwright's debugging tools
-5. Propose fix with test coverage
-6. Verify fix with test suite
-7. Document the bug and resolution
+1. **Test API first** - Use curl to verify endpoint works
+2. If API fails → Fix API, redeploy, test again
+3. If API works → Use Playwright to reproduce UI bug
+4. Capture console errors, network requests, stack traces
+5. Create failing test that reproduces the issue
+6. Analyze root cause using debugging tools
+7. Propose fix with test coverage
+8. Verify fix with test suite
+9. Document the bug and resolution
 
 **Capabilities:**
-- Autonomous bug investigation using Playwright debugging tools
-- Captures console errors, network failures, and visual regressions
-- Creates failing tests that reproduce bugs before fixing
-- Builds ever-growing test library in `web/e2e/` directory
-- Creates Playwright tests with TypeScript
-- Executes tests across browsers, monitors console errors
-- Integrates with Azure DevOps test management
-- Performs regression testing before major releases
-- **API Testing:** Tests API endpoints directly to catch 404/500 errors early
-- Verifies API health checks, route registration, and response codes
-- Tests API independently from UI to isolate deployment issues
+- **API Testing with curl:**
+  - Direct endpoint testing (no browser needed)
+  - Tests CRUD operations: Create, Read, Update, Delete
+  - Cleanup scripts to remove test data
+  - Faster than UI testing, isolates API issues
+  - Creates bash scripts in `api/tests/` directory
+- **UI Testing with Playwright:**
+  - Autonomous bug investigation
+  - Captures console errors, network failures, visual regressions
+  - Creates failing tests that reproduce bugs before fixing
+  - Builds ever-growing test library in `web/e2e/`
+  - Executes tests across browsers
+- **Integration:**
+  - Integrates with Azure DevOps test management
+  - Performs regression testing before major releases
+  - Verifies API health checks, route registration
+
+**Test Separation Philosophy:**
+- API tests catch deployment issues (404 not found, 500 internal error)
+- UI tests catch interface issues (buttons not working, forms broken)
+- Test API FIRST to save time - don't test UI if API is broken
+- This approach saved hours during Oct 15, 2025 deployment debugging
 
 **You don't need to check console logs yourself** - the TE agent handles all debugging autonomously.
 
@@ -654,14 +699,19 @@ When a bug is reported, the TE agent will:
 - Infrastructure stays separate pipeline
 - Ensures full-stack deployment consistency
 
-### Test Engineer (TE) Should Include API Testing
+### Test API FIRST with curl, Then Test UI with Playwright
 **What Happened:** Endless 404/500 errors went undetected for hours because only UI was tested
-**Why It Matters:** API failures cascade to UI, but UI tests don't catch API deployment issues
+**Why It Matters:** API failures cascade to UI, but UI tests don't catch API deployment issues. Testing UI when API is broken wastes time.
 **How to Avoid:**
-- TE agent should test API endpoints directly (not just through UI)
-- Add API health checks to test suite
-- Verify GET /api/v1/all-members works before testing members list UI
-- Test API routes independently to catch registration issues early
+- **ALWAYS test API with curl BEFORE testing UI**
+- Test pattern: Create test data → Verify operations → Clean up
+- Example: Add KvK number via API → Verify it's saved → Delete it via API
+- TE agent creates curl test scripts in `api/tests/` directory
+- **Separation of concerns:**
+  - API tests catch 404/500 errors, route registration issues, deployment failures
+  - UI tests catch button clicks, form validation, user workflows
+- Don't waste time testing UI if API is broken - test API first!
+- This saves hours of debugging time and isolates issues faster
 
 ---
 
