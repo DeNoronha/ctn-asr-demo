@@ -1,5 +1,5 @@
 # Member Portal - CI/CD Pipeline
-# Triggers on changes to portal/* directory
+# Triggers on changes to portal/* or api/* directories
 
 trigger:
   branches:
@@ -8,6 +8,7 @@ trigger:
   paths:
     include:
       - portal/*
+      - api/*
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -107,3 +108,26 @@ steps:
       app_location: 'portal/build'
       skip_app_build: true
       azure_static_web_apps_api_token: $(AZURE-STATIC-WEB-APPS-API-TOKEN-MEMBER)
+
+  # ========================================
+  # API Deployment Steps
+  # ========================================
+  - script: |
+      cd api
+      npm ci
+    displayName: 'Install API dependencies'
+
+  - script: |
+      cd api
+      npm run build
+    displayName: 'Build API (TypeScript compilation)'
+
+  - task: AzureFunctionApp@2
+    displayName: 'Deploy API to Azure Functions'
+    inputs:
+      azureSubscription: $(azureSubscription)
+      appType: 'functionAppLinux'
+      appName: 'func-ctn-demo-asr-dev'
+      package: '$(System.DefaultWorkingDirectory)/api'
+      runtimeStack: 'NODE|20'
+      deploymentMethod: 'zipDeploy'
