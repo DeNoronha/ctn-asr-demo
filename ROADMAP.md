@@ -1,6 +1,6 @@
 # CTN ASR Roadmap
 
-**Last Updated:** October 15, 2025 (Night Session - Keyboard Navigation Complete)
+**Last Updated:** October 15, 2025 (Night Session - Medium Priority UI/UX Progress)
 
 This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md) for historical record.
 
@@ -28,15 +28,15 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
   - ✅ Updated IdentifiersManager, ContactsManager, TokensManager
   - ✅ Test Engineer verified full WCAG 2.1 Level AA compliance
 
-**Medium Priority UI/UX** (~9 hours):
-- [ ] **M1: Visual feedback during async operations** (2h)
-- [ ] **M2: Color contrast fixes on warnings** (30min)
+**Medium Priority UI/UX** (~4h remaining of 9h total):
+- [x] **M8: Default sort by last_used_at in Tokens grid** (15min) - ✅ DONE
+- [x] **M2: Color contrast fixes on warnings** (30min) - ✅ DONE: All badges meet WCAG AA 4.5:1 contrast
+- [x] **M6: Always show "Last Modified" in Company Details** (30min) - ✅ DONE
+- [x] **M7: Add semantic HTML roles to status badges** (1h) - ✅ DONE: role="status" + aria-label
+- [x] **M4: Standardize section header spacing** (1h) - ✅ DONE: Consistent 20px/12px spacing
 - [ ] **M3: Tooltips for truncated grid content** (1h)
-- [ ] **M4: Standardize section header spacing** (1h)
 - [ ] **M5: Drag-drop visual feedback for uploads** (1h)
-- [ ] **M6: Always show "Last Modified" in Company Details** (30min)
-- [ ] **M7: Add semantic HTML roles to status badges** (1h)
-- [ ] **M8: Default sort by last_used_at in Tokens grid** (15min)
+- [ ] **M1: Visual feedback during async operations** (2h)
 
 **Low Priority UI/UX** (~23 hours):
 - [ ] **L1: Bulk actions for grid operations** (4h)
