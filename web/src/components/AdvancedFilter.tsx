@@ -116,8 +116,8 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
 
     return (
       <Input
-        value={criterion.value}
-        onChange={(e) => updateCriteria(criterion.id, { value: e.target.value })}
+        value={criterion.value as string || ''}
+        onChange={(e) => updateCriteria(criterion.id, { value: String(e.target.value || '') })}
         placeholder="Enter value..."
       />
     );

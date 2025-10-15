@@ -1,10 +1,65 @@
 # CLAUDE.md - CTN Association Register
 
-**Last Updated:** October 14, 2025
+**Last Updated:** October 15, 2025 (Added Autonomous Operation Guidelines + Mandatory Deployment Workflow)
 
 ---
 
 ## Way of Working
+
+### Autonomous Operation - CRITICAL
+
+**Claude Code should work autonomously without asking for confirmation on obvious next steps.**
+
+**Authorized to Continue Automatically:**
+- ✅ After completing a task, proceed to the next logical step
+- ✅ After fixing a bug, run tests to verify the fix
+- ✅ After deployment, invoke TE agent for testing (per mandatory workflow)
+- ✅ After testing, invoke TW agent for documentation (per mandatory workflow)
+- ✅ When encountering errors, debug and fix them without asking permission
+- ✅ When building/deploying, handle standard steps autonomously
+- ✅ When a workflow has clear next steps, execute them
+
+**DO NOT Ask:**
+- ❌ "Do you want to continue? Yes/No" - The answer is YES
+- ❌ "Should I proceed with the next step?" - YES, proceed
+- ❌ "Would you like me to fix this?" - YES, fix it
+- ❌ "Shall I run tests now?" - YES, run them
+- ❌ "Do you want me to deploy?" - If it's part of the workflow, YES
+
+**When to Ask for Confirmation:**
+- ⚠️ Destructive operations (deleting production data, force-pushing to main)
+- ⚠️ Major architectural changes that affect multiple systems
+- ⚠️ Spending significant money (large Azure resource deployments)
+- ⚠️ Security-sensitive operations (rotating production secrets, changing auth configs)
+- ⚠️ When genuinely unclear about requirements or user intent
+
+**Default Mindset:**
+This is a **one-person operation**. You are working as an autonomous partner, not a step-by-step assistant. Execute workflows end-to-end, handle errors proactively, and only pause for genuinely critical decisions.
+
+**Examples:**
+
+✅ **Good (Autonomous):**
+```
+User: "Fix BUG-001"
+Assistant: [Analyzes bug] → [Implements fix] → [Runs tests] → [Deploys if tests pass] → [Invokes TE for regression testing] → [Invokes TW to update docs] → "BUG-001 fixed, deployed, tested, and documented. Release readiness increased to 85%."
+```
+
+❌ **Bad (Too Many Confirmations):**
+```
+User: "Fix BUG-001"
+Assistant: "I've analyzed the bug. Should I proceed with the fix? Yes/No"
+User: "Yes"
+Assistant: "Fix implemented. Should I run tests? Yes/No"
+User: "Yes"
+Assistant: "Tests passed. Should I deploy? Yes/No"
+User: "Yes"
+Assistant: "Deployed. Should I invoke TE agent? Yes/No"
+[... frustrating cycle continues ...]
+```
+
+**This is persistent knowledge.** Work autonomously, follow established workflows, and make obvious decisions without asking permission.
+
+---
 
 ### Development Workflow
 
@@ -59,6 +114,123 @@ psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com port=5432 \
   dbname=asr_dev user=asradmin sslmode=require" \
   -f database/migrations/XXX_migration.sql
 ```
+
+### Production Deployment & Testing Workflow - MANDATORY
+
+**CRITICAL:** After each big update or change, follow this workflow to ensure quality and prevent regression issues.
+
+#### Step 1: Build and Deploy to Production
+
+After completing a significant feature or update:
+
+1. **Build Everything:**
+   ```bash
+   # Build API
+   cd api
+   npm run build
+
+   # Build Frontend
+   cd web
+   npm run build
+   ```
+
+2. **Deploy to Azure Production:**
+   ```bash
+   # Deploy API
+   cd api
+   func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote
+
+   # Deploy Admin Portal
+   cd web
+   mv .env.local .env.local.backup
+   npx @azure/static-web-apps-cli deploy ./build \
+     --deployment-token <token> \
+     --env production
+   mv .env.local.backup .env.local
+   ```
+
+3. **Verify Deployment:**
+   - Check API is responding: https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
+   - Check Admin Portal loads: https://calm-tree-03352ba03.1.azurestaticapps.net
+   - Review deployment logs for any errors
+
+#### Step 2: Invoke Test Engineer (TE) - MANDATORY
+
+**IMMEDIATELY after deployment completes**, invoke the TE agent to:
+
+1. **Test New Features Thoroughly:**
+   - TE will create comprehensive Playwright tests for the new functionality
+   - TE will test against the LIVE production environment
+   - TE will verify all user journeys work end-to-end
+
+2. **Add Test Cases to Test Battery:**
+   - **CRITICAL:** New test cases MUST be added to the existing test suite in `web/e2e/`
+   - This creates an ever-growing regression test library
+   - Each release adds more tests, catching issues earlier
+   - Test battery prevents regression bugs in production
+
+3. **Run Full Regression Suite:**
+   - TE will execute ALL existing tests to ensure nothing broke
+   - This catches unintended side effects of the changes
+   - Ensures backward compatibility
+
+**TE Invocation Example:**
+```
+"Please invoke the TE agent to:
+1. Test the new [feature name] functionality in production
+2. Create comprehensive test cases and add them to the test battery
+3. Run full regression suite to ensure no breaking changes"
+```
+
+#### Step 3: Invoke Technical Writer (TW) - MANDATORY
+
+**After TE completes testing**, invoke the TW agent to:
+
+1. **Update Documentation:**
+   - Move completed tasks from ROADMAP.md to docs/COMPLETED_ACTIONS.md
+   - Document any bugs found during testing
+   - Update feature documentation if needed
+
+2. **Re-evaluate Priorities:**
+   - Assess remaining tasks in ROADMAP.md
+   - Prioritize bug fixes discovered during testing
+
+3. **Verify Repository Structure:**
+   - Ensure root folder contains only 3 files
+   - Confirm all documentation is properly organized
+
+**TW Invocation Example:**
+```
+"Please invoke the TW agent to update documentation after testing completion"
+```
+
+#### Why This Workflow Matters
+
+**Growing Test Coverage:**
+- Each deployment adds new tests to the battery
+- Regression issues are caught earlier with each release
+- Test suite becomes comprehensive over time
+- Reduces manual testing burden
+
+**Quality Gates:**
+- No feature goes live without automated test coverage
+- Production deployments are verified immediately
+- Documentation stays current with codebase
+
+**Prevents Regression:**
+- Old features are tested every time new features deploy
+- Catches unintended breaking changes
+- Ensures system stability over time
+
+**One Command Away:**
+After any major change, you should think:
+```
+Build → Deploy → Test (TE) → Document (TW)
+```
+
+This workflow is **MANDATORY** and should be followed **automatically** without needing to ask each time.
+
+---
 
 ### Security Practices
 

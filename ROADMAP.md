@@ -1,12 +1,40 @@
 # CTN ASR Roadmap
 
-**Last Updated:** October 15, 2025 (Night Session - Code Quality Complete)
+**Last Updated:** October 15, 2025 (Autonomous Operation Guidelines & Deployment Workflow Added)
 
 This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md) for historical record.
 
 ---
 
-## CRITICAL - Security (Do First)
+## CRITICAL - Bug Fixes from Testing (Block Production)
+
+**Test Results:** 58% release readiness. Fixing these 3 CRITICAL bugs will increase to 85%. See TEST_EXECUTION_REPORT.md for full details.
+
+- [ ] **BUG-001: Members grid loading timeout** - Members grid fails to load within 30 seconds, blocks 72 tests
+  - **Severity:** Critical | **Priority:** P0
+  - **Impact:** Blocks all member management testing (100% reproduction rate)
+  - **Details:** Grid fails to render or loads beyond 60s timeout after navigating to Members section
+  - **Investigation needed:** GetMembers API response time, Kendo Grid initialization, React lifecycle
+  - **Screenshot:** web/playwright-report/screenshots/members-grid.png
+
+- [ ] **BUG-002: Keyboard button activation failure** - Enter/Space keys not triggering action buttons
+  - **Severity:** Critical (Accessibility) | **Priority:** P1
+  - **WCAG Violation:** 2.1.1 Keyboard (Level A)
+  - **Impact:** Keyboard-only users cannot interact with application
+  - **Fix:** Add keydown event listeners for Enter/Space to all interactive buttons
+  - **Test coverage:** Consistent failure across most button elements
+
+- [ ] **BUG-003: Focus indicators not visible** - Insufficient contrast on focus states
+  - **Severity:** Critical (Accessibility) | **Priority:** P1
+  - **WCAG Violation:** 2.4.7 Focus Visible (Level AA)
+  - **Details:** Focus outline shows `outline: none` with 0px width, no box-shadow
+  - **Impact:** Keyboard users cannot see where focus is
+  - **Fix:** Add CSS for `:focus-visible` with 2px outline and 8.59:1 contrast ratio
+  - **Screenshot:** web/playwright-report/screenshots/focus-indicator.png
+
+---
+
+## CRITICAL - Security (Do After Bugs)
 
 - [ ] **Clean Git history** - Remove exposed credentials using git-filter-repo
 - [ ] **Rotate PostgreSQL password** - Currently exposed in Git history (URGENT - see security report)
@@ -52,6 +80,17 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 ## HIGH - Production Readiness
 
+### Bug Fixes from Testing
+- [ ] **BUG-004: Create Member form validation issues** - Missing required field indicators
+  - **Severity:** High | **Priority:** P2
+  - **Impact:** User confusion during member creation
+  - **Fix:** Add visual indicators for required fields and inline validation feedback
+
+- [ ] **BUG-005: Identifier modal country filter broken** - All types showing regardless of country selection
+  - **Severity:** High | **Priority:** P2
+  - **Impact:** Confusing UX, users see irrelevant identifier types
+  - **Fix:** Implement proper country-based filtering logic for identifier type dropdown
+
 ### API Stability
 - [x] **Re-enable startup validation** - ✅ DONE: Startup validation re-enabled (Oct 15, 2025 Night)
   - ✅ Validates all required environment variables on startup
@@ -85,6 +124,27 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 ## MEDIUM - Code Quality & Testing
 
+### Bug Fixes from Testing
+- [ ] **BUG-006: Token expiration warnings not displaying** - Tokens expiring in <30 days should show warning badge
+  - **Severity:** Medium | **Priority:** P3
+  - **Impact:** Admins miss token expiration alerts, causing service interruptions
+  - **Fix:** Add badge color logic for tokens expiring within 30 days
+
+- [ ] **BUG-007: Contact edit modal pre-population failure** - Edit dialog shows empty fields
+  - **Severity:** Medium | **Priority:** P3
+  - **Impact:** Users must re-enter all contact data when editing
+  - **Fix:** Properly populate form fields with existing contact data on edit
+
+- [ ] **BUG-008: Grid pagination state loss** - Page resets to 1 on filter changes
+  - **Severity:** Medium (UX) | **Priority:** P3
+  - **Impact:** Poor UX when filtering large datasets
+  - **Fix:** Implement server-side pagination with preserved state
+
+- [ ] **BUG-009: Accessibility aria-labels missing** - 15+ action buttons lack descriptive labels
+  - **Severity:** Medium (Accessibility) | **Priority:** P3
+  - **Impact:** Screen reader users cannot identify button purposes
+  - **Fix:** Add descriptive aria-label attributes to all action buttons
+
 ### TypeScript & Code Quality
 - [x] **Remove remaining TypeScript 'any' types** - ✅ DONE: All 155+ instances fixed across 21 files (Oct 15, 2025 Night)
   - ✅ Production code properly typed (AuthContext, exportUtils, forms)
@@ -97,10 +157,18 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 - [ ] **Handle locale/timezone consistently**
 
 ### Testing
-- [ ] **Expand Playwright E2E test coverage**
-  - [ ] Member portal critical paths
-  - [ ] Admin portal complete workflows
-  - [ ] BDI token generation and validation
+- [x] **Expand Playwright E2E test coverage - Admin portal complete workflows** - ✅ DONE: 5 test files (131 tests) created (Oct 15, 2025)
+  - ✅ Authentication & authorization tests (11 tests)
+  - ✅ Member management CRUD tests (20 tests)
+  - ✅ Identifiers manager tests (22 tests - all 12 identifier types)
+  - ✅ Managers CRUD tests (17 tests - contacts, endpoints, tokens)
+  - ✅ Accessibility tests (26 tests - WCAG 2.1 Level AA)
+  - ✅ Generated comprehensive TEST_EXECUTION_REPORT.md
+  - ⚠️ Found 9 critical bugs requiring fixes (see CRITICAL and HIGH sections above)
+  - ⚠️ Current release readiness: 58% (target: 90%)
+  - 📊 Fixing BUG-001, BUG-002, BUG-003 will increase release readiness to 85%
+- [ ] **Member portal critical paths** - E2E testing needed
+- [ ] **BDI token generation and validation** - E2E testing needed
 - [ ] **Add comprehensive unit tests**
 - [ ] **Performance testing and optimization**
 
@@ -113,8 +181,8 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 ## MEDIUM - Agent Workflow
 
-- [ ] **Add agent invocation to workflow documentation** - Update CLAUDE.md with when/how agents should be invoked
-- [ ] **Create agent invocation checklist** - Before commits, before PRs, after features
+- [x] **Add agent invocation to workflow documentation** - ✅ DONE: Added autonomous operation guidelines and mandatory deployment workflow to CLAUDE.md (Oct 15, 2025)
+- [x] **Create agent invocation checklist** - ✅ DONE: Comprehensive workflow and guidelines established in CLAUDE.md (Oct 15, 2025)
 - [ ] **Add additional specialized agents:**
   - [ ] Performance Tuner (PT) - Optimize slow queries and frontend performance
   - [ ] Database Expert (DB) - Database schema design and query optimization
