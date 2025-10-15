@@ -410,6 +410,17 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     );
   };
 
+  const handleKeyDown = (
+    event: React.KeyboardEvent,
+    action: () => void
+  ) => {
+    // Handle Enter and Space keys for keyboard accessibility (WCAG 2.1 Level AA)
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault(); // Prevent page scroll on Space
+      action();
+    }
+  };
+
   const ActionsCell = (props: any) => {
     return (
       <td className="actions-cell">
@@ -419,6 +430,8 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
           title="Edit identifier"
           aria-label={`Edit ${props.dataItem.identifier_type} identifier`}
           onClick={() => handleEdit(props.dataItem)}
+          onKeyDown={(e) => handleKeyDown(e, () => handleEdit(props.dataItem))}
+          tabIndex={0}
         >
           <Pencil size={16} />
         </Button>
@@ -428,6 +441,8 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
           title="Delete identifier"
           aria-label={`Delete ${props.dataItem.identifier_type} identifier`}
           onClick={() => handleDeleteClick(props.dataItem)}
+          onKeyDown={(e) => handleKeyDown(e, () => handleDeleteClick(props.dataItem))}
+          tabIndex={0}
         >
           <Trash2 size={16} />
         </Button>

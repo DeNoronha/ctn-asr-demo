@@ -182,6 +182,18 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
     return <td>{formatDate(value)}</td>;
   };
 
+  const handleKeyDown = (
+    event: React.KeyboardEvent,
+    action: () => void,
+    disabled: boolean = false
+  ) => {
+    // Handle Enter and Space keys for keyboard accessibility (WCAG 2.1 Level AA)
+    if (!disabled && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault(); // Prevent page scroll on Space
+      action();
+    }
+  };
+
   const ActionsCell = (props: any) => {
     const token = props.dataItem;
     const isActive = !token.revoked_at && new Date(token.expires_at) > new Date();
@@ -195,7 +207,9 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
             title="Copy token value"
             aria-label="Copy token value"
             onClick={() => handleCopy(token.token_value!)}
+            onKeyDown={(e) => handleKeyDown(e, () => handleCopy(token.token_value!), !isActive)}
             disabled={!isActive}
+            tabIndex={isActive ? 0 : -1}
           >
             <Copy size={16} />
           </Button>
@@ -206,7 +220,9 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
           title="Revoke token"
           aria-label="Revoke token"
           onClick={() => handleRevokeClick(token)}
+          onKeyDown={(e) => handleKeyDown(e, () => handleRevokeClick(token), !!token.revoked_at)}
           disabled={!!token.revoked_at}
+          tabIndex={token.revoked_at ? -1 : 0}
         >
           <Trash2 size={16} />
         </Button>

@@ -94,6 +94,17 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
     return <td>{props.dataItem.full_name || '-'}</td>;
   };
 
+  const handleKeyDown = (
+    event: React.KeyboardEvent,
+    action: () => void
+  ) => {
+    // Handle Enter and Space keys for keyboard accessibility (WCAG 2.1 Level AA)
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault(); // Prevent page scroll on Space
+      action();
+    }
+  };
+
   const ActionsCell = (props: GridCellProps) => {
     return (
       <td>
@@ -104,6 +115,8 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
             title="Edit contact"
             aria-label={`Edit ${props.dataItem.full_name}`}
             onClick={() => handleEditContact(props.dataItem)}
+            onKeyDown={(e) => handleKeyDown(e, () => handleEditContact(props.dataItem))}
+            tabIndex={0}
           >
             <Pencil size={16} />
           </Button>
@@ -113,6 +126,8 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
             title="Delete contact"
             aria-label={`Delete ${props.dataItem.full_name}`}
             onClick={() => handleDeleteClick(props.dataItem)}
+            onKeyDown={(e) => handleKeyDown(e, () => handleDeleteClick(props.dataItem))}
+            tabIndex={0}
           >
             <Trash2 size={16} />
           </Button>

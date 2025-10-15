@@ -107,6 +107,30 @@
   cursor: not-allowed;
 }
 
+/* Keyboard navigation focus indicators (WCAG 2.1 Level AA) */
+.actions-cell button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.actions-cell button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.actions-cell button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.actions-cell button:disabled:focus,
+.actions-cell button:disabled:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;

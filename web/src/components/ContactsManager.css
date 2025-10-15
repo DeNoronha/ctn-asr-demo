@@ -44,6 +44,33 @@
   gap: 4px;
 }
 
+.action-buttons button {
+  color: #6b7280;
+  transition: color 0.2s;
+}
+
+.action-buttons button:hover {
+  color: #3b82f6;
+}
+
+/* Keyboard navigation focus indicators (WCAG 2.1 Level AA) */
+.action-buttons button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.action-buttons button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.action-buttons button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
 .empty-state {
   text-align: center;
   padding: 60px 20px;
