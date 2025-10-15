@@ -31,6 +31,13 @@ import './functions/CreateContact';
 import './functions/UpdateContact';
 import './functions/DeleteContact';
 
+// Legal Entity Identifiers (KvK, LEI, EORI, etc.)
+import './functions/GetIdentifiers';
+import './functions/CreateIdentifier';
+import './functions/UpdateIdentifier';
+import './functions/DeleteIdentifier';
+import './functions/CreateIdentifierSimple';
+
 // Member self-service functions
 import './functions/UpdateMemberProfile';
 import './functions/GetMemberContacts';
