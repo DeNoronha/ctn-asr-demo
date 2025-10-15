@@ -22,6 +22,12 @@ import './functions/DeleteContact';
 import './functions/CreateMember';
 import './functions/IssueToken';
 
+// Legal Entity Identifiers (KvK, LEI, EORI, etc.) - CRITICAL for admin portal
+import './functions/GetIdentifiers';
+import './functions/CreateIdentifier';
+import './functions/UpdateIdentifier';
+import './functions/DeleteIdentifier';
+
 // KvK verification
 import './functions/getFlaggedEntities';
 
