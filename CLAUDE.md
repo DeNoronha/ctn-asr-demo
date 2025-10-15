@@ -1,10 +1,36 @@
 # CLAUDE.md - CTN Association Register
 
-**Last Updated:** October 15, 2025 (Added Autonomous Operation Guidelines + Mandatory Deployment Workflow)
+**Last Updated:** October 15, 2025 (Added Pre-Debugging Checklist + Critical Lessons from CI/CD Deployment Failures)
 
 ---
 
 ## Way of Working
+
+### Pre-Debugging Checklist - MANDATORY FIRST STEP
+
+**BEFORE debugging ANY issue, ALWAYS check deployment status:**
+
+```bash
+# 1. Check last commit time
+git log -1 --format="%ar - %s"
+
+# 2. Check Azure DevOps last build
+# Visit: https://dev.azure.com/ctn-demo/ASR/_build
+# Compare timestamps: git commit time vs last successful build
+
+# 3. If build is older than commit → DEPLOYMENT IS BROKEN
+# Fix pipeline first, THEN debug code
+```
+
+**RED FLAGS (Fix deployment first, don't debug):**
+- ❌ Last successful build is >1 hour old
+- ❌ Git commit time doesn't match Azure build time
+- ❌ Pipeline showing failed/red status
+- ❌ Code changes not reflecting in production after "deployment"
+
+**This check takes 30 seconds and saves hours of wasted debugging.**
+
+---
 
 ### Autonomous Operation - CRITICAL
 
@@ -475,6 +501,9 @@ When a bug is reported, the TE agent will:
 - Executes tests across browsers, monitors console errors
 - Integrates with Azure DevOps test management
 - Performs regression testing before major releases
+- **API Testing:** Tests API endpoints directly to catch 404/500 errors early
+- Verifies API health checks, route registration, and response codes
+- Tests API independently from UI to isolate deployment issues
 
 **You don't need to check console logs yourself** - the TE agent handles all debugging autonomously.
 
@@ -560,6 +589,68 @@ When a bug is reported, the TE agent will:
 **What Happened:** Production deployment failed due to missing environment variables
 **Why It Matters:** Runtime errors, security issues
 **How to Avoid:** Maintain checklist of required env vars, validate before deployment
+
+### Data Integrity Between Members and Legal Entities
+**What Happened:** Members had `legal_entity_id` values but corresponding legal entity records didn't exist in the database
+**Why It Matters:** Blocked users from managing identifiers, causing production errors and UI failures
+**How to Avoid:**
+- Add database foreign key constraints to prevent orphaned references
+- Created migration 013 to ensure all members have legal entities
+- Added UI fallback with "Create Legal Entity" button for edge cases
+- Implement conditional UI rendering that checks for actual entity existence, not just ID presence
+
+### CRITICAL: Always Check Deployment Status BEFORE Debugging (October 15, 2025)
+**What Happened:** Spent entire day debugging 404/500 errors when the real issue was failed CI/CD deployments blocking all code changes
+**Why It Matters:** Wasted 8+ hours fixing code that was never deployed, endless frustration testing non-existent changes
+**How to Avoid:**
+- **FIRST STEP:** Always check last successful build timestamp in Azure DevOps
+- **RED FLAG:** If last build is >1 hour old, assume deployment is broken
+- **DON'T DEBUG until deployment works** - no point fixing code that can't deploy
+- Check: `git log -1` (last commit time) vs Azure DevOps last build time
+- If they don't match → deployment is broken, fix pipeline first
+
+### CI/CD Pipeline Failures Block All Deployments
+**What Happened:** Biome lint checks were failing with exit code 1, blocking ALL deployments since morning (08:10)
+**Why It Matters:** No code changes reached production all day despite multiple "deployments"
+**How to Avoid:**
+- Pipeline lint/quality checks should use `continueOnError: true`
+- Monitor Azure DevOps build status, not just local builds
+- Failed pipelines = production is frozen at last successful build
+- Fix pipeline issues IMMEDIATELY, they block everything
+
+### API Functions Must Be Imported in index.ts to Register
+**What Happened:** Identifier functions were compiled to dist/ but not imported in src/index.ts, so Azure Functions didn't register them
+**Why It Matters:** Functions existed in codebase but returned 404 in production
+**How to Avoid:**
+- Always add `import './functions/YourFunction'` to src/index.ts
+- Verify with `func azure functionapp list-functions` after deployment
+- Missing imports = invisible functions in production
+
+### Azure Functions v4 Lowercases All Route Parameters
+**What Happened:** Routes defined as `{legalEntityId}` became `{legalentityid}` in Azure, code accessed wrong param name
+**Why It Matters:** 400 Bad Request errors because `request.params.legalEntityId` was undefined
+**How to Avoid:**
+- **ALWAYS use lowercase route params:** `{legalentityid}` not `{legalEntityId}`
+- Access params with lowercase: `request.params.legalentityid`
+- This is Azure Functions v4 behavior, not configurable
+
+### Unified CI/CD Pipeline for Related Components
+**What Happened:** Admin portal, member portal, and API had separate/missing pipelines, causing deployment drift
+**Why It Matters:** Frontend and backend can get out of sync, API changes don't deploy with UI changes
+**How to Avoid:**
+- Unified pipeline deploys web + API together (implemented Oct 15, 2025)
+- Admin and member portals both deploy API now
+- Infrastructure stays separate pipeline
+- Ensures full-stack deployment consistency
+
+### Test Engineer (TE) Should Include API Testing
+**What Happened:** Endless 404/500 errors went undetected for hours because only UI was tested
+**Why It Matters:** API failures cascade to UI, but UI tests don't catch API deployment issues
+**How to Avoid:**
+- TE agent should test API endpoints directly (not just through UI)
+- Add API health checks to test suite
+- Verify GET /api/v1/all-members works before testing members list UI
+- Test API routes independently to catch registration issues early
 
 ---
 
