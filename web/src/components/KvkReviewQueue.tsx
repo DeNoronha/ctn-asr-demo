@@ -116,7 +116,10 @@ export const KvkReviewQueue: React.FC = () => {
           <span
             key={idx}
             className={`k-badge k-badge-${isEnteredDataMismatch(flag) ? 'error' : 'warning'}`}
-            style={{ marginRight: '5px', fontWeight: isEnteredDataMismatch(flag) ? 'bold' : 'normal' }}
+            style={{
+              marginRight: '5px',
+              fontWeight: isEnteredDataMismatch(flag) ? 'bold' : 'normal',
+            }}
           >
             {getFlagDescription(flag)}
           </span>
@@ -150,7 +153,9 @@ export const KvkReviewQueue: React.FC = () => {
           field="entered_kvk_number"
           title="Entered KvK"
           width="110px"
-          cell={(props) => <td>{props.dataItem.entered_kvk_number || <span style={{ color: '#999' }}>—</span>}</td>}
+          cell={(props) => (
+            <td>{props.dataItem.entered_kvk_number || <span style={{ color: '#999' }}>—</span>}</td>
+          )}
         />
         <GridColumn field="kvk_extracted_company_name" title="Extracted Company" width="200px" />
         <GridColumn field="kvk_extracted_number" title="Extracted KvK" width="110px" />
@@ -197,15 +202,32 @@ export const KvkReviewQueue: React.FC = () => {
               <table style={{ width: '100%', marginTop: '10px', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f5f5f5' }}>
-                    <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>Field</th>
-                    <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>Entered Value</th>
-                    <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>Extracted from Document</th>
-                    <th style={{ padding: '8px', textAlign: 'center', border: '1px solid #ddd', width: '60px' }}>Match</th>
+                    <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>
+                      Field
+                    </th>
+                    <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>
+                      Entered Value
+                    </th>
+                    <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>
+                      Extracted from Document
+                    </th>
+                    <th
+                      style={{
+                        padding: '8px',
+                        textAlign: 'center',
+                        border: '1px solid #ddd',
+                        width: '60px',
+                      }}
+                    >
+                      Match
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}>Company Name</td>
+                    <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}>
+                      Company Name
+                    </td>
                     <td style={{ padding: '8px', border: '1px solid #ddd' }}>
                       {reviewDialog.entity.entered_company_name}
                     </td>
@@ -221,9 +243,13 @@ export const KvkReviewQueue: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}>KvK Number</td>
+                    <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}>
+                      KvK Number
+                    </td>
                     <td style={{ padding: '8px', border: '1px solid #ddd' }}>
-                      {reviewDialog.entity.entered_kvk_number || <span style={{ color: '#999' }}>Not entered</span>}
+                      {reviewDialog.entity.entered_kvk_number || (
+                        <span style={{ color: '#999' }}>Not entered</span>
+                      )}
                     </td>
                     <td style={{ padding: '8px', border: '1px solid #ddd' }}>
                       {reviewDialog.entity.kvk_extracted_number}

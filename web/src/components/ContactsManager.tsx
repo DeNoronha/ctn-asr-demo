@@ -1,13 +1,13 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-import { Plus, Pencil, Trash2, Users, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Pencil, Plus, Trash2, Users } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import type { LegalEntityContact } from '../services/api';
+import { ConfirmDialog } from './ConfirmDialog';
 import { ContactForm } from './ContactForm';
 import { EmptyState } from './EmptyState';
-import { ConfirmDialog } from './ConfirmDialog';
 import './ContactsManager.css';
 
 interface ContactsManagerProps {
@@ -138,7 +138,13 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
           className="contacts-grid"
         >
           <GridColumn field="contact_type" title="Type" width="140px" cell={ContactTypeCell} />
-          <GridColumn field="name" title="Name" width="180px" cell={NameCell} minResizableWidth={120} />
+          <GridColumn
+            field="name"
+            title="Name"
+            width="180px"
+            cell={NameCell}
+            minResizableWidth={120}
+          />
           <GridColumn field="email" title="Email" width="260px" minResizableWidth={200} />
           <GridColumn field="phone" title="Phone" width="140px" />
           <GridColumn field="job_title" title="Job Title" width="180px" minResizableWidth={120} />

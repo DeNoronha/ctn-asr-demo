@@ -61,7 +61,9 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit 
 
               <div className="detail-row">
                 <label>Created:</label>
-                <span>{company.dt_created ? new Date(company.dt_created).toLocaleString() : '-'}</span>
+                <span>
+                  {company.dt_created ? new Date(company.dt_created).toLocaleString() : '-'}
+                </span>
               </div>
 
               <div className="detail-row">

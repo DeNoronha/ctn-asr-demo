@@ -1,14 +1,14 @@
 import { Button } from '@progress/kendo-react-buttons';
+import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Field, Form, FormElement, type FormRenderProps } from '@progress/kendo-react-form';
 import { Input } from '@progress/kendo-react-inputs';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
 // CompanyForm.tsx - Edit company/legal entity information
 import type React from 'react';
 import { useState } from 'react';
-import type { LegalEntity } from '../services/api';
-import type { LegalEntityIdentifier } from '../services/apiV2';
-import { apiV2 } from '../services/api';
 import { useNotification } from '../contexts/NotificationContext';
+import type { LegalEntity } from '../services/api';
+import { apiV2 } from '../services/api';
+import type { LegalEntityIdentifier } from '../services/apiV2';
 import './CompanyForm.css';
 
 interface CompanyFormProps {
@@ -18,7 +18,19 @@ interface CompanyFormProps {
 }
 
 const IDENTIFIER_TYPES = [
-  'KVK', 'LEI', 'EUID', 'HRB', 'HRA', 'KBO', 'SIREN', 'SIRET', 'CRN', 'EORI', 'VAT', 'DUNS', 'OTHER'
+  'KVK',
+  'LEI',
+  'EUID',
+  'HRB',
+  'HRA',
+  'KBO',
+  'SIREN',
+  'SIRET',
+  'CRN',
+  'EORI',
+  'VAT',
+  'DUNS',
+  'OTHER',
 ];
 
 const COUNTRY_CODES = [
@@ -77,7 +89,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
   const handleRemoveIdentifier = async (identifierId: string) => {
     try {
       await apiV2.deleteIdentifier(identifierId);
-      setIdentifiers(identifiers.filter(id => id.legal_entity_reference_id !== identifierId));
+      setIdentifiers(identifiers.filter((id) => id.legal_entity_reference_id !== identifierId));
       notification.showSuccess('Identifier removed successfully');
     } catch (error) {
       console.error('Failed to remove identifier:', error);
@@ -89,7 +101,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
     <Form
       initialValues={data}
       onSubmit={handleSubmit}
-      render={(formRenderProps: FormRenderProps) => (
+      render={(_formRenderProps: FormRenderProps) => (
         <FormElement className="company-form">
           <fieldset className="k-form-fieldset">
             <legend>Company Information</legend>
@@ -231,9 +243,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
                   <label>Registry Name</label>
                   <Input
                     value={newIdentifier.registry_name || ''}
-                    onChange={(e) =>
-                      setNewIdentifier({ ...newIdentifier, registry_name: e.value })
-                    }
+                    onChange={(e) => setNewIdentifier({ ...newIdentifier, registry_name: e.value })}
                     placeholder="e.g., Kamer van Koophandel"
                   />
                 </div>

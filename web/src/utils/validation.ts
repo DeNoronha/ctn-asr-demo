@@ -44,14 +44,14 @@ export const validateMemberForm = (data: MemberFormData): ValidationResult => {
   }
 
   // LEI validation (optional but must be valid if provided)
-  if (data.lei && data.lei.trim()) {
+  if (data.lei?.trim()) {
     if (!/^[A-Z0-9]{20}$/.test(data.lei)) {
       errors.lei = 'LEI must be exactly 20 alphanumeric characters';
     }
   }
 
   // KVK validation (optional but must be valid if provided)
-  if (data.kvk && data.kvk.trim()) {
+  if (data.kvk?.trim()) {
     if (!/^\d{8}$/.test(data.kvk)) {
       errors.kvk = 'KVK number must be exactly 8 digits';
     }
@@ -66,7 +66,7 @@ export const validateMemberForm = (data: MemberFormData): ValidationResult => {
 export const formatOrgId = (value: string): string => {
   let formatted = value.toLowerCase().trim();
   if (!formatted.startsWith('org:')) {
-    formatted = 'org:' + formatted;
+    formatted = `org:${formatted}`;
   }
   // Remove invalid characters
   formatted = formatted.replace(/[^a-z0-9:-]/g, '');

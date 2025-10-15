@@ -25,7 +25,7 @@ import './AuditLogViewer.css';
 const AuditLogViewer: React.FC = () => {
   const { user } = useAuth();
   const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
 
   // Filters
   const [selectedAction, setSelectedAction] = useState<string>('All');

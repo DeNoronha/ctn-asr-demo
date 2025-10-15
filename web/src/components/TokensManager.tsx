@@ -1,13 +1,13 @@
 import { Button } from '@progress/kendo-react-buttons';
-import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { CheckCircle, XCircle, AlertTriangle, Copy, Trash2, Key } from 'lucide-react';
+import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
+import { AlertTriangle, CheckCircle, Copy, Key, Trash2, XCircle } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { formatDate } from '../utils/dateUtils';
-import { EmptyState } from './EmptyState';
 import { ConfirmDialog } from './ConfirmDialog';
+import { EmptyState } from './EmptyState';
 import './TokensManager.css';
 
 interface Endpoint {
@@ -38,7 +38,8 @@ interface TokensManagerProps {
   onIssueToken: (orgId: string) => Promise<void>;
 }
 
-const API_BASE = process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
+const API_BASE =
+  process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
 
 export const TokensManager: React.FC<TokensManagerProps> = ({
   legalEntityId,
@@ -46,7 +47,7 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
   onIssueToken,
 }) => {
   const [tokens, setTokens] = useState<Token[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const [selectedEndpoint, setSelectedEndpoint] = useState<string | null>(null);
   const [revokeConfirmOpen, setRevokeConfirmOpen] = useState(false);
   const [tokenToRevoke, setTokenToRevoke] = useState<Token | null>(null);
@@ -129,7 +130,9 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
   const getStatusBadge = (token: Token) => {
     const now = new Date();
     const expiresAt = new Date(token.expires_at);
-    const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const daysUntilExpiry = Math.ceil(
+      (expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
 
     if (token.revoked_at) {
       return (
@@ -176,11 +179,7 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
 
     if (!value) return <td>-</td>;
 
-    return (
-      <td>
-        {formatDate(value)}
-      </td>
-    );
+    return <td>{formatDate(value)}</td>;
   };
 
   const ActionsCell = (props: any) => {
@@ -229,16 +228,16 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
     })),
   ];
 
-  const selectedEndpointOption = endpointOptions.find(
-    (e) => e.value === selectedEndpoint
-  ) || endpointOptions[0];
+  const selectedEndpointOption =
+    endpointOptions.find((e) => e.value === selectedEndpoint) || endpointOptions[0];
 
   return (
     <div className="tokens-manager">
       <div className="tokens-header">
         <h3>Token Management</h3>
         <p className="tokens-description">
-          View and manage access tokens for all endpoints. Active tokens grant API access to member systems.
+          View and manage access tokens for all endpoints. Active tokens grant API access to member
+          systems.
         </p>
       </div>
 
@@ -258,26 +257,37 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
                 />
               </div>
               <div className="stats-section">
-                <span className="stat-badge">
-                  Total: {filteredTokens.length}
-                </span>
+                <span className="stat-badge">Total: {filteredTokens.length}</span>
                 <span className="stat-badge active">
-                  Active: {filteredTokens.filter((t) =>
-                    !t.revoked_at && new Date(t.expires_at) > new Date()
-                  ).length}
+                  Active:{' '}
+                  {
+                    filteredTokens.filter(
+                      (t) => !t.revoked_at && new Date(t.expires_at) > new Date()
+                    ).length
+                  }
                 </span>
               </div>
             </div>
           </GridToolbar>
 
-          <GridColumn field="endpoint_name" title="Endpoint" width="250px" minResizableWidth={150} />
+          <GridColumn
+            field="endpoint_name"
+            title="Endpoint"
+            width="250px"
+            minResizableWidth={150}
+          />
           <GridColumn field="token_type" title="Type" width="100px" />
           <GridColumn field="issued_at" title="Issued" width="130px" cell={DateCell} />
           <GridColumn field="expires_at" title="Expires" width="130px" cell={DateCell} />
           <GridColumn field="status" title="Status" width="160px" cell={StatusCell} />
           <GridColumn field="last_used_at" title="Last Used" width="130px" cell={DateCell} />
           <GridColumn field="usage_count" title="Usage" width="80px" />
-          <GridColumn title="Actions" width="120px" cell={ActionsCell} headerClassName="center-header" />
+          <GridColumn
+            title="Actions"
+            width="120px"
+            cell={ActionsCell}
+            headerClassName="center-header"
+          />
         </Grid>
       ) : (
         <EmptyState

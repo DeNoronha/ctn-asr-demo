@@ -1,16 +1,25 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { Input } from '@progress/kendo-react-inputs';
 import { Grid, GridColumn } from '@progress/kendo-react-grid';
-import { Pencil, Plus, Trash2, CheckCircle, XCircle, AlertCircle, FileCheck, AlertTriangle } from 'lucide-react';
+import { Input } from '@progress/kendo-react-inputs';
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle,
+  FileCheck,
+  Pencil,
+  Plus,
+  Trash2,
+  XCircle,
+} from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
-import { EmptyState } from './EmptyState';
 import { ConfirmDialog } from './ConfirmDialog';
+import { EmptyState } from './EmptyState';
 import './IdentifiersManager.css';
 
 interface IdentifiersManagerProps {
@@ -22,67 +31,70 @@ interface IdentifiersManagerProps {
 const VALIDATION_STATUSES = ['PENDING', 'VALIDATED', 'FAILED', 'EXPIRED'];
 
 // Validation rules and format examples for identifier types
-const IDENTIFIER_VALIDATION: Record<string, {
-  pattern: RegExp;
-  example: string;
-  description: string;
-}> = {
-  'KVK': {
+const IDENTIFIER_VALIDATION: Record<
+  string,
+  {
+    pattern: RegExp;
+    example: string;
+    description: string;
+  }
+> = {
+  KVK: {
     pattern: /^\d{8}$/,
     example: '12345678',
     description: '8 digits',
   },
-  'LEI': {
+  LEI: {
     pattern: /^[A-Z0-9]{20}$/,
     example: '724500VKKSH9QOLTFR81',
     description: '20 alphanumeric characters',
   },
-  'EORI': {
+  EORI: {
     pattern: /^[A-Z]{2}[A-Z0-9]{1,15}$/,
     example: 'NL123456789012',
     description: 'Country code + up to 15 alphanumeric',
   },
-  'VAT': {
+  VAT: {
     pattern: /^[A-Z]{2}[A-Z0-9]{2,13}$/,
     example: 'NL123456789B01',
     description: 'Country code + 2-13 alphanumeric',
   },
-  'DUNS': {
+  DUNS: {
     pattern: /^\d{9}$/,
     example: '123456789',
     description: '9 digits',
   },
-  'EUID': {
+  EUID: {
     pattern: /^[A-Z]{2}\.[A-Z0-9.]{1,50}$/,
     example: 'NL.12345678.0001',
     description: 'Country code + identifier',
   },
-  'HRB': {
+  HRB: {
     pattern: /^HRB\s?\d{1,6}$/i,
     example: 'HRB 12345',
     description: 'HRB + 1-6 digits',
   },
-  'HRA': {
+  HRA: {
     pattern: /^HRA\s?\d{1,6}$/i,
     example: 'HRA 12345',
     description: 'HRA + 1-6 digits',
   },
-  'KBO': {
+  KBO: {
     pattern: /^\d{10}$/,
     example: '0123456789',
     description: '10 digits',
   },
-  'SIREN': {
+  SIREN: {
     pattern: /^\d{9}$/,
     example: '123456789',
     description: '9 digits',
   },
-  'SIRET': {
+  SIRET: {
     pattern: /^\d{14}$/,
     example: '12345678901234',
     description: '14 digits',
   },
-  'CRN': {
+  CRN: {
     pattern: /^[A-Z0-9]{8}$/,
     example: 'AB123456',
     description: '8 alphanumeric characters',
@@ -91,76 +103,76 @@ const IDENTIFIER_VALIDATION: Record<string, {
 
 // Mapping of country codes to applicable identifier types
 const COUNTRY_IDENTIFIER_MAP: Record<string, string[]> = {
-  'NL': ['KVK', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'DE': ['HRB', 'HRA', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'BE': ['KBO', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'FR': ['SIREN', 'SIRET', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'GB': ['CRN', 'EORI', 'VAT', 'LEI', 'DUNS'],
-  'UK': ['CRN', 'EORI', 'VAT', 'LEI', 'DUNS'],
-  'US': ['DUNS', 'LEI'],
-  'LU': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'AT': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'IT': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'ES': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'PT': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'DK': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'SE': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'NO': ['EORI', 'VAT', 'LEI', 'DUNS'],
-  'CH': ['EORI', 'VAT', 'LEI', 'DUNS'],
-  'PL': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'CZ': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'IE': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'FI': ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  'default': ['LEI', 'DUNS', 'EORI', 'VAT', 'OTHER'],
+  NL: ['KVK', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  DE: ['HRB', 'HRA', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  BE: ['KBO', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  FR: ['SIREN', 'SIRET', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  GB: ['CRN', 'EORI', 'VAT', 'LEI', 'DUNS'],
+  UK: ['CRN', 'EORI', 'VAT', 'LEI', 'DUNS'],
+  US: ['DUNS', 'LEI'],
+  LU: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  AT: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  IT: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  ES: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  PT: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  DK: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  SE: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  NO: ['EORI', 'VAT', 'LEI', 'DUNS'],
+  CH: ['EORI', 'VAT', 'LEI', 'DUNS'],
+  PL: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  CZ: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  IE: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  FI: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  default: ['LEI', 'DUNS', 'EORI', 'VAT', 'OTHER'],
 };
 
 // Mapping of identifier types to registry information
 const REGISTRY_INFO: Record<string, { name: string; url: string }> = {
-  'LEI': {
+  LEI: {
     name: 'Global Legal Entity Identifier Foundation (GLEIF)',
     url: 'https://search.gleif.org/',
   },
-  'KVK': {
+  KVK: {
     name: 'Dutch Chamber of Commerce (Kamer van Koophandel)',
     url: 'https://www.kvk.nl/',
   },
-  'EORI': {
+  EORI: {
     name: 'European Commission - EORI System',
     url: 'https://ec.europa.eu/taxation_customs/dds2/eos/eori_validation.jsp',
   },
-  'VAT': {
+  VAT: {
     name: 'European Commission - VIES VAT Number Validation',
     url: 'https://ec.europa.eu/taxation_customs/vies/',
   },
-  'DUNS': {
+  DUNS: {
     name: 'Dun & Bradstreet',
     url: 'https://www.dnb.com/',
   },
-  'EUID': {
+  EUID: {
     name: 'European Unique Identifier',
     url: 'https://e-justice.europa.eu/489/EN/business_registers',
   },
-  'HRB': {
+  HRB: {
     name: 'German Commercial Register (Handelsregister Teil B)',
     url: 'https://www.handelsregister.de/',
   },
-  'HRA': {
+  HRA: {
     name: 'German Commercial Register (Handelsregister Teil A)',
     url: 'https://www.handelsregister.de/',
   },
-  'KBO': {
+  KBO: {
     name: 'Belgian Crossroads Bank for Enterprises (KBO/BCE)',
     url: 'https://kbopub.economie.fgov.be/',
   },
-  'SIREN': {
+  SIREN: {
     name: 'French Business Registry - SIREN',
     url: 'https://www.sirene.fr/',
   },
-  'SIRET': {
+  SIRET: {
     name: 'French Business Registry - SIRET',
     url: 'https://www.sirene.fr/',
   },
-  'CRN': {
+  CRN: {
     name: 'UK Companies House - Company Registration Number',
     url: 'https://find-and-update.company-information.service.gov.uk/',
   },
@@ -233,7 +245,9 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     setFormData(identifier);
     // Set available identifier types based on country code
     if (identifier.country_code) {
-      const types = COUNTRY_IDENTIFIER_MAP[identifier.country_code.toUpperCase()] || COUNTRY_IDENTIFIER_MAP.default;
+      const types =
+        COUNTRY_IDENTIFIER_MAP[identifier.country_code.toUpperCase()] ||
+        COUNTRY_IDENTIFIER_MAP.default;
       setAvailableIdentifierTypes(types);
     } else {
       setAvailableIdentifierTypes(COUNTRY_IDENTIFIER_MAP.default);
@@ -333,13 +347,10 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
 
       if (editingIdentifier) {
         // Update existing identifier
-        const updated = await apiV2.updateIdentifier(
-          editingIdentifier.legal_entity_reference_id!,
-          {
-            ...formData,
-            dt_modified: now,
-          }
-        );
+        const updated = await apiV2.updateIdentifier(editingIdentifier.legal_entity_reference_id!, {
+          ...formData,
+          dt_modified: now,
+        });
         const updatedList = identifiers.map((i) =>
           i.legal_entity_reference_id === editingIdentifier.legal_entity_reference_id ? updated : i
         );
@@ -354,7 +365,8 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
           country_code: formData.country_code,
           registry_name: formData.registry_name,
           registry_url: formData.registry_url,
-          validation_status: formData.validation_status as LegalEntityIdentifier['validation_status'],
+          validation_status:
+            formData.validation_status as LegalEntityIdentifier['validation_status'],
           validation_date: formData.validation_date,
           verification_notes: formData.verification_notes,
         });
@@ -424,21 +436,13 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
   };
 
   const ValidationCell = (props: any) => {
-    return (
-      <td>
-        {getValidationBadge(props.dataItem.validation_status)}
-      </td>
-    );
+    return <td>{getValidationBadge(props.dataItem.validation_status)}</td>;
   };
 
   const DateCell = (props: any) => {
     const { field, dataItem } = props;
     const value = dataItem[field];
-    return (
-      <td>
-        {value ? formatDate(value) : '-'}
-      </td>
-    );
+    return <td>{value ? formatDate(value) : '-'}</td>;
   };
 
   return (
@@ -454,27 +458,27 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
       {identifiers.length > 0 ? (
         <Grid data={identifiers} style={{ height: '450px' }}>
           <GridColumn field="identifier_type" title="Type" width="100px" />
-          <GridColumn field="identifier_value" title="Identifier Value" width="180px" minResizableWidth={120} />
+          <GridColumn
+            field="identifier_value"
+            title="Identifier Value"
+            width="180px"
+            minResizableWidth={120}
+          />
           <GridColumn field="country_code" title="Country" width="100px" />
-          <GridColumn field="registry_name" title="Registry" width="220px" minResizableWidth={150} />
+          <GridColumn
+            field="registry_name"
+            title="Registry"
+            width="220px"
+            minResizableWidth={150}
+          />
           <GridColumn
             field="validation_status"
             title="Status"
             width="140px"
             cell={ValidationCell}
           />
-          <GridColumn
-            field="validation_date"
-            title="Last Verified"
-            width="140px"
-            cell={DateCell}
-          />
-          <GridColumn
-            field="dt_modified"
-            title="Last Edited"
-            width="140px"
-            cell={DateCell}
-          />
+          <GridColumn field="validation_date" title="Last Verified" width="140px" cell={DateCell} />
+          <GridColumn field="dt_modified" title="Last Edited" width="140px" cell={DateCell} />
           <GridColumn
             title="Actions"
             width="120px"
@@ -505,7 +509,9 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
                 placeholder="e.g., NL, DE, BE, FR, GB"
                 maxLength={2}
               />
-              <span className="field-hint">Enter country code first to see applicable identifier types</span>
+              <span className="field-hint">
+                Enter country code first to see applicable identifier types
+              </span>
             </div>
 
             <div className="form-field">
@@ -527,17 +533,21 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
                 value={formData.identifier_value || ''}
                 onChange={(e) => handleIdentifierValueChange(e.value)}
                 placeholder="Enter identifier value"
-                className={validationError ? 'input-error' : isValidIdentifier && formData.identifier_value ? 'input-success' : ''}
+                className={
+                  validationError
+                    ? 'input-error'
+                    : isValidIdentifier && formData.identifier_value
+                      ? 'input-success'
+                      : ''
+                }
               />
               {formData.identifier_type && IDENTIFIER_VALIDATION[formData.identifier_type] && (
                 <span className="field-hint validation-hint">
-                  Format: {IDENTIFIER_VALIDATION[formData.identifier_type].description}
-                  {' '}(e.g., {IDENTIFIER_VALIDATION[formData.identifier_type].example})
+                  Format: {IDENTIFIER_VALIDATION[formData.identifier_type].description} (e.g.,{' '}
+                  {IDENTIFIER_VALIDATION[formData.identifier_type].example})
                 </span>
               )}
-              {validationError && (
-                <span className="field-error">{validationError}</span>
-              )}
+              {validationError && <span className="field-error">{validationError}</span>}
               {isValidIdentifier && formData.identifier_value && formData.identifier_type && (
                 <span className="field-success">✓ Valid format</span>
               )}
@@ -587,7 +597,9 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
             <Button
               themeColor="primary"
               onClick={handleSave}
-              disabled={!isValidIdentifier || !formData.identifier_type || !formData.identifier_value}
+              disabled={
+                !isValidIdentifier || !formData.identifier_type || !formData.identifier_value
+              }
             >
               {editingIdentifier ? 'Update' : 'Add'}
             </Button>

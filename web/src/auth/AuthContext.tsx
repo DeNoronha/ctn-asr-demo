@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Handle redirect response
       const response = await msalInstance.handleRedirectPromise();
-      if (response && response.account) {
+      if (response?.account) {
         await loadUserRoles(response.account);
       } else {
         const accounts = msalInstance.getAllAccounts();

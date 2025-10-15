@@ -88,7 +88,7 @@ export const exportToPDF = (members: Member[], options: ExportOptions = {}) => {
       fillColor: [245, 245, 245],
     },
     margin: { left: 14, right: 14 },
-    didDrawPage: (data) => {
+    didDrawPage: (_data) => {
       // Add footer with page numbers
       const pageCount = doc.getNumberOfPages();
       const pageNumber = (doc as any).internal.getCurrentPageInfo().pageNumber;
@@ -199,7 +199,7 @@ export interface BulkOperationResult {
 
 export const performBulkOperation = async (
   memberIds: string[],
-  operation: 'export' | 'token' | 'activate' | 'suspend' | 'delete',
+  _operation: 'export' | 'token' | 'activate' | 'suspend' | 'delete',
   apiHandler: (id: string) => Promise<any>
 ): Promise<BulkOperationResult> => {
   const result: BulkOperationResult = {

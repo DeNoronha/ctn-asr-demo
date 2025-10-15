@@ -134,7 +134,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
       // Clear draft on successful submit
       localStorage.removeItem('memberFormDraft');
       setIsDirty(false);
-    } catch (error) {
+    } catch (_error) {
       // Error handling done by parent
     } finally {
       setIsSubmitting(false);

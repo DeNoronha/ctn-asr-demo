@@ -1,11 +1,11 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { Loader } from '@progress/kendo-react-indicators';
 import { Grid, GridColumn } from '@progress/kendo-react-grid';
+import { Loader } from '@progress/kendo-react-indicators';
 import { Upload } from '@progress/kendo-react-upload';
-import { CheckCircle, XCircle, AlertTriangle, FileText, FolderOpen } from 'lucide-react';
+import { AlertTriangle, CheckCircle, FileText, FolderOpen, XCircle } from 'lucide-react';
 import type React from 'react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import type { LegalEntityIdentifier } from '../services/apiV2';
 import { formatDateTime } from '../utils/dateUtils';
@@ -43,7 +43,8 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
   const [loading, setLoading] = useState(false);
   const notification = useNotification();
 
-  const API_BASE = process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
+  const _API_BASE =
+    process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
 
   // Load verification records
   useEffect(() => {
@@ -154,11 +155,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
   const DateCell = (props: any) => {
     const { field, dataItem } = props;
     const value = dataItem[field];
-    return (
-      <td>
-        {value ? formatDateTime(value) : '-'}
-      </td>
-    );
+    return <td>{value ? formatDateTime(value) : '-'}</td>;
   };
 
   const ActionsCell = (props: any) => {
@@ -274,12 +271,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
                   width="140px"
                   cell={StatusCell}
                 />
-                <GridColumn
-                  field="uploaded_at"
-                  title="Uploaded"
-                  width="160px"
-                  cell={DateCell}
-                />
+                <GridColumn field="uploaded_at" title="Uploaded" width="160px" cell={DateCell} />
                 <GridColumn field="verified_at" title="Verified" width="160px" cell={DateCell} />
                 <GridColumn field="verified_by" title="Verified By" width="150px" />
                 <GridColumn title="Actions" width="100px" cell={ActionsCell} />

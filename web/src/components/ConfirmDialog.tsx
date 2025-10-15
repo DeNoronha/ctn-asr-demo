@@ -1,5 +1,5 @@
-import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
+import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import type React from 'react';
 import './ConfirmDialog.css';
 

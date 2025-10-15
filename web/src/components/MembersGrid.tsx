@@ -174,7 +174,13 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       { field: 'kvk', title: 'KVK', show: true, width: '120px', orderIndex: 4 },
       { field: 'org_id', title: 'Organization ID', show: false, width: '180px', orderIndex: 5 },
       { field: 'domain', title: 'Domain', show: false, width: '150px', orderIndex: 6 },
-      { field: 'membership_level', title: 'Membership', show: false, width: '120px', orderIndex: 7 },
+      {
+        field: 'membership_level',
+        title: 'Membership',
+        show: false,
+        width: '120px',
+        orderIndex: 7,
+      },
       { field: 'created_at', title: 'Joined', show: false, width: '120px', orderIndex: 8 },
     ];
     setColumns(defaultColumns);
@@ -218,7 +224,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       const selectedMembers = gridData.filter((m) => selectedIds.includes(m.org_id));
 
       switch (bulkAction) {
-        case 'export-pdf':
+        case 'export-pdf': {
           const pdfFileName = exportToPDF(selectedMembers, {
             title: `CTN Members Export (${selectedIds.length} records)`,
             orientation: 'landscape',
@@ -226,13 +232,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           });
           notification.showSuccess(`Exported ${selectedIds.length} members to ${pdfFileName}`);
           break;
+        }
 
         case 'export-csv':
           exportToCSV(selectedMembers, `CTN_Members_${new Date().toISOString().split('T')[0]}.csv`);
           notification.showSuccess(`Exported ${selectedIds.length} members to CSV`);
           break;
 
-        case 'token':
+        case 'token': {
           const tokenResult = await performBulkOperation(selectedIds, 'token', async (id) => {
             await onIssueToken(id);
             return Promise.resolve();
@@ -243,6 +250,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             console.error('Token issuance errors:', tokenResult.errors);
           }
           break;
+        }
 
         case 'suspend':
           notification.showInfo(

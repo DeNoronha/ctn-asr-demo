@@ -48,7 +48,20 @@ export interface PartyReference {
 export interface LegalEntityIdentifier {
   legal_entity_reference_id?: string;
   legal_entity_id: string;
-  identifier_type: 'LEI' | 'KVK' | 'EORI' | 'VAT' | 'DUNS' | 'EUID' | 'HRB' | 'HRA' | 'KBO' | 'SIREN' | 'SIRET' | 'CRN' | 'OTHER';
+  identifier_type:
+    | 'LEI'
+    | 'KVK'
+    | 'EORI'
+    | 'VAT'
+    | 'DUNS'
+    | 'EUID'
+    | 'HRB'
+    | 'HRA'
+    | 'KBO'
+    | 'SIREN'
+    | 'SIRET'
+    | 'CRN'
+    | 'OTHER';
   identifier_value: string;
   country_code?: string;
   registry_name?: string;
@@ -204,7 +217,7 @@ export const apiV2 = {
 
   async getMembers(): Promise<Member[]> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.get<MembersResponse>(`/all-members`);
+    const response = await axiosInstance.get<MembersResponse>('/all-members');
     return response.data.data;
   },
 
@@ -216,13 +229,13 @@ export const apiV2 = {
 
   async createMember(member: Partial<Member>): Promise<Member> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.post<Member>(`/members`, member);
+    const response = await axiosInstance.post<Member>('/members', member);
     return response.data;
   },
 
   async issueToken(orgId: string): Promise<{ access_token: string }> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.post<TokenResponse>(`/oauth/token`, {
+    const response = await axiosInstance.post<TokenResponse>('/oauth/token', {
       org_id: orgId,
     });
     return response.data;
@@ -234,24 +247,19 @@ export const apiV2 = {
 
   async getLegalEntity(legalEntityId: string): Promise<LegalEntity> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.get<LegalEntity>(
-      `/legal-entities/${legalEntityId}`
-    );
+    const response = await axiosInstance.get<LegalEntity>(`/legal-entities/${legalEntityId}`);
     return response.data;
   },
 
   async createLegalEntity(entity: Partial<LegalEntity>): Promise<LegalEntity> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.post<LegalEntity>(`/legal-entities`, entity);
+    const response = await axiosInstance.post<LegalEntity>('/legal-entities', entity);
     return response.data;
   },
 
   async updateLegalEntity(legalEntityId: string, data: Partial<LegalEntity>): Promise<LegalEntity> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.put<LegalEntity>(
-      `/legal-entities/${legalEntityId}`,
-      data
-    );
+    const response = await axiosInstance.put<LegalEntity>(`/legal-entities/${legalEntityId}`, data);
     return response.data;
   },
 
@@ -262,7 +270,7 @@ export const apiV2 = {
 
   async listLegalEntities(): Promise<LegalEntity[]> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.get<LegalEntity[]>(`/legal-entities`);
+    const response = await axiosInstance.get<LegalEntity[]>('/legal-entities');
     return response.data;
   },
 
@@ -333,7 +341,7 @@ export const apiV2 = {
     contact: Omit<LegalEntityContact, 'legal_entity_contact_id' | 'dt_created' | 'dt_modified'>
   ): Promise<LegalEntityContact> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.post<LegalEntityContact>(`/contacts`, contact);
+    const response = await axiosInstance.post<LegalEntityContact>('/contacts', contact);
     return response.data;
   },
 
@@ -342,10 +350,7 @@ export const apiV2 = {
     data: Partial<LegalEntityContact>
   ): Promise<LegalEntityContact> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.put<LegalEntityContact>(
-      `/contacts/${contactId}`,
-      data
-    );
+    const response = await axiosInstance.put<LegalEntityContact>(`/contacts/${contactId}`, data);
     return response.data;
   },
 
@@ -382,10 +387,7 @@ export const apiV2 = {
     data: Partial<LegalEntityEndpoint>
   ): Promise<LegalEntityEndpoint> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.put<LegalEntityEndpoint>(
-      `/endpoints/${endpointId}`,
-      data
-    );
+    const response = await axiosInstance.put<LegalEntityEndpoint>(`/endpoints/${endpointId}`, data);
     return response.data;
   },
 
@@ -398,9 +400,11 @@ export const apiV2 = {
     endpointId: string
   ): Promise<{ success: boolean; message?: string; details?: any }> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.post<{ success: boolean; message?: string; details?: any }>(
-      `/endpoints/${endpointId}/test`
-    );
+    const response = await axiosInstance.post<{
+      success: boolean;
+      message?: string;
+      details?: any;
+    }>(`/endpoints/${endpointId}/test`);
     return response.data;
   },
 

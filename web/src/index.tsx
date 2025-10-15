@@ -3,11 +3,14 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import './i18n'; // Initialize i18n
 import App from './App';
-import reportWebVitals from './reportWebVitals';
 import { msalInstance } from './auth/AuthContext';
+import reportWebVitals from './reportWebVitals';
 
 // Expose msalInstance globally for debugging (development only)
-if (process.env.NODE_ENV === 'development' || window.location.hostname.includes('azurestaticapps.net')) {
+if (
+  process.env.NODE_ENV === 'development' ||
+  window.location.hostname.includes('azurestaticapps.net')
+) {
   (window as any).msalInstance = msalInstance;
   console.log('🔧 Debug mode: msalInstance exposed on window object');
 }

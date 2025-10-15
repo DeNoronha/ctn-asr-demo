@@ -29,7 +29,7 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:707
 
 const NewslettersGrid: React.FC = () => {
   const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [selectedNewsletter, setSelectedNewsletter] = useState<Newsletter | null>(null);
@@ -119,12 +119,12 @@ const NewslettersGrid: React.FC = () => {
 
   const calculateOpenRate = (newsletter: Newsletter) => {
     if (newsletter.delivered_count === 0) return '0%';
-    return ((newsletter.open_count / newsletter.delivered_count) * 100).toFixed(1) + '%';
+    return `${((newsletter.open_count / newsletter.delivered_count) * 100).toFixed(1)}%`;
   };
 
   const calculateClickRate = (newsletter: Newsletter) => {
     if (newsletter.open_count === 0) return '0%';
-    return ((newsletter.click_count / newsletter.open_count) * 100).toFixed(1) + '%';
+    return `${((newsletter.click_count / newsletter.open_count) * 100).toFixed(1)}%`;
   };
 
   const StatusCell = (props: any) => {

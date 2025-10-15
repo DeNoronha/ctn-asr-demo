@@ -55,7 +55,7 @@ const AdminPortal: React.FC = () => {
     try {
       const data = await loadMembers(() => api.getMembers());
       setMembers(data);
-    } catch (error) {
+    } catch (_error) {
       // Handled by useAsync
     }
   };
@@ -82,7 +82,7 @@ const AdminPortal: React.FC = () => {
       const response = await api.issueToken(orgId);
       setToken(response.access_token);
       notification.showSuccess('Token issued successfully!', 'Token Generated');
-    } catch (error) {
+    } catch (_error) {
       notification.showError('Failed to issue token');
     }
   };

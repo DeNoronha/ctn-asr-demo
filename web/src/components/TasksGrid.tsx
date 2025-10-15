@@ -29,7 +29,7 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:707
 
 const TasksGrid: React.FC = () => {
   const [tasks, setTasks] = useState<AdminTask[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedTask, setSelectedTask] = useState<AdminTask | null>(null);
@@ -62,7 +62,7 @@ const TasksGrid: React.FC = () => {
     { text: 'Urgent', value: 'urgent' },
   ];
 
-  const statusOptions = [
+  const _statusOptions = [
     { text: 'Pending', value: 'pending' },
     { text: 'In Progress', value: 'in_progress' },
     { text: 'Completed', value: 'completed' },

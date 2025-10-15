@@ -79,7 +79,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
 
   const [legalEntity, setLegalEntity] = useState<LegalEntity>(mockLegalEntity);
   const [contacts, setContacts] = useState<LegalEntityContact[]>(mockContacts);
-  const [loading, setLoading] = useState(false);
+  const [_loading, _setLoading] = useState(false);
   const notification = useNotification();
 
   const handleUpdate = async (data: MemberFormData) => {
@@ -276,7 +276,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
           <div className="detail-content">
             <div className="activity-timeline">
               <div className="timeline-item">
-                <div className="timeline-marker"></div>
+                <div className="timeline-marker" />
                 <div className="timeline-content">
                   <h4>Member Registered</h4>
                   <p>{formatDate(member.created_at)}</p>
@@ -285,7 +285,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
               </div>
               {member.updated_at && (
                 <div className="timeline-item">
-                  <div className="timeline-marker"></div>
+                  <div className="timeline-marker" />
                   <div className="timeline-content">
                     <h4>Last Updated</h4>
                     <p>{formatDate(member.updated_at)}</p>
@@ -295,7 +295,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
               )}
               {member.status === 'ACTIVE' && (
                 <div className="timeline-item">
-                  <div className="timeline-marker active"></div>
+                  <div className="timeline-marker active" />
                   <div className="timeline-content">
                     <h4>Current Status</h4>
                     <p>Active Member</p>

@@ -16,10 +16,7 @@ export const getUserLocale = (): string => {
  * @param options - Intl.DateTimeFormatOptions for formatting
  * @returns Formatted date string in user's locale
  */
-export const formatDate = (
-  date: string | Date,
-  options?: Intl.DateTimeFormatOptions
-): string => {
+export const formatDate = (date: string | Date, options?: Intl.DateTimeFormatOptions): string => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   const locale = getUserLocale();
 
@@ -57,7 +54,7 @@ export const formatDateTime = (date: string | Date): string => {
  * @param currency - Currency code (default: EUR)
  * @returns Formatted currency string
  */
-export const formatCurrency = (amount: number, currency: string = 'EUR'): string => {
+export const formatCurrency = (amount: number, currency = 'EUR'): string => {
   const locale = getUserLocale();
 
   return new Intl.NumberFormat(locale, {

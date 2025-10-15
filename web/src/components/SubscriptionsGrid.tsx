@@ -6,7 +6,10 @@ import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { Input } from '@progress/kendo-react-inputs';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { formatDate as formatDateUtil, formatCurrency as formatCurrencyUtil } from '../utils/dateUtils';
+import {
+  formatCurrency as formatCurrencyUtil,
+  formatDate as formatDateUtil,
+} from '../utils/dateUtils';
 import './SubscriptionsGrid.css';
 
 interface Subscription {
@@ -30,7 +33,7 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:707
 
 const SubscriptionsGrid: React.FC = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
@@ -53,7 +56,7 @@ const SubscriptionsGrid: React.FC = () => {
     { text: 'Yearly', value: 'yearly' },
   ];
 
-  const statusOptions = [
+  const _statusOptions = [
     { text: 'Active', value: 'active' },
     { text: 'Cancelled', value: 'cancelled' },
     { text: 'Expired', value: 'expired' },
