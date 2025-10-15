@@ -403,8 +403,13 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
 
     const { color, icon } = config[status] || { color: '#6b7280', icon: null };
     return (
-      <span className="validation-badge" style={{ backgroundColor: color }}>
-        {icon}
+      <span
+        className="validation-badge"
+        style={{ backgroundColor: color }}
+        role="status"
+        aria-label={`Validation status: ${status}`}
+      >
+        <span aria-hidden="true">{icon}</span>
         {status}
       </span>
     );

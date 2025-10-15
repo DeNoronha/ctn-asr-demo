@@ -136,8 +136,8 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
 
     if (token.revoked_at) {
       return (
-        <span className="token-status-badge revoked">
-          <XCircle size={14} />
+        <span className="token-status-badge revoked" role="status" aria-label="Token status: Revoked">
+          <XCircle size={14} aria-hidden="true" />
           Revoked
         </span>
       );
@@ -145,8 +145,8 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
 
     if (expiresAt < now) {
       return (
-        <span className="token-status-badge expired">
-          <XCircle size={14} />
+        <span className="token-status-badge expired" role="status" aria-label="Token status: Expired">
+          <XCircle size={14} aria-hidden="true" />
           Expired
         </span>
       );
@@ -154,16 +154,16 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
 
     if (daysUntilExpiry <= 30) {
       return (
-        <span className="token-status-badge expiring">
-          <AlertTriangle size={14} />
+        <span className="token-status-badge expiring" role="status" aria-label={`Token status: Expiring in ${daysUntilExpiry} days`}>
+          <AlertTriangle size={14} aria-hidden="true" />
           Expiring Soon ({daysUntilExpiry}d)
         </span>
       );
     }
 
     return (
-      <span className="token-status-badge active">
-        <CheckCircle size={14} />
+      <span className="token-status-badge active" role="status" aria-label="Token status: Active">
+        <CheckCircle size={14} aria-hidden="true" />
         Active
       </span>
     );

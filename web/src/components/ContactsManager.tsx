@@ -78,11 +78,16 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
 
     return (
       <td>
-        <span className="contact-type-badge" style={{ backgroundColor: color }}>
+        <span
+          className="contact-type-badge"
+          style={{ backgroundColor: color }}
+          role="status"
+          aria-label={`Contact type: ${type}`}
+        >
           {type}
         </span>
         {props.dataItem.is_primary && (
-          <span className="primary-indicator" title="Primary Contact">
+          <span className="primary-indicator" title="Primary Contact" aria-label="Primary contact">
             ★
           </span>
         )}
