@@ -6,7 +6,7 @@ import { getPool } from '../utils/database';
 
 async function handler(request: AuthenticatedRequest, context: InvocationContext): Promise<HttpResponseInit> {
   const pool = getPool();
-  const legalEntityId = request.params.legalEntityId;
+  const legalEntityId = request.params.legalentityid;
 
   if (!legalEntityId) {
     return {
@@ -192,7 +192,7 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
 
 app.http('GetLegalEntity', {
   methods: ['GET'],
-  route: 'v1/legal-entities/{legalEntityId}',
+  route: 'v1/legal-entities/{legalentityid}',
   authLevel: 'anonymous',
   handler: wrapEndpoint(handler, {
     requireAuth: true,

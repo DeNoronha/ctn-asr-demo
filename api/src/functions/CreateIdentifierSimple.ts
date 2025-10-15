@@ -9,7 +9,7 @@ async function handler(
 ): Promise<HttpResponseInit> {
   context.log('=== CreateIdentifierSimple called ===');
   const pool = getPool();
-  const legalEntityId = request.params.legalEntityId;
+  const legalEntityId = request.params.legalentityid;
 
   context.log('Legal Entity ID from URL:', legalEntityId);
 
@@ -120,7 +120,7 @@ async function handler(
 
 app.http('CreateIdentifierSimple', {
   methods: ['POST', 'OPTIONS'],
-  route: 'v1/entities/{legalEntityId}/identifiers-test',
+  route: 'v1/entities/{legalentityid}/identifiers-test',
   authLevel: 'anonymous',
   handler: wrapEndpoint(handler, {
     requireAuth: true,

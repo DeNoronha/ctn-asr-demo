@@ -15,20 +15,9 @@ async function handler(
 ): Promise<HttpResponseInit> {
   context.log('KvK Document Upload requested');
 
-  // Extract headers safely at the beginning (lessons learned from Headers bug)
-  let contentType: string | null = null;
   try {
-    contentType = request.headers.get('content-type') ||
-                 request.headers.get('Content-Type') ||
-                 request.headers.get('Content-type') ||
-                 request.headers.get('CONTENT-TYPE');
-  } catch (error) {
-    context.warn('Failed to extract content-type header:', error);
-  }
-
-  try {
-    const legalEntityId = request.params.legalEntityId;
-
+    const legalEntityId = request.params.legalentityid;
+    
     if (!legalEntityId) {
       return {
         status: 400,
@@ -50,7 +39,13 @@ async function handler(
       };
     }
 
-    // Parse multipart form data (contentType already extracted safely at function start)
+    // Parse multipart form data
+    // Azure Functions v4 may lowercase header names - try all variations
+    let contentType = request.headers.get('content-type');
+    if (!contentType) contentType = request.headers.get('Content-Type');
+    if (!contentType) contentType = request.headers.get('Content-type');
+    if (!contentType) contentType = request.headers.get('CONTENT-TYPE');
+    
     context.log('Content-Type:', contentType, 'File upload requested');
     
     if (!contentType) {
@@ -202,63 +197,13 @@ async function handler(
 
       context.log('Extracted data:', extractedData);
 
-      // Get the entered KvK identifier and company name for comparison
-      const enteredDataQuery = await pool.query(
-        `SELECT
-          len.identifier_value as entered_kvk_number,
-          le.primary_legal_name as entered_company_name
-         FROM legal_entity le
-         LEFT JOIN legal_entity_number len ON le.legal_entity_id = len.legal_entity_id
-           AND len.identifier_type = 'KVK'
-           AND (len.is_deleted = false OR len.is_deleted IS NULL)
-         WHERE le.legal_entity_id = $1`,
-        [legalEntityId]
-      );
-
-      const enteredData = enteredDataQuery.rows[0] || {
-        entered_kvk_number: null,
-        entered_company_name: null
-      };
-
-      context.log('Entered data:', enteredData);
-
-      // Compare entered vs extracted data
-      const mismatchFlags: string[] = [];
-
-      // Compare KvK numbers if both exist
-      if (enteredData.entered_kvk_number && extractedData.kvkNumber) {
-        if (enteredData.entered_kvk_number !== extractedData.kvkNumber) {
-          mismatchFlags.push('entered_kvk_mismatch');
-          context.warn(`KvK number mismatch: entered=${enteredData.entered_kvk_number}, extracted=${extractedData.kvkNumber}`);
-        }
-      }
-
-      // Compare company names if both exist (case-insensitive, trimmed)
-      if (enteredData.entered_company_name && extractedData.companyName) {
-        const enteredName = enteredData.entered_company_name.trim().toLowerCase();
-        const extractedName = extractedData.companyName.trim().toLowerCase();
-
-        // Allow partial match (extracted name contains entered name or vice versa)
-        const isMatch = enteredName.includes(extractedName) || extractedName.includes(enteredName);
-
-        if (!isMatch) {
-          mismatchFlags.push('entered_name_mismatch');
-          context.warn(`Company name mismatch: entered="${enteredData.entered_company_name}", extracted="${extractedData.companyName}"`);
-        }
-      }
-
-      // Update with extracted data and comparison results
+      // Update with extracted data
       await pool.query(
-        `UPDATE legal_entity
+        `UPDATE legal_entity 
          SET kvk_extracted_company_name = $1,
-             kvk_extracted_number = $2,
-             kvk_mismatch_flags = ARRAY(
-               SELECT DISTINCT unnest(
-                 COALESCE(kvk_mismatch_flags, ARRAY[]::text[]) || $3::text[]
-               )
-             )
-         WHERE legal_entity_id = $4`,
-        [extractedData.companyName, extractedData.kvkNumber, mismatchFlags, legalEntityId]
+             kvk_extracted_number = $2
+         WHERE legal_entity_id = $3`,
+        [extractedData.companyName, extractedData.kvkNumber, legalEntityId]
       );
 
       // Validate against KvK API if we have a number
@@ -271,29 +216,17 @@ async function handler(
 
         context.log('KvK validation result:', validation);
 
-        // Merge all mismatch flags: entered data comparison + KvK API validation
-        const allMismatchFlags = [...new Set([...mismatchFlags, ...validation.flags])];
-
-        // Determine verification status based on all flags
-        let newStatus: string;
-        if (allMismatchFlags.length === 0) {
-          newStatus = 'verified'; // No issues found
-        } else if (allMismatchFlags.some(f => f === 'entered_kvk_mismatch' || f === 'entered_name_mismatch')) {
-          newStatus = 'flagged'; // Entered data doesn't match extracted data - needs review
-        } else if (validation.isValid) {
-          newStatus = 'verified'; // KvK API validated, ignore minor flags
-        } else {
-          newStatus = validation.flags.length > 0 ? 'flagged' : 'failed';
-        }
-
+        // Update verification status
+        const newStatus = validation.isValid ? 'verified' : (validation.flags.length > 0 ? 'flagged' : 'failed');
+        
         await pool.query(
-          `UPDATE legal_entity
+          `UPDATE legal_entity 
            SET kvk_verification_status = $1,
                kvk_api_response = $2,
                kvk_mismatch_flags = $3,
                kvk_verified_at = NOW()
            WHERE legal_entity_id = $4`,
-          [newStatus, JSON.stringify(validation.companyData), allMismatchFlags, legalEntityId]
+          [newStatus, JSON.stringify(validation.companyData), validation.flags, legalEntityId]
         );
 
         // Log audit event
@@ -353,6 +286,6 @@ async function handler(
 app.http('uploadKvkDocument', {
   methods: ['POST', 'OPTIONS'],
   authLevel: 'anonymous',
-  route: 'v1/legal-entities/{legalEntityId}/kvk-document',
+  route: 'v1/legal-entities/{legalentityid}/kvk-document',
   handler: memberEndpoint(handler),
 });

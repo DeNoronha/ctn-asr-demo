@@ -39,16 +39,16 @@ export enum AuditEventType {
   CONTACT_UPDATED = 'contact_updated',
   CONTACT_DELETED = 'contact_deleted',
 
-  // Identifier operations
-  IDENTIFIER_CREATED = 'identifier_created',
-  IDENTIFIER_UPDATED = 'identifier_updated',
-  IDENTIFIER_DELETED = 'identifier_deleted',
-
   // Endpoint operations
   ENDPOINT_CREATED = 'endpoint_created',
   ENDPOINT_UPDATED = 'endpoint_updated',
   ENDPOINT_DELETED = 'endpoint_deleted',
   ENDPOINT_TOKEN_ISSUED = 'endpoint_token_issued',
+
+  // Identifier operations
+  IDENTIFIER_CREATED = 'identifier_created',
+  IDENTIFIER_UPDATED = 'identifier_updated',
+  IDENTIFIER_DELETED = 'identifier_deleted',
 
   // Document operations
   DOCUMENT_UPLOADED = 'document_uploaded',

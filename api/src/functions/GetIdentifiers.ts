@@ -7,7 +7,7 @@ import { getPaginationParams, executePaginatedQuery } from '../utils/pagination'
 
 async function handler(request: AuthenticatedRequest, context: InvocationContext): Promise<HttpResponseInit> {
   const pool = getPool();
-  const legalEntityId = request.params.legalEntityId;
+  const legalEntityId = request.params.legalentityid;
 
   if (!legalEntityId) {
     return {
@@ -172,7 +172,7 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
 
 app.http('GetIdentifiers', {
   methods: ['GET'],
-  route: 'v1/entities/{legalEntityId}/identifiers',
+  route: 'v1/entities/{legalentityid}/identifiers',
   authLevel: 'anonymous',
   handler: wrapEndpoint(handler, {
     requireAuth: true,

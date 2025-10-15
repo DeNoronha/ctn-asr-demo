@@ -108,21 +108,10 @@ export function wrapEndpoint(
     const requestId = getRequestId(request);
     context.log(`[${requestId}] ${request.method} ${request.url} - Processing started`);
 
-    // Extract origin header once at the beginning to avoid "Cannot read private member" error
-    let originHeader: string | null = null;
-    if (enableCors) {
-      try {
-        originHeader = request.headers.get('origin');
-      } catch (error) {
-        context.warn('Failed to extract origin header:', error);
-        originHeader = null;
-      }
-    }
-
     try {
       // Handle CORS preflight
       if (request.method === 'OPTIONS' && enableCors) {
-        const origin = originHeader;
+        const origin = request.headers.get('origin');
         return {
           status: 204,
           headers: {
@@ -137,7 +126,7 @@ export function wrapEndpoint(
       if (httpsCheck) {
         // HTTPS required but not used - return 403
         if (enableCors) {
-          const origin = originHeader;
+          const origin = request.headers.get('origin');
           const corsHeaders = getCorsHeaders(origin, allowedOrigins);
           return {
             ...httpsCheck,
@@ -172,7 +161,7 @@ export function wrapEndpoint(
 
           // Add CORS headers and request ID to error response
           if (enableCors) {
-            const origin = originHeader;
+            const origin = request.headers.get('origin');
             const corsHeaders = getCorsHeaders(origin, allowedOrigins);
             return {
               ...errorResponse,
@@ -216,7 +205,7 @@ export function wrapEndpoint(
           context.warn(`[${requestId}] Authorization failed - roles (${duration}ms)`);
 
           if (enableCors) {
-            const origin = originHeader;
+            const origin = request.headers.get('origin');
             const corsHeaders = getCorsHeaders(origin, allowedOrigins);
             return {
               ...roleCheck.response,
@@ -250,7 +239,7 @@ export function wrapEndpoint(
           context.warn(`[${requestId}] Authorization failed - permissions (${duration}ms)`);
 
           if (enableCors) {
-            const origin = originHeader;
+            const origin = request.headers.get('origin');
             const corsHeaders = getCorsHeaders(origin, allowedOrigins);
             return {
               ...permissionCheck.response,
@@ -277,7 +266,7 @@ export function wrapEndpoint(
 
       // Add CORS headers to response
       if (enableCors) {
-        const origin = originHeader;
+        const origin = request.headers.get('origin');
         const corsHeaders = getCorsHeaders(origin, allowedOrigins);
         response.headers = {
           ...corsHeaders,
@@ -310,7 +299,7 @@ export function wrapEndpoint(
 
       // Add CORS headers to error response
       if (enableCors) {
-        const origin = originHeader;
+        const origin = request.headers.get('origin');
         const corsHeaders = getCorsHeaders(origin, allowedOrigins);
         errorResponse.headers = {
           ...errorResponse.headers,

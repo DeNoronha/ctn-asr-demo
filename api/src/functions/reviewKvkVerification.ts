@@ -9,7 +9,7 @@ async function handler(
 
   try {
     const pool = getPool();
-    const legalEntityId = request.params.legalEntityId;
+    const legalEntityId = request.params.legalentityid;
     const body = await request.json() as any;
 
     const { status, notes, reviewedBy } = body;
@@ -64,6 +64,6 @@ async function handler(
 app.http('reviewKvkVerification', {
   methods: ['PUT', 'OPTIONS'],
   authLevel: 'anonymous',
-  route: 'v1/legal-entities/{legalEntityId}/kvk-verification/review',
+  route: 'v1/legal-entities/{legalentityid}/kvk-verification/review',
   handler: adminEndpoint(handler),
 });

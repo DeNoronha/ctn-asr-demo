@@ -9,7 +9,7 @@ async function handler(
 
   try {
     const pool = getPool();
-    const legalEntityId = request.params.legalEntityId;
+    const legalEntityId = request.params.legalentityid;
     const body = await request.json() as any;
 
     if (!legalEntityId) {
@@ -101,6 +101,6 @@ async function handler(
 app.http('createEndpoint', {
   methods: ['POST', 'OPTIONS'],
   authLevel: 'anonymous',
-  route: 'v1/legal-entities/{legalEntityId}/endpoints',
+  route: 'v1/legal-entities/{legalentityid}/endpoints',
   handler: memberEndpoint(handler),
 });

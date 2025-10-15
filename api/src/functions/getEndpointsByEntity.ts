@@ -9,7 +9,7 @@ async function handler(
 
   try {
     const pool = getPool();
-    const legalEntityId = request.params.legalEntityId;
+    const legalEntityId = request.params.legalentityid;
 
     if (!legalEntityId) {
       return {
@@ -60,6 +60,6 @@ async function handler(
 app.http('getEndpointsByEntity', {
   methods: ['GET', 'OPTIONS'],
   authLevel: 'anonymous',
-  route: 'v1/legal-entities/{legalEntityId}/endpoints',
+  route: 'v1/legal-entities/{legalentityid}/endpoints',
   handler: memberEndpoint(handler),
 });

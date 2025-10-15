@@ -20,7 +20,7 @@ async function handler(
   context: InvocationContext
 ): Promise<HttpResponseInit> {
   const pool = getPool();
-  const legalEntityId = request.params.legalEntityId;
+  const legalEntityId = request.params.legalentityid;
 
   // Extract headers safely at the beginning to avoid "Cannot read private member" error
   const clientIp = safeGetHeader(request.headers, 'x-forwarded-for') ||
@@ -221,7 +221,7 @@ async function handler(
 
 app.http('CreateIdentifier', {
   methods: ['POST', 'OPTIONS'],
-  route: 'v1/entities/{legalEntityId}/identifiers',
+  route: 'v1/entities/{legalentityid}/identifiers',
   authLevel: 'anonymous',
   handler: wrapEndpoint(handler, {
     requireAuth: true,

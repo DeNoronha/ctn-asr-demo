@@ -12,7 +12,7 @@ async function handler(
 
   try {
     const pool = getPool();
-    const legalEntityId = request.params.legalEntityId;
+    const legalEntityId = request.params.legalentityid;
 
     const result = await pool.query(
       `SELECT
@@ -67,6 +67,6 @@ async function handler(
 app.http('getKvkVerificationStatus', {
   methods: ['GET', 'OPTIONS'],
   authLevel: 'anonymous',
-  route: 'v1/legal-entities/{legalEntityId}/kvk-verification',
+  route: 'v1/legal-entities/{legalentityid}/kvk-verification',
   handler: memberEndpoint(handler),
 });

@@ -7,13 +7,8 @@ import { randomUUID } from 'crypto';
  * @returns Request ID (from header or newly generated)
  */
 export function getRequestId(request: HttpRequest): string {
-  try {
-    const headerValue = request.headers.get('x-request-id');
-    return headerValue || randomUUID();
-  } catch (error) {
-    // If headers access fails, just generate a new ID
-    return randomUUID();
-  }
+  const headerValue = request.headers.get('x-request-id');
+  return headerValue || randomUUID();
 }
 
 /**
