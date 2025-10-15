@@ -95,6 +95,34 @@ Assistant: "Deployed. Should I invoke TE agent? Yes/No"
 - Create pull requests for significant changes
 - Commit messages follow conventional commits format
 
+**CRITICAL: Commit Frequently to Trigger Automatic Builds**
+- **Commit after EVERY change** - don't batch changes
+- Push to Azure DevOps immediately after each commit
+- Azure DevOps triggers automatic builds on every push
+- Automatic builds deploy to production within minutes
+- **VERIFY deployment** before continuing with next feature
+- This ensures user always sees latest code in browser
+- Prevents "testing old code" scenarios (Oct 15, 2025 lesson)
+
+**Commit Workflow:**
+```bash
+# After ANY code change:
+git add -A
+git commit -m "descriptive message"
+git push origin main
+
+# Wait ~2 minutes for Azure DevOps build
+# Check build status: https://dev.azure.com/ctn-demo/ASR/_build
+# Verify deployment succeeded before next change
+```
+
+**Benefits of Frequent Commits:**
+- User always has latest code in browser
+- Build failures detected immediately
+- Easy to rollback if something breaks
+- Clear history of what changed when
+- Automatic deployment verification
+
 **Code Standards:**
 - TypeScript for all API code (minimize `any` types)
 - React + TypeScript for frontend
