@@ -23,6 +23,17 @@ const jwksClientInstance = jwksClient({
 });
 
 /**
+ * Safely get header value to avoid "Cannot read private member" error
+ */
+function safeGetHeader(headers: any, name: string): string | null {
+  try {
+    return headers.get(name);
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
  * Get signing key from JWKS endpoint
  */
 function getKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback) {
@@ -150,8 +161,8 @@ export async function authenticate(
   context: InvocationContext
 ): Promise<{ success: true; request: AuthenticatedRequest } | { success: false; response: any }> {
   try {
-    // Extract Authorization header
-    const authHeader = request.headers.get('authorization');
+    // Extract Authorization header safely
+    const authHeader = safeGetHeader(request.headers, 'authorization');
 
     if (!authHeader) {
       context.warn('Missing Authorization header');

@@ -47,6 +47,17 @@ const uploadRateLimiter = new RateLimiterMemory({
 });
 
 /**
+ * Safely get header value to avoid "Cannot read private member" error
+ */
+function safeGetHeader(headers: any, name: string): string | null {
+  try {
+    return headers.get(name);
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
  * Rate limiter types
  */
 export enum RateLimiterType {
@@ -90,11 +101,11 @@ function getRateLimitKey(
     return `user:${authRequest.userId}`;
   }
 
-  // Fall back to IP address
+  // Fall back to IP address (safe header access)
   const ip =
-    request.headers.get('x-forwarded-for') ||
-    request.headers.get('x-real-ip') ||
-    request.headers.get('cf-connecting-ip') ||
+    safeGetHeader(request.headers, 'x-forwarded-for') ||
+    safeGetHeader(request.headers, 'x-real-ip') ||
+    safeGetHeader(request.headers, 'cf-connecting-ip') ||
     'unknown';
 
   return `ip:${ip}`;

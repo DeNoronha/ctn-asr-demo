@@ -1,6 +1,6 @@
 # CTN ASR Roadmap
 
-**Last Updated:** October 15, 2025 (Autonomous Operation Guidelines & Deployment Workflow Added)
+**Last Updated:** October 15, 2025 (Identifier Management Bug Fix + Production Testing Complete)
 
 This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md) for historical record.
 
@@ -8,7 +8,7 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 ## CRITICAL - Bug Fixes from Testing (Block Production)
 
-**Test Results:** 58% release readiness. Fixing these 3 CRITICAL bugs will increase to 85%. See TEST_EXECUTION_REPORT.md for full details.
+**Test Results:** 58% release readiness. Fixing these 3 CRITICAL bugs will increase to 85%. See [docs/testing/TEST_EXECUTION_REPORT.md](./docs/testing/TEST_EXECUTION_REPORT.md) for full details.
 
 - [ ] **BUG-001: Members grid loading timeout** - Members grid fails to load within 30 seconds, blocks 72 tests
   - **Severity:** Critical | **Priority:** P0
@@ -228,7 +228,9 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 **Identifier CRUD Complete:** All identifier CRUD operations (GetIdentifiers, CreateIdentifier, UpdateIdentifier, DeleteIdentifier) are fully functional with comprehensive Azure Functions Headers fixes deployed to production.
 
-**KvK Document Verification Complete:** ✅ Implemented entered vs extracted data comparison using Azure Document Intelligence. Admins can now see side-by-side comparison of manually entered data (KvK number and company name) against data extracted from uploaded PDF documents. Entities with data mismatches are flagged with red badges and prioritized in the review queue. Comprehensive E2E testing completed with 85.7% pass rate - PRODUCTION READY. See test reports in `/web/TEST_*.md`.
+**KvK Document Verification Complete:** ✅ Implemented entered vs extracted data comparison using Azure Document Intelligence. Admins can now see side-by-side comparison of manually entered data (KvK number and company name) against data extracted from uploaded PDF documents. Entities with data mismatches are flagged with red badges and prioritized in the review queue. Comprehensive E2E testing completed with 85.7% pass rate - PRODUCTION READY. See test reports in `docs/testing/`.
+
+**Identifier Management Bug Fix:** ✅ Fixed data integrity issue where members had `legal_entity_id` but no corresponding legal entity records. Added "Create Legal Entity" button UI fallback and applied database migration 013 to ensure all members have legal entities. Production E2E tests confirm 11 identifiers displaying correctly with zero critical errors.
 
 **Production Readiness:** Most API functions have been restored and are working correctly. Remaining items are non-critical enhancements.
 

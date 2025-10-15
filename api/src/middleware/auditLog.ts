@@ -94,6 +94,17 @@ export enum AuditSeverity {
 }
 
 /**
+ * Safely get header value to avoid "Cannot read private member" error
+ */
+function safeGetHeader(headers: any, name: string): string | null {
+  try {
+    return headers.get(name);
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
  * Audit log entry interface
  */
 export interface AuditLogEntry {
@@ -168,13 +179,13 @@ export async function logAuditEvent(
  * Helper function to extract IP address from request
  */
 function getClientIp(request: AuthenticatedRequest): string | undefined {
-  // Check common headers for client IP
-  const forwardedFor = request.headers.get('x-forwarded-for');
+  // Check common headers for client IP (safe header access)
+  const forwardedFor = safeGetHeader(request.headers, 'x-forwarded-for');
   if (forwardedFor) {
     return forwardedFor.split(',')[0].trim();
   }
 
-  const realIp = request.headers.get('x-real-ip');
+  const realIp = safeGetHeader(request.headers, 'x-real-ip');
   if (realIp) {
     return realIp;
   }
@@ -202,7 +213,7 @@ export function auditMiddleware(
     request_path: request.url,
     request_method: request.method,
     ip_address: getClientIp(request),
-    user_agent: request.headers.get('user-agent') || undefined,
+    user_agent: safeGetHeader(request.headers, 'user-agent') || undefined,
     result: 'success',
   };
 
@@ -272,7 +283,7 @@ export async function logAuthSuccess(
       user_id: request.userId,
       user_email: request.userEmail,
       ip_address: getClientIp(request),
-      user_agent: request.headers.get('user-agent') || undefined,
+      user_agent: safeGetHeader(request.headers, 'user-agent') || undefined,
       result: 'success',
     },
     context
@@ -289,7 +300,7 @@ export async function logAuthFailure(
       event_type: AuditEventType.AUTH_FAILURE,
       severity: AuditSeverity.WARNING,
       ip_address: getClientIp(request),
-      user_agent: request.headers.get('user-agent') || undefined,
+      user_agent: safeGetHeader(request.headers, 'user-agent') || undefined,
       error_message: reason,
       result: 'failure',
     },

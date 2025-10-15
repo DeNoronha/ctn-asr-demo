@@ -4,6 +4,12 @@ This file tracks all completed work in chronological order (most recent first).
 
 | Date | Description |
 |------|-------------|
+| 2025-10-15 | Fixed identifier management blocking issue - Created "Create Legal Entity" button for members without linked entities, enabling identifier CRUD operations |
+| 2025-10-15 | Applied database migration 013 - Ensures all members have legal entity records, fixes data integrity issue preventing identifier management |
+| 2025-10-15 | Created production E2E test battery for identifier workflow - Added 3 new test files (identifier-workflow-production.spec.ts, identifier-workflow-simple.spec.ts, bug-investigation-identifier-404.spec.ts) with comprehensive CRUD coverage |
+| 2025-10-15 | Validated production deployment - TE agent executed full regression suite, verified 11 identifiers displayed correctly, confirmed zero critical errors in production |
+| 2025-10-15 | Investigated and resolved identifier addition bug - Root cause: members with legal_entity_id but missing legal entity records blocked UI from rendering IdentifiersManager component |
+| 2025-10-15 | Created agent invocation checklist in CLAUDE.md - Comprehensive guidelines for when to invoke each specialized agent (CR, SA, DA, TE, TW) before commits, PRs, and after features |
 | 2025-10-15 | Added mandatory production deployment and testing workflow to CLAUDE.md - After each big update: Build → Deploy → Test (TE) → Document (TW), ensuring ever-growing test battery prevents regression |
 | 2025-10-15 | Added autonomous operation guidelines to CLAUDE.md - Claude Code now works autonomously without asking for confirmation on obvious next steps, only pausing for destructive operations or genuinely unclear requirements |
 | 2025-10-15 | Completed exhaustive admin portal E2E testing - Created 5 test files (131 tests), generated comprehensive TEST_EXECUTION_REPORT.md, found 9 critical bugs, achieved 58% release readiness baseline |

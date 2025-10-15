@@ -5,16 +5,11 @@ import { AlertTriangle, CheckCircle, Copy, Key, Trash2, XCircle } from 'lucide-r
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
+import { type LegalEntityEndpoint } from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
 import { ConfirmDialog } from './ConfirmDialog';
 import { EmptyState } from './EmptyState';
 import './TokensManager.css';
-
-interface Endpoint {
-  legal_entity_endpoint_id: string;
-  endpoint_name: string;
-  data_category: string;
-}
 
 interface Token {
   endpoint_authorization_id: string;
@@ -34,7 +29,7 @@ interface Token {
 
 interface TokensManagerProps {
   legalEntityId: string;
-  endpoints: Endpoint[];
+  endpoints: LegalEntityEndpoint[];
   onIssueToken: (orgId: string) => Promise<void>;
 }
 

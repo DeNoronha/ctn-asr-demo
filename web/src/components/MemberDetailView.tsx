@@ -5,12 +5,16 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Loader } from '@progress/kendo-react-indicators';
 import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntity, type LegalEntityContact, type Member, api } from '../services/api';
-import { type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
+import {
+  type LegalEntityEndpoint,
+  type LegalEntityIdentifier,
+  apiV2,
+} from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
 import { CompanyDetails } from './CompanyDetails';
 import { CompanyForm } from './CompanyForm';
@@ -20,12 +24,6 @@ import { IdentifierVerificationManager } from './IdentifierVerificationManager';
 import { IdentifiersManager } from './IdentifiersManager';
 import { TokensManager } from './TokensManager';
 import './MemberDetailView.css';
-
-interface Endpoint {
-  legal_entity_endpoint_id: string;
-  endpoint_name: string;
-  data_category: string;
-}
 
 interface MemberDetailViewProps {
   member: Member;
@@ -44,7 +42,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
   const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(null);
   const [contacts, setContacts] = useState<LegalEntityContact[]>([]);
   const [identifiers, setIdentifiers] = useState<LegalEntityIdentifier[]>([]);
-  const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
+  const [endpoints, setEndpoints] = useState<LegalEntityEndpoint[]>([]);
   const [loading, setLoading] = useState(false);
   const notification = useNotification();
 
@@ -63,17 +61,9 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           const entityIdentifiers = await apiV2.getIdentifiers(member.legal_entity_id);
           setIdentifiers(entityIdentifiers);
 
-          // Load endpoints
-          const API_BASE =
-            process.env.REACT_APP_API_URL ||
-            'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
-          const endpointsResponse = await fetch(
-            `${API_BASE}/legal-entities/${member.legal_entity_id}/endpoints`
-          );
-          if (endpointsResponse.ok) {
-            const endpointsData = await endpointsResponse.json();
-            setEndpoints(endpointsData);
-          }
+          // Load endpoints using apiV2 (with authentication)
+          const entityEndpoints = await apiV2.getEndpoints(member.legal_entity_id);
+          setEndpoints(entityEndpoints);
         } catch (error) {
           console.error('Failed to load legal entity data:', error);
           notification.showError('Failed to load company information');
@@ -108,6 +98,41 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
     } catch (error) {
       console.error('Failed to update contacts:', error);
       notification.showError('Failed to update contacts');
+    }
+  };
+
+  const handleCreateLegalEntity = async () => {
+    if (!member.legal_entity_id) {
+      notification.showError('Cannot create legal entity: member has no legal_entity_id');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Create a new legal entity with the member's information
+      const newEntity = await apiV2.createLegalEntity({
+        legal_entity_id: member.legal_entity_id,
+        primary_legal_name: member.legal_name,
+        status: 'ACTIVE',
+        domain: member.domain,
+      });
+
+      setLegalEntity(newEntity);
+      notification.showSuccess('Legal entity created successfully. You can now manage identifiers.');
+
+      // Reload data to ensure consistency
+      const entityIdentifiers = await apiV2.getIdentifiers(member.legal_entity_id);
+      setIdentifiers(entityIdentifiers);
+
+      const entityContacts = await api.getContacts(member.legal_entity_id);
+      setContacts(entityContacts);
+    } catch (error: any) {
+      console.error('Failed to create legal entity:', error);
+      notification.showError(
+        `Failed to create legal entity: ${error.response?.data?.error || error.message || 'Unknown error'}`
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -243,10 +268,34 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
                 identifiers={identifiers}
                 onUpdate={setIdentifiers}
               />
-            ) : (
-              <div className="info-section">
+            ) : member.legal_entity_id ? (
+              <div className="info-section" style={{ textAlign: 'center', padding: '40px 20px' }}>
                 <h3>Legal Identifiers</h3>
-                <p className="empty-message">No company linked to this member</p>
+                <p className="empty-message" style={{ marginBottom: '20px' }}>
+                  No legal entity record found for this member
+                </p>
+                <p style={{ color: '#6b7280', marginBottom: '30px', maxWidth: '600px', margin: '0 auto 30px' }}>
+                  A legal entity is required to manage business identifiers like KVK, LEI, EORI, and VAT numbers.
+                  You can create one now using this member's information.
+                </p>
+                <Button
+                  themeColor="primary"
+                  onClick={handleCreateLegalEntity}
+                  disabled={loading}
+                >
+                  <Plus size={16} />
+                  Create Legal Entity
+                </Button>
+              </div>
+            ) : (
+              <div className="info-section" style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <h3>Legal Identifiers</h3>
+                <p className="empty-message" style={{ color: '#dc2626', marginBottom: '20px' }}>
+                  This member has no legal entity ID configured
+                </p>
+                <p style={{ color: '#6b7280', maxWidth: '600px', margin: '0 auto' }}>
+                  Please contact your system administrator to link a legal entity to this member before managing identifiers.
+                </p>
               </div>
             )}
           </div>

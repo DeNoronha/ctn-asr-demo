@@ -366,7 +366,7 @@ export const apiV2 = {
   async getEndpoints(legalEntityId: string): Promise<LegalEntityEndpoint[]> {
     const axiosInstance = await getAuthenticatedAxios();
     const response = await axiosInstance.get<LegalEntityEndpoint[]>(
-      `/entities/${legalEntityId}/endpoints`
+      `/legal-entities/${legalEntityId}/endpoints`
     );
     return response.data;
   },
@@ -376,7 +376,7 @@ export const apiV2 = {
   ): Promise<LegalEntityEndpoint> {
     const axiosInstance = await getAuthenticatedAxios();
     const response = await axiosInstance.post<LegalEntityEndpoint>(
-      `/entities/${endpoint.legal_entity_id}/endpoints`,
+      `/legal-entities/${endpoint.legal_entity_id}/endpoints`,
       endpoint
     );
     return response.data;
