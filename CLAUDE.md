@@ -618,11 +618,22 @@ When a bug is reported, the TE agent will:
 - Failed pipelines = production is frozen at last successful build
 - Fix pipeline issues IMMEDIATELY, they block everything
 
-### API Functions Must Be Imported in index.ts to Register
-**What Happened:** Identifier functions were compiled to dist/ but not imported in src/index.ts, so Azure Functions didn't register them
+### CRITICAL: Check package.json "main" Field for Actual Entry Point (October 15, 2025)
+**What Happened:** Spent HOURS adding imports to `src/index.ts` when Azure was actually loading `src/essential-index.ts` (defined in package.json "main" field)
+**Why It Matters:** Functions compiled correctly but NEVER loaded in production - wasted entire afternoon debugging the wrong file
+**How to Avoid:**
+- **FIRST STEP:** Check `package.json` "main" field to see which file is the entry point
+- For this project: `"main": "dist/essential-index.js"` means we use `essential-index.ts`, NOT `index.ts`
+- Add ALL function imports to the file specified in "main"
+- Verify with `func azure functionapp list-functions` after deployment
+- This cost us 4+ hours of debugging today
+
+### API Functions Must Be Imported in Entry Point File to Register
+**What Happened:** Identifier functions were compiled to dist/ but not imported in the CORRECT entry point file
 **Why It Matters:** Functions existed in codebase but returned 404 in production
 **How to Avoid:**
-- Always add `import './functions/YourFunction'` to src/index.ts
+- Check `package.json` "main" field to find correct entry point (index.ts vs essential-index.ts vs production-index.ts)
+- Add `import './functions/YourFunction'` to the CORRECT entry file
 - Verify with `func azure functionapp list-functions` after deployment
 - Missing imports = invisible functions in production
 
