@@ -16,7 +16,7 @@ export interface FilterCriteria {
   id: string;
   field: string;
   operator: string;
-  value: any;
+  value: string | Date | null;
 }
 
 interface AdvancedFilterProps {

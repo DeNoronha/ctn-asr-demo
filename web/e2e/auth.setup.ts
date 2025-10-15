@@ -1,5 +1,5 @@
-import { test as setup, expect } from '@playwright/test';
-import path from 'path';
+import path from 'node:path';
+import { expect, test as setup } from '@playwright/test';
 
 /**
  * Authentication Setup for Playwright Tests
@@ -63,7 +63,7 @@ setup('authenticate with Azure AD', async ({ page }) => {
     await staySignedInButton.waitFor({ state: 'visible', timeout: 5000 });
     await staySignedInButton.click();
     console.log('✅ Clicked "Stay signed in"');
-  } catch (error) {
+  } catch (_error) {
     console.log('⏭️  "Stay signed in" prompt did not appear');
   }
 

@@ -29,7 +29,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
   onSave,
   onCancel,
 }) => {
-  const handleSubmit = async (dataItem: { [name: string]: any }) => {
+  const handleSubmit = async (dataItem: Record<string, unknown>) => {
     const contactData: LegalEntityContact = {
       legal_entity_contact_id: contact?.legal_entity_contact_id || crypto.randomUUID(),
       legal_entity_id: legalEntityId,

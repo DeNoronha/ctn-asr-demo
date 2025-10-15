@@ -4,11 +4,11 @@
  * Ensures sessionStorage (where MSAL stores tokens) is properly loaded
  */
 
-import { chromium, FullConfig } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+import { type FullConfig, chromium } from '@playwright/test';
 
-async function globalSetup(config: FullConfig) {
+async function globalSetup(_config: FullConfig) {
   console.log('🔧 Playwright Global Setup: Preparing authentication state...');
 
   const authFile = path.join(__dirname, '.auth', 'user.json');
@@ -22,7 +22,7 @@ async function globalSetup(config: FullConfig) {
 
   // Check if we have sessionStorage entries
   const hasSessionStorage = storageState.origins?.some(
-    (origin: any) => origin.sessionStorage && origin.sessionStorage.length > 0
+    (origin: { sessionStorage?: unknown[] }) => origin.sessionStorage && origin.sessionStorage.length > 0
   );
 
   if (hasSessionStorage) {

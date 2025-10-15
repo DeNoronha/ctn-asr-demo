@@ -4,9 +4,9 @@
  * Extends Playwright test to properly restore sessionStorage for MSAL authentication
  */
 
-import { test as base, Page } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+import { Page, test as base } from '@playwright/test';
 
 // Extend base test with custom fixture that loads sessionStorage
 export const test = base.extend({
@@ -19,7 +19,8 @@ export const test = base.extend({
 
       // Find the main app origin
       const appOrigin = storageState.origins?.find(
-        (origin: any) => origin.origin.includes('azurestaticapps.net')
+        (origin: { origin: string; sessionStorage?: unknown[] }) =>
+          origin.origin.includes('azurestaticapps.net')
       );
 
       if (appOrigin?.sessionStorage) {

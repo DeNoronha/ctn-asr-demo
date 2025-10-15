@@ -1,4 +1,4 @@
-import { test, expect } from '../playwright/fixtures';
+import { expect, test } from '../playwright/fixtures';
 
 /**
  * Improved Admin Portal E2E Tests
@@ -26,7 +26,10 @@ test.describe('Admin Portal - Core Functionality', () => {
     await expect(page.locator('text=TOTAL MEMBERS')).toBeVisible();
     await expect(page.locator('text=ACTIVE MEMBERS')).toBeVisible();
 
-    await page.screenshot({ path: 'playwright-report/screenshots/dashboard-improved.png', fullPage: true });
+    await page.screenshot({
+      path: 'playwright-report/screenshots/dashboard-improved.png',
+      fullPage: true,
+    });
   });
 
   test('should display member statistics', async ({ page }) => {
@@ -52,22 +55,35 @@ test.describe('Admin Portal - Navigation', () => {
     await page.waitForLoadState('networkidle');
 
     // Click Members in sidebar
-    await page.locator('.sidebar, .drawer-content').getByText('Members', { exact: true }).first().click();
+    await page
+      .locator('.sidebar, .drawer-content')
+      .getByText('Members', { exact: true })
+      .first()
+      .click();
 
     // Wait for members view to load
-    await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible({
+      timeout: 10000,
+    });
 
     // Verify "Register New Member" button exists (for admins)
     await expect(page.getByRole('button', { name: /Register New Member/i })).toBeVisible();
 
-    await page.screenshot({ path: 'playwright-report/screenshots/members-view.png', fullPage: true });
+    await page.screenshot({
+      path: 'playwright-report/screenshots/members-view.png',
+      fullPage: true,
+    });
   });
 
   test('should display members grid', async ({ page }) => {
     await page.goto('/');
 
     // Navigate to members
-    await page.locator('.sidebar, .drawer-content').getByText('Members', { exact: true }).first().click();
+    await page
+      .locator('.sidebar, .drawer-content')
+      .getByText('Members', { exact: true })
+      .first()
+      .click();
     await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible();
 
     // Wait for grid to load (Kendo Grid)
@@ -138,7 +154,7 @@ test.describe('Admin Portal - API Integration', () => {
     page.on('request', (request) => {
       if (request.url().includes('/api/v1/')) {
         const headers = request.headers();
-        if (headers['authorization'] && headers['authorization'].startsWith('Bearer ')) {
+        if (headers.authorization?.startsWith('Bearer ')) {
           authHeaderFound = true;
           console.log('✅ Found Bearer token in API request');
         }
@@ -166,7 +182,9 @@ test.describe('Admin Portal - User Management', () => {
     await expect(page.locator('.user-role')).toContainText(/SystemAdmin|AssociationAdmin/i);
 
     // Verify logout button exists
-    await expect(page.locator('.user-info button[title="Sign out"], .user-info button')).toBeVisible();
+    await expect(
+      page.locator('.user-info button[title="Sign out"], .user-info button')
+    ).toBeVisible();
   });
 
   test('should show language switcher', async ({ page }) => {
@@ -197,7 +215,10 @@ test.describe('Admin Portal - Member Management', () => {
     const inputCount = await formInputs.count();
     expect(inputCount).toBeGreaterThan(0);
 
-    await page.screenshot({ path: 'playwright-report/screenshots/member-registration-form.png', fullPage: true });
+    await page.screenshot({
+      path: 'playwright-report/screenshots/member-registration-form.png',
+      fullPage: true,
+    });
   });
 
   test('should display member grid with data', async ({ page }) => {
@@ -228,7 +249,9 @@ test.describe('Admin Portal - Sidebar Navigation', () => {
     await page.goto('/');
 
     // Find menu toggle button
-    const menuButton = page.locator('.menu-button, button:has-text("◀"), button:has-text("▶")').first();
+    const menuButton = page
+      .locator('.menu-button, button:has-text("◀"), button:has-text("▶")')
+      .first();
     await menuButton.waitFor({ state: 'visible' });
 
     // Click to collapse

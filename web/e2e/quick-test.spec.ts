@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Quick Test - Verify basic functionality
@@ -54,7 +54,7 @@ test.describe('Quick Smoke Test', () => {
 
     const apiCalls: string[] = [];
 
-    page.on('response', response => {
+    page.on('response', (response) => {
       const url = response.url();
       if (url.includes('/api/')) {
         const status = response.status();

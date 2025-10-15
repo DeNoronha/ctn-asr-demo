@@ -136,7 +136,11 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
 
     if (token.revoked_at) {
       return (
-        <span className="token-status-badge revoked" role="status" aria-label="Token status: Revoked">
+        <span
+          className="token-status-badge revoked"
+          role="status"
+          aria-label="Token status: Revoked"
+        >
           <XCircle size={14} aria-hidden="true" />
           Revoked
         </span>
@@ -145,7 +149,11 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
 
     if (expiresAt < now) {
       return (
-        <span className="token-status-badge expired" role="status" aria-label="Token status: Expired">
+        <span
+          className="token-status-badge expired"
+          role="status"
+          aria-label="Token status: Expired"
+        >
           <XCircle size={14} aria-hidden="true" />
           Expired
         </span>
@@ -154,7 +162,11 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
 
     if (daysUntilExpiry <= 30) {
       return (
-        <span className="token-status-badge expiring" role="status" aria-label={`Token status: Expiring in ${daysUntilExpiry} days`}>
+        <span
+          className="token-status-badge expiring"
+          role="status"
+          aria-label={`Token status: Expiring in ${daysUntilExpiry} days`}
+        >
           <AlertTriangle size={14} aria-hidden="true" />
           Expiring Soon ({daysUntilExpiry}d)
         </span>
@@ -182,11 +194,7 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
     return <td>{formatDate(value)}</td>;
   };
 
-  const handleKeyDown = (
-    event: React.KeyboardEvent,
-    action: () => void,
-    disabled: boolean = false
-  ) => {
+  const handleKeyDown = (event: React.KeyboardEvent, action: () => void, disabled = false) => {
     // Handle Enter and Space keys for keyboard accessibility (WCAG 2.1 Level AA)
     if (!disabled && (event.key === 'Enter' || event.key === ' ')) {
       event.preventDefault(); // Prevent page scroll on Space
@@ -292,9 +300,8 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
                 <span className="stat-badge active">
                   Active:{' '}
                   {
-                    sortedTokens.filter(
-                      (t) => !t.revoked_at && new Date(t.expires_at) > new Date()
-                    ).length
+                    sortedTokens.filter((t) => !t.revoked_at && new Date(t.expires_at) > new Date())
+                      .length
                   }
                 </span>
               </div>

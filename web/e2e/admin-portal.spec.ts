@@ -1,4 +1,4 @@
-import { test, expect } from '../playwright/fixtures';
+import { expect, test } from '../playwright/fixtures';
 
 /**
  * Admin Portal E2E Tests
@@ -43,7 +43,11 @@ test.describe('Admin Portal - Dashboard', () => {
     await expect(page.locator('text=REGISTERED ORGANIZATIONS')).toBeVisible();
 
     // Check that numbers are displayed (not just zero)
-    const totalMembersValue = await page.locator('text=TOTAL MEMBERS').locator('..').locator('text=/\\d+/').first();
+    const totalMembersValue = await page
+      .locator('text=TOTAL MEMBERS')
+      .locator('..')
+      .locator('text=/\\d+/')
+      .first();
     await expect(totalMembersValue).toBeVisible();
   });
 });
@@ -64,7 +68,10 @@ test.describe('Admin Portal - Members List', () => {
     // Verify we're on the members page
     await expect(page).toHaveURL(/\/members/);
 
-    await page.screenshot({ path: 'playwright-report/screenshots/members-list.png', fullPage: true });
+    await page.screenshot({
+      path: 'playwright-report/screenshots/members-list.png',
+      fullPage: true,
+    });
   });
 
   test('should load and display members in grid', async ({ page }) => {

@@ -11,8 +11,8 @@
  */
 
 const { chromium } = require('playwright');
-const path = require('path');
-const fs = require('fs');
+const path = require('node:path');
+const fs = require('node:fs');
 
 async function captureAuth() {
   console.log('🔐 Starting automatic authentication capture...\n');
@@ -55,7 +55,7 @@ async function captureAuth() {
 
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.includes('msal')) {
+        if (key?.includes('msal')) {
           data.keys.push(key);
 
           if (key.includes('accesstoken') || key.includes('idtoken')) {
@@ -99,26 +99,23 @@ async function captureAuth() {
     console.log(`   Origins: ${storageData.origins.length}`);
 
     if (storageData.origins && storageData.origins.length > 0) {
-      const mainOrigin = storageData.origins.find(o => o.origin.includes('azurestaticapps'));
+      const mainOrigin = storageData.origins.find((o) => o.origin.includes('azurestaticapps'));
       if (mainOrigin?.localStorage) {
         console.log(`   LocalStorage entries: ${mainOrigin.localStorage.length}`);
 
         // Show MSAL-specific entries
-        const msalEntries = mainOrigin.localStorage.filter(item =>
-          item.name.includes('msal')
-        );
+        const msalEntries = mainOrigin.localStorage.filter((item) => item.name.includes('msal'));
         if (msalEntries.length > 0) {
           console.log(`   ✅ MSAL entries captured: ${msalEntries.length}`);
         }
       }
     }
 
-    console.log(`\n✅ Authentication capture complete!`);
+    console.log('\n✅ Authentication capture complete!');
     console.log('📝 You can now run tests with: npm run test:e2e\n');
 
     await browser.close();
     process.exit(0);
-
   } catch (error) {
     console.error('\n❌ Error during authentication capture:');
     console.error(error.message);
@@ -126,7 +123,7 @@ async function captureAuth() {
     if (error.message.includes('Timeout')) {
       console.error('\n💡 Possible reasons:');
       console.error('   - Login took longer than 5 minutes');
-      console.error('   - Dashboard didn\'t load properly');
+      console.error("   - Dashboard didn't load properly");
       console.error('   - Network issues');
       console.error('\nPlease try running the script again.');
     }

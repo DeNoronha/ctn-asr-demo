@@ -1,5 +1,5 @@
 // Simple test to call the identifier API and see the actual error
-const https = require('https');
+const https = require('node:https');
 
 // You'll need to get an auth token from the browser
 // 1. Open DevTools -> Application -> Session Storage
@@ -12,7 +12,7 @@ const LEGAL_ENTITY_ID = '75d44bd4-fb7f-4406-b31a-20af89506d12'; // From the scre
 const data = JSON.stringify({
   identifier_type: 'KVK',
   identifier_value: '95944192',
-  country_code: 'NL'
+  country_code: 'NL',
 });
 
 const options = {
@@ -23,8 +23,8 @@ const options = {
   headers: {
     'Content-Type': 'application/json',
     'Content-Length': data.length,
-    'Authorization': `Bearer ${TOKEN}`
-  }
+    Authorization: `Bearer ${TOKEN}`,
+  },
 };
 
 console.log('Testing POST to:', `https://${options.hostname}${options.path}`);
@@ -47,7 +47,7 @@ const req = https.request(options, (res) => {
     try {
       const json = JSON.parse(body);
       console.log(JSON.stringify(json, null, 2));
-    } catch (e) {
+    } catch (_e) {
       console.log(body);
     }
 

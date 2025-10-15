@@ -91,7 +91,8 @@ export const exportToPDF = (members: Member[], options: ExportOptions = {}) => {
     didDrawPage: (_data) => {
       // Add footer with page numbers
       const pageCount = doc.getNumberOfPages();
-      const pageNumber = (doc as any).internal.getCurrentPageInfo().pageNumber;
+      // @ts-expect-error - jsPDF internal API not properly typed
+      const pageNumber = doc.internal.getCurrentPageInfo().pageNumber as number;
 
       doc.setFontSize(9);
       doc.setTextColor(100);
@@ -200,7 +201,7 @@ export interface BulkOperationResult {
 export const performBulkOperation = async (
   memberIds: string[],
   _operation: 'export' | 'token' | 'activate' | 'suspend' | 'delete',
-  apiHandler: (id: string) => Promise<any>
+  apiHandler: (id: string) => Promise<void>
 ): Promise<BulkOperationResult> => {
   const result: BulkOperationResult = {
     success: 0,
@@ -212,9 +213,10 @@ export const performBulkOperation = async (
     try {
       await apiHandler(id);
       result.success++;
-    } catch (error: any) {
+    } catch (error: unknown) {
       result.failed++;
-      result.errors.push(`${id}: ${error.message || 'Unknown error'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      result.errors.push(`${id}: ${errorMessage}`);
     }
   }
 

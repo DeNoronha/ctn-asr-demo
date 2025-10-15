@@ -1,10 +1,15 @@
-import { test, expect } from '../playwright/fixtures';
+import { expect, test } from '../playwright/fixtures';
 
 test.describe('Debug Identifier 500 Error', () => {
   test('capture full error details when adding identifier', async ({ page, context }) => {
-
     // Listen to all API responses
-    const apiResponses: any[] = [];
+    const apiResponses: Array<{
+      url: string;
+      status: number;
+      statusText: string;
+      headers: Record<string, string>;
+      body: unknown;
+    }> = [];
     page.on('response', async (response) => {
       if (response.url().includes('identifiers')) {
         const status = response.status();
@@ -13,10 +18,10 @@ test.describe('Debug Identifier 500 Error', () => {
 
         try {
           body = await response.json();
-        } catch (e) {
+        } catch (_e) {
           try {
             body = await response.text();
-          } catch (e2) {
+          } catch (_e2) {
             body = 'Unable to parse response';
           }
         }
@@ -26,7 +31,7 @@ test.describe('Debug Identifier 500 Error', () => {
           status,
           statusText: response.statusText(),
           headers: response.headers(),
-          body
+          body,
         });
 
         console.log('\n========== API Response ==========');
@@ -77,7 +82,10 @@ test.describe('Debug Identifier 500 Error', () => {
 
     // Look for Add Identifier button
     console.log('Looking for Add Identifier button...');
-    const addButton = page.locator('button:has-text("Add"), button:has-text("add")').filter({ hasText: /identifier/i }).first();
+    const addButton = page
+      .locator('button:has-text("Add"), button:has-text("add")')
+      .filter({ hasText: /identifier/i })
+      .first();
 
     if (await addButton.isVisible({ timeout: 5000 })) {
       console.log('Clicking Add Identifier button...');
@@ -88,14 +96,20 @@ test.describe('Debug Identifier 500 Error', () => {
       console.log('Filling identifier form...');
 
       // Select KVK as identifier type
-      const typeDropdown = page.locator('select, .k-dropdown').filter({ hasText: /type|identifier type/i }).first();
+      const typeDropdown = page
+        .locator('select, .k-dropdown')
+        .filter({ hasText: /type|identifier type/i })
+        .first();
       if (await typeDropdown.isVisible({ timeout: 2000 })) {
         await typeDropdown.click();
         await page.locator('option:has-text("KVK"), li:has-text("KVK")').first().click();
       }
 
       // Enter KVK number
-      const valueInput = page.locator('input[type="text"]').filter({ hasText: /value|number/i }).first();
+      const valueInput = page
+        .locator('input[type="text"]')
+        .filter({ hasText: /value|number/i })
+        .first();
       if (await valueInput.isVisible({ timeout: 2000 })) {
         await valueInput.fill('95944192');
       } else {
@@ -128,7 +142,7 @@ test.describe('Debug Identifier 500 Error', () => {
       console.log('============================================\n');
 
       // Find the 500 error response
-      const errorResponse = apiResponses.find(r => r.status === 500);
+      const errorResponse = apiResponses.find((r) => r.status === 500);
       if (errorResponse) {
         console.log('\n========== 500 ERROR DETAILS ==========');
         console.log(JSON.stringify(errorResponse, null, 2));

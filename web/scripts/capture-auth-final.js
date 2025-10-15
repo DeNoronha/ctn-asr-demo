@@ -7,8 +7,8 @@
  */
 
 const { chromium } = require('playwright');
-const path = require('path');
-const fs = require('fs');
+const path = require('node:path');
+const fs = require('node:fs');
 
 async function captureAuth() {
   console.log('🔐 Starting authentication capture (with sessionStorage support)...\n');
@@ -44,12 +44,12 @@ async function captureAuth() {
       const data = {
         localStorage: {
           keys: [],
-          msal: []
+          msal: [],
         },
         sessionStorage: {
           keys: [],
-          msal: []
-        }
+          msal: [],
+        },
       };
 
       // Check localStorage
@@ -77,8 +77,12 @@ async function captureAuth() {
       return data;
     });
 
-    console.log(`   localStorage: ${storageData.localStorage.keys.length} entries, ${storageData.localStorage.msal.length} MSAL`);
-    console.log(`   sessionStorage: ${storageData.sessionStorage.keys.length} entries, ${storageData.sessionStorage.msal.length} MSAL`);
+    console.log(
+      `   localStorage: ${storageData.localStorage.keys.length} entries, ${storageData.localStorage.msal.length} MSAL`
+    );
+    console.log(
+      `   sessionStorage: ${storageData.sessionStorage.keys.length} entries, ${storageData.sessionStorage.msal.length} MSAL`
+    );
 
     if (storageData.sessionStorage.msal.length > 0) {
       console.log('   ✅ MSAL cache found in sessionStorage (this is correct!)');
@@ -103,7 +107,7 @@ async function captureAuth() {
         if (key) {
           data.push({
             name: key,
-            value: sessionStorage.getItem(key)
+            value: sessionStorage.getItem(key),
           });
         }
       }
@@ -115,7 +119,7 @@ async function captureAuth() {
 
     // Add sessionStorage to the main origin
     if (existingState.origins && existingState.origins.length > 0) {
-      const mainOrigin = existingState.origins.find(o => o.origin.includes('azurestaticapps'));
+      const mainOrigin = existingState.origins.find((o) => o.origin.includes('azurestaticapps'));
       if (mainOrigin) {
         mainOrigin.sessionStorage = sessionData;
       }
@@ -134,16 +138,17 @@ async function captureAuth() {
 
     if (existingState.origins[0]) {
       const origin = existingState.origins[0];
-      if (origin.localStorage) console.log(`   LocalStorage entries: ${origin.localStorage.length}`);
-      if (origin.sessionStorage) console.log(`   SessionStorage entries: ${origin.sessionStorage.length}`);
+      if (origin.localStorage)
+        console.log(`   LocalStorage entries: ${origin.localStorage.length}`);
+      if (origin.sessionStorage)
+        console.log(`   SessionStorage entries: ${origin.sessionStorage.length}`);
     }
 
-    console.log(`\n✅ Authentication capture complete!`);
+    console.log('\n✅ Authentication capture complete!');
     console.log('📝 You can now run tests with: npm run test:e2e\n');
 
     await browser.close();
     process.exit(0);
-
   } catch (error) {
     console.error('\n❌ Error:', error.message);
     await browser.close();

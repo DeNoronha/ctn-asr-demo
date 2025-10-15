@@ -53,7 +53,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
     registry_name: '',
   });
 
-  const handleSubmit = async (dataItem: { [name: string]: any }) => {
+  const handleSubmit = async (dataItem: Record<string, unknown>) => {
     await onSave(dataItem as LegalEntity);
   };
 
@@ -66,9 +66,9 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
     try {
       const created = await apiV2.addIdentifier({
         legal_entity_id: data.legal_entity_id,
-        identifier_type: newIdentifier.identifier_type as any,
-        identifier_value: newIdentifier.identifier_value,
-        country_code: newIdentifier.country_code,
+        identifier_type: newIdentifier.identifier_type as string,
+        identifier_value: newIdentifier.identifier_value!,
+        country_code: newIdentifier.country_code!,
         registry_name: newIdentifier.registry_name,
       });
 
@@ -210,7 +210,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
                     data={IDENTIFIER_TYPES}
                     value={newIdentifier.identifier_type}
                     onChange={(e) =>
-                      setNewIdentifier({ ...newIdentifier, identifier_type: e.value as any })
+                      setNewIdentifier({ ...newIdentifier, identifier_type: e.value as string })
                     }
                   />
                 </div>

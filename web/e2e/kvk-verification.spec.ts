@@ -1,4 +1,4 @@
-import { test, expect } from '../playwright/fixtures';
+import { expect, test } from '../playwright/fixtures';
 
 /**
  * KvK Document Upload and Verification E2E Tests
@@ -11,20 +11,21 @@ import { test, expect } from '../playwright/fixtures';
  * 5. Review dialog and comparison table
  */
 
-const API_BASE_URL = process.env.PLAYWRIGHT_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net';
+const API_BASE_URL =
+  process.env.PLAYWRIGHT_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net';
 const TEST_LEGAL_ENTITY_ID = 'fbc4bcdc-a9f9-4621-a153-c5deb6c49519'; // Contargo GmbH & Co. KG
 
 test.describe('KvK Verification - API Endpoints', () => {
   test.beforeEach(async ({ page }) => {
     // Monitor console for errors
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       if (msg.type() === 'error') {
         console.error('CONSOLE ERROR:', msg.text());
       }
     });
 
     // Monitor network failures
-    page.on('requestfailed', request => {
+    page.on('requestfailed', (request) => {
       console.error('REQUEST FAILED:', request.url(), request.failure()?.errorText);
     });
   });
@@ -35,37 +36,45 @@ test.describe('KvK Verification - API Endpoints', () => {
     await page.waitForTimeout(2000);
 
     // Intercept the API call
-    const responsePromise = page.waitForResponse(
-      response => response.url().includes(`/api/v1/legal-entities/${TEST_LEGAL_ENTITY_ID}/kvk-verification`),
+    const _responsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes(`/api/v1/legal-entities/${TEST_LEGAL_ENTITY_ID}/kvk-verification`),
       { timeout: 30000 }
     );
 
     // Make API request using page.evaluate to include auth headers
-    const result = await page.evaluate(async ({ apiUrl, entityId }) => {
-      try {
-        const response = await fetch(`${apiUrl}/api/v1/legal-entities/${entityId}/kvk-verification`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-          credentials: 'include',
-        });
+    const result = await page.evaluate(
+      async ({ apiUrl, entityId }) => {
+        try {
+          const response = await fetch(
+            `${apiUrl}/api/v1/legal-entities/${entityId}/kvk-verification`,
+            {
+              method: 'GET',
+              headers: {
+                Accept: 'application/json',
+              },
+              credentials: 'include',
+            }
+          );
 
-        return {
-          status: response.status,
-          ok: response.ok,
-          data: response.ok ? await response.json() : null,
-          error: !response.ok ? await response.text() : null,
-        };
-      } catch (error: any) {
-        return {
-          status: 0,
-          ok: false,
-          data: null,
-          error: error.message,
-        };
-      }
-    }, { apiUrl: API_BASE_URL, entityId: TEST_LEGAL_ENTITY_ID });
+          return {
+            status: response.status,
+            ok: response.ok,
+            data: response.ok ? await response.json() : null,
+            error: !response.ok ? await response.text() : null,
+          };
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          return {
+            status: 0,
+            ok: false,
+            data: null,
+            error: errorMessage,
+          };
+        }
+      },
+      { apiUrl: API_BASE_URL, entityId: TEST_LEGAL_ENTITY_ID }
+    );
 
     console.log('Verification Status Response:', result);
 
@@ -87,31 +96,35 @@ test.describe('KvK Verification - API Endpoints', () => {
     await page.waitForTimeout(2000);
 
     // Make API request
-    const result = await page.evaluate(async ({ apiUrl }) => {
-      try {
-        const response = await fetch(`${apiUrl}/api/v1/kvk-verification/flagged`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-          credentials: 'include',
-        });
+    const result = await page.evaluate(
+      async ({ apiUrl }) => {
+        try {
+          const response = await fetch(`${apiUrl}/api/v1/kvk-verification/flagged`, {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+            },
+            credentials: 'include',
+          });
 
-        return {
-          status: response.status,
-          ok: response.ok,
-          data: response.ok ? await response.json() : null,
-          error: !response.ok ? await response.text() : null,
-        };
-      } catch (error: any) {
-        return {
-          status: 0,
-          ok: false,
-          data: null,
-          error: error.message,
-        };
-      }
-    }, { apiUrl: API_BASE_URL });
+          return {
+            status: response.status,
+            ok: response.ok,
+            data: response.ok ? await response.json() : null,
+            error: !response.ok ? await response.text() : null,
+          };
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          return {
+            status: 0,
+            ok: false,
+            data: null,
+            error: errorMessage,
+          };
+        }
+      },
+      { apiUrl: API_BASE_URL }
+    );
 
     console.log('Flagged Entities Response:', result);
 
@@ -140,24 +153,27 @@ test.describe('KvK Verification - API Endpoints', () => {
 
   test('should return 401 for unauthenticated requests', async ({ page }) => {
     // Make request without auth context
-    const result = await page.evaluate(async ({ apiUrl }) => {
-      try {
-        const response = await fetch(`${apiUrl}/api/v1/kvk-verification/flagged`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
+    const result = await page.evaluate(
+      async ({ apiUrl }) => {
+        try {
+          const response = await fetch(`${apiUrl}/api/v1/kvk-verification/flagged`, {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+            },
+          });
 
-        return {
-          status: response.status,
-        };
-      } catch (error) {
-        return {
-          status: 0,
-        };
-      }
-    }, { apiUrl: API_BASE_URL });
+          return {
+            status: response.status,
+          };
+        } catch (_error) {
+          return {
+            status: 0,
+          };
+        }
+      },
+      { apiUrl: API_BASE_URL }
+    );
 
     // Should return 401 for unauthenticated request
     expect([401, 0]).toContain(result.status);
@@ -166,7 +182,7 @@ test.describe('KvK Verification - API Endpoints', () => {
   test('should have no 404 errors on KvK endpoints', async ({ page }) => {
     const apiCalls: Array<{ url: string; status: number }> = [];
 
-    page.on('response', response => {
+    page.on('response', (response) => {
       if (response.url().includes('/api/v1/') && response.url().includes('kvk')) {
         apiCalls.push({
           url: response.url(),
@@ -183,7 +199,7 @@ test.describe('KvK Verification - API Endpoints', () => {
     await page.waitForTimeout(2000);
 
     // Verify no 404 errors
-    const notFoundCalls = apiCalls.filter(call => call.status === 404);
+    const notFoundCalls = apiCalls.filter((call) => call.status === 404);
     console.log('API calls made:', apiCalls);
 
     expect(notFoundCalls.length).toBe(0);
@@ -193,7 +209,7 @@ test.describe('KvK Verification - API Endpoints', () => {
 test.describe('KvK Verification - Review Queue Component', () => {
   test.beforeEach(async ({ page }) => {
     // Monitor console for errors
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       if (msg.type() === 'error') {
         console.error('CONSOLE ERROR:', msg.text());
       } else if (msg.type() === 'warning') {
@@ -207,7 +223,9 @@ test.describe('KvK Verification - Review Queue Component', () => {
 
   test('should navigate to KvK Review Queue', async ({ page }) => {
     // Look for navigation menu items
-    const navItems = page.locator('nav a, nav button, [role="navigation"] a, [role="navigation"] button');
+    const navItems = page.locator(
+      'nav a, nav button, [role="navigation"] a, [role="navigation"] button'
+    );
     const navCount = await navItems.count();
     console.log(`Found ${navCount} navigation items`);
 
@@ -241,7 +259,10 @@ test.describe('KvK Verification - Review Queue Component', () => {
     }
 
     await page.waitForTimeout(2000);
-    await page.screenshot({ path: 'playwright-report/screenshots/kvk-review-queue.png', fullPage: true });
+    await page.screenshot({
+      path: 'playwright-report/screenshots/kvk-review-queue.png',
+      fullPage: true,
+    });
   });
 
   test('should display flagged entities grid with proper columns', async ({ page }) => {
@@ -249,12 +270,7 @@ test.describe('KvK Verification - Review Queue Component', () => {
     await page.goto('/', { waitUntil: 'networkidle' });
 
     // Look for grid or table containing flagged entities
-    const possibleGridSelectors = [
-      '[role="grid"]',
-      'table',
-      '[data-testid="kvk-grid"]',
-      '.k-grid',
-    ];
+    const possibleGridSelectors = ['[role="grid"]', 'table', '[data-testid="kvk-grid"]', '.k-grid'];
 
     let gridFound = false;
     for (const selector of possibleGridSelectors) {
@@ -299,14 +315,16 @@ test.describe('KvK Verification - Review Queue Component', () => {
       for (let i = 0; i < Math.min(badgeCount, 5); i++) {
         const badge = badges.nth(i);
         const text = await badge.textContent();
-        const backgroundColor = await badge.evaluate(el => window.getComputedStyle(el).backgroundColor);
+        const backgroundColor = await badge.evaluate(
+          (el) => window.getComputedStyle(el).backgroundColor
+        );
 
         console.log(`Badge ${i}: "${text}" - background: ${backgroundColor}`);
 
         // Check for red background on entered data mismatch flags
         if (text?.includes('entered_kvk_mismatch') || text?.includes('entered_name_mismatch')) {
           // Red badges should have rgb values with high red component
-          console.log(`Entered data mismatch badge should be RED`);
+          console.log('Entered data mismatch badge should be RED');
         }
       }
     }
@@ -318,22 +336,25 @@ test.describe('KvK Verification - Review Queue Component', () => {
     await page.goto('/', { waitUntil: 'networkidle' });
 
     // Make API call to get flagged entities
-    const flaggedEntities = await page.evaluate(async ({ apiUrl }) => {
-      try {
-        const response = await fetch(`${apiUrl}/api/v1/kvk-verification/flagged`, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' },
-          credentials: 'include',
-        });
+    const flaggedEntities = await page.evaluate(
+      async ({ apiUrl }) => {
+        try {
+          const response = await fetch(`${apiUrl}/api/v1/kvk-verification/flagged`, {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+            credentials: 'include',
+          });
 
-        if (response.ok) {
-          return await response.json();
+          if (response.ok) {
+            return await response.json();
+          }
+          return [];
+        } catch (_error) {
+          return [];
         }
-        return [];
-      } catch (error) {
-        return [];
-      }
-    }, { apiUrl: API_BASE_URL });
+      },
+      { apiUrl: API_BASE_URL }
+    );
 
     console.log(`Fetched ${flaggedEntities.length} flagged entities`);
 
@@ -394,7 +415,10 @@ test.describe('KvK Verification - Review Queue Component', () => {
 
       if (dialogVisible) {
         // Take screenshot
-        await page.screenshot({ path: 'playwright-report/screenshots/kvk-review-dialog.png', fullPage: true });
+        await page.screenshot({
+          path: 'playwright-report/screenshots/kvk-review-dialog.png',
+          fullPage: true,
+        });
 
         // Look for comparison table
         const comparisonTable = dialog.locator('table').first();
@@ -407,7 +431,9 @@ test.describe('KvK Verification - Review Queue Component', () => {
         console.log(`Found ${indicatorCount} match/mismatch indicators`);
 
         // Close dialog
-        const closeButton = dialog.locator('button:has-text("Close"), button:has-text("Cancel")').first();
+        const closeButton = dialog
+          .locator('button:has-text("Close"), button:has-text("Cancel")')
+          .first();
         if (await closeButton.isVisible({ timeout: 1000 }).catch(() => false)) {
           await closeButton.click();
         }
@@ -443,7 +469,7 @@ test.describe('KvK Verification - Review Queue Component', () => {
 test.describe('KvK Verification - Entered vs Extracted Comparison', () => {
   test.beforeEach(async ({ page }) => {
     // Monitor console for errors
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       if (msg.type() === 'error') {
         console.error('CONSOLE ERROR:', msg.text());
       }
@@ -455,22 +481,25 @@ test.describe('KvK Verification - Entered vs Extracted Comparison', () => {
 
   test('should compare entered KvK number vs extracted KvK number', async ({ page }) => {
     // Get flagged entities with mismatches
-    const entities = await page.evaluate(async ({ apiUrl }) => {
-      try {
-        const response = await fetch(`${apiUrl}/api/v1/kvk-verification/flagged`, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' },
-          credentials: 'include',
-        });
+    const entities = await page.evaluate(
+      async ({ apiUrl }) => {
+        try {
+          const response = await fetch(`${apiUrl}/api/v1/kvk-verification/flagged`, {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+            credentials: 'include',
+          });
 
-        if (response.ok) {
-          return await response.json();
+          if (response.ok) {
+            return await response.json();
+          }
+          return [];
+        } catch (_error) {
+          return [];
         }
-        return [];
-      } catch (error) {
-        return [];
-      }
-    }, { apiUrl: API_BASE_URL });
+      },
+      { apiUrl: API_BASE_URL }
+    );
 
     console.log(`Checking ${entities.length} entities for KvK number comparison`);
 
@@ -496,22 +525,25 @@ test.describe('KvK Verification - Entered vs Extracted Comparison', () => {
 
   test('should compare entered company name vs extracted company name', async ({ page }) => {
     // Get flagged entities with mismatches
-    const entities = await page.evaluate(async ({ apiUrl }) => {
-      try {
-        const response = await fetch(`${apiUrl}/api/v1/kvk-verification/flagged`, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' },
-          credentials: 'include',
-        });
+    const entities = await page.evaluate(
+      async ({ apiUrl }) => {
+        try {
+          const response = await fetch(`${apiUrl}/api/v1/kvk-verification/flagged`, {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+            credentials: 'include',
+          });
 
-        if (response.ok) {
-          return await response.json();
+          if (response.ok) {
+            return await response.json();
+          }
+          return [];
+        } catch (_error) {
+          return [];
         }
-        return [];
-      } catch (error) {
-        return [];
-      }
-    }, { apiUrl: API_BASE_URL });
+      },
+      { apiUrl: API_BASE_URL }
+    );
 
     console.log(`Checking ${entities.length} entities for company name comparison`);
 
@@ -529,7 +561,8 @@ test.describe('KvK Verification - Entered vs Extracted Comparison', () => {
         const extractedLower = entity.kvk_extracted_company_name?.toLowerCase().trim() || '';
 
         // If flagged, neither should contain the other
-        const isPartialMatch = enteredLower.includes(extractedLower) || extractedLower.includes(enteredLower);
+        const isPartialMatch =
+          enteredLower.includes(extractedLower) || extractedLower.includes(enteredLower);
         expect(isPartialMatch).toBe(false);
       }
     }
@@ -539,33 +572,45 @@ test.describe('KvK Verification - Entered vs Extracted Comparison', () => {
     await page.goto('/', { waitUntil: 'networkidle' });
 
     // Look for grid with both columns
-    const hasEnteredColumn = await page.locator('text=/Entered.*Company|Company.*Entered/i').isVisible({ timeout: 2000 }).catch(() => false);
-    const hasExtractedColumn = await page.locator('text=/Extracted.*Company|Company.*Extracted/i').isVisible({ timeout: 2000 }).catch(() => false);
+    const hasEnteredColumn = await page
+      .locator('text=/Entered.*Company|Company.*Entered/i')
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
+    const hasExtractedColumn = await page
+      .locator('text=/Extracted.*Company|Company.*Extracted/i')
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
 
     console.log(`Entered Company column visible: ${hasEnteredColumn}`);
     console.log(`Extracted Company column visible: ${hasExtractedColumn}`);
 
-    await page.screenshot({ path: 'playwright-report/screenshots/kvk-comparison-grid.png', fullPage: true });
+    await page.screenshot({
+      path: 'playwright-report/screenshots/kvk-comparison-grid.png',
+      fullPage: true,
+    });
   });
 
   test('should merge all mismatch flags correctly', async ({ page }) => {
     // Get flagged entities
-    const entities = await page.evaluate(async ({ apiUrl }) => {
-      try {
-        const response = await fetch(`${apiUrl}/api/v1/kvk-verification/flagged`, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' },
-          credentials: 'include',
-        });
+    const entities = await page.evaluate(
+      async ({ apiUrl }) => {
+        try {
+          const response = await fetch(`${apiUrl}/api/v1/kvk-verification/flagged`, {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+            credentials: 'include',
+          });
 
-        if (response.ok) {
-          return await response.json();
+          if (response.ok) {
+            return await response.json();
+          }
+          return [];
+        } catch (_error) {
+          return [];
         }
-        return [];
-      } catch (error) {
-        return [];
-      }
-    }, { apiUrl: API_BASE_URL });
+      },
+      { apiUrl: API_BASE_URL }
+    );
 
     console.log(`Checking flag merging for ${entities.length} entities`);
 
@@ -587,7 +632,7 @@ test.describe('KvK Verification - Chrome Console Monitoring', () => {
     const consoleErrors: string[] = [];
     const consoleWarnings: string[] = [];
 
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       if (msg.type() === 'error') {
         consoleErrors.push(msg.text());
       } else if (msg.type() === 'warning') {
@@ -612,7 +657,7 @@ test.describe('KvK Verification - Chrome Console Monitoring', () => {
   test('should not have failed network requests', async ({ page }) => {
     const failedRequests: Array<{ url: string; error: string }> = [];
 
-    page.on('requestfailed', request => {
+    page.on('requestfailed', (request) => {
       failedRequests.push({
         url: request.url(),
         error: request.failure()?.errorText || 'Unknown error',
@@ -629,14 +674,14 @@ test.describe('KvK Verification - Chrome Console Monitoring', () => {
     }
 
     // Allow CORS errors but no other failures
-    const criticalFailures = failedRequests.filter(req => !req.error.includes('CORS'));
+    const criticalFailures = failedRequests.filter((req) => !req.error.includes('CORS'));
     expect(criticalFailures.length).toBe(0);
   });
 
   test('should not have 500 errors during document verification', async ({ page }) => {
     const serverErrors: Array<{ url: string; status: number }> = [];
 
-    page.on('response', response => {
+    page.on('response', (response) => {
       if (response.status() >= 500 && response.url().includes('kvk')) {
         serverErrors.push({
           url: response.url(),
@@ -660,7 +705,7 @@ test.describe('KvK Verification - Chrome Console Monitoring', () => {
   test('should monitor Chrome DevTools Console during test execution', async ({ page }) => {
     const consoleMessages: Array<{ type: string; text: string }> = [];
 
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       consoleMessages.push({
         type: msg.type(),
         text: msg.text(),
@@ -671,9 +716,9 @@ test.describe('KvK Verification - Chrome Console Monitoring', () => {
     await page.waitForTimeout(3000);
 
     // Categorize messages
-    const errors = consoleMessages.filter(m => m.type === 'error');
-    const warnings = consoleMessages.filter(m => m.type === 'warning');
-    const info = consoleMessages.filter(m => m.type === 'info' || m.type === 'log');
+    const errors = consoleMessages.filter((m) => m.type === 'error');
+    const warnings = consoleMessages.filter((m) => m.type === 'warning');
+    const info = consoleMessages.filter((m) => m.type === 'info' || m.type === 'log');
 
     console.log('=== CHROME CONSOLE SUMMARY ===');
     console.log(`Errors: ${errors.length}`);
@@ -707,36 +752,38 @@ test.describe('KvK Verification - Visual Indicators', () => {
     console.log(`entered_name_mismatch badge visible: ${nameVisible}`);
 
     if (kvkVisible) {
-      const bgColor = await enteredKvkBadge.evaluate(el => window.getComputedStyle(el).backgroundColor);
+      const bgColor = await enteredKvkBadge.evaluate(
+        (el) => window.getComputedStyle(el).backgroundColor
+      );
       console.log(`entered_kvk_mismatch background: ${bgColor}`);
       // Red should have format rgb(xxx, low, low)
     }
 
     if (nameVisible) {
-      const bgColor = await enteredNameBadge.evaluate(el => window.getComputedStyle(el).backgroundColor);
+      const bgColor = await enteredNameBadge.evaluate(
+        (el) => window.getComputedStyle(el).backgroundColor
+      );
       console.log(`entered_name_mismatch background: ${bgColor}`);
     }
 
-    await page.screenshot({ path: 'playwright-report/screenshots/kvk-red-badges.png', fullPage: true });
+    await page.screenshot({
+      path: 'playwright-report/screenshots/kvk-red-badges.png',
+      fullPage: true,
+    });
   });
 
   test('should use yellow badges for other issues', async ({ page }) => {
     await page.goto('/', { waitUntil: 'networkidle' });
 
     // Look for other flag types
-    const otherFlagTypes = [
-      'name_mismatch',
-      'address_mismatch',
-      'not_active',
-      'not_found',
-    ];
+    const otherFlagTypes = ['name_mismatch', 'address_mismatch', 'not_active', 'not_found'];
 
     for (const flagType of otherFlagTypes) {
       const badge = page.locator(`text=${flagType}`).first();
       const visible = await badge.isVisible({ timeout: 1000 }).catch(() => false);
 
       if (visible) {
-        const bgColor = await badge.evaluate(el => window.getComputedStyle(el).backgroundColor);
+        const bgColor = await badge.evaluate((el) => window.getComputedStyle(el).backgroundColor);
         console.log(`${flagType} badge background: ${bgColor}`);
         // Yellow should have format rgb(xxx, xxx, low)
       }

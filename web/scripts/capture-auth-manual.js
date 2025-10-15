@@ -7,8 +7,8 @@
  */
 
 const { chromium } = require('playwright');
-const path = require('path');
-const fs = require('fs');
+const path = require('node:path');
+const fs = require('node:fs');
 
 async function captureAuth() {
   console.log('🔐 Starting manual authentication capture...\n');
@@ -44,7 +44,9 @@ async function captureAuth() {
     const isMembersVisible = await page.locator('text=Members').isVisible({ timeout: 5000 });
 
     if (!isDashboardVisible || !isMembersVisible) {
-      console.error('❌ Dashboard not detected. Please ensure you completed login and the dashboard is visible.');
+      console.error(
+        '❌ Dashboard not detected. Please ensure you completed login and the dashboard is visible.'
+      );
       await browser.close();
       process.exit(1);
     }
@@ -62,7 +64,7 @@ async function captureAuth() {
     const keys = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.includes('msal')) {
+      if (key?.includes('msal')) {
         keys.push(key);
       }
     }
@@ -71,7 +73,7 @@ async function captureAuth() {
 
   if (msalKeys.length === 0) {
     console.warn('⚠️  Warning: No MSAL cache entries found in localStorage');
-    console.log('This might mean authentication is stored differently or hasn\'t completed yet.');
+    console.log("This might mean authentication is stored differently or hasn't completed yet.");
   } else {
     console.log(`✅ Found ${msalKeys.length} MSAL cache entries`);
   }
@@ -106,7 +108,7 @@ async function captureAuth() {
 
 function waitForUserInput() {
   return new Promise((resolve) => {
-    const readline = require('readline');
+    const readline = require('node:readline');
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,

@@ -67,7 +67,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Loading user roles for account:', account);
 
       // Extract roles from ID token claims
-      const idTokenClaims = account.idTokenClaims as any;
+      interface IdTokenClaims extends Record<string, unknown> {
+        roles?: UserRole[];
+        amr?: string[];
+        extension_AssociationId?: string;
+      }
+      const idTokenClaims = (account.idTokenClaims || {}) as IdTokenClaims;
       console.log('ID Token Claims:', idTokenClaims);
 
       const roles = (idTokenClaims?.roles || []) as UserRole[];
