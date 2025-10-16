@@ -1,6 +1,6 @@
 # CLAUDE.md - CTN Association Register
 
-**Last Updated:** October 16, 2025 (Added Database Expert Agent and Updated Agent Invocation Workflow)
+**Last Updated:** October 16, 2025 (Added BUG-010 lessons learned: Pipeline quality checks and version.json generation)
 
 ---
 
@@ -865,6 +865,30 @@ When a bug is reported, the TE agent will:
   - UI tests catch button clicks, form validation, user workflows
 - Don't waste time testing UI if API is broken - test API first!
 - This saves hours of debugging time and isolates issues faster
+
+### Pipeline Quality Checks Must Use continueOnError (October 16, 2025)
+**What Happened:** Biome lint found 242 errors + 109 warnings, exited with code 1, blocked ALL deployments since morning despite continueOnError: true in pipeline config
+**Why It Matters:** Production frozen for 12+ hours, wasted time debugging when real issue was pipeline configuration
+**Root Cause:**
+- Azure DevOps continueOnError: true wasn't working as expected
+- Quality check failures marked build as "partiallySucceeded"
+- Deployment steps might have been skipped due to non-green status
+**How to Avoid:**
+- Keep quality checks simple with continueOnError: true
+- Don't use || echo workarounds to hide exit codes
+- Let failures be visible with proper reporting
+- Quality checks should INFORM, not BLOCK
+- Only actual build failures (npm run build) should prevent deployment
+- Monitor "succeeded" vs "partiallySucceeded" status - only "succeeded" may trigger deployments reliably
+
+### Version.json Must Be Generated During Build (October 16, 2025)
+**What Happened:** version.json committed to git with old build info, never updated during pipeline execution, About page always showed old commit/timestamp
+**Why It Matters:** Couldn't verify deployments were actually reaching production, About page showed "October 16, 08:10" all day despite multiple deployments
+**How to Avoid:**
+- Add scripts/generate-version.sh step BEFORE npm run build
+- Use Azure DevOps environment variables: BUILD_BUILDNUMBER, BUILD_SOURCEVERSION, BUILD_TIMESTAMP
+- Never commit version.json with actual build info - use template or generate dynamically
+- Generate during build, not during local development
 
 ### CRITICAL: Method Binding Required for Azure Functions Request Methods (October 16, 2025)
 **What Happened:** Spent 2 days debugging "Cannot read private member from an object whose class did not declare it" error when calling `request.json()` in Azure Functions handlers

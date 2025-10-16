@@ -49,15 +49,12 @@
     "react-dom": "^18.2.0",
     "react-dom-factories": "^1.0.2",
     "react-i18next": "^16.0.0",
-    "react-scripts": "5.0.1",
-    "react-transition-group": "^4.4.5",
-    "typescript": "^4.9.5"
+    "react-transition-group": "^4.4.5"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
@@ -70,17 +67,27 @@
     "review": "npm run lint && npm run security:audit && npm run security:summary",
     "ci": "biome ci . && npm audit --audit-level=high"
   },
-  "eslintConfig": {
-    "extends": ["react-app"]
-  },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@types/node": "^24.7.1",
+    "@types/node": "^20.19.21",
     "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.1"
+    "@types/react-dom": "^19.2.1",
+    "@vitejs/plugin-react": "^5.0.4",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.10",
+    "vite-plugin-svgr": "^4.5.0",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }

@@ -1,6 +1,6 @@
 # CTN ASR Roadmap
 
-**Last Updated:** October 16, 2025 (Cleaned up completed tasks - moved to COMPLETED_ACTIONS.md)
+**Last Updated:** October 16, 2025 (BUG-010 fixed - pipeline deployment issues resolved)
 
 This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md) for historical record.
 
@@ -26,6 +26,17 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
   - **Timeline:** 15 minutes
   - **Reference:** Commands provided in docs/SECURITY_AUDIT_REPORT.md
 
+- [ ] **Fix npm audit vulnerabilities** - 9 vulnerabilities (6 high, 3 moderate) in react-scripts dependencies
+  - **Priority:** P0
+  - **Impact:** Multiple security vulnerabilities including:
+    - nth-check: ReDoS vulnerability (CVSS 7.5)
+    - webpack-dev-server: Source code theft risk (CVSS 6.5)
+    - postcss: Line return parsing error (CVSS 5.3)
+  - **Affected:** Both web and portal projects
+  - **Fix:** Upgrade react-scripts or migrate to Vite (requires breaking change)
+  - **Estimate:** 4-6 hours (if migrating to Vite: 8-12 hours)
+  - **Note:** All vulnerabilities require react-scripts upgrade (currently on old version)
+
 ---
 
 ## HIGH - Bug Fixes from Testing (Block Production)
@@ -43,16 +54,6 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
   - **Estimate:** 2 hours
   - **Status:** Deferred due to complexity - Requires server-side pagination state management
 
-- [ ] **BUG-010: Azure DevOps deployment delays/inconsistency** - Automatic deployments unreliable
-  - **Severity:** Medium (DevOps) | **Priority:** P3
-  - **Impact:** Deployments sometimes take >12 minutes or don't trigger automatically. Git commit at time X but deployment shows old version hours later. Makes testing changes difficult, wastes developer time waiting for deployments
-  - **Investigation Required:**
-    - Check Azure DevOps pipeline logs for delays
-    - Validate pipeline triggers are configured correctly
-    - Review build queue and agent availability
-    - Check if builds are queuing or failing silently
-  - **Estimate:** 2 hours investigation + fixes
-  - **Reference:** See CLAUDE.md Pre-Debugging Checklist for deployment validation steps
 
 ---
 
@@ -120,6 +121,36 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 - [ ] **L6: Progressive disclosure for complex forms** (2h) - Not yet implemented
 
 ### Code Quality & Testing
+
+- [ ] **Fix Biome code quality issues** - 185 errors + 92 warnings in web portal
+  - **Priority:** P2
+  - **Impact:** Code maintainability, accessibility, and best practices
+  - **Categories:**
+    - **Accessibility (HIGH):** 20+ label-without-control errors, keyboard navigation issues
+    - **Code Smells (MEDIUM):** noUselessElse, useSelfClosingElements, noArrayIndexKey
+    - **Type Safety (MEDIUM):** 5+ noExplicitAny warnings, useImportType suggestions
+    - **Formatting (LOW):** Import organization, quote style inconsistencies
+  - **Affected:** web/src/ directory (95 files checked)
+  - **Estimate:** 6-8 hours
+  - **Plan:**
+    1. Fix accessibility issues first (4h) - Critical for WCAG compliance
+    2. Fix type safety warnings (2h) - Replace 'any' with proper types
+    3. Run 'biome check --fix' for auto-fixable issues (1h)
+    4. Manual review of remaining warnings (1h)
+
+- [ ] **Fix Biome code quality issues** - 43 errors + 5 warnings in member portal
+  - **Priority:** P2
+  - **Impact:** Code maintainability and accessibility
+  - **Categories:**
+    - **Accessibility (HIGH):** 10+ label-without-control errors
+    - **Type Safety (MEDIUM):** 3 noExplicitAny warnings
+    - **Code Quality (LOW):** noExcessiveCognitiveComplexity, useSelfClosingElements
+  - **Affected:** portal/src/ directory (22 files checked)
+  - **Estimate:** 3-4 hours
+  - **Plan:**
+    1. Fix accessibility issues (2h)
+    2. Fix type safety warnings (1h)
+    3. Auto-fix remaining issues (1h)
 
 - [ ] **Implement database transactions** - For multi-step operations
   - **Estimate:** 4 hours
@@ -198,18 +229,18 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 ## Summary Statistics
 
-**Total Remaining Tasks:** 47
+**Total Remaining Tasks:** 49
 
 **By Priority:**
-- CRITICAL (P0): 3 tasks - Security issues requiring immediate attention
-- HIGH (P1-P2): 11 tasks - Backend integration blockers and bugs
-- MEDIUM: 12 tasks - Code quality, testing, monitoring improvements
+- CRITICAL (P0): 4 tasks - Security issues requiring immediate attention
+- HIGH (P1-P2): 10 tasks - Backend integration blockers and bugs
+- MEDIUM: 14 tasks - Code quality, testing, monitoring improvements
 - LOW: 21 tasks - Future enhancements and additional features
 
 **Estimated Time to Complete:**
-- CRITICAL: ~3-4 hours
+- CRITICAL: ~8-14 hours (includes npm vulnerability fixes)
 - HIGH: ~28-33 hours
-- MEDIUM: ~43 hours
+- MEDIUM: ~52-55 hours (includes Biome fixes)
 - LOW: ~70 hours
 
 ---
