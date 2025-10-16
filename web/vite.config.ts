@@ -23,10 +23,10 @@ export default defineConfig({
   define: {
     // For compatibility with CRA environment variables
     'process.env': {
-      REACT_APP_AZURE_CLIENT_ID: JSON.stringify(process.env.REACT_APP_AZURE_CLIENT_ID),
-      REACT_APP_AZURE_TENANT_ID: JSON.stringify(process.env.REACT_APP_AZURE_TENANT_ID),
-      REACT_APP_REDIRECT_URI: JSON.stringify(process.env.REACT_APP_REDIRECT_URI),
-      REACT_APP_API_URL: JSON.stringify(process.env.REACT_APP_API_URL),
+      REACT_APP_AZURE_CLIENT_ID: JSON.stringify(process.env.REACT_APP_AZURE_CLIENT_ID || ''),
+      REACT_APP_AZURE_TENANT_ID: JSON.stringify(process.env.REACT_APP_AZURE_TENANT_ID || ''),
+      REACT_APP_REDIRECT_URI: JSON.stringify(process.env.REACT_APP_REDIRECT_URI || ''),
+      REACT_APP_API_URL: JSON.stringify(process.env.REACT_APP_API_URL || ''),
     },
   },
 });
