@@ -112,15 +112,16 @@ const About: React.FC = () => {
 
   const getEnvironmentBadge = (environment: string) => {
     const envLower = environment.toLowerCase();
+    // Only show Production badge for production environment
     if (envLower === 'production' || envLower === 'prod') {
       return <Badge themeColor="success" size="medium">Production</Badge>;
-    } else if (envLower === 'development' || envLower === 'dev') {
-      return <Badge themeColor="warning" size="medium">Development</Badge>;
-    } else if (envLower === 'local') {
-      return <Badge themeColor="info" size="medium">Local</Badge>;
-    } else {
-      return <Badge themeColor="secondary" size="medium">{environment}</Badge>;
     }
+    // Don't show environment badge for dev/local
+    return null;
+  };
+
+  const isProductionBuild = (buildNumber: string) => {
+    return buildNumber !== 'dev' && buildNumber !== 'local' && buildNumber !== '0';
   };
 
   if (loading) {
@@ -152,27 +153,37 @@ const About: React.FC = () => {
           <CardBody>
             {portalVersion && (
               <div className="version-details">
-                <div className="version-item">
-                  <strong>Version:</strong>
-                  <span className="version-number">#{portalVersion.version}</span>
-                </div>
-                <div className="version-item">
-                  <strong>Build Number:</strong>
-                  <span>{portalVersion.buildNumber}</span>
-                </div>
-                <div className="version-item">
-                  <strong>Environment:</strong>
-                  {getEnvironmentBadge(portalVersion.environment)}
-                </div>
-                <div className="version-item">
-                  <GitBranch size={16} />
-                  <strong>Branch:</strong>
-                  <span>{portalVersion.branch}</span>
-                </div>
-                <div className="version-item">
-                  <strong>Commit:</strong>
-                  <code className="commit-sha">{portalVersion.commitSha}</code>
-                </div>
+                {isProductionBuild(portalVersion.buildNumber) && (
+                  <>
+                    <div className="version-item">
+                      <strong>Version:</strong>
+                      <span className="version-number">#{portalVersion.version}</span>
+                    </div>
+                    <div className="version-item">
+                      <strong>Build Number:</strong>
+                      <span>{portalVersion.buildNumber}</span>
+                    </div>
+                  </>
+                )}
+                {getEnvironmentBadge(portalVersion.environment) && (
+                  <div className="version-item">
+                    <strong>Environment:</strong>
+                    {getEnvironmentBadge(portalVersion.environment)}
+                  </div>
+                )}
+                {portalVersion.branch && portalVersion.branch !== 'unknown' && portalVersion.branch !== 'local' && (
+                  <div className="version-item">
+                    <GitBranch size={16} />
+                    <strong>Branch:</strong>
+                    <span>{portalVersion.branch}</span>
+                  </div>
+                )}
+                {portalVersion.commitSha && portalVersion.commitSha !== 'unknown' && portalVersion.commitSha !== 'local' && (
+                  <div className="version-item">
+                    <strong>Commit:</strong>
+                    <code className="commit-sha">{portalVersion.commitSha}</code>
+                  </div>
+                )}
                 <div className="version-item">
                   <Calendar size={16} />
                   <strong>Built:</strong>
@@ -199,27 +210,37 @@ const About: React.FC = () => {
                   <strong>Status:</strong>
                   <span className="status-text">Online</span>
                 </div>
-                <div className="version-item">
-                  <strong>Version:</strong>
-                  <span className="version-number">#{apiVersion.version}</span>
-                </div>
-                <div className="version-item">
-                  <strong>Build Number:</strong>
-                  <span>{apiVersion.buildNumber}</span>
-                </div>
-                <div className="version-item">
-                  <strong>Environment:</strong>
-                  {getEnvironmentBadge(apiVersion.environment)}
-                </div>
-                <div className="version-item">
-                  <GitBranch size={16} />
-                  <strong>Branch:</strong>
-                  <span>{apiVersion.branch}</span>
-                </div>
-                <div className="version-item">
-                  <strong>Commit:</strong>
-                  <code className="commit-sha">{apiVersion.commitSha}</code>
-                </div>
+                {isProductionBuild(apiVersion.buildNumber) && (
+                  <>
+                    <div className="version-item">
+                      <strong>Version:</strong>
+                      <span className="version-number">#{apiVersion.version}</span>
+                    </div>
+                    <div className="version-item">
+                      <strong>Build Number:</strong>
+                      <span>{apiVersion.buildNumber}</span>
+                    </div>
+                  </>
+                )}
+                {getEnvironmentBadge(apiVersion.environment) && (
+                  <div className="version-item">
+                    <strong>Environment:</strong>
+                    {getEnvironmentBadge(apiVersion.environment)}
+                  </div>
+                )}
+                {apiVersion.branch && apiVersion.branch !== 'unknown' && apiVersion.branch !== 'local' && (
+                  <div className="version-item">
+                    <GitBranch size={16} />
+                    <strong>Branch:</strong>
+                    <span>{apiVersion.branch}</span>
+                  </div>
+                )}
+                {apiVersion.commitSha && apiVersion.commitSha !== 'unknown' && apiVersion.commitSha !== 'local' && (
+                  <div className="version-item">
+                    <strong>Commit:</strong>
+                    <code className="commit-sha">{apiVersion.commitSha}</code>
+                  </div>
+                )}
                 <div className="version-item">
                   <Calendar size={16} />
                   <strong>Built:</strong>
