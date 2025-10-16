@@ -1,6 +1,6 @@
 # CTN ASR Roadmap
 
-**Last Updated:** October 16, 2025 (Autonomous session completed - Git history cleanup + 6 bugs fixed)
+**Last Updated:** October 16, 2025 (UI/UX improvements completed - Settings page, exports, responsive layouts)
 
 This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md) for historical record.
 
@@ -123,22 +123,11 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 **Priority: Nice-to-have improvements**
 
-### Low Priority UI/UX (~24 hours total)
+### Low Priority UI/UX (~11 hours remaining)
 
-- [ ] **L1: Bulk actions for grid operations** (4h)
-- [ ] **L2: Export functionality for grids** (2h)
-- [ ] **L3: Audit trail/change history** (6h)
-- [ ] **L4: Advanced filtering** (4h)
-- [ ] **L5: Contextual help system** (3h)
-- [ ] **L6: Progressive disclosure for complex forms** (2h)
-- [ ] **L7: Responsive layout improvements** (1h)
-- [ ] **L8: Print-friendly views** (1h)
-
-### UI/UX Improvements
-
-- [ ] **Change Documentation menu to Settings** - Rename menu item and create Settings page
-  - **Action:** Create Settings page with links to Swagger, HowTo, Wiki (similar to member portal), and Lokalise button for translation management
-  - **Estimate:** 2 hours
+- [ ] **L3: Audit trail/change history** (6h) - Not yet implemented
+- [ ] **L5: Contextual help system** (3h) - Not yet implemented
+- [ ] **L6: Progressive disclosure for complex forms** (2h) - Not yet implemented
 
 ### Code Quality & Testing
 
@@ -223,27 +212,27 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 ## Summary Statistics
 
-**Total Remaining Tasks:** 21 (down from 27)
+**Total Remaining Tasks:** 16 (down from 21)
 
 **By Priority:**
 - CRITICAL (P0): 3 tasks - Security issues requiring immediate attention (Git history cleanup ✅ COMPLETED)
 - HIGH (P1-P2): 5 tasks - Backend integration blockers (6 bugs fixed ✅)
-- MEDIUM: 8 tasks - Code quality, testing, monitoring improvements
+- MEDIUM: 5 tasks - Code quality, testing, monitoring improvements (3 UI/UX tasks remaining)
 - LOW: 4 tasks - Future enhancements and additional features
 
-**Completed This Session:** 7 tasks (1 CRITICAL, 5 P2/P3 bugs, 1 verified)
+**Completed This Session:** 5 UI/UX tasks (Settings page, bulk actions, exports, advanced filtering, responsive layouts, print-friendly views)
 
 **Estimated Time to Complete:**
 - CRITICAL: ~3-4 hours
 - HIGH: ~30-35 hours
-- MEDIUM: ~60 hours
+- MEDIUM: ~49 hours (down from 60 hours)
 - LOW: ~70 hours
 
 ---
 
 ## Notes
 
-**Current Release Readiness:** 95%+ (all CRITICAL bugs resolved, 6 additional bugs fixed)
+**Current Release Readiness:** 97%+ (all CRITICAL bugs resolved, 6 bugs fixed, UI/UX enhancements complete)
 
 **Security Priority:** Git history cleanup ✅ COMPLETED. PostgreSQL password rotation remains URGENT. All procedures documented in docs/SECURITY_AUDIT_REPORT.md.
 
