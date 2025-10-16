@@ -1,6 +1,6 @@
 # CTN ASR Roadmap
 
-**Last Updated:** October 16, 2025 (BUG-010 fixed - pipeline deployment issues resolved)
+**Last Updated:** October 16, 2025 (Vite migration completed - all npm vulnerabilities resolved)
 
 This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md) for historical record.
 
@@ -26,16 +26,6 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
   - **Timeline:** 15 minutes
   - **Reference:** Commands provided in docs/SECURITY_AUDIT_REPORT.md
 
-- [ ] **Fix npm audit vulnerabilities** - 9 vulnerabilities (6 high, 3 moderate) in react-scripts dependencies
-  - **Priority:** P0
-  - **Impact:** Multiple security vulnerabilities including:
-    - nth-check: ReDoS vulnerability (CVSS 7.5)
-    - webpack-dev-server: Source code theft risk (CVSS 6.5)
-    - postcss: Line return parsing error (CVSS 5.3)
-  - **Affected:** Both web and portal projects
-  - **Fix:** Upgrade react-scripts or migrate to Vite (requires breaking change)
-  - **Estimate:** 4-6 hours (if migrating to Vite: 8-12 hours)
-  - **Note:** All vulnerabilities require react-scripts upgrade (currently on old version)
 
 ---
 
@@ -121,6 +111,17 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 - [ ] **L6: Progressive disclosure for complex forms** (2h) - Not yet implemented
 
 ### Code Quality & Testing
+
+- [ ] **Vite Configuration Improvements** - Follow-up from Vite migration (Code Reviewer recommendations)
+  - **Priority:** P2
+  - **Tasks:**
+    - Fix environment variable undefined handling in web/vite.config.ts (add fallback values)
+    - Create .gitignore for portal directory (currently missing)
+    - Add NODE_ENV to portal/vite.config.ts for consistency with web
+    - Consider environment variable validation in vite.config.ts
+    - Update TypeScript build command to use `tsc --noEmit` for explicit type checking
+  - **Estimate:** 2 hours
+  - **Status:** Non-blocking improvements to enhance Vite setup
 
 - [ ] **Fix Biome code quality issues** - 185 errors + 92 warnings in web portal
   - **Priority:** P2
@@ -232,15 +233,15 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 **Total Remaining Tasks:** 49
 
 **By Priority:**
-- CRITICAL (P0): 4 tasks - Security issues requiring immediate attention
+- CRITICAL (P0): 3 tasks - Security issues requiring immediate attention
 - HIGH (P1-P2): 10 tasks - Backend integration blockers and bugs
-- MEDIUM: 14 tasks - Code quality, testing, monitoring improvements
+- MEDIUM: 15 tasks - Code quality, testing, monitoring improvements (includes Vite follow-up)
 - LOW: 21 tasks - Future enhancements and additional features
 
 **Estimated Time to Complete:**
-- CRITICAL: ~8-14 hours (includes npm vulnerability fixes)
+- CRITICAL: ~3.75 hours (npm vulnerabilities now resolved)
 - HIGH: ~28-33 hours
-- MEDIUM: ~52-55 hours (includes Biome fixes)
+- MEDIUM: ~54-57 hours (includes Vite improvements and Biome fixes)
 - LOW: ~70 hours
 
 ---

@@ -65,7 +65,11 @@
     "security:aikido:scan": "aikido-api-client scan 1094319 $BASE_COMMIT $HEAD_COMMIT main --minimum-severity-level MEDIUM",
     "security:aikido:release": "aikido-api-client scan-release 1094319 $HEAD_COMMIT --minimum-severity-level HIGH",
     "review": "npm run lint && npm run security:audit && npm run security:summary",
-    "ci": "biome ci . && npm audit --audit-level=high"
+    "ci": "biome ci . && npm audit --audit-level=high",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report"
   },
   "browserslist": {
     "production": [
@@ -81,6 +85,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@playwright/test": "^1.56.0",
     "@types/node": "^20.19.21",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",

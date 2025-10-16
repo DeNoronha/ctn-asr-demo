@@ -48,3 +48,8 @@ logs/
 # Keep markdown summaries for visibility
 !**/reports/*-summary.md
 .credentials
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/
