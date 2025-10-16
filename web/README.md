@@ -38,3 +38,4 @@ To learn React, check out the [React documentation](https://reactjs.org/).
 # Pipeline test - ma 13 okt. 2025 07:25:40 CEST
 # Pipeline test with MS-hosted agents - ma 13 okt. 2025 07:41:24 CEST
 # Pipeline test - simplified single-job - ma 13 okt. 2025 08:49:39 CEST
+# Trigger pipeline to test deployment fixes
