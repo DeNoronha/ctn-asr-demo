@@ -128,6 +128,7 @@ git push origin main
 - React + TypeScript for frontend
 - ESLint + Prettier for code formatting
 - Aikido for security scanning
+- **See `docs/CODING_STANDARDS.md` for complete naming conventions, date/timezone handling, and code organization standards**
 
 ### Testing Requirements
 
