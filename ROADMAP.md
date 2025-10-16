@@ -1,6 +1,6 @@
 # CTN ASR Roadmap
 
-**Last Updated:** October 16, 2025 (UI/UX improvements completed - Settings page, exports, responsive layouts)
+**Last Updated:** October 16, 2025 (Backend integration completed - MemberDetailDialog API calls)
 
 This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md) for historical record.
 
@@ -74,15 +74,17 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 ### Backend Integration TODOs
 
-- [ ] **Implement IdentifierVerificationManager API endpoint** - Replace mock data
+- [ ] **Implement IdentifierVerificationManager API endpoint** - Backend development required
   - **Location:** IdentifierVerificationManager.tsx:57 and :110
-  - **Action:** Replace mock data with actual API calls for verification history
-  - **Estimate:** 3 hours
-
-- [ ] **Implement MemberDetailDialog API calls** - Replace mock implementations
-  - **Location:** MemberDetailDialog.tsx:92 (member details) and :105 (member updates)
-  - **Action:** Replace with actual API endpoints
-  - **Estimate:** 2 hours
+  - **Frontend Status:** Component well-documented with comprehensive TODO comments
+  - **Backend Required:**
+    - New database table: identifier_verification_history
+    - New endpoints: GET/POST /v1/legal-entities/{id}/verifications
+    - Azure Blob Storage integration for document uploads
+    - Document Intelligence API integration for KvK/LEI/EUID extraction
+  - **Why Not Implemented:** Frontend expects generic identifier verification for all types (KvK, LEI, EUID, HRB, etc.), but backend only supports KvK-specific verification via legal_entity table columns
+  - **Estimate:** 3-4 hours backend work (database table + APIs + blob storage + document intelligence)
+  - **Frontend Ready:** Component already displays upload button with warning that backend is needed
 
 - [ ] **Implement User Management API integration** - Connect to Microsoft Graph API
   - **Location:** UserManagement.tsx
@@ -212,20 +214,20 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 ## Summary Statistics
 
-**Total Remaining Tasks:** 16 (down from 21)
+**Total Remaining Tasks:** 15 (down from 16)
 
 **By Priority:**
 - CRITICAL (P0): 3 tasks - Security issues requiring immediate attention (Git history cleanup ✅ COMPLETED)
-- HIGH (P1-P2): 5 tasks - Backend integration blockers (6 bugs fixed ✅)
+- HIGH (P1-P2): 4 tasks - Backend integration blockers (MemberDetailDialog ✅ COMPLETED, 6 bugs fixed ✅)
 - MEDIUM: 5 tasks - Code quality, testing, monitoring improvements (3 UI/UX tasks remaining)
 - LOW: 4 tasks - Future enhancements and additional features
 
-**Completed This Session:** 5 UI/UX tasks (Settings page, bulk actions, exports, advanced filtering, responsive layouts, print-friendly views)
+**Completed This Session:** MemberDetailDialog API integration (removed 79 lines of mock data, integrated real backend APIs)
 
 **Estimated Time to Complete:**
 - CRITICAL: ~3-4 hours
-- HIGH: ~30-35 hours
-- MEDIUM: ~49 hours (down from 60 hours)
+- HIGH: ~28-33 hours (down from 30-35 hours)
+- MEDIUM: ~49 hours
 - LOW: ~70 hours
 
 ---
