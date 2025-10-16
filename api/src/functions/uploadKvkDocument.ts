@@ -204,12 +204,72 @@ async function handler(
 
       // Update with extracted data
       await pool.query(
-        `UPDATE legal_entity 
+        `UPDATE legal_entity
          SET kvk_extracted_company_name = $1,
              kvk_extracted_number = $2
          WHERE legal_entity_id = $3`,
         [extractedData.companyName, extractedData.kvkNumber, legalEntityId]
       );
+
+      // Compare extracted data with entered data
+      const comparisonFlags: string[] = [];
+
+      // Get entered company name from legal entity
+      const enteredCompanyName = entityResult.rows[0].primary_legal_name;
+
+      // Get entered KvK identifier (if any)
+      const identifiersResult = await pool.query(
+        `SELECT identifier_value
+         FROM legal_entity_identifier
+         WHERE legal_entity_id = $1
+           AND identifier_type = 'KVK'
+           AND is_deleted = false`,
+        [legalEntityId]
+      );
+
+      const enteredKvkNumber = identifiersResult.rows.length > 0 ? identifiersResult.rows[0].identifier_value : null;
+
+      // Compare KvK numbers (if both exist)
+      if (enteredKvkNumber && extractedData.kvkNumber) {
+        // Normalize: remove spaces, hyphens, etc.
+        const normalizedEntered = enteredKvkNumber.replace(/[\s-]/g, '');
+        const normalizedExtracted = extractedData.kvkNumber.replace(/[\s-]/g, '');
+
+        if (normalizedEntered !== normalizedExtracted) {
+          comparisonFlags.push('entered_kvk_mismatch');
+          context.warn(`KvK mismatch: entered=${enteredKvkNumber}, extracted=${extractedData.kvkNumber}`);
+        } else {
+          context.log(`KvK match: ${enteredKvkNumber} = ${extractedData.kvkNumber}`);
+        }
+      }
+
+      // Compare company names (fuzzy match - case insensitive, ignore extra spaces)
+      if (enteredCompanyName && extractedData.companyName) {
+        const normalizeCompanyName = (name: string) => {
+          return name
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, ' ')  // Normalize multiple spaces to single space
+            .replace(/[.,\-]/g, ''); // Remove punctuation
+        };
+
+        const normalizedEntered = normalizeCompanyName(enteredCompanyName);
+        const normalizedExtracted = normalizeCompanyName(extractedData.companyName);
+
+        // Check if names are similar (exact match or one contains the other)
+        const namesMatch = normalizedEntered === normalizedExtracted ||
+                          normalizedEntered.includes(normalizedExtracted) ||
+                          normalizedExtracted.includes(normalizedEntered);
+
+        if (!namesMatch) {
+          comparisonFlags.push('entered_name_mismatch');
+          context.warn(`Company name mismatch: entered="${enteredCompanyName}", extracted="${extractedData.companyName}"`);
+        } else {
+          context.log(`Company name match: "${enteredCompanyName}" ≈ "${extractedData.companyName}"`);
+        }
+      }
+
+      context.log('Comparison flags:', comparisonFlags);
 
       // Validate against KvK API if we have a number
       if (extractedData.kvkNumber) {
@@ -221,17 +281,31 @@ async function handler(
 
         context.log('KvK validation result:', validation);
 
-        // Update verification status
-        const newStatus = validation.isValid ? 'verified' : (validation.flags.length > 0 ? 'flagged' : 'failed');
-        
+        // Combine comparison flags with KvK API validation flags
+        const allFlags = [...comparisonFlags, ...validation.flags];
+
+        // Update verification status based on all flags
+        // Priority: entered data mismatches are critical, so status is 'flagged' if present
+        let newStatus: string;
+        if (comparisonFlags.length > 0) {
+          // Entered data mismatches = flagged for review
+          newStatus = 'flagged';
+        } else if (validation.isValid) {
+          newStatus = 'verified';
+        } else if (validation.flags.length > 0) {
+          newStatus = 'flagged';
+        } else {
+          newStatus = 'failed';
+        }
+
         await pool.query(
-          `UPDATE legal_entity 
+          `UPDATE legal_entity
            SET kvk_verification_status = $1,
                kvk_api_response = $2,
                kvk_mismatch_flags = $3,
                kvk_verified_at = NOW()
            WHERE legal_entity_id = $4`,
-          [newStatus, JSON.stringify(validation.companyData), validation.flags, legalEntityId]
+          [newStatus, JSON.stringify(validation.companyData), allFlags, legalEntityId]
         );
 
         // Log audit event
@@ -249,13 +323,15 @@ async function handler(
           ]
         );
       } else {
-        // No KvK number extracted - flag for manual review
+        // No KvK number extracted - combine with comparison flags
+        const allFlags = [...comparisonFlags, 'extraction_failed'];
+
         await pool.query(
-          `UPDATE legal_entity 
+          `UPDATE legal_entity
            SET kvk_verification_status = 'failed',
-               kvk_mismatch_flags = ARRAY['extraction_failed']
-           WHERE legal_entity_id = $1`,
-          [legalEntityId]
+               kvk_mismatch_flags = $1
+           WHERE legal_entity_id = $2`,
+          [allFlags, legalEntityId]
         );
       }
     } catch (verificationError) {
