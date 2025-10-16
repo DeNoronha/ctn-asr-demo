@@ -22,11 +22,9 @@ async function handler(
   const pool = getPool();
   const legalEntityId = request.params.legalentityid;
 
-  // Extract headers safely at the beginning to avoid "Cannot read private member" error
-  const clientIp = safeGetHeader(request.headers, 'x-forwarded-for') ||
-                   safeGetHeader(request.headers, 'x-real-ip') ||
-                   undefined;
-  const userAgent = safeGetHeader(request.headers, 'user-agent') || undefined;
+  // Extract request metadata for audit logging
+  const clientIp = safeGetHeader(request.headers, 'x-forwarded-for')?.split(',')[0].trim();
+  const userAgent = safeGetHeader(request.headers, 'user-agent');
   const requestPath = request.url;
   const requestMethod = request.method;
 

@@ -34,6 +34,34 @@ function safeGetHeader(headers: any, name: string): string | null {
 }
 
 /**
+ * Convert Headers object to plain object to avoid private member errors
+ * Returns a wrapper that safely delegates to the original headers
+ */
+function headersToPlainObject(headers: any): any {
+  return {
+    get: (name: string) => {
+      try {
+        return headers.get(name);
+      } catch {
+        return null;
+      }
+    },
+    has: (name: string) => {
+      try {
+        return headers.has(name);
+      } catch {
+        return false;
+      }
+    },
+    // Prevent iteration which might access private members
+    forEach: () => {},
+    entries: () => [],
+    keys: () => [],
+    values: () => []
+  };
+}
+
+/**
  * Get signing key from JWKS endpoint
  */
 function getKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback) {
@@ -225,15 +253,16 @@ export async function authenticate(
     const payload = await validateJwtToken(token, context);
 
     // Create authenticated request with essential properties
+    // Bind methods to avoid accessing private Headers members
     const authenticatedRequest: AuthenticatedRequest = {
       method: request.method,
       url: request.url,
-      headers: request.headers as any, // Type compatibility fix
+      headers: headersToPlainObject(request.headers),
       query: request.query,
       params: request.params,
-      text: request.text,
-      json: request.json,
-      arrayBuffer: request.arrayBuffer,
+      text: request.text.bind(request),
+      json: request.json.bind(request),
+      arrayBuffer: request.arrayBuffer?.bind(request),
       user: payload,
       userId: payload.oid || payload.sub,
       userEmail: payload.email || payload.preferred_username || payload.upn,
@@ -284,15 +313,16 @@ export async function optionalAuthenticate(
   }
 
   // Return request without user info (anonymous)
+  // Bind methods to avoid accessing private Headers members
   const anonymousRequest: AuthenticatedRequest = {
     method: request.method,
     url: request.url,
-    headers: request.headers as any, // Type compatibility fix
+    headers: headersToPlainObject(request.headers),
     query: request.query,
     params: request.params,
-    text: request.text,
-    json: request.json,
-    arrayBuffer: request.arrayBuffer,
+    text: request.text.bind(request),
+    json: request.json.bind(request),
+    arrayBuffer: request.arrayBuffer?.bind(request),
   };
 
   return anonymousRequest;

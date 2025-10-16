@@ -280,10 +280,10 @@ export const apiV2 = {
 
   async getIdentifiers(legalEntityId: string): Promise<LegalEntityIdentifier[]> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.get<LegalEntityIdentifier[]>(
+    const response = await axiosInstance.get<{ data: LegalEntityIdentifier[]; pagination: any }>(
       `/entities/${legalEntityId}/identifiers`
     );
-    return response.data;
+    return response.data.data; // Extract the data array from paginated response
   },
 
   async addIdentifier(
