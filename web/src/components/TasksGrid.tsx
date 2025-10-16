@@ -114,8 +114,12 @@ const TasksGrid: React.FC = () => {
   const loadReviewTasks = async () => {
     try {
       const account = accounts[0];
-      if (!account) return;
+      if (!account) {
+        console.log('TasksGrid: No MSAL account available for review tasks');
+        return;
+      }
 
+      console.log('TasksGrid: Acquiring token for review tasks...');
       const tokenResponse = await instance.acquireTokenSilent({
         scopes: ['api://5c0c3b9e-0e4b-47b8-8e4f-9b0e6c0c3b9e/.default'],
         account: account,
@@ -129,10 +133,19 @@ const TasksGrid: React.FC = () => {
         },
       });
 
+      console.log('TasksGrid: Fetching review tasks from API...');
       const response = await axiosInstance.get<ReviewTask[]>('/v1/admin/kvk-verification/flagged-entities');
+      console.log(`TasksGrid: Loaded ${response.data.length} review tasks`, response.data);
       setReviewTasks(response.data);
-    } catch (error) {
-      console.error('Error loading review tasks:', error);
+    } catch (error: any) {
+      console.error('TasksGrid: Error loading review tasks:', error);
+      if (error.response) {
+        console.error('TasksGrid: API error details:', {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data
+        });
+      }
     }
   };
 
@@ -343,21 +356,21 @@ const TasksGrid: React.FC = () => {
       </div>
 
       <div className="tasks-summary">
-        <div className="summary-card">
+        <div className="summary-card card-pending">
           <div className="summary-value">{pendingCount}</div>
           <div className="summary-label">Pending</div>
         </div>
-        <div className="summary-card">
+        <div className="summary-card card-in-progress">
           <div className="summary-value">{inProgressCount}</div>
           <div className="summary-label">In Progress</div>
         </div>
-        <div className="summary-card urgent">
+        <div className="summary-card card-overdue">
           <div className="summary-value">{overdueCount}</div>
           <div className="summary-label">Overdue</div>
         </div>
-        <div className="summary-card kvk-review">
+        <div className="summary-card card-verify">
           <div className="summary-value">{reviewCount}</div>
-          <div className="summary-label">KvK Reviews</div>
+          <div className="summary-label">Verify</div>
         </div>
       </div>
 
@@ -394,15 +407,15 @@ const TasksGrid: React.FC = () => {
           </Grid>
         </TabStripTab>
 
-        <TabStripTab title="KvK Reviews">
+        <TabStripTab title="Verify">
           <Grid data={reviewTasks} style={{ height: '550px' }}>
             <GridToolbar>
               <span className="grid-toolbar-info">Total Reviews: {reviewTasks.length}</span>
             </GridToolbar>
 
             <GridColumn field="entered_company_name" title="Company Name" width="250px" />
-            <GridColumn field="entered_legal_id" title="Entered KvK" width="120px" />
-            <GridColumn field="extracted_legal_id" title="Extracted KvK" width="130px" />
+            <GridColumn field="entered_legal_id" title="Entered ID" width="120px" />
+            <GridColumn field="extracted_legal_id" title="Extracted ID" width="130px" />
             <GridColumn
               field="kvk_mismatch_flags"
               title="Mismatches"
@@ -572,7 +585,7 @@ const TasksGrid: React.FC = () => {
       {/* Review Dialog */}
       {showReviewDialog && selectedReviewTask && (
         <Dialog
-          title={`Review KvK Verification - ${selectedReviewTask.entered_company_name}`}
+          title={`Verify Registration - ${selectedReviewTask.entered_company_name}`}
           onClose={() => setShowReviewDialog(false)}
           width={800}
         >
@@ -617,7 +630,7 @@ const TasksGrid: React.FC = () => {
                     </td>
                   </tr>
                   <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                    <td style={{ padding: '12px', fontWeight: 600 }}>KvK Number</td>
+                    <td style={{ padding: '12px', fontWeight: 600 }}>Registry Number</td>
                     <td
                       style={{
                         padding: '12px',

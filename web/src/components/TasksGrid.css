@@ -29,8 +29,7 @@
 .summary-card {
   flex: 1;
   padding: 20px;
-  background: linear-gradient(135deg, #85ea2d 0%, #6bc71e 100%);
-  color: white;
+  color: white !important;
   border-radius: 8px;
   text-align: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -39,42 +38,41 @@
 
 .summary-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 /* Pending tasks - CTN Green */
-.summary-card:nth-child(1) {
-  background: linear-gradient(135deg, #85ea2d 0%, #6bc71e 100%);
+.summary-card.card-pending {
+  background: linear-gradient(135deg, #85ea2d 0%, #6bc71e 100%) !important;
 }
 
-.summary-card:nth-child(1):hover {
+.summary-card.card-pending:hover {
   box-shadow: 0 4px 16px rgba(133, 234, 45, 0.4);
 }
 
 /* In Progress tasks - CTN Primary Blue */
-.summary-card:nth-child(2) {
-  background: linear-gradient(135deg, #0066b3 0%, #004d87 100%);
+.summary-card.card-in-progress {
+  background: linear-gradient(135deg, #0066b3 0%, #004d87 100%) !important;
 }
 
-.summary-card:nth-child(2):hover {
+.summary-card.card-in-progress:hover {
   box-shadow: 0 4px 16px rgba(0, 102, 179, 0.4);
 }
 
 /* Overdue tasks - Red (warning) */
-.summary-card.urgent {
-  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+.summary-card.card-overdue {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
 }
 
-.summary-card.urgent:hover {
+.summary-card.card-overdue:hover {
   box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
 }
 
-/* KvK Reviews - CTN Orange */
-.summary-card.kvk-review {
-  background: linear-gradient(135deg, #ff8c00 0%, #e67300 100%);
+/* Verify Reviews - CTN Orange */
+.summary-card.card-verify {
+  background: linear-gradient(135deg, #ff8c00 0%, #e67300 100%) !important;
 }
 
-.summary-card.kvk-review:hover {
+.summary-card.card-verify:hover {
   box-shadow: 0 4px 16px rgba(255, 140, 0, 0.4);
 }
 
