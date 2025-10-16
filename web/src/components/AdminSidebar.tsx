@@ -4,6 +4,7 @@ import {
   CreditCard,
   FileCheck,
   FileText,
+  Info,
   Key,
   LayoutDashboard,
   Mail,
@@ -42,6 +43,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
     { text: 'User Management', iconComponent: Shield, route: 'settings' },
     { text: 'Audit Logs', iconComponent: FileText, route: 'audit' },
     { text: 'Documentation', iconComponent: BookOpen, route: 'docs' },
+    { text: 'About', iconComponent: Info, route: 'about' },
   ];
 
   const handleItemClick = (item: MenuItem) => {

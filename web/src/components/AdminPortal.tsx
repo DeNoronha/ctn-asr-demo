@@ -15,6 +15,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useAsync } from '../hooks/useAsync';
 import { type Member, api } from '../services/api';
 import type { MemberFormData } from '../utils/validation';
+import About from './About';
 import AdminSidebar, { type MenuItem } from './AdminSidebar';
 import Dashboard from './Dashboard';
 import { EndpointManagement } from './EndpointManagement';
@@ -233,6 +234,9 @@ const AdminPortal: React.FC = () => {
             <TasksGrid />
           </div>
         );
+
+      case 'about':
+        return <About />;
 
       case 'docs':
         return (

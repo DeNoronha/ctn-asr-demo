@@ -3,6 +3,7 @@ console.log('Loading essential functions for demo...');
 
 // Health check and BDI
 import './functions/healthCheck';
+import './functions/GetVersion';
 import './functions/bdiJwks';
 import './functions/generateBvad';
 

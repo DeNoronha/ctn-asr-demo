@@ -1,0 +1,13 @@
+{
+  "buildNumber": "dev",
+  "buildId": "0",
+  "buildReason": "Manual",
+  "commitSha": "64860b83",
+  "commitShaFull": "64860b83bf730ecb1a0501bbee009df638465104",
+  "branch": "main",
+  "repository": "ASR",
+  "triggeredBy": "System",
+  "timestamp": "2025-10-16T08:10:04Z",
+  "version": "20251016.0",
+  "environment": "production"
+}

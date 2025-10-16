@@ -1,0 +1,270 @@
+/**
+ * About Page Component
+ * Displays build information for both admin portal and API
+ */
+
+import { Card, CardBody, CardHeader, CardTitle } from '@progress/kendo-react-layout';
+import { Badge } from '@progress/kendo-react-indicators';
+import { CheckCircle, AlertCircle, Clock, GitBranch, Calendar, Package } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import LoadingSpinner from './LoadingSpinner';
+import './About.css';
+
+interface VersionInfo {
+  buildNumber: string;
+  buildId: string;
+  commitSha: string;
+  commitShaFull: string;
+  branch: string;
+  timestamp: string;
+  version: string;
+  environment: string;
+}
+
+interface APIVersionInfo extends VersionInfo {
+  api: {
+    name: string;
+    nodeVersion: string;
+    platform: string;
+    uptime: number;
+  };
+  copyright: {
+    year: number;
+    owner: string;
+    license: string;
+  };
+}
+
+const About: React.FC = () => {
+  const [portalVersion, setPortalVersion] = useState<VersionInfo | null>(null);
+  const [apiVersion, setApiVersion] = useState<APIVersionInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadVersionInfo();
+  }, []);
+
+  const loadVersionInfo = async () => {
+    try {
+      setLoading(true);
+
+      // Load portal version from /version.json
+      const portalResponse = await fetch('/version.json');
+      if (portalResponse.ok) {
+        const portalData = await portalResponse.json();
+        setPortalVersion(portalData);
+      } else {
+        // Fallback for local development
+        setPortalVersion({
+          buildNumber: 'dev',
+          buildId: '0',
+          commitSha: 'local',
+          commitShaFull: 'local-development',
+          branch: 'local',
+          timestamp: new Date().toISOString(),
+          version: 'dev',
+          environment: 'local'
+        });
+      }
+
+      // Load API version from /api/v1/version
+      const apiResponse = await fetch(
+        `${process.env.REACT_APP_API_URL || 'http://localhost:7071/api/v1'}/version`
+      );
+      if (apiResponse.ok) {
+        const apiData = await apiResponse.json();
+        setApiVersion(apiData);
+      }
+
+      setLoading(false);
+    } catch (err) {
+      console.error('Failed to load version info:', err);
+      setError('Failed to load version information');
+      setLoading(false);
+    }
+  };
+
+  const formatTimestamp = (timestamp: string) => {
+    return new Date(timestamp).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short'
+    });
+  };
+
+  const formatUptime = (seconds: number) => {
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (days > 0) {
+      return `${days}d ${hours}h ${minutes}m`;
+    } else if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else {
+      return `${minutes}m`;
+    }
+  };
+
+  const getEnvironmentBadge = (environment: string) => {
+    const envLower = environment.toLowerCase();
+    if (envLower === 'production' || envLower === 'prod') {
+      return <Badge themeColor="success" size="medium">Production</Badge>;
+    } else if (envLower === 'development' || envLower === 'dev') {
+      return <Badge themeColor="warning" size="medium">Development</Badge>;
+    } else if (envLower === 'local') {
+      return <Badge themeColor="info" size="medium">Local</Badge>;
+    } else {
+      return <Badge themeColor="secondary" size="medium">{environment}</Badge>;
+    }
+  };
+
+  if (loading) {
+    return <LoadingSpinner size="large" message="Loading version information..." fullScreen />;
+  }
+
+  if (error) {
+    return (
+      <div className="about-error">
+        <AlertCircle size={48} />
+        <p>{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="about-view">
+      <h2>About CTN Association Register</h2>
+
+      <div className="about-grid">
+        {/* Admin Portal Version Card */}
+        <Card className="version-card">
+          <CardHeader>
+            <CardTitle>
+              <Package size={20} />
+              Admin Portal
+            </CardTitle>
+          </CardHeader>
+          <CardBody>
+            {portalVersion && (
+              <div className="version-details">
+                <div className="version-item">
+                  <strong>Version:</strong>
+                  <span className="version-number">#{portalVersion.version}</span>
+                </div>
+                <div className="version-item">
+                  <strong>Build Number:</strong>
+                  <span>{portalVersion.buildNumber}</span>
+                </div>
+                <div className="version-item">
+                  <strong>Environment:</strong>
+                  {getEnvironmentBadge(portalVersion.environment)}
+                </div>
+                <div className="version-item">
+                  <GitBranch size={16} />
+                  <strong>Branch:</strong>
+                  <span>{portalVersion.branch}</span>
+                </div>
+                <div className="version-item">
+                  <strong>Commit:</strong>
+                  <code className="commit-sha">{portalVersion.commitSha}</code>
+                </div>
+                <div className="version-item">
+                  <Calendar size={16} />
+                  <strong>Built:</strong>
+                  <span>{formatTimestamp(portalVersion.timestamp)}</span>
+                </div>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+
+        {/* API Version Card */}
+        <Card className="version-card">
+          <CardHeader>
+            <CardTitle>
+              <Package size={20} />
+              Backend API
+            </CardTitle>
+          </CardHeader>
+          <CardBody>
+            {apiVersion ? (
+              <div className="version-details">
+                <div className="version-item">
+                  <CheckCircle size={16} className="status-online" />
+                  <strong>Status:</strong>
+                  <span className="status-text">Online</span>
+                </div>
+                <div className="version-item">
+                  <strong>Version:</strong>
+                  <span className="version-number">#{apiVersion.version}</span>
+                </div>
+                <div className="version-item">
+                  <strong>Build Number:</strong>
+                  <span>{apiVersion.buildNumber}</span>
+                </div>
+                <div className="version-item">
+                  <strong>Environment:</strong>
+                  {getEnvironmentBadge(apiVersion.environment)}
+                </div>
+                <div className="version-item">
+                  <GitBranch size={16} />
+                  <strong>Branch:</strong>
+                  <span>{apiVersion.branch}</span>
+                </div>
+                <div className="version-item">
+                  <strong>Commit:</strong>
+                  <code className="commit-sha">{apiVersion.commitSha}</code>
+                </div>
+                <div className="version-item">
+                  <Calendar size={16} />
+                  <strong>Built:</strong>
+                  <span>{formatTimestamp(apiVersion.timestamp)}</span>
+                </div>
+                <div className="version-item">
+                  <Clock size={16} />
+                  <strong>Uptime:</strong>
+                  <span>{formatUptime(apiVersion.api.uptime)}</span>
+                </div>
+                <div className="version-item">
+                  <strong>Node.js:</strong>
+                  <span>{apiVersion.api.nodeVersion}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="version-unavailable">
+                <AlertCircle size={16} />
+                <span>API version information unavailable</span>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+      </div>
+
+      {/* Copyright Information */}
+      {apiVersion?.copyright && (
+        <Card className="copyright-card">
+          <CardBody>
+            <div className="copyright-info">
+              <p>
+                © {apiVersion.copyright.year} {apiVersion.copyright.owner}
+              </p>
+              <p className="copyright-license">
+                License: {apiVersion.copyright.license}
+              </p>
+              <p className="copyright-description">
+                CTN Association Register - Member management and API endpoint administration for the Connected Trade Network ecosystem.
+              </p>
+            </div>
+          </CardBody>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export default About;
