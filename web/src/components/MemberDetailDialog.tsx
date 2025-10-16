@@ -31,56 +31,39 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
 
-  // MOCK DATA - Create default legal entity and contacts
-  const mockLegalEntity: LegalEntity = {
-    legal_entity_id: member.legal_entity_id || 'mock-entity-id',
-    primary_legal_name: member.legal_name,
-    address_line1: 'Hoofdstraat 123',
-    address_line2: 'Building A',
-    postal_code: '1012 AB',
-    city: 'Amsterdam',
-    province: 'Noord-Holland',
-    country_code: 'NL',
-    entity_legal_form: 'BV',
-    registered_at: member.kvk || '12345678',
-    dt_created: member.created_at,
-    dt_modified: member.updated_at || member.created_at,
-  };
-
-  const mockContacts: LegalEntityContact[] = [
-    {
-      legal_entity_contact_id: 'contact-1',
-      legal_entity_id: mockLegalEntity.legal_entity_id!,
-      dt_created: new Date().toISOString(),
-      dt_modified: new Date().toISOString(),
-      contact_type: 'PRIMARY',
-      full_name: 'John Doe',
-      email: 'john.doe@example.com',
-      phone: '+31 20 123 4567',
-      mobile: '+31 6 12 34 56 78',
-      job_title: 'IT Manager',
-      department: 'IT',
-      is_primary: true,
-    },
-    {
-      legal_entity_contact_id: 'contact-2',
-      legal_entity_id: mockLegalEntity.legal_entity_id!,
-      dt_created: new Date().toISOString(),
-      dt_modified: new Date().toISOString(),
-      contact_type: 'TECHNICAL',
-      full_name: 'Jane Smith',
-      email: 'jane.smith@example.com',
-      phone: '+31 20 987 6543',
-      job_title: 'Technical Lead',
-      department: 'Development',
-      is_primary: false,
-    },
-  ];
-
-  const [legalEntity, setLegalEntity] = useState<LegalEntity>(mockLegalEntity);
-  const [contacts, setContacts] = useState<LegalEntityContact[]>(mockContacts);
-  const [_loading, _setLoading] = useState(false);
+  const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(null);
+  const [contacts, setContacts] = useState<LegalEntityContact[]>([]);
+  const [loading, setLoading] = useState(true);
   const notification = useNotification();
+
+  // Load legal entity and contacts from API
+  useEffect(() => {
+    loadLegalEntityData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [member.legal_entity_id]);
+
+  const loadLegalEntityData = async () => {
+    if (!member.legal_entity_id) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Load legal entity details
+      const entityData = await api.getLegalEntity(member.legal_entity_id);
+      setLegalEntity(entityData);
+
+      // Load contacts
+      const contactsData = await api.getContacts(member.legal_entity_id);
+      setContacts(contactsData);
+    } catch (error) {
+      console.error('Failed to load legal entity data:', error);
+      notification.showError('Failed to load company information');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleUpdate = async (data: MemberFormData) => {
     await onUpdate(data);
@@ -88,10 +71,14 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
   };
 
   const handleUpdateCompany = async (data: LegalEntity) => {
+    if (!legalEntity?.legal_entity_id) {
+      notification.showError('No legal entity ID available');
+      return;
+    }
+
     try {
-      // TODO: Replace with actual API call when backend is ready
-      // const updated = await api.updateLegalEntity(legalEntity.legal_entity_id, data);
-      setLegalEntity({ ...legalEntity, ...data, dt_modified: new Date().toISOString() });
+      const updated = await api.updateLegalEntity(legalEntity.legal_entity_id, data);
+      setLegalEntity(updated);
       setIsEditingCompany(false);
       notification.showSuccess('Company information updated successfully');
     } catch (error) {
@@ -102,9 +89,13 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
 
   const handleUpdateContacts = async (updatedContacts: LegalEntityContact[]) => {
     try {
-      // TODO: Replace with actual API calls when backend is ready
-      setContacts(updatedContacts);
-      notification.showSuccess('Contacts updated successfully');
+      // Contacts are managed by ContactsManager component which handles API calls
+      // Reload the contacts from API to ensure we have the latest data
+      if (member.legal_entity_id) {
+        const contactsData = await api.getContacts(member.legal_entity_id);
+        setContacts(contactsData);
+        notification.showSuccess('Contacts updated successfully');
+      }
     } catch (error) {
       console.error('Failed to update contacts:', error);
       notification.showError('Failed to update contacts');
@@ -244,7 +235,11 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
 
         <TabStripTab title="Company">
           <div className="detail-content">
-            {!isEditingCompany ? (
+            {loading ? (
+              <div className="loading-state">Loading company information...</div>
+            ) : !legalEntity ? (
+              <div className="empty-state">No legal entity information available</div>
+            ) : !isEditingCompany ? (
               <CompanyDetails company={legalEntity} onEdit={() => setIsEditingCompany(true)} />
             ) : (
               <CompanyForm
@@ -258,11 +253,17 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
 
         <TabStripTab title="Contacts">
           <div className="detail-content">
-            <ContactsManager
-              legalEntityId={legalEntity.legal_entity_id!}
-              contacts={contacts}
-              onUpdate={handleUpdateContacts}
-            />
+            {loading ? (
+              <div className="loading-state">Loading contacts...</div>
+            ) : !legalEntity?.legal_entity_id ? (
+              <div className="empty-state">No legal entity ID available</div>
+            ) : (
+              <ContactsManager
+                legalEntityId={legalEntity.legal_entity_id}
+                contacts={contacts}
+                onUpdate={handleUpdateContacts}
+              />
+            )}
           </div>
         </TabStripTab>
 
