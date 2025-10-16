@@ -139,20 +139,19 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
   - File: `.azure-pipelines/member-portal.yml`
 
 ### Application Insights Logging (host.json)
-- [ ] **Restore enhanced Application Insights logging** (30 min)
-  - Change log levels back to "Information" (currently "Warning")
-  - Enable live metrics: `enableLiveMetrics: true`
-  - Enable performance counters: `enablePerformanceCountersCollection: true`
-  - Enable console logging: `isEnabled: true`
-  - Increase sampling: `maxTelemetryItemsPerSecond: 20` (currently 5)
-  - Remove request exclusion: `excludedTypes: ""` (currently "Request")
-  - Re-add HTTP auto-collection options:
-    - `enableHttpTriggerExtendedInfoCollection: true`
-    - `enableW3CDistributedTracing: true`
-    - `enableResponseHeaderInjection: true`
+- [x] **Restore enhanced Application Insights logging** (30 min) - ✅ DONE (Oct 16, 2025)
+  - ✅ Log levels restored to "Information"
+  - ✅ Live metrics enabled (real-time production monitoring)
+  - ✅ Performance counters enabled (CPU, memory tracking)
+  - ✅ Console logging enabled
+  - ✅ Sampling increased to 20 items/sec
+  - ✅ Request telemetry tracking restored
+  - ✅ HTTP auto-collection options restored:
+    - W3C distributed tracing (correlation IDs)
+    - Extended HTTP trigger info collection
+    - Response header injection
+  - ✅ Tested: API deployed, health check passing, no regression issues
   - File: `api/host.json`
-  - **Why disabled:** Reduced logging noise during debugging
-  - **Impact:** Lost valuable production telemetry and monitoring
 
 ### API Functions (essential-index.ts)
 - [ ] **Re-enable endpoint management functions** (30 min)
