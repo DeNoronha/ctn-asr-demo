@@ -26,20 +26,22 @@
 }
 
 /* Dropdown list items - ensure high contrast */
-/* Target all possible Kendo list item classes */
-.language-switcher .k-list-item,
-.language-switcher .k-list-optionlabel,
-.language-switcher li,
-.language-switcher .k-item {
-  color: #1a1a1a !important; /* Force high contrast - WCAG AA compliant: 14.47:1 */
-  background-color: #ffffff;
+.language-switcher .language-item-unselected {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
   padding: 8px 12px;
+}
+
+.language-switcher .language-item-selected {
+  background-color: #0066B3 !important;
+  color: #ffffff !important;
+  padding: 8px 12px;
+  font-weight: 600;
 }
 
 /* Override any disabled or default text colors */
 .language-switcher .language-name {
-  color: #1a1a1a !important; /* Force high contrast on language names */
-  font-weight: 500;
+  font-weight: inherit;
 }
 
 .language-switcher .k-list-item:hover,

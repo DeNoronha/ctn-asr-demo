@@ -46,14 +46,30 @@ const LanguageSwitcher: React.FC = () => {
 
   const itemRender = (li: React.ReactElement, itemProps: ListItemProps) => {
     const language = itemProps.dataItem as Language;
+    const isSelected = itemProps.selected;
+
+    // Use inline styles to force high contrast (highest CSS specificity)
+    const containerStyle: React.CSSProperties = {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      color: isSelected ? '#ffffff' : '#1a1a1a',
+      fontWeight: isSelected ? 600 : 500,
+      backgroundColor: isSelected ? '#0066B3' : '#ffffff',
+      padding: '8px 12px',
+      width: '100%',
+    };
+
     return React.cloneElement(
       li,
       {},
-      <span className="language-item">
+      <span className="language-item" style={containerStyle}>
         <span className="language-flag" aria-hidden="true">
           {language.flag}
         </span>
-        <span className="language-name">{language.name}</span>
+        <span className="language-name" style={{ color: isSelected ? '#ffffff' : '#1a1a1a' }}>
+          {language.name}
+        </span>
       </span>
     );
   };
@@ -68,7 +84,9 @@ const LanguageSwitcher: React.FC = () => {
         <span className="language-flag" aria-hidden="true">
           {value.flag}
         </span>
-        <span className="language-name">{value.name}</span>
+        <span className="language-name" style={{ color: '#1a1a1a', fontWeight: 500 }}>
+          {value.name}
+        </span>
       </span>
     );
   };
