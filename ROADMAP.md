@@ -1,6 +1,6 @@
 # CTN ASR Roadmap
 
-**Last Updated:** October 16, 2025 (Completed standardization work - coding standards, locale/timezone fixes, internationalization improvements)
+**Last Updated:** October 16, 2025 (Cleaned up completed tasks - moved to COMPLETED_ACTIONS.md)
 
 This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md) for historical record.
 
@@ -9,10 +9,6 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 ## CRITICAL - Security (Do Immediately)
 
 **Priority: P0 - Address before any other work**
-
-- [x] ✅ **COMPLETED: Clean Git history** - Removed exposed PostgreSQL password from all Git history
-  - **Impact:** Historical credentials accessible in Git history
-  - **Completed:** October 16, 2025 - Used git-filter-repo to replace all credential instances with [REDACTED], force-pushed to Azure DevOps, updated author email from r.denoronha@scotchwhiskyinternational.com → ramon@denoronha.consulting
 
 - [ ] **Rotate PostgreSQL password** - Was exposed in Git history before cleanup (URGENT)
   - **Impact:** Password may exist in clones made before history cleanup
@@ -38,22 +34,7 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 **Test Results:** 90%+ release readiness (3 of 3 CRITICAL bugs fixed). See [docs/testing/TEST_EXECUTION_REPORT.md](./docs/testing/TEST_EXECUTION_REPORT.md) for full details.
 
-### P2 - High Priority Bugs
-
-- [x] ✅ **COMPLETED: BUG-004 - Create Member form validation issues**
-  - **Completed:** October 16, 2025 - Enhanced required field indicators (larger asterisks), added red border + pink background for invalid fields, improved error message styling and form accessibility
-
-- [x] ✅ **COMPLETED: BUG-005 - Identifier modal country filter**
-  - **Completed:** October 16, 2025 - Enhanced country filter with color-coded visual feedback, added warnings for invalid country codes, improved dropdown disabled state messaging with green checkmark for valid selections
-
 ### P3 - Medium Priority Bugs
-
-- [x] ✅ **VERIFIED: BUG-006 - Token expiration warnings** - Already working correctly
-  - **Status:** No changes needed - Existing logic correctly shows warnings for tokens expiring <30 days with WCAG AA compliant styling
-  - **Verified:** October 16, 2025
-
-- [x] ✅ **COMPLETED: BUG-007 - Contact edit modal pre-population failure**
-  - **Completed:** October 16, 2025 - Fixed contact_type case mismatch (backend 'PRIMARY' vs UI 'Primary'), added proper type conversion in form initialization, all contact fields now properly pre-populate when editing
 
 - [ ] **BUG-008: Grid pagination state loss** - Page resets to 1 on filter changes
   - **Severity:** Medium (UX) | **Priority:** P3
@@ -72,10 +53,6 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
     - Check if builds are queuing or failing silently
   - **Estimate:** 2 hours investigation + fixes
   - **Reference:** See CLAUDE.md Pre-Debugging Checklist for deployment validation steps
-
-- [x] ✅ **PARTIALLY COMPLETED: BUG-009 - Accessibility aria-labels**
-  - **Completed:** October 16, 2025 - Added 5 critical aria-labels to AdminPortal buttons (Language Switcher, Logout, Member Grid Actions, Create Member, Excel Export)
-  - **Remaining:** Additional buttons in other components need aria-labels (future work)
 
 ---
 
@@ -221,20 +198,18 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 ## Summary Statistics
 
-**Total Remaining Tasks:** 13 (down from 15)
+**Total Remaining Tasks:** 47
 
 **By Priority:**
-- CRITICAL (P0): 3 tasks - Security issues requiring immediate attention (Git history cleanup ✅ COMPLETED)
-- HIGH (P1-P2): 5 tasks - Backend integration blockers and bugs (6 bugs fixed ✅, standardization complete ✅)
-- MEDIUM: 3 tasks - Code quality, testing, monitoring improvements (3 UI/UX tasks remaining)
-- LOW: 4 tasks - Future enhancements and additional features
-
-**Completed This Session:** Coding standards documentation, locale/timezone standardization, internationalization improvements (KvK → Verify), Tasks screen UI fixes
+- CRITICAL (P0): 3 tasks - Security issues requiring immediate attention
+- HIGH (P1-P2): 11 tasks - Backend integration blockers and bugs
+- MEDIUM: 12 tasks - Code quality, testing, monitoring improvements
+- LOW: 21 tasks - Future enhancements and additional features
 
 **Estimated Time to Complete:**
 - CRITICAL: ~3-4 hours
 - HIGH: ~28-33 hours
-- MEDIUM: ~43 hours (down from 49 hours)
+- MEDIUM: ~43 hours
 - LOW: ~70 hours
 
 ---
@@ -243,7 +218,7 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 **Current Release Readiness:** 97%+ (all CRITICAL bugs resolved, standardization complete, internationalization improved)
 
-**Security Priority:** Git history cleanup ✅ COMPLETED. PostgreSQL password rotation remains URGENT. All procedures documented in docs/SECURITY_AUDIT_REPORT.md.
+**Security Priority:** PostgreSQL password rotation remains URGENT. All procedures documented in docs/SECURITY_AUDIT_REPORT.md.
 
 **Production Deployment Status:** Most API functions have been restored and are working correctly. Remaining HIGH priority items are backend integrations and bug fixes.
 
