@@ -98,7 +98,7 @@ export async function swagger(
 app.http('swagger', {
   methods: ['GET', 'OPTIONS'],
   authLevel: 'anonymous',
-  route: 'docs',
+  route: 'swagger/ui',
   handler: swagger
 });
 
@@ -133,6 +133,6 @@ export async function openapiJson(
 app.http('openapiJson', {
   methods: ['GET', 'OPTIONS'],
   authLevel: 'anonymous',
-  route: 'openapi.json',
+  route: 'swagger/openapi.json',
   handler: openapiJson
 });

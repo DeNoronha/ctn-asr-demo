@@ -4,7 +4,7 @@
   "description": "CTN Association Register API",
   "main": "dist/essential-index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp src/openapi.json dist/openapi.json",
     "watch": "tsc --watch",
     "prestart": "npm run build",
     "start": "func start"

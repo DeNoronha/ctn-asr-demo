@@ -46,4 +46,7 @@ import './functions/reviewKvkVerification';
 import './functions/DiagnosticCheck';
 import './functions/CreateIdentifierSimple';
 
+// API Documentation
+import './functions/swagger';
+
 console.log('✓ Essential functions loaded');
