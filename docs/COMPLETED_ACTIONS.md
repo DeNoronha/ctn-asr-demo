@@ -4,6 +4,31 @@ This file tracks all completed work in chronological order (most recent first).
 
 | Date | Description |
 |------|-------------|
+| 2025-10-16 | Completed comprehensive ROADMAP.md cleanup - Moved 34 completed tasks to COMPLETED_ACTIONS.md, reorganized 27 remaining tasks by priority (4 CRITICAL, 11 HIGH, 8 MEDIUM, 4 LOW), updated "Last Updated" date to October 16, 2025 |
+| 2025-10-16 | Re-enabled origin header extraction optimization in endpointWrapper.ts - Restored performance optimization that extracts origin header once per request, confirmed original implementation was correct and method binding was the actual issue |
+| 2025-10-16 | Fixed About page card layout issue - Adjusted card layout to display correctly in About page |
+| 2025-10-16 | Implemented tooltips for truncated grid content - Added tooltips to show full text when grid cells are truncated (M3 task) |
+| 2025-10-16 | Added drag-drop visual feedback for file uploads - Enhanced upload component with visual feedback during drag-drop operations (M5 task) |
+| 2025-10-16 | Implemented visual feedback during async operations - Added loading states and progress indicators for all asynchronous operations (M1 task) |
+| 2025-10-16 | Standardized section header spacing across all components - Applied consistent 20px/12px spacing pattern throughout application (M4 task) |
+| 2025-10-16 | Added semantic HTML roles to status badges - Implemented role="status" with aria-label for all status badges (M7 task) |
+| 2025-10-16 | Fixed "Always show Last Modified" in Company Details - Ensured Last Modified timestamp is always visible in Company Details section (M6 task) |
+| 2025-10-16 | Fixed color contrast on warning badges - All badges now meet WCAG AA 4.5:1 contrast requirement (M2 task) |
+| 2025-10-16 | Implemented default sort by last_used_at in Tokens grid - Tokens now display with most recently used first (M8 task) |
+| 2025-10-16 | Completed keyboard navigation for grid action buttons - Full WCAG 2.1 Level AA compliance with Enter/Space shortcuts, proper tab order, CSS focus indicators (8.59:1 contrast), and ARIA labels (H2 task) |
+| 2025-10-16 | Re-enabled startup validation in API - Validates all required environment variables on startup, fails fast if critical secrets missing, provides clear error messages |
+| 2025-10-16 | Completed comprehensive Application Insights integration - Enhanced host.json configuration with live metrics, W3C tracing, performance counters, created AppInsightsLogger utility with structured logging |
+| 2025-10-16 | Implemented all missing API functions - Newsletter/subscription management, task management, swagger documentation endpoint, and Event Grid handler all exist and are properly imported |
+| 2025-10-16 | Completed BUG-003 fix - Focus indicators not visible - Added CSS focus indicators with 8.59:1 contrast ratio, proper tab order, descriptive ARIA labels, resolved WCAG 2.4.7 Focus Visible violation |
+| 2025-10-16 | Completed BUG-002 fix - Keyboard button activation failure - Added keyboard shortcuts (Enter, Space) for all action buttons, resolved WCAG 2.1.1 Keyboard violation |
+| 2025-10-16 | Completed BUG-001 fix - Members grid loading timeout - Implemented server-side pagination (20 members per page), removed blocking spinner, improved performance 97% (30+ seconds to <1 second) |
+| 2025-10-16 | Created comprehensive admin portal E2E test suite - 5 test files with 131 tests covering authentication, member management, identifiers, managers, and accessibility (WCAG 2.1 Level AA) |
+| 2025-10-16 | Re-enabled 10 API functions disabled during KVK debugging - Restored endpoint management, KvK verification, and diagnostics functions, total API functions increased from 21 to 30 |
+| 2025-10-16 | Restored enhanced Application Insights logging in host.json - Re-enabled live metrics, performance counters, W3C distributed tracing, increased telemetry sampling to 20 items/sec |
+| 2025-10-16 | Re-enabled Biome lint checks with continueOnError in CI/CD - Added report-only mode to prevent deployment blocking while maintaining code quality visibility |
+| 2025-10-16 | Eliminated all TypeScript 'any' types - Fixed 155+ instances across 21 files, production code properly typed, test files use 'unknown' with type guards, zero noExplicitAny warnings |
+| 2025-10-16 | Added comprehensive agent invocation workflow to CLAUDE.md - Created checklist for when to invoke specialized agents (CR, SA, DA, TE, TW) before commits, PRs, and after features |
+| 2025-10-16 | Implemented mandatory production deployment workflow in CLAUDE.md - Build → Deploy → Test (TE) → Document (TW) pattern ensures ever-growing test battery prevents regression |
 | 2025-10-16 | Renamed "KvK Review Queue" to "Review Tasks" - Made component generic for any document verification type, updated columns to show Entered Name/Legal ID and Extracted Name/Legal ID, fixed empty fields by joining legal_entity_number table in backend, updated AdminSidebar menu item |
 | 2025-10-16 | Removed "Create Token" buttons from Member Grid - Eliminated individual Token button from grid rows and "Issue Tokens" from bulk actions menu (tokens are for systems/endpoints, not members) |
 | 2025-10-16 | Added verification status badges to Identifiers tab - New "Doc Verification" column with green (MATCH), orange (PARTIAL), or red (NO MATCH) badges for KvK identifiers with uploaded documents, WCAG AA compliant colors with tooltips, auto-fetches status on mount |
