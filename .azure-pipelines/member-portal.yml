@@ -43,12 +43,12 @@ steps:
       npm ci --legacy-peer-deps
     displayName: 'Install dependencies'
 
-  # TEMPORARILY DISABLED - Biome checks blocking deployments
-  # - script: |
-  #     cd portal
-  #     npm run lint
-  #   displayName: 'Run Biome code quality checks'
-  #   continueOnError: true
+  # Biome code quality checks - REPORT ONLY (does not block deployment)
+  - script: |
+      cd portal
+      npm run lint
+    displayName: 'Run Biome code quality checks'
+    continueOnError: true
 
   - script: |
       cd portal
