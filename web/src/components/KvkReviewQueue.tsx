@@ -6,6 +6,7 @@ import { TextArea } from '@progress/kendo-react-inputs';
 import axios from 'axios';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { msalInstance } from '../auth/AuthContext';
 
 interface FlaggedEntity {
   legal_entity_id: string;
@@ -33,13 +34,41 @@ export const KvkReviewQueue: React.FC = () => {
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:7071/api/v1';
 
+  // Helper function to get access token
+  async function getAccessToken(): Promise<string | null> {
+    try {
+      const accounts = msalInstance.getAllAccounts();
+      if (accounts.length > 0) {
+        const clientId = process.env.REACT_APP_AZURE_CLIENT_ID;
+        const response = await msalInstance.acquireTokenSilent({
+          scopes: [`api://${clientId}/access_as_user`],
+          account: accounts[0],
+        });
+        return response.accessToken;
+      }
+    } catch (error) {
+      console.error('Failed to acquire token:', error);
+    }
+    return null;
+  }
+
+  // Create authenticated axios instance
+  async function getAuthenticatedAxios() {
+    const token = await getAccessToken();
+    return axios.create({
+      baseURL: API_BASE_URL,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  }
+
   useEffect(() => {
     fetchFlaggedEntities();
   }, []);
 
   const fetchFlaggedEntities = async () => {
     try {
-      const response = await axios.get<FlaggedEntity[]>(`${API_BASE_URL}/kvk-verification/flagged`);
+      const axiosInstance = await getAuthenticatedAxios();
+      const response = await axiosInstance.get<FlaggedEntity[]>('/kvk-verification/flagged');
       setEntities(response.data);
       setLoading(false);
     } catch (error) {
@@ -59,8 +88,9 @@ export const KvkReviewQueue: React.FC = () => {
     setSubmitting(true);
 
     try {
-      await axios.put(
-        `${API_BASE_URL}/legal-entities/${reviewDialog.entity.legal_entity_id}/kvk-verification/review`,
+      const axiosInstance = await getAuthenticatedAxios();
+      await axiosInstance.put(
+        `/legal-entities/${reviewDialog.entity.legal_entity_id}/kvk-verification/review`,
         {
           status: approved ? 'verified' : 'failed',
           notes: reviewNotes,
