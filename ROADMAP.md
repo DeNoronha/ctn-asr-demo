@@ -154,21 +154,24 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
   - File: `api/host.json`
 
 ### API Functions (essential-index.ts)
-- [ ] **Re-enable endpoint management functions** (30 min)
-  - getEndpointsByEntity, createEndpoint, updateEndpoint
-  - issueEndpointToken, getEndpointTokens
-  - **Why disabled:** Narrowing down 404 errors during identifier debugging
-  - **Impact:** Endpoint management features unavailable in admin portal
+- [x] **Re-enable endpoint management functions** (30 min) - ✅ DONE (Oct 16, 2025)
+  - ✅ createEndpoint, getEndpointsByEntity, updateEndpoint
+  - ✅ issueEndpointToken, getEndpointTokens
+  - ✅ All 5 functions registered and responding
+  - ✅ Endpoint management features restored in admin portal
+  - File: `api/src/essential-index.ts`
 
-- [ ] **Re-enable KvK verification functions** (15 min)
-  - uploadKvkDocument, getKvkVerificationStatus, reviewKvkVerification
-  - **Why disabled:** Isolating identifier CRUD issues
-  - **Impact:** KvK document upload/review features unavailable
+- [x] **Re-enable KvK verification functions** (15 min) - ✅ DONE (Oct 16, 2025)
+  - ✅ uploadKvkDocument, getKvkVerificationStatus, reviewKvkVerification
+  - ✅ All 3 functions registered and responding
+  - ✅ KvK document upload/review workflow restored
+  - File: `api/src/essential-index.ts`
 
-- [ ] **Re-enable diagnostic functions** (15 min)
-  - DiagnosticCheck, CreateIdentifierSimple
-  - **Why disabled:** Simplifying debugging surface area
-  - **Impact:** Lost diagnostic tools for troubleshooting
+- [x] **Re-enable diagnostic functions** (15 min) - ✅ DONE (Oct 16, 2025)
+  - ✅ DiagnosticCheck, CreateIdentifierSimple
+  - ✅ Both functions registered and responding
+  - ✅ Diagnostic and testing tools restored
+  - File: `api/src/essential-index.ts`
 
 ### Middleware Optimizations
 - [ ] **Restore origin header extraction optimization in endpointWrapper.ts** (30 min)
