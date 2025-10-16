@@ -3,23 +3,28 @@
   "logging": {
     "fileLoggingMode": "never",
     "logLevel": {
-      "default": "Warning",
+      "default": "Information",
       "Function": "Information",
-      "Host.Results": "Warning",
-      "Host.Aggregator": "Warning"
+      "Host.Results": "Information",
+      "Host.Aggregator": "Information"
     },
     "applicationInsights": {
       "samplingSettings": {
         "isEnabled": true,
-        "maxTelemetryItemsPerSecond": 5,
-        "excludedTypes": "Request"
+        "maxTelemetryItemsPerSecond": 20,
+        "excludedTypes": ""
       },
-      "enableLiveMetrics": false,
+      "enableLiveMetrics": true,
       "enableDependencyTracking": true,
-      "enablePerformanceCountersCollection": false
+      "enablePerformanceCountersCollection": true,
+      "httpAutoCollectionOptions": {
+        "enableHttpTriggerExtendedInfoCollection": true,
+        "enableW3CDistributedTracing": true,
+        "enableResponseHeaderInjection": true
+      }
     },
     "console": {
-      "isEnabled": false
+      "isEnabled": true
     }
   },
   "extensionBundle": {
