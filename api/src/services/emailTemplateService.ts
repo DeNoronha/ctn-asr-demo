@@ -18,10 +18,16 @@ export class EmailTemplateService {
 
   private registerHelpers(): void {
     // Register custom Handlebars helpers
-    Handlebars.registerHelper('formatDate', (date: Date | string) => {
+    Handlebars.registerHelper('formatDate', (date: Date | string, options: any) => {
       if (!date) return '';
       const d = typeof date === 'string' ? new Date(date) : date;
-      return d.toLocaleDateString('nl-NL', {
+
+      // Get locale from template context or default to 'en-GB'
+      const locale = options?.data?.root?.language
+        ? `${options.data.root.language}-${options.data.root.language.toUpperCase()}`
+        : 'en-GB';
+
+      return d.toLocaleDateString(locale, {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
