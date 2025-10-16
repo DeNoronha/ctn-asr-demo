@@ -66,7 +66,7 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 - [ ] **M5: Drag-drop visual feedback for uploads** (1h)
 - [ ] **M1: Visual feedback during async operations** (2h)
 
-**Low Priority UI/UX** (~23 hours):
+**Low Priority UI/UX** (~24 hours):
 - [ ] **L1: Bulk actions for grid operations** (4h)
 - [ ] **L2: Export functionality for grids** (2h)
 - [ ] **L3: Audit trail/change history** (6h)
@@ -75,6 +75,7 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 - [ ] **L6: Progressive disclosure for complex forms** (2h)
 - [ ] **L7: Responsive layout improvements** (1h)
 - [ ] **L8: Print-friendly views** (1h)
+- [ ] **L9: Fix About page card layout** (1h) - Cards not displaying correctly, needs layout adjustment
 
 ---
 
