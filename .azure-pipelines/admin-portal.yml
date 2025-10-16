@@ -46,13 +46,13 @@ steps:
   # Biome code quality checks - REPORT ONLY (does not block deployment)
   - script: |
       cd web
-      npm run lint || echo "Biome found issues - reported but not blocking"
+      npm run lint
     displayName: 'Run Biome code quality checks'
     continueOnError: true
 
   - script: |
       cd web
-      npm audit --audit-level=moderate || echo "Security vulnerabilities found - review required"
+      npm audit --audit-level=moderate
       npm run security:audit
       npm run security:summary
     displayName: 'Run npm security audit'
@@ -75,7 +75,7 @@ steps:
       aikido-api-client scan 1094319 $BASE_COMMIT $HEAD_COMMIT main \
         --minimum-severity-level MEDIUM \
         --fail-on-sast-scan \
-        --fail-on-secrets-scan || echo "Aikido scan completed with findings"
+        --fail-on-secrets-scan
     displayName: 'Run Aikido Security scan'
     env:
       AIKIDO_CI_API_KEY: $(AIKIDO-CI-API-KEY)
@@ -92,20 +92,18 @@ steps:
 
   # ========================================
   # Build and Deployment Steps
-  # Conditions: succeededOrFailed() ensures steps run even if quality checks fail
-  # Deployments only run if builds succeed (condition: succeeded())
+  # Quality checks use continueOnError: true, so builds always run
+  # Deployments require successful builds (condition: succeeded())
   # ========================================
   - script: |
       chmod +x scripts/generate-version.sh
       ./scripts/generate-version.sh web/public
     displayName: 'Generate version.json with build metadata'
-    condition: succeededOrFailed()
 
   - script: |
       cd web
       npm run build
     displayName: 'Build React application'
-    condition: succeededOrFailed()
     env:
       CI: false
       NODE_ENV: production
@@ -129,13 +127,11 @@ steps:
       cd api
       npm ci
     displayName: 'Install API dependencies'
-    condition: succeededOrFailed()
 
   - script: |
       cd api
       npm run build
     displayName: 'Build API (TypeScript compilation)'
-    condition: succeededOrFailed()
 
   - task: AzureFunctionApp@2
     displayName: 'Deploy API to Azure Functions'
