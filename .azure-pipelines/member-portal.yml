@@ -90,10 +90,16 @@ steps:
       publishLocation: 'pipeline'
     continueOnError: true
 
+  # ========================================
+  # Build and Deployment Steps
+  # Conditions: succeededOrFailed() ensures steps run even if quality checks fail
+  # Deployments only run if builds succeed (condition: succeeded())
+  # ========================================
   - script: |
       cd portal
       npm run build
     displayName: 'Build React application'
+    condition: succeededOrFailed()
     env:
       CI: false
       NODE_ENV: production
@@ -104,6 +110,7 @@ steps:
 
   - task: AzureStaticWebApp@0
     displayName: 'Deploy to Azure Static Web Apps'
+    condition: succeeded()
     inputs:
       app_location: 'portal/build'
       skip_app_build: true
@@ -116,14 +123,17 @@ steps:
       cd api
       npm ci
     displayName: 'Install API dependencies'
+    condition: succeededOrFailed()
 
   - script: |
       cd api
       npm run build
     displayName: 'Build API (TypeScript compilation)'
+    condition: succeededOrFailed()
 
   - task: AzureFunctionApp@2
     displayName: 'Deploy API to Azure Functions'
+    condition: succeeded()
     inputs:
       azureSubscription: $(azureSubscription)
       appType: 'functionAppLinux'
