@@ -16,8 +16,9 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
   - **Reference:** See docs/SECURITY_AUDIT_REPORT.md for step-by-step procedure
   - **Completed:** October 16, 2025 - Git history cleaned, force-pushed to Azure DevOps
 
-- [ ] **Rotate PostgreSQL password** - Currently exposed in Git history (URGENT)
-  - **Impact:** Database access credentials compromised
+- [ ] **Rotate PostgreSQL password** - Was exposed in Git history before cleanup (URGENT)
+  - **Impact:** Password may exist in clones made before history cleanup
+  - **Why still needed:** External clones/backups may contain exposed password
   - **Timeline:** 30 minutes
   - **Reference:** See docs/SECRET_ROTATION_GUIDE.md for rotation procedure
 
