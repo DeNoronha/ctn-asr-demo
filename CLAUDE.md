@@ -1,6 +1,6 @@
 # CLAUDE.md - CTN Association Register
 
-**Last Updated:** October 15, 2025 (Added Pre-Debugging Checklist + Critical Lessons from CI/CD Deployment Failures)
+**Last Updated:** October 16, 2025 (Added Method Binding and Paginated Response Parsing Lessons)
 
 ---
 
@@ -740,6 +740,58 @@ When a bug is reported, the TE agent will:
   - UI tests catch button clicks, form validation, user workflows
 - Don't waste time testing UI if API is broken - test API first!
 - This saves hours of debugging time and isolates issues faster
+
+### CRITICAL: Method Binding Required for Azure Functions Request Methods (October 16, 2025)
+**What Happened:** Spent 2 days debugging "Cannot read private member from an object whose class did not declare it" error when calling `request.json()` in Azure Functions handlers
+**Why It Matters:** This cryptic error prevented ALL identifier creation/update operations. The error message didn't point to the real problem - method references lost their binding to the original request object.
+**Root Cause:**
+- Azure Functions v4 HttpRequest methods (`json()`, `text()`, `arrayBuffer()`) internally access the Headers object which has private members
+- When passing method references directly (`json: request.json`), they lose binding to the original request
+- Calling these unbound methods triggers "Cannot read private member" error
+**How to Avoid:**
+- **ALWAYS bind request methods** when creating wrapper objects in middleware:
+  ```typescript
+  // ❌ WRONG - Methods lose binding
+  const wrappedRequest = {
+    json: request.json,
+    text: request.text
+  };
+
+  // ✅ CORRECT - Methods stay bound to original request
+  const wrappedRequest = {
+    json: request.json.bind(request),
+    text: request.text.bind(request),
+    arrayBuffer: request.arrayBuffer?.bind(request)
+  };
+  ```
+- Files affected: `auth.ts`, `endpointWrapper.ts` - anywhere AuthenticatedRequest is created
+- This fix resolved CreateIdentifier, UpdateIdentifier, and all other endpoints using request body parsing
+- **Debug tip:** If you see "Cannot read private member" in Azure Functions, check method binding first
+
+### Paginated API Response Parsing in Frontend (October 16, 2025)
+**What Happened:** Identifiers were successfully saved to database via API but didn't display in frontend UI. Browser showed "No identifiers registered yet" despite data existing.
+**Why It Matters:** Created silent failure - API worked perfectly, data was in database, but users couldn't see it. Two days of debugging wasted on API side when the bug was in frontend response parsing.
+**Root Cause:**
+- API returns paginated response format: `{ data: [items], pagination: {...} }`
+- Frontend expected direct array: `[items]`
+- Frontend tried to iterate over the paginated object, silently failed
+- No error messages, just empty state in UI
+**How to Avoid:**
+- **Check API response structure** before writing frontend code
+- When API uses pagination, extract the data array:
+  ```typescript
+  // ❌ WRONG - Tries to use paginated object as array
+  const response = await axios.get<Identifier[]>('/identifiers');
+  return response.data; // Returns {data: [], pagination: {}}
+
+  // ✅ CORRECT - Extract data array from paginated response
+  const response = await axios.get<{data: Identifier[]; pagination: any}>('/identifiers');
+  return response.data.data; // Returns actual array
+  ```
+- File fixed: `web/src/services/apiV2.ts` line 286
+- **Test both API and frontend** - don't assume frontend parses correctly just because API returns 200
+- Use browser DevTools Network tab to inspect actual API response structure
+- This pattern applies to all paginated endpoints: identifiers, contacts, endpoints, etc.
 
 ---
 
