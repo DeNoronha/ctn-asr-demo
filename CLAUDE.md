@@ -493,6 +493,33 @@ Since this is a one-person project, the TW agent serves as your persistent memor
 
 ---
 
+## MCP Server Integration
+
+**Global MCP Configuration:** `/Users/ramondenoronha/.config/claude-code/mcp.json`
+**Detailed Mapping:** `.claude/MCP_SERVER_MAPPING.md`
+
+This project uses Model Context Protocol (MCP) servers to extend agent capabilities:
+
+### Available MCP Servers
+
+1. **playwright** (`@playwright/mcp`) - Browser automation and E2E testing
+2. **browser** (`@agentdeskai/browser-tools-mcp`) - Web automation and scraping
+3. **chrome-devtools** (`chrome-devtools-mcp`) - Browser debugging and inspection
+4. **icepanel** (`@icepanel/mcp-server`) - Architecture diagram generation
+
+### Agent → MCP Server Mapping
+
+- **Test Engineer (TE)**: Uses `playwright`, `chrome-devtools`, `browser` for testing and debugging
+- **Design Analyst (DA)**: Uses `browser`, `chrome-devtools` for UI inspection and accessibility checks
+- **Security Analyst (SA)**: Uses `chrome-devtools`, `browser` for security header analysis and auth testing
+- **Technical Writer (TW)**: Uses `icepanel` for architecture diagram generation
+- **Code Reviewer (CR)**: No MCP servers required (static analysis)
+- **Database Expert (DE)**: No MCP servers required (direct database access)
+
+**For complete MCP server documentation and usage guidelines, see `.claude/MCP_SERVER_MAPPING.md`**
+
+---
+
 ## Agent Registry
 
 ### Code Reviewer (CR)

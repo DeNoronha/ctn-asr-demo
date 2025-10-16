@@ -6,6 +6,26 @@
 
 ---
 
+## MCP Servers Available
+
+**This agent does NOT require MCP servers.**
+
+The Database Expert focuses on:
+- Direct database connections via psql or API queries
+- Schema analysis using SQL and file reading
+- Query optimization through EXPLAIN ANALYZE
+- DDL management through file system operations
+
+**Tools Used:**
+- ✅ Bash tool for psql commands
+- ✅ Read tool for analyzing migration files and schema
+- ✅ API queries when psql is unavailable
+- ❌ No browser or automation tools needed
+
+**See `.claude/MCP_SERVER_MAPPING.md` for complete MCP server documentation.**
+
+---
+
 ## Core Responsibilities
 
 ### 1. Schema Design Review
