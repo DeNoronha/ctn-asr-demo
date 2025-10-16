@@ -96,6 +96,10 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
   - **Impact:** Confusing UX, users see irrelevant identifier types
   - **Fix:** Implement proper country-based filtering logic for identifier type dropdown
 
+- Change the Documentation menu item to Settings. On the settings page we need the link to Swagger, HowTo, Wiki etc. (similar to the member portal). I also want a button which brings the Administrator to Lokalise, so he can add translations. 
+
+
+
 ### API Stability
 - [x] **Re-enable startup validation** - ✅ DONE: Startup validation re-enabled (Oct 15, 2025 Night)
   - ✅ Validates all required environment variables on startup

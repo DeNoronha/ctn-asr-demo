@@ -170,3 +170,18 @@
 .center-header {
   text-align: center;
 }
+
+/* Ensure Dialog action buttons are always visible */
+.identifiers-manager .k-dialog-actions {
+  display: flex !important;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+}
+
+.identifiers-manager .k-dialog-buttongroup {
+  display: flex;
+  gap: 8px;
+}
