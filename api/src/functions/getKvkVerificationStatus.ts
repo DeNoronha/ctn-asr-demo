@@ -16,6 +16,7 @@ async function handler(
 
     const result = await pool.query(
       `SELECT
+        primary_legal_name,
         kvk_document_url,
         kvk_verification_status,
         kvk_verified_at,
@@ -39,6 +40,21 @@ async function handler(
     }
 
     const data = result.rows[0];
+
+    // Get entered KvK number from identifiers table
+    const kvkIdentifierResult = await pool.query(
+      `SELECT identifier_value
+       FROM legal_entity_number
+       WHERE legal_entity_id = $1
+         AND identifier_type = 'KVK'
+         AND (is_deleted IS NULL OR is_deleted = FALSE)
+       LIMIT 1`,
+      [legalEntityId]
+    );
+
+    // Add entered values to response
+    data.entered_company_name = data.primary_legal_name;
+    data.entered_kvk_number = kvkIdentifierResult.rows.length > 0 ? kvkIdentifierResult.rows[0].identifier_value : null;
 
     // Generate SAS URL for document if it exists
     if (data.kvk_document_url) {

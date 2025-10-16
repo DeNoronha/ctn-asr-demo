@@ -13,6 +13,8 @@ interface KvkVerificationStatus {
   kvk_verified_at: string | null;
   kvk_verified_by: string | null;
   kvk_verification_notes: string | null;
+  entered_company_name: string | null;
+  entered_kvk_number: string | null;
   kvk_extracted_company_name: string | null;
   kvk_extracted_number: string | null;
   kvk_mismatch_flags: string[] | null;
@@ -227,6 +229,68 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#666' }}>
               <Loader size="small" />
               <span>Verifying document...</span>
+            </div>
+          )}
+
+          {/* Comparison Grid */}
+          {(verificationStatus.kvk_extracted_company_name || verificationStatus.kvk_extracted_number) && (
+            <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+              <strong style={{ marginBottom: '10px', display: 'block' }}>Data Comparison:</strong>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95em' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Field</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Entered Value</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Extracted Value</th>
+                    <th style={{ padding: '12px', textAlign: 'center', fontWeight: 600, width: '100px' }}>Match</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Company Name Row */}
+                  <tr style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '12px', fontWeight: 500 }}>Company Name</td>
+                    <td style={{ padding: '12px' }}>
+                      {verificationStatus.entered_company_name || (
+                        <span style={{ color: '#999', fontStyle: 'italic' }}>Not entered</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      {verificationStatus.kvk_extracted_company_name || (
+                        <span style={{ color: '#999', fontStyle: 'italic' }}>Not extracted</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                      {verificationStatus.kvk_mismatch_flags?.includes('entered_name_mismatch') ? (
+                        <span style={{ color: '#dc2626', fontSize: '1.5em', fontWeight: 'bold' }}>✗</span>
+                      ) : (
+                        <span style={{ color: '#10b981', fontSize: '1.5em', fontWeight: 'bold' }}>✓</span>
+                      )}
+                    </td>
+                  </tr>
+
+                  {/* KvK Number Row */}
+                  <tr style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '12px', fontWeight: 500 }}>KvK Number</td>
+                    <td style={{ padding: '12px' }}>
+                      {verificationStatus.entered_kvk_number || (
+                        <span style={{ color: '#999', fontStyle: 'italic' }}>Not entered</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      {verificationStatus.kvk_extracted_number || (
+                        <span style={{ color: '#999', fontStyle: 'italic' }}>Not extracted</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                      {verificationStatus.kvk_mismatch_flags?.includes('entered_kvk_mismatch') ? (
+                        <span style={{ color: '#dc2626', fontSize: '1.5em', fontWeight: 'bold' }}>✗</span>
+                      ) : (
+                        <span style={{ color: '#10b981', fontSize: '1.5em', fontWeight: 'bold' }}>✓</span>
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           )}
 
