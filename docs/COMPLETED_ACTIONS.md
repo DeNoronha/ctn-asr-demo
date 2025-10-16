@@ -4,6 +4,10 @@ This file tracks all completed work in chronological order (most recent first).
 
 | Date | Description |
 |------|-------------|
+| 2025-10-16 | Renamed "KvK Review Queue" to "Review Tasks" - Made component generic for any document verification type, updated columns to show Entered Name/Legal ID and Extracted Name/Legal ID, fixed empty fields by joining legal_entity_number table in backend, updated AdminSidebar menu item |
+| 2025-10-16 | Removed "Create Token" buttons from Member Grid - Eliminated individual Token button from grid rows and "Issue Tokens" from bulk actions menu (tokens are for systems/endpoints, not members) |
+| 2025-10-16 | Added verification status badges to Identifiers tab - New "Doc Verification" column with green (MATCH), orange (PARTIAL), or red (NO MATCH) badges for KvK identifiers with uploaded documents, WCAG AA compliant colors with tooltips, auto-fetches status on mount |
+| 2025-10-16 | Added comparison grid to Document Verification tab - Shows entered vs extracted data in clear table format (Company Name and KvK Number) with visual indicators (green checkmark/red X), backend updated to return entered_company_name and entered_kvk_number, frontend updated with KvkVerificationStatus interface |
 | 2025-10-16 | **BUG-001 FIXED: Members grid loading timeout** - Implemented server-side pagination (20 members per page), removed blocking full-screen spinner. Performance improved 97% (30+ seconds → <1 second). Updated 5 files (apiV2.ts, api.ts, AdminPortal.tsx, MembersGrid.tsx, Dashboard.tsx). Deployed to production (Build 20251016.9 at 10:22 UTC). Release readiness increased from 83% to 90%+. ALL CRITICAL BUGS NOW RESOLVED |
 | 2025-10-16 | Cleaned up repository structure - Moved 8 misplaced markdown files from web/ and api/ folders to proper locations in docs/ (bug reports to docs/bugs/, test reports to docs/testing/, completed work to docs/archive/) |
 | 2025-10-16 | Re-enabled 10 API functions disabled during KVK debugging - Restored endpoint management (5 functions), KvK verification (3 functions), and diagnostics (2 functions). Total API functions: 30 (up from 21) |

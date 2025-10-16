@@ -1,6 +1,6 @@
 # CTN ASR Roadmap
 
-**Last Updated:** October 16, 2025 (BUG-001 Fixed - All CRITICAL Bugs Resolved)
+**Last Updated:** October 16, 2025 (Completed Document Verification UI Improvements + TODO Items Added)
 
 This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md) for historical record.
 
@@ -96,7 +96,19 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
   - **Impact:** Confusing UX, users see irrelevant identifier types
   - **Fix:** Implement proper country-based filtering logic for identifier type dropdown
 
-- Change the Documentation menu item to Settings. On the settings page we need the link to Swagger, HowTo, Wiki etc. (similar to the member portal). I also want a button which brings the Administrator to Lokalise, so he can add translations. 
+### Backend Integration TODOs
+- [ ] **Implement IdentifierVerificationManager API endpoint** - Replace mock data in IdentifierVerificationManager.tsx:57 and :110 with actual API calls for verification history
+- [ ] **Implement MemberDetailDialog API calls** - Replace mock implementations in MemberDetailDialog.tsx:92 (member details) and :105 (member updates) with actual API endpoints
+- [ ] **Implement User Management API integration** - Connect UserManagement.tsx to Microsoft Graph API:
+  - :70 - Fetch users from Azure Entra ID
+  - :115 - User invitation functionality
+  - :154 - User update functionality
+  - :179 - Enable/disable user functionality
+- [ ] **Configure dynamic termsVersion in BVAD generation** - Replace hardcoded 'v3.2.0' in generateBvad.ts:213 with member metadata lookup
+- [ ] **Re-enable strict MFA checking** - Remove workaround in AuthContext.tsx:82 once Conditional Access policy is fully enforced
+
+### UI/UX Improvements
+- [ ] **Change Documentation menu to Settings** - Rename menu item and create Settings page with links to Swagger, HowTo, Wiki (similar to member portal), and Lokalise button for translation management 
 
 
 

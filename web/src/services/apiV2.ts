@@ -336,10 +336,10 @@ export const apiV2 = {
 
   async getContacts(legalEntityId: string): Promise<LegalEntityContact[]> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.get<LegalEntityContact[]>(
+    const response = await axiosInstance.get<{ data: LegalEntityContact[]; pagination: any }>(
       `/legal-entities/${legalEntityId}/contacts`
     );
-    return response.data;
+    return response.data.data; // Extract data array from paginated response
   },
 
   async addContact(
