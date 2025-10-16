@@ -19,6 +19,7 @@ import {
 import { Input } from '@progress/kendo-react-inputs';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNotification } from '../contexts/NotificationContext';
 import type { Member } from '../services/api';
 import {
@@ -55,6 +56,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   onPageChange,
   loading = false,
 }) => {
+  const { t } = useTranslation();
   const notification = useNotification();
   const [gridData, setGridData] = useState<Member[]>(members);
   const [sort, setSort] = useState<SortDescriptor[]>([]);
@@ -85,6 +87,22 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     { field: 'membership_level', title: 'Membership', show: false, width: '120px', orderIndex: 7 },
     { field: 'created_at', title: 'Joined', show: false, width: '120px', orderIndex: 8 },
   ]);
+
+  // Helper function to get translated column title
+  const getColumnTitle = (field: string) => {
+    const titleMap: Record<string, string> = {
+      'legal_name': t('members.legalName'),
+      'status': t('common.status'),
+      'lei': 'LEI',
+      'euid': 'EUID',
+      'kvk': 'KVK',
+      'org_id': t('members.orgId', 'Organization ID'),
+      'domain': t('members.domain', 'Domain'),
+      'membership_level': t('members.membership', 'Membership'),
+      'created_at': t('members.joined', 'Joined'),
+    };
+    return titleMap[field] || field;
+  };
 
   // Load saved grid state from localStorage
   useEffect(() => {
@@ -434,7 +452,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       <td>
         <div style={{ display: 'flex', gap: '8px' }}>
           <Button size="small" onClick={() => onViewDetails(props.dataItem)}>
-            View
+            {t('members.viewMember', 'View')}
           </Button>
           <Button
             themeColor="primary"
@@ -442,7 +460,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             disabled={!isActive}
             onClick={() => onIssueToken(props.dataItem.org_id)}
           >
-            Token
+            {t('tokens.issueToken', 'Token')}
           </Button>
         </div>
       </td>
@@ -541,7 +559,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                 <Input
                   value={searchValue}
                   onChange={handleSearchChange}
-                  placeholder="Search members..."
+                  placeholder={t('members.searchMembers')}
                   style={{ width: '300px' }}
                 />
                 <Button
@@ -550,10 +568,10 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                   onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
                   icon="filter"
                 >
-                  {showAdvancedFilter ? 'Hide' : 'Advanced'} Filters
+                  {showAdvancedFilter ? t('common.hide', 'Hide') : t('common.advanced', 'Advanced')} {t('common.filter')}
                 </Button>
                 <DropDownButton
-                  text="Export"
+                  text={t('common.export')}
                   icon="download"
                   items={exportMenuItems}
                   themeColor="primary"
@@ -561,21 +579,21 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                 />
                 {selectedIds.length > 0 && (
                   <DropDownButton
-                    text={`Bulk Actions (${selectedIds.length})`}
+                    text={`${t('members.bulkActions')} (${selectedIds.length})`}
                     items={bulkActions}
                     themeColor="info"
                   />
                 )}
-                <DropDownButton text="Columns" icon="columns" items={columnMenuItems} />
-                <Button fillMode="flat" onClick={resetColumns} title="Reset layout">
-                  Reset Layout
+                <DropDownButton text={t('grid.columns', 'Columns')} icon="columns" items={columnMenuItems} />
+                <Button fillMode="flat" onClick={resetColumns} title={t('grid.resetLayout', 'Reset layout')}>
+                  {t('grid.resetLayout', 'Reset Layout')}
                 </Button>
               </div>
               <div className="toolbar-stats">
-                <span>Total: {total}</span>
-                <span>Showing: {gridData.length}</span>
-                {selectedIds.length > 0 && <span>Selected: {selectedIds.length}</span>}
-                {loading && <span className="loading-indicator">⏳ Loading...</span>}
+                <span>{t('grid.total', 'Total')}: {total}</span>
+                <span>{t('grid.showing', 'Showing')}: {gridData.length}</span>
+                {selectedIds.length > 0 && <span>{t('grid.selected', 'Selected')}: {selectedIds.length}</span>}
+                {loading && <span className="loading-indicator">⏳ {t('common.loading')}</span>}
               </div>
             </div>
           </GridToolbar>
@@ -595,7 +613,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
               const columnProps: any = {
                 key: col.field,
                 field: col.field,
-                title: col.title,
+                title: getColumnTitle(col.field),
                 width: col.width,
                 columnMenu: ColumnMenu,
               };
@@ -613,7 +631,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             })}
 
           <GridColumn
-            title="Actions"
+            title={t('common.actions')}
             width="180px"
             cell={ActionCell}
             sortable={false}

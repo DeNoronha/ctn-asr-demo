@@ -8,6 +8,7 @@ import { DrawerContent } from '@progress/kendo-react-layout';
 import { LogOut, User } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/AuthContext';
 import { RoleGuard } from '../auth/ProtectedRoute';
 import { UserRole } from '../auth/authConfig';
@@ -33,6 +34,7 @@ import UserManagement from './users/UserManagement';
 import './AdminPortal.css';
 
 const AdminPortal: React.FC = () => {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const notification = useNotification();
 
@@ -110,10 +112,10 @@ const AdminPortal: React.FC = () => {
         return (
           <div className="members-view">
             <div className="view-header">
-              <h2>Member Directory</h2>
+              <h2>{t('members.title')}</h2>
               <RoleGuard allowedRoles={[UserRole.ASSOCIATION_ADMIN, UserRole.SYSTEM_ADMIN]}>
                 <Button themeColor="primary" onClick={() => setShowForm(!showForm)}>
-                  {showForm ? 'Cancel' : '+ Register New Member'}
+                  {showForm ? t('common.cancel') : `+ ${t('members.addMember')}`}
                 </Button>
               </RoleGuard>
             </div>
@@ -159,10 +161,10 @@ const AdminPortal: React.FC = () => {
                 />
               ) : (
                 <div className="empty-state">
-                  <h3>Endpoint Management</h3>
-                  <p>Select a member from the Members view to manage their endpoints.</p>
+                  <h3>{t('endpoints.title')}</h3>
+                  <p>{t('endpoints.selectMemberFirst', 'Select a member from the Members view to manage their endpoints.')}</p>
                   <Button onClick={() => setSelectedView('members')} themeColor="primary">
-                    Go to Members
+                    {t('navigation.members')}
                   </Button>
                 </div>
               )}
@@ -173,20 +175,20 @@ const AdminPortal: React.FC = () => {
       case 'tokens':
         return (
           <div className="tokens-view">
-            <h2>Token Management</h2>
+            <h2>{t('tokens.title')}</h2>
             {token ? (
               <div className="token-display">
-                <h3>Latest BVAD Token</h3>
+                <h3>{t('tokens.latestToken', 'Latest BVAD Token')}</h3>
                 <textarea readOnly value={token} rows={10} className="token-textarea" />
                 <Button onClick={() => setToken('')} themeColor="secondary">
-                  Clear Token
+                  {t('tokens.clearToken', 'Clear Token')}
                 </Button>
               </div>
             ) : (
               <div className="empty-state">
-                <p>No tokens generated yet. Go to Members to issue a token.</p>
+                <p>{t('tokens.noTokensGenerated', 'No tokens generated yet. Go to Members to issue a token.')}</p>
                 <Button onClick={() => setSelectedView('members')} themeColor="primary">
-                  Go to Members
+                  {t('navigation.members')}
                 </Button>
               </div>
             )}
@@ -241,23 +243,23 @@ const AdminPortal: React.FC = () => {
       case 'docs':
         return (
           <div className="docs-view">
-            <h2>Documentation</h2>
+            <h2>{t('navigation.documentation')}</h2>
             <div className="docs-content">
-              <h3>CTN Association Register</h3>
-              <p>Welcome to the CTN Association Register administrative interface.</p>
-              <h4>Quick Start</h4>
+              <h3>{t('common.appName')}</h3>
+              <p>{t('docs.welcome', 'Welcome to the CTN Association Register administrative interface.')}</p>
+              <h4>{t('dashboard.quickActions')}</h4>
               <ul>
                 <li>
-                  Use the <strong>Dashboard</strong> to view key statistics
+                  {t('docs.useDashboard', 'Use the Dashboard to view key statistics')}
                 </li>
                 <li>
-                  Manage members in the <strong>Members</strong> section
+                  {t('docs.manageMembers', 'Manage members in the Members section')}
                 </li>
                 <li>
-                  Manage system endpoints in the <strong>Endpoints</strong> section
+                  {t('docs.manageEndpoints', 'Manage system endpoints in the Endpoints section')}
                 </li>
                 <li>
-                  Generate and view tokens in <strong>Token Management</strong>
+                  {t('docs.manageTokens', 'Generate and view tokens in Token Management')}
                 </li>
               </ul>
             </div>
@@ -265,7 +267,7 @@ const AdminPortal: React.FC = () => {
         );
 
       default:
-        return <div>Select a view from the sidebar</div>;
+        return <div>{t('navigation.selectView', 'Select a view from the sidebar')}</div>;
     }
   };
 
@@ -289,7 +291,7 @@ const AdminPortal: React.FC = () => {
                 {drawerExpanded ? '◀' : '▶'}
               </Button>
               <img src="/assets/logos/ctn.png" alt="CTN Logo" className="header-logo" />
-              <h1>Association Register</h1>
+              <h1>{t('common.appNameShort')}</h1>
             </div>
             <div className="header-right">
               <LanguageSwitcher />

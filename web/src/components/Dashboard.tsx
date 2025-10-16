@@ -5,6 +5,7 @@
 
 import type React from 'react';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Bar,
   BarChart,
@@ -54,6 +55,8 @@ const MEMBERSHIP_COLORS: Record<string, string> = {
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = false }) => {
+  const { t } = useTranslation();
+
   // Calculate statistics
   const stats = useMemo(() => {
     const total = totalMembers || members.length;
@@ -137,38 +140,38 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
   return (
     <div className="dashboard-view">
       <div className="dashboard-header">
-        <h2>Dashboard</h2>
-        <p className="dashboard-subtitle">Overview of member statistics and trends</p>
+        <h2>{t('dashboard.title')}</h2>
+        <p className="dashboard-subtitle">{t('dashboard.overview')}</p>
       </div>
 
       {/* Key Metrics Cards */}
       <div className="stats-grid">
         <div className="stat-card primary">
           <div className="stat-icon">📊</div>
-          <h3>Total Members</h3>
+          <h3>{t('dashboard.totalMembers')}</h3>
           <div className="stat-value">{stats.total}</div>
-          <div className="stat-label">Registered organizations</div>
+          <div className="stat-label">{t('dashboard.registeredOrgs', 'Registered organizations')}</div>
         </div>
 
         <div className="stat-card success">
           <div className="stat-icon">✅</div>
-          <h3>Active Members</h3>
+          <h3>{t('dashboard.activeMembers')}</h3>
           <div className="stat-value">{stats.active}</div>
-          <div className="stat-label">{stats.activeRate}% of total</div>
+          <div className="stat-label">{stats.activeRate}% {t('dashboard.ofTotal', 'of total')}</div>
         </div>
 
         <div className="stat-card warning">
           <div className="stat-icon">⏳</div>
-          <h3>Pending Applications</h3>
+          <h3>{t('dashboard.pendingApplications')}</h3>
           <div className="stat-value">{stats.pending}</div>
-          <div className="stat-label">Awaiting approval</div>
+          <div className="stat-label">{t('dashboard.awaitingApproval', 'Awaiting approval')}</div>
         </div>
 
         <div className="stat-card accent">
           <div className="stat-icon">⭐</div>
-          <h3>Premium Members</h3>
+          <h3>{t('dashboard.premiumMembers', 'Premium Members')}</h3>
           <div className="stat-value">{stats.premium}</div>
-          <div className="stat-label">{stats.premiumRate}% of total</div>
+          <div className="stat-label">{stats.premiumRate}% {t('dashboard.ofTotal', 'of total')}</div>
         </div>
       </div>
 
@@ -176,7 +179,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
       <div className="charts-grid">
         {/* Status Distribution - Pie Chart */}
         <div className="chart-card">
-          <h3>Member Status Distribution</h3>
+          <h3>{t('dashboard.statusDistribution', 'Member Status Distribution')}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -201,7 +204,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
 
         {/* Membership Levels - Bar Chart */}
         <div className="chart-card">
-          <h3>Membership Levels</h3>
+          <h3>{t('dashboard.membershipLevels', 'Membership Levels')}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={membershipData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -220,7 +223,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
 
         {/* Member Growth - Line Chart */}
         <div className="chart-card full-width">
-          <h3>Member Growth (Last 12 Months)</h3>
+          <h3>{t('dashboard.memberGrowth', 'Member Growth (Last 12 Months)')}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={growthData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -250,7 +253,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
 
       {/* Partner Logos */}
       <div className="partner-logos">
-        <h3>In Partnership With</h3>
+        <h3>{t('dashboard.partnersWith', 'In Partnership With')}</h3>
         <div className="logos-grid">
           <div className="logo-container">
             <img src="/assets/logos/portbase.png" alt="Portbase" />
