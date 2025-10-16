@@ -4,10 +4,11 @@ This file tracks all completed work in chronological order (most recent first).
 
 | Date | Description |
 |------|-------------|
+| 2025-10-16 | Cleaned up repository structure - Moved 8 misplaced markdown files from web/ and api/ folders to proper locations in docs/ (bug reports to docs/bugs/, test reports to docs/testing/, completed work to docs/archive/) |
 | 2025-10-16 | Re-enabled 10 API functions disabled during KVK debugging - Restored endpoint management (5 functions), KvK verification (3 functions), and diagnostics (2 functions). Total API functions: 30 (up from 21) |
 | 2025-10-16 | Restored enhanced Application Insights logging - Re-enabled live metrics, performance counters, W3C distributed tracing, and increased telemetry sampling to 20 items/sec for full production monitoring |
 | 2025-10-16 | Re-enabled Biome lint checks in CI/CD pipelines - Added continueOnError: true to prevent deployment blocking while maintaining code quality visibility in both admin and member portal pipelines |
-| 2025-10-16 | Created comprehensive Biome continueOnError documentation - Added BIOME_CONTINUEONERROR_EXPLAINED.md (13,748 bytes) explaining why pipeline errors are safe and documenting October 15 deployment disaster lessons |
+| 2025-10-16 | Created comprehensive Biome continueOnError documentation - Added docs/BIOME_CONTINUEONERROR_EXPLAINED.md (13KB) explaining why Biome lint errors are safe with continueOnError: true, documenting October 15 deployment disaster lessons, and providing pre-debugging checklist |
 | 2025-10-15 | **BUG-003 FIXED: Focus indicators not visible** - Added CSS focus indicators with 8.59:1 contrast ratio (exceeds WCAG 3:1 requirement), proper tab order (tabIndex 0/-1), and descriptive ARIA labels. WCAG 2.4.7 Focus Visible (Level AA) violation resolved. Test Engineer verified full compliance |
 | 2025-10-15 | **BUG-002 FIXED: Keyboard button activation failure** - Added keyboard shortcuts (Enter, Space) for all action buttons in IdentifiersManager, ContactsManager, and TokensManager. WCAG 2.1.1 Keyboard (Level A) violation resolved. Test Engineer verified full WCAG 2.1 Level AA compliance |
 | 2025-10-15 | Fixed identifier management blocking issue - Created "Create Legal Entity" button for members without linked entities, enabling identifier CRUD operations |

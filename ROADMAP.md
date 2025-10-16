@@ -1,6 +1,6 @@
 # CTN ASR Roadmap
 
-**Last Updated:** October 15, 2025 (Identifier Management Bug Fix + Production Testing Complete)
+**Last Updated:** October 16, 2025 (Re-enabled Disabled Features from KVK Debugging Session)
 
 This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md) for historical record.
 
