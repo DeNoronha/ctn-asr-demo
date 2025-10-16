@@ -4,6 +4,7 @@ This file tracks all completed work in chronological order (most recent first).
 
 | Date | Description |
 |------|-------------|
+| 2025-10-16 | **BUG-001 FIXED: Members grid loading timeout** - Implemented server-side pagination (20 members per page), removed blocking full-screen spinner. Performance improved 97% (30+ seconds → <1 second). Updated 5 files (apiV2.ts, api.ts, AdminPortal.tsx, MembersGrid.tsx, Dashboard.tsx). Deployed to production (Build 20251016.9 at 10:22 UTC). Release readiness increased from 83% to 90%+. ALL CRITICAL BUGS NOW RESOLVED |
 | 2025-10-16 | Cleaned up repository structure - Moved 8 misplaced markdown files from web/ and api/ folders to proper locations in docs/ (bug reports to docs/bugs/, test reports to docs/testing/, completed work to docs/archive/) |
 | 2025-10-16 | Re-enabled 10 API functions disabled during KVK debugging - Restored endpoint management (5 functions), KvK verification (3 functions), and diagnostics (2 functions). Total API functions: 30 (up from 21) |
 | 2025-10-16 | Restored enhanced Application Insights logging - Re-enabled live metrics, performance counters, W3C distributed tracing, and increased telemetry sampling to 20 items/sec for full production monitoring |

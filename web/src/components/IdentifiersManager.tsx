@@ -538,9 +538,12 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
                 value={formData.identifier_type}
                 onChange={(e) => handleIdentifierTypeChange(e.value)}
                 disabled={!formData.country_code}
+                defaultItem={formData.country_code ? "Select type..." : "Enter country code first"}
               />
-              {!formData.country_code && (
-                <span className="field-hint">Please enter country code first</span>
+              {!formData.country_code ? (
+                <span className="field-hint field-hint-warning">⚠️ Please enter country code first to see applicable types</span>
+              ) : (
+                <span className="field-hint">Available types for {formData.country_code}: {availableIdentifierTypes.join(', ')}</span>
               )}
             </div>
 

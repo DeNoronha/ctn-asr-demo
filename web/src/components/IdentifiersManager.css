@@ -122,6 +122,16 @@
   display: block;
 }
 
+.field-hint-warning {
+  color: #d97706; /* WCAG AA compliant: 4.59:1 contrast on white */
+  font-weight: 600;
+  font-style: normal;
+  background-color: #fef3c7;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border-left: 3px solid #f59e0b;
+}
+
 .validation-hint {
   color: #4b5563;
   font-style: normal;

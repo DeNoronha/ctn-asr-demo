@@ -178,8 +178,8 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
         <div className="form-section">
           <h3>Organization Details</h3>
 
-          <div className="form-field">
-            <Label>Organization ID *</Label>
+          <div className="form-field required">
+            <Label>Organization ID</Label>
             <Input
               value={formData.org_id}
               onChange={(e) => handleFieldChange('org_id', e.value || '')}
@@ -193,8 +193,8 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
             <Hint>Format: org:company-name (lowercase, letters, numbers, hyphens only)</Hint>
           </div>
 
-          <div className="form-field">
-            <Label>Legal Name *</Label>
+          <div className="form-field required">
+            <Label>Legal Name</Label>
             <Input
               value={formData.legal_name}
               onChange={(e) => handleFieldChange('legal_name', e.value || '')}
@@ -208,8 +208,8 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
             <Hint>Official registered business name</Hint>
           </div>
 
-          <div className="form-field">
-            <Label>Domain *</Label>
+          <div className="form-field required">
+            <Label>Domain</Label>
             <Input
               value={formData.domain}
               onChange={(e) => handleFieldChange('domain', e.value || '')}
