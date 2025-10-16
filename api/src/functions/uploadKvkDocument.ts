@@ -220,10 +220,10 @@ async function handler(
       // Get entered KvK identifier (if any)
       const identifiersResult = await pool.query(
         `SELECT identifier_value
-         FROM legal_entity_identifier
+         FROM legal_entity_number
          WHERE legal_entity_id = $1
            AND identifier_type = 'KVK'
-           AND is_deleted = false`,
+           AND (is_deleted IS NULL OR is_deleted = FALSE)`,
         [legalEntityId]
       );
 
