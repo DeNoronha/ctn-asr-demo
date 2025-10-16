@@ -47,3 +47,4 @@ logs/
 
 # Keep markdown summaries for visibility
 !**/reports/*-summary.md
+.credentials

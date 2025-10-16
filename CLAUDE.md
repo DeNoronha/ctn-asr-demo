@@ -339,6 +339,45 @@ This workflow is **MANDATORY** and should be followed **automatically** without 
 - Run tests if available
 - Review `git status` and `git diff`
 
+### Credentials and Configuration File
+
+**Location:** `.credentials` (in project root)
+
+**Purpose:** Central repository for all Azure resources, secrets, deployment tokens, and quick reference commands. This file makes it easy to find credentials without searching through Azure Portal or Key Vault.
+
+**Contents:**
+- Azure Static Web Apps URLs and deployment tokens
+- Azure Functions API URLs and names
+- PostgreSQL database credentials (with multiple password sources)
+- Azure AD authentication configuration
+- Azure DevOps links
+- Resource group and environment info
+- Quick reference commands for deployment, logging, and database queries
+
+**Security:**
+- This file is `.gitignored` and **NEVER committed** to the repository
+- Safe to store secrets locally for this development/playground environment
+- Passwords come from both user-provided values and Azure Key Vault
+
+**Usage:**
+```bash
+# View all credentials
+cat .credentials
+
+# Use in commands
+source .credentials
+export PGPASSWORD=$POSTGRES_PASSWORD
+psql "$POSTGRES_CONNECTION_STRING"
+```
+
+**Maintenance:**
+- Update this file when passwords change
+- Add new resources as they're created
+- Keep deployment tokens current
+- Document any authentication issues in comments
+
+**Note:** If you can't find a credential, **ALWAYS check `.credentials` first** before searching Azure Portal or Key Vault.
+
 ### Agent Invocation Workflow
 
 **When to Invoke Agents:**
