@@ -37,6 +37,7 @@ const AdminPortal: React.FC = () => {
   const notification = useNotification();
 
   const [members, setMembers] = useState<Member[]>([]);
+  const [totalMembers, setTotalMembers] = useState<number>(0);
   const [showForm, setShowForm] = useState(false);
   const [token, setToken] = useState<string>('');
   const [drawerExpanded, setDrawerExpanded] = useState(true);
@@ -52,10 +53,11 @@ const AdminPortal: React.FC = () => {
     loadMembersData();
   }, []);
 
-  const loadMembersData = async () => {
+  const loadMembersData = async (page: number = 1, pageSize: number = 20) => {
     try {
-      const data = await loadMembers(() => api.getMembers());
-      setMembers(data);
+      const result = await loadMembers(() => api.getMembers(page, pageSize)) as { data: Member[]; total: number };
+      setMembers(result.data);
+      setTotalMembers(result.total);
     } catch (_error) {
       // Handled by useAsync
     }
@@ -100,13 +102,9 @@ const AdminPortal: React.FC = () => {
   };
 
   const renderContent = () => {
-    if (loading) {
-      return <LoadingSpinner size="large" message="Loading members..." fullScreen />;
-    }
-
     switch (selectedView) {
       case 'dashboard':
-        return <Dashboard members={members} />;
+        return <Dashboard members={members} totalMembers={totalMembers} loading={loading} />;
 
       case 'members':
         return (
@@ -127,9 +125,11 @@ const AdminPortal: React.FC = () => {
             {!showForm && (
               <MembersGrid
                 members={members}
+                totalMembers={totalMembers}
                 onIssueToken={handleIssueToken}
                 onViewDetails={handleViewDetails}
-                loading={false}
+                onPageChange={loadMembersData}
+                loading={loading}
               />
             )}
           </div>

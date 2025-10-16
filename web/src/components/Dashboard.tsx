@@ -25,6 +25,8 @@ import './Dashboard.css';
 
 interface DashboardProps {
   members: Member[];
+  totalMembers?: number;
+  loading?: boolean;
 }
 
 // CTN Brand Colors
@@ -51,10 +53,10 @@ const MEMBERSHIP_COLORS: Record<string, string> = {
   BASIC: COLORS.info,
 };
 
-const Dashboard: React.FC<DashboardProps> = ({ members }) => {
+const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = false }) => {
   // Calculate statistics
   const stats = useMemo(() => {
-    const total = members.length;
+    const total = totalMembers || members.length;
     const active = members.filter((m) => m.status === 'ACTIVE').length;
     const pending = members.filter((m) => m.status === 'PENDING').length;
     const suspended = members.filter((m) => m.status === 'SUSPENDED').length;
@@ -69,7 +71,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members }) => {
       activeRate: total > 0 ? ((active / total) * 100).toFixed(1) : '0',
       premiumRate: total > 0 ? ((premium / total) * 100).toFixed(1) : '0',
     };
-  }, [members]);
+  }, [members, totalMembers]);
 
   // Status distribution data for Pie Chart
   const statusData = useMemo(() => {

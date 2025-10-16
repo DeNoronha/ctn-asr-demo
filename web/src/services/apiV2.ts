@@ -215,10 +215,15 @@ export const apiV2 = {
   // LEGACY ENDPOINTS (V1 - Backward Compatibility)
   // =====================================================
 
-  async getMembers(): Promise<Member[]> {
+  async getMembers(page: number = 1, pageSize: number = 20): Promise<{ data: Member[]; total: number }> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.get<MembersResponse>('/all-members');
-    return response.data.data;
+    const response = await axiosInstance.get<{ data: Member[]; pagination: { total: number; page: number; page_size: number } }>('/all-members', {
+      params: { page, page_size: pageSize }
+    });
+    return {
+      data: response.data.data,
+      total: response.data.pagination?.total || response.data.data.length
+    };
   },
 
   async getMember(orgId: string): Promise<Member> {

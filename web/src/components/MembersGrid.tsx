@@ -32,8 +32,10 @@ import './MembersGrid.css';
 
 interface MembersGridProps {
   members: Member[];
+  totalMembers?: number;
   onIssueToken: (orgId: string) => void;
   onViewDetails: (member: Member) => void;
+  onPageChange?: (page: number, pageSize: number) => void;
   loading?: boolean;
 }
 
@@ -47,8 +49,10 @@ interface ColumnSettings {
 
 const MembersGrid: React.FC<MembersGridProps> = ({
   members,
+  totalMembers,
   onIssueToken,
   onViewDetails,
+  onPageChange,
   loading = false,
 }) => {
   const notification = useNotification();
@@ -65,6 +69,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   const [bulkAction, setBulkAction] = useState<string>('');
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const excelExportRef = useRef<ExcelExport | null>(null);
+  const [skip, setSkip] = useState(0);
+  const [take, setTake] = useState(20);
+  const [total, setTotal] = useState(totalMembers || members.length);
 
   // Column visibility state - Default shows: Legal Name, Status, LEI, EUID, KVK, Actions
   const [columns, setColumns] = useState<ColumnSettings[]>([
@@ -107,19 +114,42 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     localStorage.setItem('gridSort', JSON.stringify(sort));
   };
 
+  // Update total when totalMembers prop changes
+  useEffect(() => {
+    setTotal(totalMembers || members.length);
+  }, [totalMembers, members.length]);
+
+  // Update grid data when members change
   useEffect(() => {
     let data = [...members];
 
-    if (filter.filters.length > 0) {
-      data = filterBy(data, filter);
-    }
+    // Only apply client-side filtering/sorting if no server-side pagination
+    if (!onPageChange) {
+      if (filter.filters.length > 0) {
+        data = filterBy(data, filter);
+      }
 
-    if (sort.length > 0) {
-      data = orderBy(data, sort);
+      if (sort.length > 0) {
+        data = orderBy(data, sort);
+      }
     }
 
     setGridData(data);
-  }, [members, filter, sort]);
+  }, [members, filter, sort, onPageChange]);
+
+  // Page change handler for server-side pagination
+  const handlePageChange = (event: any) => {
+    const newSkip = event.page.skip;
+    const newTake = event.page.take;
+
+    setSkip(newSkip);
+    setTake(newTake);
+
+    if (onPageChange) {
+      const page = Math.floor(newSkip / newTake) + 1;
+      onPageChange(page, newTake);
+    }
+  };
 
   const handleSearchChange = (e: any) => {
     const value = e.target.value;
@@ -488,11 +518,20 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           sortable={true}
           sort={sort}
           onSortChange={handleSortChange}
-          filterable={true}
+          filterable={!onPageChange} // Disable client-side filtering if server-side pagination enabled
           filter={filter}
           onFilterChange={(e) => setFilter(e.filter)}
-          pageable={true}
-          pageSize={10}
+          pageable={{
+            buttonCount: 5,
+            info: true,
+            type: 'numeric',
+            pageSizes: [10, 20, 50, 100],
+            previousNext: true
+          }}
+          skip={skip}
+          take={take}
+          total={total}
+          onPageChange={handlePageChange}
           style={{ height: '600px' }}
           resizable={true}
         >
@@ -533,9 +572,10 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                 </Button>
               </div>
               <div className="toolbar-stats">
-                <span>Total: {members.length}</span>
+                <span>Total: {total}</span>
                 <span>Showing: {gridData.length}</span>
                 {selectedIds.length > 0 && <span>Selected: {selectedIds.length}</span>}
+                {loading && <span className="loading-indicator">⏳ Loading...</span>}
               </div>
             </div>
           </GridToolbar>
