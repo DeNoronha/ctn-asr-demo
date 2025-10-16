@@ -189,11 +189,16 @@ async function handler(
 
     // Start async verification process
     context.log('Starting document verification...');
-    
+
     try {
-      // Extract data from document
+      // Generate SAS URL for Document Intelligence to access the blob
+      // (Container is private, so Document Intelligence needs a SAS token)
+      const sasUrl = await blobService.getDocumentSasUrl(blobUrl, 60); // 60 minute expiry
+      context.log('Generated SAS URL for document analysis');
+
+      // Extract data from document using SAS URL
       const docIntelService = new DocumentIntelligenceService();
-      const extractedData = await docIntelService.extractKvKData(blobUrl);
+      const extractedData = await docIntelService.extractKvKData(sasUrl);
 
       context.log('Extracted data:', extractedData);
 
