@@ -1,6 +1,6 @@
 # CLAUDE.md - CTN Association Register
 
-**Last Updated:** October 16, 2025 (Added Method Binding and Paginated Response Parsing Lessons)
+**Last Updated:** October 16, 2025 (Added Database Expert Agent and Updated Agent Invocation Workflow)
 
 ---
 
@@ -414,14 +414,22 @@ psql "$POSTGRES_CONNECTION_STRING"
 7. **Documentation Updates:**
    - Technical Writer (TW) - For any documentation changes, structure audits, or completed action tracking
 
+8. **Database Changes (NEW):**
+   - Database Expert (DE) - Before applying migrations, after schema changes, when performance issues arise
+   - DE will review schema design, validate referential integrity, optimize queries
+   - DE will maintain current DDL in `database/schema/current_schema.sql`
+
 **Agent Invocation Checklist:**
 - [ ] **When encountering bugs** → Invoke TE (autonomous bug investigation with Playwright)
-- [ ] After completing a feature → Invoke TE (tests), CR (review), TW (docs)
+- [ ] **Before database migrations** → Invoke DE (schema review, migration safety check)
+- [ ] After completing a feature → Invoke TE (tests), CR (review), TW (docs), DE (if DB changes)
 - [ ] After UI changes → Invoke DA (design review), TW (docs)
 - [ ] Before committing security-sensitive code → Invoke SA (security)
-- [ ] Before pull requests → Invoke CR (code), SA (security)
+- [ ] Before pull requests → Invoke CR (code), SA (security), DE (if DB changes)
 - [ ] After major work session → Invoke TW (update COMPLETED_ACTIONS.md)
-- [ ] Before major release → Invoke TE (regression), SA (audit), DA (UX review)
+- [ ] Before major release → Invoke TE (regression), SA (audit), DA (UX review), DE (schema audit)
+- [ ] After adding database queries → Invoke DE (query optimization)
+- [ ] When performance issues reported → Invoke DE (analyze and optimize)
 
 ### Technical Writer (TW) Agent Workflow - MANDATORY
 
@@ -647,6 +655,53 @@ When a bug is reported, the TE agent will:
 - Enforces repository structure rules
 - Creates clear, concise technical documentation
 - Verifies all markdown files are in correct locations
+
+---
+
+### Database Expert (DE)
+**File:** `.claude/agents/database-expert-de.md`
+**Color:** Blue
+**Model:** Sonnet
+
+**Purpose:** Database schema design review, query optimization, and DDL maintenance
+
+**When to Use:**
+- ✅ **Before applying database migrations** - Review migration for safety and performance
+- ✅ **After major feature completion** - Ensure DDL is current in repository
+- ✅ **When adding new database queries** - Optimize performance
+- ✅ **Before major releases** - Full schema audit
+- After modifying database-heavy code
+- When performance issues are reported
+- During schema design discussions
+- When adding new tables/columns
+
+**Primary Responsibilities:**
+1. **Schema Design Review** - Evaluate normalization, data types, constraints, naming conventions, index strategy
+2. **Referential Integrity** - Verify foreign keys, CASCADE/RESTRICT strategies, orphaned record prevention
+3. **Query Optimization** - Analyze queries for performance, identify N+1 problems, review query plans
+4. **DDL Management** - Generate current schema DDL from production, maintain `database/schema/current_schema.sql`
+5. **Migration Review** - Review migrations before applying, check backward compatibility, validate rollback procedures
+
+**Capabilities:**
+- PostgreSQL-specific checks for Azure Flexible Server
+- Schema review reports with strengths, issues, and recommendations
+- Query optimization reports (before/after comparisons)
+- Index analysis and recommendations
+- Foreign key constraint validation
+- Connection pooling and performance configuration review
+- Integration with TE, SA, CR, TW agents for full workflow
+
+**Deliverables:**
+- Schema review reports documenting issues and fixes
+- Updated `database/schema/current_schema.sql` (single source of truth)
+- Query optimization recommendations with EXPLAIN ANALYZE results
+- Migration safety analysis before applying changes
+
+**File Locations:**
+- `database/schema/current_schema.sql` - Current production DDL
+- `database/migrations/` - Migration files
+- `database/schema/erd.md` or `erd.png` - Entity-relationship diagrams
+- `docs/database/schema_reviews/` - Schema review documentation
 
 ---
 
