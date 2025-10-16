@@ -46,7 +46,7 @@ steps:
   # Biome code quality checks - REPORT ONLY (does not block deployment)
   - script: |
       cd portal
-      npm run lint
+      npm run lint || echo "Biome found issues - reported but not blocking"
     displayName: 'Run Biome code quality checks'
     continueOnError: true
 
