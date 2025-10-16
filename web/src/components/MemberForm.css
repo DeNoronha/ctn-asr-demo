@@ -61,8 +61,21 @@
   content: ' *';
   color: #dc2626; /* WCAG AA compliant: 5.48:1 contrast on white */
   font-weight: 700;
-  font-size: 16px;
-  margin-left: 2px;
+  font-size: 18px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* Add visual indicator for required fields */
+.form-field.required {
+  position: relative;
+}
+
+/* Highlight required fields when empty and touched */
+.form-field.required input.k-invalid {
+  border-color: #dc2626;
+  border-width: 2px;
+  background-color: #fef2f2;
 }
 
 .form-field .k-input {
@@ -78,10 +91,13 @@
   font-size: 12px;
 }
 
-.form-field e {
+.form-field .k-form-error,
+.form-field .k-error {
   color: #f44336;
   font-size: 12px;
   font-style: normal;
+  margin-top: 4px;
+  display: block;
 }
 
 .form-actions {

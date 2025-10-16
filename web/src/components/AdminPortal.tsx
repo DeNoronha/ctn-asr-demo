@@ -114,7 +114,11 @@ const AdminPortal: React.FC = () => {
             <div className="view-header">
               <h2>{t('members.title')}</h2>
               <RoleGuard allowedRoles={[UserRole.ASSOCIATION_ADMIN, UserRole.SYSTEM_ADMIN]}>
-                <Button themeColor="primary" onClick={() => setShowForm(!showForm)}>
+                <Button
+                  themeColor="primary"
+                  onClick={() => setShowForm(!showForm)}
+                  aria-label={showForm ? t('common.cancel') : t('members.addMember')}
+                >
                   {showForm ? t('common.cancel') : `+ ${t('members.addMember')}`}
                 </Button>
               </RoleGuard>
@@ -163,7 +167,11 @@ const AdminPortal: React.FC = () => {
                 <div className="empty-state">
                   <h3>{t('endpoints.title')}</h3>
                   <p>{t('endpoints.selectMemberFirst', 'Select a member from the Members view to manage their endpoints.')}</p>
-                  <Button onClick={() => setSelectedView('members')} themeColor="primary">
+                  <Button
+                    onClick={() => setSelectedView('members')}
+                    themeColor="primary"
+                    aria-label={t('navigation.members')}
+                  >
                     {t('navigation.members')}
                   </Button>
                 </div>
@@ -180,14 +188,22 @@ const AdminPortal: React.FC = () => {
               <div className="token-display">
                 <h3>{t('tokens.latestToken', 'Latest BVAD Token')}</h3>
                 <textarea readOnly value={token} rows={10} className="token-textarea" />
-                <Button onClick={() => setToken('')} themeColor="secondary">
+                <Button
+                  onClick={() => setToken('')}
+                  themeColor="secondary"
+                  aria-label={t('tokens.clearToken', 'Clear Token')}
+                >
                   {t('tokens.clearToken', 'Clear Token')}
                 </Button>
               </div>
             ) : (
               <div className="empty-state">
                 <p>{t('tokens.noTokensGenerated', 'No tokens generated yet. Go to Members to issue a token.')}</p>
-                <Button onClick={() => setSelectedView('members')} themeColor="primary">
+                <Button
+                  onClick={() => setSelectedView('members')}
+                  themeColor="primary"
+                  aria-label={t('navigation.members')}
+                >
                   {t('navigation.members')}
                 </Button>
               </div>
@@ -302,7 +318,12 @@ const AdminPortal: React.FC = () => {
                     <span className="user-name">{user.account.name}</span>
                     <span className="user-role">{user.primaryRole}</span>
                   </div>
-                  <Button fillMode="flat" onClick={handleLogout} title="Sign out">
+                  <Button
+                    fillMode="flat"
+                    onClick={handleLogout}
+                    title="Sign out"
+                    aria-label="Sign out"
+                  >
                     <LogOut size={16} />
                   </Button>
                 </div>

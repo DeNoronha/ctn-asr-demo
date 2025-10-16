@@ -51,10 +51,21 @@ export const ContactForm: React.FC<ContactFormProps> = ({
   const getInitialValues = () => {
     if (contact) {
       const [first_name, ...lastNames] = (contact.full_name || '').split(' ');
+      // Convert backend uppercase contact_type (e.g., 'PRIMARY') to title case (e.g., 'Primary')
+      const contactType = contact.contact_type
+        ? contact.contact_type.charAt(0) + contact.contact_type.slice(1).toLowerCase()
+        : 'Primary';
+
       return {
-        ...contact,
+        contact_type: contactType,
         first_name: first_name || '',
         last_name: lastNames.join(' ') || '',
+        email: contact.email || '',
+        phone: contact.phone || '',
+        mobile: contact.mobile || '',
+        job_title: contact.job_title || '',
+        department: contact.department || '',
+        is_primary: contact.is_primary || false,
       };
     }
     return { contact_type: 'Primary', is_primary: false, first_name: '', last_name: '' };
