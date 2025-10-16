@@ -27,6 +27,7 @@ import { MemberDetailView } from './MemberDetailView';
 import MemberForm from './MemberForm';
 import MembersGrid from './MembersGrid';
 import NewslettersGrid from './NewslettersGrid';
+import Settings from './Settings';
 import SubscriptionsGrid from './SubscriptionsGrid';
 import TasksGrid from './TasksGrid';
 import AuditLogViewer from './audit/AuditLogViewer';
@@ -257,30 +258,7 @@ const AdminPortal: React.FC = () => {
         return <About />;
 
       case 'docs':
-        return (
-          <div className="docs-view">
-            <h2>{t('navigation.documentation')}</h2>
-            <div className="docs-content">
-              <h3>{t('common.appName')}</h3>
-              <p>{t('docs.welcome', 'Welcome to the CTN Association Register administrative interface.')}</p>
-              <h4>{t('dashboard.quickActions')}</h4>
-              <ul>
-                <li>
-                  {t('docs.useDashboard', 'Use the Dashboard to view key statistics')}
-                </li>
-                <li>
-                  {t('docs.manageMembers', 'Manage members in the Members section')}
-                </li>
-                <li>
-                  {t('docs.manageEndpoints', 'Manage system endpoints in the Endpoints section')}
-                </li>
-                <li>
-                  {t('docs.manageTokens', 'Generate and view tokens in Token Management')}
-                </li>
-              </ul>
-            </div>
-          </div>
-        );
+        return <Settings />;
 
       default:
         return <div>{t('navigation.selectView', 'Select a view from the sidebar')}</div>;

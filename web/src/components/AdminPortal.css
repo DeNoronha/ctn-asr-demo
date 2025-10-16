@@ -139,3 +139,168 @@
 .endpoints-view .empty-state {
   height: calc(100vh - 200px);
 }
+
+/* Responsive Layout Improvements (L7) */
+@media (max-width: 768px) {
+  .header-logo {
+    height: 28px;
+    margin: 0 8px;
+  }
+
+  .header-left h1 {
+    font-size: 16px;
+  }
+
+  .user-info {
+    padding: 6px 12px;
+    gap: 8px;
+  }
+
+  .user-details {
+    display: none; /* Hide user name/role on mobile, show only avatar and logout */
+  }
+
+  .partner-logos {
+    padding: 16px;
+    margin-top: 24px;
+  }
+
+  .logos-grid {
+    gap: 16px;
+  }
+
+  .logo-container {
+    padding: 12px 16px;
+  }
+
+  .logo-container img {
+    height: 24px;
+  }
+
+  .empty-state {
+    padding: 40px 16px;
+  }
+
+  .empty-state h3 {
+    font-size: 20px;
+  }
+
+  .empty-state p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-left h1 {
+    display: none; /* Hide title on very small screens */
+  }
+
+  .user-info {
+    padding: 4px 8px;
+    gap: 4px;
+  }
+
+  .partner-logos h3 {
+    font-size: 14px;
+  }
+
+  .logos-grid {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .empty-state {
+    padding: 30px 12px;
+  }
+}
+
+/* Print-Friendly Styles (L8) */
+@media print {
+  /* Hide navigation and interactive elements */
+  .admin-sidebar,
+  .menu-button,
+  .header-right,
+  .k-button,
+  .actions-cell,
+  .k-grid-toolbar {
+    display: none !important;
+  }
+
+  /* Optimize layout for printing */
+  .app-container {
+    display: block !important;
+  }
+
+  .main-content {
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .app-header {
+    background: white !important;
+    color: black !important;
+    border-bottom: 2px solid #333;
+    padding: 10px !important;
+  }
+
+  .header-left h1 {
+    color: black !important;
+  }
+
+  /* Optimize grids for printing */
+  .k-grid {
+    border: 1px solid #000 !important;
+  }
+
+  .k-grid th {
+    background: #f0f0f0 !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+  }
+
+  .k-grid td {
+    border: 1px solid #000 !important;
+    color: #000 !important;
+  }
+
+  /* Remove background colors and shadows */
+  .empty-state,
+  .partner-logos,
+  .user-info,
+  .logo-container {
+    background: white !important;
+    box-shadow: none !important;
+    border-color: #333 !important;
+  }
+
+  /* Ensure text is readable */
+  body {
+    color: #000 !important;
+    background: white !important;
+  }
+
+  /* Add page breaks for better printing */
+  .view-header {
+    page-break-after: avoid;
+  }
+
+  .k-grid {
+    page-break-inside: avoid;
+  }
+
+  /* Print URL for links */
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    font-style: italic;
+  }
+
+  /* Add print date */
+  .app-header::after {
+    content: "Printed: " attr(data-print-date);
+    display: block;
+    font-size: 0.75em;
+    color: #666;
+    margin-top: 8px;
+  }
+}

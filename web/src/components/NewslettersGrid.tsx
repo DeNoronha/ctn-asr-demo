@@ -1,11 +1,13 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button, DropDownButton } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
+import { ExcelExport } from '@progress/kendo-react-excel-export';
 import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { Input, TextArea } from '@progress/kendo-react-inputs';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { formatDate } from '../utils/dateUtils';
+import { exportGenericToCSV, exportGenericToPDF } from '../utils/genericExportUtils';
 import './NewslettersGrid.css';
 
 interface Newsletter {
@@ -33,6 +35,7 @@ const NewslettersGrid: React.FC = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [selectedNewsletter, setSelectedNewsletter] = useState<Newsletter | null>(null);
+  const excelExportRef = useRef<ExcelExport | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -127,6 +130,55 @@ const NewslettersGrid: React.FC = () => {
     return `${((newsletter.click_count / newsletter.open_count) * 100).toFixed(1)}%`;
   };
 
+  const handleExcelExport = () => {
+    if (excelExportRef.current) {
+      excelExportRef.current.save();
+    }
+  };
+
+  const handlePDFExport = () => {
+    const columns = [
+      { field: 'title', header: 'Title' },
+      { field: 'subject_line', header: 'Subject' },
+      { field: 'status', header: 'Status' },
+      { field: 'recipient_count', header: 'Recipients' },
+      { field: 'delivered_count', header: 'Delivered' },
+      { field: 'open_count', header: 'Opens' },
+      { field: 'click_count', header: 'Clicks' },
+      { field: 'sent_at', header: 'Sent Date' },
+    ];
+
+    exportGenericToPDF(newsletters, {
+      title: 'CTN Newsletters',
+      columns,
+      orientation: 'landscape',
+      includeTimestamp: true,
+    });
+  };
+
+  const handleCSVExport = () => {
+    const columns = [
+      { field: 'title', header: 'Title' },
+      { field: 'subject_line', header: 'Subject' },
+      { field: 'status', header: 'Status' },
+      { field: 'recipient_filter', header: 'Recipient Filter' },
+      { field: 'recipient_count', header: 'Recipients' },
+      { field: 'delivered_count', header: 'Delivered' },
+      { field: 'open_count', header: 'Opens' },
+      { field: 'click_count', header: 'Clicks' },
+      { field: 'sent_at', header: 'Sent Date' },
+      { field: 'created_at', header: 'Created Date' },
+    ];
+
+    exportGenericToCSV(newsletters, columns, `CTN_Newsletters_${new Date().toISOString().split('T')[0]}.csv`);
+  };
+
+  const exportMenuItems = [
+    { text: 'Export to Excel', icon: 'file-excel', click: handleExcelExport },
+    { text: 'Export to PDF', icon: 'file-pdf', click: handlePDFExport },
+    { text: 'Export to CSV', icon: 'file-txt', click: handleCSVExport },
+  ];
+
   const StatusCell = (props: any) => {
     const status = props.dataItem.status;
     const statusClass = `status-badge status-${status}`;
@@ -157,10 +209,20 @@ const NewslettersGrid: React.FC = () => {
         </Button>
       </div>
 
-      <Grid data={newsletters} style={{ height: '600px' }}>
-        <GridToolbar>
-          <span className="grid-toolbar-info">Total Newsletters: {newsletters.length}</span>
-        </GridToolbar>
+      <ExcelExport data={newsletters} fileName="CTN_Newsletters.xlsx" ref={excelExportRef}>
+        <Grid data={newsletters} style={{ height: '600px' }}>
+          <GridToolbar>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              <span className="grid-toolbar-info">Total Newsletters: {newsletters.length}</span>
+              <DropDownButton
+                text="Export"
+                icon="download"
+                items={exportMenuItems}
+                themeColor="primary"
+                fillMode="outline"
+              />
+            </div>
+          </GridToolbar>
 
         <GridColumn field="title" title="Title" width="250px" />
         <GridColumn field="subject_line" title="Subject" width="250px" />
@@ -190,7 +252,8 @@ const NewslettersGrid: React.FC = () => {
           cell={(props) => <td>{formatNewsletterDate(props.dataItem.sent_at)}</td>}
         />
         <GridColumn title="Actions" width="150px" cell={ActionsCell} />
-      </Grid>
+        </Grid>
+      </ExcelExport>
 
       {/* Create Dialog */}
       {showCreateDialog && (

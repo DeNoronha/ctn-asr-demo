@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   Mail,
   Plug,
+  Settings,
   Shield,
   Users,
 } from 'lucide-react';
@@ -42,7 +43,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
     { separator: true, text: '' },
     { text: 'User Management', iconComponent: Shield, route: 'settings' },
     { text: 'Audit Logs', iconComponent: FileText, route: 'audit' },
-    { text: 'Documentation', iconComponent: BookOpen, route: 'docs' },
+    { text: 'Settings', iconComponent: Settings, route: 'docs' },
     { text: 'About', iconComponent: Info, route: 'about' },
   ];
 

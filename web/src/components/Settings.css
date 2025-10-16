@@ -1,0 +1,264 @@
+/* Settings Component Styles */
+
+.settings-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Section Styles */
+.settings-section {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.section-description {
+  margin: 0 0 24px 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Resources Grid */
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.resource-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.resource-card:hover {
+  border-color: var(--card-color, #0066b3);
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 102, 179, 0.15);
+  transform: translateY(-2px);
+}
+
+.resource-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 2px solid var(--card-color, #0066b3);
+  border-radius: 8px;
+  color: var(--card-color, #0066b3);
+}
+
+.resource-content {
+  flex: 1;
+}
+
+.resource-title {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.resource-description {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.resource-arrow {
+  flex-shrink: 0;
+  color: #9ca3af;
+  transition: all 0.2s ease;
+}
+
+.resource-card:hover .resource-arrow {
+  color: var(--card-color, #0066b3);
+  transform: translateX(4px);
+}
+
+/* Translation Management */
+.translation-card {
+  display: flex;
+  gap: 32px;
+  padding: 24px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #0ea5e9;
+  border-radius: 12px;
+}
+
+.translation-info {
+  flex: 1;
+}
+
+.translation-info h4 {
+  margin: 0 0 12px 0;
+  color: #0c4a6e;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.translation-info p {
+  margin: 0 0 16px 0;
+  color: #0369a1;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.translation-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.translation-features li {
+  color: #0369a1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.translation-action {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.translation-action button {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* Application Information */
+.app-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.info-item {
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.info-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  display: block;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Monaco', 'Courier New', monospace;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .settings-container {
+    padding: 16px;
+  }
+
+  .resources-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .translation-card {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .translation-features {
+    grid-template-columns: 1fr;
+  }
+
+  .translation-action {
+    width: 100%;
+  }
+
+  .translation-action button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .app-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-section {
+    padding: 16px;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+
+  .resource-card {
+    padding: 16px;
+  }
+
+  .resource-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .translation-action button {
+    display: none;
+  }
+
+  .resource-card {
+    break-inside: avoid;
+  }
+
+  .settings-section {
+    page-break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+}
