@@ -13,8 +13,10 @@ import {
   Trash2,
   XCircle,
 } from 'lucide-react';
+import axios from 'axios';
 import type React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { msalInstance } from '../auth/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
@@ -26,6 +28,11 @@ interface IdentifiersManagerProps {
   legalEntityId: string;
   identifiers: LegalEntityIdentifier[];
   onUpdate: (identifiers: LegalEntityIdentifier[]) => void;
+}
+
+interface KvkVerificationStatus {
+  kvk_document_url: string | null;
+  kvk_mismatch_flags: string[] | null;
 }
 
 const VALIDATION_STATUSES = ['PENDING', 'VALIDATED', 'FAILED', 'EXPIRED'];
@@ -195,7 +202,62 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
   const [isValidIdentifier, setIsValidIdentifier] = useState<boolean>(true);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [identifierToDelete, setIdentifierToDelete] = useState<LegalEntityIdentifier | null>(null);
+  const [kvkVerificationFlags, setKvkVerificationFlags] = useState<string[]>([]);
+  const [hasKvkDocument, setHasKvkDocument] = useState(false);
   const notification = useNotification();
+
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:7071/api/v1';
+
+  // Helper function to get access token
+  async function getAccessToken(): Promise<string | null> {
+    try {
+      const accounts = msalInstance.getAllAccounts();
+      if (accounts.length > 0) {
+        const clientId = process.env.REACT_APP_AZURE_CLIENT_ID;
+        const response = await msalInstance.acquireTokenSilent({
+          scopes: [`api://${clientId}/access_as_user`],
+          account: accounts[0],
+        });
+        return response.accessToken;
+      }
+    } catch (error) {
+      console.error('Failed to acquire token:', error);
+    }
+    return null;
+  }
+
+  // Create authenticated axios instance
+  async function getAuthenticatedAxios() {
+    const token = await getAccessToken();
+    return axios.create({
+      baseURL: API_BASE_URL,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  }
+
+  // Fetch KvK verification status for document verification badges
+  useEffect(() => {
+    const fetchKvkVerification = async () => {
+      try {
+        const axiosInstance = await getAuthenticatedAxios();
+        const response = await axiosInstance.get<KvkVerificationStatus>(
+          `/legal-entities/${legalEntityId}/kvk-verification`
+        );
+        if (response.data) {
+          setKvkVerificationFlags(response.data.kvk_mismatch_flags || []);
+          setHasKvkDocument(!!response.data.kvk_document_url);
+        }
+      } catch (error) {
+        // Silently fail if no document uploaded yet
+        console.debug('No KvK verification status available yet');
+      }
+    };
+
+    if (legalEntityId) {
+      fetchKvkVerification();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [legalEntityId, identifiers]); // Re-fetch when identifiers change
 
   // Validate identifier value based on type
   const validateIdentifierValue = (type: string | undefined, value: string): boolean => {
@@ -415,6 +477,58 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     );
   };
 
+  const getDocumentVerificationBadge = (identifierType: string) => {
+    // Only show for KvK identifiers with uploaded document
+    if (identifierType !== 'KVK' || !hasKvkDocument) {
+      return <span style={{ color: '#9ca3af', fontSize: '0.875rem' }}>—</span>;
+    }
+
+    const hasNameMismatch = kvkVerificationFlags.includes('entered_name_mismatch');
+    const hasNumberMismatch = kvkVerificationFlags.includes('entered_kvk_mismatch');
+
+    let color: string;
+    let icon: React.ReactNode;
+    let label: string;
+
+    if (!hasNameMismatch && !hasNumberMismatch) {
+      // Green: Both match
+      color = '#059669'; // WCAG AA compliant
+      icon = <CheckCircle size={14} />;
+      label = 'MATCH';
+    } else if (hasNameMismatch && hasNumberMismatch) {
+      // Red: Neither match
+      color = '#dc2626'; // WCAG AA compliant
+      icon = <XCircle size={14} />;
+      label = 'NO MATCH';
+    } else {
+      // Orange: Partial match
+      color = '#b45309'; // WCAG AA compliant
+      icon = <AlertTriangle size={14} />;
+      label = 'PARTIAL';
+    }
+
+    return (
+      <span
+        className="validation-badge"
+        style={{ backgroundColor: color }}
+        role="status"
+        aria-label={`Document verification: ${label}`}
+        title={
+          hasNameMismatch && hasNumberMismatch
+            ? 'Company name and KvK number do not match uploaded document'
+            : hasNameMismatch
+              ? 'Company name does not match uploaded document'
+              : hasNumberMismatch
+                ? 'KvK number does not match uploaded document'
+                : 'Company name and KvK number match uploaded document'
+        }
+      >
+        <span aria-hidden="true">{icon}</span>
+        {label}
+      </span>
+    );
+  };
+
   const handleKeyDown = (event: React.KeyboardEvent, action: () => void) => {
     // Handle Enter and Space keys for keyboard accessibility (WCAG 2.1 Level AA)
     if (event.key === 'Enter' || event.key === ' ') {
@@ -456,6 +570,10 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     return <td>{getValidationBadge(props.dataItem.validation_status)}</td>;
   };
 
+  const DocumentVerificationCell = (props: any) => {
+    return <td>{getDocumentVerificationBadge(props.dataItem.identifier_type)}</td>;
+  };
+
   const DateCell = (props: any) => {
     const { field, dataItem } = props;
     const value = dataItem[field];
@@ -493,6 +611,11 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
             title="Status"
             width="140px"
             cell={ValidationCell}
+          />
+          <GridColumn
+            title="Doc Verification"
+            width="160px"
+            cell={DocumentVerificationCell}
           />
           <GridColumn field="validation_date" title="Last Verified" width="140px" cell={DateCell} />
           <GridColumn field="dt_modified" title="Last Edited" width="140px" cell={DateCell} />
