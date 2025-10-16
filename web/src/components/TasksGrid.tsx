@@ -1,9 +1,12 @@
+import { useMsal } from '@azure/msal-react';
 import { Button } from '@progress/kendo-react-buttons';
 import { DatePicker } from '@progress/kendo-react-dateinputs';
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { Input, TextArea } from '@progress/kendo-react-inputs';
+import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
+import axios from 'axios';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { formatDate } from '../utils/dateUtils';
@@ -25,14 +28,32 @@ interface AdminTask {
   created_at: string;
 }
 
+interface ReviewTask {
+  legal_entity_id: string;
+  entered_company_name: string;
+  entered_legal_id: string | null;
+  extracted_company_name: string;
+  extracted_legal_id: string;
+  registry_type: string;
+  country_code: string | null;
+  kvk_mismatch_flags: string[];
+  kvk_document_url: string;
+  document_uploaded_at: string;
+}
+
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:7071/api';
 
 const TasksGrid: React.FC = () => {
+  const { instance, accounts } = useMsal();
   const [tasks, setTasks] = useState<AdminTask[]>([]);
+  const [reviewTasks, setReviewTasks] = useState<ReviewTask[]>([]);
   const [_loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [selectedTask, setSelectedTask] = useState<AdminTask | null>(null);
+  const [selectedReviewTask, setSelectedReviewTask] = useState<ReviewTask | null>(null);
+  const [activeTab, setActiveTab] = useState(0);
 
   const [formData, setFormData] = useState({
     task_type: 'other' as string,
@@ -72,6 +93,8 @@ const TasksGrid: React.FC = () => {
 
   useEffect(() => {
     loadTasks();
+    loadReviewTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadTasks = async () => {
@@ -85,6 +108,31 @@ const TasksGrid: React.FC = () => {
       console.error('Error loading tasks:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadReviewTasks = async () => {
+    try {
+      const account = accounts[0];
+      if (!account) return;
+
+      const tokenResponse = await instance.acquireTokenSilent({
+        scopes: ['api://5c0c3b9e-0e4b-47b8-8e4f-9b0e6c0c3b9e/.default'],
+        account: account,
+      });
+
+      const axiosInstance = axios.create({
+        baseURL: API_BASE_URL,
+        headers: {
+          Authorization: `Bearer ${tokenResponse.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const response = await axiosInstance.get<ReviewTask[]>('/v1/admin/kvk-verification/flagged-entities');
+      setReviewTasks(response.data);
+    } catch (error) {
+      console.error('Error loading review tasks:', error);
     }
   };
 
@@ -154,6 +202,46 @@ const TasksGrid: React.FC = () => {
       console.error('Error completing task:', error);
       alert('Failed to complete task');
     }
+  };
+
+  const handleReviewDecision = async (decision: 'approve' | 'reject', notes?: string) => {
+    if (!selectedReviewTask) return;
+
+    try {
+      const account = accounts[0];
+      if (!account) return;
+
+      const tokenResponse = await instance.acquireTokenSilent({
+        scopes: ['api://5c0c3b9e-0e4b-47b8-8e4f-9b0e6c0c3b9e/.default'],
+        account: account,
+      });
+
+      const axiosInstance = axios.create({
+        baseURL: API_BASE_URL,
+        headers: {
+          Authorization: `Bearer ${tokenResponse.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      await axiosInstance.post('/v1/admin/kvk-verification/review', {
+        legal_entity_id: selectedReviewTask.legal_entity_id,
+        decision,
+        reviewer_notes: notes || '',
+      });
+
+      setShowReviewDialog(false);
+      setSelectedReviewTask(null);
+      loadReviewTasks();
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      alert('Failed to submit review decision');
+    }
+  };
+
+  const openReviewDialog = (task: ReviewTask) => {
+    setSelectedReviewTask(task);
+    setShowReviewDialog(true);
   };
 
   const resetForm = () => {
@@ -243,11 +331,12 @@ const TasksGrid: React.FC = () => {
   const pendingCount = tasks.filter((t) => t.status === 'pending').length;
   const inProgressCount = tasks.filter((t) => t.status === 'in_progress').length;
   const overdueCount = tasks.filter((t) => isOverdue(t)).length;
+  const reviewCount = reviewTasks.length;
 
   return (
     <div className="tasks-grid">
       <div className="grid-header">
-        <h2>Admin Tasks</h2>
+        <h2>Admin Tasks & Reviews</h2>
         <Button icon="plus" themeColor="primary" onClick={() => setShowCreateDialog(true)}>
           New Task
         </Button>
@@ -266,9 +355,15 @@ const TasksGrid: React.FC = () => {
           <div className="summary-value">{overdueCount}</div>
           <div className="summary-label">Overdue</div>
         </div>
+        <div className="summary-card kvk-review">
+          <div className="summary-value">{reviewCount}</div>
+          <div className="summary-label">KvK Reviews</div>
+        </div>
       </div>
 
-      <Grid data={tasks} style={{ height: '550px' }}>
+      <TabStrip selected={activeTab} onSelect={(e) => setActiveTab(e.selected)}>
+        <TabStripTab title="My Tasks">
+          <Grid data={tasks} style={{ height: '550px' }}>
         <GridToolbar>
           <span className="grid-toolbar-info">Total Tasks: {tasks.length}</span>
         </GridToolbar>
@@ -296,7 +391,50 @@ const TasksGrid: React.FC = () => {
         />
         <GridColumn field="due_date" title="Due Date" width="130px" cell={DueDateCell} />
         <GridColumn title="Actions" width="220px" cell={ActionsCell} />
-      </Grid>
+          </Grid>
+        </TabStripTab>
+
+        <TabStripTab title="KvK Reviews">
+          <Grid data={reviewTasks} style={{ height: '550px' }}>
+            <GridToolbar>
+              <span className="grid-toolbar-info">Total Reviews: {reviewTasks.length}</span>
+            </GridToolbar>
+
+            <GridColumn field="entered_company_name" title="Company Name" width="250px" />
+            <GridColumn field="entered_legal_id" title="Entered KvK" width="120px" />
+            <GridColumn field="extracted_legal_id" title="Extracted KvK" width="130px" />
+            <GridColumn
+              field="kvk_mismatch_flags"
+              title="Mismatches"
+              width="150px"
+              cell={(props) => (
+                <td>
+                  <span className="priority-badge priority-urgent">
+                    {props.dataItem.kvk_mismatch_flags.length} Issues
+                  </span>
+                </td>
+              )}
+            />
+            <GridColumn
+              field="document_uploaded_at"
+              title="Uploaded"
+              width="150px"
+              cell={(props) => <td>{formatTaskDate(props.dataItem.document_uploaded_at)}</td>}
+            />
+            <GridColumn
+              title="Actions"
+              width="180px"
+              cell={(props) => (
+                <td>
+                  <Button icon="preview" fillMode="flat" onClick={() => openReviewDialog(props.dataItem)}>
+                    Review
+                  </Button>
+                </td>
+              )}
+            />
+          </Grid>
+        </TabStripTab>
+      </TabStrip>
 
       {/* Create Dialog */}
       {showCreateDialog && (
@@ -426,6 +564,126 @@ const TasksGrid: React.FC = () => {
             <Button onClick={() => setShowEditDialog(false)}>Cancel</Button>
             <Button themeColor="primary" onClick={() => handleUpdate()}>
               Update Task
+            </Button>
+          </div>
+        </Dialog>
+      )}
+
+      {/* Review Dialog */}
+      {showReviewDialog && selectedReviewTask && (
+        <Dialog
+          title={`Review KvK Verification - ${selectedReviewTask.entered_company_name}`}
+          onClose={() => setShowReviewDialog(false)}
+          width={800}
+        >
+          <div className="dialog-content">
+            <div style={{ marginBottom: '20px' }}>
+              <h3 style={{ color: '#003366', marginBottom: '15px' }}>Comparison Details</h3>
+
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#f3f4f6', borderBottom: '2px solid #e5e7eb' }}>
+                    <th style={{ padding: '12px', textAlign: 'left', width: '30%' }}>Field</th>
+                    <th style={{ padding: '12px', textAlign: 'left', width: '35%' }}>
+                      Entered (Database)
+                    </th>
+                    <th style={{ padding: '12px', textAlign: 'left', width: '35%' }}>
+                      Extracted (Document)
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                    <td style={{ padding: '12px', fontWeight: 600 }}>Company Name</td>
+                    <td
+                      style={{
+                        padding: '12px',
+                        background: selectedReviewTask.kvk_mismatch_flags.includes('company_name')
+                          ? '#fee2e2'
+                          : 'transparent',
+                      }}
+                    >
+                      {selectedReviewTask.entered_company_name}
+                    </td>
+                    <td
+                      style={{
+                        padding: '12px',
+                        background: selectedReviewTask.kvk_mismatch_flags.includes('company_name')
+                          ? '#dcfce7'
+                          : 'transparent',
+                      }}
+                    >
+                      {selectedReviewTask.extracted_company_name}
+                    </td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                    <td style={{ padding: '12px', fontWeight: 600 }}>KvK Number</td>
+                    <td
+                      style={{
+                        padding: '12px',
+                        background: selectedReviewTask.kvk_mismatch_flags.includes('legal_id')
+                          ? '#fee2e2'
+                          : 'transparent',
+                      }}
+                    >
+                      {selectedReviewTask.entered_legal_id || 'Not provided'}
+                    </td>
+                    <td
+                      style={{
+                        padding: '12px',
+                        background: selectedReviewTask.kvk_mismatch_flags.includes('legal_id')
+                          ? '#dcfce7'
+                          : 'transparent',
+                      }}
+                    >
+                      {selectedReviewTask.extracted_legal_id}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: '12px', fontWeight: 600 }}>Registry Type</td>
+                    <td style={{ padding: '12px' }} colSpan={2}>
+                      {selectedReviewTask.registry_type} ({selectedReviewTask.country_code || 'NL'})
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div style={{ marginTop: '20px' }}>
+                <p style={{ fontWeight: 600, marginBottom: '8px' }}>Mismatch Flags:</p>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {selectedReviewTask.kvk_mismatch_flags.map((flag) => (
+                    <span
+                      key={flag}
+                      className="priority-badge priority-urgent"
+                      style={{ textTransform: 'capitalize' }}
+                    >
+                      {flag.replace('_', ' ')}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginTop: '20px' }}>
+                <p style={{ fontWeight: 600, marginBottom: '8px' }}>Document:</p>
+                <a
+                  href={selectedReviewTask.kvk_document_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#0066b3', textDecoration: 'underline' }}
+                >
+                  View Uploaded Document
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="dialog-actions">
+            <Button onClick={() => setShowReviewDialog(false)}>Cancel</Button>
+            <Button themeColor="error" onClick={() => handleReviewDecision('reject')}>
+              Reject
+            </Button>
+            <Button themeColor="primary" onClick={() => handleReviewDecision('approve')}>
+              Approve
             </Button>
           </div>
         </Dialog>

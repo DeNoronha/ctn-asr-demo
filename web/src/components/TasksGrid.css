@@ -45,6 +45,10 @@
   background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
 }
 
+.summary-card.kvk-review {
+  background: linear-gradient(135deg, #ff8c00 0%, #e67300 100%);
+}
+
 .summary-value {
   font-size: 32px;
   font-weight: 700;

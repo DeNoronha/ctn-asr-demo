@@ -1,8 +1,6 @@
 import {
-  BookOpen,
   CheckSquare,
   CreditCard,
-  FileCheck,
   FileText,
   Info,
   Key,
@@ -33,7 +31,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
   const items: MenuItem[] = [
     { text: 'Dashboard', iconComponent: LayoutDashboard, route: 'dashboard' },
     { text: 'Members', iconComponent: Users, route: 'members' },
-    { text: 'Review Tasks', iconComponent: FileCheck, route: 'kvk-review' },
     { text: 'Endpoints', iconComponent: Plug, route: 'endpoints' },
     { text: 'Token Management', iconComponent: Key, route: 'tokens' },
     { separator: true, text: '' },
