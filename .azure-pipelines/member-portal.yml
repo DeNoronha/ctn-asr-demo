@@ -96,6 +96,12 @@ steps:
   # Deployments only run if builds succeed (condition: succeeded())
   # ========================================
   - script: |
+      chmod +x scripts/generate-version.sh
+      ./scripts/generate-version.sh portal/public
+    displayName: 'Generate version.json with build metadata'
+    condition: succeededOrFailed()
+
+  - script: |
       cd portal
       npm run build
     displayName: 'Build React application'
