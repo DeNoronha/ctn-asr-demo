@@ -123,6 +123,64 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 ---
 
+## MEDIUM - Re-enable Disabled Features from KVK Debugging
+
+**Context:** During October 15 KVK number debugging session, several features were temporarily disabled to isolate issues. These need to be re-enabled now that the bugs are fixed.
+
+### CI/CD Pipeline
+- [ ] **Re-enable Biome lint checks in admin-portal.yml** (15 min)
+  - Currently commented out (lines 46-51)
+  - Was blocking deployments with exit code 1
+  - Verify Biome passes before uncommenting
+  - File: `.azure-pipelines/admin-portal.yml`
+
+- [ ] **Re-enable Biome lint checks in member-portal.yml** (15 min)
+  - Same issue as admin portal
+  - File: `.azure-pipelines/member-portal.yml`
+
+### Application Insights Logging (host.json)
+- [ ] **Restore enhanced Application Insights logging** (30 min)
+  - Change log levels back to "Information" (currently "Warning")
+  - Enable live metrics: `enableLiveMetrics: true`
+  - Enable performance counters: `enablePerformanceCountersCollection: true`
+  - Enable console logging: `isEnabled: true`
+  - Increase sampling: `maxTelemetryItemsPerSecond: 20` (currently 5)
+  - Remove request exclusion: `excludedTypes: ""` (currently "Request")
+  - Re-add HTTP auto-collection options:
+    - `enableHttpTriggerExtendedInfoCollection: true`
+    - `enableW3CDistributedTracing: true`
+    - `enableResponseHeaderInjection: true`
+  - File: `api/host.json`
+  - **Why disabled:** Reduced logging noise during debugging
+  - **Impact:** Lost valuable production telemetry and monitoring
+
+### API Functions (essential-index.ts)
+- [ ] **Re-enable endpoint management functions** (30 min)
+  - getEndpointsByEntity, createEndpoint, updateEndpoint
+  - issueEndpointToken, getEndpointTokens
+  - **Why disabled:** Narrowing down 404 errors during identifier debugging
+  - **Impact:** Endpoint management features unavailable in admin portal
+
+- [ ] **Re-enable KvK verification functions** (15 min)
+  - uploadKvkDocument, getKvkVerificationStatus, reviewKvkVerification
+  - **Why disabled:** Isolating identifier CRUD issues
+  - **Impact:** KvK document upload/review features unavailable
+
+- [ ] **Re-enable diagnostic functions** (15 min)
+  - DiagnosticCheck, CreateIdentifierSimple
+  - **Why disabled:** Simplifying debugging surface area
+  - **Impact:** Lost diagnostic tools for troubleshooting
+
+### Middleware Optimizations
+- [ ] **Restore origin header extraction optimization in endpointWrapper.ts** (30 min)
+  - Currently calls `request.headers.get('origin')` multiple times per request
+  - Previous optimization extracted once to avoid "Cannot read private member" errors
+  - **Why reverted:** Was suspected to cause header access issues (turned out to be binding issue)
+  - **Impact:** Minor performance degradation on every CORS request
+  - **Note:** Original optimization was actually fine, issue was method binding
+
+---
+
 ## MEDIUM - Code Quality & Testing
 
 ### Bug Fixes from Testing
