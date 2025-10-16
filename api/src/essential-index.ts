@@ -29,7 +29,21 @@ import './functions/CreateIdentifier';
 import './functions/UpdateIdentifier';
 import './functions/DeleteIdentifier';
 
+// Endpoint management
+import './functions/getEndpointsByEntity';
+import './functions/createEndpoint';
+import './functions/updateEndpoint';
+import './functions/issueEndpointToken';
+import './functions/getEndpointTokens';
+
 // KvK verification
 import './functions/getFlaggedEntities';
+import './functions/uploadKvkDocument';
+import './functions/getKvkVerificationStatus';
+import './functions/reviewKvkVerification';
+
+// Diagnostics
+import './functions/DiagnosticCheck';
+import './functions/CreateIdentifierSimple';
 
 console.log('✓ Essential functions loaded');
