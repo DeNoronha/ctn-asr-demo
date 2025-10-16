@@ -20,7 +20,7 @@ import About from './About';
 import AdminSidebar, { type MenuItem } from './AdminSidebar';
 import Dashboard from './Dashboard';
 import { EndpointManagement } from './EndpointManagement';
-import { KvkReviewQueue } from './KvkReviewQueue';
+import { ReviewTasks } from './ReviewTasks';
 import LanguageSwitcher from './LanguageSwitcher';
 import LoadingSpinner from './LoadingSpinner';
 import { MemberDetailView } from './MemberDetailView';
@@ -211,8 +211,8 @@ const AdminPortal: React.FC = () => {
 
       case 'kvk-review':
         return (
-          <div className="kvk-review-view">
-            <KvkReviewQueue />
+          <div className="review-tasks-view">
+            <ReviewTasks />
           </div>
         );
 

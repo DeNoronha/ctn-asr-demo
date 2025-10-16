@@ -446,23 +446,11 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   };
 
   const ActionCell = (props: any) => {
-    const isActive = props.dataItem.status === 'ACTIVE';
-
     return (
       <td>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <Button size="small" onClick={() => onViewDetails(props.dataItem)}>
-            {t('members.viewMember', 'View')}
-          </Button>
-          <Button
-            themeColor="primary"
-            size="small"
-            disabled={!isActive}
-            onClick={() => onIssueToken(props.dataItem.org_id)}
-          >
-            {t('tokens.issueToken', 'Token')}
-          </Button>
-        </div>
+        <Button size="small" onClick={() => onViewDetails(props.dataItem)}>
+          {t('members.viewMember', 'View')}
+        </Button>
       </td>
     );
   };
@@ -476,7 +464,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   const bulkActions = [
     { text: 'Export to PDF', icon: 'file-pdf', click: () => handleBulkAction('export-pdf') },
     { text: 'Export to CSV', icon: 'file-txt', click: () => handleBulkAction('export-csv') },
-    { text: 'Issue Tokens', icon: 'key', click: () => handleBulkAction('token') },
     { text: 'Suspend Selected', icon: 'pause', click: () => handleBulkAction('suspend') },
     { text: 'Delete Selected', icon: 'trash', click: () => handleBulkAction('delete') },
   ];
