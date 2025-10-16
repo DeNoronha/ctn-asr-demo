@@ -268,22 +268,29 @@ const About: React.FC = () => {
 
       {/* Copyright Information */}
       {apiVersion?.copyright && (
-        <Card className="copyright-card">
-          <CardBody>
-            <div className="copyright-info">
-              <p>
-                © {apiVersion.copyright.year} {apiVersion.copyright.owner}
-              </p>
-              <p className="copyright-license">
-                License: {apiVersion.copyright.license}
-              </p>
-              <p className="copyright-description">
-                CTN Association Register - Member management and API endpoint administration for the Connected Trade Network ecosystem.
-              </p>
-            </div>
-          </CardBody>
-        </Card>
+        <div className="copyright-footer">
+          <p>© {apiVersion.copyright.year} {apiVersion.copyright.owner}</p>
+        </div>
       )}
+
+      {/* Partner Logos - Same as Dashboard */}
+      <div className="partner-logos">
+        <h3>In Partnership With</h3>
+        <div className="logos-grid">
+          <div className="logo-container">
+            <img src="/assets/logos/portbase.png" alt="Portbase" />
+          </div>
+          <div className="logo-container">
+            <img src="/assets/logos/contargo.png" alt="Contargo" />
+          </div>
+          <div className="logo-container">
+            <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" />
+          </div>
+          <div className="logo-container">
+            <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

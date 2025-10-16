@@ -26,6 +26,8 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   transition: transform 0.2s, box-shadow 0.2s;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .version-card:hover {
@@ -124,45 +126,61 @@
   color: #856404;
 }
 
-.copyright-card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-}
-
-.copyright-card .k-card-body {
-  padding: 2rem;
-}
-
-.copyright-info {
+.copyright-footer {
   text-align: center;
+  padding: 1.5rem 0;
+  margin: 2rem 0 1rem 0;
+  border-top: 1px solid #e5e7eb;
   color: #6c757d;
 }
 
-.copyright-info p {
-  margin: 0.5rem 0;
-  font-size: 0.95rem;
-}
-
-.copyright-info p:first-child {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #495057;
-}
-
-.copyright-license {
-  font-size: 0.85rem;
-  color: #868e96;
-}
-
-.copyright-description {
-  margin-top: 1rem;
+.copyright-footer p {
+  margin: 0;
   font-size: 0.9rem;
-  line-height: 1.6;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
+}
+
+/* Partner Logos - Same as Dashboard */
+.partner-logos {
+  margin-top: 2rem;
+  padding: 24px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.partner-logos h3 {
+  margin: 0 0 20px 0;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.logos-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.logo-container {
+  padding: 16px 24px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.logo-container:hover {
+  border-color: #0066b3;
+  box-shadow: 0 2px 8px rgba(0, 102, 179, 0.1);
+}
+
+.logo-container img {
+  height: 32px;
+  width: auto;
+  display: block;
 }
 
 .about-error {
