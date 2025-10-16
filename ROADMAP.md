@@ -1,6 +1,6 @@
 # CTN ASR Roadmap
 
-**Last Updated:** October 16, 2025 (Backend integration completed - MemberDetailDialog API calls)
+**Last Updated:** October 16, 2025 (Completed standardization work - coding standards, locale/timezone fixes, internationalization improvements)
 
 This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md) for historical record.
 
@@ -61,6 +61,17 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
   - **Fix:** Implement server-side pagination with preserved state
   - **Estimate:** 2 hours
   - **Status:** Deferred due to complexity - Requires server-side pagination state management
+
+- [ ] **BUG-010: Azure DevOps deployment delays/inconsistency** - Automatic deployments unreliable
+  - **Severity:** Medium (DevOps) | **Priority:** P3
+  - **Impact:** Deployments sometimes take >12 minutes or don't trigger automatically. Git commit at time X but deployment shows old version hours later. Makes testing changes difficult, wastes developer time waiting for deployments
+  - **Investigation Required:**
+    - Check Azure DevOps pipeline logs for delays
+    - Validate pipeline triggers are configured correctly
+    - Review build queue and agent availability
+    - Check if builds are queuing or failing silently
+  - **Estimate:** 2 hours investigation + fixes
+  - **Reference:** See CLAUDE.md Pre-Debugging Checklist for deployment validation steps
 
 - [x] ✅ **PARTIALLY COMPLETED: BUG-009 - Accessibility aria-labels**
   - **Completed:** October 16, 2025 - Added 5 critical aria-labels to AdminPortal buttons (Language Switcher, Logout, Member Grid Actions, Create Member, Excel Export)
@@ -137,10 +148,6 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
   - **Estimate:** 4 hours
 - [ ] **Define API versioning strategy**
   - **Estimate:** 2 hours
-- [ ] **Standardize naming conventions** across codebase
-  - **Estimate:** 3 hours
-- [ ] **Handle locale/timezone consistently**
-  - **Estimate:** 2 hours
 
 ### Testing
 
@@ -214,27 +221,27 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 
 ## Summary Statistics
 
-**Total Remaining Tasks:** 15 (down from 16)
+**Total Remaining Tasks:** 13 (down from 15)
 
 **By Priority:**
 - CRITICAL (P0): 3 tasks - Security issues requiring immediate attention (Git history cleanup ✅ COMPLETED)
-- HIGH (P1-P2): 4 tasks - Backend integration blockers (MemberDetailDialog ✅ COMPLETED, 6 bugs fixed ✅)
-- MEDIUM: 5 tasks - Code quality, testing, monitoring improvements (3 UI/UX tasks remaining)
+- HIGH (P1-P2): 5 tasks - Backend integration blockers and bugs (6 bugs fixed ✅, standardization complete ✅)
+- MEDIUM: 3 tasks - Code quality, testing, monitoring improvements (3 UI/UX tasks remaining)
 - LOW: 4 tasks - Future enhancements and additional features
 
-**Completed This Session:** MemberDetailDialog API integration (removed 79 lines of mock data, integrated real backend APIs)
+**Completed This Session:** Coding standards documentation, locale/timezone standardization, internationalization improvements (KvK → Verify), Tasks screen UI fixes
 
 **Estimated Time to Complete:**
 - CRITICAL: ~3-4 hours
-- HIGH: ~28-33 hours (down from 30-35 hours)
-- MEDIUM: ~49 hours
+- HIGH: ~28-33 hours
+- MEDIUM: ~43 hours (down from 49 hours)
 - LOW: ~70 hours
 
 ---
 
 ## Notes
 
-**Current Release Readiness:** 97%+ (all CRITICAL bugs resolved, 6 bugs fixed, UI/UX enhancements complete)
+**Current Release Readiness:** 97%+ (all CRITICAL bugs resolved, standardization complete, internationalization improved)
 
 **Security Priority:** Git history cleanup ✅ COMPLETED. PostgreSQL password rotation remains URGENT. All procedures documented in docs/SECURITY_AUDIT_REPORT.md.
 
