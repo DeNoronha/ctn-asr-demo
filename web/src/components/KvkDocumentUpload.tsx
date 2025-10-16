@@ -5,6 +5,7 @@ import { Upload } from '@progress/kendo-react-upload';
 import axios from 'axios';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { msalInstance } from '../auth/AuthContext';
 
 interface KvkVerificationStatus {
   kvk_document_url: string | null;
@@ -37,6 +38,33 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:7071/api/v1';
 
+  // Helper function to get access token
+  async function getAccessToken(): Promise<string | null> {
+    try {
+      const accounts = msalInstance.getAllAccounts();
+      if (accounts.length > 0) {
+        const clientId = process.env.REACT_APP_AZURE_CLIENT_ID;
+        const response = await msalInstance.acquireTokenSilent({
+          scopes: [`api://${clientId}/access_as_user`],
+          account: accounts[0],
+        });
+        return response.accessToken;
+      }
+    } catch (error) {
+      console.error('Failed to acquire token:', error);
+    }
+    return null;
+  }
+
+  // Create authenticated axios instance
+  async function getAuthenticatedAxios() {
+    const token = await getAccessToken();
+    return axios.create({
+      baseURL: API_BASE_URL,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  }
+
   useEffect(() => {
     fetchVerificationStatus();
     // Poll for status updates every 5 seconds if verification is pending
@@ -51,8 +79,9 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
 
   const fetchVerificationStatus = async () => {
     try {
-      const response = await axios.get<KvkVerificationStatus>(
-        `${API_BASE_URL}/legal-entities/${legalEntityId}/kvk-verification`
+      const axiosInstance = await getAuthenticatedAxios();
+      const response = await axiosInstance.get<KvkVerificationStatus>(
+        `/legal-entities/${legalEntityId}/kvk-verification`
       );
       setVerificationStatus(response.data);
       setLoading(false);
@@ -90,8 +119,9 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
       const formData = new FormData();
       formData.append('file', file, file.name);
 
-      const response = await axios.post(
-        `${API_BASE_URL}/legal-entities/${legalEntityId}/kvk-document`,
+      const axiosInstance = await getAuthenticatedAxios();
+      const response = await axiosInstance.post(
+        `/legal-entities/${legalEntityId}/kvk-document`,
         formData,
         {
           headers: {
