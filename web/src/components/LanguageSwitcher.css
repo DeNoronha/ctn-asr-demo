@@ -33,7 +33,7 @@
 }
 
 .language-switcher .language-item-selected {
-  background-color: #0066B3 !important;
+  background-color: #0066b3 !important;
   color: #ffffff !important;
   padding: 8px 12px;
   font-weight: 600;
@@ -53,7 +53,7 @@
 
 .language-switcher .k-list-item.k-state-selected,
 .language-switcher .k-selected {
-  background-color: #0066B3 !important; /* CTN brand color */
+  background-color: #0066b3 !important; /* CTN brand color */
   color: #ffffff !important; /* WCAG AA compliant: 4.57:1 on #0066B3 */
   font-weight: 600;
 }
@@ -67,7 +67,7 @@
 .language-switcher li:focus {
   background-color: #e6f2ff;
   color: #003366 !important; /* WCAG AAA compliant: 12.27:1 on #e6f2ff */
-  outline: 2px solid #0066B3;
+  outline: 2px solid #0066b3;
   outline-offset: -2px;
 }
 

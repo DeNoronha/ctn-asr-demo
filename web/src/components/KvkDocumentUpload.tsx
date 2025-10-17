@@ -233,16 +233,30 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
           )}
 
           {/* Comparison Grid */}
-          {(verificationStatus.kvk_extracted_company_name || verificationStatus.kvk_extracted_number) && (
+          {(verificationStatus.kvk_extracted_company_name ||
+            verificationStatus.kvk_extracted_number) && (
             <div style={{ marginTop: '20px', marginBottom: '20px' }}>
               <strong style={{ marginBottom: '10px', display: 'block' }}>Data Comparison:</strong>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95em' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
                     <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Field</th>
-                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Entered Value</th>
-                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Extracted Value</th>
-                    <th style={{ padding: '12px', textAlign: 'center', fontWeight: 600, width: '100px' }}>Match</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>
+                      Entered Value
+                    </th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>
+                      Extracted Value
+                    </th>
+                    <th
+                      style={{
+                        padding: '12px',
+                        textAlign: 'center',
+                        fontWeight: 600,
+                        width: '100px',
+                      }}
+                    >
+                      Match
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -261,9 +275,13 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                     </td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
                       {verificationStatus.kvk_mismatch_flags?.includes('entered_name_mismatch') ? (
-                        <span style={{ color: '#dc2626', fontSize: '1.5em', fontWeight: 'bold' }}>✗</span>
+                        <span style={{ color: '#dc2626', fontSize: '1.5em', fontWeight: 'bold' }}>
+                          ✗
+                        </span>
                       ) : (
-                        <span style={{ color: '#10b981', fontSize: '1.5em', fontWeight: 'bold' }}>✓</span>
+                        <span style={{ color: '#10b981', fontSize: '1.5em', fontWeight: 'bold' }}>
+                          ✓
+                        </span>
                       )}
                     </td>
                   </tr>
@@ -283,9 +301,13 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                     </td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
                       {verificationStatus.kvk_mismatch_flags?.includes('entered_kvk_mismatch') ? (
-                        <span style={{ color: '#dc2626', fontSize: '1.5em', fontWeight: 'bold' }}>✗</span>
+                        <span style={{ color: '#dc2626', fontSize: '1.5em', fontWeight: 'bold' }}>
+                          ✗
+                        </span>
                       ) : (
-                        <span style={{ color: '#10b981', fontSize: '1.5em', fontWeight: 'bold' }}>✓</span>
+                        <span style={{ color: '#10b981', fontSize: '1.5em', fontWeight: 'bold' }}>
+                          ✓
+                        </span>
                       )}
                     </td>
                   </tr>

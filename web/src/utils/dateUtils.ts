@@ -27,7 +27,7 @@ export const formatDate = (date: string | Date, options?: Intl.DateTimeFormatOpt
   if (!date) return '';
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(dateObj.getTime())) {
+  if (Number.isNaN(dateObj.getTime())) {
     console.error('Invalid date:', date);
     return 'Invalid Date';
   }
@@ -54,7 +54,7 @@ export const formatDateTime = (date: string | Date): string => {
   if (!date) return '';
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(dateObj.getTime())) {
+  if (Number.isNaN(dateObj.getTime())) {
     console.error('Invalid date:', date);
     return 'Invalid Date';
   }
@@ -81,7 +81,7 @@ export const formatTime = (date: string | Date): string => {
   if (!date) return '';
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(dateObj.getTime())) {
+  if (Number.isNaN(dateObj.getTime())) {
     console.error('Invalid date:', date);
     return 'Invalid Time';
   }
@@ -105,7 +105,7 @@ export const getRelativeTime = (date: string | Date): string => {
   if (!date) return '';
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(dateObj.getTime())) {
+  if (Number.isNaN(dateObj.getTime())) {
     console.error('Invalid date:', date);
     return 'Invalid Date';
   }
@@ -123,16 +123,18 @@ export const getRelativeTime = (date: string | Date): string => {
 
   if (Math.abs(diffSeconds) < 60) {
     return rtf.format(diffSeconds, 'second');
-  } else if (Math.abs(diffMinutes) < 60) {
-    return rtf.format(diffMinutes, 'minute');
-  } else if (Math.abs(diffHours) < 24) {
-    return rtf.format(diffHours, 'hour');
-  } else if (Math.abs(diffDays) < 30) {
-    return rtf.format(diffDays, 'day');
-  } else {
-    // For dates more than 30 days away, show absolute date
-    return formatDate(dateObj);
   }
+  if (Math.abs(diffMinutes) < 60) {
+    return rtf.format(diffMinutes, 'minute');
+  }
+  if (Math.abs(diffHours) < 24) {
+    return rtf.format(diffHours, 'hour');
+  }
+  if (Math.abs(diffDays) < 30) {
+    return rtf.format(diffDays, 'day');
+  }
+  // For dates more than 30 days away, show absolute date
+  return formatDate(dateObj);
 };
 
 /**

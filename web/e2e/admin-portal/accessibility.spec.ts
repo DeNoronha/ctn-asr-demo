@@ -104,7 +104,7 @@ test.describe('Accessibility - Keyboard Navigation', () => {
     const hasFocus = await focusedElement.isVisible({ timeout: 1000 }).catch(() => false);
 
     if (hasFocus) {
-      const outlineStyle = await focusedElement.evaluate(el => {
+      const outlineStyle = await focusedElement.evaluate((el) => {
         const styles = window.getComputedStyle(el);
         return {
           outline: styles.outline,
@@ -169,7 +169,10 @@ test.describe('Accessibility - Keyboard Navigation', () => {
       await page.keyboard.press('Escape');
       await page.waitForTimeout(500);
 
-      const dialogClosed = await page.locator('[role="dialog"]').isVisible({ timeout: 1000 }).catch(() => false);
+      const dialogClosed = await page
+        .locator('[role="dialog"]')
+        .isVisible({ timeout: 1000 })
+        .catch(() => false);
       expect(dialogClosed).toBe(false);
       console.log('✅ Dialog closed with Escape key');
     }
@@ -286,7 +289,7 @@ test.describe('Accessibility - Color Contrast', () => {
     const hasFocus = await focusedElement.isVisible({ timeout: 1000 }).catch(() => false);
 
     if (hasFocus) {
-      const styles = await focusedElement.evaluate(el => {
+      const styles = await focusedElement.evaluate((el) => {
         const computed = window.getComputedStyle(el);
         return {
           backgroundColor: computed.backgroundColor,
@@ -297,7 +300,9 @@ test.describe('Accessibility - Color Contrast', () => {
       });
 
       console.log('Focus styles for contrast check:', styles);
-      console.log('Note: Contrast ratio 8.59:1 requires manual calculation with color contrast tool');
+      console.log(
+        'Note: Contrast ratio 8.59:1 requires manual calculation with color contrast tool'
+      );
     }
   });
 
@@ -311,7 +316,7 @@ test.describe('Accessibility - Color Contrast', () => {
     if (badgeCount > 0) {
       for (let i = 0; i < Math.min(badgeCount, 3); i++) {
         const badge = badges.nth(i);
-        const styles = await badge.evaluate(el => {
+        const styles = await badge.evaluate((el) => {
           const computed = window.getComputedStyle(el);
           return {
             backgroundColor: computed.backgroundColor,
@@ -331,19 +336,14 @@ test.describe('Accessibility - Color Contrast', () => {
     await page.waitForTimeout(2000);
 
     // Get colors from various UI elements
-    const elements = [
-      '.sidebar',
-      '.k-grid-header',
-      '.k-button',
-      'h1, h2, h3',
-    ];
+    const elements = ['.sidebar', '.k-grid-header', '.k-button', 'h1, h2, h3'];
 
     for (const selector of elements) {
       const element = page.locator(selector).first();
       const exists = await element.isVisible({ timeout: 1000 }).catch(() => false);
 
       if (exists) {
-        const colors = await element.evaluate(el => {
+        const colors = await element.evaluate((el) => {
           const computed = window.getComputedStyle(el);
           return {
             backgroundColor: computed.backgroundColor,
@@ -393,14 +393,14 @@ test.describe('Accessibility - Screen Reader Support', () => {
     const headings = await page.locator('h1, h2, h3, h4, h5, h6').all();
     const headingTexts = await Promise.all(
       headings.map(async (h) => {
-        const tag = await h.evaluate(el => el.tagName);
+        const tag = await h.evaluate((el) => el.tagName);
         const text = await h.textContent();
         return `${tag}: ${text}`;
       })
     );
 
     console.log('Heading hierarchy:');
-    headingTexts.forEach(h => console.log(`  ${h}`));
+    headingTexts.forEach((h) => console.log(`  ${h}`));
 
     expect(headings.length).toBeGreaterThan(0);
     console.log(`✅ Found ${headings.length} headings`);
@@ -519,7 +519,9 @@ test.describe('Accessibility - Form Accessibility', () => {
         await page.waitForTimeout(1000);
 
         // Check for error messages with ARIA roles
-        const errorMessages = page.locator('[role="alert"], .error[aria-live], [aria-invalid="true"]');
+        const errorMessages = page.locator(
+          '[role="alert"], .error[aria-live], [aria-invalid="true"]'
+        );
         const count = await errorMessages.count();
 
         console.log(`✅ Accessible error messages: ${count}`);

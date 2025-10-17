@@ -26,7 +26,10 @@ interface TokenResponse {
 
 // Legacy API - delegates to apiV2
 export const api = {
-  async getMembers(page?: number, pageSize?: number): Promise<Member[] | { data: Member[]; total: number }> {
+  async getMembers(
+    page?: number,
+    pageSize?: number
+  ): Promise<Member[] | { data: Member[]; total: number }> {
     // If pagination params provided, return paginated result
     if (page !== undefined || pageSize !== undefined) {
       return apiV2.getMembers(page || 1, pageSize || 20);

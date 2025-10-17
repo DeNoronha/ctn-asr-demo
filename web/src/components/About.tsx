@@ -3,10 +3,11 @@
  * Displays build information for both admin portal and API
  */
 
-import { Card, CardBody, CardHeader, CardTitle } from '@progress/kendo-react-layout';
 import { Badge } from '@progress/kendo-react-indicators';
-import { CheckCircle, AlertCircle, Clock, GitBranch, Calendar, Package } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { Card, CardBody, CardHeader, CardTitle } from '@progress/kendo-react-layout';
+import { AlertCircle, Calendar, CheckCircle, Clock, GitBranch, Package } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import LoadingSpinner from './LoadingSpinner';
 import './About.css';
 
@@ -64,7 +65,7 @@ const About: React.FC = () => {
           branch: 'local',
           timestamp: new Date().toISOString(),
           version: 'dev',
-          environment: 'local'
+          environment: 'local',
         });
       }
 
@@ -92,7 +93,7 @@ const About: React.FC = () => {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      timeZoneName: 'short'
+      timeZoneName: 'short',
     });
   };
 
@@ -103,18 +104,22 @@ const About: React.FC = () => {
 
     if (days > 0) {
       return `${days}d ${hours}h ${minutes}m`;
-    } else if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    } else {
-      return `${minutes}m`;
     }
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
   };
 
   const getEnvironmentBadge = (environment: string) => {
     const envLower = environment.toLowerCase();
     // Only show Production badge for production environment
     if (envLower === 'production' || envLower === 'prod') {
-      return <Badge themeColor="success" size="medium">Production</Badge>;
+      return (
+        <Badge themeColor="success" size="medium">
+          Production
+        </Badge>
+      );
     }
     // Don't show environment badge for dev/local
     return null;
@@ -171,19 +176,23 @@ const About: React.FC = () => {
                     {getEnvironmentBadge(portalVersion.environment)}
                   </div>
                 )}
-                {portalVersion.branch && portalVersion.branch !== 'unknown' && portalVersion.branch !== 'local' && (
-                  <div className="version-item">
-                    <GitBranch size={16} />
-                    <strong>Branch:</strong>
-                    <span>{portalVersion.branch}</span>
-                  </div>
-                )}
-                {portalVersion.commitSha && portalVersion.commitSha !== 'unknown' && portalVersion.commitSha !== 'local' && (
-                  <div className="version-item">
-                    <strong>Commit:</strong>
-                    <code className="commit-sha">{portalVersion.commitSha}</code>
-                  </div>
-                )}
+                {portalVersion.branch &&
+                  portalVersion.branch !== 'unknown' &&
+                  portalVersion.branch !== 'local' && (
+                    <div className="version-item">
+                      <GitBranch size={16} />
+                      <strong>Branch:</strong>
+                      <span>{portalVersion.branch}</span>
+                    </div>
+                  )}
+                {portalVersion.commitSha &&
+                  portalVersion.commitSha !== 'unknown' &&
+                  portalVersion.commitSha !== 'local' && (
+                    <div className="version-item">
+                      <strong>Commit:</strong>
+                      <code className="commit-sha">{portalVersion.commitSha}</code>
+                    </div>
+                  )}
                 <div className="version-item">
                   <Calendar size={16} />
                   <strong>Built:</strong>
@@ -228,19 +237,23 @@ const About: React.FC = () => {
                     {getEnvironmentBadge(apiVersion.environment)}
                   </div>
                 )}
-                {apiVersion.branch && apiVersion.branch !== 'unknown' && apiVersion.branch !== 'local' && (
-                  <div className="version-item">
-                    <GitBranch size={16} />
-                    <strong>Branch:</strong>
-                    <span>{apiVersion.branch}</span>
-                  </div>
-                )}
-                {apiVersion.commitSha && apiVersion.commitSha !== 'unknown' && apiVersion.commitSha !== 'local' && (
-                  <div className="version-item">
-                    <strong>Commit:</strong>
-                    <code className="commit-sha">{apiVersion.commitSha}</code>
-                  </div>
-                )}
+                {apiVersion.branch &&
+                  apiVersion.branch !== 'unknown' &&
+                  apiVersion.branch !== 'local' && (
+                    <div className="version-item">
+                      <GitBranch size={16} />
+                      <strong>Branch:</strong>
+                      <span>{apiVersion.branch}</span>
+                    </div>
+                  )}
+                {apiVersion.commitSha &&
+                  apiVersion.commitSha !== 'unknown' &&
+                  apiVersion.commitSha !== 'local' && (
+                    <div className="version-item">
+                      <strong>Commit:</strong>
+                      <code className="commit-sha">{apiVersion.commitSha}</code>
+                    </div>
+                  )}
                 <div className="version-item">
                   <Calendar size={16} />
                   <strong>Built:</strong>
@@ -269,7 +282,9 @@ const About: React.FC = () => {
       {/* Copyright Information */}
       {apiVersion?.copyright && (
         <div className="copyright-footer">
-          <p>© {apiVersion.copyright.year} {apiVersion.copyright.owner}</p>
+          <p>
+            © {apiVersion.copyright.year} {apiVersion.copyright.owner}
+          </p>
         </div>
       )}
 

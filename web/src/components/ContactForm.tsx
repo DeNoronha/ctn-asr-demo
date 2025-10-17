@@ -35,14 +35,20 @@ export const ContactForm: React.FC<ContactFormProps> = ({
       legal_entity_id: legalEntityId,
       dt_created: contact?.dt_created || new Date().toISOString(),
       dt_modified: new Date().toISOString(),
-      contact_type: dataItem.contact_type as 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'COMPLIANCE' | 'ADMIN',
+      contact_type: dataItem.contact_type as
+        | 'PRIMARY'
+        | 'TECHNICAL'
+        | 'BILLING'
+        | 'SUPPORT'
+        | 'COMPLIANCE'
+        | 'ADMIN',
       full_name: `${dataItem.first_name} ${dataItem.last_name}`,
       email: dataItem.email as string,
       phone: dataItem.phone as string,
       mobile: dataItem.mobile as string,
       job_title: dataItem.job_title as string,
       department: dataItem.department as string,
-      is_primary: dataItem.is_primary as boolean || false,
+      is_primary: (dataItem.is_primary as boolean) || false,
     };
 
     await onSave(contactData);

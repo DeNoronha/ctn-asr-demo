@@ -31,7 +31,7 @@ test.describe('Bug Investigation: Contargo KvK Visibility', () => {
 
     await page.screenshot({
       path: 'playwright-report/bug-investigation/01-portal-loaded.png',
-      fullPage: true
+      fullPage: true,
     });
     console.log('✓ Portal loaded');
     console.log('');
@@ -45,7 +45,7 @@ test.describe('Bug Investigation: Contargo KvK Visibility', () => {
 
     await page.screenshot({
       path: 'playwright-report/bug-investigation/02-members-page.png',
-      fullPage: true
+      fullPage: true,
     });
     console.log('✓ Members page loaded');
     console.log('');
@@ -64,7 +64,7 @@ test.describe('Bug Investigation: Contargo KvK Visibility', () => {
 
     await page.screenshot({
       path: 'playwright-report/bug-investigation/03-search-contargo.png',
-      fullPage: true
+      fullPage: true,
     });
 
     // Step 4: Click Contargo row
@@ -79,14 +79,14 @@ test.describe('Bug Investigation: Contargo KvK Visibility', () => {
       console.error('✗ CRITICAL: Contargo not found in members list');
       await page.screenshot({
         path: 'playwright-report/bug-investigation/ERROR-contargo-not-found.png',
-        fullPage: true
+        fullPage: true,
       });
       throw new Error('Contargo member not found in list');
     }
 
     await page.screenshot({
       path: 'playwright-report/bug-investigation/04-contargo-details.png',
-      fullPage: true
+      fullPage: true,
     });
     console.log('');
 
@@ -94,14 +94,14 @@ test.describe('Bug Investigation: Contargo KvK Visibility', () => {
     console.log('Step 5: Capturing browser diagnostics...');
 
     // Listen for console errors
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       if (msg.type() === 'error') {
         console.error('🔴 Browser Console Error:', msg.text());
       }
     });
 
     // Listen for network failures
-    page.on('requestfailed', request => {
+    page.on('requestfailed', (request) => {
       console.error('🔴 Network Request Failed:', request.url());
     });
 
@@ -115,17 +115,17 @@ test.describe('Bug Investigation: Contargo KvK Visibility', () => {
       'h2:has-text("Identifiers")',
       'h3:has-text("Identifiers")',
       '.identifiers-section',
-      '#identifiers'
+      '#identifiers',
     ];
 
     let identifiersSectionFound = false;
-    let usedSelector = '';
+    let _usedSelector = '';
 
     for (const selector of possibleSelectors) {
       const element = page.locator(selector).first();
       if (await element.isVisible({ timeout: 2000 }).catch(() => false)) {
         identifiersSectionFound = true;
-        usedSelector = selector;
+        _usedSelector = selector;
         console.log(`✓ Found Identifiers section with selector: ${selector}`);
         break;
       }
@@ -138,7 +138,7 @@ test.describe('Bug Investigation: Contargo KvK Visibility', () => {
 
     await page.screenshot({
       path: 'playwright-report/bug-investigation/05-identifiers-section.png',
-      fullPage: true
+      fullPage: true,
     });
     console.log('');
 
@@ -155,15 +155,15 @@ test.describe('Bug Investigation: Contargo KvK Visibility', () => {
 
       await page.screenshot({
         path: 'playwright-report/bug-investigation/SUCCESS-kvk-visible.png',
-        fullPage: true
+        fullPage: true,
       });
     } else {
       console.error('✗ BUG CONFIRMED: KvK 95944192 is NOT VISIBLE');
-      console.error('  This confirms the user\'s bug report.');
+      console.error("  This confirms the user's bug report.");
 
       await page.screenshot({
         path: 'playwright-report/bug-investigation/BUG-kvk-not-visible.png',
-        fullPage: true
+        fullPage: true,
       });
     }
     console.log('');
@@ -190,18 +190,24 @@ test.describe('Bug Investigation: Contargo KvK Visibility', () => {
       'No identifiers',
       'No records found',
       'Add your first identifier',
-      'No data available'
+      'No data available',
     ];
 
     for (const message of emptyStateMessages) {
-      if (await page.locator(`text=${message}`).first().isVisible({ timeout: 1000 }).catch(() => false)) {
+      if (
+        await page
+          .locator(`text=${message}`)
+          .first()
+          .isVisible({ timeout: 1000 })
+          .catch(() => false)
+      ) {
         console.log(`  ⚠️ Found empty state message: "${message}"`);
       }
     }
 
     await page.screenshot({
       path: 'playwright-report/bug-investigation/06-visible-identifiers.png',
-      fullPage: true
+      fullPage: true,
     });
     console.log('');
 
@@ -211,13 +217,13 @@ test.describe('Bug Investigation: Contargo KvK Visibility', () => {
     // Reload page to capture fresh network requests
     const identifierRequests: any[] = [];
 
-    page.on('response', async response => {
+    page.on('response', async (response) => {
       const url = response.url();
       if (url.includes('/identifiers') || url.includes('/entities/')) {
         identifierRequests.push({
           url,
           status: response.status(),
-          ok: response.ok()
+          ok: response.ok(),
         });
 
         console.log(`  API Request: ${response.status()} ${url}`);
@@ -227,7 +233,7 @@ test.describe('Bug Investigation: Contargo KvK Visibility', () => {
           try {
             const body = await response.json();
             console.log('  Response body:', JSON.stringify(body, null, 2));
-          } catch (e) {
+          } catch (_e) {
             console.log('  Could not parse response body as JSON');
           }
         }

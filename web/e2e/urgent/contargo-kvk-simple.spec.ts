@@ -24,7 +24,7 @@ test.describe('Add KvK to Contargo - Simple Version', () => {
     // Take screenshot of initial state
     await page.screenshot({
       path: 'playwright-report/01-portal-loaded.png',
-      fullPage: true
+      fullPage: true,
     });
 
     // Click Members in sidebar
@@ -34,7 +34,10 @@ test.describe('Add KvK to Contargo - Simple Version', () => {
       console.log('✅ Clicked Members');
     } catch (e) {
       console.error('Could not click Members link:', e.message);
-      await page.screenshot({ path: 'playwright-report/ERROR-members-not-found.png', fullPage: true });
+      await page.screenshot({
+        path: 'playwright-report/ERROR-members-not-found.png',
+        fullPage: true,
+      });
       throw e;
     }
 
@@ -42,7 +45,7 @@ test.describe('Add KvK to Contargo - Simple Version', () => {
 
     await page.screenshot({
       path: 'playwright-report/02-members-page.png',
-      fullPage: true
+      fullPage: true,
     });
 
     // Search for Contargo
@@ -58,7 +61,7 @@ test.describe('Add KvK to Contargo - Simple Version', () => {
 
     await page.screenshot({
       path: 'playwright-report/03-search-contargo.png',
-      fullPage: true
+      fullPage: true,
     });
 
     // Click on Contargo row
@@ -68,7 +71,10 @@ test.describe('Add KvK to Contargo - Simple Version', () => {
       console.log('✅ Clicked Contargo row');
     } catch (e) {
       console.error('Could not click Contargo row:', e.message);
-      await page.screenshot({ path: 'playwright-report/ERROR-contargo-not-found.png', fullPage: true });
+      await page.screenshot({
+        path: 'playwright-report/ERROR-contargo-not-found.png',
+        fullPage: true,
+      });
       throw e;
     }
 
@@ -76,7 +82,7 @@ test.describe('Add KvK to Contargo - Simple Version', () => {
 
     await page.screenshot({
       path: 'playwright-report/04-contargo-details.png',
-      fullPage: true
+      fullPage: true,
     });
 
     // Look for "Add Identifier" or "Add" button
@@ -89,7 +95,10 @@ test.describe('Add KvK to Contargo - Simple Version', () => {
       console.log('✅ Clicked Add button');
     } else {
       console.error('❌ Add Identifier button not found');
-      await page.screenshot({ path: 'playwright-report/ERROR-add-button-not-found.png', fullPage: true });
+      await page.screenshot({
+        path: 'playwright-report/ERROR-add-button-not-found.png',
+        fullPage: true,
+      });
       throw new Error('Add Identifier button not found');
     }
 
@@ -97,7 +106,7 @@ test.describe('Add KvK to Contargo - Simple Version', () => {
 
     await page.screenshot({
       path: 'playwright-report/05-add-identifier-dialog.png',
-      fullPage: true
+      fullPage: true,
     });
 
     // Fill in the form
@@ -126,12 +135,14 @@ test.describe('Add KvK to Contargo - Simple Version', () => {
 
     await page.screenshot({
       path: 'playwright-report/06-form-filled.png',
-      fullPage: true
+      fullPage: true,
     });
 
     // Submit
     console.log('Submitting form...');
-    const submitButton = page.locator('button:has-text("Add"), button:has-text("Save"), button[type="submit"]').last();
+    const submitButton = page
+      .locator('button:has-text("Add"), button:has-text("Save"), button[type="submit"]')
+      .last();
     await submitButton.click();
     console.log('✅ Form submitted');
 
@@ -139,7 +150,7 @@ test.describe('Add KvK to Contargo - Simple Version', () => {
 
     await page.screenshot({
       path: 'playwright-report/07-after-submit.png',
-      fullPage: true
+      fullPage: true,
     });
 
     // Verify
@@ -151,7 +162,7 @@ test.describe('Add KvK to Contargo - Simple Version', () => {
       console.log('✅✅✅ SUCCESS! KvK 95944192 is visible!');
       await page.screenshot({
         path: 'playwright-report/SUCCESS-kvk-added.png',
-        fullPage: true
+        fullPage: true,
       });
     } else {
       console.log('⚠️ KvK not immediately visible, refreshing page...');
@@ -163,13 +174,15 @@ test.describe('Add KvK to Contargo - Simple Version', () => {
       await page.waitForTimeout(2000);
 
       const kvkAfterRefresh = page.locator('text=95944192');
-      const isVisibleAfterRefresh = await kvkAfterRefresh.isVisible({ timeout: 5000 }).catch(() => false);
+      const isVisibleAfterRefresh = await kvkAfterRefresh
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
 
       if (isVisibleAfterRefresh) {
         console.log('✅✅✅ SUCCESS AFTER REFRESH! KvK persisted!');
         await page.screenshot({
           path: 'playwright-report/SUCCESS-kvk-persisted.png',
-          fullPage: true
+          fullPage: true,
         });
       } else {
         console.error('❌ KvK was not added successfully');

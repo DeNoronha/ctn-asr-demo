@@ -134,7 +134,9 @@ const TasksGrid: React.FC = () => {
       });
 
       console.log('TasksGrid: Fetching review tasks from API...');
-      const response = await axiosInstance.get<ReviewTask[]>('/v1/admin/kvk-verification/flagged-entities');
+      const response = await axiosInstance.get<ReviewTask[]>(
+        '/v1/admin/kvk-verification/flagged-entities'
+      );
       console.log(`TasksGrid: Loaded ${response.data.length} review tasks`, response.data);
       setReviewTasks(response.data);
     } catch (error: any) {
@@ -143,7 +145,7 @@ const TasksGrid: React.FC = () => {
         console.error('TasksGrid: API error details:', {
           status: error.response.status,
           statusText: error.response.statusText,
-          data: error.response.data
+          data: error.response.data,
         });
       }
     }
@@ -377,33 +379,33 @@ const TasksGrid: React.FC = () => {
       <TabStrip selected={activeTab} onSelect={(e) => setActiveTab(e.selected)}>
         <TabStripTab title="My Tasks">
           <Grid data={tasks} style={{ height: '550px' }}>
-        <GridToolbar>
-          <span className="grid-toolbar-info">Total Tasks: {tasks.length}</span>
-        </GridToolbar>
+            <GridToolbar>
+              <span className="grid-toolbar-info">Total Tasks: {tasks.length}</span>
+            </GridToolbar>
 
-        <GridColumn field="title" title="Title" width="250px" />
-        <GridColumn
-          field="task_type"
-          title="Type"
-          width="150px"
-          cell={(props) => <td>{props.dataItem.task_type.replace('_', ' ')}</td>}
-        />
-        <GridColumn field="priority" title="Priority" width="100px" cell={PriorityCell} />
-        <GridColumn field="status" title="Status" width="120px" cell={StatusCell} />
-        <GridColumn
-          field="assigned_to_email"
-          title="Assigned To"
-          width="200px"
-          cell={(props) => <td>{props.dataItem.assigned_to_email || 'Unassigned'}</td>}
-        />
-        <GridColumn
-          field="related_entity_name"
-          title="Related Entity"
-          width="180px"
-          cell={(props) => <td>{props.dataItem.related_entity_name || '-'}</td>}
-        />
-        <GridColumn field="due_date" title="Due Date" width="130px" cell={DueDateCell} />
-        <GridColumn title="Actions" width="220px" cell={ActionsCell} />
+            <GridColumn field="title" title="Title" width="250px" />
+            <GridColumn
+              field="task_type"
+              title="Type"
+              width="150px"
+              cell={(props) => <td>{props.dataItem.task_type.replace('_', ' ')}</td>}
+            />
+            <GridColumn field="priority" title="Priority" width="100px" cell={PriorityCell} />
+            <GridColumn field="status" title="Status" width="120px" cell={StatusCell} />
+            <GridColumn
+              field="assigned_to_email"
+              title="Assigned To"
+              width="200px"
+              cell={(props) => <td>{props.dataItem.assigned_to_email || 'Unassigned'}</td>}
+            />
+            <GridColumn
+              field="related_entity_name"
+              title="Related Entity"
+              width="180px"
+              cell={(props) => <td>{props.dataItem.related_entity_name || '-'}</td>}
+            />
+            <GridColumn field="due_date" title="Due Date" width="130px" cell={DueDateCell} />
+            <GridColumn title="Actions" width="220px" cell={ActionsCell} />
           </Grid>
         </TabStripTab>
 
@@ -439,7 +441,11 @@ const TasksGrid: React.FC = () => {
               width="180px"
               cell={(props) => (
                 <td>
-                  <Button icon="preview" fillMode="flat" onClick={() => openReviewDialog(props.dataItem)}>
+                  <Button
+                    icon="preview"
+                    fillMode="flat"
+                    onClick={() => openReviewDialog(props.dataItem)}
+                  >
                     Review
                   </Button>
                 </td>

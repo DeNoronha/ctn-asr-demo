@@ -15,7 +15,8 @@ import { expect, test } from '../../playwright/fixtures';
  * - Member status management (Active, Pending, Suspended)
  */
 
-const API_BASE_URL = process.env.PLAYWRIGHT_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net';
+const _API_BASE_URL =
+  process.env.PLAYWRIGHT_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net';
 
 test.describe('Member Management - View Members List', () => {
   test.beforeEach(async ({ page }) => {
@@ -31,7 +32,9 @@ test.describe('Member Management - View Members List', () => {
   test('should display members grid with data', async ({ page }) => {
     // Navigate to members
     await page.locator('.sidebar, .drawer-content').getByText('Members', { exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible({
+      timeout: 10000,
+    });
 
     // Wait for grid to load
     const grid = page.locator('.k-grid, [role="grid"]').first();
@@ -55,7 +58,10 @@ test.describe('Member Management - View Members List', () => {
     // Check for expected columns
     const expectedColumns = ['Legal Name', 'Status', 'Country', 'Type'];
     for (const column of expectedColumns) {
-      const isVisible = await grid.locator(`text=/.*${column}.*/i`).isVisible({ timeout: 2000 }).catch(() => false);
+      const isVisible = await grid
+        .locator(`text=/.*${column}.*/i`)
+        .isVisible({ timeout: 2000 })
+        .catch(() => false);
       console.log(`Column "${column}": ${isVisible ? 'FOUND' : 'NOT FOUND'}`);
     }
 
@@ -82,7 +88,9 @@ test.describe('Member Management - View Members List', () => {
     await page.waitForTimeout(3000);
 
     // Verify GetMembers endpoint was called successfully
-    const getMembersCall = apiCalls.find(call => call.url.includes('all-members') || call.url.includes('members'));
+    const getMembersCall = apiCalls.find(
+      (call) => call.url.includes('all-members') || call.url.includes('members')
+    );
     expect(getMembersCall).toBeTruthy();
 
     if (getMembersCall) {
@@ -124,7 +132,9 @@ test.describe('Member Management - View Members List', () => {
       const noResults = page.locator('text=/No.*results|No.*members|Empty/i').first();
       const hasNoResults = await noResults.isVisible({ timeout: 2000 }).catch(() => false);
 
-      console.log(`Empty search handling: ${hasNoResults ? 'PROPER EMPTY STATE' : 'NO EMPTY STATE SHOWN'}`);
+      console.log(
+        `Empty search handling: ${hasNoResults ? 'PROPER EMPTY STATE' : 'NO EMPTY STATE SHOWN'}`
+      );
     } else {
       console.log('⏭️ No search functionality found');
     }
@@ -176,7 +186,10 @@ test.describe('Member Management - View Member Details', () => {
       // GetMember endpoint: /api/v1/members/{id} or /api/v1/legal-entities/{id}
       if (url.includes('/api/v1/members/') || url.includes('/api/v1/legal-entities/')) {
         // Check if it's a specific ID (not a list endpoint)
-        const isListEndpoint = url.includes('all-members') || url.endsWith('/members') || url.endsWith('/legal-entities');
+        const isListEndpoint =
+          url.includes('all-members') ||
+          url.endsWith('/members') ||
+          url.endsWith('/legal-entities');
         if (!isListEndpoint) {
           getMemberCalled = true;
           getMemberUrl = url;
@@ -288,15 +301,12 @@ test.describe('Member Management - Create Member', () => {
     await page.waitForTimeout(1000);
 
     // Check for common required fields
-    const expectedFields = [
-      'Legal Name',
-      'Country',
-      'Type',
-      'Email',
-    ];
+    const expectedFields = ['Legal Name', 'Country', 'Type', 'Email'];
 
     for (const field of expectedFields) {
-      const fieldElement = page.locator(`label:has-text("${field}"), input[placeholder*="${field}"]`).first();
+      const fieldElement = page
+        .locator(`label:has-text("${field}"), input[placeholder*="${field}"]`)
+        .first();
       const isVisible = await fieldElement.isVisible({ timeout: 2000 }).catch(() => false);
       console.log(`Field "${field}": ${isVisible ? 'FOUND' : 'NOT FOUND'}`);
     }
@@ -308,7 +318,9 @@ test.describe('Member Management - Create Member', () => {
     await page.waitForTimeout(1000);
 
     // Try to submit empty form
-    const submitButton = page.locator('button[type="submit"], button:has-text("Submit"), button:has-text("Save")').first();
+    const submitButton = page
+      .locator('button[type="submit"], button:has-text("Submit"), button:has-text("Save")')
+      .first();
     const hasSubmit = await submitButton.isVisible({ timeout: 2000 }).catch(() => false);
 
     if (hasSubmit) {
@@ -319,7 +331,9 @@ test.describe('Member Management - Create Member', () => {
       const validationErrors = page.locator('.k-invalid, .error, [role="alert"]');
       const errorCount = await validationErrors.count();
 
-      console.log(`Validation errors shown: ${errorCount > 0 ? 'YES' : 'NO'} (${errorCount} errors)`);
+      console.log(
+        `Validation errors shown: ${errorCount > 0 ? 'YES' : 'NO'} (${errorCount} errors)`
+      );
 
       await page.screenshot({
         path: 'playwright-report/screenshots/member-form-validation.png',
@@ -334,7 +348,9 @@ test.describe('Member Management - Create Member', () => {
     await page.waitForTimeout(1000);
 
     // Look for close/cancel button
-    const closeButton = page.locator('button:has-text("Cancel"), button:has-text("Close"), button[aria-label="Close"]').first();
+    const closeButton = page
+      .locator('button:has-text("Cancel"), button:has-text("Close"), button[aria-label="Close"]')
+      .first();
     const hasClose = await closeButton.isVisible({ timeout: 2000 }).catch(() => false);
 
     if (hasClose) {
@@ -488,7 +504,11 @@ test.describe('Member Management - Status Management', () => {
     await page.waitForTimeout(1500);
 
     // Look for status change dropdown or buttons
-    const statusControl = page.locator('select[name*="status"], .status-dropdown, button:has-text("Activate"), button:has-text("Suspend")').first();
+    const statusControl = page
+      .locator(
+        'select[name*="status"], .status-dropdown, button:has-text("Activate"), button:has-text("Suspend")'
+      )
+      .first();
     const hasStatusControl = await statusControl.isVisible({ timeout: 3000 }).catch(() => false);
 
     console.log(`Status change control available: ${hasStatusControl}`);

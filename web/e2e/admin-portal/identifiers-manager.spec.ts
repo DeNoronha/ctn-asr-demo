@@ -28,7 +28,7 @@ const IDENTIFIER_TYPES = [
   'EORI',
   'VAT',
   'DUNS',
-  'OTHER'
+  'OTHER',
 ];
 
 test.describe('Identifiers Manager - View Identifiers', () => {
@@ -102,7 +102,9 @@ test.describe('Identifiers Manager - View Identifiers', () => {
     await page.waitForTimeout(1500);
 
     // Count identifier rows
-    const identifierRows = page.locator('[data-testid*="identifier"], .identifier-row, tr:has-text("KVK"), tr:has-text("LEI")');
+    const identifierRows = page.locator(
+      '[data-testid*="identifier"], .identifier-row, tr:has-text("KVK"), tr:has-text("LEI")'
+    );
     const count = await identifierRows.count();
 
     console.log(`Found ${count} existing identifiers`);
@@ -113,7 +115,9 @@ test.describe('Identifiers Manager - View Identifiers', () => {
     await page.waitForTimeout(2000);
 
     // Look for empty state component
-    const emptyState = page.locator('.empty-state, text=/No.*identifiers|Add.*your.*first/i').first();
+    const emptyState = page
+      .locator('.empty-state, text=/No.*identifiers|Add.*your.*first/i')
+      .first();
     const hasEmptyState = await emptyState.isVisible({ timeout: 2000 }).catch(() => false);
 
     if (hasEmptyState) {
@@ -149,7 +153,11 @@ test.describe('Identifiers Manager - Create Identifier', () => {
 
   test('should open create identifier dialog', async ({ page }) => {
     // Look for "Add Identifier" button
-    const addButton = page.locator('button:has-text("Add Identifier"), button:has-text("Add"), button[aria-label*="Add"]').first();
+    const addButton = page
+      .locator(
+        'button:has-text("Add Identifier"), button:has-text("Add"), button[aria-label*="Add"]'
+      )
+      .first();
     const hasButton = await addButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasButton) {
@@ -172,7 +180,9 @@ test.describe('Identifiers Manager - Create Identifier', () => {
   });
 
   test('should have type dropdown with all 12 identifier types', async ({ page }) => {
-    const addButton = page.locator('button:has-text("Add Identifier"), button:has-text("Add")').first();
+    const addButton = page
+      .locator('button:has-text("Add Identifier"), button:has-text("Add")')
+      .first();
     const hasButton = await addButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasButton) {
@@ -180,7 +190,9 @@ test.describe('Identifiers Manager - Create Identifier', () => {
       await page.waitForTimeout(1000);
 
       // Look for type dropdown
-      const typeDropdown = page.locator('select[name*="type"], .k-dropdown:has-text("Type")').first();
+      const typeDropdown = page
+        .locator('select[name*="type"], .k-dropdown:has-text("Type")')
+        .first();
       const hasDropdown = await typeDropdown.isVisible({ timeout: 2000 }).catch(() => false);
 
       if (hasDropdown) {
@@ -200,7 +212,9 @@ test.describe('Identifiers Manager - Create Identifier', () => {
   });
 
   test('should validate identifier value field', async ({ page }) => {
-    const addButton = page.locator('button:has-text("Add Identifier"), button:has-text("Add")').first();
+    const addButton = page
+      .locator('button:has-text("Add Identifier"), button:has-text("Add")')
+      .first();
     const hasButton = await addButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasButton) {
@@ -208,7 +222,9 @@ test.describe('Identifiers Manager - Create Identifier', () => {
       await page.waitForTimeout(1000);
 
       // Try to submit empty form
-      const submitButton = page.locator('button[type="submit"], button:has-text("Save"), button:has-text("Add")').last();
+      const submitButton = page
+        .locator('button[type="submit"], button:has-text("Save"), button:has-text("Add")')
+        .last();
       const hasSubmit = await submitButton.isVisible({ timeout: 2000 }).catch(() => false);
 
       if (hasSubmit) {
@@ -216,7 +232,9 @@ test.describe('Identifiers Manager - Create Identifier', () => {
         await page.waitForTimeout(1000);
 
         // Look for validation error
-        const validationError = page.locator('.k-invalid, .error, [role="alert"], text=/required|cannot be empty/i').first();
+        const validationError = page
+          .locator('.k-invalid, .error, [role="alert"], text=/required|cannot be empty/i')
+          .first();
         const hasError = await validationError.isVisible({ timeout: 2000 }).catch(() => false);
 
         console.log(`Validation error shown: ${hasError}`);
@@ -230,7 +248,9 @@ test.describe('Identifiers Manager - Create Identifier', () => {
   });
 
   test('should successfully create KVK identifier', async ({ page }) => {
-    const addButton = page.locator('button:has-text("Add Identifier"), button:has-text("Add")').first();
+    const addButton = page
+      .locator('button:has-text("Add Identifier"), button:has-text("Add")')
+      .first();
     const hasButton = await addButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasButton) {
@@ -253,11 +273,15 @@ test.describe('Identifiers Manager - Create Identifier', () => {
           await page.waitForTimeout(300);
 
           // Fill value
-          const valueInput = page.locator('input[name*="value"], input[placeholder*="Value"]').first();
+          const valueInput = page
+            .locator('input[name*="value"], input[placeholder*="Value"]')
+            .first();
           await valueInput.fill('12345678');
 
           // Submit
-          const submitButton = page.locator('button[type="submit"], button:has-text("Save")').last();
+          const submitButton = page
+            .locator('button[type="submit"], button:has-text("Save")')
+            .last();
           await submitButton.click();
           await page.waitForTimeout(2000);
 
@@ -272,7 +296,9 @@ test.describe('Identifiers Manager - Create Identifier', () => {
   });
 
   test('should provide inline validation feedback', async ({ page }) => {
-    const addButton = page.locator('button:has-text("Add Identifier"), button:has-text("Add")').first();
+    const addButton = page
+      .locator('button:has-text("Add Identifier"), button:has-text("Add")')
+      .first();
     const hasButton = await addButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasButton) {
@@ -320,7 +346,9 @@ test.describe('Identifiers Manager - Edit Identifier', () => {
 
   test('should open edit dialog for existing identifier', async ({ page }) => {
     // Look for edit button in identifier row
-    const editButton = page.locator('button[title="Edit"], button[aria-label="Edit"], button:has-text("Edit")').first();
+    const editButton = page
+      .locator('button[title="Edit"], button[aria-label="Edit"], button:has-text("Edit")')
+      .first();
     const hasEdit = await editButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasEdit) {
@@ -409,7 +437,9 @@ test.describe('Identifiers Manager - Delete Identifier', () => {
 
   test('should show delete confirmation dialog', async ({ page }) => {
     // Look for delete button
-    const deleteButton = page.locator('button[title="Delete"], button[aria-label="Delete"], button:has-text("Delete")').first();
+    const deleteButton = page
+      .locator('button[title="Delete"], button[aria-label="Delete"], button:has-text("Delete")')
+      .first();
     const hasDelete = await deleteButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasDelete) {
@@ -417,7 +447,9 @@ test.describe('Identifiers Manager - Delete Identifier', () => {
       await page.waitForTimeout(1000);
 
       // Look for confirmation dialog
-      const confirmDialog = page.locator('[role="dialog"], .k-dialog, text=/Are you sure|Confirm/i').first();
+      const confirmDialog = page
+        .locator('[role="dialog"], .k-dialog, text=/Are you sure|Confirm/i')
+        .first();
       const hasConfirm = await confirmDialog.isVisible({ timeout: 3000 }).catch(() => false);
 
       if (hasConfirm) {
@@ -429,7 +461,9 @@ test.describe('Identifiers Manager - Delete Identifier', () => {
         });
 
         // Cancel deletion
-        const cancelButton = page.locator('button:has-text("Cancel"), button:has-text("No")').first();
+        const cancelButton = page
+          .locator('button:has-text("Cancel"), button:has-text("No")')
+          .first();
         const hasCancel = await cancelButton.isVisible({ timeout: 2000 }).catch(() => false);
 
         if (hasCancel) {
@@ -443,7 +477,9 @@ test.describe('Identifiers Manager - Delete Identifier', () => {
   });
 
   test('should use ConfirmDialog component for deletions', async ({ page }) => {
-    const deleteButton = page.locator('button[title="Delete"], button[aria-label="Delete"]').first();
+    const deleteButton = page
+      .locator('button[title="Delete"], button[aria-label="Delete"]')
+      .first();
     const hasDelete = await deleteButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasDelete) {
@@ -494,7 +530,9 @@ test.describe('Identifiers Manager - All 12 Identifier Types', () => {
     await firstRow.click();
     await page.waitForTimeout(1500);
 
-    const addButton = page.locator('button:has-text("Add Identifier"), button:has-text("Add")').first();
+    const addButton = page
+      .locator('button:has-text("Add Identifier"), button:has-text("Add")')
+      .first();
     const hasButton = await addButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasButton) {
@@ -583,7 +621,9 @@ test.describe('Identifiers Manager - Error Handling', () => {
     await page.goto('/');
 
     // Monitor for error toasts
-    const errorToast = page.locator('.k-notification.error, .toast.error, [role="alert"]:has-text("error")').first();
+    const errorToast = page
+      .locator('.k-notification.error, .toast.error, [role="alert"]:has-text("error")')
+      .first();
 
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
@@ -634,7 +674,7 @@ test.describe('Identifiers Manager - Console Monitoring', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(3000);
 
-    const criticalFailures = failedRequests.filter(req => !req.error.includes('CORS'));
+    const criticalFailures = failedRequests.filter((req) => !req.error.includes('CORS'));
     expect(criticalFailures.length).toBe(0);
 
     if (criticalFailures.length > 0) {

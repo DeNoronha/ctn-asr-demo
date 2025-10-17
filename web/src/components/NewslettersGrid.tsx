@@ -170,7 +170,11 @@ const NewslettersGrid: React.FC = () => {
       { field: 'created_at', header: 'Created Date' },
     ];
 
-    exportGenericToCSV(newsletters, columns, `CTN_Newsletters_${new Date().toISOString().split('T')[0]}.csv`);
+    exportGenericToCSV(
+      newsletters,
+      columns,
+      `CTN_Newsletters_${new Date().toISOString().split('T')[0]}.csv`
+    );
   };
 
   const exportMenuItems = [
@@ -212,7 +216,14 @@ const NewslettersGrid: React.FC = () => {
       <ExcelExport data={newsletters} fileName="CTN_Newsletters.xlsx" ref={excelExportRef}>
         <Grid data={newsletters} style={{ height: '600px' }}>
           <GridToolbar>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
               <span className="grid-toolbar-info">Total Newsletters: {newsletters.length}</span>
               <DropDownButton
                 text="Export"
@@ -224,34 +235,34 @@ const NewslettersGrid: React.FC = () => {
             </div>
           </GridToolbar>
 
-        <GridColumn field="title" title="Title" width="250px" />
-        <GridColumn field="subject_line" title="Subject" width="250px" />
-        <GridColumn field="status" title="Status" width="120px" cell={StatusCell} />
-        <GridColumn
-          field="recipient_count"
-          title="Recipients"
-          width="100px"
-          cell={(props) => <td className="text-center">{props.dataItem.recipient_count || 0}</td>}
-        />
-        <GridColumn
-          field="open_rate"
-          title="Open Rate"
-          width="100px"
-          cell={(props) => <td className="text-center">{calculateOpenRate(props.dataItem)}</td>}
-        />
-        <GridColumn
-          field="click_rate"
-          title="Click Rate"
-          width="100px"
-          cell={(props) => <td className="text-center">{calculateClickRate(props.dataItem)}</td>}
-        />
-        <GridColumn
-          field="sent_at"
-          title="Sent Date"
-          width="120px"
-          cell={(props) => <td>{formatNewsletterDate(props.dataItem.sent_at)}</td>}
-        />
-        <GridColumn title="Actions" width="150px" cell={ActionsCell} />
+          <GridColumn field="title" title="Title" width="250px" />
+          <GridColumn field="subject_line" title="Subject" width="250px" />
+          <GridColumn field="status" title="Status" width="120px" cell={StatusCell} />
+          <GridColumn
+            field="recipient_count"
+            title="Recipients"
+            width="100px"
+            cell={(props) => <td className="text-center">{props.dataItem.recipient_count || 0}</td>}
+          />
+          <GridColumn
+            field="open_rate"
+            title="Open Rate"
+            width="100px"
+            cell={(props) => <td className="text-center">{calculateOpenRate(props.dataItem)}</td>}
+          />
+          <GridColumn
+            field="click_rate"
+            title="Click Rate"
+            width="100px"
+            cell={(props) => <td className="text-center">{calculateClickRate(props.dataItem)}</td>}
+          />
+          <GridColumn
+            field="sent_at"
+            title="Sent Date"
+            width="120px"
+            cell={(props) => <td>{formatNewsletterDate(props.dataItem.sent_at)}</td>}
+          />
+          <GridColumn title="Actions" width="150px" cell={ActionsCell} />
         </Grid>
       </ExcelExport>
 

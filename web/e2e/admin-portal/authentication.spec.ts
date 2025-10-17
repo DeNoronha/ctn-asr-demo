@@ -68,7 +68,7 @@ test.describe('Authentication & Authorization - Critical Path', () => {
 
     // Verify it's a valid role
     const validRoles = ['SystemAdmin', 'AssociationAdmin', 'Member'];
-    const hasValidRole = validRoles.some(role => userRole?.includes(role));
+    const hasValidRole = validRoles.some((role) => userRole?.includes(role));
     expect(hasValidRole).toBe(true);
 
     console.log(`User role: ${userRole}`);
@@ -153,7 +153,9 @@ test.describe('Authentication & Authorization - Critical Path', () => {
     await page.goto('/');
 
     // Look for logout/sign out button
-    const logoutButton = page.locator('button[title="Sign out"], button:has-text("Sign out"), button:has-text("Logout")').first();
+    const logoutButton = page
+      .locator('button[title="Sign out"], button:has-text("Sign out"), button:has-text("Logout")')
+      .first();
     await expect(logoutButton).toBeVisible({ timeout: 5000 });
 
     console.log('✅ Logout button is visible');
@@ -201,12 +203,7 @@ test.describe('Authentication & Authorization - Critical Path', () => {
   });
 
   test('should not expose sensitive data in browser console', async ({ page }) => {
-    const sensitivePatterns = [
-      /password/i,
-      /secret/i,
-      /private[_-]?key/i,
-      /access[_-]?token/i,
-    ];
+    const sensitivePatterns = [/password/i, /secret/i, /private[_-]?key/i, /access[_-]?token/i];
 
     const consoleMessages: string[] = [];
 
@@ -219,8 +216,8 @@ test.describe('Authentication & Authorization - Critical Path', () => {
     await page.waitForTimeout(2000);
 
     // Check for sensitive data in console
-    const exposedData = consoleMessages.filter(msg =>
-      sensitivePatterns.some(pattern => pattern.test(msg))
+    const exposedData = consoleMessages.filter((msg) =>
+      sensitivePatterns.some((pattern) => pattern.test(msg))
     );
 
     if (exposedData.length > 0) {

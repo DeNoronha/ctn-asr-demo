@@ -87,7 +87,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
     }
   };
 
-  const handleUpdateContacts = async (updatedContacts: LegalEntityContact[]) => {
+  const handleUpdateContacts = async (_updatedContacts: LegalEntityContact[]) => {
     try {
       // Contacts are managed by ContactsManager component which handles API calls
       // Reload the contacts from API to ensure we have the latest data

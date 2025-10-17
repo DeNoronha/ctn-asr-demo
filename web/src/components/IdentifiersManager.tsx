@@ -3,6 +3,7 @@ import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Grid, GridColumn } from '@progress/kendo-react-grid';
 import { Input } from '@progress/kendo-react-inputs';
+import axios from 'axios';
 import {
   AlertCircle,
   AlertTriangle,
@@ -13,7 +14,6 @@ import {
   Trash2,
   XCircle,
 } from 'lucide-react';
-import axios from 'axios';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { msalInstance } from '../auth/AuthContext';
@@ -247,7 +247,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
           setKvkVerificationFlags(response.data.kvk_mismatch_flags || []);
           setHasKvkDocument(!!response.data.kvk_document_url);
         }
-      } catch (error) {
+      } catch (_error) {
         // Silently fail if no document uploaded yet
         console.debug('No KvK verification status available yet');
       }
@@ -612,11 +612,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
             width="140px"
             cell={ValidationCell}
           />
-          <GridColumn
-            title="Doc Verification"
-            width="160px"
-            cell={DocumentVerificationCell}
-          />
+          <GridColumn title="Doc Verification" width="160px" cell={DocumentVerificationCell} />
           <GridColumn field="validation_date" title="Last Verified" width="140px" cell={DateCell} />
           <GridColumn field="dt_modified" title="Last Edited" width="140px" cell={DateCell} />
           <GridColumn
@@ -661,19 +657,26 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
                 value={formData.identifier_type}
                 onChange={(e) => handleIdentifierTypeChange(e.value)}
                 disabled={!formData.country_code || availableIdentifierTypes.length === 0}
-                defaultItem={formData.country_code ? "Select type..." : "Enter country code first"}
+                defaultItem={formData.country_code ? 'Select type...' : 'Enter country code first'}
               />
               {!formData.country_code ? (
-                <span className="field-hint field-hint-warning" style={{color: '#dc2626', fontWeight: 500}}>
+                <span
+                  className="field-hint field-hint-warning"
+                  style={{ color: '#dc2626', fontWeight: 500 }}
+                >
                   ⚠️ Please enter country code first to see applicable types
                 </span>
               ) : availableIdentifierTypes.length === 0 ? (
-                <span className="field-hint field-hint-warning" style={{color: '#dc2626', fontWeight: 500}}>
+                <span
+                  className="field-hint field-hint-warning"
+                  style={{ color: '#dc2626', fontWeight: 500 }}
+                >
                   ⚠️ No identifier types available for country code "{formData.country_code}"
                 </span>
               ) : (
-                <span className="field-hint" style={{color: '#059669', fontWeight: 500}}>
-                  ✓ Available types for {formData.country_code.toUpperCase()}: {availableIdentifierTypes.join(', ')}
+                <span className="field-hint" style={{ color: '#059669', fontWeight: 500 }}>
+                  ✓ Available types for {formData.country_code.toUpperCase()}:{' '}
+                  {availableIdentifierTypes.join(', ')}
                 </span>
               )}
             </div>

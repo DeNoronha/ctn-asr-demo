@@ -71,7 +71,7 @@ test.describe('URGENT: Production Identifier Creation Diagnostic', () => {
         const method = request.method();
 
         console.log(`📤 ${method} ${url}`);
-        console.log(`   Authorization: ${headers['authorization'] ? '✅ Present' : '❌ Missing'}`);
+        console.log(`   Authorization: ${headers.authorization ? '✅ Present' : '❌ Missing'}`);
 
         capturedData.networkRequests.push({
           url,
@@ -154,7 +154,10 @@ test.describe('URGENT: Production Identifier Creation Diagnostic', () => {
 
     // Step 4: Click on Contargo row's View button
     console.log('📍 Step 4: Looking for Contargo row...');
-    const contargoRow = page.locator('.k-grid tbody tr').filter({ hasText: /Contargo GmbH/i }).first();
+    const contargoRow = page
+      .locator('.k-grid tbody tr')
+      .filter({ hasText: /Contargo GmbH/i })
+      .first();
     if (await contargoRow.isVisible({ timeout: 5000 })) {
       console.log('✅ Found Contargo row, clicking View button...');
 
@@ -204,7 +207,10 @@ test.describe('URGENT: Production Identifier Creation Diagnostic', () => {
 
     // Step 6: Click Add Identifier button
     console.log('\n📍 Step 6: Looking for Add Identifier button...');
-    const addButton = page.locator('button').filter({ hasText: /add identifier/i }).first();
+    const addButton = page
+      .locator('button')
+      .filter({ hasText: /add identifier/i })
+      .first();
 
     if (!(await addButton.isVisible({ timeout: 5000 }))) {
       // Try alternative selectors
@@ -279,7 +285,9 @@ test.describe('URGENT: Production Identifier Creation Diagnostic', () => {
     if (await statusDropdown.isVisible({ timeout: 2000 })) {
       await statusDropdown.click();
       await page.waitForTimeout(500);
-      const pendingOption = page.locator('option:has-text("PENDING"), li:has-text("PENDING")').first();
+      const pendingOption = page
+        .locator('option:has-text("PENDING"), li:has-text("PENDING")')
+        .first();
       if (await pendingOption.isVisible({ timeout: 2000 })) {
         await pendingOption.click();
       }
@@ -350,7 +358,9 @@ test.describe('URGENT: Production Identifier Creation Diagnostic', () => {
     if (identifierRequests.length > 0) {
       identifierRequests.forEach((req, i) => {
         console.log(`\n   [${i + 1}] ${req.method} ${req.url}`);
-        console.log(`   Authorization Header: ${req.headers['authorization'] ? '✅ Present' : '❌ MISSING'}`);
+        console.log(
+          `   Authorization Header: ${req.headers.authorization ? '✅ Present' : '❌ MISSING'}`
+        );
         if (req.postData) {
           console.log(`   Request Body: ${req.postData}`);
         }
@@ -367,8 +377,8 @@ test.describe('URGENT: Production Identifier Creation Diagnostic', () => {
       identifierResponses.forEach((res, i) => {
         console.log(`\n   [${i + 1}] ${res.method} ${res.url}`);
         console.log(`   Status: ${res.status} ${res.statusText}`);
-        console.log(`   Response Headers:`, JSON.stringify(res.headers, null, 2));
-        console.log(`   Response Body:`, JSON.stringify(res.body, null, 2));
+        console.log('   Response Headers:', JSON.stringify(res.headers, null, 2));
+        console.log('   Response Body:', JSON.stringify(res.body, null, 2));
       });
     } else {
       console.log('   ⚠️  No identifier-related responses captured');
@@ -380,31 +390,31 @@ test.describe('URGENT: Production Identifier Creation Diagnostic', () => {
       errorResponses.forEach((res) => {
         console.log(`\n   🚨 ${res.status} Error: ${res.method} ${res.url}`);
         console.log(`   Status Text: ${res.statusText}`);
-        console.log(`   Response Body:`, JSON.stringify(res.body, null, 2));
+        console.log('   Response Body:', JSON.stringify(res.body, null, 2));
 
         // Provide diagnosis
         if (res.status === 401) {
-          console.log(`\n   ⚠️  DIAGNOSIS: Authentication failure`);
-          console.log(`      - Check if Authorization header was sent`);
-          console.log(`      - Check if token is valid (not expired)`);
+          console.log('\n   ⚠️  DIAGNOSIS: Authentication failure');
+          console.log('      - Check if Authorization header was sent');
+          console.log('      - Check if token is valid (not expired)');
           console.log(`      - Check token format (should be "Bearer <token>")`);
         } else if (res.status === 403) {
-          console.log(`\n   ⚠️  DIAGNOSIS: Authorization failure`);
-          console.log(`      - User authenticated but lacks permissions`);
-          console.log(`      - Check RBAC configuration`);
+          console.log('\n   ⚠️  DIAGNOSIS: Authorization failure');
+          console.log('      - User authenticated but lacks permissions');
+          console.log('      - Check RBAC configuration');
         } else if (res.status === 404) {
-          console.log(`\n   ⚠️  DIAGNOSIS: Resource not found`);
-          console.log(`      - Check if entity ID is correct`);
-          console.log(`      - Check API route configuration`);
+          console.log('\n   ⚠️  DIAGNOSIS: Resource not found');
+          console.log('      - Check if entity ID is correct');
+          console.log('      - Check API route configuration');
         } else if (res.status === 409) {
-          console.log(`\n   ⚠️  DIAGNOSIS: Conflict`);
-          console.log(`      - Identifier may already exist`);
-          console.log(`      - Check database constraints`);
+          console.log('\n   ⚠️  DIAGNOSIS: Conflict');
+          console.log('      - Identifier may already exist');
+          console.log('      - Check database constraints');
         } else if (res.status === 500) {
-          console.log(`\n   ⚠️  DIAGNOSIS: Server error`);
-          console.log(`      - Check API logs for stack trace`);
-          console.log(`      - Check database connection`);
-          console.log(`      - Check audit logging`);
+          console.log('\n   ⚠️  DIAGNOSIS: Server error');
+          console.log('      - Check API logs for stack trace');
+          console.log('      - Check database connection');
+          console.log('      - Check audit logging');
 
           // Parse error details if available
           if (typeof res.body === 'object' && res.body !== null) {
@@ -429,7 +439,7 @@ test.describe('URGENT: Production Identifier Creation Diagnostic', () => {
 
     // Save full diagnostic data to file
     const diagnosticReport = JSON.stringify(capturedData, null, 2);
-    const fs = require('fs');
+    const fs = require('node:fs');
     fs.writeFileSync('diagnostic-full-report.json', diagnosticReport);
     console.log('✅ Full diagnostic report saved to: diagnostic-full-report.json\n');
   });

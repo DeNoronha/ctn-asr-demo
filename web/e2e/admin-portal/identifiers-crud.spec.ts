@@ -32,7 +32,8 @@ import { expect, test } from '@playwright/test';
  * - Test KvK Number: 95944192
  */
 
-const API_BASE_URL = process.env.PLAYWRIGHT_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net';
+const API_BASE_URL =
+  process.env.PLAYWRIGHT_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net';
 const TEST_ENTITY_ID = 'fbc4bcdc-a9f9-4621-a153-c5deb6c49519';
 
 // Test identifier types matching the API validation
@@ -45,7 +46,7 @@ const IDENTIFIER_TYPES = [
 ];
 
 test.describe('Identifier CRUD API - Direct API Testing', () => {
-  let authToken: string | null = null;
+  const _authToken: string | null = null;
 
   test.beforeAll(async () => {
     // Note: Direct API testing requires valid auth token
@@ -54,16 +55,21 @@ test.describe('Identifier CRUD API - Direct API Testing', () => {
     console.log('Test Entity ID:', TEST_ENTITY_ID);
   });
 
-  test('should verify API endpoint responds without "Cannot read private member" error', async ({ request }) => {
+  test('should verify API endpoint responds without "Cannot read private member" error', async ({
+    request,
+  }) => {
     // Test GET identifiers endpoint directly
-    const response = await request.get(`${API_BASE_URL}/api/v1/entities/${TEST_ENTITY_ID}/identifiers`, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Playwright-Test/1.0',
-        'X-Forwarded-For': '127.0.0.1',
-      },
-      failOnStatusCode: false,
-    });
+    const response = await request.get(
+      `${API_BASE_URL}/api/v1/entities/${TEST_ENTITY_ID}/identifiers`,
+      {
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': 'Playwright-Test/1.0',
+          'X-Forwarded-For': '127.0.0.1',
+        },
+        failOnStatusCode: false,
+      }
+    );
 
     const status = response.status();
     console.log(`GET /identifiers status: ${status}`);
@@ -96,16 +102,19 @@ test.describe('Identifier CRUD API - Direct API Testing', () => {
       validation_status: 'PENDING',
     };
 
-    const response = await request.post(`${API_BASE_URL}/api/v1/entities/${TEST_ENTITY_ID}/identifiers`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'User-Agent': 'Playwright-Test/1.0',
-        'X-Forwarded-For': '127.0.0.1',
-      },
-      data: testIdentifier,
-      failOnStatusCode: false,
-    });
+    const response = await request.post(
+      `${API_BASE_URL}/api/v1/entities/${TEST_ENTITY_ID}/identifiers`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'User-Agent': 'Playwright-Test/1.0',
+          'X-Forwarded-For': '127.0.0.1',
+        },
+        data: testIdentifier,
+        failOnStatusCode: false,
+      }
+    );
 
     const status = response.status();
     console.log(`POST /identifiers status: ${status}`);
@@ -134,15 +143,18 @@ test.describe('Identifier CRUD API - Direct API Testing', () => {
 
   test('should verify audit logging captures headers without error', async ({ request }) => {
     // Test with custom headers to verify audit logging
-    const response = await request.get(`${API_BASE_URL}/api/v1/entities/${TEST_ENTITY_ID}/identifiers`, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Playwright-BugFix-Test/1.0.0',
-        'X-Forwarded-For': '192.168.1.100',
-        'X-Real-IP': '192.168.1.100',
-      },
-      failOnStatusCode: false,
-    });
+    const response = await request.get(
+      `${API_BASE_URL}/api/v1/entities/${TEST_ENTITY_ID}/identifiers`,
+      {
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': 'Playwright-BugFix-Test/1.0.0',
+          'X-Forwarded-For': '192.168.1.100',
+          'X-Real-IP': '192.168.1.100',
+        },
+        failOnStatusCode: false,
+      }
+    );
 
     const status = response.status();
     console.log(`GET with custom headers status: ${status}`);
@@ -155,8 +167,8 @@ test.describe('Identifier CRUD API - Direct API Testing', () => {
       console.error('Server error response:', body);
 
       // Check for the specific bug
-      const hasPrivateMemberError = body.includes('Cannot read private member') ||
-                                    body.includes('#properties');
+      const hasPrivateMemberError =
+        body.includes('Cannot read private member') || body.includes('#properties');
 
       if (hasPrivateMemberError) {
         console.error('❌ CRITICAL BUG DETECTED: Header access still failing!');
@@ -170,17 +182,20 @@ test.describe('Identifier CRUD API - Direct API Testing', () => {
 
   test('should verify all identifier types are accepted', async ({ request }) => {
     for (const identifier of IDENTIFIER_TYPES) {
-      const response = await request.post(`${API_BASE_URL}/api/v1/entities/${TEST_ENTITY_ID}/identifiers`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'Playwright-Test/1.0',
-        },
-        data: {
-          identifier_type: identifier.type,
-          identifier_value: identifier.value,
-        },
-        failOnStatusCode: false,
-      });
+      const response = await request.post(
+        `${API_BASE_URL}/api/v1/entities/${TEST_ENTITY_ID}/identifiers`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'Playwright-Test/1.0',
+          },
+          data: {
+            identifier_type: identifier.type,
+            identifier_value: identifier.value,
+          },
+          failOnStatusCode: false,
+        }
+      );
 
       const status = response.status();
 
@@ -206,9 +221,12 @@ test.describe('Identifier CRUD API - Direct API Testing', () => {
     // Test with invalid UUID to check error handling
     const invalidEntityId = 'not-a-uuid';
 
-    const response = await request.get(`${API_BASE_URL}/api/v1/entities/${invalidEntityId}/identifiers`, {
-      failOnStatusCode: false,
-    });
+    const response = await request.get(
+      `${API_BASE_URL}/api/v1/entities/${invalidEntityId}/identifiers`,
+      {
+        failOnStatusCode: false,
+      }
+    );
 
     const status = response.status();
     console.log(`GET with invalid UUID status: ${status}`);
@@ -227,10 +245,13 @@ test.describe('Identifier CRUD API - Direct API Testing', () => {
   });
 
   test('should verify OPTIONS request for CORS', async ({ request }) => {
-    const response = await request.fetch(`${API_BASE_URL}/api/v1/entities/${TEST_ENTITY_ID}/identifiers`, {
-      method: 'OPTIONS',
-      failOnStatusCode: false,
-    });
+    const response = await request.fetch(
+      `${API_BASE_URL}/api/v1/entities/${TEST_ENTITY_ID}/identifiers`,
+      {
+        method: 'OPTIONS',
+        failOnStatusCode: false,
+      }
+    );
 
     const status = response.status();
     console.log(`OPTIONS /identifiers status: ${status}`);

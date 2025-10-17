@@ -60,7 +60,8 @@
   border-bottom: none;
 }
 
-.detail-row label {
+.detail-row label,
+.detail-row .detail-label {
   font-weight: 600;
   color: #4b5563;
   font-size: 0.875rem;

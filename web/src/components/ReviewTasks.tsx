@@ -3,13 +3,8 @@ import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Grid, GridColumn } from '@progress/kendo-react-grid';
 import { Loader } from '@progress/kendo-react-indicators';
 import { TextArea } from '@progress/kendo-react-inputs';
-import {
-  AlertCircle,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-} from 'lucide-react';
 import axios from 'axios';
+import { AlertCircle, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { msalInstance } from '../auth/AuthContext';
@@ -256,9 +251,7 @@ export const ReviewTasks: React.FC = () => {
           field="registry_type"
           title="Registry"
           width="100px"
-          cell={(props) => (
-            <td>{props.dataItem.registry_type || 'KVK'}</td>
-          )}
+          cell={(props) => <td>{props.dataItem.registry_type || 'KVK'}</td>}
         />
         <GridColumn
           field="country_code"

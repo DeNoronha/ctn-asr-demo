@@ -20,7 +20,10 @@ const Settings: React.FC = () => {
   const externalLinks = [
     {
       title: t('settings.swagger', 'API Documentation (Swagger)'),
-      description: t('settings.swaggerDesc', 'Interactive API documentation with endpoint testing capabilities'),
+      description: t(
+        'settings.swaggerDesc',
+        'Interactive API documentation with endpoint testing capabilities'
+      ),
       icon: FileText,
       url: 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/swagger/ui',
       color: '#85ea2d',
@@ -34,7 +37,10 @@ const Settings: React.FC = () => {
     },
     {
       title: t('settings.wiki', 'CTN Wiki'),
-      description: t('settings.wikiDesc', 'Comprehensive documentation, architecture, and best practices'),
+      description: t(
+        'settings.wikiDesc',
+        'Comprehensive documentation, architecture, and best practices'
+      ),
       icon: BookOpen,
       url: 'https://github.com/ctn-demo/ASR/wiki',
       color: '#ff8c00',
@@ -55,7 +61,10 @@ const Settings: React.FC = () => {
             {t('settings.externalResources', 'External Resources')}
           </h3>
           <p className="section-description">
-            {t('settings.externalResourcesDesc', 'Access documentation, guides, and API references')}
+            {t(
+              'settings.externalResourcesDesc',
+              'Access documentation, guides, and API references'
+            )}
           </p>
 
           <div className="resources-grid">
@@ -116,12 +125,7 @@ const Settings: React.FC = () => {
               </ul>
             </div>
             <div className="translation-action">
-              <Button
-                themeColor="primary"
-                size="large"
-                onClick={handleLokaliseClick}
-                icon="globe"
-              >
+              <Button themeColor="primary" size="large" onClick={handleLokaliseClick} icon="globe">
                 <Globe size={18} style={{ marginRight: '8px' }} />
                 {t('settings.openLokalise', 'Open Lokalise')}
               </Button>

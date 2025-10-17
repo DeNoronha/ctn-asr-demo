@@ -27,7 +27,7 @@ import { expect, test } from '../../playwright/fixtures';
  * - Tags: production, regression, identifiers, crud
  */
 
-const TEST_ENTITY_ID = 'fbc4bcdc-a9f9-4621-a153-c5deb6c49519';
+const _TEST_ENTITY_ID = 'fbc4bcdc-a9f9-4621-a153-c5deb6c49519';
 const TEST_KVK_NUMBER = '95944192';
 
 test.describe('Production Identifier Workflow - Critical Path', () => {
@@ -74,7 +74,7 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
           try {
             const body = await response.text();
             console.error(`Response body: ${body}`);
-          } catch (e) {
+          } catch (_e) {
             console.error('Could not read response body');
           }
         }
@@ -163,7 +163,9 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
 
     // Check for "Create Legal Entity" button OR IdentifiersManager
     const createEntityButton = page.locator('button:has-text("Create Legal Entity")').first();
-    const hasCreateButton = await createEntityButton.isVisible({ timeout: 3000 }).catch(() => false);
+    const hasCreateButton = await createEntityButton
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
 
     await page.screenshot({
       path: 'playwright-report/screenshots/production-identifiers-tab.png',
@@ -242,7 +244,9 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
     console.log('✅ Navigated to Identifiers tab');
 
     // Look for "Add Identifier" button
-    const addButton = page.locator('button:has-text("Add Identifier"), button:has-text("Add")').first();
+    const addButton = page
+      .locator('button:has-text("Add Identifier"), button:has-text("Add")')
+      .first();
     const hasButton = await addButton.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!hasButton) {
@@ -276,7 +280,9 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
     await typeDropdown.click();
     await page.waitForTimeout(500);
 
-    const kvkOption = page.locator('li:has-text("KVK"), option:has-text("KVK"), text="KVK"').first();
+    const kvkOption = page
+      .locator('li:has-text("KVK"), option:has-text("KVK"), text="KVK"')
+      .first();
     const hasKvkOption = await kvkOption.isVisible({ timeout: 2000 }).catch(() => false);
 
     if (hasKvkOption) {
@@ -421,7 +427,9 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
       const validatedOption = page
         .locator('li:has-text("VALIDATED"), option:has-text("VALIDATED"), text="VALIDATED"')
         .first();
-      const hasValidatedOption = await validatedOption.isVisible({ timeout: 2000 }).catch(() => false);
+      const hasValidatedOption = await validatedOption
+        .isVisible({ timeout: 2000 })
+        .catch(() => false);
 
       if (hasValidatedOption) {
         await validatedOption.click();
@@ -543,7 +551,9 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
 
     // Confirm deletion
     console.log('⚙️ Confirming deletion...');
-    const confirmButton = page.locator('button:has-text("Yes"), button:has-text("Confirm")').first();
+    const confirmButton = page
+      .locator('button:has-text("Yes"), button:has-text("Confirm")')
+      .first();
     const hasConfirmButton = await confirmButton.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (hasConfirmButton) {
@@ -698,9 +708,9 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
 
     // Final summary
     console.log('\n📊 Regression Test Summary:');
-    console.log(`✅ Identifier list loads correctly`);
+    console.log('✅ Identifier list loads correctly');
     console.log(`✅ Page refresh doesn't break functionality`);
-    console.log(`✅ API requests succeed (status 200)`);
-    console.log(`✅ No console errors throughout workflow`);
+    console.log('✅ API requests succeed (status 200)');
+    console.log('✅ No console errors throughout workflow');
   });
 });

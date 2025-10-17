@@ -91,15 +91,15 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   // Helper function to get translated column title
   const getColumnTitle = (field: string) => {
     const titleMap: Record<string, string> = {
-      'legal_name': t('members.legalName'),
-      'status': t('common.status'),
-      'lei': 'LEI',
-      'euid': 'EUID',
-      'kvk': 'KVK',
-      'org_id': t('members.orgId', 'Organization ID'),
-      'domain': t('members.domain', 'Domain'),
-      'membership_level': t('members.membership', 'Membership'),
-      'created_at': t('members.joined', 'Joined'),
+      legal_name: t('members.legalName'),
+      status: t('common.status'),
+      lei: 'LEI',
+      euid: 'EUID',
+      kvk: 'KVK',
+      org_id: t('members.orgId', 'Organization ID'),
+      domain: t('members.domain', 'Domain'),
+      membership_level: t('members.membership', 'Membership'),
+      created_at: t('members.joined', 'Joined'),
     };
     return titleMap[field] || field;
   };
@@ -531,7 +531,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             info: true,
             type: 'numeric',
             pageSizes: [10, 20, 50, 100],
-            previousNext: true
+            previousNext: true,
           }}
           skip={skip}
           take={take}
@@ -555,7 +555,8 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                   onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
                   icon="filter"
                 >
-                  {showAdvancedFilter ? t('common.hide', 'Hide') : t('common.advanced', 'Advanced')} {t('common.filter')}
+                  {showAdvancedFilter ? t('common.hide', 'Hide') : t('common.advanced', 'Advanced')}{' '}
+                  {t('common.filter')}
                 </Button>
                 <DropDownButton
                   text={t('common.export')}
@@ -571,15 +572,31 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                     themeColor="info"
                   />
                 )}
-                <DropDownButton text={t('grid.columns', 'Columns')} icon="columns" items={columnMenuItems} />
-                <Button fillMode="flat" onClick={resetColumns} title={t('grid.resetLayout', 'Reset layout')}>
+                <DropDownButton
+                  text={t('grid.columns', 'Columns')}
+                  icon="columns"
+                  items={columnMenuItems}
+                />
+                <Button
+                  fillMode="flat"
+                  onClick={resetColumns}
+                  title={t('grid.resetLayout', 'Reset layout')}
+                >
                   {t('grid.resetLayout', 'Reset Layout')}
                 </Button>
               </div>
               <div className="toolbar-stats">
-                <span>{t('grid.total', 'Total')}: {total}</span>
-                <span>{t('grid.showing', 'Showing')}: {gridData.length}</span>
-                {selectedIds.length > 0 && <span>{t('grid.selected', 'Selected')}: {selectedIds.length}</span>}
+                <span>
+                  {t('grid.total', 'Total')}: {total}
+                </span>
+                <span>
+                  {t('grid.showing', 'Showing')}: {gridData.length}
+                </span>
+                {selectedIds.length > 0 && (
+                  <span>
+                    {t('grid.selected', 'Selected')}: {selectedIds.length}
+                  </span>
+                )}
                 {loading && <span className="loading-indicator">⏳ {t('common.loading')}</span>}
               </div>
             </div>

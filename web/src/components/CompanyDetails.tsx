@@ -25,32 +25,32 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit 
             <h4>Basic Information</h4>
 
             <div className="detail-row">
-              <label>Legal Name:</label>
+              <div className="detail-label">Legal Name:</div>
               <span>{company.primary_legal_name || '-'}</span>
             </div>
 
             <div className="detail-row">
-              <label>Legal Form:</label>
+              <div className="detail-label">Legal Form:</div>
               <span>{company.entity_legal_form || '-'}</span>
             </div>
 
             <div className="detail-row">
-              <label>Registration Number:</label>
+              <div className="detail-label">Registration Number:</div>
               <span>{company.registered_at || '-'}</span>
             </div>
 
             <div className="detail-row">
-              <label>Domain:</label>
+              <div className="detail-label">Domain:</div>
               <span>{company.domain || '-'}</span>
             </div>
 
             <div className="detail-row">
-              <label>Status:</label>
+              <div className="detail-label">Status:</div>
               <span>{company.status || '-'}</span>
             </div>
 
             <div className="detail-row">
-              <label>Membership Level:</label>
+              <div className="detail-label">Membership Level:</div>
               <span>{company.membership_level || '-'}</span>
             </div>
           </div>
@@ -59,14 +59,14 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit 
             <h4>Record Information</h4>
 
             <div className="detail-row">
-              <label>Created:</label>
+              <div className="detail-label">Created:</div>
               <span>
                 {company.dt_created ? new Date(company.dt_created).toLocaleString() : '-'}
               </span>
             </div>
 
             <div className="detail-row">
-              <label>Last Modified:</label>
+              <div className="detail-label">Last Modified:</div>
               <span>
                 {company.dt_modified ? new Date(company.dt_modified).toLocaleString() : '-'}
               </span>
@@ -74,7 +74,7 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit 
 
             {company.modified_by && (
               <div className="detail-row">
-                <label>Modified By:</label>
+                <div className="detail-label">Modified By:</div>
                 <span>{company.modified_by}</span>
               </div>
             )}
@@ -86,34 +86,34 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit 
             <h4>Address</h4>
 
             <div className="detail-row">
-              <label>Street:</label>
+              <div className="detail-label">Street:</div>
               <span>{company.address_line1 || '-'}</span>
             </div>
 
             {company.address_line2 && (
               <div className="detail-row">
-                <label>Address Line 2:</label>
+                <div className="detail-label">Address Line 2:</div>
                 <span>{company.address_line2}</span>
               </div>
             )}
 
             <div className="detail-row">
-              <label>Postal Code:</label>
+              <div className="detail-label">Postal Code:</div>
               <span>{company.postal_code || '-'}</span>
             </div>
 
             <div className="detail-row">
-              <label>City:</label>
+              <div className="detail-label">City:</div>
               <span>{company.city || '-'}</span>
             </div>
 
             <div className="detail-row">
-              <label>Province/State:</label>
+              <div className="detail-label">Province/State:</div>
               <span>{company.province || '-'}</span>
             </div>
 
             <div className="detail-row">
-              <label>Country:</label>
+              <div className="detail-label">Country:</div>
               <span>{company.country_code || '-'}</span>
             </div>
           </div>
@@ -124,14 +124,14 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit 
 
               {company.direct_parent_legal_entity_id && (
                 <div className="detail-row">
-                  <label>Direct Parent:</label>
+                  <div className="detail-label">Direct Parent:</div>
                   <span>{company.direct_parent_legal_entity_id}</span>
                 </div>
               )}
 
               {company.ultimate_parent_legal_entity_id && (
                 <div className="detail-row">
-                  <label>Ultimate Parent:</label>
+                  <div className="detail-label">Ultimate Parent:</div>
                   <span>{company.ultimate_parent_legal_entity_id}</span>
                 </div>
               )}

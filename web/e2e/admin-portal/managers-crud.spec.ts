@@ -47,8 +47,12 @@ test.describe('Contacts Manager - CRUD Operations', () => {
     }
   });
 
-  test('should have contact role types (PRIMARY, TECHNICAL, BILLING, SUPPORT)', async ({ page }) => {
-    const addButton = page.locator('button:has-text("Add Contact"), button:has-text("Add")').first();
+  test('should have contact role types (PRIMARY, TECHNICAL, BILLING, SUPPORT)', async ({
+    page,
+  }) => {
+    const addButton = page
+      .locator('button:has-text("Add Contact"), button:has-text("Add")')
+      .first();
     const hasButton = await addButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasButton) {
@@ -91,7 +95,9 @@ test.describe('Contacts Manager - CRUD Operations', () => {
   });
 
   test('should use ConfirmDialog for contact deletions', async ({ page }) => {
-    const deleteButton = page.locator('button[title="Delete"], button[aria-label="Delete"]').first();
+    const deleteButton = page
+      .locator('button[title="Delete"], button[aria-label="Delete"]')
+      .first();
     const hasDelete = await deleteButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasDelete) {
@@ -104,7 +110,9 @@ test.describe('Contacts Manager - CRUD Operations', () => {
       console.log(`ConfirmDialog for contact deletion: ${hasConfirm}`);
 
       if (hasConfirm) {
-        const cancelButton = page.locator('button:has-text("Cancel"), button:has-text("No")').first();
+        const cancelButton = page
+          .locator('button:has-text("Cancel"), button:has-text("No")')
+          .first();
         const hasCancel = await cancelButton.isVisible({ timeout: 1000 }).catch(() => false);
         if (hasCancel) await cancelButton.click();
       }
@@ -112,7 +120,9 @@ test.describe('Contacts Manager - CRUD Operations', () => {
   });
 
   test('should validate required contact fields', async ({ page }) => {
-    const addButton = page.locator('button:has-text("Add Contact"), button:has-text("Add")').first();
+    const addButton = page
+      .locator('button:has-text("Add Contact"), button:has-text("Add")')
+      .first();
     const hasButton = await addButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasButton) {
@@ -176,7 +186,9 @@ test.describe('Endpoints Manager - CRUD Operations', () => {
   });
 
   test('should open create endpoint dialog', async ({ page }) => {
-    const addButton = page.locator('button:has-text("Add Endpoint"), button:has-text("Add")').first();
+    const addButton = page
+      .locator('button:has-text("Add Endpoint"), button:has-text("Add")')
+      .first();
     const hasButton = await addButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasButton) {
@@ -196,7 +208,9 @@ test.describe('Endpoints Manager - CRUD Operations', () => {
   });
 
   test('should allow token association with endpoints', async ({ page }) => {
-    const addButton = page.locator('button:has-text("Add Endpoint"), button:has-text("Add")').first();
+    const addButton = page
+      .locator('button:has-text("Add Endpoint"), button:has-text("Add")')
+      .first();
     const hasButton = await addButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasButton) {
@@ -217,7 +231,9 @@ test.describe('Endpoints Manager - CRUD Operations', () => {
   });
 
   test('should validate endpoint URL format', async ({ page }) => {
-    const addButton = page.locator('button:has-text("Add Endpoint"), button:has-text("Add")').first();
+    const addButton = page
+      .locator('button:has-text("Add Endpoint"), button:has-text("Add")')
+      .first();
     const hasButton = await addButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasButton) {
@@ -292,7 +308,9 @@ test.describe('Tokens Manager - View and Manage Tokens', () => {
   });
 
   test('should have copy token to clipboard functionality', async ({ page }) => {
-    const copyButton = page.locator('button[title*="Copy"], button[aria-label*="Copy"], button:has-text("Copy")').first();
+    const copyButton = page
+      .locator('button[title*="Copy"], button[aria-label*="Copy"], button:has-text("Copy")')
+      .first();
     const hasCopy = await copyButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasCopy) {
@@ -329,7 +347,9 @@ test.describe('Tokens Manager - View and Manage Tokens', () => {
       console.log(`Revoke confirmation dialog: ${hasConfirm}`);
 
       if (hasConfirm) {
-        const cancelButton = page.locator('button:has-text("Cancel"), button:has-text("No")').first();
+        const cancelButton = page
+          .locator('button:has-text("Cancel"), button:has-text("No")')
+          .first();
         const hasCancel = await cancelButton.isVisible({ timeout: 1000 }).catch(() => false);
         if (hasCancel) await cancelButton.click();
       }
@@ -337,7 +357,11 @@ test.describe('Tokens Manager - View and Manage Tokens', () => {
   });
 
   test('should allow issuing new tokens', async ({ page }) => {
-    const issueButton = page.locator('button:has-text("Issue"), button:has-text("New Token"), button:has-text("Generate")').first();
+    const issueButton = page
+      .locator(
+        'button:has-text("Issue"), button:has-text("New Token"), button:has-text("Generate")'
+      )
+      .first();
     const hasIssue = await issueButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasIssue) {
@@ -364,7 +388,9 @@ test.describe('Tokens Manager - View and Manage Tokens', () => {
 
   test('should sort tokens by last_used_at by default', async ({ page }) => {
     // Look for sorted column indicator
-    const sortedColumn = page.locator('.k-sorted, [aria-sort="descending"], [aria-sort="ascending"]').first();
+    const sortedColumn = page
+      .locator('.k-sorted, [aria-sort="descending"], [aria-sort="ascending"]')
+      .first();
     const hasSorted = await sortedColumn.isVisible({ timeout: 2000 }).catch(() => false);
 
     if (hasSorted) {
@@ -378,8 +404,10 @@ test.describe('Tokens Manager - View and Manage Tokens', () => {
     const hasBadge = await badges.isVisible({ timeout: 2000 }).catch(() => false);
 
     if (hasBadge) {
-      const backgroundColor = await badges.evaluate(el => window.getComputedStyle(el).backgroundColor);
-      const color = await badges.evaluate(el => window.getComputedStyle(el).color);
+      const backgroundColor = await badges.evaluate(
+        (el) => window.getComputedStyle(el).backgroundColor
+      );
+      const color = await badges.evaluate((el) => window.getComputedStyle(el).color);
 
       console.log(`Badge colors - Background: ${backgroundColor}, Text: ${color}`);
 
@@ -406,7 +434,7 @@ test.describe('Managers - Error Handling', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(3000);
 
-    const criticalErrors = serverErrors.filter(e => e.status >= 500);
+    const criticalErrors = serverErrors.filter((e) => e.status >= 500);
     expect(criticalErrors.length).toBe(0);
 
     if (serverErrors.length > 0) {
@@ -454,7 +482,9 @@ test.describe('Managers - Loading States', () => {
   test('should have semantic HTML roles for loading states', async ({ page }) => {
     await page.goto('/');
 
-    const loadingElement = page.locator('[role="status"], [role="progressbar"], [aria-busy="true"]').first();
+    const loadingElement = page
+      .locator('[role="status"], [role="progressbar"], [aria-busy="true"]')
+      .first();
     const hasSemanticRole = await loadingElement.isVisible({ timeout: 1000 }).catch(() => false);
 
     if (hasSemanticRole) {

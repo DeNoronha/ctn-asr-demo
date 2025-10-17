@@ -150,14 +150,18 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
           <div className="stat-icon">📊</div>
           <h3>{t('dashboard.totalMembers')}</h3>
           <div className="stat-value">{stats.total}</div>
-          <div className="stat-label">{t('dashboard.registeredOrgs', 'Registered organizations')}</div>
+          <div className="stat-label">
+            {t('dashboard.registeredOrgs', 'Registered organizations')}
+          </div>
         </div>
 
         <div className="stat-card success">
           <div className="stat-icon">✅</div>
           <h3>{t('dashboard.activeMembers')}</h3>
           <div className="stat-value">{stats.active}</div>
-          <div className="stat-label">{stats.activeRate}% {t('dashboard.ofTotal', 'of total')}</div>
+          <div className="stat-label">
+            {stats.activeRate}% {t('dashboard.ofTotal', 'of total')}
+          </div>
         </div>
 
         <div className="stat-card warning">
@@ -171,7 +175,9 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
           <div className="stat-icon">⭐</div>
           <h3>{t('dashboard.premiumMembers', 'Premium Members')}</h3>
           <div className="stat-value">{stats.premium}</div>
-          <div className="stat-label">{stats.premiumRate}% {t('dashboard.ofTotal', 'of total')}</div>
+          <div className="stat-label">
+            {stats.premiumRate}% {t('dashboard.ofTotal', 'of total')}
+          </div>
         </div>
       </div>
 

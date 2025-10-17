@@ -4,11 +4,11 @@
  * This script adds the KvK number directly via API call
  */
 
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
+const https = require('node:https');
+const fs = require('node:fs');
+const path = require('node:path');
 
-const API_BASE = 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
+const _API_BASE = 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
 
 // Read auth token from Playwright auth state
 const authFilePath = path.join(__dirname, '../playwright/.auth/user.json');
@@ -16,7 +16,7 @@ const authState = JSON.parse(fs.readFileSync(authFilePath, 'utf8'));
 
 // Extract access token from sessionStorage
 let accessToken = null;
-const appOrigin = authState.origins?.find(origin =>
+const appOrigin = authState.origins?.find((origin) =>
   origin.origin.includes('azurestaticapps.net')
 );
 
@@ -27,7 +27,7 @@ if (appOrigin?.sessionStorage) {
         const tokenData = JSON.parse(item.value);
         accessToken = tokenData.secret || tokenData.accessToken;
         break;
-      } catch (e) {
+      } catch (_e) {
         // Try as plain string
         accessToken = item.value;
       }
@@ -51,14 +51,16 @@ function getAllMembers() {
       path: '/api/v1/all-members',
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
     };
 
     const req = https.request(options, (res) => {
       let data = '';
-      res.on('data', (chunk) => { data += chunk; });
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
       res.on('end', () => {
         if (res.statusCode === 200) {
           resolve(JSON.parse(data));
@@ -74,7 +76,7 @@ function getAllMembers() {
 }
 
 // Step 2: Create identifier for Contargo
-function createIdentifier(entityId, identifier) {
+function createIdentifier(_entityId, identifier) {
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify(identifier);
 
@@ -84,15 +86,17 @@ function createIdentifier(entityId, identifier) {
       path: '/api/v1/identifiers',
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(payload)
-      }
+        'Content-Length': Buffer.byteLength(payload),
+      },
     };
 
     const req = https.request(options, (res) => {
       let data = '';
-      res.on('data', (chunk) => { data += chunk; });
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
       res.on('end', () => {
         if (res.statusCode === 200 || res.statusCode === 201) {
           console.log(`✅ Identifier created: ${data}`);
@@ -119,13 +123,14 @@ async function main() {
     const members = await getAllMembers();
     console.log(`✅ Found ${members.length} members`);
 
-    const contargo = members.find(m =>
-      m.legal_name && m.legal_name.includes('Contargo')
-    );
+    const contargo = members.find((m) => m.legal_name?.includes('Contargo'));
 
     if (!contargo) {
       console.error('❌ CRITICAL: Contargo not found in members list!');
-      console.log('Available members:', members.map(m => m.legal_name));
+      console.log(
+        'Available members:',
+        members.map((m) => m.legal_name)
+      );
       process.exit(1);
     }
 
@@ -138,14 +143,13 @@ async function main() {
       country_code: 'NL',
       identifier_type: 'KVK',
       identifier_value: '95944192',
-      validation_status: 'PENDING'
+      validation_status: 'PENDING',
     };
 
     const result = await createIdentifier(contargo.entity_id, identifier);
     console.log('✅✅✅ SUCCESS! KvK 95944192 added to Contargo!');
     console.log('Result:', JSON.stringify(result, null, 2));
     console.log('🎉 Ramon will see this tomorrow morning!');
-
   } catch (error) {
     console.error('❌ ERROR:', error.message);
     process.exit(1);

@@ -32,7 +32,7 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
 
     await page.screenshot({
       path: 'playwright-report/01-contargo-found.png',
-      fullPage: true
+      fullPage: true,
     });
 
     // Click the View button for Contargo row
@@ -44,7 +44,7 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
 
     await page.screenshot({
       path: 'playwright-report/02-contargo-detail-page.png',
-      fullPage: true
+      fullPage: true,
     });
 
     // Look for Identifiers tab or section
@@ -64,7 +64,7 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
 
     await page.screenshot({
       path: 'playwright-report/03-identifiers-section.png',
-      fullPage: true
+      fullPage: true,
     });
 
     // Check if KvK 95944192 already exists
@@ -75,7 +75,7 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
       console.log('✅✅✅ KvK 95944192 ALREADY EXISTS! No need to add it.');
       await page.screenshot({
         path: 'playwright-report/SUCCESS-kvk-already-exists.png',
-        fullPage: true
+        fullPage: true,
       });
       return;
     }
@@ -93,7 +93,7 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
       console.error('❌ Add button not found');
       await page.screenshot({
         path: 'playwright-report/ERROR-no-add-button.png',
-        fullPage: true
+        fullPage: true,
       });
 
       // Log what buttons ARE visible
@@ -105,7 +105,7 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
 
     await page.screenshot({
       path: 'playwright-report/04-add-identifier-dialog.png',
-      fullPage: true
+      fullPage: true,
     });
 
     // Fill the form
@@ -118,7 +118,7 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
       'input[placeholder*="Country"]',
       '.k-dropdown:has-text("Country")',
       'label:has-text("Country") + input',
-      'label:has-text("Country") ~ input'
+      'label:has-text("Country") ~ input',
     ];
 
     let countryFilled = false;
@@ -134,7 +134,10 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
 
     if (!countryFilled) {
       console.error('❌ Could not find Country field');
-      await page.screenshot({ path: 'playwright-report/ERROR-no-country-field.png', fullPage: true });
+      await page.screenshot({
+        path: 'playwright-report/ERROR-no-country-field.png',
+        fullPage: true,
+      });
     }
 
     await page.waitForTimeout(1000);
@@ -144,7 +147,8 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
 
     // Click on the Identifier Type dropdown to open it
     // The dropdown is right after the "Identifier Type *" label
-    const typeDropdownSelector = 'label:has-text("Identifier Type") ~ span.k-dropdown, label:has-text("Identifier Type") + * span.k-dropdown';
+    const typeDropdownSelector =
+      'label:has-text("Identifier Type") ~ span.k-dropdown, label:has-text("Identifier Type") + * span.k-dropdown';
     let typeDropdown = page.locator(typeDropdownSelector).first();
 
     // Try various methods to find and click the dropdown
@@ -159,7 +163,11 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
 
     // Method 2: Find any dropdown after "Identifier Type" label
     if (!dropdownClicked) {
-      typeDropdown = page.locator('text=Identifier Type').locator('..').locator('span[role="combobox"], button[aria-haspopup="listbox"]').first();
+      typeDropdown = page
+        .locator('text=Identifier Type')
+        .locator('..')
+        .locator('span[role="combobox"], button[aria-haspopup="listbox"]')
+        .first();
       if (await typeDropdown.isVisible({ timeout: 1000 }).catch(() => false)) {
         await typeDropdown.click();
         dropdownClicked = true;
@@ -169,7 +177,11 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
 
     // Method 3: Click any clickable element with dropdown arrow after Identifier Type
     if (!dropdownClicked) {
-      const dropdownArrow = page.locator('text=Identifier Type').locator('..').locator('.k-dropdown-wrap, .k-select').first();
+      const dropdownArrow = page
+        .locator('text=Identifier Type')
+        .locator('..')
+        .locator('.k-dropdown-wrap, .k-select')
+        .first();
       if (await dropdownArrow.isVisible({ timeout: 1000 }).catch(() => false)) {
         await dropdownArrow.click();
         dropdownClicked = true;
@@ -179,7 +191,10 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
 
     if (!dropdownClicked) {
       console.error('❌ Could not find Identifier Type dropdown');
-      await page.screenshot({ path: 'playwright-report/ERROR-dropdown-not-found.png', fullPage: true });
+      await page.screenshot({
+        path: 'playwright-report/ERROR-dropdown-not-found.png',
+        fullPage: true,
+      });
       throw new Error('Could not find Identifier Type dropdown');
     }
 
@@ -187,14 +202,19 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
 
     // Now select KVK from the dropdown list
     console.log('Selecting KVK from dropdown list...');
-    const kvkOption = page.locator('li:has-text("KVK"), .k-list-item:has-text("KVK"), [role="option"]:has-text("KVK")').first();
+    const kvkOption = page
+      .locator('li:has-text("KVK"), .k-list-item:has-text("KVK"), [role="option"]:has-text("KVK")')
+      .first();
 
     if (await kvkOption.isVisible({ timeout: 3000 }).catch(() => false)) {
       await kvkOption.click();
       console.log('✅ Selected KVK from dropdown');
     } else {
       console.error('❌ KVK option not found in dropdown');
-      await page.screenshot({ path: 'playwright-report/ERROR-kvk-option-not-found.png', fullPage: true });
+      await page.screenshot({
+        path: 'playwright-report/ERROR-kvk-option-not-found.png',
+        fullPage: true,
+      });
 
       // Try alternative: type KVK
       await page.keyboard.type('KVK');
@@ -212,7 +232,7 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
       'input[placeholder*="number"]',
       'label:has-text("Value") + input',
       'label:has-text("Number") + input',
-      'label:has-text("Value") ~ input'
+      'label:has-text("Value") ~ input',
     ];
 
     let valueFilled = false;
@@ -231,12 +251,12 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
       await page.screenshot({ path: 'playwright-report/ERROR-no-value-field.png', fullPage: true });
 
       // Log all visible inputs for debugging
-      const allInputs = await page.locator('input').evaluateAll(inputs =>
-        inputs.map(input => ({
+      const allInputs = await page.locator('input').evaluateAll((inputs) =>
+        inputs.map((input) => ({
           name: input.getAttribute('name'),
           placeholder: input.getAttribute('placeholder'),
           type: input.getAttribute('type'),
-          visible: input.offsetWidth > 0 && input.offsetHeight > 0
+          visible: input.offsetWidth > 0 && input.offsetHeight > 0,
         }))
       );
       console.log('All input fields:', JSON.stringify(allInputs, null, 2));
@@ -246,12 +266,16 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
 
     await page.screenshot({
       path: 'playwright-report/05-form-filled.png',
-      fullPage: true
+      fullPage: true,
     });
 
     // Submit the form
     console.log('Submitting form...');
-    const submitButton = page.locator('button:has-text("Add"), button:has-text("Save"), button:has-text("Submit"), button[type="submit"]').last();
+    const submitButton = page
+      .locator(
+        'button:has-text("Add"), button:has-text("Save"), button:has-text("Submit"), button[type="submit"]'
+      )
+      .last();
     await submitButton.click();
     console.log('✅ Form submitted');
 
@@ -259,7 +283,7 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
 
     await page.screenshot({
       path: 'playwright-report/06-after-submit.png',
-      fullPage: true
+      fullPage: true,
     });
 
     // Verify KvK was added
@@ -271,7 +295,7 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
       console.log('✅✅✅ SUCCESS! KvK 95944192 is now visible!');
       await page.screenshot({
         path: 'playwright-report/SUCCESS-kvk-added.png',
-        fullPage: true
+        fullPage: true,
       });
     } else {
       console.log('⚠️ KvK not immediately visible, refreshing...');
@@ -290,19 +314,21 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
       await page.waitForTimeout(2000);
 
       const kvkAfterRefresh = page.locator('text=95944192');
-      const isVisibleAfterRefresh = await kvkAfterRefresh.isVisible({ timeout: 5000 }).catch(() => false);
+      const isVisibleAfterRefresh = await kvkAfterRefresh
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
 
       if (isVisibleAfterRefresh) {
         console.log('✅✅✅ SUCCESS AFTER REFRESH! KvK 95944192 persisted!');
         await page.screenshot({
           path: 'playwright-report/SUCCESS-kvk-persisted.png',
-          fullPage: true
+          fullPage: true,
         });
       } else {
         console.error('❌ KvK 95944192 was not successfully added');
         await page.screenshot({
           path: 'playwright-report/FAILURE-kvk-not-added.png',
-          fullPage: true
+          fullPage: true,
         });
         throw new Error('KvK identifier 95944192 was not successfully added');
       }

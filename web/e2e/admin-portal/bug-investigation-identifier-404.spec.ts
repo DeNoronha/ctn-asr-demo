@@ -115,9 +115,7 @@ test.describe('Bug Investigation - Identifier 404/500 Error', () => {
 
     // Click on the "Identifiers" tab
     const identifiersTab = page.locator('.k-tabstrip-items').getByText('Identifiers').first();
-    const hasIdentifiersTab = await identifiersTab
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
+    const hasIdentifiersTab = await identifiersTab.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasIdentifiersTab) {
       await identifiersTab.click();
@@ -204,9 +202,7 @@ test.describe('Bug Investigation - Identifier 404/500 Error', () => {
     console.log('✅ Filled identifier value: 95944192');
 
     // Fill Country: NL (if field exists)
-    const countryInput = page
-      .locator('input[name*="country"], select[name*="country"]')
-      .first();
+    const countryInput = page.locator('input[name*="country"], select[name*="country"]').first();
     const hasCountry = await countryInput.isVisible({ timeout: 2000 }).catch(() => false);
 
     if (hasCountry) {
@@ -225,9 +221,7 @@ test.describe('Bug Investigation - Identifier 404/500 Error', () => {
     });
 
     // Click Save/Submit
-    const submitButton = page
-      .locator('button[type="submit"], button:has-text("Save")')
-      .last();
+    const submitButton = page.locator('button[type="submit"], button:has-text("Save")').last();
     await submitButton.click();
 
     console.log('✅ Clicked Save button');
@@ -251,7 +245,7 @@ test.describe('Bug Investigation - Identifier 404/500 Error', () => {
         console.error(`\nError ${index + 1}:`);
         console.error(`  URL: ${error.url}`);
         console.error(`  Status: ${error.status}`);
-        console.error(`  Body:`, JSON.stringify(error.body, null, 2));
+        console.error('  Body:', JSON.stringify(error.body, null, 2));
       });
 
       // Check for specific error patterns

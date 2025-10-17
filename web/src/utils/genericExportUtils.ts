@@ -23,12 +23,7 @@ export const exportGenericToPDF = <T extends Record<string, any>>(
   data: T[],
   options: GenericExportOptions
 ) => {
-  const {
-    title = 'Export',
-    orientation = 'landscape',
-    includeTimestamp = true,
-    columns,
-  } = options;
+  const { title = 'Export', orientation = 'landscape', includeTimestamp = true, columns } = options;
 
   // Create PDF document
   const doc = new jsPDF({

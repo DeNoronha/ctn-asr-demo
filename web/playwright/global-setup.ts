@@ -22,7 +22,8 @@ async function globalSetup(_config: FullConfig) {
 
   // Check if we have sessionStorage entries
   const hasSessionStorage = storageState.origins?.some(
-    (origin: { sessionStorage?: unknown[] }) => origin.sessionStorage && origin.sessionStorage.length > 0
+    (origin: { sessionStorage?: unknown[] }) =>
+      origin.sessionStorage && origin.sessionStorage.length > 0
   );
 
   if (hasSessionStorage) {

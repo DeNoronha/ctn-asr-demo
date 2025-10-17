@@ -106,7 +106,9 @@ test.describe('URGENT: Add KvK to Contargo', () => {
     const addIdentifierButton = page.getByRole('button', { name: /Add.*Identifier/i });
 
     // Try multiple selectors if first one doesn't work
-    let addButtonVisible = await addIdentifierButton.isVisible({ timeout: 3000 }).catch(() => false);
+    let addButtonVisible = await addIdentifierButton
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
 
     if (!addButtonVisible) {
       console.log('⚠️ Trying alternative selector for Add Identifier button');
@@ -141,8 +143,12 @@ test.describe('URGENT: Add KvK to Contargo', () => {
     console.log('Step 7: Fill in KvK identifier form');
 
     // Country Code: NL
-    const countryDropdown = page.locator('select[name*="country"], .k-dropdown:has-text("Country")').first();
-    const hasCountryDropdown = await countryDropdown.isVisible({ timeout: 3000 }).catch(() => false);
+    const countryDropdown = page
+      .locator('select[name*="country"], .k-dropdown:has-text("Country")')
+      .first();
+    const hasCountryDropdown = await countryDropdown
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
 
     if (hasCountryDropdown) {
       // Try standard select
@@ -190,7 +196,11 @@ test.describe('URGENT: Add KvK to Contargo', () => {
     await page.waitForTimeout(500);
 
     // Identifier Value: 95944192
-    const valueInput = page.locator('input[name*="value"], input[placeholder*="value"], input[placeholder*="identifier"]').first();
+    const valueInput = page
+      .locator(
+        'input[name*="value"], input[placeholder*="value"], input[placeholder*="identifier"]'
+      )
+      .first();
     await valueInput.fill('95944192');
     console.log('✅ Identifier value set to 95944192');
 
@@ -203,7 +213,9 @@ test.describe('URGENT: Add KvK to Contargo', () => {
 
     // Step 8: Submit the form
     console.log('Step 8: Submit identifier form');
-    const submitButton = page.locator('button[type="submit"], button:has-text("Add"), button:has-text("Save")').last();
+    const submitButton = page
+      .locator('button[type="submit"], button:has-text("Add"), button:has-text("Save")')
+      .last();
     await submitButton.click();
     await page.waitForTimeout(3000);
     console.log('✅ Form submitted');
@@ -218,7 +230,9 @@ test.describe('URGENT: Add KvK to Contargo', () => {
     if (kvkAdded) {
       console.log('✅✅✅ SUCCESS! KvK 95944192 is now visible in Contargo identifiers!');
     } else {
-      console.warn('⚠️ KvK not immediately visible, but may have been added. Refreshing to verify...');
+      console.warn(
+        '⚠️ KvK not immediately visible, but may have been added. Refreshing to verify...'
+      );
 
       // Refresh the page to see if it persisted
       await page.reload({ waitUntil: 'networkidle' });

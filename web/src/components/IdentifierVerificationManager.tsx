@@ -130,7 +130,9 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
       // POST /v1/legal-entities/{legalEntityId}/kvk-verification
       //
       // Placeholder notification until backend is ready
-      notification.showWarning('Document upload feature requires backend API implementation. See code comments for details.');
+      notification.showWarning(
+        'Document upload feature requires backend API implementation. See code comments for details.'
+      );
 
       // Reload verification records
       setTimeout(() => {

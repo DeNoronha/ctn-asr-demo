@@ -36,7 +36,7 @@
 }
 
 .version-card .k-card-header {
-  background: linear-gradient(135deg, #003366 0%, #005A9C 100%);
+  background: linear-gradient(135deg, #003366 0%, #005a9c 100%);
   color: white;
   padding: 1.25rem;
   border-radius: 8px 8px 0 0;
@@ -92,14 +92,14 @@
 }
 
 .version-number {
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-weight: 600;
   color: #667eea;
   font-size: 1.1rem;
 }
 
 .commit-sha {
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   background: #e9ecef;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;

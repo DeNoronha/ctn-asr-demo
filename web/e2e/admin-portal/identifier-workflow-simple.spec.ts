@@ -16,7 +16,7 @@ import { expect, test } from '../../playwright/fixtures';
  * - Tags: production, smoke-test, identifiers
  */
 
-const TEST_KVK_NUMBER = '95944192';
+const _TEST_KVK_NUMBER = '95944192';
 
 test.describe('Production Smoke Test - Identifier Workflow', () => {
   let consoleErrors: string[] = [];
@@ -208,7 +208,9 @@ test.describe('Production Smoke Test - Identifier Workflow', () => {
           .isVisible({ timeout: 2000 })
           .catch(() => false);
 
-        console.log(`Form fields - Country: ${hasCountryField}, Type: ${hasTypeField}, Value: ${hasValueField}`);
+        console.log(
+          `Form fields - Country: ${hasCountryField}, Type: ${hasTypeField}, Value: ${hasValueField}`
+        );
 
         // Close dialog
         const cancelButton = page.getByRole('button', { name: /cancel/i }).first();

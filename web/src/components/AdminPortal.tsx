@@ -20,13 +20,13 @@ import About from './About';
 import AdminSidebar, { type MenuItem } from './AdminSidebar';
 import Dashboard from './Dashboard';
 import { EndpointManagement } from './EndpointManagement';
-import { ReviewTasks } from './ReviewTasks';
 import LanguageSwitcher from './LanguageSwitcher';
 import LoadingSpinner from './LoadingSpinner';
 import { MemberDetailView } from './MemberDetailView';
 import MemberForm from './MemberForm';
 import MembersGrid from './MembersGrid';
 import NewslettersGrid from './NewslettersGrid';
+import { ReviewTasks } from './ReviewTasks';
 import Settings from './Settings';
 import SubscriptionsGrid from './SubscriptionsGrid';
 import TasksGrid from './TasksGrid';
@@ -56,9 +56,12 @@ const AdminPortal: React.FC = () => {
     loadMembersData();
   }, []);
 
-  const loadMembersData = async (page: number = 1, pageSize: number = 20) => {
+  const loadMembersData = async (page = 1, pageSize = 20) => {
     try {
-      const result = await loadMembers(() => api.getMembers(page, pageSize)) as { data: Member[]; total: number };
+      const result = (await loadMembers(() => api.getMembers(page, pageSize))) as {
+        data: Member[];
+        total: number;
+      };
       setMembers(result.data);
       setTotalMembers(result.total);
     } catch (_error) {
@@ -167,7 +170,12 @@ const AdminPortal: React.FC = () => {
               ) : (
                 <div className="empty-state">
                   <h3>{t('endpoints.title')}</h3>
-                  <p>{t('endpoints.selectMemberFirst', 'Select a member from the Members view to manage their endpoints.')}</p>
+                  <p>
+                    {t(
+                      'endpoints.selectMemberFirst',
+                      'Select a member from the Members view to manage their endpoints.'
+                    )}
+                  </p>
                   <Button
                     onClick={() => setSelectedView('members')}
                     themeColor="primary"
@@ -199,7 +207,12 @@ const AdminPortal: React.FC = () => {
               </div>
             ) : (
               <div className="empty-state">
-                <p>{t('tokens.noTokensGenerated', 'No tokens generated yet. Go to Members to issue a token.')}</p>
+                <p>
+                  {t(
+                    'tokens.noTokensGenerated',
+                    'No tokens generated yet. Go to Members to issue a token.'
+                  )}
+                </p>
                 <Button
                   onClick={() => setSelectedView('members')}
                   themeColor="primary"

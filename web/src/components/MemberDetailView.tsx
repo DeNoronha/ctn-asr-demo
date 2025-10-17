@@ -10,18 +10,14 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntity, type LegalEntityContact, type Member, api } from '../services/api';
-import {
-  type LegalEntityEndpoint,
-  type LegalEntityIdentifier,
-  apiV2,
-} from '../services/apiV2';
+import { type LegalEntityEndpoint, type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
 import { CompanyDetails } from './CompanyDetails';
 import { CompanyForm } from './CompanyForm';
 import { ContactsManager } from './ContactsManager';
 import { EndpointManagement } from './EndpointManagement';
-import { KvkDocumentUpload } from './KvkDocumentUpload';
 import { IdentifiersManager } from './IdentifiersManager';
+import { KvkDocumentUpload } from './KvkDocumentUpload';
 import { TokensManager } from './TokensManager';
 import './MemberDetailView.css';
 
@@ -118,7 +114,9 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
       });
 
       setLegalEntity(newEntity);
-      notification.showSuccess('Legal entity created successfully. You can now manage identifiers.');
+      notification.showSuccess(
+        'Legal entity created successfully. You can now manage identifiers.'
+      );
 
       // Reload data to ensure consistency
       const entityIdentifiers = await apiV2.getIdentifiers(member.legal_entity_id);
@@ -274,15 +272,18 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
                 <p className="empty-message" style={{ marginBottom: '20px' }}>
                   No legal entity record found for this member
                 </p>
-                <p style={{ color: '#6b7280', marginBottom: '30px', maxWidth: '600px', margin: '0 auto 30px' }}>
-                  A legal entity is required to manage business identifiers like KVK, LEI, EORI, and VAT numbers.
-                  You can create one now using this member's information.
-                </p>
-                <Button
-                  themeColor="primary"
-                  onClick={handleCreateLegalEntity}
-                  disabled={loading}
+                <p
+                  style={{
+                    color: '#6b7280',
+                    marginBottom: '30px',
+                    maxWidth: '600px',
+                    margin: '0 auto 30px',
+                  }}
                 >
+                  A legal entity is required to manage business identifiers like KVK, LEI, EORI, and
+                  VAT numbers. You can create one now using this member's information.
+                </p>
+                <Button themeColor="primary" onClick={handleCreateLegalEntity} disabled={loading}>
                   <Plus size={16} />
                   Create Legal Entity
                 </Button>
@@ -294,7 +295,8 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
                   This member has no legal entity ID configured
                 </p>
                 <p style={{ color: '#6b7280', maxWidth: '600px', margin: '0 auto' }}>
-                  Please contact your system administrator to link a legal entity to this member before managing identifiers.
+                  Please contact your system administrator to link a legal entity to this member
+                  before managing identifiers.
                 </p>
               </div>
             )}
