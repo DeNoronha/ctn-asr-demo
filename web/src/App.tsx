@@ -14,6 +14,7 @@ import { UnauthorizedPage } from './components/auth/Unauthorized';
 
 // Admin Portal
 import AdminPortal from './components/AdminPortal';
+import NotFound from './components/NotFound';
 
 // Import Kendo UI theme
 import '@progress/kendo-theme-default/dist/all.css';
@@ -41,8 +42,8 @@ function App() {
                 }
               />
 
-              {/* Default redirect */}
-              <Route path="*" element={<Navigate to="/" replace />} />
+              {/* 404 Not Found - Only for truly non-existent routes outside admin portal */}
+              <Route path="/404" element={<NotFound />} />
             </Routes>
           </NotificationProvider>
         </AuthProvider>

@@ -51,7 +51,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
   };
 
   return (
-    <div className={`admin-sidebar ${expanded ? '' : 'collapsed'}`}>
+    <nav className={`admin-sidebar ${expanded ? '' : 'collapsed'}`} aria-label="Main navigation">
       <div className="sidebar-nav">
         {items.map((item, index) => {
           if (item.separator) {
@@ -77,7 +77,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 };
 

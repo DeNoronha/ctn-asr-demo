@@ -274,7 +274,30 @@ const AdminPortal: React.FC = () => {
         return <Settings />;
 
       default:
-        return <div>{t('navigation.selectView', 'Select a view from the sidebar')}</div>;
+        return (
+          <div className="not-found-view" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '400px',
+            textAlign: 'center',
+            padding: '2rem'
+          }}>
+            <h2 style={{ fontSize: '3rem', color: '#667eea', marginBottom: '1rem' }}>404</h2>
+            <h3>{t('errors.pageNotFound', 'Page Not Found')}</h3>
+            <p style={{ color: '#4a5568', marginBottom: '2rem' }}>
+              {t('errors.pageNotFoundMessage', 'The view you\'re looking for doesn\'t exist.')}
+            </p>
+            <Button
+              themeColor="primary"
+              onClick={() => setSelectedView('dashboard')}
+              aria-label={t('navigation.dashboard')}
+            >
+              {t('common.goToDashboard', 'Go to Dashboard')}
+            </Button>
+          </div>
+        );
     }
   };
 
