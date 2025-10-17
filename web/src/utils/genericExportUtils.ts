@@ -19,7 +19,7 @@ export interface GenericExportOptions {
 /**
  * Export any data to PDF
  */
-export const exportGenericToPDF = <T extends Record<string, any>>(
+export const exportGenericToPDF = <T extends Record<string, unknown>>(
   data: T[],
   options: GenericExportOptions
 ) => {
@@ -123,7 +123,7 @@ export const exportGenericToPDF = <T extends Record<string, any>>(
 /**
  * Export any data to CSV
  */
-export const exportGenericToCSV = <T extends Record<string, any>>(
+export const exportGenericToCSV = <T extends Record<string, unknown>>(
   data: T[],
   columns: Array<{ field: string; header: string }>,
   filename?: string
@@ -182,7 +182,7 @@ export const exportGenericToCSV = <T extends Record<string, any>>(
 /**
  * Format value for display (helper function)
  */
-export const formatValueForExport = (value: any): string => {
+export const formatValueForExport = (value: unknown): string => {
   if (value === null || value === undefined) {
     return '';
   }
