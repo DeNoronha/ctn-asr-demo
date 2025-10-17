@@ -112,7 +112,7 @@ export const Support: React.FC = () => {
                 borderRadius: '50%',
                 background: '#10b981',
               }}
-            ></div>
+            />
             <span style={{ fontWeight: 600, color: '#065f46' }}>All Systems Operational</span>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--ctn-text-light)' }}>

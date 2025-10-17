@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Vite Migration Verification - Member Portal
@@ -18,7 +18,6 @@ import { test, expect } from '@playwright/test';
 const MEMBER_PORTAL_URL = 'https://calm-pebble-043b2db03.1.azurestaticapps.net';
 
 test.describe('Member Portal - Vite Migration Verification', () => {
-
   test.beforeEach(async ({ page }) => {
     // Clear console logs before each test
     await page.goto(MEMBER_PORTAL_URL);
@@ -44,9 +43,10 @@ test.describe('Member Portal - Vite Migration Verification', () => {
     expect(page.url()).toContain(MEMBER_PORTAL_URL);
 
     // Check for critical console errors
-    const criticalErrors = consoleErrors.filter(err =>
-      !err.includes('DevTools') && // Ignore DevTools errors
-      !err.includes('extension') // Ignore browser extension errors
+    const criticalErrors = consoleErrors.filter(
+      (err) =>
+        !err.includes('DevTools') && // Ignore DevTools errors
+        !err.includes('extension') // Ignore browser extension errors
     );
 
     expect(criticalErrors, `Console errors found: ${criticalErrors.join(', ')}`).toHaveLength(0);
@@ -80,7 +80,7 @@ test.describe('Member Portal - Vite Migration Verification', () => {
       version: versionData.version,
       commitSha: versionData.commitSha,
       buildNumber: versionData.buildNumber,
-      timestamp: versionData.timestamp
+      timestamp: versionData.timestamp,
     });
   });
 
@@ -96,10 +96,11 @@ test.describe('Member Portal - Vite Migration Verification', () => {
     await page.waitForLoadState('networkidle');
 
     // Filter out expected failures (e.g., browser extensions)
-    const criticalFailures = failedRequests.filter(url =>
-      !url.includes('chrome-extension://') &&
-      !url.includes('moz-extension://') &&
-      !url.includes('safari-extension://')
+    const criticalFailures = failedRequests.filter(
+      (url) =>
+        !url.includes('chrome-extension://') &&
+        !url.includes('moz-extension://') &&
+        !url.includes('safari-extension://')
     );
 
     expect(criticalFailures, `Failed requests: ${criticalFailures.join(', ')}`).toHaveLength(0);
@@ -109,7 +110,9 @@ test.describe('Member Portal - Vite Migration Verification', () => {
     expect(faviconResponse?.status()).toBe(200);
   });
 
-  test('should have environment variables correctly embedded (no "undefined")', async ({ page }) => {
+  test('should have environment variables correctly embedded (no "undefined")', async ({
+    page,
+  }) => {
     await page.goto(MEMBER_PORTAL_URL);
 
     // Check page source for "undefined" environment variable placeholders
@@ -137,7 +140,7 @@ test.describe('Member Portal - Vite Migration Verification', () => {
 
     // Check if main navigation or header is present
     // Note: Adjust selectors based on your actual app structure
-    const hasNavigation = await page.locator('nav, header, [role="navigation"]').count() > 0;
+    const hasNavigation = (await page.locator('nav, header, [role="navigation"]').count()) > 0;
     expect(hasNavigation).toBe(true);
 
     console.log('Navigation elements found on page');
@@ -149,10 +152,7 @@ test.describe('Member Portal - Vite Migration Verification', () => {
 
     // Test that navigation works (adjust selectors based on your app)
     // Example: Try navigating to different routes
-    const routes = [
-      MEMBER_PORTAL_URL,
-      `${MEMBER_PORTAL_URL}/about`
-    ];
+    const routes = [MEMBER_PORTAL_URL, `${MEMBER_PORTAL_URL}/about`];
 
     for (const route of routes) {
       const response = await page.goto(route);
@@ -186,7 +186,7 @@ test.describe('Member Portal - Vite Migration Verification', () => {
     console.log('Security Headers:', {
       csp: headers?.['content-security-policy'],
       xFrameOptions: headers?.['x-frame-options'],
-      xContentTypeOptions: headers?.['x-content-type-options']
+      xContentTypeOptions: headers?.['x-content-type-options'],
     });
 
     // Verify response is successful
@@ -195,7 +195,6 @@ test.describe('Member Portal - Vite Migration Verification', () => {
 });
 
 test.describe('Member Portal - Vite Build Verification', () => {
-
   test('should load bundled JavaScript without errors', async ({ page }) => {
     const scriptErrors: string[] = [];
 
@@ -243,7 +242,6 @@ test.describe('Member Portal - Vite Build Verification', () => {
 });
 
 test.describe('Member Portal - Authentication Integration', () => {
-
   test('should redirect to login when accessing protected routes', async ({ page }) => {
     await page.goto(MEMBER_PORTAL_URL);
     await page.waitForLoadState('networkidle');
@@ -251,13 +249,14 @@ test.describe('Member Portal - Authentication Integration', () => {
     // Check if page redirects to Azure AD login or shows login UI
     // Note: This will vary based on your authentication implementation
     const currentUrl = page.url();
-    const hasLoginUI = currentUrl.includes('login') ||
-                       currentUrl.includes('microsoftonline.com') ||
-                       await page.locator('button:has-text("Sign in"), button:has-text("Login")').count() > 0;
+    const hasLoginUI =
+      currentUrl.includes('login') ||
+      currentUrl.includes('microsoftonline.com') ||
+      (await page.locator('button:has-text("Sign in"), button:has-text("Login")').count()) > 0;
 
     console.log('Authentication check:', {
       url: currentUrl,
-      hasLoginUI
+      hasLoginUI,
     });
 
     // Expect either redirect to Azure AD or login UI present

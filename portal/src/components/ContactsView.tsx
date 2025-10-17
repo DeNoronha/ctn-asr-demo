@@ -104,7 +104,7 @@ export const ContactsView: React.FC<ComponentProps> = ({
       setShowDialog(false);
       loadContacts();
       onDataChange();
-    } catch (error) {
+    } catch (_error) {
       onNotification('Failed to save contact', 'error');
     }
   };
@@ -124,7 +124,7 @@ export const ContactsView: React.FC<ComponentProps> = ({
       <div className="card">
         {loading ? (
           <div className="loading-container">
-            <div className="loading-spinner"></div>
+            <div className="loading-spinner" />
             <p>Loading contacts...</p>
           </div>
         ) : contacts.length === 0 ? (

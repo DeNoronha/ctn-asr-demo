@@ -33,7 +33,7 @@ export default defineConfig({
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'test-results/results.json' }],
-    ['list']
+    ['list'],
   ],
 
   // Shared settings for all the projects below
@@ -69,9 +69,7 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         // Additional Chrome-specific settings
         launchOptions: {
-          args: [
-            '--disable-blink-features=AutomationControlled',
-          ],
+          args: ['--disable-blink-features=AutomationControlled'],
         },
       },
     },

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Vite Migration Verification - Admin Portal
@@ -18,7 +18,6 @@ import { test, expect } from '@playwright/test';
 const ADMIN_PORTAL_URL = 'https://calm-tree-03352ba03.1.azurestaticapps.net';
 
 test.describe('Admin Portal - Vite Migration Verification', () => {
-
   test.beforeEach(async ({ page }) => {
     // Clear console logs before each test
     await page.goto(ADMIN_PORTAL_URL);
@@ -44,9 +43,10 @@ test.describe('Admin Portal - Vite Migration Verification', () => {
     expect(page.url()).toContain(ADMIN_PORTAL_URL);
 
     // Check for critical console errors
-    const criticalErrors = consoleErrors.filter(err =>
-      !err.includes('DevTools') && // Ignore DevTools errors
-      !err.includes('extension') // Ignore browser extension errors
+    const criticalErrors = consoleErrors.filter(
+      (err) =>
+        !err.includes('DevTools') && // Ignore DevTools errors
+        !err.includes('extension') // Ignore browser extension errors
     );
 
     expect(criticalErrors, `Console errors found: ${criticalErrors.join(', ')}`).toHaveLength(0);
@@ -80,7 +80,7 @@ test.describe('Admin Portal - Vite Migration Verification', () => {
       version: versionData.version,
       commitSha: versionData.commitSha,
       buildNumber: versionData.buildNumber,
-      timestamp: versionData.timestamp
+      timestamp: versionData.timestamp,
     });
   });
 
@@ -96,10 +96,11 @@ test.describe('Admin Portal - Vite Migration Verification', () => {
     await page.waitForLoadState('networkidle');
 
     // Filter out expected failures (e.g., browser extensions)
-    const criticalFailures = failedRequests.filter(url =>
-      !url.includes('chrome-extension://') &&
-      !url.includes('moz-extension://') &&
-      !url.includes('safari-extension://')
+    const criticalFailures = failedRequests.filter(
+      (url) =>
+        !url.includes('chrome-extension://') &&
+        !url.includes('moz-extension://') &&
+        !url.includes('safari-extension://')
     );
 
     expect(criticalFailures, `Failed requests: ${criticalFailures.join(', ')}`).toHaveLength(0);
@@ -109,7 +110,9 @@ test.describe('Admin Portal - Vite Migration Verification', () => {
     expect(faviconResponse?.status()).toBe(200);
   });
 
-  test('should have environment variables correctly embedded (no "undefined")', async ({ page }) => {
+  test('should have environment variables correctly embedded (no "undefined")', async ({
+    page,
+  }) => {
     await page.goto(ADMIN_PORTAL_URL);
 
     // Check page source for "undefined" environment variable placeholders
@@ -137,7 +140,7 @@ test.describe('Admin Portal - Vite Migration Verification', () => {
 
     // Check if main navigation or header is present
     // Note: Adjust selectors based on your actual app structure
-    const hasNavigation = await page.locator('nav, header, [role="navigation"]').count() > 0;
+    const hasNavigation = (await page.locator('nav, header, [role="navigation"]').count()) > 0;
     expect(hasNavigation).toBe(true);
 
     console.log('Navigation elements found on page');
@@ -183,7 +186,7 @@ test.describe('Admin Portal - Vite Migration Verification', () => {
     console.log('Security Headers:', {
       csp: headers?.['content-security-policy'],
       xFrameOptions: headers?.['x-frame-options'],
-      xContentTypeOptions: headers?.['x-content-type-options']
+      xContentTypeOptions: headers?.['x-content-type-options'],
     });
 
     // Verify response is successful
@@ -192,7 +195,6 @@ test.describe('Admin Portal - Vite Migration Verification', () => {
 });
 
 test.describe('Admin Portal - Vite Build Verification', () => {
-
   test('should load bundled JavaScript without errors', async ({ page }) => {
     const scriptErrors: string[] = [];
 

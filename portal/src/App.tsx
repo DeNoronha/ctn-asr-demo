@@ -104,9 +104,9 @@ function AppContent({ instance }: AppContentProps) {
 
       const data = await response.json();
       setMemberData(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error:', err);
-      setError(err.message || 'Failed to load member information');
+      setError(err instanceof Error ? err.message : 'Failed to load member information');
       showNotification('Failed to load member information', 'error');
     } finally {
       setLoading(false);
@@ -289,7 +289,7 @@ function AppContent({ instance }: AppContentProps) {
         <AuthenticatedTemplate>
           {loading && (
             <div className="loading-container">
-              <div className="loading-spinner"></div>
+              <div className="loading-spinner" />
               <p>Loading member data...</p>
             </div>
           )}

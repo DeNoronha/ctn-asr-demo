@@ -68,7 +68,7 @@ export const TokensView: React.FC<ComponentProps> = ({
       onNotification('Token generated successfully', 'success');
 
       setTimeout(() => loadTokens(), 1000);
-    } catch (error) {
+    } catch (_error) {
       onNotification('Failed to generate token', 'error');
     } finally {
       setGenerating(false);
@@ -122,7 +122,7 @@ export const TokensView: React.FC<ComponentProps> = ({
       <div className="card">
         {loading ? (
           <div className="loading-container">
-            <div className="loading-spinner"></div>
+            <div className="loading-spinner" />
             <p>Loading tokens...</p>
           </div>
         ) : tokens.length === 0 ? (

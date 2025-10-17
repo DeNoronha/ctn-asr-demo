@@ -52,8 +52,8 @@ export const Endpoints: React.FC<EndpointsProps> = ({
 
       const data = await response.json();
       setEndpoints(data.endpoints || []);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load endpoints');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load endpoints');
     } finally {
       setLoading(false);
     }

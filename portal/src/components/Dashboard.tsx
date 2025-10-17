@@ -72,7 +72,7 @@ export const Dashboard: React.FC<ComponentProps> = ({
   if (loading) {
     return (
       <div className="loading-container">
-        <div className="loading-spinner"></div>
+        <div className="loading-spinner" />
         <p>Loading dashboard...</p>
       </div>
     );

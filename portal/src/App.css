@@ -923,7 +923,7 @@ textarea.form-input {
   font-weight: 600;
   color: var(--ctn-dark-blue);
   margin-bottom: 0.5rem;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   word-break: break-all;
 }
 

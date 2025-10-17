@@ -66,7 +66,7 @@ export interface Token {
   issued_at: string;
   expires_at: string;
   revoked: boolean;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ComponentProps {

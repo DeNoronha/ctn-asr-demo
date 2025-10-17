@@ -134,7 +134,7 @@ export const EndpointsView: React.FC<ComponentProps> = ({
       <div className="card">
         {loading ? (
           <div className="loading-container">
-            <div className="loading-spinner"></div>
+            <div className="loading-spinner" />
             <p>Loading endpoints...</p>
           </div>
         ) : endpoints.length === 0 ? (

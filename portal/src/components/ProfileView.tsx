@@ -44,7 +44,7 @@ export const ProfileView: React.FC<ComponentProps> = ({
       onNotification('Profile updated successfully', 'success');
       setEditMode(false);
       onDataChange();
-    } catch (error) {
+    } catch (_error) {
       onNotification('Failed to update profile', 'error');
     } finally {
       setSaving(false);
