@@ -258,12 +258,12 @@ After completing a significant feature or update:
 **After TE completes testing**, invoke the TW agent to:
 
 1. **Update Documentation:**
-   - Move completed tasks from ROADMAP.md to docs/COMPLETED_ACTIONS.md
+   - Move completed tasks from ~/Desktop/ROADMAP.md to docs/COMPLETED_ACTIONS.md
    - Document any bugs found during testing
    - Update feature documentation if needed
 
 2. **Re-evaluate Priorities:**
-   - Assess remaining tasks in ROADMAP.md
+   - Assess remaining tasks in ~/Desktop/ROADMAP.md
    - Prioritize bug fixes discovered during testing
 
 3. **Verify Repository Structure:**
@@ -434,31 +434,34 @@ psql "$POSTGRES_CONNECTION_STRING"
 
 ### Technical Writer (TW) Agent Workflow - MANDATORY
 
-**CRITICAL:** The Technical Writer (TW) agent MUST be invoked automatically after completing ANY task from ROADMAP.md.
+**CRITICAL:** The Technical Writer (TW) agent MUST be invoked automatically after completing ANY task from ~/Desktop/ROADMAP.md.
+
+**ROADMAP Location:** `~/Desktop/ROADMAP.md` (synced across all devices for easy access)
 
 **TW Agent Responsibilities (Every Invocation):**
 
 1. **Move Completed Tasks:**
-   - Identify completed tasks from ROADMAP.md
+   - Identify completed tasks from ~/Desktop/ROADMAP.md
    - Move them to `docs/COMPLETED_ACTIONS.md` with today's date
    - Maintain chronological order (most recent first)
    - Use concise, clear descriptions
 
 2. **Re-evaluate Priorities:**
-   - Review remaining tasks in ROADMAP.md
+   - Review remaining tasks in ~/Desktop/ROADMAP.md
    - Re-assess priorities based on:
      - Security risks (CRITICAL)
      - Production stability (HIGH)
      - Code quality impact (MEDIUM)
      - Future enhancements (LOW)
-   - Reorganize ROADMAP.md if priorities have shifted
+   - Reorganize ~/Desktop/ROADMAP.md if priorities have shifted
    - Update "Last Updated" date
 
 3. **Verify Repository Structure:**
-   - **Root folder MUST contain ONLY 3 files:**
+   - **Root folder MUST contain ONLY 2 files:**
      - `README.md` - Main entry point
      - `CLAUDE.md` - Way of working (this file)
-     - `ROADMAP.md` - Pending actions
+   - **Desktop folder contains:**
+     - `ROADMAP.md` - Pending actions (synced across devices)
    - **ALL other markdown files MUST be in `docs/` folder:**
      - `docs/COMPLETED_ACTIONS.md` - Historical record
      - `docs/DEPLOYMENT_GUIDE.md`
@@ -474,17 +477,17 @@ psql "$POSTGRES_CONNECTION_STRING"
    - Verify markdown formatting is clean
 
 **When to Invoke TW (Automatically):**
-- ✅ **ALWAYS** after marking a ROADMAP.md task as complete
+- ✅ **ALWAYS** after marking a ~/Desktop/ROADMAP.md task as complete
 - ✅ **ALWAYS** after a significant work session ends
 - ✅ **ALWAYS** when asked to "update documentation"
 - ✅ **ALWAYS** before committing changes
 
 **TW Invocation Pattern:**
 ```
-User: "I've completed [task from ROADMAP.md]"
+User: "I've completed [task from ~/Desktop/ROADMAP.md]"
 Assistant: "Great! Let me invoke the Technical Writer (TW) agent to:
 1. Move this completed task to docs/COMPLETED_ACTIONS.md
-2. Re-evaluate remaining task priorities
+2. Re-evaluate remaining task priorities in ~/Desktop/ROADMAP.md
 3. Verify repository structure
 4. Update documentation links"
 ```
@@ -673,17 +676,19 @@ When a bug is reported, the TE agent will:
 - ✅ **ALWAYS** when documentation needs updating
 - ✅ **ALWAYS** before committing changes
 
+**ROADMAP Location:** `~/Desktop/ROADMAP.md` (synced across all devices)
+
 **Primary Responsibilities:**
-1. Move completed tasks from ROADMAP.md to `docs/COMPLETED_ACTIONS.md`
-2. Re-evaluate and reorganize ROADMAP.md priorities
-3. Enforce root folder structure (only 3 files: README.md, CLAUDE.md, ROADMAP.md)
+1. Move completed tasks from ~/Desktop/ROADMAP.md to `docs/COMPLETED_ACTIONS.md`
+2. Re-evaluate and reorganize ~/Desktop/ROADMAP.md priorities
+3. Enforce root folder structure (only 2 files: README.md, CLAUDE.md)
 4. Maintain clean `docs/` folder organization
 5. Update documentation cross-references
 
 **Capabilities:**
 - Tracks completed actions with dates
-- Manages ROADMAP.md priorities (CRITICAL → HIGH → MEDIUM → LOW)
-- Enforces repository structure rules
+- Manages ~/Desktop/ROADMAP.md priorities (CRITICAL → HIGH → MEDIUM → LOW)
+- Enforces repository structure rules (ROADMAP.md on Desktop, not in repo)
 - Creates clear, concise technical documentation
 - Verifies all markdown files are in correct locations
 
@@ -1051,10 +1056,12 @@ The **Connected Trade Network Association Register (ASR)** is a member managemen
 
 ## Documentation Structure
 
-### Root Files (ONLY 3 Files Allowed)
+### Root Files (ONLY 2 Files Allowed)
 - **README.md** - Main entry point for the repository
-- **ROADMAP.md** - ALL pending actions (single source of truth)
 - **CLAUDE.md** - This file (way of working, agent registry, lessons learned)
+
+### Desktop Files (Synced Across Devices)
+- **~/Desktop/ROADMAP.md** - ALL pending actions (single source of truth, synced across devices)
 
 ### docs/ Folder (ALL Other Documentation)
 - `COMPLETED_ACTIONS.md` - Historical record of completed work (moved from root)
