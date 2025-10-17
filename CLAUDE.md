@@ -1,6 +1,6 @@
 # CLAUDE.md - CTN Association Register
 
-**Last Updated:** October 16, 2025 (Added BUG-010 lessons learned: Pipeline quality checks and version.json generation)
+**Last Updated:** October 17, 2025 (Added Vite migration lessons: loadEnv() vs process.env, define configuration, pipeline environment variables)
 
 ---
 
@@ -941,6 +941,79 @@ When a bug is reported, the TE agent will:
 - **Test both API and frontend** - don't assume frontend parses correctly just because API returns 200
 - Use browser DevTools Network tab to inspect actual API response structure
 - This pattern applies to all paginated endpoints: identifiers, contacts, endpoints, etc.
+
+### Vite loadEnv() vs Shell Environment Variables (October 17, 2025)
+**What Happened:** After Vite migration, authentication failed with "AADSTS90102: redirect_uri value must be a valid absolute URI" error. redirect_uri was undefined in production builds.
+**Why It Matters:** Broke authentication on both admin and member portals in production deployments, despite working locally with .env.local files.
+**Root Cause:**
+- Vite's `loadEnv()` function ONLY reads from .env files in the filesystem
+- Azure DevOps CI/CD pipelines set environment variables via shell (env: block in YAML)
+- `loadEnv()` cannot access shell environment variables, only filesystem .env files
+- Production builds had undefined values for all environment variables
+**How to Avoid:**
+- **Use `process.env` directly** to read shell environment variables in vite.config.ts:
+  ```typescript
+  // ❌ WRONG - loadEnv() only reads .env files
+  const env = loadEnv(mode, process.cwd(), '');
+  define: {
+    'process.env': env
+  }
+
+  // ✅ CORRECT - process.env reads shell variables
+  define: {
+    'process.env.REACT_APP_API_BASE_URL': JSON.stringify(process.env.REACT_APP_API_BASE_URL),
+    'process.env.REACT_APP_AZURE_CLIENT_ID': JSON.stringify(process.env.REACT_APP_AZURE_CLIENT_ID)
+  }
+  ```
+- Files fixed: `web/vite.config.ts`, `portal/vite.config.ts`
+- **Don't mix approaches** - either use .env files (local dev) OR shell variables (CI/CD), not both
+- Azure DevOps pipelines set variables via `env:` block, which are shell environment variables
+- Vite 7.1.10 requires Node.js 20.x - update pipeline Node.js version accordingly
+
+### Vite define Configuration for Environment Variables (October 17, 2025)
+**What Happened:** Attempted to replace entire `process.env` object with `define: { 'process.env': {...} }` which caused issues with Vite's environment variable handling.
+**Why It Matters:** Replacing the entire process.env object can break Vite's internal variable resolution and cause unexpected behavior in production builds.
+**How to Avoid:**
+- **Define individual environment variables** instead of replacing the entire object:
+  ```typescript
+  // ❌ WRONG - Replacing entire process.env object
+  define: {
+    'process.env': {
+      REACT_APP_API_BASE_URL: JSON.stringify(process.env.REACT_APP_API_BASE_URL)
+    }
+  }
+
+  // ✅ CORRECT - Define individual variables
+  define: {
+    'process.env.REACT_APP_API_BASE_URL': JSON.stringify(process.env.REACT_APP_API_BASE_URL),
+    'process.env.REACT_APP_AZURE_CLIENT_ID': JSON.stringify(process.env.REACT_APP_AZURE_CLIENT_ID)
+  }
+  ```
+- Use individual `'process.env.VAR_NAME': JSON.stringify(process.env.VAR_NAME)` entries
+- This ensures Vite can properly replace variable references during build
+- Prevents conflicts with Vite's own environment variable system
+
+### Azure DevOps Pipeline Environment Variables with Vite (October 17, 2025)
+**What Happened:** Environment variables set in Azure DevOps pipeline YAML weren't being read by Vite during build step.
+**Why It Matters:** Production builds had undefined configuration values, causing runtime errors and authentication failures.
+**How to Avoid:**
+- **Set variables in pipeline YAML env: block** for the build step:
+  ```yaml
+  - script: npm run build
+    env:
+      REACT_APP_API_BASE_URL: $(REACT_APP_API_BASE_URL)
+      REACT_APP_AZURE_CLIENT_ID: $(REACT_APP_AZURE_CLIENT_ID)
+  ```
+- **Read with process.env in vite.config.ts** during build:
+  ```typescript
+  define: {
+    'process.env.REACT_APP_API_BASE_URL': JSON.stringify(process.env.REACT_APP_API_BASE_URL)
+  }
+  ```
+- Pipeline variables set at job/stage level must be passed to script via `env:` block
+- Vite reads these during build time and embeds them in the bundle
+- Don't use `loadEnv()` for CI/CD pipeline variables - it only reads .env files
+- This pattern works for Azure DevOps, GitHub Actions, GitLab CI, etc.
 
 ---
 

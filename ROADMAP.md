@@ -1,6 +1,6 @@
 # CTN ASR Roadmap
 
-**Last Updated:** October 16, 2025 (Vite migration completed - all npm vulnerabilities resolved)
+**Last Updated:** October 17, 2025 (Vite migration completed with authentication fix - zero npm vulnerabilities)
 
 This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md) for historical record.
 
@@ -113,15 +113,15 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 ### Code Quality & Testing
 
 - [ ] **Vite Configuration Improvements** - Follow-up from Vite migration (Code Reviewer recommendations)
-  - **Priority:** P2
+  - **Priority:** P3 (downgraded from P2 - critical auth bug fixed)
   - **Tasks:**
-    - Fix environment variable undefined handling in web/vite.config.ts (add fallback values)
+    - ✅ Fixed environment variable undefined handling (CRITICAL auth bug resolved - Oct 17)
     - Create .gitignore for portal directory (currently missing)
     - Add NODE_ENV to portal/vite.config.ts for consistency with web
     - Consider environment variable validation in vite.config.ts
     - Update TypeScript build command to use `tsc --noEmit` for explicit type checking
-  - **Estimate:** 2 hours
-  - **Status:** Non-blocking improvements to enhance Vite setup
+  - **Estimate:** 1.5 hours (reduced from 2h - auth fix complete)
+  - **Status:** Non-blocking improvements to enhance Vite setup. Authentication now working correctly in production.
 
 - [ ] **Fix Biome code quality issues** - 185 errors + 92 warnings in web portal
   - **Priority:** P2
@@ -235,13 +235,13 @@ This file contains ALL pending actions. See [docs/COMPLETED_ACTIONS.md](./docs/C
 **By Priority:**
 - CRITICAL (P0): 3 tasks - Security issues requiring immediate attention
 - HIGH (P1-P2): 10 tasks - Backend integration blockers and bugs
-- MEDIUM: 15 tasks - Code quality, testing, monitoring improvements (includes Vite follow-up)
+- MEDIUM: 15 tasks - Code quality, testing, monitoring improvements (Vite auth bug fixed)
 - LOW: 21 tasks - Future enhancements and additional features
 
 **Estimated Time to Complete:**
 - CRITICAL: ~3.75 hours (npm vulnerabilities now resolved)
 - HIGH: ~28-33 hours
-- MEDIUM: ~54-57 hours (includes Vite improvements and Biome fixes)
+- MEDIUM: ~53-56 hours (reduced from 54-57h - Vite auth fix complete)
 - LOW: ~70 hours
 
 ---
