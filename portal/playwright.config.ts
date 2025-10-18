@@ -12,7 +12,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 
 export default defineConfig({
-  testDir: './web/e2e',
+  testDir: './e2e',
 
   // Maximum time one test can run for
   timeout: 30 * 1000,
@@ -40,7 +40,7 @@ export default defineConfig({
   use: {
     // Base URL to use in actions like `await page.goto('/')`.
     // This can be overridden per test file or project
-    baseURL: process.env.BASE_URL || 'https://calm-tree-03352ba03.1.azurestaticapps.net',
+    baseURL: process.env.BASE_URL || 'https://calm-pebble-043b2db03.1.azurestaticapps.net',
 
     // Collect trace when retrying the failed test
     trace: 'on-first-retry',

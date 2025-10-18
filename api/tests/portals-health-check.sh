@@ -22,7 +22,7 @@ TESTS_PASSED=0
 TESTS_FAILED=0
 FAILED_TESTS=()
 
-# Function to test portal accessibility
+# Function to test portal accessibility and security headers
 test_portal() {
   local portal_name="$1"
   local url="$2"
@@ -31,13 +31,15 @@ test_portal() {
   echo "Testing: $portal_name"
   echo "URL: $url"
 
-  # Get response with timeout and follow redirects
-  response=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 30 "$url" 2>&1 || echo "CURL_ERROR")
+  # Get response with headers
+  temp_file=$(mktemp)
+  response=$(curl -s -D "$temp_file" -o /dev/null -w "%{http_code}" -L --max-time 30 "$url" 2>&1 || echo "CURL_ERROR")
 
   if [ "$response" = "CURL_ERROR" ]; then
     echo -e "${RED}✗ FAILED${NC} - Curl error (timeout or connection failed)"
     TESTS_FAILED=$((TESTS_FAILED + 1))
     FAILED_TESTS+=("$portal_name - Curl error")
+    rm -f "$temp_file"
     echo ""
     return 1
   fi
@@ -50,6 +52,41 @@ test_portal() {
     TESTS_FAILED=$((TESTS_FAILED + 1))
     FAILED_TESTS+=("$portal_name - HTTP $response instead of $expected_status")
   fi
+
+  # Check security headers
+  echo "  Security Headers:"
+
+  # X-Content-Type-Options
+  if grep -qi "X-Content-Type-Options: nosniff" "$temp_file"; then
+    echo -e "    ${GREEN}✓${NC} X-Content-Type-Options: nosniff"
+  else
+    echo -e "    ${YELLOW}⚠${NC} X-Content-Type-Options: nosniff (missing or incorrect)"
+  fi
+
+  # X-Frame-Options
+  if grep -qi "X-Frame-Options: DENY" "$temp_file"; then
+    echo -e "    ${GREEN}✓${NC} X-Frame-Options: DENY"
+  elif grep -qi "X-Frame-Options: SAMEORIGIN" "$temp_file"; then
+    echo -e "    ${GREEN}✓${NC} X-Frame-Options: SAMEORIGIN"
+  else
+    echo -e "    ${YELLOW}⚠${NC} X-Frame-Options (missing)"
+  fi
+
+  # Strict-Transport-Security
+  if grep -qi "Strict-Transport-Security" "$temp_file"; then
+    echo -e "    ${GREEN}✓${NC} Strict-Transport-Security present"
+  else
+    echo -e "    ${YELLOW}⚠${NC} Strict-Transport-Security (missing)"
+  fi
+
+  # Content-Security-Policy
+  if grep -qi "Content-Security-Policy" "$temp_file"; then
+    echo -e "    ${GREEN}✓${NC} Content-Security-Policy present"
+  else
+    echo -e "    ${YELLOW}⚠${NC} Content-Security-Policy (missing)"
+  fi
+
+  rm -f "$temp_file"
   echo ""
 }
 
@@ -95,12 +132,12 @@ echo "=========================================="
 test_portal "Member Portal - Home" "https://calm-pebble-043b2db03.1.azurestaticapps.net/"
 test_portal "Member Portal - NotFound Page" "https://calm-pebble-043b2db03.1.azurestaticapps.net/nonexistent"
 
-# Test Documentation Portal
+# Test Orchestrator Portal
 echo "=========================================="
-echo "3. DOCUMENTATION PORTAL"
+echo "3. ORCHESTRATOR PORTAL"
 echo "=========================================="
-test_portal "Documentation Portal - Home" "https://ambitious-sky-098ea8e03.2.azurestaticapps.net/"
-test_portal "Documentation Portal - Support" "https://ambitious-sky-098ea8e03.2.azurestaticapps.net/support"
+test_portal "Orchestrator Portal - Home" "https://ambitious-sky-098ea8e03.2.azurestaticapps.net/"
+test_portal "Orchestrator Portal - NotFound Page" "https://ambitious-sky-098ea8e03.2.azurestaticapps.net/nonexistent"
 
 # Test API Health
 echo "=========================================="
