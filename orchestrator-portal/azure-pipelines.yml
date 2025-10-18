@@ -31,6 +31,42 @@ stages:
         pool:
           vmImage: 'ubuntu-latest'
         steps:
+          - script: |
+              echo "🔍 Validating required environment variables..."
+              EXIT_CODE=0
+
+              # Check VITE_API_BASE_URL
+              if [ -z "$(VITE_API_BASE_URL)" ]; then
+                echo "❌ ERROR: VITE_API_BASE_URL is not set"
+                EXIT_CODE=1
+              else
+                echo "✅ VITE_API_BASE_URL is set"
+              fi
+
+              # Check VITE_KENDO_LICENSE_KEY (optional but warn if missing)
+              if [ -z "$(VITE_KENDO_LICENSE_KEY)" ]; then
+                echo "⚠️ WARNING: VITE_KENDO_LICENSE_KEY is not set (Kendo will show trial banner)"
+              else
+                echo "✅ VITE_KENDO_LICENSE_KEY is set"
+              fi
+
+              if [ $EXIT_CODE -ne 0 ]; then
+                echo ""
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo "🚫 Build blocked - Missing required variables"
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo ""
+                echo "Please ensure the 'ctn-orchestrator-portal-variables' variable group contains:"
+                echo "  - VITE_API_BASE_URL (required)"
+                echo "  - VITE_KENDO_LICENSE_KEY (optional)"
+                echo ""
+                exit 1
+              fi
+
+              echo ""
+              echo "✅ All required variables validated"
+            displayName: 'Validate environment variables'
+
           - task: NodeTool@0
             displayName: 'Install Node.js $(NODE_VERSION)'
             inputs:
@@ -73,6 +109,24 @@ stages:
         pool:
           vmImage: 'ubuntu-latest'
         steps:
+          - script: |
+              echo "🔍 Validating deployment token..."
+
+              if [ -z "$(AZURE_STATIC_WEB_APPS_API_TOKEN)" ]; then
+                echo "❌ ERROR: AZURE_STATIC_WEB_APPS_API_TOKEN is not set"
+                echo ""
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo "🚫 Deployment blocked - Missing deployment token"
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo ""
+                echo "Please add AZURE_STATIC_WEB_APPS_API_TOKEN to the 'ctn-orchestrator-portal-variables' variable group"
+                echo ""
+                exit 1
+              fi
+
+              echo "✅ Deployment token validated"
+            displayName: 'Validate deployment token'
+
           - download: current
             artifact: orchestrator-portal
             displayName: 'Download build artifacts'

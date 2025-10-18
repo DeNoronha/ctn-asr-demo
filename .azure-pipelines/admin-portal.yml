@@ -14,9 +14,12 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
+  - group: ctn-admin-portal-variables
   # Key Vault configuration
-  keyVaultName: 'kv-ctn-demo-asr-dev' # Update based on environment
-  azureSubscription: 'Azure-CTN-ASR-ServiceConnection' # Azure service connection name
+  - name: keyVaultName
+    value: 'kv-ctn-demo-asr-dev'
+  - name: azureSubscription
+    value: 'Azure-CTN-ASR-ServiceConnection'
 
 steps:
   # Fetch secrets from Azure Key Vault
@@ -32,6 +35,71 @@ steps:
     displayName: 'Install Node.js 20.x'
     inputs:
       versionSpec: '20.x'
+
+  - script: |
+      echo "🔍 Validating required environment variables..."
+      EXIT_CODE=0
+
+      # Check Azure AD configuration
+      if [ -z "$(REACT_APP_AZURE_CLIENT_ID)" ]; then
+        echo "❌ ERROR: REACT_APP_AZURE_CLIENT_ID is not set"
+        EXIT_CODE=1
+      else
+        echo "✅ REACT_APP_AZURE_CLIENT_ID is set"
+      fi
+
+      if [ -z "$(REACT_APP_AZURE_TENANT_ID)" ]; then
+        echo "❌ ERROR: REACT_APP_AZURE_TENANT_ID is not set"
+        EXIT_CODE=1
+      else
+        echo "✅ REACT_APP_AZURE_TENANT_ID is set"
+      fi
+
+      # Check API and redirect configuration
+      if [ -z "$(REACT_APP_REDIRECT_URI)" ]; then
+        echo "❌ ERROR: REACT_APP_REDIRECT_URI is not set"
+        EXIT_CODE=1
+      else
+        echo "✅ REACT_APP_REDIRECT_URI is set"
+      fi
+
+      if [ -z "$(REACT_APP_API_URL)" ]; then
+        echo "❌ ERROR: REACT_APP_API_URL is not set"
+        EXIT_CODE=1
+      else
+        echo "✅ REACT_APP_API_URL is set"
+      fi
+
+      # Check deployment token (from Key Vault)
+      if [ -z "$(AZURE-STATIC-WEB-APPS-API-TOKEN-ADMIN)" ]; then
+        echo "❌ ERROR: AZURE-STATIC-WEB-APPS-API-TOKEN-ADMIN is not set"
+        echo "   (Check Key Vault secret is correctly referenced)"
+        EXIT_CODE=1
+      else
+        echo "✅ AZURE-STATIC-WEB-APPS-API-TOKEN-ADMIN is set"
+      fi
+
+      if [ $EXIT_CODE -ne 0 ]; then
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🚫 Build blocked - Missing required variables"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "Please ensure the 'ctn-admin-portal-variables' variable group contains:"
+        echo "  - REACT_APP_AZURE_CLIENT_ID"
+        echo "  - REACT_APP_AZURE_TENANT_ID"
+        echo "  - REACT_APP_REDIRECT_URI"
+        echo "  - REACT_APP_API_URL"
+        echo ""
+        echo "And Key Vault contains:"
+        echo "  - AZURE-STATIC-WEB-APPS-API-TOKEN-ADMIN"
+        echo ""
+        exit 1
+      fi
+
+      echo ""
+      echo "✅ All required variables validated"
+    displayName: 'Validate environment variables'
 
   - script: |
       node --version
@@ -107,10 +175,10 @@ steps:
     env:
       CI: false
       NODE_ENV: production
-      REACT_APP_AZURE_CLIENT_ID: 'd3037c11-a541-4f21-8862-8079137a0cde'
-      REACT_APP_AZURE_TENANT_ID: '598664e7-725c-4daa-bd1f-89c4ada717ff'
-      REACT_APP_REDIRECT_URI: 'https://calm-tree-03352ba03.1.azurestaticapps.net'
-      REACT_APP_API_URL: 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1'
+      REACT_APP_AZURE_CLIENT_ID: $(REACT_APP_AZURE_CLIENT_ID)
+      REACT_APP_AZURE_TENANT_ID: $(REACT_APP_AZURE_TENANT_ID)
+      REACT_APP_REDIRECT_URI: $(REACT_APP_REDIRECT_URI)
+      REACT_APP_API_URL: $(REACT_APP_API_URL)
 
   - task: AzureStaticWebApp@0
     displayName: 'Deploy to Azure Static Web Apps'
