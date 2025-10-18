@@ -1,7 +1,6 @@
 import axios from "axios";
 import type { Webhook } from "../types/webhook";
-
-const API_BASE_URL = "http://localhost:3001/api/v1";
+import { API_BASE_URL } from "../config/api";
 
 export const webhooksApi = {
 	getAll: async (tenantId: string) => {
