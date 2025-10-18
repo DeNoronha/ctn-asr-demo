@@ -30,7 +30,8 @@ mv .env.local.backup .env.local
 
 - **Admin Portal:** https://calm-tree-03352ba03.1.azurestaticapps.net
 - **Member Portal:** https://calm-pebble-043b2db03.1.azurestaticapps.net
-- **Orchestrator Portal:** Development build (local only)
+- **Documentation Portal:** https://ambitious-sky-098ea8e03.2.azurestaticapps.net
+- **Orchestrator Portal:** https://blue-dune-0353f1303.1.azurestaticapps.net (October 2025 - Production)
 - **API:** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
 - **Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
 - **Resource Group:** rg-ctn-demo-asr-dev
@@ -38,7 +39,7 @@ mv .env.local.backup .env.local
 
 ## Essential Documentation
 
-- **[ROADMAP.md](./ROADMAP.md)** - Next actions and priorities
+- **[~/Desktop/ROADMAP.md](~/Desktop/ROADMAP.md)** - Next actions and priorities (synced across devices)
 - **[CLAUDE.md](./CLAUDE.md)** - Way of working, agent registry, lessons learned
 - **[docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md)** - Historical record of completed work
 - **[docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)** - Deployment instructions
@@ -64,23 +65,27 @@ cd api && npm run build
 
 ## Project Structure
 
-This repository contains three portals and supporting infrastructure:
+This repository contains four portals and supporting infrastructure:
 
 - **`web/`** - Admin Portal (React 18 + TypeScript + Kendo React)
 - **`portal/`** - Member Portal (React 18 + TypeScript + Kendo React)
-- **`orchestrator-portal/`** - Orchestrator Portal (React 18 + TypeScript + Vite + Kendo React)
+- **`ctn-docs-portal/`** - Documentation Portal (Static site with markdown conversion)
+- **`orchestrator-portal/`** - Orchestrator Portal (React 18 + TypeScript + Vite + Kendo React + TanStack Query)
 - **`api/`** - Azure Functions API (Node.js 20 + TypeScript)
 - **`database/`** - PostgreSQL schema and migrations
 - **`infrastructure/`** - Azure infrastructure as code
 
 ## Technology Stack
 
-- **Frontend:** React 18 + TypeScript + Kendo React
-- **Build Tools:** Create React App (admin/member), Vite (orchestrator)
-- **Backend:** Azure Functions (Node.js 20)
-- **Database:** PostgreSQL (Azure)
+- **Frontend:** React 18 + TypeScript + Kendo React UI
+- **Build Tools:** Vite 7.1.10 (admin/member/orchestrator), Static HTML (documentation)
+- **State Management:** TanStack Query + Zustand (orchestrator), React Context (admin/member)
+- **Backend:** Azure Functions v4 (Node.js 20 + TypeScript)
+- **Database:** PostgreSQL 14 (Azure Flexible Server)
 - **Storage:** Azure Blob Storage
 - **AI:** Azure Document Intelligence
+- **Testing:** Playwright (E2E), Jest (unit)
+- **CI/CD:** Azure DevOps Pipelines
 
 ## Support
 
