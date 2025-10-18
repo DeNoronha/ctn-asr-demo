@@ -30,6 +30,7 @@ mv .env.local.backup .env.local
 
 - **Admin Portal:** https://calm-tree-03352ba03.1.azurestaticapps.net
 - **Member Portal:** https://calm-pebble-043b2db03.1.azurestaticapps.net
+- **Orchestrator Portal:** Development build (local only)
 - **API:** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
 - **Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
 - **Resource Group:** rg-ctn-demo-asr-dev
@@ -61,9 +62,21 @@ cd web && npm run build
 cd api && npm run build
 ```
 
+## Project Structure
+
+This repository contains three portals and supporting infrastructure:
+
+- **`web/`** - Admin Portal (React 18 + TypeScript + Kendo React)
+- **`portal/`** - Member Portal (React 18 + TypeScript + Kendo React)
+- **`orchestrator-portal/`** - Orchestrator Portal (React 18 + TypeScript + Vite + Kendo React)
+- **`api/`** - Azure Functions API (Node.js 20 + TypeScript)
+- **`database/`** - PostgreSQL schema and migrations
+- **`infrastructure/`** - Azure infrastructure as code
+
 ## Technology Stack
 
 - **Frontend:** React 18 + TypeScript + Kendo React
+- **Build Tools:** Create React App (admin/member), Vite (orchestrator)
 - **Backend:** Azure Functions (Node.js 20)
 - **Database:** PostgreSQL (Azure)
 - **Storage:** Azure Blob Storage

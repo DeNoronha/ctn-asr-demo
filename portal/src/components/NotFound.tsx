@@ -41,8 +41,8 @@ const NotFound: React.FC<NotFoundProps> = ({ onGoHome }) => {
         themeColor="primary"
         size="large"
         onClick={handleGoHome}
-        icon={() => <Home size={18} />}
       >
+        <Home size={18} style={{ marginRight: '0.5rem' }} />
         Go to Dashboard
       </Button>
     </div>

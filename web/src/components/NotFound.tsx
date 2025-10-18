@@ -21,16 +21,16 @@ const NotFound: React.FC = () => {
             themeColor="primary"
             size="large"
             onClick={() => navigate('/')}
-            icon={() => <Home size={18} />}
           >
+            <Home size={18} style={{ marginRight: '0.5rem' }} />
             Go to Dashboard
           </Button>
           <Button
             fillMode="outline"
             size="large"
             onClick={() => navigate(-1)}
-            icon={() => <Search size={18} />}
           >
+            <Search size={18} style={{ marginRight: '0.5rem' }} />
             Go Back
           </Button>
         </div>

@@ -148,7 +148,7 @@ const NewslettersGrid: React.FC = () => {
       { field: 'sent_at', header: 'Sent Date' },
     ];
 
-    exportGenericToPDF(newsletters, {
+    exportGenericToPDF(newsletters as unknown as Record<string, unknown>[], {
       title: 'CTN Newsletters',
       columns,
       orientation: 'landscape',
@@ -171,7 +171,7 @@ const NewslettersGrid: React.FC = () => {
     ];
 
     exportGenericToCSV(
-      newsletters,
+      newsletters as unknown as Record<string, unknown>[],
       columns,
       `CTN_Newsletters_${new Date().toISOString().split('T')[0]}.csv`
     );
