@@ -2,7 +2,42 @@
 
 A modern, real-time monitoring and management portal for Container Transport Network (CTN) orchestrations, built with React 18, TypeScript, and Kendo React UI.
 
-**Status:** Development Complete - Production Ready
+**Status:** ⚠️ **IN DEVELOPMENT - API NOT DEPLOYED**
+
+---
+
+## ⚠️ IMPORTANT - API Status
+
+This portal is **deployed to Azure** but requires Orchestrations API endpoints that are **not yet implemented in production**:
+
+**Missing Endpoints:**
+- `GET /api/v1/orchestrations` - List orchestrations
+- `GET /api/v1/orchestrations/:id` - Get orchestration details
+- `GET /api/v1/events` - List events
+- `GET /api/v1/webhooks` - List webhooks
+
+**Current API:** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
+
+**Portal URL:** https://blue-dune-0353f1303.1.azurestaticapps.net (deployed but will show empty due to missing API)
+
+### Options
+
+**Option 1: Use Mock API (Development Only)**
+```bash
+cd orchestrator-portal
+npm run mock-api:dev  # Starts mock API on http://localhost:3001
+npm run dev           # Starts portal on http://localhost:5173
+```
+
+**Option 2: Wait for API Implementation**
+- **Status:** Coming Soon
+- **Estimated Effort:** 8 hours to build orchestrations API backend
+- Portal is fully built and tested, just waiting for API deployment
+
+**Option 3: Build Orchestrations API**
+- Create new Azure Functions for orchestrations, events, and webhooks
+- Implement business logic for container transport orchestrations
+- Deploy to `func-ctn-demo-asr-dev`
 
 ---
 
