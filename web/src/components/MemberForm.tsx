@@ -13,6 +13,8 @@ import {
   formatOrgId,
   validateMemberForm,
 } from '../utils/validation';
+import { HelpTooltip } from './help/HelpTooltip';
+import { helpContent } from '../config/helpContent';
 import './MemberForm.css';
 
 interface MemberFormProps {
@@ -179,7 +181,10 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
           <h3>Organization Details</h3>
 
           <div className="form-field required">
-            <Label>Organization ID</Label>
+            <Label>
+              Organization ID
+              <HelpTooltip content={helpContent.orgId} dataTestId="org-id-help" />
+            </Label>
             <Input
               value={formData.org_id}
               onChange={(e) => handleFieldChange('org_id', e.value || '')}
@@ -194,7 +199,10 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
           </div>
 
           <div className="form-field required">
-            <Label>Legal Name</Label>
+            <Label>
+              Legal Name
+              <HelpTooltip content={helpContent.legalName} dataTestId="legal-name-help" />
+            </Label>
             <Input
               value={formData.legal_name}
               onChange={(e) => handleFieldChange('legal_name', e.value || '')}
@@ -209,7 +217,10 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
           </div>
 
           <div className="form-field required">
-            <Label>Domain</Label>
+            <Label>
+              Domain
+              <HelpTooltip content={helpContent.domain} dataTestId="domain-help" />
+            </Label>
             <Input
               value={formData.domain}
               onChange={(e) => handleFieldChange('domain', e.value || '')}
@@ -228,7 +239,10 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
           <h3>Optional Identifiers</h3>
 
           <div className="form-field">
-            <Label>LEI (Legal Entity Identifier)</Label>
+            <Label>
+              LEI (Legal Entity Identifier)
+              <HelpTooltip content={helpContent.lei} dataTestId="lei-help" />
+            </Label>
             <MaskedTextBox
               value={formData.lei}
               onChange={(e) => handleFieldChange('lei', e.value || '')}
@@ -243,7 +257,10 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
           </div>
 
           <div className="form-field">
-            <Label>KVK Number (Dutch Chamber of Commerce)</Label>
+            <Label>
+              KVK Number (Dutch Chamber of Commerce)
+              <HelpTooltip content={helpContent.kvk} dataTestId="kvk-help" />
+            </Label>
             <MaskedTextBox
               value={formData.kvk}
               onChange={(e) => handleFieldChange('kvk', e.value || '')}

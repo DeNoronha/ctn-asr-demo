@@ -6,6 +6,8 @@ import { Checkbox } from '@progress/kendo-react-inputs';
 // ContactForm.tsx - Form for creating/editing contacts
 import type React from 'react';
 import type { LegalEntityContact } from '../services/api';
+import { FieldLabel } from './help/FieldLabel';
+import { helpContent } from '../config/helpContent';
 import './ContactForm.css';
 
 interface ContactFormProps {
@@ -86,9 +88,30 @@ export const ContactForm: React.FC<ContactFormProps> = ({
           <fieldset className="k-form-fieldset">
             <legend>Contact Type</legend>
 
-            <Field name="contact_type" label="Type" component={DropDownList} data={contactTypes} />
+            <Field
+              name="contact_type"
+              label={() => (
+                <FieldLabel
+                  text="Type"
+                  helpText={helpContent.contactType}
+                  dataTestId="contact-type-help"
+                />
+              )}
+              component={DropDownList}
+              data={contactTypes}
+            />
 
-            <Field name="is_primary" label="Primary Contact" component={Checkbox} />
+            <Field
+              name="is_primary"
+              label={() => (
+                <FieldLabel
+                  text="Primary Contact"
+                  helpText={helpContent.isPrimaryContact}
+                  dataTestId="is-primary-help"
+                />
+              )}
+              component={Checkbox}
+            />
           </fieldset>
 
           <fieldset className="k-form-fieldset">
@@ -102,7 +125,14 @@ export const ContactForm: React.FC<ContactFormProps> = ({
 
             <Field
               name="email"
-              label="Email"
+              label={() => (
+                <FieldLabel
+                  text="Email"
+                  helpText={helpContent.emailFormat}
+                  required
+                  dataTestId="email-help"
+                />
+              )}
               component={Input}
               type="email"
               validator={emailValidator}
@@ -110,11 +140,28 @@ export const ContactForm: React.FC<ContactFormProps> = ({
             />
 
             <div className="form-row-group">
-              <Field name="phone" label="Phone" component={Input} placeholder="+31 20 123 4567" />
+              <Field
+                name="phone"
+                label={() => (
+                  <FieldLabel
+                    text="Phone"
+                    helpText={helpContent.contactPhone}
+                    dataTestId="phone-help"
+                  />
+                )}
+                component={Input}
+                placeholder="+31 20 123 4567"
+              />
 
               <Field
                 name="mobile"
-                label="Mobile"
+                label={() => (
+                  <FieldLabel
+                    text="Mobile"
+                    helpText={helpContent.contactMobile}
+                    dataTestId="mobile-help"
+                  />
+                )}
                 component={Input}
                 placeholder="+31 6 12 34 56 78"
               />
@@ -126,14 +173,26 @@ export const ContactForm: React.FC<ContactFormProps> = ({
 
             <Field
               name="job_title"
-              label="Job Title"
+              label={() => (
+                <FieldLabel
+                  text="Job Title"
+                  helpText={helpContent.jobTitle}
+                  dataTestId="job-title-help"
+                />
+              )}
               component={Input}
               placeholder="e.g., IT Manager, Operations Director"
             />
 
             <Field
               name="department"
-              label="Department"
+              label={() => (
+                <FieldLabel
+                  text="Department"
+                  helpText={helpContent.department}
+                  dataTestId="department-help"
+                />
+              )}
               component={Input}
               placeholder="e.g., IT, Operations, Finance"
             />
