@@ -1,9 +1,12 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Input, MaskedTextBox } from '@progress/kendo-react-inputs';
 import { Error, Hint, Label } from '@progress/kendo-react-labels';
-// MemberForm.tsx - Enhanced form with validation
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { StepperForm } from '../components/forms/StepperForm';
+import { HelpTooltip } from '../components/help/HelpTooltip';
+import { helpContent } from '../config/helpContent';
 import { useNotification } from '../contexts/NotificationContext';
 import {
   type MemberFormData,
@@ -13,59 +16,23 @@ import {
   formatOrgId,
   validateMemberForm,
 } from '../utils/validation';
-import { HelpTooltip } from './help/HelpTooltip';
-import { helpContent } from '../config/helpContent';
-import { ProgressiveSection } from './forms/ProgressiveSection';
-import './MemberForm.css';
 import '../styles/progressive-forms.css';
+import './MemberRegistrationWizard.css';
 
-interface MemberFormProps {
-  onSubmit: (data: MemberFormData) => Promise<void>;
-  onCancel: () => void;
-  initialData?: MemberFormData;
-}
-
-const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData }) => {
+export const MemberRegistrationWizard: React.FC = () => {
+  const navigate = useNavigate();
   const notification = useNotification();
-  const [formData, setFormData] = useState<MemberFormData>(
-    initialData || {
-      org_id: 'org:',
-      legal_name: '',
-      domain: '',
-      lei: '',
-      kvk: '',
-    }
-  );
+
+  const [formData, setFormData] = useState<MemberFormData>({
+    org_id: 'org:',
+    legal_name: '',
+    domain: '',
+    lei: '',
+    kvk: '',
+  });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDirty, setIsDirty] = useState(false);
-
-  // Auto-save draft to localStorage
-  useEffect(() => {
-    if (isDirty && !initialData) {
-      const draftKey = 'memberFormDraft';
-      localStorage.setItem(draftKey, JSON.stringify(formData));
-    }
-  }, [formData, isDirty, initialData]);
-
-  // Load draft on mount
-  useEffect(() => {
-    if (!initialData) {
-      const draftKey = 'memberFormDraft';
-      const draft = localStorage.getItem(draftKey);
-      if (draft) {
-        try {
-          const parsedDraft = JSON.parse(draft);
-          setFormData(parsedDraft);
-          notification.showInfo('Draft restored from previous session');
-        } catch (e) {
-          console.error('Failed to load draft', e);
-        }
-      }
-    }
-  }, [initialData, notification]);
 
   const handleFieldChange = (field: keyof MemberFormData, value: string) => {
     let formattedValue = value;
@@ -87,7 +54,6 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
     }
 
     setFormData((prev) => ({ ...prev, [field]: formattedValue }));
-    setIsDirty(true);
 
     // Clear error when user starts typing
     if (errors[field]) {
@@ -109,78 +75,76 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Mark all fields as touched
-    const allTouched = Object.keys(formData).reduce(
-      (acc, key) => {
-        acc[key] = true;
-        return acc;
-      },
-      {} as Record<string, boolean>
-    );
-    setTouched(allTouched);
-
-    // Validate
+  const validateStep1 = () => {
+    const requiredFields = ['org_id', 'legal_name', 'domain'];
     const validation = validateMemberForm(formData);
 
-    if (!validation.isValid) {
-      setErrors(validation.errors);
-      notification.showError('Please fix the errors before submitting');
-      return;
+    const stepErrors: Record<string, string> = {};
+    for (const field of requiredFields) {
+      if (validation.errors[field]) {
+        stepErrors[field] = validation.errors[field];
+      }
     }
 
-    setIsSubmitting(true);
+    setErrors(stepErrors);
+    setTouched((prev) => ({
+      ...prev,
+      org_id: true,
+      legal_name: true,
+      domain: true,
+    }));
 
+    if (Object.keys(stepErrors).length > 0) {
+      notification.showError('Please fix validation errors before proceeding');
+      return false;
+    }
+
+    return true;
+  };
+
+  const validateStep2 = () => {
+    // Optional identifiers - validate format if provided
+    const validation = validateMemberForm(formData);
+    const stepErrors: Record<string, string> = {};
+
+    if (formData.lei && validation.errors.lei) {
+      stepErrors.lei = validation.errors.lei;
+    }
+    if (formData.kvk && validation.errors.kvk) {
+      stepErrors.kvk = validation.errors.kvk;
+    }
+
+    setErrors(stepErrors);
+
+    if (Object.keys(stepErrors).length > 0) {
+      notification.showError('Please fix validation errors before proceeding');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleComplete = async (data: MemberFormData) => {
     try {
-      await onSubmit(formData);
-      // Clear draft on successful submit
-      localStorage.removeItem('memberFormDraft');
-      setIsDirty(false);
-    } catch (_error) {
-      // Error handling done by parent
-    } finally {
-      setIsSubmitting(false);
+      // TODO: Replace with actual API call
+      console.log('Submitting member registration:', data);
+      notification.showSuccess('Member registered successfully!');
+      navigate('/members');
+    } catch (error) {
+      console.error('Failed to register member:', error);
+      notification.showError('Failed to register member');
     }
   };
 
-  const handleReset = () => {
-    if (isDirty) {
-      if (
-        window.confirm('Are you sure you want to reset the form? Unsaved changes will be lost.')
-      ) {
-        setFormData({
-          org_id: 'org:',
-          legal_name: '',
-          domain: '',
-          lei: '',
-          kvk: '',
-        });
-        setErrors({});
-        setTouched({});
-        setIsDirty(false);
-        localStorage.removeItem('memberFormDraft');
-        notification.showInfo('Form reset');
-      }
-    }
-  };
-
-  const handleCancel = () => {
-    if (isDirty) {
-      if (window.confirm('You have unsaved changes. Are you sure you want to cancel?')) {
-        onCancel();
-      }
-    } else {
-      onCancel();
-    }
-  };
-
-  return (
-    <div className="member-form-container">
-      <form onSubmit={handleSubmit} className="member-form">
-        <div className="form-section">
-          <h3>Organization Details</h3>
+  const steps = [
+    {
+      label: 'Organization Details',
+      component: (
+        <div className="wizard-step">
+          <h2>Step 1: Organization Details</h2>
+          <p className="step-description">
+            Provide the basic information about the organization you want to register.
+          </p>
 
           <div className="form-field required">
             <Label>
@@ -236,12 +200,19 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
             <Hint>Primary domain name (e.g., company.com)</Hint>
           </div>
         </div>
+      ),
+      isValid: validateStep1,
+    },
+    {
+      label: 'Legal Identifiers',
+      component: (
+        <div className="wizard-step">
+          <h2>Step 2: Legal Identifiers (Optional)</h2>
+          <p className="step-description">
+            Add legal identifiers to verify the organization's identity. These are optional but
+            recommended.
+          </p>
 
-        <ProgressiveSection
-          title="Optional Identifiers"
-          storageKey="member-form-identifiers"
-          defaultExpanded={false}
-        >
           <div className="form-field">
             <Label>
               LEI (Legal Entity Identifier)
@@ -277,30 +248,80 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
             {touched.kvk && errors.kvk && <Error>{errors.kvk}</Error>}
             <Hint>8-digit number (optional)</Hint>
           </div>
-        </ProgressiveSection>
-
-        <div className="form-actions">
-          <Button type="submit" themeColor="primary" disabled={isSubmitting}>
-            {isSubmitting ? 'Submitting...' : initialData ? 'Update Member' : 'Register Member'}
-          </Button>
-          <Button type="button" onClick={handleCancel} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          {isDirty && !initialData && (
-            <Button type="button" fillMode="flat" onClick={handleReset} disabled={isSubmitting}>
-              Reset Form
-            </Button>
-          )}
         </div>
+      ),
+      isValid: validateStep2,
+    },
+    {
+      label: 'Review & Submit',
+      component: (
+        <div className="wizard-step">
+          <h2>Step 3: Review Your Information</h2>
+          <p className="step-description">
+            Please review the information below before submitting your registration.
+          </p>
 
-        {isDirty && (
-          <div className="form-status">
-            <small>💾 Draft auto-saved</small>
+          <div className="summary-section">
+            <h3>Organization Details</h3>
+            <dl className="summary-list">
+              <dt>Organization ID:</dt>
+              <dd>{formData.org_id}</dd>
+
+              <dt>Legal Name:</dt>
+              <dd>{formData.legal_name}</dd>
+
+              <dt>Domain:</dt>
+              <dd>{formData.domain}</dd>
+            </dl>
           </div>
-        )}
-      </form>
+
+          {(formData.lei || formData.kvk) && (
+            <div className="summary-section">
+              <h3>Legal Identifiers</h3>
+              <dl className="summary-list">
+                {formData.lei && (
+                  <>
+                    <dt>LEI:</dt>
+                    <dd>{formData.lei}</dd>
+                  </>
+                )}
+
+                {formData.kvk && (
+                  <>
+                    <dt>KVK Number:</dt>
+                    <dd>{formData.kvk}</dd>
+                  </>
+                )}
+              </dl>
+            </div>
+          )}
+
+          <div className="summary-actions">
+            <p className="summary-note">
+              By submitting this form, you confirm that the information provided is accurate and
+              complete.
+            </p>
+          </div>
+        </div>
+      ),
+      isValid: () => true,
+    },
+  ];
+
+  return (
+    <div className="member-registration-wizard">
+      <div className="wizard-header">
+        <h1>New Member Registration</h1>
+        <p>Complete the steps below to register a new member organization</p>
+      </div>
+
+      <StepperForm steps={steps} onComplete={handleComplete} formData={formData} />
+
+      <div className="wizard-footer">
+        <Button onClick={() => navigate('/members')} fillMode="flat">
+          Cancel Registration
+        </Button>
+      </div>
     </div>
   );
 };
-
-export default MemberForm;

@@ -1,0 +1,146 @@
+/* Member Registration Wizard Styles */
+
+.member-registration-wizard {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.wizard-header {
+  text-align: center;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #e1e1e1;
+}
+
+.wizard-header h1 {
+  color: #1a1a1a;
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.wizard-header p {
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.wizard-step {
+  padding: 16px 0;
+}
+
+.wizard-step h2 {
+  color: #1a1a1a;
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+}
+
+.step-description {
+  color: #6b7280;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.wizard-step .form-field {
+  margin-bottom: 24px;
+}
+
+.wizard-step .form-field.required label::after {
+  content: ' *';
+  color: #dc2626;
+}
+
+/* Summary View Styles */
+.summary-section {
+  background: #f9fafb;
+  border: 1px solid #e1e1e1;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.summary-section h3 {
+  color: #1a1a1a;
+  font-size: 1.25rem;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.summary-list {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 12px;
+  margin: 0;
+}
+
+.summary-list dt {
+  color: #6b7280;
+  font-weight: 600;
+  text-align: right;
+  padding-right: 16px;
+}
+
+.summary-list dd {
+  color: #1a1a1a;
+  margin: 0;
+  word-break: break-word;
+}
+
+.summary-actions {
+  margin-top: 24px;
+}
+
+.summary-note {
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  padding: 12px;
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  border-radius: 4px;
+}
+
+.wizard-footer {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e1e1e1;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .member-registration-wizard {
+    padding: 16px;
+  }
+
+  .wizard-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .wizard-step h2 {
+    font-size: 1.25rem;
+  }
+
+  .summary-list {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .summary-list dt {
+    text-align: left;
+    padding-right: 0;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .summary-list dd {
+    margin-bottom: 16px;
+    padding-left: 12px;
+  }
+}
+
+/* Accessibility */
+.wizard-step:focus-visible {
+  outline: 2px solid #ff6358;
+  outline-offset: 4px;
+}

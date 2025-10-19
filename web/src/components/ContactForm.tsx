@@ -8,7 +8,9 @@ import type React from 'react';
 import type { LegalEntityContact } from '../services/api';
 import { FieldLabel } from './help/FieldLabel';
 import { helpContent } from '../config/helpContent';
+import { ProgressiveSection } from './forms/ProgressiveSection';
 import './ContactForm.css';
+import '../styles/progressive-forms.css';
 
 interface ContactFormProps {
   contact: LegalEntityContact | null;
@@ -138,7 +140,13 @@ export const ContactForm: React.FC<ContactFormProps> = ({
               validator={emailValidator}
               required
             />
+          </fieldset>
 
+          <ProgressiveSection
+            title="Additional Contact Details (Optional)"
+            storageKey="contact-form-details"
+            defaultExpanded={false}
+          >
             <div className="form-row-group">
               <Field
                 name="phone"
@@ -166,10 +174,6 @@ export const ContactForm: React.FC<ContactFormProps> = ({
                 placeholder="+31 6 12 34 56 78"
               />
             </div>
-          </fieldset>
-
-          <fieldset className="k-form-fieldset">
-            <legend>Professional Information</legend>
 
             <Field
               name="job_title"
@@ -196,7 +200,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
               component={Input}
               placeholder="e.g., IT, Operations, Finance"
             />
-          </fieldset>
+          </ProgressiveSection>
 
           <div className="k-form-buttons">
             <Button type="submit" themeColor="primary" disabled={!formRenderProps.allowSubmit}>

@@ -24,7 +24,9 @@ import { ConfirmDialog } from './ConfirmDialog';
 import { EmptyState } from './EmptyState';
 import { HelpTooltip } from './help/HelpTooltip';
 import { helpContent } from '../config/helpContent';
+import { ConditionalField } from './forms/ConditionalField';
 import './IdentifiersManager.css';
+import '../styles/progressive-forms.css';
 
 interface IdentifiersManagerProps {
   legalEntityId: string;
@@ -718,43 +720,47 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
               )}
             </div>
 
-            <div className="form-field">
-              <label>Registry Name</label>
-              <Input
-                value={formData.registry_name || ''}
-                onChange={(e) => setFormData({ ...formData, registry_name: e.value })}
-                placeholder="Auto-populated based on identifier type"
-              />
-              <span className="field-hint">Auto-populated when identifier type is selected</span>
-            </div>
+            <ConditionalField show={!!formData.identifier_type}>
+              <div className="form-field">
+                <label>Registry Name</label>
+                <Input
+                  value={formData.registry_name || ''}
+                  onChange={(e) => setFormData({ ...formData, registry_name: e.value })}
+                  placeholder="Auto-populated based on identifier type"
+                />
+                <span className="field-hint">Auto-populated when identifier type is selected</span>
+              </div>
 
-            <div className="form-field">
-              <label>Registry URL</label>
-              <Input
-                value={formData.registry_url || ''}
-                onChange={(e) => setFormData({ ...formData, registry_url: e.value })}
-                placeholder="Auto-populated based on identifier type"
-              />
-              <span className="field-hint">Auto-populated when identifier type is selected</span>
-            </div>
+              <div className="form-field">
+                <label>Registry URL</label>
+                <Input
+                  value={formData.registry_url || ''}
+                  onChange={(e) => setFormData({ ...formData, registry_url: e.value })}
+                  placeholder="Auto-populated based on identifier type"
+                />
+                <span className="field-hint">Auto-populated when identifier type is selected</span>
+              </div>
+            </ConditionalField>
 
-            <div className="form-field">
-              <label>Validation Status</label>
-              <DropDownList
-                data={VALIDATION_STATUSES}
-                value={formData.validation_status}
-                onChange={(e) => setFormData({ ...formData, validation_status: e.value })}
-              />
-            </div>
+            <ConditionalField show={!!formData.identifier_value && !!formData.identifier_type}>
+              <div className="form-field">
+                <label>Validation Status</label>
+                <DropDownList
+                  data={VALIDATION_STATUSES}
+                  value={formData.validation_status}
+                  onChange={(e) => setFormData({ ...formData, validation_status: e.value })}
+                />
+              </div>
 
-            <div className="form-field">
-              <label>Verification Notes</label>
-              <Input
-                value={formData.verification_notes || ''}
-                onChange={(e) => setFormData({ ...formData, verification_notes: e.value })}
-                placeholder="Any notes about verification"
-              />
-            </div>
+              <div className="form-field">
+                <label>Verification Notes</label>
+                <Input
+                  value={formData.verification_notes || ''}
+                  onChange={(e) => setFormData({ ...formData, verification_notes: e.value })}
+                  placeholder="Any notes about verification"
+                />
+              </div>
+            </ConditionalField>
           </div>
 
           <DialogActionsBar>
