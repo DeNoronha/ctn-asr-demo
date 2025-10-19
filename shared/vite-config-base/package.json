@@ -1,0 +1,17 @@
+{
+  "name": "@ctn-asr/vite-config-base",
+  "version": "1.0.0",
+  "description": "Shared Vite configuration for CTN ASR portals",
+  "main": "index.ts",
+  "type": "module",
+  "keywords": ["vite", "config", "shared"],
+  "author": "CTN ASR Team",
+  "license": "UNLICENSED",
+  "private": true,
+  "peerDependencies": {
+    "vite": "^7.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "vite-plugin-svgr": "^4.0.0",
+    "vite-tsconfig-paths": "^5.0.0"
+  }
+}

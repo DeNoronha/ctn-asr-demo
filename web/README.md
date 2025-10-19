@@ -2,6 +2,15 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Configuration
+
+This portal uses a **shared Vite configuration** located in `../shared/vite-config-base/`. This centralized approach:
+- Eliminates configuration duplication across portals
+- Ensures consistency in build settings and plugins
+- Simplifies maintenance
+
+For more details, see [shared/vite-config-base/README.md](../shared/vite-config-base/README.md).
+
 ## Available Scripts
 
 ### `npm run build`
