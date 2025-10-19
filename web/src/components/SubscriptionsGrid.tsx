@@ -29,7 +29,7 @@ interface Subscription {
   created_at: string;
 }
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:7071/api';
+const API_BASE_URL = process.env.VITE_API_URL || 'http://localhost:7071/api';
 
 const SubscriptionsGrid: React.FC = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);

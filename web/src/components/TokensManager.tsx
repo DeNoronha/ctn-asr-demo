@@ -34,7 +34,7 @@ interface TokensManagerProps {
 }
 
 const API_BASE =
-  process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
+  process.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
 
 export const TokensManager: React.FC<TokensManagerProps> = ({
   legalEntityId,

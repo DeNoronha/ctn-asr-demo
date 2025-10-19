@@ -5,11 +5,11 @@ import viteTsconfigPaths from 'vite-tsconfig-paths';
 
 // Validate required environment variables
 const requiredEnvVars = [
-  'REACT_APP_AAD_CLIENT_ID',
-  'REACT_APP_AAD_AUTHORITY',
-  'REACT_APP_AAD_REDIRECT_URI',
-  'REACT_APP_API_CLIENT_ID',
-  'REACT_APP_API_BASE_URL',
+  'VITE_AAD_CLIENT_ID',
+  'VITE_AAD_AUTHORITY',
+  'VITE_AAD_REDIRECT_URI',
+  'VITE_API_CLIENT_ID',
+  'VITE_API_BASE_URL',
 ];
 
 const missingEnvVars = requiredEnvVars.filter((varName) => !process.env[varName]);
@@ -38,21 +38,21 @@ export default defineConfig({
     sourcemap: true,
   },
   define: {
-    // For compatibility with CRA environment variables
+    // Vite environment variables
     // Use process.env directly to read shell environment variables from Azure DevOps
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
-    'process.env.REACT_APP_AAD_CLIENT_ID': JSON.stringify(
-      process.env.REACT_APP_AAD_CLIENT_ID || ''
+    'process.env.VITE_AAD_CLIENT_ID': JSON.stringify(
+      process.env.VITE_AAD_CLIENT_ID || ''
     ),
-    'process.env.REACT_APP_AAD_AUTHORITY': JSON.stringify(
-      process.env.REACT_APP_AAD_AUTHORITY || ''
+    'process.env.VITE_AAD_AUTHORITY': JSON.stringify(
+      process.env.VITE_AAD_AUTHORITY || ''
     ),
-    'process.env.REACT_APP_AAD_REDIRECT_URI': JSON.stringify(
-      process.env.REACT_APP_AAD_REDIRECT_URI || ''
+    'process.env.VITE_AAD_REDIRECT_URI': JSON.stringify(
+      process.env.VITE_AAD_REDIRECT_URI || ''
     ),
-    'process.env.REACT_APP_API_CLIENT_ID': JSON.stringify(
-      process.env.REACT_APP_API_CLIENT_ID || ''
+    'process.env.VITE_API_CLIENT_ID': JSON.stringify(
+      process.env.VITE_API_CLIENT_ID || ''
     ),
-    'process.env.REACT_APP_API_BASE_URL': JSON.stringify(process.env.REACT_APP_API_BASE_URL || ''),
+    'process.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL || ''),
   },
 });

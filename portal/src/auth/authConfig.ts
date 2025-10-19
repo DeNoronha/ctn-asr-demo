@@ -2,9 +2,9 @@ import type { Configuration, PopupRequest } from '@azure/msal-browser';
 
 export const msalConfig: Configuration = {
   auth: {
-    clientId: process.env.REACT_APP_AAD_CLIENT_ID || '',
-    authority: process.env.REACT_APP_AAD_AUTHORITY || '',
-    redirectUri: process.env.REACT_APP_AAD_REDIRECT_URI || window.location.origin,
+    clientId: process.env.VITE_AAD_CLIENT_ID || '',
+    authority: process.env.VITE_AAD_AUTHORITY || '',
+    redirectUri: process.env.VITE_AAD_REDIRECT_URI || window.location.origin,
     postLogoutRedirectUri: window.location.origin,
   },
   cache: {
@@ -18,5 +18,5 @@ export const loginRequest: PopupRequest = {
 };
 
 export const apiRequest = {
-  scopes: [`api://${process.env.REACT_APP_API_CLIENT_ID}/Member.Read`],
+  scopes: [`api://${process.env.VITE_API_CLIENT_ID}/Member.Read`],
 };

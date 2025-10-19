@@ -44,7 +44,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
   const notification = useNotification();
 
   const _API_BASE =
-    process.env.REACT_APP_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
+    process.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
 
   // Load verification records
   useEffect(() => {

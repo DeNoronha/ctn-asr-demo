@@ -87,11 +87,11 @@ function AppContent({ instance }: AppContentProps) {
       const account = accounts[0];
 
       const tokenResponse = await msal.acquireTokenSilent({
-        scopes: [`api://${process.env.REACT_APP_API_CLIENT_ID}/Member.Read`],
+        scopes: [`api://${process.env.VITE_API_CLIENT_ID}/Member.Read`],
         account: account,
       });
 
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/member`, {
+      const response = await fetch(`${process.env.VITE_API_BASE_URL}/member`, {
         headers: {
           Authorization: `Bearer ${tokenResponse.accessToken}`,
           'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ function AppContent({ instance }: AppContentProps) {
   const getAccessToken = async (): Promise<string> => {
     const account = accounts[0];
     const tokenResponse = await msal.acquireTokenSilent({
-      scopes: [`api://${process.env.REACT_APP_API_CLIENT_ID}/Member.Read`],
+      scopes: [`api://${process.env.VITE_API_CLIENT_ID}/Member.Read`],
       account: account,
     });
     return tokenResponse.accessToken;
@@ -129,7 +129,7 @@ function AppContent({ instance }: AppContentProps) {
           'openid',
           'profile',
           'email',
-          `api://${process.env.REACT_APP_API_CLIENT_ID}/Member.Read`,
+          `api://${process.env.VITE_API_CLIENT_ID}/Member.Read`,
         ],
       })
       .catch((err) => {
@@ -147,7 +147,7 @@ function AppContent({ instance }: AppContentProps) {
     if (!memberData) return null;
 
     const commonProps = {
-      apiBaseUrl: process.env.REACT_APP_API_BASE_URL || '',
+      apiBaseUrl: process.env.VITE_API_BASE_URL || '',
       getAccessToken,
       memberData,
       onNotification: showNotification,

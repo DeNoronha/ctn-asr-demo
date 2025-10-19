@@ -206,14 +206,14 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
   const [hasKvkDocument, setHasKvkDocument] = useState(false);
   const notification = useNotification();
 
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:7071/api/v1';
+  const API_BASE_URL = process.env.VITE_API_URL || 'http://localhost:7071/api/v1';
 
   // Helper function to get access token
   async function getAccessToken(): Promise<string | null> {
     try {
       const accounts = msalInstance.getAllAccounts();
       if (accounts.length > 0) {
-        const clientId = process.env.REACT_APP_AZURE_CLIENT_ID;
+        const clientId = process.env.VITE_AZURE_CLIENT_ID;
         const response = await msalInstance.acquireTokenSilent({
           scopes: [`api://${clientId}/access_as_user`],
           account: accounts[0],
