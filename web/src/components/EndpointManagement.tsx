@@ -7,6 +7,8 @@ import { Plus } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
+import { HelpTooltip } from './help/HelpTooltip';
+import { helpContent } from '../config/helpContent';
 import './EndpointManagement.css';
 
 interface Endpoint {
@@ -207,7 +209,10 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
             </div>
 
             <div className="form-field">
-              <label>Endpoint URL *</label>
+              <label>
+                Endpoint URL *
+                <HelpTooltip content={helpContent.endpointUrl} dataTestId="endpoint-url-help" />
+              </label>
               <Input
                 value={formData.endpoint_url}
                 onChange={(e) => setFormData({ ...formData, endpoint_url: e.value })}

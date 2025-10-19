@@ -22,6 +22,8 @@ import { type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
 import { ConfirmDialog } from './ConfirmDialog';
 import { EmptyState } from './EmptyState';
+import { HelpTooltip } from './help/HelpTooltip';
+import { helpContent } from '../config/helpContent';
 import './IdentifiersManager.css';
 
 interface IdentifiersManagerProps {
@@ -638,7 +640,10 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
         >
           <div className="identifier-form">
             <div className="form-field">
-              <label>Country Code *</label>
+              <label>
+                Country Code *
+                <HelpTooltip content={helpContent.identifierCountry} dataTestId="country-code-help" />
+              </label>
               <Input
                 value={formData.country_code || ''}
                 onChange={(e) => handleCountryCodeChange(e.value)}
@@ -651,7 +656,10 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
             </div>
 
             <div className="form-field">
-              <label>Identifier Type *</label>
+              <label>
+                Identifier Type *
+                <HelpTooltip content={helpContent.identifierType} dataTestId="identifier-type-help" />
+              </label>
               <DropDownList
                 data={availableIdentifierTypes}
                 value={formData.identifier_type}
@@ -682,7 +690,10 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
             </div>
 
             <div className="form-field">
-              <label>Identifier Value *</label>
+              <label>
+                Identifier Value *
+                <HelpTooltip content={helpContent.identifierValue} dataTestId="identifier-value-help" />
+              </label>
               <Input
                 value={formData.identifier_value || ''}
                 onChange={(e) => handleIdentifierValueChange(e.value)}
