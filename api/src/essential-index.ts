@@ -39,6 +39,9 @@ import './functions/getEndpointTokens';
 // Authentication & Party Resolution
 import './functions/ResolveParty';
 
+// Audit Logs
+import './functions/GetAuditLogs';
+
 // Orchestration (graph database - Cosmos DB Gremlin API)
 import './functions/GetOrchestrations';
 import './functions/GetOrchestrationDetails';

@@ -1,171 +1,110 @@
-# Implementation Plan: AUTH-001 - Azure AD User → Party ID Resolution
+# Implementation Plan: Audit Trail/Change History (L3)
 
 ## Overview
-**Goal**: Enable Azure AD users to be mapped to their party_id in the database for multi-tenant data isolation
-**Estimated Stages**: 5
-**Security Impact**: CRITICAL - Resolves IDOR vulnerabilities in Orchestrator Portal
+**Goal**: Implement audit trail viewing functionality for administrators
+**Estimated Stages**: 4
 
 ---
 
-## Stage 1: Database Schema Migration
-**Goal**: Add Azure AD object ID mapping to members table
+## Stage 1: Backend API Endpoint
+**Goal**: Create GET /api/v1/audit-logs endpoint with filtering and pagination
 **Success Criteria**:
-- [ ] Migration file created with azure_ad_object_id UUID column
-- [ ] Email column added for fallback lookup
-- [ ] Index created for fast oid lookups
-- [ ] Migration tested on database
-- [ ] Schema documentation updated
+- [ ] GetAuditLogs function created with proper type safety
+- [ ] Supports filtering by event_type, user_email, resource_type, resource_id, result, date range
+- [ ] Implements pagination with total count
+- [ ] Uses parameterized queries to prevent SQL injection
+- [ ] Returns consistent API response format
+- [ ] Registered in essential-index.ts
 
 **Tests**:
-- Migration executes without errors
-- Index created successfully
-- Columns queryable
+- API responds with 200 and paginated data
+- Filters work correctly (event_type, date range, user)
+- Pagination returns correct page sizes
+- Auth required (401 without token)
 
-**Status**: ✅ Complete
+**Status**: In Progress
 
 **Implementation Notes**:
-- Use ALTER TABLE with IF NOT EXISTS for idempotency
-- Create partial index (WHERE azure_ad_object_id IS NOT NULL)
-- Add column comments for documentation
+- Follow existing API patterns in GetMembers.ts
+- Use pool.query with parameterized queries
+- Return data + pagination structure
 
 ---
 
-## Stage 2: Party Resolution API Function
-**Goal**: Create GET /api/v1/auth/resolve-party endpoint
+## Stage 2: Frontend UI Component
+**Goal**: Create AuditTrailView component with Kendo Grid
 **Success Criteria**:
-- [ ] ResolveParty.ts function created
-- [ ] Extracts oid claim from JWT via middleware
-- [ ] Queries members → legal_entity → party_reference
-- [ ] Returns party_id, party_name, legal_entity_id
-- [ ] Returns 404 if no party association found
-- [ ] Proper error handling and logging
+- [ ] AuditTrailView component displays audit logs in grid
+- [ ] Implements filters: event type, user, resource type, date range, result
+- [ ] Pagination integrated with Kendo Grid
+- [ ] Severity color coding (INFO, WARNING, ERROR, CRITICAL)
+- [ ] Result icons (success/failure)
+- [ ] Responsive design
 
 **Tests**:
-- Valid user with party → 200 OK with party data
-- Valid user without party → 404 Not Found
-- Invalid token → 401 Unauthorized
-- Missing oid claim → 403 Forbidden
+- Component renders without errors
+- Grid displays data from API
+- Filters update API requests
+- Pagination works correctly
 
-**Status**: Pending
+**Status**: Not Started
 
 **Implementation Notes**:
-- Follow GetLegalEntities.ts pattern
-- Use parameterized queries only
-- Include CORS support
-- Use existing db connection pool
+- Use Kendo Grid patterns from MemberList.tsx
+- API client integration for /api/v1/audit-logs
+- Date range picker for temporal filtering
 
 ---
 
-## Stage 3: Middleware Enhancement
-**Goal**: Add party resolution helper to auth middleware
+## Stage 3: Integration with Admin Portal
+**Goal**: Add audit trail page to admin portal navigation
 **Success Criteria**:
-- [ ] resolvePartyId() helper function added
-- [ ] AuthenticatedRequest.user includes partyId
-- [ ] Graceful handling if party not found
-- [ ] TypeScript types updated
-- [ ] Backward compatible with existing code
+- [ ] Route added to App.tsx (/audit-trail)
+- [ ] Navigation menu item added (admin only)
+- [ ] Protected route with admin role check
+- [ ] Page accessible from admin portal
 
 **Tests**:
-- Middleware correctly populates partyId
-- Functions using middleware receive partyId
-- No breaking changes to existing endpoints
+- Route accessible at /audit-trail
+- Menu item visible for admin users
+- Non-admin users cannot access page
 
-**Status**: Pending
+**Status**: Not Started
 
 **Implementation Notes**:
-- Add optional partyId field to avoid breaking changes
-- Cache party resolution result in request context
-- Log when party resolution fails
+- Follow existing protected route pattern
+- Add to Navigation.tsx with admin role check
 
 ---
 
-## Stage 4: Update Orchestration Functions
-**Goal**: Replace "TBD" party IDs with real party filtering
+## Stage 4: Verification and Testing
+**Goal**: Verify all write operations use audit logging and create comprehensive tests
 **Success Criteria**:
-- [ ] GetOrchestrations.ts uses user.partyId
-- [ ] GetOrchestrationDetails.ts uses user.partyId
-- [ ] GetEvents.ts uses user.partyId
-- [ ] Gremlin queries filter by actual party
-- [ ] No "TBD" placeholders remain
-- [ ] Multi-tenant isolation verified
+- [ ] All Create/Update/Delete functions verified to use auditMiddleware
+- [ ] API test script created (test-audit-logs.sh)
+- [ ] E2E tests created (audit-trail.spec.ts)
+- [ ] Tests pass locally
+- [ ] Deployed and tested in Azure
 
 **Tests**:
-- User only sees their party's orchestrations
-- Cross-party access blocked (404, not 403)
-- IDOR vulnerability tests pass
+- All write operations log audit events
+- API tests cover all filter combinations
+- E2E tests verify UI functionality
+- Performance acceptable with large datasets
 
-**Status**: Pending
-
-**Implementation Notes**:
-- Use parameterized Gremlin queries
-- Return 404 if partyId missing (security)
-- Update query filters: .has('partyId', partyId)
-
----
-
-## Stage 5: Testing, Deployment & Documentation
-**Goal**: Comprehensive testing and production deployment
-**Success Criteria**:
-- [ ] API curl tests created (test-resolve-party.sh)
-- [ ] All test scenarios pass
-- [ ] Function registered in essential-index.ts
-- [ ] Deployed to Azure
-- [ ] Documentation updated (orchestrator-portal-security.md)
-- [ ] Security review confirms IDOR resolution
-- [ ] IMPLEMENTATION_PLAN.md removed
-
-**Tests**:
-- End-to-end party resolution flow
-- Multi-tenant isolation verification
-- Performance acceptable (<200ms)
-- No security vulnerabilities
-
-**Status**: Pending
+**Status**: Not Started
 
 **Implementation Notes**:
-- Deploy API function first
-- Test with real Azure AD tokens
-- Verify Application Insights logging
-- Get security sign-off before marking complete
+- Review all functions in api/src/functions/ for audit logging
+- Create comprehensive test suite
+- Verify performance with production data
 
 ---
 
 ## Progress Tracking
-- [x] Stage 1 complete (Database Migration) ✅
-- [x] Stage 2 complete (Party Resolution API) ✅
-- [x] Stage 3 complete (Middleware Enhancement) ✅
-- [x] Stage 4 complete (Orchestration Functions Update) ✅
-- [x] Stage 5 complete (Testing & Deployment) ✅
-- [ ] Database migration executed (requires authorized IP)
-- [ ] User data populated (azure_ad_object_id mappings)
-- [ ] End-to-end testing with real tokens
+- [ ] Stage 1 complete
+- [ ] Stage 2 complete
+- [ ] Stage 3 complete
+- [ ] Stage 4 complete
+- [ ] All tests passing
 - [ ] Documentation updated
-- [ ] Security review approved
-
-## Deployment Status
-- ✅ Code complete
-- ✅ API deployed to Azure (func-ctn-demo-asr-dev)
-- ✅ Test scripts created (api/tests/test-resolve-party.sh)
-- ⏳ Database migration pending (requires authorized IP)
-- ⏳ Production data population pending
-
-## Next Actions Required
-1. **Run database migration** from authorized IP:
-   - See .credentials file for connection details
-   - Execute: database/migrations/015_add_azure_ad_object_id.sql
-   - Requires authorized IP address in PostgreSQL firewall rules
-
-2. **Populate azure_ad_object_id** for existing users:
-   - Map Azure AD users to their organizations
-   - Update members table with oid values
-   - Test with real Azure AD tokens
-
-3. **Test endpoints** with populated data:
-   - Get Azure AD token from portal
-   - Run: ./api/tests/test-resolve-party.sh
-   - Verify party resolution works correctly
-
-4. **Verify multi-tenant isolation**:
-   - Test GetOrchestrations with different users
-   - Confirm IDOR protection working
-   - Check audit logs for party resolution events
