@@ -10,6 +10,12 @@ import { Permission } from '../middleware/rbac';
 import { getPool } from '../utils/database';
 import { validateBvodToken, extractOrchestrationDetails } from '../services/bdiJwtService';
 
+interface ValidateBvodRequest {
+  bvod_token: string;
+  member_domain?: string;
+  check_role?: string;
+}
+
 async function handler(
   request: AuthenticatedRequest,
   context: InvocationContext
@@ -21,7 +27,7 @@ async function handler(
     const pool = getPool();
 
     // Parse request body
-    const body = await request.json();
+    const body = await request.json() as ValidateBvodRequest;
     const { bvod_token, member_domain, check_role } = body;
 
     if (!bvod_token) {

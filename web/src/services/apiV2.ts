@@ -34,6 +34,48 @@ async function getAuthenticatedAxios() {
 // TYPE DEFINITIONS (Enhanced Schema)
 // =====================================================
 
+/**
+ * Pagination metadata for API responses
+ */
+export interface PaginationMetadata {
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages?: number;
+}
+
+/**
+ * Generic metadata object for extensible data storage
+ * Used for storing additional context-specific information
+ */
+export interface Metadata {
+  [key: string]: string | number | boolean | null | undefined;
+}
+
+/**
+ * Connection test result details
+ */
+export interface ConnectionTestDetails {
+  status_code?: number;
+  response_time_ms?: number;
+  error_message?: string;
+  tested_at?: string;
+  tested_by?: string;
+  connection_type?: string;
+  [key: string]: string | number | boolean | null | undefined;
+}
+
+/**
+ * Identifier validation details
+ */
+export interface IdentifierValidationDetails {
+  registry_response?: string;
+  validation_errors?: string[];
+  validated_fields?: string[];
+  confidence_score?: number;
+  [key: string]: string | number | boolean | string[] | null | undefined;
+}
+
 export interface PartyReference {
   party_id: string;
   dt_created: string;
@@ -113,7 +155,7 @@ export interface LegalEntityEndpoint {
   authentication_method?: string;
   last_connection_test?: string;
   last_connection_status?: string;
-  connection_test_details?: any;
+  connection_test_details?: ConnectionTestDetails;
   is_active?: boolean;
   activation_date?: string;
   deactivation_date?: string;
@@ -164,7 +206,7 @@ export interface LegalEntity {
   domain?: string;
   status?: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'TERMINATED';
   membership_level?: 'BASIC' | 'PREMIUM' | 'ENTERPRISE';
-  metadata?: any;
+  metadata?: Metadata;
   dt_created?: string;
   dt_modified?: string;
   created_by?: string;
@@ -189,7 +231,7 @@ export interface Member {
   membership_level: string;
   created_at: string;
   updated_at?: string;
-  metadata?: any;
+  metadata?: Metadata;
   legal_entity_id?: string;
   legal_entity?: LegalEntity;
 }
@@ -288,7 +330,7 @@ export const apiV2 = {
 
   async getIdentifiers(legalEntityId: string): Promise<LegalEntityIdentifier[]> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.get<{ data: LegalEntityIdentifier[]; pagination: any }>(
+    const response = await axiosInstance.get<{ data: LegalEntityIdentifier[]; pagination: PaginationMetadata }>(
       `/entities/${legalEntityId}/identifiers`
     );
     return response.data.data; // Extract the data array from paginated response
@@ -325,9 +367,9 @@ export const apiV2 = {
     await axiosInstance.delete(`/identifiers/${identifierId}`);
   },
 
-  async validateIdentifier(identifierId: string): Promise<{ valid: boolean; details?: any }> {
+  async validateIdentifier(identifierId: string): Promise<{ valid: boolean; details?: IdentifierValidationDetails }> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.post<{ valid: boolean; details?: any }>(
+    const response = await axiosInstance.post<{ valid: boolean; details?: IdentifierValidationDetails }>(
       `/identifiers/${identifierId}/validate`
     );
     return response.data;
@@ -339,7 +381,7 @@ export const apiV2 = {
 
   async getContacts(legalEntityId: string): Promise<LegalEntityContact[]> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.get<{ data: LegalEntityContact[]; pagination: any }>(
+    const response = await axiosInstance.get<{ data: LegalEntityContact[]; pagination: PaginationMetadata }>(
       `/legal-entities/${legalEntityId}/contacts`
     );
     return response.data.data; // Extract data array from paginated response
@@ -406,12 +448,12 @@ export const apiV2 = {
 
   async testEndpointConnection(
     endpointId: string
-  ): Promise<{ success: boolean; message?: string; details?: any }> {
+  ): Promise<{ success: boolean; message?: string; details?: ConnectionTestDetails }> {
     const axiosInstance = await getAuthenticatedAxios();
     const response = await axiosInstance.post<{
       success: boolean;
       message?: string;
-      details?: any;
+      details?: ConnectionTestDetails;
     }>(`/endpoints/${endpointId}/test`);
     return response.data;
   },

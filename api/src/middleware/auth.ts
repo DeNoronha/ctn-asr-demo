@@ -4,7 +4,7 @@
 // Validates Azure AD JWT tokens with signature verification
 // Uses JWKS (JSON Web Key Set) for public key retrieval
 
-import { HttpRequest, InvocationContext } from '@azure/functions';
+import { HttpRequest, InvocationContext, HttpResponseInit } from '@azure/functions';
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 
@@ -23,9 +23,37 @@ const jwksClientInstance = jwksClient({
 });
 
 /**
+ * Minimal interface for Headers-like objects
+ * Supports both Azure Functions Headers and standard Headers API
+ */
+interface HeadersLike {
+  get(name: string): string | null;
+  has?(name: string): boolean;
+}
+
+/**
+ * Safe wrapper for Headers object access
+ * Provides a simplified interface that avoids private member access issues
+ * Implements the full Headers interface for compatibility
+ */
+interface SafeHeaders extends Iterable<[string, string]> {
+  get(name: string): string | null;
+  has(name: string): boolean;
+  append(name: string, value: string): void;
+  delete(name: string): void;
+  set(name: string, value: string): void;
+  getSetCookie(): string[];
+  forEach(callbackfn: (value: string, key: string, parent: Headers) => void, thisArg?: unknown): void;
+  entries(): IterableIterator<[string, string]>;
+  keys(): IterableIterator<string>;
+  values(): IterableIterator<string>;
+  [Symbol.iterator](): IterableIterator<[string, string]>;
+}
+
+/**
  * Safely get header value to avoid "Cannot read private member" error
  */
-function safeGetHeader(headers: any, name: string): string | null {
+function safeGetHeader(headers: HeadersLike, name: string): string | null {
   try {
     return headers.get(name);
   } catch (error) {
@@ -37,7 +65,9 @@ function safeGetHeader(headers: any, name: string): string | null {
  * Convert Headers object to plain object to avoid private member errors
  * Returns a wrapper that safely delegates to the original headers
  */
-function headersToPlainObject(headers: any): any {
+function headersToPlainObject(headers: HeadersLike): SafeHeaders {
+  const emptyIterator = [][Symbol.iterator]() as IterableIterator<[string, string]>;
+
   return {
     get: (name: string) => {
       try {
@@ -48,16 +78,21 @@ function headersToPlainObject(headers: any): any {
     },
     has: (name: string) => {
       try {
-        return headers.has(name);
+        return headers.has ? headers.has(name) : false;
       } catch {
         return false;
       }
     },
-    // Prevent iteration which might access private members
+    // Stub methods for full Headers compatibility (read-only wrapper)
+    append: () => {},
+    delete: () => {},
+    set: () => {},
+    getSetCookie: () => [],
     forEach: () => {},
-    entries: () => [],
-    keys: () => [],
-    values: () => []
+    entries: () => emptyIterator,
+    keys: () => [][Symbol.iterator]() as IterableIterator<string>,
+    values: () => [][Symbol.iterator]() as IterableIterator<string>,
+    [Symbol.iterator]: () => emptyIterator
   };
 }
 
@@ -101,13 +136,13 @@ export interface AuthenticatedRequest {
   // Essential HttpRequest properties
   method: string;
   url: string;
-  headers: Headers;
+  headers: SafeHeaders;
   query: URLSearchParams;
   params: Record<string, string>;
 
   // Optional body access methods
   text?: () => Promise<string>;
-  json?: () => Promise<any>;
+  json?: () => Promise<unknown>;
   arrayBuffer?: () => Promise<ArrayBuffer>;
 
   // Custom authentication properties
@@ -179,6 +214,21 @@ export async function validateJwtToken(
 }
 
 /**
+ * Authentication result types
+ */
+interface AuthenticationSuccess {
+  success: true;
+  request: AuthenticatedRequest;
+}
+
+interface AuthenticationFailure {
+  success: false;
+  response: HttpResponseInit;
+}
+
+type AuthenticationResult = AuthenticationSuccess | AuthenticationFailure;
+
+/**
  * Authentication middleware - validates JWT token
  * @param request HTTP request
  * @param context Invocation context
@@ -187,7 +237,7 @@ export async function validateJwtToken(
 export async function authenticate(
   request: HttpRequest,
   context: InvocationContext
-): Promise<{ success: true; request: AuthenticatedRequest } | { success: false; response: any }> {
+): Promise<AuthenticationResult> {
   try {
     // Extract Authorization header safely
     const authHeader = safeGetHeader(request.headers, 'authorization');

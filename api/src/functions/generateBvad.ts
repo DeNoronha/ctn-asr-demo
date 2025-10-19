@@ -11,6 +11,14 @@ import { getPool } from '../utils/database';
 import { generateBvad, RegistryIdentifier } from '../services/bdiJwtService';
 import crypto from 'crypto';
 
+interface GenerateBvadRequest {
+  memberDomain?: string;
+  kvk?: string;
+  lei?: string;
+  audience?: string;
+  validityHours?: number;
+}
+
 async function handler(
   request: AuthenticatedRequest,
   context: InvocationContext
@@ -21,7 +29,7 @@ async function handler(
     const pool = getPool();
 
     // Parse request body
-    const body = await request.json();
+    const body = await request.json() as GenerateBvadRequest;
     const { memberDomain, kvk, lei, audience, validityHours } = body;
 
     if (!memberDomain && !kvk && !lei) {
