@@ -1,0 +1,26 @@
+{
+  "name": "ctn-booking-api",
+  "version": "1.0.0",
+  "description": "CTN Booking Portal API",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rimraf dist",
+    "prestart": "npm run clean && npm run build",
+    "start": "func start"
+  },
+  "dependencies": {
+    "@azure/cosmos": "^4.0.0",
+    "@azure/storage-blob": "^12.17.0",
+    "@azure/ai-form-recognizer": "^5.0.0",
+    "@azure/functions": "^4.0.0",
+    "@azure/identity": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "azure-functions-core-tools": "^4.0.5455",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  }
+}
