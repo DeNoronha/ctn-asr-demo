@@ -1,5 +1,6 @@
 import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
+import { addVersionHeaders, logApiRequest } from '../middleware/versioning';
 import { getPool } from '../utils/database';
 import { withTransaction } from '../utils/transaction';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
@@ -148,11 +149,17 @@ async function handler(
       }
     }, context);
 
-    return {
+    // Log API request with version info
+    logApiRequest(context, 'v1', '/members', request);
+
+    // Build response with version headers
+    const response: HttpResponseInit = {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(result)
     };
+
+    return addVersionHeaders(response, 'v1');
   } catch (error: any) {
     context.error('Error creating member:', error);
 

@@ -3,7 +3,7 @@
   "info": {
     "title": "CTN Association Register API",
     "version": "1.0.0",
-    "description": "API for managing CTN (Connecting the Netherlands) Association Register - A comprehensive system for managing legal entities, member applications, endpoint registrations, and BVAD token management.",
+    "description": "API for managing CTN (Connecting the Netherlands) Association Register - A comprehensive system for managing legal entities, member applications, endpoint registrations, and BVAD token management.\n\n## API Versioning\n\nThis API uses URL path versioning (e.g., `/api/v1/`, `/api/v2/`). All responses include version headers:\n\n- `API-Version`: Current API version\n- `Deprecation`: Date when version was deprecated (RFC 8594)\n- `Sunset`: Date when version will be sunset (RFC 8594)\n- `Link`: Migration guide URL (rel=\"deprecation\")\n\n**Current Version:** v1\n**Status:** Active\n\n**Migration Guide:** See [API Versioning Strategy](https://docs.ctn.cloud/api/versioning) for details.\n\n**Deprecation Policy:** Previous versions are supported for 12 months after a new major version release. After sunset, deprecated versions return HTTP 410 Gone.",
     "contact": {
       "name": "CTN Development Team",
       "email": "support@ctn.nl",
@@ -492,6 +492,49 @@
     }
   },
   "components": {
+    "parameters": {
+      "VersionHeader": {
+        "name": "API-Version",
+        "in": "header",
+        "description": "API version being used (automatically added to all responses)",
+        "schema": {
+          "type": "string",
+          "example": "v1"
+        }
+      }
+    },
+    "headers": {
+      "API-Version": {
+        "description": "Current API version",
+        "schema": {
+          "type": "string",
+          "example": "v1"
+        }
+      },
+      "Deprecation": {
+        "description": "RFC 8594 deprecation date (only present if version is deprecated)",
+        "schema": {
+          "type": "string",
+          "format": "http-date",
+          "example": "Sun, 01 Jun 2026 00:00:00 GMT"
+        }
+      },
+      "Sunset": {
+        "description": "RFC 8594 sunset date - when version will stop working (only present if version is deprecated)",
+        "schema": {
+          "type": "string",
+          "format": "http-date",
+          "example": "Sun, 01 Dec 2026 00:00:00 GMT"
+        }
+      },
+      "Link": {
+        "description": "Migration guide URL with rel=\"deprecation\" (only present if version is deprecated)",
+        "schema": {
+          "type": "string",
+          "example": "<https://docs.ctn.cloud/migrations/v1-to-v2>; rel=\"deprecation\""
+        }
+      }
+    },
     "schemas": {
       "LegalEntity": {
         "type": "object",
@@ -824,6 +867,44 @@
             "type": "string"
           }
         }
+      },
+      "VersionSunsetError": {
+        "type": "object",
+        "description": "Error returned when a sunset API version is accessed",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "API Version Sunset"
+          },
+          "message": {
+            "type": "string",
+            "example": "API version v1 is no longer supported"
+          },
+          "sunset_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date when version was sunset",
+            "example": "2026-12-01T00:00:00Z"
+          },
+          "current_version": {
+            "type": "string",
+            "description": "Current active API version",
+            "example": "v2"
+          },
+          "migration_guide": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to migration guide",
+            "example": "https://docs.ctn.cloud/migrations/v1-to-v2"
+          },
+          "documentation": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to API documentation",
+            "example": "https://docs.ctn.cloud/api"
+          }
+        },
+        "required": ["error", "message", "sunset_date", "current_version", "migration_guide"]
       }
     },
     "responses": {
@@ -853,6 +934,29 @@
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "VersionSunset": {
+        "description": "Gone - API version is sunset and no longer available",
+        "headers": {
+          "API-Version": {
+            "$ref": "#/components/headers/API-Version"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/VersionSunsetError"
+            },
+            "example": {
+              "error": "API Version Sunset",
+              "message": "API version v1 is no longer supported as of 2026-12-01",
+              "sunset_date": "2026-12-01T00:00:00Z",
+              "current_version": "v2",
+              "migration_guide": "https://docs.ctn.cloud/migrations/v1-to-v2",
+              "documentation": "https://docs.ctn.cloud/api"
             }
           }
         }

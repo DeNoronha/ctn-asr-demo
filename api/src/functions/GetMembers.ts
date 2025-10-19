@@ -1,5 +1,6 @@
 import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
+import { addVersionHeaders, logApiRequest } from '../middleware/versioning';
 import { getPool } from '../utils/database';
 import { getPaginationParams, executePaginatedQuery } from '../utils/pagination';
 
@@ -21,11 +22,18 @@ async function handler(
 
     const result = await executePaginatedQuery(pool, baseQuery, [], pagination);
 
-    return {
+    // Log API request with version info
+    logApiRequest(context, 'v1', '/all-members', request);
+
+    // Build response
+    const response: HttpResponseInit = {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
       jsonBody: result
     };
+
+    // Add version headers
+    return addVersionHeaders(response, 'v1');
   } catch (error) {
     context.error('Error fetching members:', error);
     return {
