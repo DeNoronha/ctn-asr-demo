@@ -32,13 +32,18 @@ async function handler(
       };
     }
 
-    // Get authenticated party ID
-    const partyId = request.userId;
+    // Get authenticated party ID from middleware (resolved from Azure AD oid)
+    const partyId = request.partyId;
 
     if (!partyId) {
+      context.warn('User does not have a party ID association');
       return {
-        status: 401,
-        jsonBody: { error: 'Party identification required' }
+        status: 404,
+        jsonBody: {
+          error: 'not_found',
+          message: 'User is not associated with any registered party',
+          hint: 'Contact administrator to link your account to an organization'
+        }
       };
     }
 
