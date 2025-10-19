@@ -4,7 +4,8 @@
 // Comprehensive logging utility for production monitoring
 // Integrates with Azure Application Insights
 
-import type { InvocationContext } from '@azure/functions';
+import type { HttpRequest, InvocationContext } from '@azure/functions';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Log severity levels matching Application Insights
@@ -246,4 +247,125 @@ export function trackPerformance(
   operationName: string
 ): PerformanceTracker {
   return new PerformanceTracker(logger, operationName);
+}
+
+// ========================================
+// HTTP Request/Response Logging Helpers
+// ========================================
+
+/**
+ * Extract correlation ID from request or generate new one
+ */
+export function getOrCreateCorrelationId(request: HttpRequest): string {
+  const existingId = request.headers.get('x-correlation-id');
+  return existingId || uuidv4();
+}
+
+/**
+ * Log incoming HTTP request
+ */
+export function logHttpRequest(
+  logger: AppInsightsLogger,
+  request: HttpRequest,
+  correlationId: string
+): void {
+  const queryParams = Object.fromEntries(request.query.entries());
+  logger.info('HTTP Request', {
+    correlationId,
+    method: request.method,
+    url: request.url,
+    userAgent: request.headers.get('user-agent') || 'unknown',
+    contentType: request.headers.get('content-type') || 'unknown',
+    queryParams: Object.keys(queryParams).length > 0 ? JSON.stringify(queryParams) : 'none',
+  });
+}
+
+/**
+ * Log HTTP response
+ */
+export function logHttpResponse(
+  logger: AppInsightsLogger,
+  request: HttpRequest,
+  statusCode: number,
+  correlationId: string,
+  durationMs: number
+): void {
+  const level = statusCode >= 500 ? LogLevel.Error : statusCode >= 400 ? LogLevel.Warning : LogLevel.Information;
+
+  const message = `HTTP Response - ${request.method} ${request.url}`;
+  const properties = {
+    correlationId,
+    method: request.method,
+    url: request.url,
+    statusCode,
+    duration: `${durationMs}ms`,
+  };
+
+  switch (level) {
+    case LogLevel.Error:
+      logger.error(message, undefined, properties);
+      break;
+    case LogLevel.Warning:
+      logger.warn(message, properties);
+      break;
+    default:
+      logger.info(message, properties);
+  }
+}
+
+/**
+ * Log security-related event
+ */
+export function logSecurityEvent(
+  logger: AppInsightsLogger,
+  eventName: string,
+  correlationId: string,
+  details: LogProperties
+): void {
+  logger.warn(`Security Event: ${eventName}`, {
+    correlationId,
+    securityEvent: eventName,
+    timestamp: new Date().toISOString(),
+    ...details,
+  });
+}
+
+/**
+ * Log authentication event
+ */
+export function logAuthEvent(
+  logger: AppInsightsLogger,
+  success: boolean,
+  correlationId: string,
+  details: LogProperties
+): void {
+  if (success) {
+    logger.info('Authentication successful', {
+      correlationId,
+      authenticationStatus: 'success',
+      ...details,
+    });
+  } else {
+    logSecurityEvent(logger, 'Authentication Failed', correlationId, details);
+  }
+}
+
+/**
+ * Log authorization event
+ */
+export function logAuthzEvent(
+  logger: AppInsightsLogger,
+  success: boolean,
+  correlationId: string,
+  details: LogProperties
+): void {
+  if (success) {
+    logger.info('Authorization successful', {
+      correlationId,
+      authorizationStatus: 'success',
+      ...details,
+    });
+  } else {
+    logSecurityEvent(logger, 'Authorization Failed', correlationId, details);
+  }
 }

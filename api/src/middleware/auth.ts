@@ -7,6 +7,14 @@
 import { HttpRequest, InvocationContext, HttpResponseInit } from '@azure/functions';
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
+import {
+  createLogger,
+  getOrCreateCorrelationId,
+  logHttpRequest,
+  logHttpResponse,
+  logAuthEvent,
+  logSecurityEvent,
+} from '../utils/logger';
 
 // Azure AD configuration
 const AZURE_AD_TENANT_ID = process.env.AZURE_AD_TENANT_ID || '598664e7-725c-4daa-bd1f-89c4ada717ff';
@@ -238,12 +246,26 @@ export async function authenticate(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<AuthenticationResult> {
+  const logger = createLogger(context);
+  const correlationId = getOrCreateCorrelationId(request);
+  const startTime = Date.now();
+
+  // Log incoming request
+  logHttpRequest(logger, request, correlationId);
+
   try {
     // Extract Authorization header safely
     const authHeader = safeGetHeader(request.headers, 'authorization');
 
     if (!authHeader) {
-      context.warn('Missing Authorization header');
+      logSecurityEvent(logger, 'Missing Authorization Header', correlationId, {
+        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+        userAgent: request.headers.get('user-agent') || 'unknown',
+      });
+
+      const duration = Date.now() - startTime;
+      logHttpResponse(logger, request, 401, correlationId, duration);
+
       return {
         success: false,
         response: {
@@ -251,6 +273,7 @@ export async function authenticate(
           headers: {
             'Content-Type': 'application/json',
             'WWW-Authenticate': 'Bearer realm="CTN ASR API"',
+            'X-Correlation-ID': correlationId,
           },
           body: JSON.stringify({
             error: 'unauthorized',
@@ -262,7 +285,14 @@ export async function authenticate(
 
     // Check Bearer token format
     if (!authHeader.startsWith('Bearer ')) {
-      context.warn('Invalid Authorization header format');
+      logSecurityEvent(logger, 'Invalid Authorization Header Format', correlationId, {
+        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+        authHeaderFormat: authHeader.split(' ')[0],
+      });
+
+      const duration = Date.now() - startTime;
+      logHttpResponse(logger, request, 401, correlationId, duration);
+
       return {
         success: false,
         response: {
@@ -270,6 +300,7 @@ export async function authenticate(
           headers: {
             'Content-Type': 'application/json',
             'WWW-Authenticate': 'Bearer realm="CTN ASR API" error="invalid_token"',
+            'X-Correlation-ID': correlationId,
           },
           body: JSON.stringify({
             error: 'unauthorized',
@@ -283,6 +314,13 @@ export async function authenticate(
     const token = authHeader.substring(7).trim();
 
     if (!token) {
+      logSecurityEvent(logger, 'Empty Bearer Token', correlationId, {
+        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+      });
+
+      const duration = Date.now() - startTime;
+      logHttpResponse(logger, request, 401, correlationId, duration);
+
       return {
         success: false,
         response: {
@@ -290,6 +328,7 @@ export async function authenticate(
           headers: {
             'Content-Type': 'application/json',
             'WWW-Authenticate': 'Bearer realm="CTN ASR API" error="invalid_token"',
+            'X-Correlation-ID': correlationId,
           },
           body: JSON.stringify({
             error: 'unauthorized',
@@ -319,16 +358,31 @@ export async function authenticate(
       userRoles: payload.roles || [],
     };
 
-    context.log(
-      `User authenticated: ${authenticatedRequest.userEmail} (${authenticatedRequest.userId})`
-    );
+    // Log successful authentication
+    const userEmail = authenticatedRequest.userEmail || 'unknown';
+    const userId = authenticatedRequest.userId || 'unknown';
+    logAuthEvent(logger, true, correlationId, {
+      userId,
+      userEmail,
+      roles: (payload.roles || []).join(',') || 'none',
+    });
+
+    const duration = Date.now() - startTime;
+    logHttpResponse(logger, request, 200, correlationId, duration);
 
     return {
       success: true,
       request: authenticatedRequest,
     };
   } catch (error) {
-    context.error('Authentication failed:', error);
+    // Log authentication failure
+    logAuthEvent(logger, false, correlationId, {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+    });
+
+    const duration = Date.now() - startTime;
+    logHttpResponse(logger, request, 401, correlationId, duration);
 
     return {
       success: false,
@@ -337,6 +391,7 @@ export async function authenticate(
         headers: {
           'Content-Type': 'application/json',
           'WWW-Authenticate': 'Bearer realm="CTN ASR API" error="invalid_token"',
+          'X-Correlation-ID': correlationId,
         },
         body: JSON.stringify({
           error: 'unauthorized',

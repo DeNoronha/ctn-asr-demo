@@ -5,6 +5,7 @@
 
 import { InvocationContext } from '@azure/functions';
 import { AuthenticatedRequest } from './auth';
+import { createLogger, logAuthzEvent } from '../utils/logger';
 
 /**
  * User roles in the system
@@ -51,6 +52,10 @@ export enum Permission {
   // KvK verification permissions
   UPLOAD_KVK_DOCUMENTS = 'upload:kvk_documents',
   REVIEW_KVK_DOCUMENTS = 'review:kvk_documents',
+
+  // Orchestration permissions
+  READ_ORCHESTRATIONS = 'read:orchestrations',
+  MANAGE_ORCHESTRATIONS = 'manage:orchestrations',
 }
 
 /**
@@ -87,6 +92,10 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 
     // KvK verification
     Permission.REVIEW_KVK_DOCUMENTS,
+
+    // Orchestrations
+    Permission.READ_ORCHESTRATIONS,
+    Permission.MANAGE_ORCHESTRATIONS,
   ],
 
   [UserRole.MEMBER_ADMIN]: [
@@ -104,6 +113,10 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 
     // KvK uploads
     Permission.UPLOAD_KVK_DOCUMENTS,
+
+    // Orchestrations
+    Permission.READ_ORCHESTRATIONS,
+    Permission.MANAGE_ORCHESTRATIONS,
   ],
 
   [UserRole.MEMBER_USER]: [
@@ -115,6 +128,9 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 
     // View own tokens
     Permission.VIEW_OWN_TOKENS,
+
+    // Orchestrations
+    Permission.READ_ORCHESTRATIONS,
   ],
 
   [UserRole.MEMBER_READONLY]: [
@@ -122,6 +138,9 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.READ_OWN_ENTITY,
     Permission.READ_OWN_ENDPOINTS,
     Permission.VIEW_OWN_TOKENS,
+
+    // Orchestrations
+    Permission.READ_ORCHESTRATIONS,
   ],
 };
 
@@ -195,13 +214,23 @@ export function requireRoles(
   roles: UserRole[]
 ): (request: AuthenticatedRequest, context: InvocationContext) => { authorized: boolean; response?: any } {
   return (request: AuthenticatedRequest, context: InvocationContext) => {
+    const logger = createLogger(context);
+    const correlationId = request.headers.get('x-correlation-id') || 'unknown';
+
     if (!request.user) {
-      context.warn('RBAC check failed: User not authenticated');
+      logAuthzEvent(logger, false, correlationId, {
+        reason: 'User not authenticated',
+        requiredRoles: roles.join(','),
+      });
+
       return {
         authorized: false,
         response: {
           status: 401,
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Correlation-ID': correlationId,
+          },
           body: JSON.stringify({
             error: 'unauthorized',
             error_description: 'Authentication required',
@@ -211,14 +240,22 @@ export function requireRoles(
     }
 
     if (!hasAnyRole(request, roles)) {
-      context.warn(
-        `RBAC check failed: User ${request.userEmail} lacks required roles: ${roles.join(', ')}`
-      );
+      logAuthzEvent(logger, false, correlationId, {
+        userId: request.userId || 'unknown',
+        userEmail: request.userEmail || 'unknown',
+        userRoles: (request.userRoles || []).join(',') || 'none',
+        requiredRoles: roles.join(','),
+        reason: 'Insufficient roles',
+      });
+
       return {
         authorized: false,
         response: {
           status: 403,
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Correlation-ID': correlationId,
+          },
           body: JSON.stringify({
             error: 'forbidden',
             error_description: 'Insufficient permissions',
@@ -228,7 +265,14 @@ export function requireRoles(
       };
     }
 
-    context.log(`RBAC check passed: User ${request.userEmail} has required roles`);
+    logAuthzEvent(logger, true, correlationId, {
+      userId: request.userId || 'unknown',
+      userEmail: request.userEmail || 'unknown',
+      userRoles: (request.userRoles || []).join(','),
+      requiredRoles: roles.join(','),
+      checkType: 'roles',
+    });
+
     return { authorized: true };
   };
 }
@@ -241,13 +285,23 @@ export function requirePermissions(
   requireAll: boolean = true
 ): (request: AuthenticatedRequest, context: InvocationContext) => { authorized: boolean; response?: any } {
   return (request: AuthenticatedRequest, context: InvocationContext) => {
+    const logger = createLogger(context);
+    const correlationId = request.headers.get('x-correlation-id') || 'unknown';
+
     if (!request.user) {
-      context.warn('RBAC check failed: User not authenticated');
+      logAuthzEvent(logger, false, correlationId, {
+        reason: 'User not authenticated',
+        requiredPermissions: permissions.join(','),
+      });
+
       return {
         authorized: false,
         response: {
           status: 401,
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Correlation-ID': correlationId,
+          },
           body: JSON.stringify({
             error: 'unauthorized',
             error_description: 'Authentication required',
@@ -261,14 +315,23 @@ export function requirePermissions(
       : hasAnyPermission(request, permissions);
 
     if (!hasRequiredPermissions) {
-      context.warn(
-        `RBAC check failed: User ${request.userEmail} lacks required permissions: ${permissions.join(', ')}`
-      );
+      logAuthzEvent(logger, false, correlationId, {
+        userId: request.userId || 'unknown',
+        userEmail: request.userEmail || 'unknown',
+        userRoles: (request.userRoles || []).join(',') || 'none',
+        requiredPermissions: permissions.join(','),
+        requireAll: requireAll.toString(),
+        reason: 'Insufficient permissions',
+      });
+
       return {
         authorized: false,
         response: {
           status: 403,
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Correlation-ID': correlationId,
+          },
           body: JSON.stringify({
             error: 'forbidden',
             error_description: 'Insufficient permissions',
@@ -278,7 +341,15 @@ export function requirePermissions(
       };
     }
 
-    context.log(`RBAC check passed: User ${request.userEmail} has required permissions`);
+    logAuthzEvent(logger, true, correlationId, {
+      userId: request.userId || 'unknown',
+      userEmail: request.userEmail || 'unknown',
+      userRoles: (request.userRoles || []).join(','),
+      requiredPermissions: permissions.join(','),
+      requireAll: requireAll.toString(),
+      checkType: 'permissions',
+    });
+
     return { authorized: true };
   };
 }
