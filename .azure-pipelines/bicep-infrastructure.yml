@@ -82,7 +82,6 @@ stages:
     jobs:
       - deployment: DeployInfrastructureDev
         displayName: 'Deploy Bicep to Dev'
-        environment: 'ctn-demo-asr-dev'
         strategy:
           runOnce:
             deploy:
@@ -143,7 +142,6 @@ stages:
     jobs:
       - deployment: DeployInfrastructureProd
         displayName: 'Deploy Bicep to Production'
-        environment: 'ctn-demo-asr-prod'
         strategy:
           runOnce:
             deploy:
