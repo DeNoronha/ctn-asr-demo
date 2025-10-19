@@ -36,6 +36,12 @@ import './functions/updateEndpoint';
 import './functions/issueEndpointToken';
 import './functions/getEndpointTokens';
 
+// Orchestration (graph database - Cosmos DB Gremlin API)
+import './functions/GetOrchestrations';
+import './functions/GetOrchestrationDetails';
+import './functions/GetEvents';
+import './functions/GetWebhooks';
+
 // KvK verification
 import './functions/getFlaggedEntities';
 import './functions/uploadKvkDocument';
