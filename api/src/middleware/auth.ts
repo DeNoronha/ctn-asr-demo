@@ -158,6 +158,7 @@ export interface AuthenticatedRequest {
   userId?: string;
   userEmail?: string;
   userRoles?: string[];
+  partyId?: string; // Party ID resolved from Azure AD user
 }
 
 /**
@@ -219,6 +220,50 @@ export async function validateJwtToken(
       }
     );
   });
+}
+
+/**
+ * Resolve party ID from Azure AD object ID (oid claim)
+ * @param oid Azure AD object ID from JWT token
+ * @param context Invocation context for logging
+ * @returns Party ID or null if not found
+ */
+export async function resolvePartyId(
+  oid: string,
+  context: InvocationContext
+): Promise<string | null> {
+  try {
+    // Import database pool dynamically to avoid circular dependencies
+    const { getPool } = await import('../utils/database');
+    const pool = getPool();
+
+    // Query to resolve party ID from Azure AD object ID
+    const query = `
+      SELECT pr.party_id
+      FROM members m
+      INNER JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
+      INNER JOIN party_reference pr ON le.party_id = pr.party_id
+      WHERE m.azure_ad_object_id = $1
+        AND m.status != 'DELETED'
+        AND le.is_deleted = false
+        AND pr.is_deleted = false
+      LIMIT 1
+    `;
+
+    const result = await pool.query(query, [oid]);
+
+    if (result.rows.length === 0) {
+      context.warn(`No party association found for oid: ${oid}`);
+      return null;
+    }
+
+    const partyId = result.rows[0].party_id;
+    context.log(`Party ID resolved: ${partyId} for oid: ${oid}`);
+    return partyId;
+  } catch (error) {
+    context.error('Error resolving party ID:', error);
+    return null;
+  }
 }
 
 /**
@@ -341,6 +386,15 @@ export async function authenticate(
     // Validate token with signature verification
     const payload = await validateJwtToken(token, context);
 
+    // Resolve party ID from Azure AD object ID (if oid claim exists)
+    let partyId: string | undefined;
+    if (payload.oid) {
+      const resolvedPartyId = await resolvePartyId(payload.oid, context);
+      if (resolvedPartyId) {
+        partyId = resolvedPartyId;
+      }
+    }
+
     // Create authenticated request with essential properties
     // Bind methods to avoid accessing private Headers members
     const authenticatedRequest: AuthenticatedRequest = {
@@ -356,6 +410,7 @@ export async function authenticate(
       userId: payload.oid || payload.sub,
       userEmail: payload.email || payload.preferred_username || payload.upn,
       userRoles: payload.roles || [],
+      partyId: partyId, // Include resolved party ID
     };
 
     // Log successful authentication
