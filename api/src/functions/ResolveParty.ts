@@ -160,7 +160,7 @@ async function handler(
 
     // Log error
     await logAuditEvent({
-      event_type: AuditEventType.SYSTEM_ERROR,
+      event_type: AuditEventType.ACCESS_DENIED,
       severity: AuditSeverity.ERROR,
       result: 'failure',
       user_id: request.userId,
