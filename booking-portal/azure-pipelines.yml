@@ -10,9 +10,13 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  FUNCTION_APP_NAME: 'func-ctn-booking-prod'
-  STATIC_WEB_APP_NAME: 'swa-ctn-booking-prod'
-  NODE_VERSION: '20.x'
+  - group: ctn-booking-portal-variables
+  - name: FUNCTION_APP_NAME
+    value: 'func-ctn-booking-prod'
+  - name: STATIC_WEB_APP_NAME
+    value: 'swa-ctn-booking-prod'
+  - name: NODE_VERSION
+    value: '20.x'
 
 stages:
   - stage: Build
@@ -81,7 +85,7 @@ stages:
 
                 - task: AzureFunctionApp@2
                   inputs:
-                    azureSubscription: 'Azure-Subscription'
+                    azureSubscription: 'Azure-CTN-ASR-ServiceConnection'
                     appType: 'functionAppLinux'
                     appName: $(FUNCTION_APP_NAME)
                     package: '$(Pipeline.Workspace)/api/api-$(Build.BuildId).zip'
