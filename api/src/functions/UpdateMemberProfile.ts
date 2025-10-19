@@ -3,6 +3,7 @@ import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrappe
 import { Permission } from '../middleware/rbac';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { getPool } from '../utils/database';
+import { withTransaction } from '../utils/transaction';
 
 async function handler(request: AuthenticatedRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log('UpdateMemberProfile function triggered');
@@ -48,10 +49,8 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
     const { org_id, legal_entity_id } = memberResult.rows[0];
     const updateData = await request.json() as any;
 
-    // Start transaction
-    await pool.query('BEGIN');
-
-    try {
+    // Execute updates in a transaction
+    await withTransaction(pool, context, async (tx) => {
       // Update member table
       if (updateData.domain || updateData.metadata) {
         const memberUpdates: string[] = [];
@@ -70,7 +69,7 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
         memberUpdates.push(`updated_at = now()`);
         memberValues.push(org_id);
 
-        await pool.query(`
+        await tx.query(`
           UPDATE members
           SET ${memberUpdates.join(', ')}
           WHERE org_id = $${paramIndex}
@@ -113,40 +112,35 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
         leValues.push(userEmail);
         leValues.push(legal_entity_id);
 
-        await pool.query(`
+        await tx.query(`
           UPDATE legal_entity
           SET ${leUpdates.join(', ')}
           WHERE legal_entity_id = $${paramIndex}
         `, leValues);
       }
+    });
 
-      // Log audit event using the new audit system
-      await logAuditEvent({
-        event_type: AuditEventType.MEMBER_UPDATED,
-        severity: AuditSeverity.INFO,
-        result: 'success',
-        user_id: request.userId,
-        user_email: request.userEmail,
-        ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
-        user_agent: request.headers.get('user-agent') || undefined,
-        request_path: request.url,
-        request_method: request.method,
-        resource_type: 'member',
-        resource_id: org_id,
-        action: 'update',
-        details: { updated_by: userEmail, changes: updateData }
-      }, context);
+    // Log audit event after successful transaction
+    await logAuditEvent({
+      event_type: AuditEventType.MEMBER_UPDATED,
+      severity: AuditSeverity.INFO,
+      result: 'success',
+      user_id: request.userId,
+      user_email: request.userEmail,
+      ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
+      user_agent: request.headers.get('user-agent') || undefined,
+      request_path: request.url,
+      request_method: request.method,
+      resource_type: 'member',
+      resource_id: org_id,
+      action: 'update',
+      details: { updated_by: userEmail, changes: updateData }
+    }, context);
 
-      await pool.query('COMMIT');
-
-      return {
-        status: 200,
-        jsonBody: { message: 'Profile updated successfully' }
-      };
-    } catch (error) {
-      await pool.query('ROLLBACK');
-      throw error;
-    }
+    return {
+      status: 200,
+      jsonBody: { message: 'Profile updated successfully' }
+    };
   } catch (error) {
     context.error('Error updating member profile:', error);
 
