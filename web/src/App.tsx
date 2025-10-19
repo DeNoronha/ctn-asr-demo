@@ -19,6 +19,7 @@ import NotFound from './components/NotFound';
 // Import Kendo UI theme
 import '@progress/kendo-theme-default/dist/all.css';
 import './App.css';
+import './components/help/help.css';
 
 function App() {
   return (
