@@ -10,6 +10,7 @@ import { applySecurityHeaders } from './securityHeaders';
 import { enforceHttps, addHttpsSecurityHeaders } from './httpsEnforcement';
 import { handleError } from '../utils/errors';
 import { getRequestId } from '../utils/requestId';
+import { checkRateLimit, RateLimiterType } from './rateLimiter';
 
 // Re-export AuthenticatedRequest for convenience
 export type AuthenticatedRequest = AuthRequest;
@@ -35,6 +36,12 @@ export interface EndpointOptions {
 
   /** Allowed CORS origins (default: environment-specific) */
   allowedOrigins?: string[];
+
+  /** Enable rate limiting (default: true) */
+  enableRateLimit?: boolean;
+
+  /** Rate limiter type (default: API) */
+  rateLimiterType?: RateLimiterType;
 }
 
 /**
@@ -135,6 +142,8 @@ export function wrapEndpoint(
     requireAllPermissions = true,
     enableCors = true,
     allowedOrigins = DEFAULT_CORS_ORIGINS,
+    enableRateLimit = true,
+    rateLimiterType = RateLimiterType.API,
   } = options;
 
   return async (
@@ -183,6 +192,39 @@ export function wrapEndpoint(
             'X-Request-ID': requestId
           }
         };
+      }
+
+      // Apply rate limiting
+      let rateLimitResult: { allowed: boolean; remaining: number; resetTime: Date; response?: any } | null = null;
+      if (enableRateLimit) {
+        rateLimitResult = await checkRateLimit(request, context, rateLimiterType);
+
+        if (!rateLimitResult.allowed && rateLimitResult.response) {
+          const duration = Date.now() - startTime;
+          context.warn(`[${requestId}] Rate limit exceeded (${duration}ms)`);
+
+          // Add CORS headers and request ID to rate limit response
+          if (enableCors) {
+            const origin = safeGetHeader(request.headers, 'origin');
+            const corsHeaders = getCorsHeaders(origin, allowedOrigins);
+            return {
+              ...rateLimitResult.response,
+              headers: {
+                ...(rateLimitResult.response.headers || {}),
+                ...corsHeaders,
+                'X-Request-ID': requestId
+              },
+            };
+          }
+
+          return {
+            ...rateLimitResult.response,
+            headers: {
+              ...(rateLimitResult.response.headers || {}),
+              'X-Request-ID': requestId
+            }
+          };
+        }
       }
 
       // Apply authentication if required
@@ -311,6 +353,16 @@ export function wrapEndpoint(
         response.headers = {
           ...corsHeaders,
           ...response.headers,
+        };
+      }
+
+      // Add rate limit headers to response
+      if (rateLimitResult && rateLimitResult.allowed) {
+        response.headers = {
+          ...response.headers,
+          'X-RateLimit-Limit': '100',
+          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+          'X-RateLimit-Reset': rateLimitResult.resetTime.toISOString(),
         };
       }
 
