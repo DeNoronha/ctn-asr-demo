@@ -49,10 +49,10 @@ const AuditLogViewer: React.FC = () => {
     applyFiltersAndProcess();
   }, [logs, selectedAction, selectedTargetType, dataState]);
 
-  const loadLogs = () => {
+  const loadLogs = async () => {
     setLoading(true);
     try {
-      const allLogs = auditLogService.getLogs();
+      const allLogs = await auditLogService.getLogs(1, 1000);
       setLogs(allLogs);
     } catch (error) {
       console.error('Failed to load audit logs:', error);
@@ -76,17 +76,21 @@ const AuditLogViewer: React.FC = () => {
     setProcessedData(processed);
   };
 
-  const handleExport = () => {
-    const json = auditLogService.exportLogs();
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `audit-logs-${new Date().toISOString()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleExport = async () => {
+    try {
+      const json = await auditLogService.exportLogs();
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audit-logs-${new Date().toISOString()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to export logs:', error);
+    }
   };
 
   const handleClearFilters = () => {
