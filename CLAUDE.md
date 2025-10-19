@@ -550,6 +550,48 @@ This project uses Model Context Protocol (MCP) servers to extend agent capabilit
 
 ---
 
+### Coding Assistant (CA)
+**File:** `.claude/agents/coding-assistant-ca.md`
+**Color:** Blue
+**Model:** Sonnet
+
+**Purpose:** Feature development and bug fixing following structured development guidelines
+
+**When to Use:**
+- When developing new features or implementing significant functionality
+- When fixing bugs that require systematic investigation
+- When refactoring code or improving existing implementations
+- For complex multi-stage work requiring planning and incremental progress
+- When user explicitly requests structured development
+
+**Capabilities:**
+- Creates and maintains IMPLEMENTATION_PLAN.md for complex work
+- Breaks work into 3-5 manageable stages with clear success criteria
+- Follows test-driven development (TDD) when possible
+- Studies existing codebase patterns before implementing
+- Uses incremental commits with clear documentation
+- Implements 3-attempt rule (stop and reassess after 3 failed attempts)
+- Ensures all commits compile and pass tests
+- Follows project conventions and coding standards
+- Documents decisions and approaches
+- Integrates with other agents (CR, SA, TE, TW) for comprehensive quality
+
+**Development Philosophy:**
+- Incremental progress over big bangs
+- Learning from existing code before implementing
+- Pragmatic over dogmatic
+- Clear intent over clever code
+- Test-first when feasible
+
+**Quality Standards:**
+- Every commit must compile and pass tests
+- Code follows project formatting/linting
+- Tests included for new functionality
+- Clear commit messages explaining "why"
+- No TODOs without issue numbers
+
+---
+
 ### Security Analyst (SA)
 **File:** `.claude/agents/security-analyst-sa.md`
 **Color:** Red
