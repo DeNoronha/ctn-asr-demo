@@ -21,6 +21,7 @@ import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../contexts/NotificationContext';
+import { useGridState } from '../hooks/useGridState';
 import type { Member } from '../services/api';
 import {
   exportToCSV,
@@ -58,6 +59,13 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 }) => {
   const { t } = useTranslation();
   const notification = useNotification();
+
+  // Use grid state hook for URL-based pagination persistence
+  const { page, pageSize, skip, updatePage, updatePageSize } = useGridState('members-grid', {
+    defaultPage: 1,
+    defaultPageSize: 20,
+  });
+
   const [gridData, setGridData] = useState<Member[]>(members);
   const [sort, setSort] = useState<SortDescriptor[]>([]);
   const [filter, setFilter] = useState<CompositeFilterDescriptor>({
@@ -71,8 +79,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   const [bulkAction, setBulkAction] = useState<string>('');
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const excelExportRef = useRef<ExcelExport | null>(null);
-  const [skip, setSkip] = useState(0);
-  const [take, setTake] = useState(20);
   const [total, setTotal] = useState(totalMembers || members.length);
 
   // Column visibility state - Default shows: Legal Name, Status, LEI, EUID, KVK, Actions
@@ -155,17 +161,27 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     setGridData(data);
   }, [members, filter, sort, onPageChange]);
 
+  // Trigger data load when page/pageSize changes
+  useEffect(() => {
+    if (onPageChange) {
+      onPageChange(page, pageSize);
+    }
+  }, [page, pageSize, onPageChange]);
+
   // Page change handler for server-side pagination
   const handlePageChange = (event: any) => {
     const newSkip = event.page.skip;
     const newTake = event.page.take;
 
-    setSkip(newSkip);
-    setTake(newTake);
+    // Calculate new page number (1-based)
+    const newPage = Math.floor(newSkip / newTake) + 1;
 
-    if (onPageChange) {
-      const page = Math.floor(newSkip / newTake) + 1;
-      onPageChange(page, newTake);
+    // Update page size if it changed
+    if (newTake !== pageSize) {
+      updatePageSize(newTake);
+    } else if (newPage !== page) {
+      // Only update page if pageSize didn't change (to avoid double API call)
+      updatePage(newPage);
     }
   };
 
@@ -534,7 +550,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             previousNext: true,
           }}
           skip={skip}
-          take={take}
+          take={pageSize}
           total={total}
           onPageChange={handlePageChange}
           style={{ height: '600px' }}
