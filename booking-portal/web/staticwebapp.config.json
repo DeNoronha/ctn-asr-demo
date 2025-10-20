@@ -3,12 +3,7 @@
     "rewrite": "/index.html",
     "exclude": ["/assets/*", "/*.{css,js,jpg,png,gif,svg,ico,woff,woff2,ttf,eot}"]
   },
-  "routes": [
-    {
-      "route": "/api/*",
-      "allowedRoles": ["authenticated"]
-    }
-  ],
+  "routes": [],
   "responseOverrides": {
     "404": {
       "rewrite": "/index.html",
