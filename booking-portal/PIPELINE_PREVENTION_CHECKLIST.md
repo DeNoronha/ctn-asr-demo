@@ -76,7 +76,7 @@ yaml-validator booking-portal/azure-pipelines.yml
 
 **Pass criteria**: YAML is valid
 
-### 5a. Verify Service Connection Names ✅
+### 5a. Verify Service Connection Names & Scope ✅
 ```bash
 # IMPORTANT: Don't guess service connection names!
 # Query Azure DevOps for actual names:
@@ -86,11 +86,25 @@ az devops service-endpoint list \
   --query "[].{name:name, type:type}" -o table
 
 # Available service connections:
-# - azure-ctn-demo
-# - Azure-CTN-ASR-ServiceConnection
+# - azure-ctn-demo (subscription-wide access)
+# - Azure-CTN-ASR-ServiceConnection (scoped to rg-ctn-demo-asr-dev only)
+
+# Check service connection subscription:
+az devops service-endpoint show \
+  --org https://dev.azure.com/ctn-demo \
+  --project ASR \
+  --id <service-connection-id> \
+  --query "data.subscriptionId"
+
+# Verify target resources exist and are accessible:
+az functionapp list --query "[?name=='func-ctn-booking-prod'].{name:name, rg:resourceGroup}"
+az staticwebapp list --query "[?name=='swa-ctn-booking-prod'].{name:name, rg:resourceGroup}"
 ```
 
-**Pass criteria**: Service connection exists in Azure DevOps
+**Pass criteria**:
+- Service connection exists in Azure DevOps
+- Service connection has access to target resource group
+- Target resources exist in Azure
 
 ### 6. Review Deployment Architecture ✅
 
@@ -299,6 +313,13 @@ When you encounter a new pipeline failure:
 **Date**: October 20, 2025
 **Learning**: Function App couldn't access blob storage without "Storage Blob Data Contributor" role
 **Prevention**: Document all Azure RBAC requirements in DEPLOYMENT_ARCHITECTURE.md
+
+### Lesson #4: Service connection scope matters
+**Date**: October 20, 2025
+**Learning**: Azure-CTN-ASR-ServiceConnection is scoped to rg-ctn-demo-asr-dev only, can't access rg-ctn-booking-prod
+**Root cause**: Different service connections have different scopes (resource group vs subscription-wide)
+**Prevention**: Always verify service connection scope matches target resources before using it in pipeline
+**Solution**: Use azure-ctn-demo (subscription-wide) for booking portal resources
 
 ---
 
