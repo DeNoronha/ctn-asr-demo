@@ -6,7 +6,8 @@
       "direction": "in",
       "name": "req",
       "methods": ["post", "options"],
-      "route": "v1/documents"
+      "route": "v1/documents",
+      "dataType": "binary"
     },
     {
       "type": "http",

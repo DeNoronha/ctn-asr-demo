@@ -4,6 +4,7 @@ import { DocumentAnalysisClient, AzureKeyCredential } from "@azure/ai-form-recog
 import { CosmosClient } from "@azure/cosmos";
 import { DefaultAzureCredential } from "@azure/identity";
 import { getUserFromRequest } from "../shared/auth";
+import { parseMultipartForm } from "../shared/multipart";
 
 // Environment variables
 const FORM_RECOGNIZER_ENDPOINT = process.env.DOCUMENT_INTELLIGENCE_ENDPOINT || process.env.FORM_RECOGNIZER_ENDPOINT;
@@ -43,14 +44,17 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         }
 
         // Extract file from multipart form data
-        const file = req.body;
-        if (!file || !Buffer.isBuffer(file)) {
+        const fileUpload = await parseMultipartForm(req);
+        if (!fileUpload) {
             context.res = {
                 status: 400,
                 body: { error: 'No file provided or invalid file format' }
             };
             return;
         }
+
+        const file = fileUpload.buffer;
+        const originalFilename = fileUpload.filename;
 
         const bookingId = `booking-${Date.now()}`;
         const documentId = `doc-${Date.now()}`;
