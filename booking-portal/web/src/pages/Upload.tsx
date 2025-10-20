@@ -26,9 +26,15 @@ const Upload: React.FC = () => {
 
       setUploadedBooking(response.data);
       alert('Document uploaded and processed successfully!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload failed:', error);
-      alert('Upload failed. Please try again.');
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Unknown error';
+      const errorDetails = error.response?.data?.details || '';
+
+      alert(`Upload failed: ${errorMessage}\n${errorDetails}`);
     } finally {
       setUploading(false);
     }

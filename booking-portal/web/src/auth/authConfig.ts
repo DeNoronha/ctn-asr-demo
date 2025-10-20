@@ -30,9 +30,9 @@ export const apiRequest = {
 };
 
 // User Roles for Booking Portal
-// Using SystemAdmin role from CTN Association Register app
+// Using System Admin role from CTN Association Register app (note the space)
 export enum UserRole {
-  SYSTEM_ADMIN = 'SystemAdmin',
+  SYSTEM_ADMIN = 'System Admin',
   TERMINAL_OPERATOR = 'TerminalOperator',
   FREIGHT_FORWARDER = 'FreightForwarder',
 }

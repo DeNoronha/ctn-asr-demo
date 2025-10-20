@@ -72,8 +72,24 @@ stages:
     dependsOn: Build
     condition: succeeded()
     jobs:
+      - job: DeployFunctionApp
+        displayName: 'Deploy API to Function App'
+        steps:
+          - download: current
+            artifact: api
+            displayName: 'Download API artifact'
+
+          - task: AzureFunctionApp@2
+            inputs:
+              azureSubscription: 'Azure-Service-Connection'
+              appType: 'functionApp'
+              appName: $(FUNCTION_APP_NAME)
+              package: '$(Pipeline.Workspace)/api/*.zip'
+              deploymentMethod: 'zipDeploy'
+            displayName: 'Deploy API to Azure Function App'
+
       - job: DeployStaticWebApp
-        displayName: 'Deploy Frontend and API to Static Web App'
+        displayName: 'Deploy Frontend to Static Web App'
         steps:
           - checkout: self
             submodules: false
@@ -89,19 +105,12 @@ stages:
             displayName: 'Install Node.js'
 
           - script: |
-              cd booking-portal/api
-              npm ci
-              npm run build
-            displayName: 'Install and build API'
-
-          - script: |
               cp -r $(Pipeline.Workspace)/frontend booking-portal/web/build
             displayName: 'Copy frontend build artifact'
 
           - task: AzureStaticWebApp@0
             inputs:
               app_location: 'booking-portal/web/build'
-              api_location: 'booking-portal/api'
               output_location: ''
               azure_static_web_apps_api_token: $(AZURE_STATIC_WEB_APPS_API_TOKEN_BOOKING)
-            displayName: 'Deploy to Static Web App with Integrated API'
+            displayName: 'Deploy Frontend to Static Web App'

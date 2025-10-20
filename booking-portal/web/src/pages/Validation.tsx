@@ -3,9 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@progress/kendo-react-buttons';
 import { Input, TextArea } from '@progress/kendo-react-inputs';
 import axios from 'axios';
+import PDFViewer from '../components/PDFViewer';
 
 interface Booking {
   id: string;
+  documentId: string;
   documentUrl: string;
   processingStatus: string;
   overallConfidence: number;
@@ -17,6 +19,7 @@ const Validation: React.FC = () => {
   const { bookingId } = useParams();
   const navigate = useNavigate();
   const [booking, setBooking] = useState<Booking | null>(null);
+  const [documentSasUrl, setDocumentSasUrl] = useState<string>('');
   const [formData, setFormData] = useState<any>({});
   const [corrections, setCorrections] = useState<any[]>([]);
   const [validating, setValidating] = useState(false);
@@ -28,13 +31,27 @@ const Validation: React.FC = () => {
   const loadBooking = async () => {
     try {
       const response = await axios.get<Booking>(`/api/v1/bookings/${bookingId}`);
-      setBooking(response.data);
-      setFormData(response.data.dcsaPlusData);
+      const bookingData = response.data;
+      setBooking(bookingData);
+      setFormData(bookingData.dcsaPlusData);
+
+      // Fetch SAS URL for the document
+      if (bookingData.documentId) {
+        try {
+          const sasResponse = await axios.get<{ sasUrl: string }>(`/api/v1/documents/${bookingData.documentId}/sas`);
+          setDocumentSasUrl(sasResponse.data.sasUrl);
+        } catch (sasError) {
+          console.error('Failed to get SAS URL:', sasError);
+          // Fallback to direct URL (may not work for private containers)
+          setDocumentSasUrl(bookingData.documentUrl);
+        }
+      }
     } catch (error) {
       console.error('Failed to load booking:', error);
       // Mock data for demo
       const mockBooking = {
         id: bookingId || '',
+        documentId: 'doc-mock',
         documentUrl: 'https://example.com/document.pdf',
         processingStatus: 'pending',
         overallConfidence: 0.87,
@@ -150,6 +167,29 @@ const Validation: React.FC = () => {
     return booking.extractionMetadata?.uncertainFields?.includes(field);
   };
 
+  const getFieldConfidence = (field: string): number | null => {
+    const confidence = booking?.extractionMetadata?.confidenceScores?.[field];
+    return typeof confidence === 'number' ? confidence : null;
+  };
+
+  const renderConfidenceBadge = (field: string) => {
+    const confidence = getFieldConfidence(field);
+    if (confidence === null) return null;
+
+    const percentage = Math.round(confidence * 100);
+    let badgeClass = 'status-badge ';
+
+    if (percentage >= 90) badgeClass += 'status-validated';
+    else if (percentage >= 80) badgeClass += 'status-pending';
+    else badgeClass += 'status-processing';
+
+    return (
+      <span className={badgeClass} style={{ marginLeft: '8px', fontSize: '11px' }}>
+        {percentage}% confidence
+      </span>
+    );
+  };
+
   return (
     <div>
       <div className="card-header" style={{ marginBottom: '24px' }}>
@@ -167,26 +207,77 @@ const Validation: React.FC = () => {
       <div className="validation-container">
         {/* Document Viewer */}
         <div className="document-viewer">
-          <iframe src={booking.documentUrl} title="Document Preview" />
+          {documentSasUrl ? (
+            <PDFViewer url={documentSasUrl} title="Booking Document" />
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#64748b' }}>
+              Loading document...
+            </div>
+          )}
         </div>
 
         {/* Validation Form */}
         <div className="validation-form">
+          {/* Corrections Summary */}
+          {corrections.length > 0 && (
+            <div style={{
+              background: '#fffbeb',
+              border: '2px solid #f59e0b',
+              borderRadius: '8px',
+              padding: '16px',
+              marginBottom: '24px'
+            }}>
+              <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: '#92400e' }}>
+                📝 Pending Corrections ({corrections.length})
+              </h4>
+              {corrections.map((correction, idx) => (
+                <div key={idx} style={{
+                  fontSize: '13px',
+                  padding: '8px',
+                  background: 'white',
+                  borderRadius: '4px',
+                  marginBottom: '8px',
+                  borderLeft: '3px solid #f59e0b'
+                }}>
+                  <strong>{correction.field}:</strong>
+                  <div style={{ marginTop: '4px', color: '#64748b' }}>
+                    <span style={{ textDecoration: 'line-through' }}>{String(correction.originalValue)}</span>
+                    {' → '}
+                    <span style={{ color: '#10b981', fontWeight: 500 }}>{String(correction.correctedValue)}</span>
+                  </div>
+                  {correction.originalConfidence && (
+                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                      Original confidence: {Math.round(correction.originalConfidence * 100)}%
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="form-section">
             <h3>Booking Information</h3>
             <div className="form-row">
               <div className="form-field">
-                <label>Carrier Booking Reference</label>
+                <label>
+                  Carrier Booking Reference
+                  {renderConfidenceBadge('carrierBookingReference')}
+                </label>
                 <Input
                   value={formData.carrierBookingReference || ''}
                   onChange={(e) => handleFieldChange('carrierBookingReference', e.value)}
+                  className={getFieldConfidence('carrierBookingReference') !== null && getFieldConfidence('carrierBookingReference')! < 0.8 ? 'low-confidence' : ''}
                 />
               </div>
               <div className="form-field">
-                <label>Transport Document Reference</label>
+                <label>
+                  Transport Document Reference
+                  {renderConfidenceBadge('transportDocumentReference')}
+                </label>
                 <Input
                   value={formData.transportDocumentReference || ''}
                   onChange={(e) => handleFieldChange('transportDocumentReference', e.value)}
+                  className={getFieldConfidence('transportDocumentReference') !== null && getFieldConfidence('transportDocumentReference')! < 0.8 ? 'low-confidence' : ''}
                 />
               </div>
             </div>
@@ -200,10 +291,14 @@ const Validation: React.FC = () => {
                 <Input value={formData.shipmentDetails?.carrierCode || ''} readOnly />
               </div>
               <div className="form-field">
-                <label>Vessel Name</label>
+                <label>
+                  Vessel Name
+                  {renderConfidenceBadge('vesselName')}
+                </label>
                 <Input
                   value={formData.shipmentDetails?.vesselName || ''}
                   onChange={(e) => handleFieldChange('shipmentDetails.vesselName', e.value)}
+                  className={getFieldConfidence('vesselName') !== null && getFieldConfidence('vesselName')! < 0.8 ? 'low-confidence' : ''}
                 />
               </div>
             </div>
@@ -230,7 +325,10 @@ const Validation: React.FC = () => {
             {formData.containers?.map((container: any, index: number) => (
               <div key={index} className="form-row">
                 <div className="form-field">
-                  <label>Container Number</label>
+                  <label>
+                    Container Number
+                    {renderConfidenceBadge('containerNumber')}
+                  </label>
                   <Input value={container.containerNumber || ''} readOnly />
                 </div>
                 <div className="form-field">

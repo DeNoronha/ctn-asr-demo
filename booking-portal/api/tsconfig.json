@@ -17,7 +17,8 @@
     "UploadDocument/**/*.ts",
     "GetBookings/**/*.ts",
     "GetTenants/**/*.ts",
-    "ValidateBooking/**/*.ts"
+    "ValidateBooking/**/*.ts",
+    "GetDocumentSasUrl/**/*.ts"
   ],
   "exclude": ["node_modules", "dist", "**/*.js"]
 }

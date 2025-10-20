@@ -42,20 +42,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initializeAuth();
   }, []);
 
-  // Configure axios to automatically add JWT tokens
+  // Configure axios to automatically add JWT tokens and use API base URL
   useEffect(() => {
     const interceptor = axios.interceptors.request.use(
       async (config: any) => {
+        // Set base URL for API calls
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://func-ctn-booking-prod.azurewebsites.net';
+        if (config.url?.startsWith('/api/')) {
+          config.url = `${apiUrl}${config.url}`;
+        }
+
         if (user) {
           try {
+            console.log('Acquiring access token for API...');
             const token = await getAccessToken();
+            console.log('Access token acquired successfully');
             if (!config.headers) {
               config.headers = {};
             }
             config.headers.Authorization = `Bearer ${token}`;
           } catch (error) {
             console.error('Failed to get access token:', error);
+            throw error; // Re-throw to prevent request without token
           }
+        } else {
+          console.warn('No user logged in, skipping token acquisition');
         }
         return config;
       },
@@ -146,8 +157,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       await msalInstance.loginRedirect({
-        scopes: ['User.Read', 'openid', 'profile', 'email'],
-        prompt: 'select_account',
+        scopes: [
+          'User.Read',
+          'openid',
+          'profile',
+          'email',
+          `api://${msalConfig.auth.clientId}/access_as_user`
+        ],
+        prompt: 'consent', // Force consent screen to show
       });
     } catch (error) {
       console.error('Login error:', error);
@@ -171,20 +188,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const getAccessToken = async (): Promise<string> => {
     try {
+      console.log('[Auth] Getting access token...');
+      console.log('[Auth] User object:', user);
+      console.log('[Auth] API Request scopes:', apiRequest);
+
       const account = user?.account || msalInstance.getAllAccounts()[0];
+      console.log('[Auth] Account:', account);
+
       if (!account) {
         throw new Error('No active account');
       }
 
       // Try silent token acquisition first
+      console.log('[Auth] Attempting silent token acquisition...');
       const response = await msalInstance.acquireTokenSilent({
         ...apiRequest,
         account,
       });
 
+      console.log('[Auth] Token acquired successfully!');
+      console.log('[Auth] Token scopes:', response.scopes);
+      console.log('[Auth] Token expires:', new Date(response.expiresOn!));
+
+      // Decode and log token claims for debugging
+      const tokenParts = response.accessToken.split('.');
+      if (tokenParts.length === 3) {
+        const payload = JSON.parse(atob(tokenParts[1]));
+        console.log('[Auth] Token claims:', payload);
+      }
+
       return response.accessToken;
-    } catch (error) {
+    } catch (error: any) {
+      console.error('[Auth] Token acquisition failed:', error);
+      console.error('[Auth] Error name:', error.name);
+      console.error('[Auth] Error message:', error.message);
+
       if (error instanceof InteractionRequiredAuthError) {
+        console.log('[Auth] Interaction required, redirecting...');
         // Fallback to interactive method
         await msalInstance.acquireTokenRedirect({
           ...apiRequest,
