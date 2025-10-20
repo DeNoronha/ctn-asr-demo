@@ -5,5 +5,7 @@ test
 tsconfig.json
 .funcignore
 *.md
-**/*.ts
+.DS_Store
+node_modules
+**/index.ts
 **/*.map
