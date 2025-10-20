@@ -199,6 +199,15 @@ Schema review, query optimization, DDL management. Maintains `database/schema/cu
 18. **Gremlin/NoSQL injection prevention** - Never concatenate user input into queries. Use parameterized queries with Gremlin traversal API. Deprecate unsafe functions like executeQuery().
 19. **Environment variable validation at startup** - Validate all required credentials at module initialization. Fail fast with clear error messages. Check presence, format, and protocol (HTTPS).
 
+### Pipeline & Deployment (October 20, 2025)
+20. **Never test pipeline changes on main** - Always use feature branch + PR validation pipeline to catch issues before merge. 15+ failed builds = 2 hours wasted.
+21. **Azure Static Web Apps ≠ Integrated Functions** - TypeScript Azure Functions must be deployed separately to Function App. Don't add `api_location` to Static Web App deployment.
+22. **Service connection scope must match resources** - Query Azure DevOps for actual service connection names and verify scope (resource group vs subscription-wide). Don't guess names.
+23. **Never include node_modules in deployment packages** - Remove node_modules before packaging, enable remote build (`SCM_DO_BUILD_DURING_DEPLOYMENT=true`). Package size: 560MB → 5MB.
+24. **Query Azure resources, don't guess** - Use `az devops service-endpoint list`, `az functionapp list`, etc. to find actual names instead of guessing.
+
+**See:** `docs/PIPELINE_PREVENTION_CHECKLIST.md` (comprehensive checklist), `docs/DEPLOYMENT_ARCHITECTURE_BOOKING_PORTAL.md` (architecture guide), `docs/BOOKING_PORTAL_PIPELINE_FIXES_2025-10-20.md` (detailed fixes)
+
 ---
 
 ## Project Context

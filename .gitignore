@@ -53,3 +53,4 @@ logs/
 playwright-report/
 test-results/
 .playwright/
+booking-portal/api/deploy.zip
