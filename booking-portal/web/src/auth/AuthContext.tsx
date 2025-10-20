@@ -110,9 +110,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const email = idTokenClaims?.preferred_username || account.username;
       const name = idTokenClaims?.name || account.name || '';
 
-      // If no roles, assign default FreightForwarder role for now
-      // TODO: Implement proper role assignment in Azure AD
-      const userRoles = roles.length > 0 ? roles : [UserRole.FREIGHT_FORWARDER];
+      // If no roles, user cannot access the portal
+      if (roles.length === 0) {
+        console.error('No roles found for user - access denied');
+        setUser(null);
+        return;
+      }
+
+      const userRoles = roles;
 
       // Determine primary role (highest in hierarchy)
       const primaryRole = userRoles.reduce((highest, role) => {

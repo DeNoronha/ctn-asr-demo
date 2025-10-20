@@ -1,34 +1,47 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const cosmos_1 = require("@azure/cosmos");
+// Environment variables
+const COSMOS_ENDPOINT = process.env.COSMOS_DB_ENDPOINT || process.env.COSMOS_ENDPOINT;
+const COSMOS_KEY = process.env.COSMOS_DB_KEY;
+const COSMOS_DATABASE_NAME = process.env.COSMOS_DATABASE_NAME || 'ctn-bookings-db';
+const COSMOS_CONTAINER_NAME = process.env.COSMOS_CONTAINER_NAME || 'bookings';
 const httpTrigger = async function (context, req) {
     context.log('GetBookings triggered');
     try {
-        // Mock data - will be replaced with actual Cosmos DB query
-        const mockBookings = {
-            data: [
-                {
-                    id: 'booking-1',
-                    documentId: 'doc-1',
-                    containerNumber: 'OOLU3703895',
-                    carrierBookingReference: 'OOLU2649906690',
-                    uploadTimestamp: new Date().toISOString(),
-                    processingStatus: 'pending',
-                    overallConfidence: 0.87
-                },
-                {
-                    id: 'booking-2',
-                    documentId: 'doc-2',
-                    containerNumber: 'MAEU1234567',
-                    carrierBookingReference: 'MAEU9876543210',
-                    uploadTimestamp: new Date(Date.now() - 3600000).toISOString(),
-                    processingStatus: 'validated',
-                    overallConfidence: 0.95
-                }
-            ]
+        // Validate environment variables
+        if (!COSMOS_ENDPOINT || !COSMOS_KEY) {
+            throw new Error('Cosmos DB credentials not configured');
+        }
+        const cosmosClient = new cosmos_1.CosmosClient({
+            endpoint: COSMOS_ENDPOINT,
+            key: COSMOS_KEY
+        });
+        const database = cosmosClient.database(COSMOS_DATABASE_NAME);
+        const container = database.container(COSMOS_CONTAINER_NAME);
+        // Query all bookings, ordered by upload timestamp descending
+        const querySpec = {
+            query: "SELECT c.id, c.documentId, c.uploadTimestamp, c.processingStatus, c.overallConfidence, c.dcsaPlusData FROM c ORDER BY c.uploadTimestamp DESC"
         };
+        const { resources: bookings } = await container.items
+            .query(querySpec)
+            .fetchAll();
+        context.log(`Retrieved ${bookings.length} bookings from Cosmos DB`);
+        // Format response to match expected structure
+        const formattedBookings = bookings.map(booking => ({
+            id: booking.id,
+            documentId: booking.documentId,
+            containerNumber: booking.dcsaPlusData?.containers?.[0]?.containerNumber || '',
+            carrierBookingReference: booking.dcsaPlusData?.carrierBookingReference || '',
+            uploadTimestamp: booking.uploadTimestamp,
+            processingStatus: booking.processingStatus,
+            overallConfidence: booking.overallConfidence
+        }));
         context.res = {
             status: 200,
-            body: mockBookings,
+            body: {
+                data: formattedBookings
+            },
             headers: {
                 'Content-Type': 'application/json'
             }

@@ -3,6 +3,7 @@ import { BlobServiceClient } from "@azure/storage-blob";
 import { DocumentAnalysisClient, AzureKeyCredential } from "@azure/ai-form-recognizer";
 import { CosmosClient } from "@azure/cosmos";
 import { DefaultAzureCredential } from "@azure/identity";
+import { getUserFromRequest } from "../shared/auth";
 
 // Environment variables
 const FORM_RECOGNIZER_ENDPOINT = process.env.DOCUMENT_INTELLIGENCE_ENDPOINT || process.env.FORM_RECOGNIZER_ENDPOINT;
@@ -18,6 +19,18 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     context.log('UploadDocument triggered');
 
     try {
+        // Authenticate user
+        const user = await getUserFromRequest(context, req);
+        if (!user) {
+            context.res = {
+                status: 401,
+                body: { error: 'Unauthorized', message: 'Valid authentication token required' }
+            };
+            return;
+        }
+
+        context.log(`Authenticated user: ${user.email} (${user.name})`);
+
         // Validate environment variables
         if (!FORM_RECOGNIZER_ENDPOINT || !FORM_RECOGNIZER_KEY) {
             throw new Error('Form Recognizer credentials not configured');
@@ -118,10 +131,12 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
 
         const booking = {
             id: bookingId,
-            tenantId: 'demo-terminal', // TODO: Extract from authentication
+            tenantId: user.tenantId || 'default', // From JWT token or default
             documentId,
             documentUrl,
-            uploadedBy: 'user@demo.com', // TODO: Extract from authentication
+            uploadedBy: user.email,
+            uploadedByName: user.name,
+            uploadedByUserId: user.userId,
             uploadTimestamp: new Date().toISOString(),
             processingStatus: 'completed',
             overallConfidence: Math.round(overallConfidence * 100) / 100,

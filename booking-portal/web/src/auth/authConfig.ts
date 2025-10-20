@@ -30,15 +30,16 @@ export const apiRequest = {
 };
 
 // User Roles for Booking Portal
+// Using SystemAdmin role from CTN Association Register app
 export enum UserRole {
+  SYSTEM_ADMIN = 'SystemAdmin',
   TERMINAL_OPERATOR = 'TerminalOperator',
   FREIGHT_FORWARDER = 'FreightForwarder',
-  ADMIN = 'Admin',
 }
 
 // Role hierarchy (for permission checks)
 export const roleHierarchy: Record<UserRole, number> = {
-  [UserRole.ADMIN]: 3,
+  [UserRole.SYSTEM_ADMIN]: 3,
   [UserRole.TERMINAL_OPERATOR]: 2,
   [UserRole.FREIGHT_FORWARDER]: 1,
 };
