@@ -36,7 +36,6 @@ az monitor metrics alert create \
   --evaluation-frequency 1m \
   --severity 1 \
   --description "Critical: Health endpoint returning 503 (unhealthy status) 5+ times in 5 minutes" \
-  --enabled true \
   || echo "Alert already exists or creation failed"
 
 echo "✅ Health Endpoint Unhealthy alert configured"
@@ -53,44 +52,41 @@ az monitor metrics alert create \
   --evaluation-frequency 1m \
   --severity 2 \
   --description "Warning: Health endpoint response time exceeds 5 seconds" \
-  --enabled true \
   || echo "Alert already exists or creation failed"
 
 echo "✅ High Response Time alert configured"
 echo ""
 
-# Alert 3: Database Connection Failures (via Application Insights)
-echo "Creating Alert: Database Connection Failures..."
+# Alert 3: High Request Rate
+echo "Creating Alert: High Request Rate..."
 az monitor metrics alert create \
-  --name "ASR-Database-Connection-Failures" \
+  --name "ASR-High-Request-Rate" \
   --resource-group "$RESOURCE_GROUP" \
-  --scopes "$APP_INSIGHTS_ID" \
-  --condition "count exceptions > 10" \
+  --scopes "$FUNCTION_APP_ID" \
+  --condition "count Requests > 1000" \
+  --window-size 5m \
+  --evaluation-frequency 1m \
+  --severity 2 \
+  --description "Warning: Request rate exceeds 1000 requests per 5 minutes" \
+  || echo "Alert already exists or creation failed"
+
+echo "✅ High Request Rate alert configured"
+echo ""
+
+# Alert 4: Function Execution Failures
+echo "Creating Alert: Function Execution Failures..."
+az monitor metrics alert create \
+  --name "ASR-Function-Execution-Failures" \
+  --resource-group "$RESOURCE_GROUP" \
+  --scopes "$FUNCTION_APP_ID" \
+  --condition "count Http5xx > 10" \
   --window-size 5m \
   --evaluation-frequency 1m \
   --severity 1 \
-  --description "Critical: Multiple database connection failures detected (10+ exceptions in 5 minutes)" \
-  --enabled true \
+  --description "Critical: Function execution failures exceed 10 in 5 minutes" \
   || echo "Alert already exists or creation failed"
 
-echo "✅ Database Connection Failures alert configured"
-echo ""
-
-# Alert 4: Function App Availability
-echo "Creating Alert: Function App Availability..."
-az monitor metrics alert create \
-  --name "ASR-Function-App-Availability" \
-  --resource-group "$RESOURCE_GROUP" \
-  --scopes "$FUNCTION_APP_ID" \
-  --condition "avg availability < 95" \
-  --window-size 15m \
-  --evaluation-frequency 5m \
-  --severity 2 \
-  --description "Warning: Function App availability below 95% over 15 minutes" \
-  --enabled true \
-  || echo "Alert already exists or creation failed"
-
-echo "✅ Function App Availability alert configured"
+echo "✅ Function Execution Failures alert configured"
 echo ""
 
 # Alert 5: Memory Usage High
@@ -100,11 +96,10 @@ az monitor metrics alert create \
   --resource-group "$RESOURCE_GROUP" \
   --scopes "$FUNCTION_APP_ID" \
   --condition "avg MemoryWorkingSet > 800000000" \
-  --window-size 10m \
+  --window-size 15m \
   --evaluation-frequency 5m \
   --severity 2 \
-  --description "Warning: Memory usage exceeds 800MB for 10 minutes" \
-  --enabled true \
+  --description "Warning: Memory usage exceeds 800MB for 15 minutes" \
   || echo "Alert already exists or creation failed"
 
 echo "✅ High Memory Usage alert configured"
