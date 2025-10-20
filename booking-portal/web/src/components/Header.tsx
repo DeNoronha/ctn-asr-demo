@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+import { Button } from '@progress/kendo-react-buttons';
 
 const Header: React.FC = () => {
+  const { user, logout } = useAuth();
+
   return (
     <header className="app-header">
       <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
@@ -21,15 +25,34 @@ const Header: React.FC = () => {
         </nav>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <span className="header-subtitle">ITG Hengelo</span>
+        {user?.tenantId && (
+          <span className="header-subtitle">{user.tenantId}</span>
+        )}
         <div style={{
           padding: '8px 16px',
           borderRadius: '8px',
           background: 'rgba(255, 255, 255, 0.1)',
-          color: 'white'
+          color: 'white',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end'
         }}>
-          John Planner
+          <div>{user?.name || user?.email}</div>
+          <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+            {user?.primaryRole}
+          </div>
         </div>
+        <Button
+          onClick={logout}
+          size="small"
+          fillMode="outline"
+          style={{
+            color: 'white',
+            borderColor: 'white'
+          }}
+        >
+          Logout
+        </Button>
       </div>
     </header>
   );
