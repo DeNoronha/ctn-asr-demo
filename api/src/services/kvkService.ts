@@ -54,7 +54,7 @@ export class KvKService {
         timeout: 10000,
       });
 
-      const data: KvKCompanyData = response.data;
+      const data = response.data as KvKCompanyData;
       const flags: string[] = [];
 
       // Check for bankruptcies or dissolution
