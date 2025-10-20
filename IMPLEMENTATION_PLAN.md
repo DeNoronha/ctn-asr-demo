@@ -66,17 +66,17 @@
 ## Stage 3: Integrate Dashboard into Admin Portal
 **Goal**: Add routing and navigation for health dashboard
 **Success Criteria**:
-- [ ] Route added to App.tsx with admin protection
-- [ ] Navigation menu item added
-- [ ] Dashboard accessible at /health
-- [ ] Proper role-based access control
+- [x] Route added to App.tsx with admin protection
+- [x] Navigation menu item added
+- [x] Dashboard accessible at /health
+- [x] Proper role-based access control
 
 **Tests**:
 - E2E test navigating to /health
 - Test admin-only access
 - Test navigation menu item
 
-**Status**: In Progress
+**Status**: ✅ Complete
 
 **Implementation Notes**:
 - Update web/src/App.tsx
@@ -89,18 +89,18 @@
 ## Stage 4: Configure Azure Monitor Alerts
 **Goal**: Set up automated health monitoring alerts
 **Success Criteria**:
-- [ ] Alert for API unhealthy status configured
-- [ ] Alert for database connection failures configured
-- [ ] Alert thresholds properly set
-- [ ] Alert severity levels assigned
-- [ ] Notification actions configured
+- [x] Alert for API unhealthy status configured
+- [x] Alert for database connection failures configured
+- [x] Alert thresholds properly set
+- [x] Alert severity levels assigned
+- [x] Notification actions configured
 
 **Tests**:
 - Manual trigger of alerts
 - Verify alert appears in Azure Portal
 - Check alert notification delivery
 
-**Status**: Not Started
+**Status**: ✅ Complete
 
 **Implementation Notes**:
 - Create infrastructure/health-alerts.sh
@@ -113,10 +113,10 @@
 ## Stage 5: Documentation and Testing
 **Goal**: Complete documentation and comprehensive testing
 **Success Criteria**:
-- [ ] HEALTH_MONITORING.md created with architecture
-- [ ] Dashboard usage instructions documented
-- [ ] Alert configuration documented
-- [ ] Troubleshooting guide included
+- [x] HEALTH_MONITORING.md created with architecture
+- [x] Dashboard usage instructions documented
+- [x] Alert configuration documented
+- [x] Troubleshooting guide included
 - [ ] API tests passing
 - [ ] E2E tests passing
 - [ ] All components deployed
@@ -127,7 +127,7 @@
 - Alert trigger test
 - Documentation review
 
-**Status**: Not Started
+**Status**: In Progress
 
 **Implementation Notes**:
 - Create docs/HEALTH_MONITORING.md
