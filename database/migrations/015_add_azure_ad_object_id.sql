@@ -35,9 +35,6 @@ COMMENT ON COLUMN members.azure_ad_object_id IS
 COMMENT ON COLUMN members.email IS
 'Primary contact email for the member organization. Used for notifications and fallback authentication lookup.';
 
--- Verification query (shows table structure)
-\d members;
-
 -- Success message
 DO $$
 BEGIN
