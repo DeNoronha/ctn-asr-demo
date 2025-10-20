@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@ctn/api-client": "file:../packages/api-client",
     "@azure/msal-browser": "^3.7.1",
     "@azure/msal-react": "^2.0.22",
     "@progress/kendo-charts": "^2.8.2",

@@ -6,7 +6,7 @@ import './i18n'; // Initialize i18n
 import App from './App';
 import './index.css';
 
-const msalInstance = new PublicClientApplication(msalConfig);
+export const msalInstance = new PublicClientApplication(msalConfig);
 
 msalInstance
   .initialize()

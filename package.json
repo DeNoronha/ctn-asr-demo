@@ -1,4 +1,12 @@
 {
+  "name": "ctn-asr-monorepo",
+  "private": true,
+  "workspaces": [
+    "web",
+    "portal",
+    "api",
+    "packages/*"
+  ],
   "dependencies": {
     "@progress/kendo-licensing": "^1.7.1",
     "@progress/kendo-react-buttons": "^12.1.0",
