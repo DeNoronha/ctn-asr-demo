@@ -27,7 +27,7 @@ const Validation: React.FC = () => {
 
   const loadBooking = async () => {
     try {
-      const response = await axios.get(`/api/v1/bookings/${bookingId}`);
+      const response = await axios.get<Booking>(`/api/v1/bookings/${bookingId}`);
       setBooking(response.data);
       setFormData(response.data.dcsaPlusData);
     } catch (error) {

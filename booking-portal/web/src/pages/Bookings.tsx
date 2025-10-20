@@ -30,7 +30,7 @@ const Bookings: React.FC = () => {
         ? `/api/v1/bookings?status=${status}`
         : '/api/v1/bookings';
 
-      const response = await axios.get(url);
+      const response = await axios.get<{ data: Booking[] }>(url);
       setBookings(response.data.data || []);
     } catch (error) {
       console.error('Failed to load bookings:', error);

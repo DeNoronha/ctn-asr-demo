@@ -33,7 +33,7 @@ const Admin: React.FC = () => {
 
   const loadTenants = async () => {
     try {
-      const response = await axios.get('/api/v1/tenants');
+      const response = await axios.get<Tenant[]>('/api/v1/tenants');
       setTenants(response.data || []);
     } catch (error) {
       console.error('Failed to load tenants:', error);
