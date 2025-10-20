@@ -72,33 +72,36 @@ stages:
     dependsOn: Build
     condition: succeeded()
     jobs:
-      - job: DeployAPI
-        displayName: 'Deploy Backend API'
+      - job: DeployStaticWebApp
+        displayName: 'Deploy Frontend and API to Static Web App'
         steps:
-          - download: current
-            artifact: api
-            displayName: 'Download API artifact'
+          - checkout: self
+            submodules: false
+            displayName: 'Checkout source code'
 
-          - task: AzureFunctionApp@2
-            inputs:
-              azureSubscription: 'Azure-CTN-ASR-ServiceConnection'
-              appType: 'functionAppLinux'
-              appName: $(FUNCTION_APP_NAME)
-              package: '$(Pipeline.Workspace)/api/api-$(Build.BuildId).zip'
-              deploymentMethod: 'zipDeploy'
-            displayName: 'Deploy to Azure Functions'
-
-      - job: DeployFrontend
-        displayName: 'Deploy Frontend'
-        steps:
           - download: current
             artifact: frontend
             displayName: 'Download frontend artifact'
 
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(NODE_VERSION)
+            displayName: 'Install Node.js'
+
+          - script: |
+              cd booking-portal/api
+              npm ci
+              npm run build
+            displayName: 'Install and build API'
+
+          - script: |
+              cp -r $(Pipeline.Workspace)/frontend booking-portal/web/build
+            displayName: 'Copy frontend build artifact'
+
           - task: AzureStaticWebApp@0
             inputs:
-              app_location: '$(Pipeline.Workspace)/frontend'
-              api_location: ''
+              app_location: 'booking-portal/web/build'
+              api_location: 'booking-portal/api'
               output_location: ''
               azure_static_web_apps_api_token: $(AZURE_STATIC_WEB_APPS_API_TOKEN_BOOKING)
-            displayName: 'Deploy to Static Web App'
+            displayName: 'Deploy to Static Web App with Integrated API'
