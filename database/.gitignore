@@ -1,0 +1,19 @@
+# Temporary files
+*.tmp
+*.bak
+*.backup
+
+# Database dumps with data
+*_with_data.sql
+*_dump.sql
+
+# Local test databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Editor files
+.DS_Store
+*.swp
+*.swo
+*~
