@@ -20,6 +20,7 @@ import About from './About';
 import AdminSidebar, { type MenuItem } from './AdminSidebar';
 import Dashboard from './Dashboard';
 import { EndpointManagement } from './EndpointManagement';
+import { HealthDashboard } from './HealthDashboard';
 import LanguageSwitcher from './LanguageSwitcher';
 import LoadingSpinner from './LoadingSpinner';
 import { MemberDetailView } from './MemberDetailView';
@@ -236,6 +237,13 @@ const AdminPortal: React.FC = () => {
         return (
           <div className="audit-view">
             <AuditLogViewer />
+          </div>
+        );
+
+      case 'health':
+        return (
+          <div className="health-view">
+            <HealthDashboard />
           </div>
         );
 

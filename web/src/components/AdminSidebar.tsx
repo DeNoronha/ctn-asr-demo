@@ -1,4 +1,5 @@
 import {
+  Activity,
   CheckSquare,
   CreditCard,
   FileText,
@@ -40,6 +41,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
     { separator: true, text: '' },
     { text: 'User Management', iconComponent: Shield, route: 'settings' },
     { text: 'Audit Logs', iconComponent: FileText, route: 'audit' },
+    { text: 'Health Monitor', iconComponent: Activity, route: 'health' },
     { text: 'Settings', iconComponent: Settings, route: 'docs' },
     { text: 'About', iconComponent: Info, route: 'about' },
   ];
