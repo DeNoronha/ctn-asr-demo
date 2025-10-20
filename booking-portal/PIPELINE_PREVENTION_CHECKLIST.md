@@ -76,6 +76,22 @@ yaml-validator booking-portal/azure-pipelines.yml
 
 **Pass criteria**: YAML is valid
 
+### 5a. Verify Service Connection Names ✅
+```bash
+# IMPORTANT: Don't guess service connection names!
+# Query Azure DevOps for actual names:
+az devops service-endpoint list \
+  --org https://dev.azure.com/ctn-demo \
+  --project ASR \
+  --query "[].{name:name, type:type}" -o table
+
+# Available service connections:
+# - azure-ctn-demo
+# - Azure-CTN-ASR-ServiceConnection
+```
+
+**Pass criteria**: Service connection exists in Azure DevOps
+
 ### 6. Review Deployment Architecture ✅
 
 Read `DEPLOYMENT_ARCHITECTURE.md` and confirm:
