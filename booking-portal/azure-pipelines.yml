@@ -38,6 +38,15 @@ stages:
               npm run build
             displayName: 'Install dependencies and build API'
 
+          - script: |
+              # Remove node_modules to reduce package size
+              # Azure Functions will install dependencies remotely
+              rm -rf booking-portal/api/node_modules
+
+              # Verify package size reduction
+              du -sh booking-portal/api
+            displayName: 'Remove node_modules before packaging'
+
           - task: ArchiveFiles@2
             inputs:
               rootFolderOrFile: 'booking-portal/api'
@@ -45,7 +54,7 @@ stages:
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/api-$(Build.BuildId).zip'
               replaceExistingArchive: true
-            displayName: 'Archive API files'
+            displayName: 'Archive API files (without node_modules)'
 
           - publish: $(Build.ArtifactStagingDirectory)/api-$(Build.BuildId).zip
             artifact: api
@@ -88,7 +97,9 @@ stages:
               appName: $(FUNCTION_APP_NAME)
               package: '$(Pipeline.Workspace)/api/*.zip'
               deploymentMethod: 'zipDeploy'
-            displayName: 'Deploy API to Azure Function App'
+              # Enable remote build - Azure will install node_modules
+              appSettings: '-SCM_DO_BUILD_DURING_DEPLOYMENT true -ENABLE_ORYX_BUILD true'
+            displayName: 'Deploy API to Azure Function App (with remote build)'
 
       - job: DeployStaticWebApp
         displayName: 'Deploy Frontend to Static Web App'
