@@ -321,6 +321,20 @@ When you encounter a new pipeline failure:
 **Prevention**: Always verify service connection scope matches target resources before using it in pipeline
 **Solution**: Use azure-ctn-demo (subscription-wide) for booking portal resources
 
+### Lesson #5: Never include node_modules in deployment packages
+**Date**: October 20, 2025
+**Learning**: Deployment package was 560MB (with node_modules), exceeded Function App disk space (500MB)
+**Root cause**: ArchiveFiles@2 task included entire api directory with node_modules
+**Prevention**: Always remove node_modules before packaging, enable remote build in Azure Functions
+**Solution**:
+```yaml
+- script: rm -rf booking-portal/api/node_modules
+- task: AzureFunctionApp@2
+  inputs:
+    appSettings: '-SCM_DO_BUILD_DURING_DEPLOYMENT true -ENABLE_ORYX_BUILD true'
+```
+**Result**: Package size reduced from 560MB to ~5-10MB
+
 ---
 
 **Remember**: 5 minutes of checklist review > 2 hours of debugging failed pipelines
