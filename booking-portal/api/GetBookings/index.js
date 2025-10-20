@@ -20,7 +20,8 @@ const httpTrigger = async function (context, req) {
         const database = cosmosClient.database(COSMOS_DATABASE_NAME);
         const container = database.container(COSMOS_CONTAINER_NAME);
         // Check if bookingId parameter is provided
-        const bookingId = context.bindingData.bookingId;
+        // Note: Azure Functions lowercases route parameters
+        const bookingId = context.bindingData.bookingid;
         if (bookingId) {
             // Fetch single booking by ID
             context.log(`Fetching booking: ${bookingId}`);
