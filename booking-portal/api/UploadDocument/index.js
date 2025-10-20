@@ -1,8 +1,7 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-
-export async function UploadDocument(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-    context.log(`UploadDocument triggered`);
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const httpTrigger = async function (context, req) {
+    context.log('UploadDocument triggered');
     try {
         // Mock response for MVP - will be replaced with actual upload and processing
         const mockBooking = {
@@ -23,7 +22,7 @@ export async function UploadDocument(request: HttpRequest, context: InvocationCo
                 },
                 containers: [],
                 inlandExtensions: {
-                    transportMode: 'barge' as const,
+                    transportMode: 'barge',
                     pickupDetails: { facilityName: '' },
                     deliveryDetails: { facilityName: '' }
                 },
@@ -39,24 +38,24 @@ export async function UploadDocument(request: HttpRequest, context: InvocationCo
             },
             validationHistory: []
         };
-
-        return {
+        context.res = {
             status: 202,
-            jsonBody: mockBooking
-        };
-
-    } catch (error: any) {
-        context.error('Error in UploadDocument:', error);
-        return {
-            status: 500,
-            jsonBody: { error: 'Internal server error', message: error.message }
+            body: mockBooking,
+            headers: {
+                'Content-Type': 'application/json'
+            }
         };
     }
-}
-
-app.http('UploadDocument', {
-    methods: ['POST', 'OPTIONS'],
-    authLevel: 'anonymous',
-    route: 'v1/documents',
-    handler: UploadDocument
-});
+    catch (error) {
+        context.log.error('Error in UploadDocument:', error);
+        context.res = {
+            status: 500,
+            body: { error: 'Internal server error', message: error.message },
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+    }
+};
+exports.default = httpTrigger;
+//# sourceMappingURL=index.js.map
