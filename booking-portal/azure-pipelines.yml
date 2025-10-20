@@ -17,6 +17,8 @@ variables:
     value: 'swa-ctn-booking-prod'
   - name: NODE_VERSION
     value: '20.x'
+  - name: AZURE_SUBSCRIPTION
+    value: 'Azure subscription 1(add6a89c-7fb9-4f8a-9d63-7611a617430e)'
 
 stages:
   - stage: Build
@@ -81,7 +83,7 @@ stages:
 
           - task: AzureFunctionApp@2
             inputs:
-              azureSubscription: 'Azure-Service-Connection'
+              azureSubscription: $(AZURE_SUBSCRIPTION)
               appType: 'functionApp'
               appName: $(FUNCTION_APP_NAME)
               package: '$(Pipeline.Workspace)/api/*.zip'
