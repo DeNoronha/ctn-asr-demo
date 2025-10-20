@@ -1,6 +1,10 @@
 // Essential functions for demo - member and admin portals
 console.log('Loading essential functions for demo...');
 
+// Initialize Application Insights telemetry
+import { initializeTelemetry } from './utils/telemetry';
+initializeTelemetry();
+
 // Health check and BDI
 import './functions/healthCheck';
 import './functions/GetVersion';

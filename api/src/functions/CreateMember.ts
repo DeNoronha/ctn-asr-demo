@@ -4,15 +4,23 @@ import { addVersionHeaders, logApiRequest } from '../middleware/versioning';
 import { getPool } from '../utils/database';
 import { withTransaction } from '../utils/transaction';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
+import { trackEvent, trackMetric, trackException, trackDependency } from '../utils/telemetry';
 
 async function handler(
   request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
+  const startTime = Date.now();
   const pool = getPool();
 
   try {
     const body = await request.json() as any;
+
+    // Track request
+    trackEvent('create_member_request', {
+      user_id: request.userId || 'anonymous',
+      org_id: body.org_id
+    }, undefined, context);
 
     // Validate required fields
     if (!body.org_id || !body.legal_name || !body.domain) {
@@ -25,6 +33,7 @@ async function handler(
     }
 
     // Execute all operations in a single transaction
+    const dbStart = Date.now();
     const result = await withTransaction(pool, context, async (tx) => {
       // 1. Create a party reference if needed (or use existing logic)
       const { rows: partyRows } = await tx.query(
@@ -128,6 +137,23 @@ async function handler(
       };
     });
 
+    const dbDuration = Date.now() - dbStart;
+    trackDependency('PostgreSQL:CreateMember', 'SQL', dbDuration, true, {
+      table: 'members',
+      operation: 'INSERT'
+    });
+
+    // Track success
+    const totalDuration = Date.now() - startTime;
+    trackEvent('create_member_success', {
+      status: 'success',
+      org_id: result.org_id
+    }, { duration: totalDuration }, context);
+
+    trackMetric('create_member_duration', totalDuration, {
+      operation: 'create_member'
+    });
+
     // Log successful member creation
     await logAuditEvent({
       event_type: AuditEventType.MEMBER_CREATED,
@@ -150,7 +176,7 @@ async function handler(
     }, context);
 
     // Log API request with version info
-    logApiRequest(context, 'v1', '/members', request);
+    logApiRequest(context, 'v1', '/members', request as any);
 
     // Build response with version headers
     const response: HttpResponseInit = {
@@ -161,7 +187,19 @@ async function handler(
 
     return addVersionHeaders(response, 'v1');
   } catch (error: any) {
+    const totalDuration = Date.now() - startTime;
     context.error('Error creating member:', error);
+
+    // Track failure
+    trackException(error, {
+      operation: 'create_member',
+      user_id: request.userId || 'anonymous'
+    });
+
+    trackEvent('create_member_failure', {
+      status: 'failure',
+      error: error.message
+    }, { duration: totalDuration }, context);
 
     // Log failed member creation
     await logAuditEvent({

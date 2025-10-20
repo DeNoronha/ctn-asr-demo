@@ -32,16 +32,23 @@ import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { getPool } from '../utils/database';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
+import { trackEvent, trackMetric, trackException, trackDependency } from '../utils/telemetry';
 
 async function handler(
   request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
+  const startTime = Date.now();
   context.log('ResolveParty function triggered');
 
   try {
     // Extract oid (Azure AD object ID) from authenticated token
     const oid = request.user?.oid;
+
+    trackEvent('resolve_party_request', {
+      user_id: request.userId || 'anonymous',
+      oid: oid || 'missing'
+    }, undefined, context);
 
     if (!oid) {
       context.warn('Party resolution failed: Missing oid claim in JWT');
@@ -82,7 +89,14 @@ async function handler(
       LIMIT 1
     `;
 
+    const dbStart = Date.now();
     const result = await pool.query(query, [oid]);
+    const dbDuration = Date.now() - dbStart;
+
+    trackDependency('PostgreSQL:ResolveParty', 'SQL', dbDuration, true, {
+      table: 'members_legal_entity_party',
+      operation: 'SELECT'
+    });
 
     // Check if user has party association
     if (result.rows.length === 0) {
@@ -139,6 +153,17 @@ async function handler(
       }
     }, context);
 
+    // Track success
+    const totalDuration = Date.now() - startTime;
+    trackEvent('resolve_party_success', {
+      status: 'success',
+      party_id: party.party_id
+    }, { duration: totalDuration }, context);
+
+    trackMetric('resolve_party_duration', totalDuration, {
+      operation: 'resolve_party'
+    });
+
     // Return party information
     return {
       status: 200,
@@ -156,7 +181,19 @@ async function handler(
     };
 
   } catch (error) {
+    const totalDuration = Date.now() - startTime;
     context.error('Error resolving party:', error);
+
+    // Track failure
+    trackException(error as Error, {
+      operation: 'resolve_party',
+      user_id: request.userId || 'anonymous'
+    });
+
+    trackEvent('resolve_party_failure', {
+      status: 'failure',
+      error: (error as Error).message
+    }, { duration: totalDuration }, context);
 
     // Log error
     await logAuditEvent({
