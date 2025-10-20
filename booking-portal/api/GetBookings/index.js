@@ -19,33 +19,70 @@ const httpTrigger = async function (context, req) {
         });
         const database = cosmosClient.database(COSMOS_DATABASE_NAME);
         const container = database.container(COSMOS_CONTAINER_NAME);
-        // Query all bookings, ordered by upload timestamp descending
-        const querySpec = {
-            query: "SELECT c.id, c.documentId, c.uploadTimestamp, c.processingStatus, c.overallConfidence, c.dcsaPlusData FROM c ORDER BY c.uploadTimestamp DESC"
-        };
-        const { resources: bookings } = await container.items
-            .query(querySpec)
-            .fetchAll();
-        context.log(`Retrieved ${bookings.length} bookings from Cosmos DB`);
-        // Format response to match expected structure
-        const formattedBookings = bookings.map(booking => ({
-            id: booking.id,
-            documentId: booking.documentId,
-            containerNumber: booking.dcsaPlusData?.containers?.[0]?.containerNumber || '',
-            carrierBookingReference: booking.dcsaPlusData?.carrierBookingReference || '',
-            uploadTimestamp: booking.uploadTimestamp,
-            processingStatus: booking.processingStatus,
-            overallConfidence: booking.overallConfidence
-        }));
-        context.res = {
-            status: 200,
-            body: {
-                data: formattedBookings
-            },
-            headers: {
-                'Content-Type': 'application/json'
+        // Check if bookingId parameter is provided
+        const bookingId = context.bindingData.bookingId;
+        if (bookingId) {
+            // Fetch single booking by ID
+            context.log(`Fetching booking: ${bookingId}`);
+            try {
+                const { resource: booking } = await container.item(bookingId, bookingId).read();
+                if (!booking) {
+                    context.res = {
+                        status: 404,
+                        body: { error: 'Booking not found' },
+                        headers: { 'Content-Type': 'application/json' }
+                    };
+                    return;
+                }
+                context.log(`Retrieved booking ${bookingId} from Cosmos DB`);
+                context.res = {
+                    status: 200,
+                    body: booking,
+                    headers: { 'Content-Type': 'application/json' }
+                };
             }
-        };
+            catch (error) {
+                if (error.code === 404) {
+                    context.res = {
+                        status: 404,
+                        body: { error: 'Booking not found' },
+                        headers: { 'Content-Type': 'application/json' }
+                    };
+                }
+                else {
+                    throw error;
+                }
+            }
+        }
+        else {
+            // Query all bookings, ordered by upload timestamp descending
+            const querySpec = {
+                query: "SELECT c.id, c.documentId, c.uploadTimestamp, c.processingStatus, c.overallConfidence, c.dcsaPlusData FROM c ORDER BY c.uploadTimestamp DESC"
+            };
+            const { resources: bookings } = await container.items
+                .query(querySpec)
+                .fetchAll();
+            context.log(`Retrieved ${bookings.length} bookings from Cosmos DB`);
+            // Format response to match expected structure
+            const formattedBookings = bookings.map(booking => ({
+                id: booking.id,
+                documentId: booking.documentId,
+                containerNumber: booking.dcsaPlusData?.containers?.[0]?.containerNumber || '',
+                carrierBookingReference: booking.dcsaPlusData?.carrierBookingReference || '',
+                uploadTimestamp: booking.uploadTimestamp,
+                processingStatus: booking.processingStatus,
+                overallConfidence: booking.overallConfidence
+            }));
+            context.res = {
+                status: 200,
+                body: {
+                    data: formattedBookings
+                },
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+        }
     }
     catch (error) {
         context.log.error('Error in GetBookings:', error);

@@ -5,6 +5,7 @@ const ai_form_recognizer_1 = require("@azure/ai-form-recognizer");
 const cosmos_1 = require("@azure/cosmos");
 const identity_1 = require("@azure/identity");
 const auth_1 = require("../shared/auth");
+const multipart_1 = require("../shared/multipart");
 // Environment variables
 const FORM_RECOGNIZER_ENDPOINT = process.env.DOCUMENT_INTELLIGENCE_ENDPOINT || process.env.FORM_RECOGNIZER_ENDPOINT;
 const FORM_RECOGNIZER_KEY = process.env.DOCUMENT_INTELLIGENCE_KEY;
@@ -38,14 +39,16 @@ const httpTrigger = async function (context, req) {
             throw new Error('Storage Account not configured');
         }
         // Extract file from multipart form data
-        const file = req.body;
-        if (!file || !Buffer.isBuffer(file)) {
+        const fileUpload = await (0, multipart_1.parseMultipartForm)(req);
+        if (!fileUpload) {
             context.res = {
                 status: 400,
                 body: { error: 'No file provided or invalid file format' }
             };
             return;
         }
+        const file = fileUpload.buffer;
+        const originalFilename = fileUpload.filename;
         const bookingId = `booking-${Date.now()}`;
         const documentId = `doc-${Date.now()}`;
         const fileName = `${documentId}.pdf`;
