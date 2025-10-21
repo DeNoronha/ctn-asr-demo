@@ -76,6 +76,12 @@ steps:
       npm ci --legacy-peer-deps
     displayName: 'Install dependencies'
 
+  - script: |
+      cd packages/api-client
+      npm ci
+      npm run build
+    displayName: 'Build @ctn/api-client package'
+
   # Biome code quality checks - REPORT ONLY (does not block deployment)
   - script: |
       cd portal
