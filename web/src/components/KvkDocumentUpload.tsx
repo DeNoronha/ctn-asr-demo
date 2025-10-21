@@ -7,6 +7,15 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 
+interface KvkApiResponse {
+  kvkNumber: string;
+  statutoryName: string;
+  status?: string;
+  tradeNames?: {
+    businessName: string;
+  };
+}
+
 interface KvkVerificationStatus {
   kvk_document_url: string | null;
   kvk_verification_status: string;
@@ -17,6 +26,7 @@ interface KvkVerificationStatus {
   entered_kvk_number: string | null;
   kvk_extracted_company_name: string | null;
   kvk_extracted_number: string | null;
+  kvk_api_response: KvkApiResponse | string | null;
   kvk_mismatch_flags: string[] | null;
   document_uploaded_at: string | null;
 }
@@ -85,7 +95,18 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
       const response = await axiosInstance.get<KvkVerificationStatus>(
         `/legal-entities/${legalEntityId}/kvk-verification`
       );
-      setVerificationStatus(response.data);
+
+      // Parse kvk_api_response if it's a JSON string
+      const data = response.data;
+      if (data.kvk_api_response && typeof data.kvk_api_response === 'string') {
+        try {
+          data.kvk_api_response = JSON.parse(data.kvk_api_response);
+        } catch (e) {
+          console.warn('Failed to parse kvk_api_response:', e);
+        }
+      }
+
+      setVerificationStatus(data);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch verification status:', error);
@@ -171,6 +192,30 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
     return <span className={`k-badge k-badge-${badge.color}`}>{badge.text}</span>;
   };
 
+  // Type guard for KvK API response
+  const getKvkApiData = (): KvkApiResponse | null => {
+    const response = verificationStatus?.kvk_api_response;
+    if (!response || typeof response === 'string') {
+      return null;
+    }
+    return response;
+  };
+
+  const getCompanyStatus = (): { text: string; color: string; icon: string } => {
+    const kvkData = getKvkApiData();
+    if (!kvkData?.status) {
+      return { text: 'Active', color: '#10b981', icon: '✓' };
+    }
+
+    if (kvkData.status === 'Faillissement') {
+      return { text: 'Bankrupt', color: '#dc2626', icon: '⚠' };
+    }
+    if (kvkData.status === 'Ontbonden') {
+      return { text: 'Dissolved', color: '#dc2626', icon: '⚠' };
+    }
+    return { text: 'Active', color: '#10b981', icon: '✓' };
+  };
+
   const getFlagDescription = (flag: string): string => {
     const descriptions: { [key: string]: string } = {
       // Entered vs Extracted comparison flags
@@ -183,11 +228,12 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
       bankrupt: 'Company is bankrupt according to KvK',
       dissolved: 'Company is dissolved according to KvK',
       kvk_number_not_found: 'KvK number not found in registry',
+      api_key_missing: 'KvK API key not configured',
 
       // Processing flags
       extraction_failed: 'Failed to extract data from document',
       processing_error: 'Error processing document',
-      api_error: 'KvK API error',
+      api_error: 'Failed to connect to KvK API',
     };
 
     return descriptions[flag] || flag;
@@ -221,167 +267,163 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
 
       {verificationStatus?.kvk_document_url ? (
         <div className="verification-status" style={{ marginBottom: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
             <strong>Status:</strong> {getStatusBadge(verificationStatus.kvk_verification_status)}
           </div>
 
           {verificationStatus.kvk_verification_status === 'pending' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#666' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#666', marginBottom: '15px' }}>
               <Loader size="small" />
               <span>Verifying document...</span>
             </div>
           )}
 
-          {/* Comparison Grid */}
-          {(verificationStatus.kvk_extracted_company_name ||
-            verificationStatus.kvk_extracted_number) && (
+          {/* KvK Company Status - Prominent Display */}
+          {getKvkApiData() && (
+            <div
+              style={{
+                marginBottom: '20px',
+                padding: '15px',
+                backgroundColor: getCompanyStatus().color === '#10b981' ? '#f0fdf4' : '#fef2f2',
+                border: `2px solid ${getCompanyStatus().color}`,
+                borderRadius: '6px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '1.5em' }}>{getCompanyStatus().icon}</span>
+                <div>
+                  <strong style={{ fontSize: '1.1em' }}>
+                    Company Status (KvK Registry):{' '}
+                    <span style={{ color: getCompanyStatus().color }}>{getCompanyStatus().text}</span>
+                  </strong>
+                  <div style={{ fontSize: '0.9em', color: '#666', marginTop: '5px' }}>
+                    {getKvkApiData()?.statutoryName}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 3-Column Comparison Grid */}
+          {(verificationStatus.kvk_extracted_company_name || verificationStatus.kvk_extracted_number) && (
             <div style={{ marginTop: '20px', marginBottom: '20px' }}>
-              <strong style={{ marginBottom: '10px', display: 'block' }}>Data Comparison:</strong>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95em' }}>
+              <strong style={{ marginBottom: '10px', display: 'block', fontSize: '1.05em' }}>
+                Verification Details:
+              </strong>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9em' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
-                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Field</th>
-                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>
-                      Entered Value
+                    <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600, width: '15%' }}>
+                      Field
                     </th>
-                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>
-                      Extracted Value
+                    <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600 }}>
+                      Entered by User
                     </th>
-                    <th
-                      style={{
-                        padding: '12px',
-                        textAlign: 'center',
-                        fontWeight: 600,
-                        width: '100px',
-                      }}
-                    >
-                      Match
+                    <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600 }}>
+                      From PDF
+                    </th>
+                    <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600 }}>
+                      KvK Registry
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {/* Company Name Row */}
                   <tr style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '12px', fontWeight: 500 }}>Company Name</td>
-                    <td style={{ padding: '12px' }}>
+                    <td style={{ padding: '10px', fontWeight: 500, backgroundColor: '#fafafa' }}>
+                      Company Name
+                    </td>
+                    <td style={{ padding: '10px' }}>
                       {verificationStatus.entered_company_name || (
-                        <span style={{ color: '#999', fontStyle: 'italic' }}>Not entered</span>
+                        <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
                       )}
                     </td>
-                    <td style={{ padding: '12px' }}>
+                    <td
+                      style={{
+                        padding: '10px',
+                        backgroundColor:
+                          verificationStatus.kvk_mismatch_flags?.includes('entered_name_mismatch')
+                            ? '#fee2e2'
+                            : 'inherit',
+                      }}
+                    >
                       {verificationStatus.kvk_extracted_company_name || (
-                        <span style={{ color: '#999', fontStyle: 'italic' }}>Not extracted</span>
+                        <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
                       )}
                     </td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
-                      {verificationStatus.kvk_mismatch_flags?.includes('entered_name_mismatch') ? (
-                        <span style={{ color: '#dc2626', fontSize: '1.5em', fontWeight: 'bold' }}>
-                          ✗
-                        </span>
-                      ) : (
-                        <span style={{ color: '#10b981', fontSize: '1.5em', fontWeight: 'bold' }}>
-                          ✓
-                        </span>
+                    <td
+                      style={{
+                        padding: '10px',
+                        backgroundColor:
+                          verificationStatus.kvk_mismatch_flags?.includes('company_name_mismatch')
+                            ? '#fef3c7'
+                            : 'inherit',
+                      }}
+                    >
+                      {getKvkApiData()?.statutoryName || (
+                        <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
                       )}
                     </td>
                   </tr>
 
                   {/* KvK Number Row */}
                   <tr style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '12px', fontWeight: 500 }}>KvK Number</td>
-                    <td style={{ padding: '12px' }}>
+                    <td style={{ padding: '10px', fontWeight: 500, backgroundColor: '#fafafa' }}>
+                      KvK Number
+                    </td>
+                    <td style={{ padding: '10px' }}>
                       {verificationStatus.entered_kvk_number || (
-                        <span style={{ color: '#999', fontStyle: 'italic' }}>Not entered</span>
+                        <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
                       )}
                     </td>
-                    <td style={{ padding: '12px' }}>
+                    <td
+                      style={{
+                        padding: '10px',
+                        backgroundColor:
+                          verificationStatus.kvk_mismatch_flags?.includes('entered_kvk_mismatch')
+                            ? '#fee2e2'
+                            : 'inherit',
+                      }}
+                    >
                       {verificationStatus.kvk_extracted_number || (
-                        <span style={{ color: '#999', fontStyle: 'italic' }}>Not extracted</span>
+                        <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
                       )}
                     </td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
-                      {verificationStatus.kvk_mismatch_flags?.includes('entered_kvk_mismatch') ? (
-                        <span style={{ color: '#dc2626', fontSize: '1.5em', fontWeight: 'bold' }}>
-                          ✗
-                        </span>
-                      ) : (
-                        <span style={{ color: '#10b981', fontSize: '1.5em', fontWeight: 'bold' }}>
-                          ✓
-                        </span>
+                    <td style={{ padding: '10px' }}>
+                      {getKvkApiData()?.kvkNumber || (
+                        <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
                       )}
                     </td>
                   </tr>
                 </tbody>
               </table>
-            </div>
-          )}
-
-          {verificationStatus.kvk_extracted_company_name && (
-            <div style={{ marginTop: '10px' }}>
-              <strong>Extracted Company Name:</strong>{' '}
-              {verificationStatus.kvk_extracted_company_name}
-            </div>
-          )}
-
-          {verificationStatus.kvk_extracted_number && (
-            <div style={{ marginTop: '5px' }}>
-              <strong>Extracted KvK Number:</strong> {verificationStatus.kvk_extracted_number}
-            </div>
-          )}
-
-          {verificationStatus.kvk_mismatch_flags &&
-            verificationStatus.kvk_mismatch_flags.length > 0 && (
-              <div
-                style={{
-                  marginTop: '15px',
-                  padding: '10px',
-                  backgroundColor: verificationStatus.kvk_mismatch_flags.some(isEnteredDataMismatch)
-                    ? '#ffe5e5' // Red tint for entered data mismatches
-                    : '#fff3cd', // Yellow for other issues
-                  borderRadius: '4px',
-                  border: verificationStatus.kvk_mismatch_flags.some(isEnteredDataMismatch)
-                    ? '2px solid #ff9999'
-                    : '1px solid #ffc107',
-                }}
-              >
-                <strong>
-                  {verificationStatus.kvk_mismatch_flags.some(isEnteredDataMismatch)
-                    ? '⚠️ Entered Data Mismatch Detected:'
-                    : 'Issues Detected:'}
-                </strong>
-                <ul style={{ marginTop: '5px', marginBottom: 0 }}>
-                  {verificationStatus.kvk_mismatch_flags.map((flag, idx) => (
-                    <li
-                      key={idx}
-                      style={{
-                        fontWeight: isEnteredDataMismatch(flag) ? 'bold' : 'normal',
-                        color: isEnteredDataMismatch(flag) ? '#d32f2f' : 'inherit',
-                      }}
-                    >
-                      {getFlagDescription(flag)}
-                    </li>
-                  ))}
-                </ul>
-                {verificationStatus.kvk_mismatch_flags.some(isEnteredDataMismatch) && (
-                  <div
-                    style={{
-                      marginTop: '10px',
-                      padding: '8px',
-                      backgroundColor: 'white',
-                      borderRadius: '4px',
-                      fontSize: '0.9em',
-                    }}
-                  >
-                    <strong>ℹ️ What this means:</strong>
-                    <p style={{ margin: '5px 0 0 0' }}>
-                      The KvK number or company name you entered manually does not match what was
-                      extracted from the uploaded document. Please verify the information is correct
-                      or contact an administrator for review.
-                    </p>
-                  </div>
-                )}
+              <div style={{ marginTop: '8px', fontSize: '0.85em', color: '#666' }}>
+                <strong>Legend:</strong>{' '}
+                <span style={{ backgroundColor: '#fee2e2', padding: '2px 6px', borderRadius: '3px', marginRight: '10px' }}>
+                  PDF doesn't match entered data
+                </span>
+                <span style={{ backgroundColor: '#fef3c7', padding: '2px 6px', borderRadius: '3px' }}>
+                  KvK doesn't match PDF
+                </span>
               </div>
-            )}
+            </div>
+          )}
+
+          {/* Issues Summary - Only show if there are validation flags */}
+          {verificationStatus.kvk_mismatch_flags && verificationStatus.kvk_mismatch_flags.length > 0 && (
+            <div style={{ marginTop: '15px', marginBottom: '15px' }}>
+              <strong style={{ display: 'block', marginBottom: '8px', fontSize: '1.05em' }}>
+                ⚠️ Validation Issues:
+              </strong>
+              <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
+                {verificationStatus.kvk_mismatch_flags.map((flag, idx) => (
+                  <li key={idx} style={{ color: isEnteredDataMismatch(flag) ? '#dc2626' : '#f59e0b' }}>
+                    {getFlagDescription(flag)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {verificationStatus.kvk_verification_notes && (
             <div style={{ marginTop: '10px' }}>

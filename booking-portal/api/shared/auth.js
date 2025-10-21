@@ -69,9 +69,14 @@ async function getUserFromRequest(context, req) {
         }
         const token = authHeader.replace('Bearer ', '');
         // Verify and decode JWT token
+        // Accept both formats: "api://{CLIENT_ID}" and "api://{CLIENT_ID}/access_as_user"
         const decoded = await new Promise((resolve, reject) => {
             jwt.verify(token, getKey, {
-                audience: `api://${CLIENT_ID}/access_as_user`,
+                audience: [
+                    CLIENT_ID,
+                    `api://${CLIENT_ID}`,
+                    `api://${CLIENT_ID}/access_as_user`
+                ],
                 issuer: `https://login.microsoftonline.com/${TENANT_ID}/v2.0`,
                 algorithms: ['RS256']
             }, (err, decoded) => {

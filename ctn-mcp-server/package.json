@@ -1,0 +1,34 @@
+{
+  "name": "ctn-mcp-server",
+  "version": "1.0.0",
+  "description": "Model Context Protocol server for CTN documentation",
+  "main": "src/index.js",
+  "bin": {
+    "ctn-mcp-server": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "NODE_ENV=development MCP_TRANSPORT=stdio node src/index.js",
+    "prod": "NODE_ENV=production node src/index.js",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "documentation",
+    "ctn",
+    "ai",
+    "claude"
+  ],
+  "author": "CTN Team",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "express": "^4.18.2",
+    "jsdom": "^23.0.0",
+    "node-cron": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

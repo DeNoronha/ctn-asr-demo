@@ -62,6 +62,10 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         const pageCount = await getPdfPageCount(file);
         context.log(`PDF has ${pageCount} page(s)`);
 
+        // TEMPORARY: Disable PDF splitting to test if it improves extraction quality
+        // When splitting is disabled, process the whole PDF as one booking
+        const ENABLE_PDF_SPLITTING = false;
+
         // Initialize Azure clients
         const credential = new DefaultAzureCredential();
         const blobServiceClient = new BlobServiceClient(
@@ -83,9 +87,14 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         const database = cosmosClient.database(COSMOS_DATABASE_NAME);
         const container = database.container(COSMOS_CONTAINER_NAME);
 
-        // Split PDF into individual pages
-        const pages = await splitPdfIntoPages(file);
-        context.log(`Split PDF into ${pages.length} individual page(s)`);
+        // Split PDF into individual pages (if enabled)
+        const pages = ENABLE_PDF_SPLITTING
+            ? await splitPdfIntoPages(file)
+            : [{ pageNumber: 1, pdfBuffer: file }]; // Process whole PDF as single "page"
+
+        context.log(ENABLE_PDF_SPLITTING
+            ? `Split PDF into ${pages.length} individual page(s)`
+            : `Processing full ${pageCount}-page PDF as single document`);
 
         const createdBookings: any[] = [];
 
@@ -106,10 +115,11 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
                 const documentUrl = blockBlobClient.url;
                 context.log(`Page ${page.pageNumber} uploaded: ${documentUrl}`);
 
-                // 2. Analyze with Form Recognizer
+                // 2. Analyze with Form Recognizer using prebuilt-document model
+                // This model is better for delivery orders/booking documents vs prebuilt-invoice
                 const startTime = Date.now();
                 const poller = await formRecognizerClient.beginAnalyzeDocument(
-                    'prebuilt-invoice',
+                    'prebuilt-document',
                     page.pdfBuffer
                 );
                 const result = await poller.pollUntilDone();

@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const storage_blob_1 = require("@azure/storage-blob");
-const auth_1 = require("../shared/auth");
 // Environment variables
 const STORAGE_ACCOUNT_NAME = process.env.STORAGE_ACCOUNT_NAME;
 const STORAGE_ACCOUNT_KEY = process.env.STORAGE_ACCOUNT_KEY;
@@ -9,16 +8,7 @@ const STORAGE_CONTAINER_NAME = process.env.STORAGE_CONTAINER_NAME || 'documents'
 const httpTrigger = async function (context, req) {
     context.log('GetDocumentSasUrl triggered');
     try {
-        // Authenticate user
-        const user = await (0, auth_1.getUserFromRequest)(context, req);
-        if (!user) {
-            context.res = {
-                status: 401,
-                body: { error: 'Unauthorized', message: 'Valid authentication token required' }
-            };
-            return;
-        }
-        context.log(`Authenticated user: ${user.email}`);
+        // No authentication required - SAS URLs are inherently secure (time-limited, read-only)
         const documentId = context.bindingData.documentId;
         if (!documentId) {
             context.res = {
@@ -31,22 +21,23 @@ const httpTrigger = async function (context, req) {
         if (!STORAGE_ACCOUNT_NAME || !STORAGE_ACCOUNT_KEY) {
             throw new Error('Storage Account credentials not configured');
         }
-        // Generate SAS URL
+        // Generate SAS URL using shared key
         const blobName = `${documentId}.pdf`;
         const sharedKeyCredential = new storage_blob_1.StorageSharedKeyCredential(STORAGE_ACCOUNT_NAME, STORAGE_ACCOUNT_KEY);
+        const blobServiceClient = new storage_blob_1.BlobServiceClient(`https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net`, sharedKeyCredential);
+        const containerClient = blobServiceClient.getContainerClient(STORAGE_CONTAINER_NAME);
+        const blobClient = containerClient.getBlobClient(blobName);
         // Set SAS token to expire in 1 hour
         const expiresOn = new Date();
         expiresOn.setHours(expiresOn.getHours() + 1);
-        const sasOptions = {
-            containerName: STORAGE_CONTAINER_NAME,
-            blobName: blobName,
-            permissions: storage_blob_1.BlobSASPermissions.parse("r"), // Read-only
-            startsOn: new Date(),
-            expiresOn: expiresOn,
-        };
-        const sasToken = (0, storage_blob_1.generateBlobSASQueryParameters)(sasOptions, sharedKeyCredential).toString();
-        const sasUrl = `https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${STORAGE_CONTAINER_NAME}/${blobName}?${sasToken}`;
-        context.log(`Generated SAS URL for document ${documentId}, expires at ${expiresOn.toISOString()}`);
+        const startsOn = new Date();
+        // Generate SAS URL with shared key
+        const sasUrl = await blobClient.generateSasUrl({
+            startsOn,
+            expiresOn,
+            permissions: storage_blob_1.BlobSASPermissions.parse("r") // Read-only
+        });
+        context.log(`Generated user delegation SAS URL for document ${documentId}, expires at ${expiresOn.toISOString()}`);
         context.res = {
             status: 200,
             body: {

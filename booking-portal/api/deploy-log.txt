@@ -1,0 +1,23 @@
+Getting site publishing info...
+[2025-10-21T05:38:35.196Z] Starting the function app deployment...
+Creating archive for current directory...
+Uploading 67,89 KB [----------------------------------------------------------]Upload completed successfully.
+Functions in func-ctn-booking-prod:
+    GetBookingById - [httpTrigger]
+        Invoke url: https://func-ctn-booking-prod.azurewebsites.net/api/v1/bookings/detail/{bookingid}
+
+    GetBookings - [httpTrigger]
+        Invoke url: https://func-ctn-booking-prod.azurewebsites.net/api/v1/bookings
+
+    GetDocumentSasUrl - [httpTrigger]
+        Invoke url: https://func-ctn-booking-prod.azurewebsites.net/api/v1/documents/{documentid}/sas
+
+    GetTenants - [httpTrigger]
+        Invoke url: https://func-ctn-booking-prod.azurewebsites.net/api/v1/tenants
+
+    UploadDocument - [httpTrigger]
+        Invoke url: https://func-ctn-booking-prod.azurewebsites.net/api/v1/documents
+
+    ValidateBooking - [httpTrigger]
+        Invoke url: https://func-ctn-booking-prod.azurewebsites.net/api/v1/bookings/{bookingid}/validate
+
