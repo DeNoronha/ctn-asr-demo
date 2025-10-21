@@ -25,7 +25,7 @@ const LanguageSwitcher: React.FC = () => {
   const { i18n } = useTranslation();
   const [selectedLanguage, setSelectedLanguage] = useState<Language>(() => {
     // Handle language variants like 'en-US' by taking only the base code
-    const currentLangCode = i18n.language.split('-')[0];
+    const currentLangCode = (i18n.language || 'nl').split('-')[0];
     return languages.find((lang) => lang.code === currentLangCode) || languages[0];
   });
 
