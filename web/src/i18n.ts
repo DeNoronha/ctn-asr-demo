@@ -1,6 +1,5 @@
 import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import HttpBackend from 'i18next-http-backend';
 import { initReactI18next } from 'react-i18next';
 
 import deTranslations from './locales/de/translation.json';
@@ -9,16 +8,13 @@ import enTranslations from './locales/en/translation.json';
 import nlTranslations from './locales/nl/translation.json';
 
 i18n
-  // Load translation using http backend
-  // Can be configured to load from API or CDN
-  .use(HttpBackend)
   // Detect user language
   .use(LanguageDetector)
   // Pass the i18n instance to react-i18next
   .use(initReactI18next)
   // Initialize i18next
   .init({
-    // Embedded translations (can also load from external sources)
+    // Embedded translations (bundled in JavaScript, no HTTP loading needed)
     resources: {
       en: {
         translation: enTranslations,
@@ -60,15 +56,10 @@ i18n
       excludeCacheFor: ['cimode'],
     },
 
-    // Backend options (if loading from external source)
-    backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json',
-    },
-
     // React-specific options
     react: {
-      // Wait for translations to load before rendering
-      useSuspense: true,
+      // Don't use Suspense - translations are embedded and immediately available
+      useSuspense: false,
     },
   });
 
