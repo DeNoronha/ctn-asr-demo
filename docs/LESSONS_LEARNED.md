@@ -746,7 +746,83 @@ test-results/
 
 ---
 
-### 24. Session Summaries Capture Critical Context
+### 24. i18n Configuration: Avoid HttpBackend with Embedded Translations (October 21, 2025)
+
+**What Happened:** Both Admin and Member Portals showed white pages after deployment. Investigation revealed i18n was configured with `HttpBackend` to load translations from `/locales/{{lng}}/{{ns}}.json` AND `useSuspense: true`, causing React to wait forever for translations that didn't exist in the deployment.
+
+**Why It Matters:** Application completely unusable - white page, no errors in Network tab, successful build. User frustration, deployment appeared successful but application broken.
+
+**Root Cause:**
+```typescript
+// web/src/i18n.ts - BROKEN CONFIGURATION
+import HttpBackend from 'i18next-http-backend';
+
+i18n
+  .use(HttpBackend)  // ← Trying to load from HTTP
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    resources: {
+      // Translations already embedded in bundle
+      en: { translation: enTranslations },
+      nl: { translation: nlTranslations },
+      de: { translation: deTranslations },
+    },
+    backend: {
+      loadPath: '/locales/{{lng}}/{{ns}}.json',  // ← File doesn't exist
+    },
+    react: {
+      useSuspense: true,  // ← React waits forever for HTTP load
+    },
+  });
+```
+
+**How to Avoid:**
+```typescript
+// CORRECT: No HttpBackend when translations are embedded
+import i18n from 'i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+import { initReactI18next } from 'react-i18next';
+
+// Import translations directly (bundled in JavaScript)
+import enTranslations from './locales/en/translation.json';
+import nlTranslations from './locales/nl/translation.json';
+import deTranslations from './locales/de/translation.json';
+
+i18n
+  .use(LanguageDetector)  // No HttpBackend
+  .use(initReactI18next)
+  .init({
+    resources: {
+      en: { translation: enTranslations },
+      nl: { translation: nlTranslations },
+      de: { translation: deTranslations },
+    },
+    react: {
+      useSuspense: false,  // Don't block - translations immediately available
+    },
+  });
+```
+
+**Key Principles:**
+- **HttpBackend is for loading translations from external URLs/APIs**
+- **Embedded translations (imported from JSON) don't need HttpBackend**
+- **useSuspense: true blocks React rendering until translations load**
+- **White page + successful build = check for Suspense/lazy loading issues**
+
+**Debugging Tip:**
+```bash
+# Check if translation files exist in deployment
+curl -I https://your-app.azurestaticapps.net/locales/en/translation.json
+# If returns HTML (404 page), translations aren't deployed as static files
+# → Remove HttpBackend and use embedded translations
+```
+
+Cost: 2+ hours debugging, complete application outage.
+
+---
+
+### 25. Session Summaries Capture Critical Context
 
 **What Happened:** Detailed session summaries helped reconstruct decisions weeks later.
 
