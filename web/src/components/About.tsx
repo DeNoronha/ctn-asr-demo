@@ -5,7 +5,7 @@
 
 import { Badge } from '@progress/kendo-react-indicators';
 import { Card, CardBody, CardHeader, CardTitle } from '@progress/kendo-react-layout';
-import { AlertCircle, Calendar, CheckCircle, Clock, GitBranch, Package } from 'lucide-react';
+import { AlertCircle, Calendar, CheckCircle, Clock, GitBranch, Package } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import LoadingSpinner from './LoadingSpinner';

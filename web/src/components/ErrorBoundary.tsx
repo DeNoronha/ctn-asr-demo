@@ -1,5 +1,4 @@
 import { Button } from '@progress/kendo-react-buttons';
-import { AlertCircle, RefreshCw } from 'lucide-react';
 // ErrorBoundary.tsx - Error boundary with retry functionality
 import type React from 'react';
 import { Component, type ReactNode } from 'react';
@@ -61,14 +60,15 @@ class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="error-boundary-container">
           <div className="error-boundary-content">
-            <AlertCircle size={48} className="error-icon" />
+            <div className="error-icon" role="img" aria-label="Error">
+              ⚠️
+            </div>
             <h2>Something went wrong</h2>
             <p className="error-message">
               {this.state.error?.message || 'An unexpected error occurred'}
             </p>
             <div className="error-actions">
               <Button themeColor="primary" icon="refresh" onClick={this.handleReset}>
-                <RefreshCw size={16} style={{ marginRight: '8px' }} />
                 Try Again
               </Button>
               <Button onClick={() => window.location.reload()}>Reload Page</Button>

@@ -13,7 +13,7 @@ import {
   type GridPageChangeEvent,
   type GridSortChangeEvent,
 } from '@progress/kendo-react-grid';
-import { Download, FileText, RefreshCw } from 'lucide-react';
+import { Download, FileText, RefreshCw } from '../icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../auth/AuthContext';

@@ -1,5 +1,5 @@
 import { Button } from '@progress/kendo-react-buttons';
-import { Home, Search } from 'lucide-react';
+import { Home, Search } from './icons';
 import type React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './NotFound.css';

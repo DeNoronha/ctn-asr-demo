@@ -3,7 +3,7 @@ import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Grid, GridColumn } from '@progress/kendo-react-grid';
 import { Loader } from '@progress/kendo-react-indicators';
 import { Upload } from '@progress/kendo-react-upload';
-import { AlertTriangle, CheckCircle, FileText, FolderOpen, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, FileText, FolderOpen, XCircle } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';

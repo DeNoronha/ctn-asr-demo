@@ -6,7 +6,7 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Card, CardBody, CardHeader } from '@progress/kendo-react-layout';
 import { Loader } from '@progress/kendo-react-indicators';
-import { Activity, AlertTriangle, CheckCircle, RefreshCw, XCircle } from 'lucide-react';
+import { Activity, AlertTriangle, CheckCircle, RefreshCw, XCircle } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import './HealthDashboard.css';

@@ -4,7 +4,7 @@ import { Grid, GridColumn } from '@progress/kendo-react-grid';
 import { Loader } from '@progress/kendo-react-indicators';
 import { TextArea } from '@progress/kendo-react-inputs';
 import axios from 'axios';
-import { AlertCircle, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle, XCircle } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { msalInstance } from '../auth/AuthContext';

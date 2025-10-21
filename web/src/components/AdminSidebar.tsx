@@ -11,7 +11,7 @@ import {
   Settings,
   Shield,
   Users,
-} from 'lucide-react';
+} from './icons';
 import type React from 'react';
 import './AdminSidebar.css';
 

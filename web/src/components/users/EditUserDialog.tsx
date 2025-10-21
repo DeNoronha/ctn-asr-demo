@@ -5,7 +5,7 @@
 
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
-import { Save } from 'lucide-react';
+import { Save } from '../icons';
 import type React from 'react';
 import { useState } from 'react';
 import { UserRole } from '../../auth/authConfig';

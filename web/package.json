@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@ctn/api-client": "file:../packages/api-client",
     "@azure/msal-browser": "^4.24.1",
     "@azure/msal-react": "^3.0.20",
+    "@ctn/api-client": "file:../packages/api-client",
     "@progress/kendo-data-query": "^1.7.1",
     "@progress/kendo-date-math": "^1.5.15",
     "@progress/kendo-drawing": "^1.22.1",
@@ -50,11 +50,10 @@
     "i18next-http-backend": "^3.0.2",
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
-    "lucide-react": "^0.545.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^16.0.0",
-    "react-router-dom": "^7.9.3",
+    "react-router-dom": "^6.30.1",
     "react-transition-group": "^4.4.5",
     "recharts": "^3.2.1",
     "web-vitals": "^2.1.4"
@@ -82,8 +81,16 @@
     "ci": "biome ci . && npm audit --audit-level=high"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

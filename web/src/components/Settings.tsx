@@ -4,7 +4,7 @@
  */
 
 import { Button } from '@progress/kendo-react-buttons';
-import { BookOpen, ExternalLink, FileText, Globe, HelpCircle } from 'lucide-react';
+import { BookOpen, ExternalLink, FileText, Globe, HelpCircle } from './icons';
 import type React from 'react';
 import { useTranslation } from 'react-i18next';
 import './Settings.css';

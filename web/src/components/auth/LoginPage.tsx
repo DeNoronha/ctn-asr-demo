@@ -4,7 +4,7 @@
  */
 
 import { Button } from '@progress/kendo-react-buttons';
-import { AlertCircle, Key, Shield } from 'lucide-react';
+import { AlertCircle, Key, Shield } from '../icons';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';

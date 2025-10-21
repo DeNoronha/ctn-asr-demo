@@ -1,7 +1,7 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-import { AlertTriangle, Pencil, Plus, Trash2, Users } from 'lucide-react';
+import { AlertTriangle, Pencil, Plus, Trash2, Users } from './icons';
 import type React from 'react';
 import { useState } from 'react';
 import type { LegalEntityContact } from '../services/api';

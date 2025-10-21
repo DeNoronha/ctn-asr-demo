@@ -5,7 +5,7 @@
 
 import { Button } from '@progress/kendo-react-buttons';
 import { DrawerContent } from '@progress/kendo-react-layout';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';

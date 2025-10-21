@@ -5,7 +5,7 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Loader } from '@progress/kendo-react-indicators';
 import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';

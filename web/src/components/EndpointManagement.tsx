@@ -3,7 +3,7 @@ import { Dialog } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Grid, GridColumn } from '@progress/kendo-react-grid';
 import { Input, TextArea } from '@progress/kendo-react-inputs';
-import { Plus } from 'lucide-react';
+import { Plus } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';

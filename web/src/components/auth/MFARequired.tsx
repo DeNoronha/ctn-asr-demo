@@ -4,7 +4,7 @@
  */
 
 import { Button } from '@progress/kendo-react-buttons';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from '../icons';
 import type React from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import './MFARequired.css';

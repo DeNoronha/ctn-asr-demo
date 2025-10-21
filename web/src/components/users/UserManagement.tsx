@@ -12,7 +12,7 @@ import {
   type GridPageChangeEvent,
   type GridSortChangeEvent,
 } from '@progress/kendo-react-grid';
-import { Edit2, Shield, Trash2, UserPlus } from 'lucide-react';
+import { Edit2, Shield, Trash2, UserPlus } from '../icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../auth/AuthContext';

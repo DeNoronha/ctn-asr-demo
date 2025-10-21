@@ -13,7 +13,7 @@ import {
   Plus,
   Trash2,
   XCircle,
-} from 'lucide-react';
+} from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { msalInstance } from '../auth/AuthContext';

@@ -1,7 +1,7 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
-import { AlertTriangle, CheckCircle, Copy, Key, Trash2, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Copy, Key, Trash2, XCircle } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';

@@ -4,7 +4,7 @@
  */
 
 import { Button } from '@progress/kendo-react-buttons';
-import { Home, LogOut, ShieldX } from 'lucide-react';
+import { Home, LogOut, ShieldX } from '../icons';
 import type React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
