@@ -11,7 +11,10 @@ export interface SplitPDFPage {
  * @returns Array of individual page PDFs with their page numbers
  */
 export async function splitPdfIntoPages(pdfBuffer: Buffer): Promise<SplitPDFPage[]> {
-    const pdfDoc = await PDFDocument.load(pdfBuffer);
+    // Load PDF with ignoreEncryption to handle secured/encrypted PDFs
+    const pdfDoc = await PDFDocument.load(pdfBuffer, {
+        ignoreEncryption: true
+    });
     const pageCount = pdfDoc.getPageCount();
 
     const splitPages: SplitPDFPage[] = [];
@@ -43,6 +46,8 @@ export async function splitPdfIntoPages(pdfBuffer: Buffer): Promise<SplitPDFPage
  * @returns Number of pages in the PDF
  */
 export async function getPdfPageCount(pdfBuffer: Buffer): Promise<number> {
-    const pdfDoc = await PDFDocument.load(pdfBuffer);
+    const pdfDoc = await PDFDocument.load(pdfBuffer, {
+        ignoreEncryption: true
+    });
     return pdfDoc.getPageCount();
 }
