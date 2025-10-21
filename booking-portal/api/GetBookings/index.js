@@ -19,15 +19,29 @@ const httpTrigger = async function (context, req) {
         });
         const database = cosmosClient.database(COSMOS_DATABASE_NAME);
         const container = database.container(COSMOS_CONTAINER_NAME);
-        // Get status filter from query parameters
+        // Get filters from query parameters
         const statusFilter = req.query.status;
-        context.log(`Status filter: ${statusFilter || 'none (all bookings)'}`);
-        // Build query with optional status filter
-        let query = "SELECT c.id, c.documentId, c.uploadTimestamp, c.processingStatus, c.overallConfidence, c.dcsaPlusData FROM c";
+        const documentTypeFilter = req.query.documentType;
+        const carrierFilter = req.query.carrier;
+        context.log(`Filters - Status: ${statusFilter || 'all'}, DocumentType: ${documentTypeFilter || 'all'}, Carrier: ${carrierFilter || 'all'}`);
+        // Build query with optional filters
+        let query = "SELECT c.id, c.documentId, c.documentType, c.documentNumber, c.carrier, c.uploadTimestamp, c.processingStatus, c.extractionMetadata, c.data FROM c";
         const parameters = [];
+        const conditions = [];
         if (statusFilter) {
-            query += " WHERE c.processingStatus = @status";
+            conditions.push("c.processingStatus = @status");
             parameters.push({ name: "@status", value: statusFilter });
+        }
+        if (documentTypeFilter) {
+            conditions.push("c.documentType = @documentType");
+            parameters.push({ name: "@documentType", value: documentTypeFilter });
+        }
+        if (carrierFilter) {
+            conditions.push("c.carrier = @carrier");
+            parameters.push({ name: "@carrier", value: carrierFilter.toLowerCase() });
+        }
+        if (conditions.length > 0) {
+            query += " WHERE " + conditions.join(" AND ");
         }
         query += " ORDER BY c.uploadTimestamp DESC";
         const querySpec = {
@@ -42,11 +56,17 @@ const httpTrigger = async function (context, req) {
         const formattedBookings = bookings.map(booking => ({
             id: booking.id,
             documentId: booking.documentId,
-            containerNumber: booking.dcsaPlusData?.containers?.[0]?.containerNumber || '',
-            carrierBookingReference: booking.dcsaPlusData?.carrierBookingReference || '',
+            documentType: booking.documentType,
+            documentNumber: booking.documentNumber,
+            carrier: booking.carrier,
+            containerNumber: booking.data?.containers?.[0]?.containerNumber ||
+                booking.dcsaPlusData?.containers?.[0]?.containerNumber || '',
+            carrierBookingReference: booking.documentNumber ||
+                booking.dcsaPlusData?.carrierBookingReference || '',
             uploadTimestamp: booking.uploadTimestamp,
             processingStatus: booking.processingStatus,
-            overallConfidence: booking.overallConfidence
+            confidenceScore: booking.extractionMetadata?.confidenceScore || booking.overallConfidence,
+            uncertainFields: booking.extractionMetadata?.uncertainFields || []
         }));
         context.res = {
             status: 200,
