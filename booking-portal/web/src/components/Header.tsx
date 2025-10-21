@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { Button } from '@progress/kendo-react-buttons';
+
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -42,17 +42,18 @@ const Header: React.FC = () => {
             {user?.primaryRole}
           </div>
         </div>
-        <Button
+        <button
+          className="btn-secondary"
           onClick={logout}
-          size="small"
-          fillMode="outline"
           style={{
+            background: 'transparent',
             color: 'white',
-            borderColor: 'white'
+            border: '1px solid white',
+            padding: '8px 16px'
           }}
         >
           Logout
-        </Button>
+        </button>
       </div>
     </header>
   );

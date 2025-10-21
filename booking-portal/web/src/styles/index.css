@@ -250,26 +250,6 @@ body {
   margin-top: 4px;
 }
 
-/* Kendo UI Overrides */
-.k-button-primary {
-  background-color: var(--ctn-orange);
-  border-color: var(--ctn-orange);
-}
-
-.k-button-primary:hover {
-  background-color: #e07b00;
-  border-color: #e07b00;
-}
-
-.k-button-secondary {
-  background-color: var(--ctn-light-blue);
-  border-color: var(--ctn-light-blue);
-}
-
-.k-license-banner {
-  display: none !important;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .validation-container {

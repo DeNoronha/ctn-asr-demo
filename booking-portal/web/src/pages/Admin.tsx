@@ -1,8 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, GridColumn } from '@progress/kendo-react-grid';
-import { Button } from '@progress/kendo-react-buttons';
-import { Dialog } from '@progress/kendo-react-dialogs';
-import { Input } from '@progress/kendo-react-inputs';
 import axios from 'axios';
 
 interface Tenant {
@@ -77,89 +73,151 @@ const Admin: React.FC = () => {
     }
   };
 
-  const StatusCell = (props: any) => {
-    const status = props.dataItem.subscription.status;
-    const className = `status-badge status-${status}`;
-    return <td><span className={className}>{status}</span></td>;
-  };
-
-  const TypeCell = (props: any) => {
-    return <td>{props.dataItem.subscription.type}</td>;
-  };
-
-  const FeeCell = (props: any) => {
-    return <td>€{props.dataItem.subscription.monthlyFee}/month</td>;
-  };
-
   return (
     <div>
       <div className="card-header" style={{ marginBottom: '24px' }}>
         <h2>Tenant Management</h2>
-        <Button themeColor="primary" onClick={() => setShowDialog(true)}>
+        <button className="btn-primary" onClick={() => setShowDialog(true)}>
           Add Tenant
-        </Button>
+        </button>
       </div>
 
       <div className="card">
-        <Grid data={tenants} style={{ height: '600px' }}>
-          <GridColumn field="tenantId" title="Tenant ID" width="180px" />
-          <GridColumn field="organizationName" title="Organization" width="150px" />
-          <GridColumn field="terminalName" title="Terminal" width="200px" />
-          <GridColumn field="subscription.type" title="Type" width="120px" cell={TypeCell} />
-          <GridColumn field="subscription.status" title="Status" width="120px" cell={StatusCell} />
-          <GridColumn field="subscription.monthlyFee" title="Monthly Fee" width="150px" cell={FeeCell} />
-        </Grid>
+        <div className="table-container" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th style={{ width: '180px' }}>Tenant ID</th>
+                <th style={{ width: '150px' }}>Organization</th>
+                <th style={{ width: '200px' }}>Terminal</th>
+                <th style={{ width: '120px' }}>Type</th>
+                <th style={{ width: '120px' }}>Status</th>
+                <th style={{ width: '150px' }}>Monthly Fee</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tenants.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                    No tenants found
+                  </td>
+                </tr>
+              ) : (
+                tenants.map((tenant) => (
+                  <tr key={tenant.id}>
+                    <td>{tenant.tenantId}</td>
+                    <td>{tenant.organizationName}</td>
+                    <td>{tenant.terminalName}</td>
+                    <td>{tenant.subscription.type}</td>
+                    <td>
+                      <span className={`status-badge status-${tenant.subscription.status}`}>
+                        {tenant.subscription.status}
+                      </span>
+                    </td>
+                    <td>€{tenant.subscription.monthlyFee}/month</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {showDialog && (
-        <Dialog
-          title="Add New Tenant"
-          onClose={() => setShowDialog(false)}
-          width={500}
-        >
-          <div style={{ padding: '16px' }}>
-            <div className="form-field" style={{ marginBottom: '16px' }}>
-              <label>Organization ID</label>
-              <Input
-                value={newTenant.organizationId}
-                onChange={(e) => setNewTenant({ ...newTenant, organizationId: e.value })}
-                placeholder="itg"
-              />
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            width: '500px',
+            maxWidth: '90%',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
+          }}>
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid #e2e8f0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>Add New Tenant</h3>
+              <button
+                onClick={() => setShowDialog(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  padding: '0 8px',
+                  lineHeight: 1
+                }}
+              >
+                ×
+              </button>
             </div>
-            <div className="form-field" style={{ marginBottom: '16px' }}>
-              <label>Organization Name</label>
-              <Input
-                value={newTenant.organizationName}
-                onChange={(e) => setNewTenant({ ...newTenant, organizationName: e.value })}
-                placeholder="ITG"
-              />
-            </div>
-            <div className="form-field" style={{ marginBottom: '16px' }}>
-              <label>Terminal Code</label>
-              <Input
-                value={newTenant.terminalCode}
-                onChange={(e) => setNewTenant({ ...newTenant, terminalCode: e.value })}
-                placeholder="hengelo"
-              />
-            </div>
-            <div className="form-field" style={{ marginBottom: '24px' }}>
-              <label>Terminal Name</label>
-              <Input
-                value={newTenant.terminalName}
-                onChange={(e) => setNewTenant({ ...newTenant, terminalName: e.value })}
-                placeholder="ITG Hengelo"
-              />
-            </div>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <Button themeColor="primary" onClick={handleCreateTenant}>
-                Create
-              </Button>
-              <Button onClick={() => setShowDialog(false)}>
-                Cancel
-              </Button>
+            <div style={{ padding: '24px' }}>
+              <div className="form-field" style={{ marginBottom: '16px' }}>
+                <label>Organization ID</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={newTenant.organizationId}
+                  onChange={(e) => setNewTenant({ ...newTenant, organizationId: e.target.value })}
+                  placeholder="itg"
+                />
+              </div>
+              <div className="form-field" style={{ marginBottom: '16px' }}>
+                <label>Organization Name</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={newTenant.organizationName}
+                  onChange={(e) => setNewTenant({ ...newTenant, organizationName: e.target.value })}
+                  placeholder="ITG"
+                />
+              </div>
+              <div className="form-field" style={{ marginBottom: '16px' }}>
+                <label>Terminal Code</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={newTenant.terminalCode}
+                  onChange={(e) => setNewTenant({ ...newTenant, terminalCode: e.target.value })}
+                  placeholder="hengelo"
+                />
+              </div>
+              <div className="form-field" style={{ marginBottom: '24px' }}>
+                <label>Terminal Name</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={newTenant.terminalName}
+                  onChange={(e) => setNewTenant({ ...newTenant, terminalName: e.target.value })}
+                  placeholder="ITG Hengelo"
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <button className="btn-primary" onClick={handleCreateTenant}>
+                  Create
+                </button>
+                <button className="btn-secondary" onClick={() => setShowDialog(false)}>
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
-        </Dialog>
+        </div>
       )}
 
       <div className="card">

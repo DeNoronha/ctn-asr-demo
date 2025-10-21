@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@progress/kendo-react-buttons';
+
 
 interface DashboardStats {
   totalBookings: number;
@@ -41,7 +41,7 @@ const Dashboard: React.FC = () => {
       <div className="card-header" style={{ marginBottom: '24px' }}>
         <h2>Dashboard</h2>
         <Link to="/upload">
-          <Button themeColor="primary">Upload Document</Button>
+          <button className="btn-primary">Upload Document</button>
         </Link>
       </div>
 
@@ -87,13 +87,13 @@ const Dashboard: React.FC = () => {
         <h2 style={{ marginBottom: '16px' }}>Quick Actions</h2>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <Link to="/upload">
-            <Button themeColor="primary">Upload New Document</Button>
+            <button className="btn-primary">Upload New Document</button>
           </Link>
           <Link to="/bookings?status=pending">
-            <Button themeColor="secondary">Review Pending ({stats.pendingValidation})</Button>
+            <button className="btn-primary">Review Pending ({stats.pendingValidation})</button>
           </Link>
           <Link to="/bookings">
-            <Button>View All Bookings</Button>
+            <button className="btn-primary">View All Bookings</button>
           </Link>
         </div>
       </div>

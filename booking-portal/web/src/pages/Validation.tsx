@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@progress/kendo-react-buttons';
-import { Input, TextArea } from '@progress/kendo-react-inputs';
 import axios from 'axios';
 import PDFViewer from '../components/PDFViewer';
 
@@ -263,10 +261,11 @@ const Validation: React.FC = () => {
                   Carrier Booking Reference
                   {renderConfidenceBadge('carrierBookingReference')}
                 </label>
-                <Input
+                <input
+                  type="text"
                   value={formData.carrierBookingReference || ''}
-                  onChange={(e) => handleFieldChange('carrierBookingReference', e.value)}
-                  className={getFieldConfidence('carrierBookingReference') !== null && getFieldConfidence('carrierBookingReference')! < 0.8 ? 'low-confidence' : ''}
+                  onChange={(e) => handleFieldChange('carrierBookingReference', e.target.value)}
+                  className={`form-input ${getFieldConfidence('carrierBookingReference') !== null && getFieldConfidence('carrierBookingReference')! < 0.8 ? 'low-confidence' : ''}`}
                 />
               </div>
               <div className="form-field">
@@ -274,10 +273,11 @@ const Validation: React.FC = () => {
                   Transport Document Reference
                   {renderConfidenceBadge('transportDocumentReference')}
                 </label>
-                <Input
+                <input
+                  type="text"
                   value={formData.transportDocumentReference || ''}
-                  onChange={(e) => handleFieldChange('transportDocumentReference', e.value)}
-                  className={getFieldConfidence('transportDocumentReference') !== null && getFieldConfidence('transportDocumentReference')! < 0.8 ? 'low-confidence' : ''}
+                  onChange={(e) => handleFieldChange('transportDocumentReference', e.target.value)}
+                  className={`form-input ${getFieldConfidence('transportDocumentReference') !== null && getFieldConfidence('transportDocumentReference')! < 0.8 ? 'low-confidence' : ''}`}
                 />
               </div>
             </div>
@@ -288,31 +288,36 @@ const Validation: React.FC = () => {
             <div className="form-row">
               <div className="form-field">
                 <label>Carrier</label>
-                <Input value={formData.shipmentDetails?.carrierCode || ''} readOnly />
+                <input type="text" className="form-input" value={formData.shipmentDetails?.carrierCode || ''} readOnly />
               </div>
               <div className="form-field">
                 <label>
                   Vessel Name
                   {renderConfidenceBadge('vesselName')}
                 </label>
-                <Input
+                <input
+                  type="text"
                   value={formData.shipmentDetails?.vesselName || ''}
-                  onChange={(e) => handleFieldChange('shipmentDetails.vesselName', e.value)}
-                  className={getFieldConfidence('vesselName') !== null && getFieldConfidence('vesselName')! < 0.8 ? 'low-confidence' : ''}
+                  onChange={(e) => handleFieldChange('shipmentDetails.vesselName', e.target.value)}
+                  className={`form-input ${getFieldConfidence('vesselName') !== null && getFieldConfidence('vesselName')! < 0.8 ? 'low-confidence' : ''}`}
                 />
               </div>
             </div>
             <div className="form-row">
               <div className="form-field">
                 <label>Port of Loading</label>
-                <Input
+                <input
+                  type="text"
+                  className="form-input"
                   value={formData.shipmentDetails?.portOfLoading?.locationName || ''}
                   readOnly
                 />
               </div>
               <div className="form-field">
                 <label>Port of Discharge</label>
-                <Input
+                <input
+                  type="text"
+                  className="form-input"
                   value={formData.shipmentDetails?.portOfDischarge?.locationName || ''}
                   readOnly
                 />
@@ -329,11 +334,11 @@ const Validation: React.FC = () => {
                     Container Number
                     {renderConfidenceBadge('containerNumber')}
                   </label>
-                  <Input value={container.containerNumber || ''} readOnly />
+                  <input type="text" className="form-input" value={container.containerNumber || ''} readOnly />
                 </div>
                 <div className="form-field">
                   <label>Seal Number</label>
-                  <Input value={container.sealNumber || ''} readOnly />
+                  <input type="text" className="form-input" value={container.sealNumber || ''} readOnly />
                 </div>
               </div>
             ))}
@@ -344,16 +349,20 @@ const Validation: React.FC = () => {
             <div className="form-row">
               <div className="form-field">
                 <label>Facility</label>
-                <Input
+                <input
+                  type="text"
+                  className="form-input"
                   value={formData.inlandExtensions?.pickupDetails?.facilityName || ''}
-                  onChange={(e) => handleFieldChange('inlandExtensions.pickupDetails.facilityName', e.value)}
+                  onChange={(e) => handleFieldChange('inlandExtensions.pickupDetails.facilityName', e.target.value)}
                 />
               </div>
               <div className="form-field">
                 <label>PIN Code</label>
-                <Input
+                <input
+                  type="text"
+                  className="form-input"
                   value={formData.inlandExtensions?.pickupDetails?.pinCode || ''}
-                  onChange={(e) => handleFieldChange('inlandExtensions.pickupDetails.pinCode', e.value)}
+                  onChange={(e) => handleFieldChange('inlandExtensions.pickupDetails.pinCode', e.target.value)}
                 />
               </div>
             </div>
@@ -364,18 +373,20 @@ const Validation: React.FC = () => {
             <div className="form-row">
               <div className="form-field">
                 <label>Facility</label>
-                <Input
+                <input
+                  type="text"
+                  className="form-input"
                   value={formData.inlandExtensions?.deliveryDetails?.facilityName || ''}
-                  onChange={(e) => handleFieldChange('inlandExtensions.deliveryDetails.facilityName', e.value)}
+                  onChange={(e) => handleFieldChange('inlandExtensions.deliveryDetails.facilityName', e.target.value)}
                 />
               </div>
             </div>
             <div className="form-field">
               <label>Address</label>
-              <TextArea
+              <textarea
+                className={`form-input ${isFieldUncertain('dcsaPlusData.inlandExtensions.deliveryDetails.address') ? 'low-confidence' : ''}`}
                 value={formData.inlandExtensions?.deliveryDetails?.address || ''}
-                onChange={(e) => handleFieldChange('inlandExtensions.deliveryDetails.address', e.value)}
-                className={isFieldUncertain('dcsaPlusData.inlandExtensions.deliveryDetails.address') ? 'low-confidence' : ''}
+                onChange={(e) => handleFieldChange('inlandExtensions.deliveryDetails.address', e.target.value)}
                 rows={2}
               />
               {isFieldUncertain('dcsaPlusData.inlandExtensions.deliveryDetails.address') && (
@@ -387,28 +398,30 @@ const Validation: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '12px', marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
-            <Button
-              themeColor="primary"
+            <button
+              className="btn-primary"
               onClick={() => handleSubmit('approved-with-corrections')}
               disabled={validating}
             >
               Approve with Corrections ({corrections.length})
-            </Button>
-            <Button
+            </button>
+            <button
+              className="btn-secondary"
               onClick={() => handleSubmit('approved')}
               disabled={validating || corrections.length > 0}
             >
               Approve as-is
-            </Button>
-            <Button
+            </button>
+            <button
+              className="btn-secondary"
               onClick={() => handleSubmit('rejected')}
               disabled={validating}
             >
               Reject
-            </Button>
-            <Button onClick={() => navigate('/bookings')}>
+            </button>
+            <button className="btn-secondary" onClick={() => navigate('/bookings')}>
               Cancel
-            </Button>
+            </button>
           </div>
         </div>
       </div>

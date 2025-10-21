@@ -1,24 +1,41 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@progress/kendo-react-buttons';
-import { Upload as KendoUpload, UploadOnAddEvent } from '@progress/kendo-react-upload';
 import axios from 'axios';
 
 const Upload: React.FC = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadedBooking, setUploadedBooking] = useState<any>(null);
 
-  const handleUpload = async (event: UploadOnAddEvent) => {
-    const files = event.affectedFiles;
-    if (files.length === 0) return;
+  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+
+    // Validate file type
+    const allowedExtensions = ['.pdf', '.xlsx', '.msg', '.eml'];
+    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+      alert(`Invalid file type. Allowed types: ${allowedExtensions.join(', ')}`);
+      event.target.value = ''; // Reset input
+      return;
+    }
+
+    // Validate file size (10MB max)
+    const maxFileSize = 10485760; // 10MB in bytes
+    if (file.size > maxFileSize) {
+      alert(`File size exceeds maximum of 10MB. File size: ${(file.size / 1048576).toFixed(2)}MB`);
+      event.target.value = ''; // Reset input
+      return;
+    }
 
     setUploading(true);
 
     try {
-      const file = files[0].getRawFile?.();
       const formData = new FormData();
-      formData.append('file', file as File);
+      formData.append('file', file);
 
       const response = await axios.post('/api/v1/documents', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -26,6 +43,11 @@ const Upload: React.FC = () => {
 
       setUploadedBooking(response.data);
       alert('Document uploaded and processed successfully!');
+
+      // Reset file input so user can upload another file
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } catch (error: any) {
       console.error('Upload failed:', error);
       console.error('Error response:', error.response?.data);
@@ -56,19 +78,26 @@ const Upload: React.FC = () => {
         </ul>
 
         <div style={{ marginBottom: '24px' }}>
-          <KendoUpload
-            batch={false}
-            multiple={false}
-            defaultFiles={[]}
-            withCredentials={false}
-            saveUrl="/api/v1/documents"
-            removeUrl="/api/v1/documents"
-            onAdd={handleUpload}
-            restrictions={{
-              allowedExtensions: ['.pdf', '.xlsx', '.msg', '.eml'],
-              maxFileSize: 10485760
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.xlsx,.msg,.eml"
+            onChange={handleUpload}
+            disabled={uploading}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '12px',
+              border: '2px dashed #cbd5e1',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              backgroundColor: uploading ? '#f1f5f9' : 'white'
             }}
           />
+          <p style={{ marginTop: '8px', fontSize: '12px', color: '#64748b' }}>
+            Select a file to upload (PDF, Excel, Email - max 10MB)
+          </p>
         </div>
 
         {uploading && (
@@ -86,12 +115,12 @@ const Upload: React.FC = () => {
               Status: {uploadedBooking.processingStatus}
             </p>
             {uploadedBooking.processingStatus === 'pending' && (
-              <Button
-                themeColor="primary"
+              <button
+                className="btn-primary"
                 onClick={() => navigate(`/validate/${uploadedBooking.id}`)}
               >
                 Validate Now
-              </Button>
+              </button>
             )}
           </div>
         )}

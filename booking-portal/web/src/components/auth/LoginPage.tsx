@@ -6,7 +6,7 @@
 import { useEffect } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@progress/kendo-react-buttons';
+
 
 export const LoginPage = () => {
   const { login, isAuthenticated, isLoading } = useAuth();
@@ -60,14 +60,13 @@ export const LoginPage = () => {
         <p style={{ marginBottom: '2rem', color: '#666' }}>
           Document Processing & Validation
         </p>
-        <Button
-          themeColor="primary"
-          size="large"
+        <button
+          className="btn-primary"
           onClick={handleLogin}
-          style={{ width: '100%' }}
+          style={{ width: '100%', padding: '12px', fontSize: '16px' }}
         >
           Sign in with Microsoft
-        </Button>
+        </button>
         <p style={{ marginTop: '2rem', fontSize: '0.875rem', color: '#999' }}>
           CTN Association Register
         </p>

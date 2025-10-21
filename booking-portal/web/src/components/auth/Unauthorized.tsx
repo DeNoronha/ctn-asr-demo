@@ -5,7 +5,7 @@
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { Button } from '@progress/kendo-react-buttons';
+
 
 export const UnauthorizedPage = () => {
   const { logout, user } = useAuth();
@@ -37,12 +37,12 @@ export const UnauthorizedPage = () => {
           </p>
         )}
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-          <Button onClick={() => navigate('/dashboard')}>
+          <button className="btn-primary" onClick={() => navigate('/dashboard')}>
             Go to Dashboard
-          </Button>
-          <Button themeColor="error" onClick={logout}>
+          </button>
+          <button className="btn-primary" onClick={logout}>
             Sign Out
-          </Button>
+          </button>
         </div>
       </div>
     </div>
