@@ -143,7 +143,11 @@ steps:
     env:
       CI: false
       NODE_ENV: production
-      # Environment variables loaded from .env.production file
+      VITE_AAD_CLIENT_ID: d3037c11-a541-4f21-8862-8079137a0cde
+      VITE_AAD_AUTHORITY: https://login.microsoftonline.com/598664e7-725c-4daa-bd1f-89c4ada717ff
+      VITE_AAD_REDIRECT_URI: https://calm-pebble-043b2db03.1.azurestaticapps.net
+      VITE_API_CLIENT_ID: d3037c11-a541-4f21-8862-8079137a0cde
+      VITE_API_BASE_URL: https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
 
   - task: AzureStaticWebApp@0
     displayName: 'Deploy to Azure Static Web Apps'
