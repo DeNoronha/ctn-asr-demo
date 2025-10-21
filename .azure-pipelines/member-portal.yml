@@ -73,15 +73,11 @@ steps:
 
   - script: |
       npm ci --legacy-peer-deps
-    displayName: 'Install root dependencies (sets up workspace)'
+    displayName: 'Install all workspace dependencies'
 
   # @ctn/api-client pre-built dist/ files are committed to git
-  # so we don't need to build it during the pipeline
-
-  - script: |
-      cd portal
-      npm ci --legacy-peer-deps
-    displayName: 'Install portal dependencies'
+  # Note: In a monorepo, we only run npm ci at the root level.
+  # Running npm ci in individual workspaces breaks workspace symlinks.
 
   # Biome code quality checks - REPORT ONLY (does not block deployment)
   - script: |
