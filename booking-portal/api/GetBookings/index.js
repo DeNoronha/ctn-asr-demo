@@ -4,7 +4,7 @@ const cosmos_1 = require("@azure/cosmos");
 // Environment variables
 const COSMOS_ENDPOINT = process.env.COSMOS_DB_ENDPOINT || process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_DB_KEY;
-const COSMOS_DATABASE_NAME = process.env.COSMOS_DATABASE_NAME || 'ctn-bookings-db';
+const COSMOS_DATABASE_NAME = process.env.COSMOS_DATABASE_NAME || 'booking-portal';
 const COSMOS_CONTAINER_NAME = process.env.COSMOS_CONTAINER_NAME || 'bookings';
 const httpTrigger = async function (context, req) {
     context.log('GetBookings triggered');
@@ -19,9 +19,20 @@ const httpTrigger = async function (context, req) {
         });
         const database = cosmosClient.database(COSMOS_DATABASE_NAME);
         const container = database.container(COSMOS_CONTAINER_NAME);
-        // Query all bookings, ordered by upload timestamp descending
+        // Get status filter from query parameters
+        const statusFilter = req.query.status;
+        context.log(`Status filter: ${statusFilter || 'none (all bookings)'}`);
+        // Build query with optional status filter
+        let query = "SELECT c.id, c.documentId, c.uploadTimestamp, c.processingStatus, c.overallConfidence, c.dcsaPlusData FROM c";
+        const parameters = [];
+        if (statusFilter) {
+            query += " WHERE c.processingStatus = @status";
+            parameters.push({ name: "@status", value: statusFilter });
+        }
+        query += " ORDER BY c.uploadTimestamp DESC";
         const querySpec = {
-            query: "SELECT c.id, c.documentId, c.uploadTimestamp, c.processingStatus, c.overallConfidence, c.dcsaPlusData FROM c ORDER BY c.uploadTimestamp DESC"
+            query,
+            parameters
         };
         const { resources: bookings } = await container.items
             .query(querySpec)

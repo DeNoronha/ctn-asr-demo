@@ -91,41 +91,55 @@ const httpTrigger = async function (context, req) {
                 });
                 const documentUrl = blockBlobClient.url;
                 context.log(`Page ${page.pageNumber} uploaded: ${documentUrl}`);
-                // 2. Analyze with Form Recognizer using prebuilt-document model
-                // This model is better for delivery orders/booking documents vs prebuilt-invoice
+                // 2. Analyze with Form Recognizer using prebuilt-layout model
+                // Better for delivery orders/shipping documents vs invoice model
                 const startTime = Date.now();
-                const poller = await formRecognizerClient.beginAnalyzeDocument('prebuilt-document', page.pdfBuffer);
+                const poller = await formRecognizerClient.beginAnalyzeDocument('prebuilt-layout', page.pdfBuffer);
                 const result = await poller.pollUntilDone();
                 const processingTimeMs = Date.now() - startTime;
                 context.log(`Page ${page.pageNumber} analysis complete in ${processingTimeMs}ms`);
-                // 3. Extract booking data from Form Recognizer results
-                const document = result.documents?.[0];
-                const fields = document?.fields || {};
-                // Calculate overall confidence
+                // 3. Extract booking data from Form Recognizer results (prebuilt-layout model)
+                const allText = result.content || '';
+                const keyValuePairs = result.keyValuePairs || [];
+                // Build a map of detected key-value pairs
+                const kvMap = new Map();
+                keyValuePairs.forEach((pair) => {
+                    if (pair.key && pair.value) {
+                        const keyText = pair.key.content?.toLowerCase() || '';
+                        const valueText = pair.value.content || '';
+                        kvMap.set(keyText, {
+                            value: valueText,
+                            confidence: pair.confidence || 0
+                        });
+                    }
+                });
+                // Calculate overall confidence from key-value pairs
                 const confidenceScores = {};
                 let totalConfidence = 0;
                 let fieldCount = 0;
-                Object.entries(fields).forEach(([key, field]) => {
-                    if (field?.confidence !== undefined) {
-                        confidenceScores[key] = field.confidence;
-                        totalConfidence += field.confidence;
+                kvMap.forEach((data, key) => {
+                    if (data.confidence !== undefined) {
+                        confidenceScores[key] = data.confidence;
+                        totalConfidence += data.confidence;
                         fieldCount++;
                     }
                 });
                 const overallConfidence = fieldCount > 0 ? totalConfidence / fieldCount : 0;
-                // Extract specific fields (Form Recognizer invoice model)
-                const extractField = (fieldName) => {
-                    const field = fields[fieldName];
-                    if (!field)
-                        return '';
-                    // Handle different field types
-                    if ('content' in field && field.content) {
-                        return String(field.content);
-                    }
-                    if ('value' in field && field.value) {
-                        return String(field.value);
+                // Helper to find value by key patterns
+                const findByKeyPattern = (patterns) => {
+                    for (const pattern of patterns) {
+                        for (const [key, data] of kvMap) {
+                            if (key.includes(pattern.toLowerCase())) {
+                                return data.value;
+                            }
+                        }
                     }
                     return '';
+                };
+                // Helper to extract with regex pattern from full text
+                const extractWithPattern = (pattern) => {
+                    const match = allText.match(pattern);
+                    return match ? match[1]?.trim() || match[0]?.trim() || '' : '';
                 };
                 const booking = {
                     id: bookingId,
@@ -142,35 +156,43 @@ const httpTrigger = async function (context, req) {
                     processingStatus: 'pending',
                     overallConfidence: Math.round(overallConfidence * 100) / 100,
                     dcsaPlusData: {
-                        carrierBookingReference: extractField('InvoiceId') || extractField('PurchaseOrder'),
+                        carrierBookingReference: findByKeyPattern(['booking', 'booking ref', 'booking number', 'reference', 'order number']) ||
+                            extractWithPattern(/(?:booking|reference|order)[\s#:]*([A-Z0-9]{6,})/i),
                         shipmentDetails: {
-                            carrierCode: extractField('VendorName'),
+                            carrierCode: findByKeyPattern(['carrier', 'shipping line', 'line']) ||
+                                extractWithPattern(/(?:OOCL|MAERSK|MSC|CMA|COSCO|HAPAG|EVERGREEN)/i),
                             portOfLoading: {
-                                UNLocationCode: '',
-                                locationName: extractField('ShipFromAddress')
+                                UNLocationCode: extractWithPattern(/([A-Z]{5})\s*(?:POL|port of loading|loading)/i),
+                                locationName: findByKeyPattern(['port of loading', 'pol', 'loading port', 'load port']) ||
+                                    extractWithPattern(/(?:port of loading|pol)[:\s]*([^\n]+)/i)
                             },
                             portOfDischarge: {
-                                UNLocationCode: '',
-                                locationName: extractField('ShipToAddress')
+                                UNLocationCode: extractWithPattern(/([A-Z]{5})\s*(?:POD|port of discharge|discharge)/i),
+                                locationName: findByKeyPattern(['port of discharge', 'pod', 'discharge port', 'destination']) ||
+                                    extractWithPattern(/(?:port of discharge|pod|destination)[:\s]*([^\n]+)/i)
                             }
                         },
                         containers: [],
                         inlandExtensions: {
                             transportMode: 'barge',
                             pickupDetails: {
-                                facilityName: extractField('ShipFromAddress')
+                                facilityName: findByKeyPattern(['pickup', 'pick up', 'collection', 'origin']) ||
+                                    extractWithPattern(/(?:pickup|collection|origin)[:\s]*([^\n]+)/i)
                             },
                             deliveryDetails: {
-                                facilityName: extractField('ShipToAddress')
+                                facilityName: findByKeyPattern(['delivery', 'deliver to', 'final destination']) ||
+                                    extractWithPattern(/(?:delivery|deliver to|final destination)[:\s]*([^\n]+)/i)
                             }
                         },
                         parties: {
-                            vendor: extractField('VendorName'),
-                            customer: extractField('CustomerName')
+                            vendor: findByKeyPattern(['shipper', 'consignor', 'sender']) ||
+                                extractWithPattern(/(?:shipper|consignor)[:\s]*([^\n]+)/i),
+                            customer: findByKeyPattern(['consignee', 'receiver', 'notify party']) ||
+                                extractWithPattern(/(?:consignee|receiver)[:\s]*([^\n]+)/i)
                         }
                     },
                     extractionMetadata: {
-                        modelId: 'prebuilt-invoice',
+                        modelId: 'prebuilt-layout',
                         modelVersion: result.modelId || '1.0',
                         confidenceScores,
                         uncertainFields: Object.entries(confidenceScores)
