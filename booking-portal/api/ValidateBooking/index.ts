@@ -56,16 +56,25 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         const database = cosmosClient.database(COSMOS_DATABASE_NAME);
         const container = database.container(COSMOS_CONTAINER_NAME);
 
-        // Get existing booking
-        const { resource: booking } = await container.item(bookingId, bookingId).read();
+        // Get existing booking using query (to avoid needing partition key upfront)
+        const querySpec = {
+            query: "SELECT * FROM c WHERE c.id = @bookingId",
+            parameters: [{ name: "@bookingId", value: bookingId }]
+        };
 
-        if (!booking) {
+        const { resources: results } = await container.items
+            .query(querySpec)
+            .fetchAll();
+
+        if (results.length === 0) {
             context.res = {
                 status: 404,
                 body: { error: 'Not found', message: `Booking ${bookingId} not found` }
             };
             return;
         }
+
+        const booking = results[0];
 
         // Create validation record
         const validationRecord = {
@@ -114,8 +123,8 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         booking.lastModified = new Date().toISOString();
         booking.lastModifiedBy = user.email;
 
-        // Save updated booking
-        await container.item(bookingId, bookingId).replace(booking);
+        // Save updated booking (using correct partition key: tenantId)
+        await container.item(bookingId, booking.tenantId).replace(booking);
 
         context.log(`Booking ${bookingId} validated successfully by ${user.email}`);
 

@@ -33,9 +33,18 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
             context.log(`Fetching booking: ${bookingId}`);
 
             try {
-                const { resource: booking } = await container.item(bookingId, bookingId).read();
+                // First, query to get the booking and its tenantId
+                // We need tenantId for the partition key
+                const querySpec = {
+                    query: "SELECT * FROM c WHERE c.id = @bookingId",
+                    parameters: [{ name: "@bookingId", value: bookingId }]
+                };
 
-                if (!booking) {
+                const { resources: results } = await container.items
+                    .query(querySpec)
+                    .fetchAll();
+
+                if (results.length === 0) {
                     context.res = {
                         status: 404,
                         body: { error: 'Booking not found' },
@@ -44,6 +53,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
                     return;
                 }
 
+                const booking = results[0];
                 context.log(`Retrieved booking ${bookingId} from Cosmos DB`);
 
                 context.res = {
@@ -64,8 +74,9 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
             }
         } else {
             // Query all bookings, ordered by upload timestamp descending
+            // TODO: Add tenantId filter when user context is available
             const querySpec = {
-                query: "SELECT c.id, c.documentId, c.uploadTimestamp, c.processingStatus, c.overallConfidence, c.dcsaPlusData FROM c ORDER BY c.uploadTimestamp DESC"
+                query: "SELECT c.id, c.documentId, c.uploadTimestamp, c.processingStatus, c.overallConfidence, c.dcsaPlusData, c.tenantId FROM c ORDER BY c.uploadTimestamp DESC"
             };
 
             const { resources: bookings } = await container.items
