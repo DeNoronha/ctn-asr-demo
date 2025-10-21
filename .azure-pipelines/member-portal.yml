@@ -40,44 +40,10 @@ steps:
       echo "🔍 Validating required environment variables..."
       EXIT_CODE=0
 
-      # Check Azure AD configuration
-      if [ -z "$(REACT_APP_AAD_CLIENT_ID)" ]; then
-        echo "❌ ERROR: REACT_APP_AAD_CLIENT_ID is not set"
-        EXIT_CODE=1
-      else
-        echo "✅ REACT_APP_AAD_CLIENT_ID is set"
-      fi
+      # TEMPORARILY DISABLED - Variables loaded from .env.production
+      # All VITE_* variables are in portal/.env.production file
 
-      if [ -z "$(REACT_APP_AAD_AUTHORITY)" ]; then
-        echo "❌ ERROR: REACT_APP_AAD_AUTHORITY is not set"
-        EXIT_CODE=1
-      else
-        echo "✅ REACT_APP_AAD_AUTHORITY is set"
-      fi
-
-      if [ -z "$(REACT_APP_AAD_REDIRECT_URI)" ]; then
-        echo "❌ ERROR: REACT_APP_AAD_REDIRECT_URI is not set"
-        EXIT_CODE=1
-      else
-        echo "✅ REACT_APP_AAD_REDIRECT_URI is set"
-      fi
-
-      # Check API configuration
-      if [ -z "$(REACT_APP_API_CLIENT_ID)" ]; then
-        echo "❌ ERROR: REACT_APP_API_CLIENT_ID is not set"
-        EXIT_CODE=1
-      else
-        echo "✅ REACT_APP_API_CLIENT_ID is set"
-      fi
-
-      if [ -z "$(REACT_APP_API_BASE_URL)" ]; then
-        echo "❌ ERROR: REACT_APP_API_BASE_URL is not set"
-        EXIT_CODE=1
-      else
-        echo "✅ REACT_APP_API_BASE_URL is set"
-      fi
-
-      # Check deployment token (from Key Vault)
+      # Check deployment token (from Key Vault) - THIS MUST WORK
       if [ -z "$(AZURE-STATIC-WEB-APPS-API-TOKEN-MEMBER)" ]; then
         echo "❌ ERROR: AZURE-STATIC-WEB-APPS-API-TOKEN-MEMBER is not set"
         echo "   (Check Key Vault secret is correctly referenced)"
@@ -89,18 +55,8 @@ steps:
       if [ $EXIT_CODE -ne 0 ]; then
         echo ""
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "🚫 Build blocked - Missing required variables"
+        echo "🚫 Build blocked - Missing deployment token"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        echo "Please ensure the 'ctn-member-portal-variables' variable group contains:"
-        echo "  - REACT_APP_AAD_CLIENT_ID"
-        echo "  - REACT_APP_AAD_AUTHORITY"
-        echo "  - REACT_APP_AAD_REDIRECT_URI"
-        echo "  - REACT_APP_API_CLIENT_ID"
-        echo "  - REACT_APP_API_BASE_URL"
-        echo ""
-        echo "And Key Vault contains:"
-        echo "  - AZURE-STATIC-WEB-APPS-API-TOKEN-MEMBER"
         echo ""
         exit 1
       fi
@@ -183,11 +139,7 @@ steps:
     env:
       CI: false
       NODE_ENV: production
-      REACT_APP_AAD_CLIENT_ID: $(REACT_APP_AAD_CLIENT_ID)
-      REACT_APP_AAD_AUTHORITY: $(REACT_APP_AAD_AUTHORITY)
-      REACT_APP_AAD_REDIRECT_URI: $(REACT_APP_AAD_REDIRECT_URI)
-      REACT_APP_API_CLIENT_ID: $(REACT_APP_API_CLIENT_ID)
-      REACT_APP_API_BASE_URL: $(REACT_APP_API_BASE_URL)
+      # Environment variables loaded from .env.production file
 
   - task: AzureStaticWebApp@0
     displayName: 'Deploy to Azure Static Web Apps'
