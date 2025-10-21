@@ -115,11 +115,10 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
                 const documentUrl = blockBlobClient.url;
                 context.log(`Page ${page.pageNumber} uploaded: ${documentUrl}`);
 
-                // 2. Analyze with Form Recognizer using prebuilt-document model
-                // This model is better for delivery orders/booking documents vs prebuilt-invoice
+                // 2. Analyze with Form Recognizer using prebuilt-invoice model
                 const startTime = Date.now();
                 const poller = await formRecognizerClient.beginAnalyzeDocument(
-                    'prebuilt-document',
+                    'prebuilt-invoice',
                     page.pdfBuffer
                 );
                 const result = await poller.pollUntilDone();
