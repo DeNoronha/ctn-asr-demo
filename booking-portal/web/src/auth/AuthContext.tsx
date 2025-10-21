@@ -164,7 +164,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           'email',
           `api://${msalConfig.auth.clientId}/access_as_user`
         ],
-        prompt: 'consent', // Force consent screen to show
       });
     } catch (error) {
       console.error('Login error:', error);
