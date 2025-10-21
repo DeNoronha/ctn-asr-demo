@@ -17,7 +17,7 @@
     "@progress/kendo-react-labels": "^12.1.0",
     "@progress/kendo-react-layout": "^12.1.0",
     "@progress/kendo-theme-default": "^12.1.0",
-    "axios": "^1.12.2",
+    "axios": "^1.6.0",
     "lucide-react": "^0.545.0"
   }
 }
