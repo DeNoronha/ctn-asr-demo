@@ -72,15 +72,18 @@ steps:
     displayName: 'Display Node and NPM versions'
 
   - script: |
-      cd portal
       npm ci --legacy-peer-deps
-    displayName: 'Install dependencies'
+    displayName: 'Install root dependencies (sets up workspace)'
 
   - script: |
       cd packages/api-client
-      npm ci
       npm run build
     displayName: 'Build @ctn/api-client package'
+
+  - script: |
+      cd portal
+      npm ci --legacy-peer-deps
+    displayName: 'Install portal dependencies'
 
   # Biome code quality checks - REPORT ONLY (does not block deployment)
   - script: |
