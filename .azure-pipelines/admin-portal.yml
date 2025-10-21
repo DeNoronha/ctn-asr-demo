@@ -112,11 +112,8 @@ steps:
       npm ci --legacy-peer-deps
     displayName: 'Install root dependencies (sets up workspace)'
 
-  - script: |
-      cd packages/api-client
-      npm install
-      npm run build
-    displayName: 'Build @ctn/api-client package'
+  # @ctn/api-client pre-built dist/ files are committed to git
+  # so we don't need to build it during the pipeline
 
   - script: |
       cd web
