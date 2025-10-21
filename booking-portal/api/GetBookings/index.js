@@ -19,81 +19,33 @@ const httpTrigger = async function (context, req) {
         });
         const database = cosmosClient.database(COSMOS_DATABASE_NAME);
         const container = database.container(COSMOS_CONTAINER_NAME);
-        // Check if bookingId parameter is provided
-        // Note: Azure Functions lowercases route parameters
-        const bookingId = context.bindingData.bookingid;
-        if (bookingId) {
-            // Fetch single booking by ID
-            context.log(`Fetching booking: ${bookingId}`);
-            try {
-                // First, query to get the booking and its tenantId
-                // We need tenantId for the partition key
-                const querySpec = {
-                    query: "SELECT * FROM c WHERE c.id = @bookingId",
-                    parameters: [{ name: "@bookingId", value: bookingId }]
-                };
-                const { resources: results } = await container.items
-                    .query(querySpec)
-                    .fetchAll();
-                if (results.length === 0) {
-                    context.res = {
-                        status: 404,
-                        body: { error: 'Booking not found' },
-                        headers: { 'Content-Type': 'application/json' }
-                    };
-                    return;
-                }
-                const booking = results[0];
-                context.log(`Retrieved booking ${bookingId} from Cosmos DB`);
-                context.res = {
-                    status: 200,
-                    body: booking,
-                    headers: { 'Content-Type': 'application/json' }
-                };
+        // Query all bookings, ordered by upload timestamp descending
+        const querySpec = {
+            query: "SELECT c.id, c.documentId, c.uploadTimestamp, c.processingStatus, c.overallConfidence, c.dcsaPlusData FROM c ORDER BY c.uploadTimestamp DESC"
+        };
+        const { resources: bookings } = await container.items
+            .query(querySpec)
+            .fetchAll();
+        context.log(`Retrieved ${bookings.length} bookings from Cosmos DB`);
+        // Format response to match expected structure
+        const formattedBookings = bookings.map(booking => ({
+            id: booking.id,
+            documentId: booking.documentId,
+            containerNumber: booking.dcsaPlusData?.containers?.[0]?.containerNumber || '',
+            carrierBookingReference: booking.dcsaPlusData?.carrierBookingReference || '',
+            uploadTimestamp: booking.uploadTimestamp,
+            processingStatus: booking.processingStatus,
+            overallConfidence: booking.overallConfidence
+        }));
+        context.res = {
+            status: 200,
+            body: {
+                data: formattedBookings
+            },
+            headers: {
+                'Content-Type': 'application/json'
             }
-            catch (error) {
-                if (error.code === 404) {
-                    context.res = {
-                        status: 404,
-                        body: { error: 'Booking not found' },
-                        headers: { 'Content-Type': 'application/json' }
-                    };
-                }
-                else {
-                    throw error;
-                }
-            }
-        }
-        else {
-            // Query all bookings, ordered by upload timestamp descending
-            // TODO: Add tenantId filter when user context is available
-            const querySpec = {
-                query: "SELECT c.id, c.documentId, c.uploadTimestamp, c.processingStatus, c.overallConfidence, c.dcsaPlusData, c.tenantId FROM c ORDER BY c.uploadTimestamp DESC"
-            };
-            const { resources: bookings } = await container.items
-                .query(querySpec)
-                .fetchAll();
-            context.log(`Retrieved ${bookings.length} bookings from Cosmos DB`);
-            // Format response to match expected structure
-            const formattedBookings = bookings.map(booking => ({
-                id: booking.id,
-                documentId: booking.documentId,
-                containerNumber: booking.dcsaPlusData?.containers?.[0]?.containerNumber || '',
-                carrierBookingReference: booking.dcsaPlusData?.carrierBookingReference || '',
-                uploadTimestamp: booking.uploadTimestamp,
-                processingStatus: booking.processingStatus,
-                overallConfidence: booking.overallConfidence
-            }));
-            context.res = {
-                status: 200,
-                body: {
-                    data: formattedBookings
-                },
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            };
-        }
+        };
     }
     catch (error) {
         context.log.error('Error in GetBookings:', error);
