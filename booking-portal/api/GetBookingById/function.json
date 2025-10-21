@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["get"],
-      "route": "v1/bookings"
+      "route": "v1/bookings/detail/{bookingid}"
     },
     {
       "type": "http",

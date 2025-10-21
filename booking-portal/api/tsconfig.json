@@ -16,6 +16,7 @@
   "include": [
     "UploadDocument/**/*.ts",
     "GetBookings/**/*.ts",
+    "GetBookingById/**/*.ts",
     "GetTenants/**/*.ts",
     "ValidateBooking/**/*.ts",
     "GetDocumentSasUrl/**/*.ts"

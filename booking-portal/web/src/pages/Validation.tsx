@@ -30,7 +30,7 @@ const Validation: React.FC = () => {
 
   const loadBooking = async () => {
     try {
-      const response = await axios.get<Booking>(`/api/v1/bookings/${bookingId}`);
+      const response = await axios.get<Booking>(`/api/v1/bookings/detail/${bookingId}`);
       const bookingData = response.data;
       setBooking(bookingData);
       setFormData(bookingData.dcsaPlusData);

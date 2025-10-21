@@ -8,7 +8,7 @@ const COSMOS_DATABASE_NAME = process.env.COSMOS_DATABASE_NAME || 'ctn-bookings-d
 const COSMOS_CONTAINER_NAME = process.env.COSMOS_CONTAINER_NAME || 'bookings';
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
-    context.log('GetBookings triggered');
+    context.log('GetBookingById triggered');
 
     try {
         // Validate environment variables
@@ -24,40 +24,50 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         const database = cosmosClient.database(COSMOS_DATABASE_NAME);
         const container = database.container(COSMOS_CONTAINER_NAME);
 
-        // Query all bookings, ordered by upload timestamp descending
+        // Get bookingId from route parameter (lowercased by Azure Functions)
+        const bookingId = context.bindingData.bookingid;
+
+        if (!bookingId) {
+            context.res = {
+                status: 400,
+                body: { error: 'Booking ID is required' },
+                headers: { 'Content-Type': 'application/json' }
+            };
+            return;
+        }
+
+        context.log(`Fetching booking: ${bookingId}`);
+
+        // Query for the booking (cross-partition query since we don't have tenantId upfront)
         const querySpec = {
-            query: "SELECT c.id, c.documentId, c.uploadTimestamp, c.processingStatus, c.overallConfidence, c.dcsaPlusData FROM c ORDER BY c.uploadTimestamp DESC"
+            query: "SELECT * FROM c WHERE c.id = @bookingId",
+            parameters: [{ name: "@bookingId", value: bookingId }]
         };
 
-        const { resources: bookings } = await container.items
+        const { resources: results } = await container.items
             .query(querySpec)
             .fetchAll();
 
-        context.log(`Retrieved ${bookings.length} bookings from Cosmos DB`);
+        if (results.length === 0) {
+            context.res = {
+                status: 404,
+                body: { error: 'Booking not found' },
+                headers: { 'Content-Type': 'application/json' }
+            };
+            return;
+        }
 
-        // Format response to match expected structure
-        const formattedBookings = bookings.map(booking => ({
-            id: booking.id,
-            documentId: booking.documentId,
-            containerNumber: booking.dcsaPlusData?.containers?.[0]?.containerNumber || '',
-            carrierBookingReference: booking.dcsaPlusData?.carrierBookingReference || '',
-            uploadTimestamp: booking.uploadTimestamp,
-            processingStatus: booking.processingStatus,
-            overallConfidence: booking.overallConfidence
-        }));
+        const booking = results[0];
+        context.log(`Retrieved booking ${bookingId} from Cosmos DB`);
 
         context.res = {
             status: 200,
-            body: {
-                data: formattedBookings
-            },
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            body: booking,
+            headers: { 'Content-Type': 'application/json' }
         };
 
     } catch (error: any) {
-        context.log.error('Error in GetBookings:', error);
+        context.log.error('Error in GetBookingById:', error);
         context.res = {
             status: 500,
             body: { error: 'Internal server error', message: error.message },
