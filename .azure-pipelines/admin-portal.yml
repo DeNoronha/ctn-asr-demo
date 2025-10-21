@@ -1,5 +1,6 @@
 # Admin Portal - CI/CD Pipeline
 # Triggers on changes to web/* or api/* directories
+# Environment variables loaded from web/.env.production (tracked in git)
 
 trigger:
   branches:

@@ -1,5 +1,6 @@
 # Member Portal - CI/CD Pipeline
 # Triggers on changes to portal/* or api/* directories
+# Environment variables loaded from portal/.env.production (tracked in git)
 
 trigger:
   branches:
