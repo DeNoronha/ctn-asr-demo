@@ -5,6 +5,7 @@ import { CosmosClient } from "@azure/cosmos";
 import { DefaultAzureCredential } from "@azure/identity";
 import { getUserFromRequest } from "../shared/auth";
 import { parseMultipartForm } from "../shared/multipart";
+import { splitPdfIntoPages, getPdfPageCount } from "../shared/pdfSplitter";
 
 // Environment variables
 const FORM_RECOGNIZER_ENDPOINT = process.env.DOCUMENT_INTELLIGENCE_ENDPOINT || process.env.FORM_RECOGNIZER_ENDPOINT;
@@ -56,155 +57,179 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         const file = fileUpload.buffer;
         const originalFilename = fileUpload.filename;
 
-        const bookingId = `booking-${Date.now()}`;
-        const documentId = `doc-${Date.now()}`;
-        const fileName = `${documentId}.pdf`;
+        // Check if PDF has multiple pages
+        context.log('Checking PDF page count...');
+        const pageCount = await getPdfPageCount(file);
+        context.log(`PDF has ${pageCount} page(s)`);
 
-        context.log(`Processing booking ${bookingId}, document ${documentId}`);
-
-        // 1. Upload to Blob Storage
-        context.log('Uploading to Blob Storage...');
+        // Initialize Azure clients
         const credential = new DefaultAzureCredential();
         const blobServiceClient = new BlobServiceClient(
             `https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net`,
             credential
         );
-
         const containerClient = blobServiceClient.getContainerClient(STORAGE_CONTAINER_NAME);
-        await containerClient.createIfNotExists(); // Private container by default
-
-        const blockBlobClient = containerClient.getBlockBlobClient(fileName);
-        await blockBlobClient.upload(file, file.length, {
-            blobHTTPHeaders: { blobContentType: 'application/pdf' }
-        });
-
-        const documentUrl = blockBlobClient.url;
-        context.log(`Document uploaded: ${documentUrl}`);
-
-        // 2. Analyze with Form Recognizer
-        context.log('Analyzing document with Form Recognizer...');
-        const startTime = Date.now();
+        await containerClient.createIfNotExists();
 
         const formRecognizerClient = new DocumentAnalysisClient(
             FORM_RECOGNIZER_ENDPOINT,
             new AzureKeyCredential(FORM_RECOGNIZER_KEY)
         );
 
-        const poller = await formRecognizerClient.beginAnalyzeDocument(
-            'prebuilt-invoice',
-            file
-        );
-        const result = await poller.pollUntilDone();
-
-        const processingTimeMs = Date.now() - startTime;
-        context.log(`Analysis complete in ${processingTimeMs}ms`);
-
-        // 3. Extract booking data from Form Recognizer results
-        const document = result.documents?.[0];
-        const fields = document?.fields || {};
-
-        // Calculate overall confidence
-        const confidenceScores: any = {};
-        let totalConfidence = 0;
-        let fieldCount = 0;
-
-        Object.entries(fields).forEach(([key, field]: [string, any]) => {
-            if (field?.confidence !== undefined) {
-                confidenceScores[key] = field.confidence;
-                totalConfidence += field.confidence;
-                fieldCount++;
-            }
-        });
-
-        const overallConfidence = fieldCount > 0 ? totalConfidence / fieldCount : 0;
-
-        // Extract specific fields (Form Recognizer invoice model)
-        const extractField = (fieldName: string): string => {
-            const field = fields[fieldName];
-            if (!field) return '';
-
-            // Handle different field types
-            if ('content' in field && field.content) {
-                return String(field.content);
-            }
-            if ('value' in field && field.value) {
-                return String(field.value);
-            }
-            return '';
-        };
-
-        const booking = {
-            id: bookingId,
-            tenantId: user.tenantId || 'default', // From JWT token or default
-            documentId,
-            documentUrl,
-            uploadedBy: user.email,
-            uploadedByName: user.name,
-            uploadedByUserId: user.userId,
-            uploadTimestamp: new Date().toISOString(),
-            processingStatus: 'completed',
-            overallConfidence: Math.round(overallConfidence * 100) / 100,
-            dcsaPlusData: {
-                carrierBookingReference: extractField('InvoiceId') || extractField('PurchaseOrder'),
-                shipmentDetails: {
-                    carrierCode: extractField('VendorName'),
-                    portOfLoading: {
-                        UNLocationCode: '',
-                        locationName: extractField('ShipFromAddress')
-                    },
-                    portOfDischarge: {
-                        UNLocationCode: '',
-                        locationName: extractField('ShipToAddress')
-                    }
-                },
-                containers: [],
-                inlandExtensions: {
-                    transportMode: 'barge' as const,
-                    pickupDetails: {
-                        facilityName: extractField('ShipFromAddress')
-                    },
-                    deliveryDetails: {
-                        facilityName: extractField('ShipToAddress')
-                    }
-                },
-                parties: {
-                    vendor: extractField('VendorName'),
-                    customer: extractField('CustomerName')
-                }
-            },
-            extractionMetadata: {
-                modelId: 'prebuilt-invoice',
-                modelVersion: result.modelId || '1.0',
-                confidenceScores,
-                uncertainFields: Object.entries(confidenceScores)
-                    .filter(([_, confidence]) => typeof confidence === 'number' && confidence < 0.8)
-                    .map(([field, _]) => field),
-                processingTimeMs,
-                extractionTimestamp: new Date().toISOString()
-            },
-            validationHistory: [],
-            rawFormRecognizerData: result.documents?.[0] // Store full results for debugging
-        };
-
-        // 4. Store in Cosmos DB
-        context.log('Storing booking in Cosmos DB...');
         const cosmosClient = new CosmosClient({
             endpoint: COSMOS_ENDPOINT,
             key: COSMOS_KEY
         });
-
         const database = cosmosClient.database(COSMOS_DATABASE_NAME);
         const container = database.container(COSMOS_CONTAINER_NAME);
 
-        await container.items.create(booking);
-        context.log(`Booking ${bookingId} stored successfully`);
+        // Split PDF into individual pages
+        const pages = await splitPdfIntoPages(file);
+        context.log(`Split PDF into ${pages.length} individual page(s)`);
 
-        // Remove raw data from response
-        const { rawFormRecognizerData, ...responseBooking } = booking;
+        const createdBookings: any[] = [];
+
+        // Process each page as a separate booking
+        for (const page of pages) {
+            const bookingId = `booking-${Date.now()}-p${page.pageNumber}`;
+            const documentId = `doc-${Date.now()}-p${page.pageNumber}`;
+            const fileName = `${documentId}.pdf`;
+
+            context.log(`Processing page ${page.pageNumber}/${pages.length}: ${bookingId}`);
+
+            try {
+                // 1. Upload page to Blob Storage
+                const blockBlobClient = containerClient.getBlockBlobClient(fileName);
+                await blockBlobClient.upload(page.pdfBuffer, page.pdfBuffer.length, {
+                    blobHTTPHeaders: { blobContentType: 'application/pdf' }
+                });
+                const documentUrl = blockBlobClient.url;
+                context.log(`Page ${page.pageNumber} uploaded: ${documentUrl}`);
+
+                // 2. Analyze with Form Recognizer
+                const startTime = Date.now();
+                const poller = await formRecognizerClient.beginAnalyzeDocument(
+                    'prebuilt-invoice',
+                    page.pdfBuffer
+                );
+                const result = await poller.pollUntilDone();
+                const processingTimeMs = Date.now() - startTime;
+                context.log(`Page ${page.pageNumber} analysis complete in ${processingTimeMs}ms`);
+
+                // 3. Extract booking data from Form Recognizer results
+                const document = result.documents?.[0];
+                const fields = document?.fields || {};
+
+                // Calculate overall confidence
+                const confidenceScores: any = {};
+                let totalConfidence = 0;
+                let fieldCount = 0;
+
+                Object.entries(fields).forEach(([key, field]: [string, any]) => {
+                    if (field?.confidence !== undefined) {
+                        confidenceScores[key] = field.confidence;
+                        totalConfidence += field.confidence;
+                        fieldCount++;
+                    }
+                });
+
+                const overallConfidence = fieldCount > 0 ? totalConfidence / fieldCount : 0;
+
+                // Extract specific fields (Form Recognizer invoice model)
+                const extractField = (fieldName: string): string => {
+                    const field = fields[fieldName];
+                    if (!field) return '';
+
+                    // Handle different field types
+                    if ('content' in field && field.content) {
+                        return String(field.content);
+                    }
+                    if ('value' in field && field.value) {
+                        return String(field.value);
+                    }
+                    return '';
+                };
+
+                const booking = {
+                    id: bookingId,
+                    tenantId: user.tenantId || 'default',
+                    documentId,
+                    documentUrl,
+                    originalFilename,
+                    pageNumber: page.pageNumber,
+                    totalPages: pages.length,
+                    uploadedBy: user.email,
+                    uploadedByName: user.name,
+                    uploadedByUserId: user.userId,
+                    uploadTimestamp: new Date().toISOString(),
+                    processingStatus: 'pending',
+                    overallConfidence: Math.round(overallConfidence * 100) / 100,
+                    dcsaPlusData: {
+                        carrierBookingReference: extractField('InvoiceId') || extractField('PurchaseOrder'),
+                        shipmentDetails: {
+                            carrierCode: extractField('VendorName'),
+                            portOfLoading: {
+                                UNLocationCode: '',
+                                locationName: extractField('ShipFromAddress')
+                            },
+                            portOfDischarge: {
+                                UNLocationCode: '',
+                                locationName: extractField('ShipToAddress')
+                            }
+                        },
+                        containers: [],
+                        inlandExtensions: {
+                            transportMode: 'barge' as const,
+                            pickupDetails: {
+                                facilityName: extractField('ShipFromAddress')
+                            },
+                            deliveryDetails: {
+                                facilityName: extractField('ShipToAddress')
+                            }
+                        },
+                        parties: {
+                            vendor: extractField('VendorName'),
+                            customer: extractField('CustomerName')
+                        }
+                    },
+                    extractionMetadata: {
+                        modelId: 'prebuilt-invoice',
+                        modelVersion: result.modelId || '1.0',
+                        confidenceScores,
+                        uncertainFields: Object.entries(confidenceScores)
+                            .filter(([_, confidence]) => typeof confidence === 'number' && confidence < 0.8)
+                            .map(([field, _]) => field),
+                        processingTimeMs,
+                        extractionTimestamp: new Date().toISOString()
+                    },
+                    validationHistory: []
+                };
+
+                // 4. Store in Cosmos DB
+                await container.items.create(booking);
+                context.log(`Page ${page.pageNumber} booking ${bookingId} stored successfully`);
+
+                // Add to results (without raw data)
+                createdBookings.push(booking);
+
+            } catch (pageError: any) {
+                context.log.error(`Error processing page ${page.pageNumber}:`, pageError);
+                // Continue with other pages even if one fails
+                createdBookings.push({
+                    error: true,
+                    pageNumber: page.pageNumber,
+                    message: `Failed to process page ${page.pageNumber}: ${pageError.message}`
+                });
+            }
+        }
 
         context.res = {
             status: 202,
-            body: responseBooking,
+            body: {
+                message: `Processed ${createdBookings.length} page(s) from uploaded PDF`,
+                totalPages: pages.length,
+                bookings: createdBookings
+            },
             headers: {
                 'Content-Type': 'application/json'
             }
