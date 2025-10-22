@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
+interface Booking {
+  id: string;
+  documentId: string;
+  containerNumber: string;
+  carrierBookingReference: string;
+  uploadTimestamp: string;
+  processingStatus: string;
+  overallConfidence: number;
+}
 
 interface DashboardStats {
   totalBookings: number;
@@ -16,6 +26,7 @@ const Dashboard: React.FC = () => {
     validatedToday: 0,
     averageConfidence: 0
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadStats();
@@ -23,18 +34,53 @@ const Dashboard: React.FC = () => {
 
   const loadStats = async () => {
     try {
-      // In production, fetch from API
-      // For demo, use mock data
+      setLoading(true);
+      const response = await axios.get<{ data: Booking[] }>('/api/v1/bookings');
+      const bookings = response.data.data || [];
+
+      // Calculate stats from real data
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const pendingCount = bookings.filter(b => b.processingStatus === 'pending').length;
+      const validatedToday = bookings.filter(b => {
+        const uploadDate = new Date(b.uploadTimestamp);
+        uploadDate.setHours(0, 0, 0, 0);
+        return b.processingStatus === 'validated' && uploadDate.getTime() === today.getTime();
+      }).length;
+
+      const avgConfidence = bookings.length > 0
+        ? bookings.reduce((sum, b) => sum + (b.overallConfidence || 0), 0) / bookings.length * 100
+        : 0;
+
       setStats({
-        totalBookings: 247,
-        pendingValidation: 12,
-        validatedToday: 8,
-        averageConfidence: 87.3
+        totalBookings: bookings.length,
+        pendingValidation: pendingCount,
+        validatedToday,
+        averageConfidence: Math.round(avgConfidence * 10) / 10
       });
     } catch (error) {
       console.error('Failed to load stats:', error);
+      // Fallback to zeros on error
+      setStats({
+        totalBookings: 0,
+        pendingValidation: 0,
+        validatedToday: 0,
+        averageConfidence: 0
+      });
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="card" style={{ textAlign: 'center', padding: '60px' }}>
+        <div className="k-loading k-loading-lg" style={{ margin: '0 auto 16px' }} />
+        <p style={{ color: '#64748b' }}>Loading dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div>
