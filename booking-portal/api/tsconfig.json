@@ -19,7 +19,8 @@
     "GetBookingById/**/*.ts",
     "GetTenants/**/*.ts",
     "ValidateBooking/**/*.ts",
-    "GetDocumentSasUrl/**/*.ts"
+    "GetDocumentSasUrl/**/*.ts",
+    "AddToKnowledgeBase/**/*.ts"
   ],
   "exclude": ["node_modules", "dist", "**/*.js"]
 }
