@@ -91,6 +91,10 @@
   font-size: 0.95rem;
 }
 
+.version-item .k-badge {
+  margin-left: 0.5rem;
+}
+
 .version-number {
   font-family: "Courier New", monospace;
   font-weight: 600;

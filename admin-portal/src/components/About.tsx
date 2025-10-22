@@ -170,12 +170,11 @@ const About: React.FC = () => {
                     </div>
                   </>
                 )}
-                {getEnvironmentBadge(portalVersion.environment) && (
-                  <div className="version-item">
-                    <strong>Environment:</strong>
-                    {getEnvironmentBadge(portalVersion.environment)}
-                  </div>
-                )}
+                <div className="version-item">
+                  <strong>Environment:</strong>
+                  <span>{portalVersion.environment || 'Development'}</span>
+                  {getEnvironmentBadge(portalVersion.environment)}
+                </div>
                 {portalVersion.branch &&
                   portalVersion.branch !== 'unknown' &&
                   portalVersion.branch !== 'local' && (
@@ -231,12 +230,11 @@ const About: React.FC = () => {
                     </div>
                   </>
                 )}
-                {getEnvironmentBadge(apiVersion.environment) && (
-                  <div className="version-item">
-                    <strong>Environment:</strong>
-                    {getEnvironmentBadge(apiVersion.environment)}
-                  </div>
-                )}
+                <div className="version-item">
+                  <strong>Environment:</strong>
+                  <span>{apiVersion.environment || 'Development'}</span>
+                  {getEnvironmentBadge(apiVersion.environment)}
+                </div>
                 {apiVersion.branch &&
                   apiVersion.branch !== 'unknown' &&
                   apiVersion.branch !== 'local' && (
