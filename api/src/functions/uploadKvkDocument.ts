@@ -374,15 +374,34 @@ async function handler(
           [allFlags, legalEntityId]
         );
       }
-    } catch (verificationError) {
+    } catch (verificationError: any) {
       context.error('Verification error:', verificationError);
-      // Document uploaded but verification failed - mark as pending
+
+      // Determine error type for better user feedback
+      let errorFlag = 'processing_error';
+
+      // Check if it's a KvK API error
+      if (verificationError.message?.includes('KvK') ||
+          verificationError.message?.includes('API') ||
+          verificationError.code === 'ENOTFOUND' ||
+          verificationError.code === 'ECONNREFUSED' ||
+          verificationError.response?.status >= 400) {
+        errorFlag = 'api_error';
+      }
+      // Check if it's a PDF extraction error
+      else if (verificationError.message?.includes('extract') ||
+               verificationError.message?.includes('Document Intelligence') ||
+               verificationError.message?.includes('PDF')) {
+        errorFlag = 'extraction_failed';
+      }
+
+      // Document uploaded but verification failed - mark as failed with specific error
       await pool.query(
-        `UPDATE legal_entity 
+        `UPDATE legal_entity
          SET kvk_verification_status = 'failed',
-             kvk_mismatch_flags = ARRAY['processing_error']
-         WHERE legal_entity_id = $1`,
-        [legalEntityId]
+             kvk_mismatch_flags = ARRAY[$1]
+         WHERE legal_entity_id = $2`,
+        [errorFlag, legalEntityId]
       );
     }
 
