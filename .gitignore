@@ -55,3 +55,26 @@ playwright-report/
 test-results/
 .playwright/
 booking-portal/api/deploy.zip
+
+# Debug artifacts
+**/debug/
+diagnostic-*.png
+diagnostic-*.jpg
+screenshot-*.png
+screenshot-*.jpg
+*-dump.json
+*-trace.json
+*.har
+console-logs.json
+network-requests.json
+debug-summary.txt
+
+# Compiled TypeScript (except config files)
+# Note: Some projects may track compiled files intentionally (e.g., packages/api-client/dist/)
+# Use project-specific .gitignore files to override if needed
+*.js.map
+# Keep JavaScript config files
+!*.config.js
+!vite.config.js
+!jest.config.js
+!.eslintrc.js
