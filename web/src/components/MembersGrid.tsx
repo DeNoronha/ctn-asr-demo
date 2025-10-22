@@ -490,7 +490,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   ];
 
   const exportMenuItems = [
-    { text: 'Export to Excel', icon: 'file-excel', click: handleExcelExport },
+    { text: 'Export to Excel (Coming Soon)', icon: 'file-excel', click: () => {} },
     { text: 'Export to PDF', icon: 'file-pdf', click: handlePDFExport },
     { text: 'Export to CSV', icon: 'file-txt', click: handleCSVExport },
   ];
