@@ -18,8 +18,14 @@ export default defineConfig({
       // Force single React instance to prevent "Cannot read properties of null (reading 'useContext')" error
       react: path.resolve(__dirname, './node_modules/react'),
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
-      // Fix Kendo Excel Export: Polyfill react-dom/server for browser compatibility
-      'react-dom/server': path.resolve(__dirname, './node_modules/react-dom/server.browser.js'),
+    },
+    // Prefer browser builds over Node.js builds
+    conditions: ['browser', 'module', 'import', 'default'],
+  },
+  optimizeDeps: {
+    // Force Vite to use browser-safe builds
+    esbuildOptions: {
+      conditions: ['browser'],
     },
   },
   build: {
