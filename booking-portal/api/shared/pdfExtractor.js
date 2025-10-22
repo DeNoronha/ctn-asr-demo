@@ -13,26 +13,22 @@ exports.detectDocumentStart = detectDocumentStart;
 exports.groupPagesIntoDocuments = groupPagesIntoDocuments;
 exports.cleanExtractedText = cleanExtractedText;
 exports.extractSnippet = extractSnippet;
-// pdf-parse v2 uses class-based API
-const { PDFParse } = require('pdf-parse');
+const pdfParse = require('pdf-parse');
 /**
  * Extracts text from entire PDF
  */
 async function extractTextFromPDF(buffer) {
     try {
-        // pdf-parse v2 API
-        const parser = new PDFParse({ data: buffer });
-        const result = await parser.getText();
+        const data = await pdfParse(buffer);
         return {
-            text: result.text,
+            text: data.text,
             pages: [], // Will populate with page-by-page extraction if needed
             metadata: {
-                totalPages: result.pages.length,
-                // pdf-parse v2 doesn't expose metadata in getText(), would need getInfo()
-                title: undefined,
-                author: undefined,
-                producer: undefined,
-                creationDate: undefined
+                totalPages: data.numpages,
+                title: data.info?.Title,
+                author: data.info?.Author,
+                producer: data.info?.Producer,
+                creationDate: data.info?.CreationDate ? new Date(data.info.CreationDate) : undefined
             }
         };
     }
@@ -46,16 +42,36 @@ async function extractTextFromPDF(buffer) {
  */
 async function extractTextByPage(buffer) {
     try {
-        // pdf-parse v2 API - getText() already returns pages array
-        const parser = new PDFParse({ data: buffer });
-        const result = await parser.getText();
-        const totalPages = result.pages.length;
-        // Convert pdf-parse v2 page format to our PDFPage interface
-        const pages = result.pages.map((page) => ({
-            pageNumber: page.num,
-            text: page.text,
-            totalPages
-        }));
+        const result = await extractTextFromPDF(buffer);
+        const totalPages = result.metadata.totalPages;
+        // pdf-parse doesn't directly support page-by-page extraction
+        // We'll split the text based on page markers or use full text
+        // For now, we'll use full text with page detection
+        const pages = [];
+        // Try to detect page boundaries in the text
+        const pageMarkers = detectPageBoundaries(result.text, totalPages);
+        if (pageMarkers.length > 0) {
+            for (let i = 0; i < pageMarkers.length; i++) {
+                const start = pageMarkers[i];
+                const end = i < pageMarkers.length - 1 ? pageMarkers[i + 1] : result.text.length;
+                const pageText = result.text.substring(start, end).trim();
+                if (pageText) {
+                    pages.push({
+                        pageNumber: i + 1,
+                        text: pageText,
+                        totalPages
+                    });
+                }
+            }
+        }
+        else {
+            // If can't detect boundaries, return full text as single page
+            pages.push({
+                pageNumber: 1,
+                text: result.text,
+                totalPages
+            });
+        }
         return pages;
     }
     catch (error) {
@@ -103,9 +119,8 @@ function detectPageBoundaries(text, expectedPages) {
  */
 async function getPdfPageCount(buffer) {
     try {
-        const parser = new PDFParse({ data: buffer });
-        const result = await parser.getText();
-        return result.pages.length;
+        const data = await pdfParse(buffer);
+        return data.numpages;
     }
     catch (error) {
         throw new Error(`Failed to get PDF page count: ${error.message}`);
