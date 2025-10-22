@@ -8,7 +8,6 @@ import {
 import { Fade } from '@progress/kendo-react-animation';
 import { Button } from '@progress/kendo-react-buttons';
 import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
-import { LogOut } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import './kendoLicense';
@@ -208,7 +207,7 @@ function AppContent({ instance }: AppContentProps) {
                   title="Sign out"
                   className="logout-button"
                 >
-                  <LogOut size={16} /> Sign Out
+                  🚪 Sign Out
                 </Button>
               </div>
             </AuthenticatedTemplate>

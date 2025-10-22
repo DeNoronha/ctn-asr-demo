@@ -1,5 +1,4 @@
 import { Button } from '@progress/kendo-react-buttons';
-import { Home } from 'lucide-react';
 import type React from 'react';
 
 interface NotFoundProps {
@@ -42,8 +41,7 @@ const NotFound: React.FC<NotFoundProps> = ({ onGoHome }) => {
         size="large"
         onClick={handleGoHome}
       >
-        <Home size={18} style={{ marginRight: '0.5rem' }} />
-        Go to Dashboard
+        🏠 Go to Dashboard
       </Button>
     </div>
   );
