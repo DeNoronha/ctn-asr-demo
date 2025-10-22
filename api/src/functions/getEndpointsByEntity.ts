@@ -1,5 +1,6 @@
 import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
+import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
+import { Permission } from '../middleware/rbac';
 import { getPool } from '../utils/database';
 
 async function handler(
@@ -61,5 +62,9 @@ app.http('getEndpointsByEntity', {
   methods: ['GET', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'v1/legal-entities/{legalentityid}/endpoints',
-  handler: memberEndpoint(handler),
+  handler: wrapEndpoint(handler, {
+    requireAuth: true,
+    requiredPermissions: [Permission.READ_OWN_ENTITY, Permission.READ_ALL_ENTITIES],
+    requireAllPermissions: false // Either permission grants access
+  }),
 });
