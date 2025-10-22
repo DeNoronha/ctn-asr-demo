@@ -17,9 +17,9 @@ import type { Configuration, PopupRequest } from '@azure/msal-browser';
 // Azure Entra ID Configuration
 export const msalConfig: Configuration = {
   auth: {
-    clientId: process.env.VITE_AZURE_CLIENT_ID || '',
-    authority: `https://login.microsoftonline.com/${process.env.VITE_AZURE_TENANT_ID}`,
-    redirectUri: process.env.VITE_REDIRECT_URI || window.location.origin,
+    clientId: import.meta.env.VITE_AZURE_CLIENT_ID || '',
+    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_AZURE_TENANT_ID}`,
+    redirectUri: import.meta.env.VITE_REDIRECT_URI || window.location.origin,
     postLogoutRedirectUri: window.location.origin,
   },
   cache: {
@@ -35,7 +35,7 @@ export const loginRequest: PopupRequest = {
 
 // API scopes for backend calls
 export const apiRequest = {
-  scopes: [`api://${process.env.VITE_AZURE_CLIENT_ID}/access_as_user`],
+  scopes: [`api://${import.meta.env.VITE_AZURE_CLIENT_ID}/access_as_user`],
 };
 
 // User Roles (stored in Azure Entra ID App Roles)

@@ -7,7 +7,7 @@
 import axios from 'axios';
 import { type LegalEntity, type LegalEntityContact, type Member, apiV2 } from './apiV2';
 
-const _API_BASE_URL = process.env.VITE_API_URL || 'http://localhost:7071/api/v1';
+const _API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
 
 // Re-export types for backward compatibility
 export type { LegalEntity, LegalEntityContact, Member };

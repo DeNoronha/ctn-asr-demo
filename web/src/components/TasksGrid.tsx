@@ -41,7 +41,7 @@ interface ReviewTask {
   document_uploaded_at: string;
 }
 
-const API_BASE_URL = process.env.VITE_API_URL || 'http://localhost:7071/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api';
 
 const TasksGrid: React.FC = () => {
   const { instance, accounts } = useMsal();

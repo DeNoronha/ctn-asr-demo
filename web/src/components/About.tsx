@@ -71,7 +71,7 @@ const About: React.FC = () => {
 
       // Load API version from /api/v1/version
       const apiResponse = await fetch(
-        `${process.env.VITE_API_URL || 'http://localhost:7071/api/v1'}/version`
+        `${import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1'}/version`
       );
       if (apiResponse.ok) {
         const apiData = await apiResponse.json();

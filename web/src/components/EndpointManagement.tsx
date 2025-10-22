@@ -65,7 +65,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
   });
 
   const API_BASE =
-    process.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
+    import.meta.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
 
   useEffect(() => {
     loadEndpoints();

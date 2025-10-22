@@ -20,14 +20,6 @@ export default defineConfig({
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
     },
   },
-  define: {
-    // Map process.env.VITE_* to import.meta.env.VITE_* for Azure Static Web Apps
-    // This is required because Azure SWA builds from Git without .env files
-    'process.env.VITE_AZURE_CLIENT_ID': 'import.meta.env.VITE_AZURE_CLIENT_ID',
-    'process.env.VITE_AZURE_TENANT_ID': 'import.meta.env.VITE_AZURE_TENANT_ID',
-    'process.env.VITE_REDIRECT_URI': 'import.meta.env.VITE_REDIRECT_URI',
-    'process.env.VITE_API_URL': 'import.meta.env.VITE_API_URL',
-  },
   build: {
     outDir: 'build',
     sourcemap: true,

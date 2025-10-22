@@ -48,14 +48,14 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
     message: string;
   } | null>(null);
 
-  const API_BASE_URL = process.env.VITE_API_URL || 'http://localhost:7071/api/v1';
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
 
   // Helper function to get access token
   async function getAccessToken(): Promise<string | null> {
     try {
       const accounts = msalInstance.getAllAccounts();
       if (accounts.length > 0) {
-        const clientId = process.env.VITE_AZURE_CLIENT_ID;
+        const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
         const response = await msalInstance.acquireTokenSilent({
           scopes: [`api://${clientId}/access_as_user`],
           account: accounts[0],
