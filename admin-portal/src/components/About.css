@@ -91,8 +91,22 @@
   font-size: 0.95rem;
 }
 
-.version-item .k-badge {
+.env-badge {
   margin-left: 0.5rem;
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: 12px;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+
+.env-badge-production {
+  background-color: #28a745;
+  color: white;
 }
 
 .version-number {

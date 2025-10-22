@@ -3,7 +3,6 @@
  * Displays build information for both admin portal and API
  */
 
-import { Badge } from '@progress/kendo-react-indicators';
 import { Card, CardBody, CardHeader, CardTitle } from '@progress/kendo-react-layout';
 import { AlertCircle, Calendar, CheckCircle, Clock, GitBranch, Package } from './icons';
 import type React from 'react';
@@ -116,9 +115,9 @@ const About: React.FC = () => {
     // Only show Production badge for production environment
     if (envLower === 'production' || envLower === 'prod') {
       return (
-        <Badge themeColor="success" size="medium">
+        <span className="env-badge env-badge-production">
           Production
-        </Badge>
+        </span>
       );
     }
     // Don't show environment badge for dev/local
