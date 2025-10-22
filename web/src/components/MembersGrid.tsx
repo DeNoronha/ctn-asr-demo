@@ -7,7 +7,8 @@ import {
 import { Button } from '@progress/kendo-react-buttons';
 import { DropDownButton } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { ExcelExport } from '@progress/kendo-react-excel-export';
+// TEMPORARILY DISABLED: Excel export causes react-dom/server Node.js build issues
+// import { ExcelExport } from '@progress/kendo-react-excel-export';
 import {
   Grid,
   GridColumn,
@@ -78,7 +79,8 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [bulkAction, setBulkAction] = useState<string>('');
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
-  const excelExportRef = useRef<ExcelExport | null>(null);
+  // TEMPORARILY DISABLED
+  // const excelExportRef = useRef<ExcelExport | null>(null);
   const [total, setTotal] = useState(totalMembers || members.length);
 
   // Column visibility state - Default shows: Legal Name, Status, LEI, EUID, KVK, Actions
@@ -211,11 +213,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     saveGridState();
   };
 
+  // TEMPORARILY DISABLED
   const handleExcelExport = () => {
-    if (excelExportRef.current) {
-      excelExportRef.current.save();
-      notification.showSuccess(`Exported ${gridData.length} members to Excel`);
-    }
+    alert('Excel export temporarily disabled');
+    // notification.showInfo('Excel export temporarily disabled');
+    // if (excelExportRef.current) {
+    //   excelExportRef.current.save();
+    //   notification.showSuccess(`Exported ${gridData.length} members to Excel`);
+    // }
   };
 
   const toggleColumn = (field: string) => {
@@ -527,13 +532,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         </Dialog>
       )}
 
-      <ExcelExport
+      {/* TEMP DISABLED: Excel Export */}
+      {/* <ExcelExport
         data={
           selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData
         }
         fileName="CTN_Members.xlsx"
         ref={excelExportRef}
-      >
+      > */}
         <Grid
           data={gridData}
           sortable={true}
@@ -658,7 +664,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             filterable={false}
           />
         </Grid>
-      </ExcelExport>
+      {/* </ExcelExport> */}
     </div>
   );
 };

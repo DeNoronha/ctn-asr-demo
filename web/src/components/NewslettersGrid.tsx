@@ -1,7 +1,8 @@
 import { Button, DropDownButton } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { ExcelExport } from '@progress/kendo-react-excel-export';
+// TEMP DISABLED: Excel export causes react-dom/server issues
+// import { ExcelExport } from '@progress/kendo-react-excel-export';
 import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { Input, TextArea } from '@progress/kendo-react-inputs';
 import type React from 'react';
@@ -35,7 +36,8 @@ const NewslettersGrid: React.FC = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [selectedNewsletter, setSelectedNewsletter] = useState<Newsletter | null>(null);
-  const excelExportRef = useRef<ExcelExport | null>(null);
+  // TEMP DISABLED
+  // const excelExportRef = useRef<ExcelExport | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -131,9 +133,10 @@ const NewslettersGrid: React.FC = () => {
   };
 
   const handleExcelExport = () => {
-    if (excelExportRef.current) {
-      excelExportRef.current.save();
-    }
+    alert('Excel export temporarily disabled');
+    // if (excelExportRef.current) {
+    //   excelExportRef.current.save();
+    // }
   };
 
   const handlePDFExport = () => {
@@ -213,7 +216,8 @@ const NewslettersGrid: React.FC = () => {
         </Button>
       </div>
 
-      <ExcelExport data={newsletters} fileName="CTN_Newsletters.xlsx" ref={excelExportRef}>
+      {/* TEMP DISABLED */}
+      {/* <ExcelExport data={newsletters} fileName="CTN_Newsletters.xlsx" ref={excelExportRef}> */}
         <Grid data={newsletters} style={{ height: '600px' }}>
           <GridToolbar>
             <div
@@ -264,7 +268,7 @@ const NewslettersGrid: React.FC = () => {
           />
           <GridColumn title="Actions" width="150px" cell={ActionsCell} />
         </Grid>
-      </ExcelExport>
+      {/* </ExcelExport> */}
 
       {/* Create Dialog */}
       {showCreateDialog && (
