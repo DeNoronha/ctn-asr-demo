@@ -7,7 +7,7 @@ import { Button } from '@progress/kendo-react-buttons';
 import { DrawerContent } from '@progress/kendo-react-layout';
 import { LogOut, User } from './icons';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/AuthContext';
 import { RoleGuard } from '../auth/ProtectedRoute';
@@ -48,65 +48,80 @@ const AdminPortal: React.FC = () => {
   const [selectedView, setSelectedView] = useState<string>('dashboard');
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
-  const { loading, execute: loadMembers } = useAsync({
-    showErrorNotification: true,
-    errorMessage: 'Failed to load members',
-  });
+  // Memoize useAsync options to prevent infinite re-renders
+  const asyncOptions = useMemo(
+    () => ({
+      showErrorNotification: true,
+      errorMessage: 'Failed to load members',
+    }),
+    []
+  );
+
+  const { loading, execute: loadMembers } = useAsync(asyncOptions);
+
+  const loadMembersData = useCallback(
+    async (page = 1, pageSize = 20) => {
+      try {
+        const result = (await loadMembers(() => api.getMembers(page, pageSize))) as {
+          data: Member[];
+          total: number;
+        };
+        setMembers(result.data);
+        setTotalMembers(result.total);
+      } catch (_error) {
+        // Handled by useAsync
+      }
+    },
+    [loadMembers]
+  );
 
   useEffect(() => {
     loadMembersData();
-  }, []);
+  }, [loadMembersData]);
 
-  const loadMembersData = async (page = 1, pageSize = 20) => {
-    try {
-      const result = (await loadMembers(() => api.getMembers(page, pageSize))) as {
-        data: Member[];
-        total: number;
-      };
-      setMembers(result.data);
-      setTotalMembers(result.total);
-    } catch (_error) {
-      // Handled by useAsync
-    }
-  };
+  const handleFormSubmit = useCallback(
+    async (formData: MemberFormData) => {
+      await api.createMember(formData);
+      setShowForm(false);
+      notification.showSuccess('Member registered successfully!');
+      await loadMembersData();
+    },
+    [notification, loadMembersData]
+  );
 
-  const handleFormSubmit = async (formData: MemberFormData) => {
-    await api.createMember(formData);
-    setShowForm(false);
-    notification.showSuccess('Member registered successfully!');
-    await loadMembersData();
-  };
-
-  const handleViewDetails = (member: Member) => {
+  const handleViewDetails = useCallback((member: Member) => {
     setSelectedMember(member);
     setSelectedView('member-detail');
-  };
+  }, []);
 
-  const handleBackToMembers = () => {
+  const handleBackToMembers = useCallback(() => {
     setSelectedMember(null);
     setSelectedView('members');
-  };
+  }, []);
 
-  const handleIssueToken = async (orgId: string) => {
-    try {
-      const response = await api.issueToken(orgId);
-      setToken(response.access_token);
-      notification.showSuccess('Token issued successfully!', 'Token Generated');
-    } catch (_error) {
-      notification.showError('Failed to issue token');
-    }
-  };
+  const handleIssueToken = useCallback(
+    async (orgId: string) => {
+      try {
+        const response = await api.issueToken(orgId);
+        setToken(response.access_token);
+        notification.showSuccess('Token issued successfully!', 'Token Generated');
+      } catch (_error) {
+        notification.showError('Failed to issue token');
+      }
+    },
+    [notification]
+  );
 
-  const handleMenuSelect = (item: MenuItem) => {
+  const handleMenuSelect = useCallback((item: MenuItem) => {
     if (item.route) {
       setSelectedView(item.route);
       setSelectedMember(null);
     }
-  };
+  }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await logout();
-  };
+  }, [logout]);
 
   const renderContent = () => {
     switch (selectedView) {
