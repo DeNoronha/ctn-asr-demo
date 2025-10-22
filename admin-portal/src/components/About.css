@@ -91,6 +91,10 @@
   font-size: 0.95rem;
 }
 
+.version-item .k-badge {
+  margin-left: 0.5rem;
+}
+
 .env-badge {
   margin-left: 0.5rem;
   display: inline-block;
