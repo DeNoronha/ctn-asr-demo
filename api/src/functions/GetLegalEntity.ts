@@ -27,9 +27,11 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
   try {
     const userEmail = request.userEmail;
     const userRoles = request.userRoles || [];
+    const userPermissions = request.userPermissions || [];
 
-    // Admin can read any entity
-    if (hasAnyRole(request, [UserRole.SYSTEM_ADMIN, UserRole.ASSOCIATION_ADMIN])) {
+    // User with READ_ALL_ENTITIES permission can read any entity
+    if (userPermissions.includes(Permission.READ_ALL_ENTITIES) ||
+        hasAnyRole(request, [UserRole.SYSTEM_ADMIN, UserRole.ASSOCIATION_ADMIN])) {
       const result = await pool.query(
         `SELECT legal_entity_id, party_id, dt_created, dt_modified, created_by, modified_by,
                 is_deleted, primary_legal_name, address_line1, address_line2, postal_code,
