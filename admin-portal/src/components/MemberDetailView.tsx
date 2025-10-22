@@ -19,6 +19,8 @@ import { EndpointManagement } from './EndpointManagement';
 import { IdentifiersManager } from './IdentifiersManager';
 import { APIAccessManager } from './APIAccessManager';
 import { KvkDocumentUpload } from './KvkDocumentUpload';
+import { KvkRegistryDetails } from './KvkRegistryDetails';
+import { TokensManager } from './TokensManager';
 import './MemberDetailView.css';
 
 interface MemberDetailViewProps {
@@ -38,6 +40,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
   const [identifiers, setIdentifiers] = useState<LegalEntityIdentifier[]>([]);
   const [endpoints, setEndpoints] = useState<LegalEntityEndpoint[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hasKvkRegistryData, setHasKvkRegistryData] = useState(false);
   const notification = useNotification();
 
   // Load legal entity, contacts, identifiers, and endpoints
@@ -58,6 +61,18 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           // Load endpoints using apiV2 (with authentication)
           const entityEndpoints = await apiV2.getEndpoints(member.legal_entity_id);
           setEndpoints(entityEndpoints);
+
+          // Check if KvK registry data exists (for conditional tab display)
+          try {
+            await apiV2.getKvkRegistryData(member.legal_entity_id);
+            setHasKvkRegistryData(true);
+          } catch (kvkError: any) {
+            // 404 means no data, that's okay
+            if (kvkError.response?.status !== 404) {
+              console.error('Error checking KvK registry data:', kvkError);
+            }
+            setHasKvkRegistryData(false);
+          }
         } catch (error) {
           console.error('Failed to load legal entity data:', error);
           notification.showError('Failed to load company information');
@@ -361,6 +376,11 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
                   // Reload legal entity data after verification
                   if (member.legal_entity_id) {
                     api.getLegalEntity(member.legal_entity_id).then(setLegalEntity);
+                    // Refresh KvK registry data check
+                    apiV2
+                      .getKvkRegistryData(member.legal_entity_id)
+                      .then(() => setHasKvkRegistryData(true))
+                      .catch(() => setHasKvkRegistryData(false));
                   }
                 }}
               />
@@ -372,6 +392,21 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
             )}
           </div>
         </TabStripTab>
+
+        {hasKvkRegistryData && (
+          <TabStripTab title="KvK Registry">
+            <div className="tab-content">
+              {legalEntity ? (
+                <KvkRegistryDetails legalEntityId={legalEntity.legal_entity_id!} />
+              ) : (
+                <div className="info-section">
+                  <h3>KvK Registry Data</h3>
+                  <p className="empty-message">No company linked to this member</p>
+                </div>
+              )}
+            </div>
+          </TabStripTab>
+        )}
       </TabStrip>
     </div>
   );

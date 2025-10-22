@@ -490,6 +490,16 @@ export const apiV2 = {
     );
     return response.data;
   },
+
+  // =====================================================
+  // KVK REGISTRY DATA
+  // =====================================================
+
+  async getKvkRegistryData(legalEntityId: string): Promise<any> {
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get(`/legal-entities/${legalEntityId}/kvk-registry-data`);
+    return response.data;
+  },
 };
 
 // Export default for convenience

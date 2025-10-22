@@ -308,6 +308,43 @@ async function handler(
           [newStatus, JSON.stringify(validation.companyData), allFlags, legalEntityId]
         );
 
+        // Store full KvK registry data in dedicated table
+        if (validation.companyData) {
+          const kvkData = validation.companyData;
+
+          // Delete existing registry data for this entity (soft delete)
+          await pool.query(
+            `UPDATE kvk_registry_data
+             SET is_deleted = TRUE, modified_by = 'system'
+             WHERE legal_entity_id = $1 AND is_deleted = FALSE`,
+            [legalEntityId]
+          );
+
+          // Insert new registry data
+          await pool.query(
+            `INSERT INTO kvk_registry_data (
+               legal_entity_id, kvk_number, company_name, legal_form,
+               trade_names, company_status, addresses, sbi_activities,
+               total_employees, raw_api_response, fetched_at,
+               last_verified_at, data_source, created_by
+             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW(), 'kvk_api', 'system')`,
+            [
+              legalEntityId,
+              kvkData.kvkNumber,
+              kvkData.statutoryName,
+              null, // legal_form - extract from raw response if available
+              JSON.stringify(kvkData.tradeNames),
+              kvkData.status || 'Active',
+              JSON.stringify(kvkData.addresses),
+              null, // sbi_activities - will be in raw response
+              null, // total_employees - will be in raw response
+              JSON.stringify(validation.companyData)
+            ]
+          );
+
+          context.log(`Stored KvK registry data for ${kvkData.kvkNumber}`);
+        }
+
         // Log audit event
         await pool.query(
           `INSERT INTO audit_logs (event_type, actor_org_id, resource_type, resource_id, action, result, metadata)
