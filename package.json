@@ -6,6 +6,5 @@
     "portal",
     "api",
     "packages/*"
-  ],
-  "dependencies": {}
+  ]
 }
