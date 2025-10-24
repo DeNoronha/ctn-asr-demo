@@ -30,6 +30,7 @@ import {
   formatBulkOperationSummary,
   performBulkOperation,
 } from '../utils/exportUtils';
+import { Eye, Pencil } from './icons';
 import AdvancedFilter from './AdvancedFilter';
 import './MembersGrid.css';
 
@@ -83,17 +84,17 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   // const excelExportRef = useRef<ExcelExport | null>(null);
   const [total, setTotal] = useState(totalMembers || members.length);
 
-  // Column visibility state - Default shows: Legal Name, Status, LEI, EUID, KVK, Actions
+  // Column visibility state - Default shows: Legal Name, Status, LEI, EUID, KVK, Member Since, Actions
   const [columns, setColumns] = useState<ColumnSettings[]>([
     { field: 'legal_name', title: 'Legal Name', show: true, width: '200px', orderIndex: 0 },
     { field: 'status', title: 'Status', show: true, width: '120px', orderIndex: 1 },
     { field: 'lei', title: 'LEI', show: true, width: '150px', orderIndex: 2 },
     { field: 'euid', title: 'EUID', show: true, width: '150px', orderIndex: 3 },
     { field: 'kvk', title: 'KVK', show: true, width: '120px', orderIndex: 4 },
-    { field: 'org_id', title: 'Organization ID', show: false, width: '180px', orderIndex: 5 },
-    { field: 'domain', title: 'Domain', show: false, width: '150px', orderIndex: 6 },
-    { field: 'membership_level', title: 'Membership', show: false, width: '120px', orderIndex: 7 },
-    { field: 'created_at', title: 'Joined', show: false, width: '120px', orderIndex: 8 },
+    { field: 'created_at', title: 'Member Since', show: true, width: '140px', orderIndex: 5 },
+    { field: 'org_id', title: 'Organization ID', show: false, width: '180px', orderIndex: 6 },
+    { field: 'domain', title: 'Domain', show: false, width: '150px', orderIndex: 7 },
+    { field: 'membership_level', title: 'Membership', show: false, width: '120px', orderIndex: 8 },
   ]);
 
   // Helper function to get translated column title
@@ -107,7 +108,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       org_id: t('members.orgId', 'Organization ID'),
       domain: t('members.domain', 'Domain'),
       membership_level: t('members.membership', 'Membership'),
-      created_at: t('members.joined', 'Joined'),
+      created_at: t('members.memberSince', 'Member Since'),
     };
     return titleMap[field] || field;
   };
@@ -241,16 +242,16 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       { field: 'lei', title: 'LEI', show: true, width: '150px', orderIndex: 2 },
       { field: 'euid', title: 'EUID', show: true, width: '150px', orderIndex: 3 },
       { field: 'kvk', title: 'KVK', show: true, width: '120px', orderIndex: 4 },
-      { field: 'org_id', title: 'Organization ID', show: false, width: '180px', orderIndex: 5 },
-      { field: 'domain', title: 'Domain', show: false, width: '150px', orderIndex: 6 },
+      { field: 'created_at', title: 'Member Since', show: true, width: '140px', orderIndex: 5 },
+      { field: 'org_id', title: 'Organization ID', show: false, width: '180px', orderIndex: 6 },
+      { field: 'domain', title: 'Domain', show: false, width: '150px', orderIndex: 7 },
       {
         field: 'membership_level',
         title: 'Membership',
         show: false,
         width: '120px',
-        orderIndex: 7,
+        orderIndex: 8,
       },
-      { field: 'created_at', title: 'Joined', show: false, width: '120px', orderIndex: 8 },
     ];
     setColumns(defaultColumns);
     setSort([]);
@@ -469,9 +470,16 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   const ActionCell = (props: any) => {
     return (
       <td>
-        <Button size="small" onClick={() => onViewDetails(props.dataItem)}>
-          {t('members.viewMember', 'View')}
-        </Button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Button
+            size="small"
+            fillMode="flat"
+            onClick={() => onViewDetails(props.dataItem)}
+            title={t('members.viewMember', 'View Member')}
+          >
+            <Eye size={16} />
+          </Button>
+        </div>
       </td>
     );
   };
