@@ -460,9 +460,18 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
         }
       }
       setIsDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save identifier:', error);
-      notification.showError('Failed to save identifier');
+
+      // Show specific error message from API if available
+      if (error.response?.status === 409) {
+        const errorMsg = error.response?.data?.error || 'This identifier already exists for this entity';
+        notification.showError(errorMsg);
+      } else if (error.response?.data?.error) {
+        notification.showError(error.response.data.error);
+      } else {
+        notification.showError('Failed to save identifier');
+      }
     }
   };
 
