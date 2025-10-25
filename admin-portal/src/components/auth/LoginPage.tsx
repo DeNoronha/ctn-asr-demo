@@ -79,7 +79,6 @@ export const LoginPage: React.FC = () => {
         <div className="login-partners">
           <p>In Partnership With</p>
           <div className="partner-logos-login">
-            <img src="/assets/logos/portbase.png" alt="Portbase" />
             <img src="/assets/logos/contargo.png" alt="Contargo" />
             <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" />
             <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" />
