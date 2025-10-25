@@ -5,6 +5,10 @@ console.log('Loading essential functions for demo...');
 import { initializeTelemetry } from './utils/telemetry';
 initializeTelemetry();
 
+// Run startup diagnostics to detect configuration/deployment issues
+import { performStartupDiagnostics } from './utils/startup-diagnostics';
+performStartupDiagnostics();
+
 // Health check and BDI
 import './functions/healthCheck';
 import './functions/GetVersion';
