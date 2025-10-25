@@ -243,6 +243,12 @@ Schema review, query optimization, DDL management. Maintains `database/schema/cu
 26. **NEVER run multiple Claude Code sessions in same monorepo** - Running two sessions concurrently causes commits to mix changes from different projects, triggering all pipelines on every push. Use feature branches or work sequentially.
 27. **Mixed commits break pipeline path filters** - When Session A (admin portal) and Session B (booking portal) both push to main, ALL commits trigger ALL pipelines regardless of path filters, causing unnecessary deployments and potential conflicts.
 28. **Evidence of concurrent session contamination:** Commit `5524301` (booking-portal pdf-parse fix) inadvertently included `web/src/react-dom-server-stub.js` and `web/vite.config.ts` from parallel session. ALWAYS work in separate branches if concurrent development is needed.
+29. **Folder renames break pipeline builds (October 25, 2025)** - When renaming workspace folders (web/ → admin-portal/), pipelines fail with "module not found" because:
+    - Root `npm ci` installs dependencies to root node_modules/
+    - Workspaces use symlinks from root node_modules/
+    - Pipeline must verify symlinks after `npm ci` before building
+    - Always test pipeline changes on feature branch first (lesson #21)
+    - After folder rename: Update pipeline yml, root package.json workspaces, test on feature branch
 
 **See:** `docs/PIPELINE_PREVENTION_CHECKLIST.md` (comprehensive checklist), `docs/DEPLOYMENT_ARCHITECTURE_BOOKING_PORTAL.md` (architecture guide), `docs/BOOKING_PORTAL_PIPELINE_FIXES_2025-10-20.md` (detailed fixes)
 
@@ -251,6 +257,9 @@ Schema review, query optimization, DDL management. Maintains `database/schema/cu
 
 ### Monorepo Workspace Management (October 25, 2025)
 30. **ALWAYS regenerate package-lock.json after workspace changes** - When renaming folders referenced in root package.json workspaces (e.g., web/ → admin-portal/), you MUST regenerate package-lock.json or npm ci will fail in CI/CD pipelines. After updating package.json workspaces, run: `rm -f package-lock.json && npm install` to regenerate lockfile with correct workspace references. Symptom: "npm error code ENOENT" in Azure DevOps pipeline, "no such file or directory, open '/home/vsts/work/1/s/web/package.json'" even though workspace was updated to admin-portal/. Root cause: package-lock.json contains cached file paths that don't automatically update when package.json changes. Impact: Critical for monorepo builds - stale lockfile breaks CI/CD completely. Discovered during admin portal refactoring (October 25, 2025).
+
+### Deployment Verification (October 25, 2025)
+31. **"Members not showing" = Check API deployment FIRST** - When user reports dashboard shows 0 members or data not appearing, this is a DEPLOYMENT issue 99% of the time, NOT a code issue. STOP debugging code immediately. **MANDATORY CHECK**: Test API endpoint health BEFORE debugging frontend. Run: `curl https://func-ctn-demo-asr-dev.azurewebsites.net/api/health` - If 404/empty response = API not deployed. **Pattern**: Frontend pipeline can succeed while API deployment silently fails, even when both are in same pipeline yml file (admin-portal.yml lines 197-220). **Root cause**: Pipeline shows green ✅ but AzureFunctionApp@2 task failed without blocking deployment. **Solution**: Manually deploy API with `func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote`. **Occurred**: 3rd time this pattern happened (Oct 25, 2025). Each time wasted 30-60 minutes debugging Dashboard.tsx, MembersGrid.tsx, api.ts when actual problem was backend not deployed. **Prevention**: Add API health check as pipeline verification step after deployment. **Test sequence**: (1) Check /api/health endpoint, (2) If healthy, test data endpoint with auth, (3) ONLY THEN debug frontend code if issue persists.
 
 ---
 

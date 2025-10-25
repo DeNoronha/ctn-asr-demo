@@ -217,3 +217,23 @@ steps:
       package: '$(System.DefaultWorkingDirectory)/api'
       runtimeStack: 'NODE|20'
       deploymentMethod: 'zipDeploy'
+
+  - script: |
+      echo "⏳ Waiting for Function App to warm up..."
+      sleep 15
+
+      echo "🔍 Verifying API deployment..."
+      HEALTH_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/health"
+      HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL")
+
+      if [ "$HEALTH_STATUS" != "200" ]; then
+        echo "❌ API health check failed (HTTP $HEALTH_STATUS)"
+        echo "   URL: $HEALTH_URL"
+        echo "   This indicates the API deployment did not complete successfully."
+        exit 1
+      fi
+
+      echo "✅ API health check passed (HTTP 200)"
+      echo "   API is deployed and responding correctly"
+    displayName: 'Verify API deployment health'
+    condition: succeeded()
