@@ -1,6 +1,38 @@
 # CLAUDE.md - CTN Association Register
 
-**Last Updated:** October 17, 2025
+**Last Updated:** October 25, 2025
+
+---
+
+## 🚨 CRITICAL - READ THIS ENTIRE FILE FIRST 🚨
+
+**Claude Code: You MUST read this entire CLAUDE.md file before starting ANY work.**
+
+If you're reading this, stop and read the entire file NOW. Do not proceed with any task until you've read all sections below.
+
+---
+
+## MANDATORY PRE-WORK CHECKLIST
+
+**EVERY session, EVERY task - complete this checklist FIRST:**
+
+```bash
+# 1. READ CLAUDE.MD
+cat CLAUDE.md  # Read the entire file
+
+# 2. CHECK CURRENT BRANCH
+git branch --show-current  # Must be on 'main' or feature branch
+
+# 3. CHECK LATEST BUILD STATUS
+git log -1 --format="%ar - %s"
+# Compare to: https://dev.azure.com/ctn-demo/ASR/_build
+
+# 4. SYNC WITH MAIN (if on feature branch)
+git fetch origin
+git status  # Check for uncommitted changes
+```
+
+**If you skip this checklist, you WILL make mistakes that waste hours.**
 
 ---
 
@@ -169,7 +201,7 @@ Schema review, query optimization, DDL management. Maintains `database/schema/cu
 **For complete lessons with examples, see `docs/LESSONS_LEARNED.md`**
 
 ### Deployment & Pipeline
-1. **Check deployment status BEFORE debugging** (saves hours)
+1. **Check deployment status BEFORE debugging** (saves hours) - When user reports "old version" or "missing features", this is a deployment sync issue, NOT a code issue. Run pre-work checklist step 3: compare `git log -1` to Azure DevOps last build. Solution: merge feature branches to main and push to trigger pipeline.
 2. **Package.json "main" field** determines entry point (essential-index.ts vs index.ts)
 3. **API functions must import in entry file** to register
 4. **Pipeline quality checks** use continueOnError: true (inform, don't block)
@@ -213,6 +245,9 @@ Schema review, query optimization, DDL management. Maintains `database/schema/cu
 28. **Evidence of concurrent session contamination:** Commit `5524301` (booking-portal pdf-parse fix) inadvertently included `web/src/react-dom-server-stub.js` and `web/vite.config.ts` from parallel session. ALWAYS work in separate branches if concurrent development is needed.
 
 **See:** `docs/PIPELINE_PREVENTION_CHECKLIST.md` (comprehensive checklist), `docs/DEPLOYMENT_ARCHITECTURE_BOOKING_PORTAL.md` (architecture guide), `docs/BOOKING_PORTAL_PIPELINE_FIXES_2025-10-20.md` (detailed fixes)
+
+### Deployment Troubleshooting (October 25, 2025)
+29. **"Old version" in production = deployment sync issue, NOT code issue** - When user reports seeing old version or missing recent features (EUID, LEI, UI improvements), STOP debugging code. Run MANDATORY PRE-WORK CHECKLIST first. Check: (1) What branch are you on? (2) What's the last commit on main? (3) When was the last Azure pipeline run? (4) Are recent feature branches merged to main? Solution: `git checkout main` → `git merge feature/branch` → `git push origin main` → wait 2-3 minutes for pipeline. Wasted 60+ minutes debugging "404 errors" and trying manual deployments when the actual fix was a 3-command git workflow.
 
 ---
 
