@@ -2,7 +2,7 @@
   "name": "ctn-asr-monorepo",
   "private": true,
   "workspaces": [
-    "web",
+    "admin-portal",
     "portal",
     "api",
     "packages/*"
