@@ -3,6 +3,7 @@ import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrappe
 import { Permission } from '../middleware/rbac';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { getPool } from '../utils/database';
+import { syncEuidForEntity, supportsEuidGeneration } from '../services/euidService';
 
 /**
  * Safely get header value to avoid "Cannot read private member" error
@@ -154,9 +155,55 @@ async function handler(
       }
     }, context);
 
+    // Auto-update EUID if the identifier type supports it and value changed
+    let euidUpdated = false;
+    const updatedIdentifierType = result.rows[0].identifier_type;
+    const updatedIdentifierValue = result.rows[0].identifier_value;
+    const legalEntityId = result.rows[0].legal_entity_id;
+
+    if (supportsEuidGeneration(updatedIdentifierType)) {
+      try {
+        context.log(`Auto-updating EUID for ${updatedIdentifierType}: ${updatedIdentifierValue}`);
+        const euidResult = await syncEuidForEntity(
+          legalEntityId,
+          updatedIdentifierType,
+          updatedIdentifierValue,
+          request.userEmail || 'system',
+          context
+        );
+        euidUpdated = euidResult.was_updated || euidResult.was_created;
+        context.log(`✓ EUID auto-sync completed (updated: ${euidResult.was_updated}, created: ${euidResult.was_created})`);
+      } catch (euidError) {
+        // Log warning but don't fail the main operation
+        context.warn('Failed to auto-sync EUID:', euidError);
+        await logAuditEvent({
+          event_type: AuditEventType.IDENTIFIER_UPDATED,
+          severity: AuditSeverity.WARNING,
+          result: 'failure',
+          user_id: request.userId,
+          user_email: request.userEmail,
+          ip_address: clientIp,
+          user_agent: userAgent,
+          request_path: requestPath,
+          request_method: requestMethod,
+          resource_type: 'euid',
+          resource_id: legalEntityId,
+          action: 'auto_sync',
+          error_message: euidError instanceof Error ? euidError.message : 'Unknown error',
+          details: {
+            reason: 'euid_auto_sync_failed',
+            source_identifier: `${updatedIdentifierType}:${updatedIdentifierValue}`
+          }
+        }, context);
+      }
+    }
+
     return {
       status: 200,
-      jsonBody: result.rows[0]
+      jsonBody: {
+        ...result.rows[0],
+        euid_auto_updated: euidUpdated
+      }
     };
   } catch (error: any) {
     context.error('Error updating identifier:', error);

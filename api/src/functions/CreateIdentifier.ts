@@ -3,6 +3,7 @@ import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrappe
 import { Permission } from '../middleware/rbac';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { getPool } from '../utils/database';
+import { syncEuidForEntity, supportsEuidGeneration } from '../services/euidService';
 
 /**
  * Safely get header value to avoid "Cannot read private member" error
@@ -125,9 +126,51 @@ async function handler(
       }
     }, context);
 
+    // Auto-generate EUID if applicable (KVK, HRB, HRA, KBO, SIREN, CRN)
+    let euidGenerated = false;
+    if (supportsEuidGeneration(body.identifier_type)) {
+      try {
+        context.log(`Auto-generating EUID for ${body.identifier_type}: ${body.identifier_value}`);
+        await syncEuidForEntity(
+          legalEntityId,
+          body.identifier_type,
+          body.identifier_value,
+          request.userEmail || 'system',
+          context
+        );
+        euidGenerated = true;
+        context.log(`✓ EUID auto-generated successfully`);
+      } catch (euidError) {
+        // Log warning but don't fail the main operation
+        context.warn('Failed to auto-generate EUID:', euidError);
+        await logAuditEvent({
+          event_type: AuditEventType.IDENTIFIER_CREATED,
+          severity: AuditSeverity.WARNING,
+          result: 'failure',
+          user_id: request.userId,
+          user_email: request.userEmail,
+          ip_address: clientIp,
+          user_agent: userAgent,
+          request_path: requestPath,
+          request_method: requestMethod,
+          resource_type: 'euid',
+          resource_id: legalEntityId,
+          action: 'auto_generate',
+          error_message: euidError instanceof Error ? euidError.message : 'Unknown error',
+          details: {
+            reason: 'euid_auto_generation_failed',
+            source_identifier: `${body.identifier_type}:${body.identifier_value}`
+          }
+        }, context);
+      }
+    }
+
     return {
       status: 201,
-      jsonBody: result.rows[0]
+      jsonBody: {
+        ...result.rows[0],
+        euid_auto_generated: euidGenerated
+      }
     };
   } catch (error: any) {
     context.error('Error creating identifier:', error);

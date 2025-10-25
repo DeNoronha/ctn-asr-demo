@@ -32,6 +32,7 @@ import './functions/GetIdentifiers';
 import './functions/CreateIdentifier';
 import './functions/UpdateIdentifier';
 import './functions/DeleteIdentifier';
+import './functions/GenerateEUID';
 
 // Endpoint management
 import './functions/getEndpointsByEntity';
