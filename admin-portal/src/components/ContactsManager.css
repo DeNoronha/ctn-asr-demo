@@ -1,5 +1,7 @@
 .contacts-manager {
-  padding: 20px;
+  padding: 0;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .section-header {
@@ -9,6 +11,8 @@
   margin-bottom: 20px;
   padding-bottom: 12px;
   border-bottom: 2px solid #e5e7eb;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .section-header h3 {
@@ -16,6 +20,15 @@
   font-size: 1.25rem;
   color: #1f2937;
   font-weight: 600;
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Button group in header */
+.section-header > div {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .contacts-grid {

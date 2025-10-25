@@ -1,5 +1,7 @@
 .identifiers-manager {
-  padding: 20px;
+  padding: 0;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .section-header {
