@@ -47,6 +47,43 @@
 
 .tab-content {
   padding: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Grid containers with better width management */
+.tab-content .k-grid {
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Sticky actions column for better UX */
+.tab-content .k-grid td:last-child,
+.tab-content .k-grid th:last-child {
+  position: sticky;
+  right: 0;
+  background-color: white;
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
+  z-index: 2;
+}
+
+/* Header row styling */
+.tab-content .k-grid th:last-child {
+  background-color: #f8fafc;
+}
+
+/* Ensure action buttons are visible and properly spaced */
+.action-buttons,
+.actions-cell {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: 8px;
+}
+
+/* Better grid scrolling */
+.tab-content .k-grid .k-grid-content {
+  overflow-x: auto;
 }
 
 .endpoints-tab {
@@ -227,4 +264,54 @@
 .loading-state span {
   font-size: 0.95rem;
   font-weight: 500;
+}
+
+/* Responsive Design for Tablets and Mobile */
+@media (max-width: 1200px) {
+  .tab-content {
+    max-width: 100%;
+    padding: 20px;
+  }
+
+  /* Allow horizontal scroll on smaller screens */
+  .tab-content .k-grid {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .tab-content {
+    padding: 16px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .section-header h3 {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  /* Stack buttons vertically on mobile */
+  .section-header > div {
+    width: 100%;
+  }
+
+  .section-header > div button {
+    flex: 1;
+  }
+
+  /* Adjust grid height for mobile */
+  .tab-content .k-grid {
+    font-size: 13px;
+  }
+
+  /* Remove sticky positioning on mobile for better scroll */
+  .tab-content .k-grid td:last-child,
+  .tab-content .k-grid th:last-child {
+    position: relative;
+    box-shadow: none;
+  }
 }
