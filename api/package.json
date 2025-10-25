@@ -2,7 +2,7 @@
   "name": "ctn-asr-api",
   "version": "1.0.0",
   "description": "CTN Association Register API",
-  "main": "dist/essential-index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc && cp src/openapi.json dist/openapi.json",
     "watch": "tsc --watch",
