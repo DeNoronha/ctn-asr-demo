@@ -111,6 +111,8 @@ steps:
 
   - script: |
       npm ci --legacy-peer-deps
+      # Verify workspace symlinks are correct
+      ls -la admin-portal/node_modules/ || echo "Node modules not linked yet"
     displayName: 'Install all workspace dependencies'
 
   # @ctn/api-client pre-built dist/ files are committed to git
