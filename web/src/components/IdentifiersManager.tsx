@@ -208,6 +208,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
   const [identifierToDelete, setIdentifierToDelete] = useState<LegalEntityIdentifier | null>(null);
   const [kvkVerificationFlags, setKvkVerificationFlags] = useState<string[]>([]);
   const [hasKvkDocument, setHasKvkDocument] = useState(false);
+  const [fetchingLei, setFetchingLei] = useState(false);
   const notification = useNotification();
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
@@ -465,6 +466,63 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     }
   };
 
+  const handleFetchLei = async () => {
+    // Find a suitable identifier to use for LEI lookup (KVK, HRB, etc.)
+    const suitableIdentifier = identifiers.find(
+      (id) => ['KVK', 'HRB', 'HRA', 'KBO', 'SIREN', 'CRN'].includes(id.identifier_type)
+    );
+
+    if (!suitableIdentifier || !suitableIdentifier.country_code) {
+      notification.showError('No suitable identifier found for LEI lookup. Add a KVK, HRB, or similar identifier first.');
+      return;
+    }
+
+    // Check if LEI already exists
+    const leiExists = identifiers.some((id) => id.identifier_type === 'LEI');
+    if (leiExists) {
+      notification.showInfo('LEI already exists for this entity');
+      return;
+    }
+
+    setFetchingLei(true);
+    try {
+      const axiosInstance = await getAuthenticatedAxios();
+      const response = await axiosInstance.post(
+        `${API_BASE_URL}/entities/${legalEntityId}/identifiers/fetch-lei`,
+        {
+          identifier_type: suitableIdentifier.identifier_type,
+          identifier_value: suitableIdentifier.identifier_value,
+          country_code: suitableIdentifier.country_code,
+          save_to_database: true,
+        }
+      );
+
+      const result = response.data;
+
+      if (result.status === 'found' && result.was_saved) {
+        notification.showSuccess(`LEI ${result.lei} found and saved successfully!`);
+        // Refetch identifiers to show the new LEI
+        const refreshedIdentifiers = await apiV2.getIdentifiers(legalEntityId);
+        onUpdate(refreshedIdentifiers);
+      } else if (result.status === 'found' && !result.was_saved) {
+        notification.showWarning(`LEI ${result.lei} found but not saved to database`);
+      } else if (result.status === 'not_found') {
+        notification.showWarning(`No LEI found for ${suitableIdentifier.identifier_type} ${suitableIdentifier.identifier_value}`);
+      } else if (result.status === 'already_exists') {
+        notification.showInfo(`LEI already exists: ${result.lei}`);
+      }
+    } catch (error: any) {
+      console.error('Failed to fetch LEI:', error);
+      if (error.response?.status === 404) {
+        notification.showWarning('No LEI found for this organization in GLEIF database');
+      } else {
+        notification.showError('Failed to fetch LEI from GLEIF API');
+      }
+    } finally {
+      setFetchingLei(false);
+    }
+  };
+
   const handleCancel = () => {
     setIsDialogOpen(false);
     setEditingIdentifier(null);
@@ -607,10 +665,20 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     <div className="identifiers-manager">
       <div className="section-header">
         <h3>Legal Identifiers</h3>
-        <Button themeColor="primary" onClick={handleAdd}>
-          <Plus size={16} />
-          Add Identifier
-        </Button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Button
+            themeColor="info"
+            onClick={handleFetchLei}
+            disabled={fetchingLei || identifiers.length === 0}
+            title="Fetch LEI from GLEIF API"
+          >
+            {fetchingLei ? 'Fetching...' : 'Fetch LEI'}
+          </Button>
+          <Button themeColor="primary" onClick={handleAdd}>
+            <Plus size={16} />
+            Add Identifier
+          </Button>
+        </div>
       </div>
 
       {identifiers.length > 0 ? (

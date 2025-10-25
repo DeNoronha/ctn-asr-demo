@@ -33,6 +33,7 @@ import './functions/CreateIdentifier';
 import './functions/UpdateIdentifier';
 import './functions/DeleteIdentifier';
 import './functions/GenerateEUID';
+import './functions/FetchLEI';
 
 // Endpoint management
 import './functions/getEndpointsByEntity';
