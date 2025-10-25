@@ -119,8 +119,7 @@ steps:
 
   # Biome code quality checks - REPORT ONLY (does not block deployment)
   - script: |
-      cd admin-portal
-      npm run lint
+      npm run lint -w admin-portal
     displayName: 'Run Biome code quality checks'
     continueOnError: true
 
@@ -175,8 +174,7 @@ steps:
     displayName: 'Generate version.json with build metadata'
 
   - script: |
-      cd admin-portal
-      npm run build
+      npm run build -w admin-portal
     displayName: 'Build React application'
     env:
       CI: false
