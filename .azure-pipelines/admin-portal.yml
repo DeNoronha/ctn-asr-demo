@@ -10,6 +10,7 @@ trigger:
     include:
       - admin-portal/*
       - api/*
+      - .azure-pipelines/admin-portal.yml
 
 pool:
   vmImage: 'ubuntu-latest'
