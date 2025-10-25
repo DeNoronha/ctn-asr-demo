@@ -496,7 +496,13 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     setFetchingLei(true);
     try {
       const axiosInstance = await getAuthenticatedAxios();
-      const response = await axiosInstance.post(
+      const response = await axiosInstance.post<{
+        lei: string | null;
+        legal_name: string | null;
+        status: 'found' | 'not_found' | 'already_exists' | 'error';
+        was_saved: boolean;
+        message?: string;
+      }>(
         `${API_BASE_URL}/entities/${legalEntityId}/identifiers/fetch-lei`,
         {
           identifier_type: suitableIdentifier.identifier_type,
