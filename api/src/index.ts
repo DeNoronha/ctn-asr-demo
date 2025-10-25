@@ -1,85 +1,70 @@
-// ========================================
-// Azure Functions App Entry Point
-// ========================================
+// Essential functions for demo - member and admin portals
+console.log('Loading essential functions for demo...');
 
-// Startup validation - ensures all required secrets are configured
-import { enforceStartupValidation } from './utils/startupValidation';
+// Initialize Application Insights telemetry
+import { initializeTelemetry } from './utils/telemetry';
+initializeTelemetry();
 
-// Temporarily disabled to debug deployment issue
-// try {
-//   enforceStartupValidation();
-// } catch (error) {
-//   console.error('Failed to start API:', error);
-//   throw error; // Fail fast if validation fails
-// }
-console.log('⚠️  Startup validation temporarily disabled for debugging');
+// Health check and BDI
+import './functions/healthCheck';
+import './functions/GetVersion';
+import './functions/bdiJwks';
+import './functions/generateBvad';
 
-// Test function first
-import './functions/simpleTest';
+// Member portal (critical)
+import './functions/GetAuthenticatedMember';
+import './functions/UpdateMemberProfile';
 
-// Import all functions to register them with Azure Functions runtime
+// Admin portal (critical)
 import './functions/GetMembers';
 import './functions/GetMember';
-import './functions/GetAuthenticatedMember';
-import './functions/CreateMember';
-import './functions/IssueToken';
-// import './functions/EndpointManagement';  // Disabled - replaced by individual endpoint functions
 import './functions/GetLegalEntity';
 import './functions/UpdateLegalEntity';
 import './functions/GetContacts';
 import './functions/CreateContact';
 import './functions/UpdateContact';
 import './functions/DeleteContact';
+import './functions/CreateMember';
+import './functions/IssueToken';
 
-// Legal Entity Identifiers (KvK, LEI, EORI, etc.)
+// Legal Entity Identifiers (KvK, LEI, EORI, etc.) - CRITICAL for admin portal
 import './functions/GetIdentifiers';
 import './functions/CreateIdentifier';
 import './functions/UpdateIdentifier';
 import './functions/DeleteIdentifier';
-import './functions/CreateIdentifierSimple';
+import './functions/GenerateEUID';
+import './functions/FetchLEI';
 
-// Member self-service functions
-import './functions/UpdateMemberProfile';
-import './functions/GetMemberContacts';
-import './functions/CreateMemberContact';
-import './functions/UpdateMemberContact';
-import './functions/GetMemberEndpoints';
-import './functions/CreateMemberEndpoint';
-import './functions/GetMemberTokens';
-
-// Event Grid and notifications
-import './functions/EventGridHandler';
-
-// KvK Document Verification
-import './functions/uploadKvkDocument';
-import './functions/getKvkVerificationStatus';
-import './functions/reviewKvkVerification';
-import './functions/getFlaggedEntities';
-
-// Multi-System Endpoint Management
+// Endpoint management
 import './functions/getEndpointsByEntity';
 import './functions/createEndpoint';
 import './functions/updateEndpoint';
 import './functions/issueEndpointToken';
 import './functions/getEndpointTokens';
 
+// Authentication & Party Resolution
+import './functions/ResolveParty';
+
+// Audit Logs
+import './functions/GetAuditLogs';
+
+// Orchestration (graph database - Cosmos DB Gremlin API)
+import './functions/GetOrchestrations';
+import './functions/GetOrchestrationDetails';
+import './functions/GetEvents';
+import './functions/GetWebhooks';
+
+// KvK verification
+import './functions/getFlaggedEntities';
+import './functions/uploadKvkDocument';
+import './functions/getKvkVerificationStatus';
+import './functions/reviewKvkVerification';
+
+// Diagnostics
+import './functions/DiagnosticCheck';
+import './functions/CreateIdentifierSimple';
+
 // API Documentation
 import './functions/swagger';
 
-// Health Check
-import './functions/healthCheck';
-
-// Admin Portal Expansion (Subscriptions, Newsletters, Tasks)
-import './functions/getSubscriptions';
-import './functions/createSubscription';
-import './functions/updateSubscription';
-import './functions/getNewsletters';
-import './functions/createNewsletter';
-import './functions/getTasks';
-import './functions/createTask';
-import './functions/updateTask';
-
-// BDI Integration (BVAD & BVOD)
-import './functions/bdiJwks';
-import './functions/generateBvad';
-import './functions/validateBvod';
+console.log('✓ Essential functions loaded');
