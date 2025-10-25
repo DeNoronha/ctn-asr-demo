@@ -118,13 +118,13 @@ steps:
 
   # Biome code quality checks - REPORT ONLY (does not block deployment)
   - script: |
-      cd web
+      cd admin-portal
       npm run lint
     displayName: 'Run Biome code quality checks'
     continueOnError: true
 
   - script: |
-      cd web
+      cd admin-portal
       npm audit --audit-level=moderate
       npm run security:audit
       npm run security:summary
@@ -138,7 +138,7 @@ steps:
     continueOnError: true
 
   - script: |
-      cd web
+      cd admin-portal
       # Fetch origin to ensure we have the reference
       git fetch origin main --depth=50
       # Use the commit before HEAD as base (for comparing current changes)
@@ -174,7 +174,7 @@ steps:
     displayName: 'Generate version.json with build metadata'
 
   - script: |
-      cd web
+      cd admin-portal
       npm run build
     displayName: 'Build React application'
     env:
