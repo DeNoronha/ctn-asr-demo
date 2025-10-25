@@ -1,6 +1,6 @@
 # Admin Portal - CI/CD Pipeline
-# Triggers on changes to web/* or api/* directories
-# Environment variables loaded from web/.env.production (tracked in git)
+# Triggers on changes to admin-portal/* or api/* directories
+# Environment variables loaded from admin-portal/.env.production (tracked in git)
 
 trigger:
   branches:
@@ -8,7 +8,7 @@ trigger:
       - main
   paths:
     include:
-      - web/*
+      - admin-portal/*
       - api/*
 
 pool:
@@ -158,7 +158,7 @@ steps:
     displayName: 'Publish security reports'
     condition: always()
     inputs:
-      targetPath: 'web/reports'
+      targetPath: 'admin-portal/reports'
       artifact: 'security-reports-admin'
       publishLocation: 'pipeline'
     continueOnError: true
@@ -170,7 +170,7 @@ steps:
   # ========================================
   - script: |
       chmod +x scripts/generate-version.sh
-      ./scripts/generate-version.sh web/public
+      ./scripts/generate-version.sh admin-portal/public
     displayName: 'Generate version.json with build metadata'
 
   - script: |
@@ -189,7 +189,7 @@ steps:
     displayName: 'Deploy to Azure Static Web Apps'
     condition: succeeded()
     inputs:
-      app_location: 'web/build'
+      app_location: 'admin-portal/build'
       skip_app_build: true
       azure_static_web_apps_api_token: $(AZURE-STATIC-WEB-APPS-API-TOKEN-ADMIN)
 
