@@ -71,4 +71,9 @@ import './functions/CreateIdentifierSimple';
 // API Documentation
 import './functions/swagger';
 
+// M2M Authentication Endpoints
+import './functions/GetETAUpdates';
+import './functions/GetContainerStatus';
+import './functions/ManageBookings';
+
 console.log('✓ Essential functions loaded');
