@@ -249,6 +249,9 @@ Schema review, query optimization, DDL management. Maintains `database/schema/cu
 ### Deployment Troubleshooting (October 25, 2025)
 29. **"Old version" in production = deployment sync issue, NOT code issue** - When user reports seeing old version or missing recent features (EUID, LEI, UI improvements), STOP debugging code. Run MANDATORY PRE-WORK CHECKLIST first. Check: (1) What branch are you on? (2) What's the last commit on main? (3) When was the last Azure pipeline run? (4) Are recent feature branches merged to main? Solution: `git checkout main` → `git merge feature/branch` → `git push origin main` → wait 2-3 minutes for pipeline. Wasted 60+ minutes debugging "404 errors" and trying manual deployments when the actual fix was a 3-command git workflow.
 
+### Monorepo Workspace Management (October 25, 2025)
+30. **ALWAYS regenerate package-lock.json after workspace changes** - When renaming folders referenced in root package.json workspaces (e.g., web/ → admin-portal/), you MUST regenerate package-lock.json or npm ci will fail in CI/CD pipelines. After updating package.json workspaces, run: `rm -f package-lock.json && npm install` to regenerate lockfile with correct workspace references. Symptom: "npm error code ENOENT" in Azure DevOps pipeline, "no such file or directory, open '/home/vsts/work/1/s/web/package.json'" even though workspace was updated to admin-portal/. Root cause: package-lock.json contains cached file paths that don't automatically update when package.json changes. Impact: Critical for monorepo builds - stale lockfile breaks CI/CD completely. Discovered during admin portal refactoring (October 25, 2025).
+
 ---
 
 ## Project Context
