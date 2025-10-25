@@ -11,6 +11,20 @@ import { HelpTooltip } from './help/HelpTooltip';
 import { helpContent } from '../config/helpContent';
 import './EndpointManagement.css';
 
+// Auth helper
+const getAccessToken = async (): Promise<string> => {
+  const accounts = (window as any).msalInstance?.getAllAccounts();
+  if (!accounts || accounts.length === 0) {
+    throw new Error('No authenticated user');
+  }
+  const request = {
+    scopes: ['api://d3037c11-a541-4f21-8862-8079137a0cde/.default'],
+    account: accounts[0],
+  };
+  const response = await (window as any).msalInstance.acquireTokenSilent(request);
+  return response.accessToken;
+};
+
 interface Endpoint {
   legal_entity_endpoint_id: string;
   endpoint_name: string;
@@ -74,9 +88,15 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
   const loadEndpoints = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/legal-entities/${legalEntityId}/endpoints`);
-      const data = await response.json();
-      setEndpoints(data);
+      const response = await fetch(`${API_BASE}/legal-entities/${legalEntityId}/endpoints`, {
+        headers: {
+          'Authorization': `Bearer ${await getAccessToken()}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setEndpoints(data);
+      }
     } catch (error) {
       console.error('Error loading endpoints:', error);
     } finally {
@@ -89,11 +109,15 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
     try {
       const response = await fetch(`${API_BASE}/legal-entities/${legalEntityId}/endpoints`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await getAccessToken()}`
+        },
         body: JSON.stringify(formData),
       });
 
       if (response.ok) {
+        notification.showSuccess('Endpoint created successfully');
         setShowDialog(false);
         setFormData({
           endpoint_name: '',
@@ -103,9 +127,13 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
           endpoint_type: 'REST_API',
         });
         loadEndpoints();
+      } else {
+        const error = await response.json();
+        notification.showError(error.error || 'Failed to create endpoint');
       }
     } catch (error) {
       console.error('Error creating endpoint:', error);
+      notification.showError('Failed to create endpoint');
     } finally {
       setLoading(false);
     }
@@ -118,7 +146,10 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
         `${API_BASE}/endpoints/${endpoint.legal_entity_endpoint_id}/tokens`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${await getAccessToken()}`
+          },
           body: JSON.stringify({}),
         }
       );
@@ -128,9 +159,12 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
         setNewToken(token);
         setSelectedEndpoint(endpoint);
         setShowTokenDialog(true);
+      } else {
+        notification.showError('Failed to issue token');
       }
     } catch (error) {
       console.error('Error issuing token:', error);
+      notification.showError('Failed to issue token');
     } finally {
       setLoading(false);
     }
