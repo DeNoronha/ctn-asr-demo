@@ -77,3 +77,4 @@ export const CreditCard: React.FC<IconProps> = (props) => <Icon {...props} icon=
 export const Info: React.FC<IconProps> = (props) => <Icon {...props} icon="ℹ️" label="Info" />;
 export const Mail: React.FC<IconProps> = (props) => <Icon {...props} icon="✉️" label="Mail" />;
 export const Plug: React.FC<IconProps> = (props) => <Icon {...props} icon="🔌" label="Plug" />;
+export const Eye: React.FC<IconProps> = (props) => <Icon {...props} icon="👁️" label="View" />;
