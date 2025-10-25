@@ -122,7 +122,7 @@ function getKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback) {
  * Interface for decoded JWT token with user claims
  */
 export interface JwtPayload {
-  oid: string; // Object ID (user ID)
+  oid?: string; // Object ID (user ID) - optional for M2M tokens
   sub: string; // Subject
   email?: string;
   preferred_username?: string;
@@ -134,6 +134,8 @@ export interface JwtPayload {
   iss: string; // Issuer
   exp: number; // Expiration time
   iat: number; // Issued at
+  azp?: string; // Authorized party (client ID for M2M)
+  appid?: string; // Application ID (alternative M2M client ID claim)
 }
 
 /**
@@ -159,6 +161,10 @@ export interface AuthenticatedRequest {
   userEmail?: string;
   userRoles?: string[];
   partyId?: string; // Party ID resolved from Azure AD user
+
+  // M2M authentication properties
+  isM2M?: boolean; // True if authenticated via client credentials
+  clientId?: string; // M2M client ID (from azp or appid claim)
 }
 
 /**
@@ -210,12 +216,16 @@ export async function validateJwtToken(
         }
 
         // Additional validation
-        if (!payload.oid && !payload.sub) {
-          reject(new Error('Token missing user identifier (oid/sub)'));
+        // For M2M tokens: sub is required, oid may be missing
+        // For user tokens: oid or sub is required
+        if (!payload.sub) {
+          reject(new Error('Token missing subject (sub) claim'));
           return;
         }
 
-        context.log('Token validated successfully for user:', payload.email || payload.oid);
+        // Log successful validation
+        const identifier = payload.email || payload.oid || payload.azp || payload.appid || payload.sub;
+        context.log('Token validated successfully for:', identifier);
         resolve(payload);
       }
     );
@@ -386,9 +396,13 @@ export async function authenticate(
     // Validate token with signature verification
     const payload = await validateJwtToken(token, context);
 
-    // Resolve party ID from Azure AD object ID (if oid claim exists)
+    // Detect if this is an M2M token (has azp or appid but no oid)
+    const isM2M = !payload.oid && (!!payload.azp || !!payload.appid);
+    const clientId = payload.azp || payload.appid;
+
+    // Resolve party ID from Azure AD object ID (only for user tokens)
     let partyId: string | undefined;
-    if (payload.oid) {
+    if (payload.oid && !isM2M) {
       const resolvedPartyId = await resolvePartyId(payload.oid, context);
       if (resolvedPartyId) {
         partyId = resolvedPartyId;
@@ -411,16 +425,28 @@ export async function authenticate(
       userEmail: payload.email || payload.preferred_username || payload.upn,
       userRoles: payload.roles || [],
       partyId: partyId, // Include resolved party ID
+      isM2M: isM2M,
+      clientId: clientId,
     };
 
     // Log successful authentication
-    const userEmail = authenticatedRequest.userEmail || 'unknown';
-    const userId = authenticatedRequest.userId || 'unknown';
-    logAuthEvent(logger, true, correlationId, {
-      userId,
-      userEmail,
-      roles: (payload.roles || []).join(',') || 'none',
-    });
+    if (isM2M) {
+      logAuthEvent(logger, true, correlationId, {
+        authenticationType: 'M2M',
+        clientId: clientId || 'unknown',
+        roles: (payload.roles || []).join(',') || 'none',
+      });
+      context.log(`M2M client authenticated: ${clientId} with roles: ${(payload.roles || []).join(', ')}`);
+    } else {
+      const userEmail = authenticatedRequest.userEmail || 'unknown';
+      const userId = authenticatedRequest.userId || 'unknown';
+      logAuthEvent(logger, true, correlationId, {
+        authenticationType: 'User',
+        userId,
+        userEmail,
+        roles: (payload.roles || []).join(',') || 'none',
+      });
+    }
 
     const duration = Date.now() - startTime;
     logHttpResponse(logger, request, 200, correlationId, duration);
@@ -486,4 +512,119 @@ export async function optionalAuthenticate(
   };
 
   return anonymousRequest;
+}
+
+/**
+ * M2M scope validation result
+ */
+interface ScopeValidationSuccess {
+  valid: true;
+}
+
+interface ScopeValidationFailure {
+  valid: false;
+  response: HttpResponseInit;
+}
+
+type ScopeValidationResult = ScopeValidationSuccess | ScopeValidationFailure;
+
+/**
+ * Require specific scopes for M2M or user authentication
+ * Works with both user tokens (roles claim) and M2M tokens (roles claim)
+ *
+ * @param requiredScopes Array of scope names (e.g., ['ETA.Read', 'Container.Read'])
+ * @returns Middleware function that validates scopes
+ *
+ * @example
+ * ```typescript
+ * // In an endpoint handler:
+ * const scopeCheck = await requireScopes('ETA.Read')(request, context);
+ * if (!scopeCheck.valid) return scopeCheck.response;
+ * ```
+ */
+export function requireScopes(...requiredScopes: string[]) {
+  return async (
+    request: AuthenticatedRequest,
+    context: InvocationContext
+  ): Promise<ScopeValidationResult> => {
+    const logger = createLogger(context);
+    const correlationId = request.headers.get('x-correlation-id') || 'unknown';
+
+    // Check if user is authenticated
+    if (!request.user) {
+      logSecurityEvent(logger, 'Scope Check Failed - No Authentication', correlationId, {
+        requiredScopes: requiredScopes.join(', '),
+        reason: 'Missing authentication',
+      });
+
+      return {
+        valid: false,
+        response: {
+          status: 401,
+          headers: {
+            'Content-Type': 'application/json',
+            'WWW-Authenticate': 'Bearer realm="CTN ASR API"',
+            'X-Correlation-ID': correlationId,
+          },
+          body: JSON.stringify({
+            error: 'unauthorized',
+            error_description: 'Authentication required',
+          }),
+        },
+      };
+    }
+
+    // Get token scopes (roles claim)
+    const tokenScopes = request.userRoles || [];
+
+    // Check if all required scopes are present
+    const missingScopes = requiredScopes.filter(
+      (scope) => !tokenScopes.includes(scope)
+    );
+
+    if (missingScopes.length > 0) {
+      const authType = request.isM2M ? 'M2M' : 'User';
+      const identifier = request.clientId || request.userEmail || request.userId || 'unknown';
+
+      logSecurityEvent(logger, 'Scope Check Failed - Insufficient Scopes', correlationId, {
+        authenticationType: authType,
+        identifier,
+        hasScopes: tokenScopes.join(', ') || 'none',
+        requiredScopes: requiredScopes.join(', '),
+        missingScopes: missingScopes.join(', '),
+      });
+
+      context.warn(
+        `${authType} authentication scope check failed for ${identifier}. ` +
+        `Has: [${tokenScopes.join(', ')}], Needs: [${requiredScopes.join(', ')}], Missing: [${missingScopes.join(', ')}]`
+      );
+
+      return {
+        valid: false,
+        response: {
+          status: 403,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Correlation-ID': correlationId,
+          },
+          body: JSON.stringify({
+            error: 'forbidden',
+            error_description: `Missing required scopes: ${missingScopes.join(', ')}`,
+            required_scopes: requiredScopes,
+            missing_scopes: missingScopes,
+          }),
+        },
+      };
+    }
+
+    // Scopes validated successfully
+    const authType = request.isM2M ? 'M2M' : 'User';
+    const identifier = request.clientId || request.userEmail || request.userId || 'unknown';
+
+    context.log(
+      `${authType} scope check passed for ${identifier}. Scopes: [${requiredScopes.join(', ')}]`
+    );
+
+    return { valid: true };
+  };
 }
