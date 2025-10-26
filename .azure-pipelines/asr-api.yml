@@ -77,37 +77,35 @@ stages:
               echo "✅ Build artifacts verified"
             displayName: 'Verify build artifacts'
 
-          # Create deployment package (CRITICAL: exclude node_modules, include only necessary files)
+          # Prepare deployment (remove node_modules for remote build)
           - script: |
               cd api
-              echo "📦 Creating deployment package..."
+              echo "📦 Preparing deployment package..."
 
-              # Remove old package if exists
-              rm -rf deploy-package
-              mkdir -p deploy-package
-
-              # Copy built artifacts
-              cp -r dist deploy-package/
-              cp -r node_modules deploy-package/
-              cp package.json deploy-package/
-              cp host.json deploy-package/ 2>/dev/null || echo "No host.json found"
-              cp local.settings.json deploy-package/ 2>/dev/null || echo "No local.settings.json (expected in CI/CD)"
+              # Remove node_modules to reduce package size and enable remote build
+              rm -rf node_modules
 
               # Verify package structure
-              echo "✅ Deployment package contents:"
-              ls -la deploy-package/
-            displayName: 'Create deployment package'
+              echo "✅ Deployment package will contain:"
+              ls -la | grep -E "dist|package.json|host.json"
+              echo ""
+              echo "dist/ folder contents:"
+              ls -la dist/ | head -10
+            displayName: 'Prepare deployment package (excluding node_modules)'
 
-          # Deploy to Azure Functions using zipDeploy with SCM build
+          # Deploy to Azure Functions using zipDeploy with remote build
           - task: AzureFunctionApp@2
             displayName: 'Deploy API to Azure Functions'
             inputs:
               azureSubscription: $(azureSubscription)
               appType: 'functionAppLinux'
               appName: $(functionAppName)
-              package: '$(System.DefaultWorkingDirectory)/api/deploy-package'
+              package: '$(System.DefaultWorkingDirectory)/api'
               runtimeStack: 'NODE|20'
               deploymentMethod: 'zipDeploy'
+              # Enable remote build for dependency installation
+              enableCustomDeployment: true
+              appSettings: '-SCM_DO_BUILD_DURING_DEPLOYMENT true'
 
           # Wait and verify deployment
           - script: |
