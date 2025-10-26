@@ -1,6 +1,6 @@
 # CLAUDE.md - CTN Association Register
 
-**Last Updated:** October 25, 2025
+**Last Updated:** October 26, 2025
 
 ---
 
@@ -301,6 +301,9 @@ Schema review, query optimization, DDL management. Maintains `database/schema/cu
 
 ### Pipeline Architecture & Isolation (October 26, 2025)
 32. **Separate API pipeline from portal pipelines** - Running two pipelines (admin/member) that both tried to deploy the same API caused conflicts and silent failures (Lesson #31 root cause). **Solution**: Create dedicated `asr-api.yml` pipeline as single source of truth for ASR API deployment. Portal pipelines (admin/member) now ONLY deploy frontend, and verify API health before building. **Benefits**: (1) Eliminates API deployment conflicts, (2) Clear separation of concerns, (3) API changes trigger cascading portal builds, (4) Portal changes don't unnecessarily redeploy API. **Architecture**: ASR API pipeline → triggers → Admin + Member portal pipelines. **Isolation**: Use path exclusions to prevent cross-contamination between ASR (admin/member/api), DocuFlow (booking-portal), Orchestrator (orchestrator-portal), and Documentation (ctn-docs-portal). **Critical**: Multi-tenant applications (DocuFlow, Orchestrator) are completely independent with own pipelines and backends. They consume ASR API as external service only if needed.
+
+### Branch Management in Monorepos (October 26, 2025)
+33. **NEVER delete branches without verifying ALL project folders** - **CRITICAL DISASTER**: Deleted 6 feature branches assuming they were project-specific based on names (e.g., `feature/booking-portal-xyz` assumed to only contain booking-portal/ changes). In reality, monorepo branches can contain changes to MULTIPLE projects (admin-portal/, member-portal/, booking-portal/, api/). Lost 74 files (12,920 insertions) including multi-leg journey visualization, async document processing, Week 3 & 4 UX improvements, security fixes, and comprehensive test coverage. **Recovery took 3 hours.** **Prevention**: (1) Before deleting ANY branch, run `git log main..branch --name-only | cut -d/ -f1 | sort -u` to see ALL affected folders. (2) Verify ZERO unmerged commits with `git log main..branch --oneline`. (3) Create safety tag `git tag archive/branch-name-YYYYMMDD branch-tip` before deletion. (4) MANDATORY: Follow **docs/BRANCH_PROTECTION_PROTOCOL.md** - comprehensive checklist and monorepo folder structure reference. **Never assume branch names indicate content.** **Never delete based on folder path alone.** **Always verify merge status before deletion.** This is a **MANDATORY protocol violation = git access revocation** offense. See protocol for emergency recovery procedures (reflog, tags, Azure DevOps history).
 
 ---
 
