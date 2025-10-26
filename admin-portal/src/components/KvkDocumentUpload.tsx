@@ -298,6 +298,11 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                   </strong>
                   <div style={{ fontSize: '0.9em', color: '#666', marginTop: '5px' }}>
                     {getKvkApiData()?.statutoryName}
+                    {verificationStatus?.kvk_verified_at && (
+                      <span style={{ marginLeft: '10px', fontSize: '0.95em' }}>
+                        • Last verified: {new Date(verificationStatus.kvk_verified_at).toLocaleDateString()}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

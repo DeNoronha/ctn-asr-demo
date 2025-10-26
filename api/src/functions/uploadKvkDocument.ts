@@ -343,20 +343,25 @@ async function handler(
           context.log(`Stored KvK registry data for ${kvkData.kvkNumber}`);
         }
 
-        // Log audit event
-        await pool.query(
-          `INSERT INTO audit_logs (event_type, actor_org_id, resource_type, resource_id, action, result, metadata)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-          [
-            'KVK_VERIFICATION',
-            'SYSTEM',
-            'legal_entity',
-            legalEntityId,
-            'VERIFY',
-            newStatus.toUpperCase(),
-            JSON.stringify({ flags: validation.flags, message: validation.message })
-          ]
-        );
+        // Log audit event (non-critical - don't fail verification if audit logging fails)
+        try {
+          await pool.query(
+            `INSERT INTO audit_logs (event_type, actor_org_id, resource_type, resource_id, action, result, metadata)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [
+              'KVK_VERIFICATION',
+              'SYSTEM',
+              'legal_entity',
+              legalEntityId,
+              'VERIFY',
+              newStatus.toUpperCase(),
+              JSON.stringify({ flags: validation.flags, message: validation.message })
+            ]
+          );
+        } catch (auditError: any) {
+          // Audit logging failed, but don't fail the verification
+          context.warn('Failed to log audit event:', auditError.message);
+        }
       } else {
         // No KvK number extracted - combine with comparison flags
         const allFlags = [...comparisonFlags, 'extraction_failed'];
