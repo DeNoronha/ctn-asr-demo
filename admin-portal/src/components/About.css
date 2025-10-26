@@ -201,6 +201,23 @@
   font-size: 1.1rem;
 }
 
+/* Environment badge styling */
+.env-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 0.5rem;
+}
+
+.env-badge-production {
+  background-color: #28a745;
+  color: white;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .about-grid {
