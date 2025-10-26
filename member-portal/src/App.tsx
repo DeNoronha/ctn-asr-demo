@@ -124,7 +124,7 @@ function AppContent({ instance }: AppContentProps) {
 
   const handleLogin = () => {
     msal
-      .loginPopup({
+      .loginRedirect({
         scopes: [
           'openid',
           'profile',
@@ -138,7 +138,7 @@ function AppContent({ instance }: AppContentProps) {
   };
 
   const handleLogout = () => {
-    msal.logoutPopup().catch((err) => {
+    msal.logoutRedirect().catch((err) => {
       console.error('Logout failed:', err);
     });
   };
