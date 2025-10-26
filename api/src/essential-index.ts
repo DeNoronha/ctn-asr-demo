@@ -42,6 +42,9 @@ import './functions/updateEndpoint';
 import './functions/issueEndpointToken';
 import './functions/getEndpointTokens';
 
+// M2M Client Management (OAuth 2.0 Client Credentials)
+import './functions/ManageM2MClients';
+
 // Authentication & Party Resolution
 import './functions/ResolveParty';
 
