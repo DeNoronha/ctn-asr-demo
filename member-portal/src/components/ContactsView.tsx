@@ -81,8 +81,8 @@ export const ContactsView: React.FC<ComponentProps> = ({
       const token = await getAccessToken();
       const method = editingContact ? 'PUT' : 'POST';
       const url = editingContact
-        ? `${apiBaseUrl}/member-contacts/${editingContact.legal_entity_contact_id}`
-        : `${apiBaseUrl}/member-contacts`;
+        ? `${apiBaseUrl}/member/contacts/${editingContact.legal_entity_contact_id}`
+        : `${apiBaseUrl}/member/contacts`;
 
       const response = await fetch(url, {
         method,

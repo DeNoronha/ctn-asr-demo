@@ -89,7 +89,7 @@ export const EndpointsView: React.FC<ComponentProps> = ({
 
       console.log('Creating endpoint:', formData);
 
-      const response = await fetch(`${apiBaseUrl}/member-endpoints`, {
+      const response = await fetch(`${apiBaseUrl}/member/endpoints`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
