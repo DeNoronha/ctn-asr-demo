@@ -162,23 +162,35 @@ stages:
       - job: TriggerAdminPortal
         displayName: 'Trigger Admin Portal Pipeline'
         steps:
-          - script: |
-              echo "🚀 Triggering Admin Portal pipeline..."
-              az pipelines run \
-                --org https://dev.azure.com/ctn-demo \
-                --project ASR \
-                --name "Association-Register-Admin" \
-                --branch main
+          - task: AzureCLI@2
             displayName: 'Trigger Admin Portal build'
+            inputs:
+              azureSubscription: $(azureSubscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "🚀 Triggering Admin Portal pipeline..."
+                az pipelines run \
+                  --org https://dev.azure.com/ctn-demo \
+                  --project ASR \
+                  --name "Association-Register-Admin" \
+                  --branch main
+                echo "✅ Admin Portal pipeline triggered"
 
       - job: TriggerMemberPortal
         displayName: 'Trigger Member Portal Pipeline'
         steps:
-          - script: |
-              echo "🚀 Triggering Member Portal pipeline..."
-              az pipelines run \
-                --org https://dev.azure.com/ctn-demo \
-                --project ASR \
-                --name "Association-Register-Member" \
-                --branch main
+          - task: AzureCLI@2
             displayName: 'Trigger Member Portal build'
+            inputs:
+              azureSubscription: $(azureSubscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "🚀 Triggering Member Portal pipeline..."
+                az pipelines run \
+                  --org https://dev.azure.com/ctn-demo \
+                  --project ASR \
+                  --name "Association-Register-Member" \
+                  --branch main
+                echo "✅ Member Portal pipeline triggered"
