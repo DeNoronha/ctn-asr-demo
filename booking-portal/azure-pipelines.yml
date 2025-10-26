@@ -121,8 +121,10 @@ stages:
           - script: |
               # Install all workspace dependencies from root
               npm install
-              # Build API
+              # Install booking portal API dependencies
               cd booking-portal/api
+              npm install
+              # Build API
               npm run build
             displayName: 'Install dependencies and build API'
 
@@ -159,8 +161,10 @@ stages:
           - script: |
               # Install all workspace dependencies from root (if not already done)
               npm install
-              # Build frontend
+              # Install booking portal web dependencies
               cd booking-portal/web
+              npm install
+              # Build frontend
               npm run build
             displayName: 'Install dependencies and build frontend'
 
