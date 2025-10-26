@@ -292,6 +292,94 @@ Schema review, query optimization, DDL management. Maintains `database/schema/cu
 
 ---
 
+## Pipeline & Portal Isolation Reference
+
+### Application Boundaries (CRITICAL - DO NOT MIX)
+
+**1. ASR (Association Register) - Single-Tenant**
+```
+Folders:     api/, admin-portal/, member-portal/
+Pipelines:   .azure-pipelines/asr-api.yml
+             .azure-pipelines/admin-portal.yml
+             .azure-pipelines/member-portal.yml
+Backend:     Shared - func-ctn-demo-asr-dev (Azure Functions)
+Database:    Shared - psql-ctn-demo-asr-dev (PostgreSQL)
+Isolation:   Tightly coupled (API + 2 portals work together)
+```
+
+**2. DocuFlow - Multi-Tenant (COMPLETELY SEPARATE)**
+```
+Folders:     booking-portal/
+Pipelines:   TBD (own pipeline, not in .azure-pipelines/)
+Backend:     Own backend (booking-portal/api/)
+Database:    Own database or schema
+Isolation:   May consume ASR API as external HTTP service
+             NO code sharing with ASR
+```
+
+**3. Orchestrator - Multi-Tenant (COMPLETELY SEPARATE)**
+```
+Folders:     orchestrator-portal/
+Pipelines:   TBD (own pipeline)
+Backend:     Own backend
+Database:    Own database or schema
+Isolation:   May consume ASR API as external HTTP service
+             NO code sharing with ASR
+```
+
+**4. Documentation - Decoupled (COMPLETELY SEPARATE)**
+```
+Folders:     ctn-docs-portal/
+Pipelines:   TBD (own pipeline)
+Backend:     Static site or own backend
+Isolation:   NO dependencies on ASR, DocuFlow, or Orchestrator
+```
+
+### Pipeline Trigger Rules
+
+**ASR API Pipeline** (`.azure-pipelines/asr-api.yml`):
+- Triggers on: `api/*` changes
+- Excludes: `booking-portal/**`, `orchestrator-portal/**`, `ctn-docs-portal/**`
+- Deploys: Azure Function App (func-ctn-demo-asr-dev)
+- Then triggers: Admin + Member portal pipelines
+
+**Admin Portal Pipeline** (`.azure-pipelines/admin-portal.yml`):
+- Triggers on: `admin-portal/*` changes OR triggered by ASR API pipeline
+- Excludes: `api/**`, `member-portal/**`, `booking-portal/**`, `orchestrator-portal/**`, `ctn-docs-portal/**`
+- Verifies: ASR API health (dependency check)
+- Deploys: Azure Static Web App (admin portal only)
+
+**Member Portal Pipeline** (`.azure-pipelines/member-portal.yml`):
+- Triggers on: `member-portal/*` changes OR triggered by ASR API pipeline
+- Excludes: `api/**`, `admin-portal/**`, `booking-portal/**`, `orchestrator-portal/**`, `ctn-docs-portal/**`
+- Verifies: ASR API health (dependency check)
+- Deploys: Azure Static Web App (member portal only)
+
+**DocuFlow/Orchestrator/Docs Pipelines:**
+- Completely independent
+- Own trigger paths
+- Own deployment targets
+- NO automatic triggers from ASR changes
+
+### Path Filter Examples
+
+**Will NOT trigger ASR pipelines:**
+- Changes to `booking-portal/` (DocuFlow)
+- Changes to `orchestrator-portal/` (Orchestrator)
+- Changes to `ctn-docs-portal/` (Documentation)
+- Changes to `docs/` (documentation only)
+
+**Will trigger ASR API + both portal pipelines:**
+- Changes to `api/`
+
+**Will trigger ONLY admin portal pipeline:**
+- Changes to `admin-portal/`
+
+**Will trigger ONLY member portal pipeline:**
+- Changes to `member-portal/`
+
+---
+
 ## Project Context
 
 **CTN ASR** - Member management system for container transport ecosystem
