@@ -16,8 +16,9 @@ export default defineConfig({
   resolve: {
     alias: {
       // Force single React instance to prevent "Cannot read properties of null (reading 'useContext')" error
-      react: path.resolve(__dirname, './node_modules/react'),
-      'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
+      // In workspace setup, use parent node_modules
+      react: path.resolve(__dirname, '../node_modules/react'),
+      'react-dom': path.resolve(__dirname, '../node_modules/react-dom'),
     },
   },
   build: {

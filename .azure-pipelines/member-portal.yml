@@ -1,6 +1,6 @@
 # Member Portal - CI/CD Pipeline
-# Triggers on changes to portal/* or api/* directories
-# Environment variables loaded from portal/.env.production (tracked in git)
+# Triggers on changes to member-portal/* or api/* directories
+# Environment variables loaded from member-portal/.env.production (tracked in git)
 
 trigger:
   branches:
@@ -8,7 +8,7 @@ trigger:
       - main
   paths:
     include:
-      - portal/*
+      - member-portal/*
       - api/*
 
 pool:
@@ -42,7 +42,7 @@ steps:
       EXIT_CODE=0
 
       # TEMPORARILY DISABLED - Variables loaded from .env.production
-      # All VITE_* variables are in portal/.env.production file
+      # All VITE_* variables are in member-portal/.env.production file
 
       # Check deployment token (from Key Vault) - THIS MUST WORK
       if [ -z "$(AZURE-STATIC-WEB-APPS-API-TOKEN-MEMBER)" ]; then
@@ -81,13 +81,13 @@ steps:
 
   # Biome code quality checks - REPORT ONLY (does not block deployment)
   - script: |
-      cd portal
+      cd member-portal
       npm run lint
     displayName: 'Run Biome code quality checks'
     continueOnError: true
 
   - script: |
-      cd portal
+      cd member-portal
       npm audit --audit-level=moderate
       npm run security:audit
       npm run security:summary
@@ -101,7 +101,7 @@ steps:
     continueOnError: true
 
   - script: |
-      cd portal
+      cd member-portal
       # Fetch origin to ensure we have the reference
       git fetch origin main --depth=50
       # Use the commit before HEAD as base (for comparing current changes)
@@ -121,7 +121,7 @@ steps:
     displayName: 'Publish security reports'
     condition: always()
     inputs:
-      targetPath: 'portal/reports'
+      targetPath: 'member-portal/reports'
       artifact: 'security-reports-member'
       publishLocation: 'pipeline'
     continueOnError: true
@@ -133,11 +133,11 @@ steps:
   # ========================================
   - script: |
       chmod +x scripts/generate-version.sh
-      ./scripts/generate-version.sh portal/public
+      ./scripts/generate-version.sh member-portal/public
     displayName: 'Generate version.json with build metadata'
 
   - script: |
-      cd portal
+      cd member-portal
       npm run build
     displayName: 'Build React application'
     env:
@@ -153,7 +153,7 @@ steps:
     displayName: 'Deploy to Azure Static Web Apps'
     condition: succeeded()
     inputs:
-      app_location: 'portal/build'
+      app_location: 'member-portal/build'
       skip_app_build: true
       azure_static_web_apps_api_token: $(AZURE-STATIC-WEB-APPS-API-TOKEN-MEMBER)
 
