@@ -5,7 +5,7 @@ import svgr from 'vite-plugin-svgr';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     viteTsconfigPaths(),
@@ -21,6 +21,14 @@ export default defineConfig({
       'react-dom': path.resolve(__dirname, '../node_modules/react-dom'),
     },
   },
+  define: {
+    // Expose environment variables as process.env for compatibility
+    'process.env.VITE_AAD_CLIENT_ID': JSON.stringify(process.env.VITE_AAD_CLIENT_ID),
+    'process.env.VITE_AAD_AUTHORITY': JSON.stringify(process.env.VITE_AAD_AUTHORITY),
+    'process.env.VITE_AAD_REDIRECT_URI': JSON.stringify(process.env.VITE_AAD_REDIRECT_URI),
+    'process.env.VITE_API_CLIENT_ID': JSON.stringify(process.env.VITE_API_CLIENT_ID),
+    'process.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL),
+  },
   build: {
     outDir: 'build',
     sourcemap: true,
@@ -29,4 +37,4 @@ export default defineConfig({
     port: 3001,
     open: true,
   },
-});
+}));
