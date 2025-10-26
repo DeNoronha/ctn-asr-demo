@@ -17,9 +17,8 @@ import { CompanyForm } from './CompanyForm';
 import { ContactsManager } from './ContactsManager';
 import { EndpointManagement } from './EndpointManagement';
 import { IdentifiersManager } from './IdentifiersManager';
+import { APIAccessManager } from './APIAccessManager';
 import { KvkDocumentUpload } from './KvkDocumentUpload';
-import { M2MClientsManager } from './M2MClientsManager';
-import { TokensManager } from './TokensManager';
 import './MemberDetailView.css';
 
 interface MemberDetailViewProps {
@@ -304,32 +303,32 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           </div>
         </TabStripTab>
 
-        <TabStripTab title="Endpoints">
+        <TabStripTab title="System Integrations">
           <div className="tab-content endpoints-tab">
+            <div style={{ marginBottom: '16px' }}>
+              <h3>System Integrations</h3>
+              <p style={{ color: '#6b7280', fontSize: '0.875rem', margin: '8px 0 0 0', maxWidth: '800px' }}>
+                Register your organization's system endpoints where CTN can send notifications, webhooks, and event updates.
+                These are <strong>outbound integrations</strong> from CTN to your systems.
+              </p>
+            </div>
             <EndpointManagement legalEntityId={member.org_id} legalEntityName={member.legal_name} />
           </div>
         </TabStripTab>
 
-        <TabStripTab title="Tokens">
-          <div className="tab-content">
-            <TokensManager
-              legalEntityId={member.org_id}
-              endpoints={endpoints}
-              onIssueToken={onIssueToken}
-            />
-          </div>
-        </TabStripTab>
-
-        <TabStripTab title="API Clients">
+        <TabStripTab title="API Access">
           <div className="tab-content">
             {legalEntity ? (
-              <M2MClientsManager
+              <APIAccessManager
                 legalEntityId={legalEntity.legal_entity_id!}
                 legalEntityName={legalEntity.primary_legal_name || member.legal_name}
+                orgId={member.org_id}
+                endpoints={endpoints}
+                onIssueToken={onIssueToken}
               />
             ) : (
               <div className="info-section">
-                <h3>API Clients (M2M Authentication)</h3>
+                <h3>API Access</h3>
                 <p className="empty-message">No company linked to this member</p>
               </div>
             )}
