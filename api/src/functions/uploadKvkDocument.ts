@@ -320,24 +320,27 @@ async function handler(
             [legalEntityId]
           );
 
-          // Insert new registry data
+          // Insert new registry data with formal and material registration dates
           await pool.query(
             `INSERT INTO kvk_registry_data (
                legal_entity_id, kvk_number, company_name, legal_form,
-               trade_names, company_status, addresses, sbi_activities,
+               trade_names, formal_registration_date, material_registration_date,
+               company_status, addresses, sbi_activities,
                total_employees, raw_api_response, fetched_at,
                last_verified_at, data_source, created_by
-             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW(), 'kvk_api', 'system')`,
+             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW(), 'kvk_api', 'system')`,
             [
               legalEntityId,
               kvkData.kvkNumber,
               kvkData.statutoryName,
-              null, // legal_form - extract from raw response if available
+              kvkData.legalForm,
               JSON.stringify(kvkData.tradeNames),
+              kvkData.formalRegistrationDate,
+              kvkData.materialRegistrationDate,
               kvkData.status || 'Active',
               JSON.stringify(kvkData.addresses),
-              null, // sbi_activities - will be in raw response
-              null, // total_employees - will be in raw response
+              JSON.stringify(kvkData.sbiActivities),
+              kvkData.totalEmployees,
               JSON.stringify(validation.companyData)
             ]
           );

@@ -1,5 +1,41 @@
 import axios from 'axios';
 
+interface KvKApiResponse {
+  kvkNummer: string;
+  naam: string;
+  status?: string;
+  formeleRegistratiedatum?: string;
+  materieleRegistratie?: {
+    datumAanvang?: string;
+  };
+  totaalWerkzamePersonen?: number;
+  handelsnamen?: Array<{
+    naam: string;
+    volgorde: number;
+  }>;
+  sbiActiviteiten?: Array<{
+    sbiCode: string;
+    sbiOmschrijving: string;
+    indHoofdactiviteit: string;
+  }>;
+  _embedded?: {
+    hoofdvestiging?: {
+      adressen?: Array<{
+        type?: string;
+        straatnaam?: string;
+        huisnummer?: string;
+        postcode?: string;
+        plaats?: string;
+        land?: string;
+      }>;
+    };
+    eigenaar?: {
+      rechtsvorm?: string;
+      uitgebreideRechtsvorm?: string;
+    };
+  };
+}
+
 interface KvKCompanyData {
   kvkNumber: string;
   tradeNames: {
@@ -8,6 +44,15 @@ interface KvKCompanyData {
   };
   statutoryName: string;
   status?: string;
+  legalForm?: string;
+  formalRegistrationDate?: string;
+  materialRegistrationDate?: string;
+  totalEmployees?: number;
+  sbiActivities?: Array<{
+    sbiCode: string;
+    sbiOmschrijving: string;
+    indHoofdactiviteit: string;
+  }>;
   addresses: Array<{
     type: string;
     street: string;
@@ -54,7 +99,32 @@ export class KvKService {
         timeout: 10000,
       });
 
-      const data = response.data as KvKCompanyData;
+      const apiData = response.data as KvKApiResponse;
+
+      // Transform API response to our internal data structure
+      const data: KvKCompanyData = {
+        kvkNumber: apiData.kvkNummer,
+        statutoryName: apiData.naam,
+        status: apiData.status,
+        legalForm: apiData._embedded?.eigenaar?.uitgebreideRechtsvorm || apiData._embedded?.eigenaar?.rechtsvorm,
+        formalRegistrationDate: apiData.formeleRegistratiedatum,
+        materialRegistrationDate: apiData.materieleRegistratie?.datumAanvang,
+        totalEmployees: apiData.totaalWerkzamePersonen,
+        sbiActivities: apiData.sbiActiviteiten,
+        tradeNames: {
+          businessName: apiData.handelsnamen?.[0]?.naam || apiData.naam,
+          currentTradeNames: apiData.handelsnamen?.map(h => h.naam) || [apiData.naam],
+        },
+        addresses: apiData._embedded?.hoofdvestiging?.adressen?.map(addr => ({
+          type: addr.type || 'bezoekadres',
+          street: addr.straatnaam || '',
+          houseNumber: addr.huisnummer || '',
+          postalCode: addr.postcode || '',
+          city: addr.plaats || '',
+          country: addr.land || 'Nederland',
+        })) || [],
+      };
+
       const flags: string[] = [];
 
       // Check for bankruptcies or dissolution
@@ -70,7 +140,7 @@ export class KvKService {
       const normalizedStatutory = this.normalizeCompanyName(data.statutoryName);
       const normalizedTrade = this.normalizeCompanyName(data.tradeNames.businessName);
 
-      const nameMatch = 
+      const nameMatch =
         normalizedExtracted.includes(normalizedStatutory) ||
         normalizedStatutory.includes(normalizedExtracted) ||
         normalizedExtracted.includes(normalizedTrade) ||
@@ -84,7 +154,7 @@ export class KvKService {
         isValid: flags.length === 0,
         companyData: data,
         flags,
-        message: flags.length === 0 
+        message: flags.length === 0
           ? 'Company verified successfully'
           : `Verification flagged: ${flags.join(', ')}`,
       };
