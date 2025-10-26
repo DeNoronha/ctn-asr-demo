@@ -66,6 +66,7 @@ import './functions/getFlaggedEntities';
 import './functions/uploadKvkDocument';
 import './functions/getKvkVerificationStatus';
 import './functions/reviewKvkVerification';
+import './functions/getKvkRegistryData';
 
 // Diagnostics
 import './functions/DiagnosticCheck';
