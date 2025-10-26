@@ -18,6 +18,7 @@ import { ContactsManager } from './ContactsManager';
 import { EndpointManagement } from './EndpointManagement';
 import { IdentifiersManager } from './IdentifiersManager';
 import { KvkDocumentUpload } from './KvkDocumentUpload';
+import { M2MClientsManager } from './M2MClientsManager';
 import { TokensManager } from './TokensManager';
 import './MemberDetailView.css';
 
@@ -316,6 +317,22 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
               endpoints={endpoints}
               onIssueToken={onIssueToken}
             />
+          </div>
+        </TabStripTab>
+
+        <TabStripTab title="API Clients">
+          <div className="tab-content">
+            {legalEntity ? (
+              <M2MClientsManager
+                legalEntityId={legalEntity.legal_entity_id!}
+                legalEntityName={legalEntity.primary_legal_name || member.legal_name}
+              />
+            ) : (
+              <div className="info-section">
+                <h3>API Clients (M2M Authentication)</h3>
+                <p className="empty-message">No company linked to this member</p>
+              </div>
+            )}
           </div>
         </TabStripTab>
 
