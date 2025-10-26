@@ -9,8 +9,6 @@
     "@progress/kendo-charts": "^2.8.2",
     "@progress/kendo-data-query": "^1.7.1",
     "@progress/kendo-date-math": "^1.5.15",
-    "@progress/kendo-draggable": "^3.1.0",
-    "@progress/kendo-draggable-common": "^3.1.0",
     "@progress/kendo-drawing": "^1.22.2",
     "@progress/kendo-file-saver": "^1.1.2",
     "@progress/kendo-inputs-common": "^3.1.2",
