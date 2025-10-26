@@ -19,7 +19,8 @@ async function handler(
   }
 
   try {
-    // Retrieve KvK registry data
+    // Retrieve KvK registry data - always return the latest record
+    // Historical records are preserved but we show the most recent one
     const result = await pool.query(
       `SELECT
          registry_data_id,
@@ -42,7 +43,6 @@ async function handler(
          data_source
        FROM kvk_registry_data
        WHERE legal_entity_id = $1
-         AND (is_deleted IS NULL OR is_deleted = FALSE)
        ORDER BY fetched_at DESC
        LIMIT 1`,
       [legalEntityId]

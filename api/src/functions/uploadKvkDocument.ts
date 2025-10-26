@@ -312,13 +312,8 @@ async function handler(
         if (validation.companyData) {
           const kvkData = validation.companyData;
 
-          // Delete existing registry data for this entity (soft delete)
-          await pool.query(
-            `UPDATE kvk_registry_data
-             SET is_deleted = TRUE, modified_by = 'system'
-             WHERE legal_entity_id = $1 AND is_deleted = FALSE`,
-            [legalEntityId]
-          );
+          // Keep all historical records - do not delete previous versions
+          // The API will automatically return the latest record (ORDER BY fetched_at DESC LIMIT 1)
 
           // Insert new registry data with formal and material registration dates
           await pool.query(
