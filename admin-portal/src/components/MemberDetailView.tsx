@@ -58,8 +58,14 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           setIdentifiers(entityIdentifiers);
 
           // Load endpoints using apiV2 (with authentication)
-          const entityEndpoints = await apiV2.getEndpoints(member.legal_entity_id);
-          setEndpoints(entityEndpoints);
+          try {
+            const entityEndpoints = await apiV2.getEndpoints(member.legal_entity_id);
+            setEndpoints(entityEndpoints);
+          } catch (endpointError: any) {
+            console.error('Failed to load endpoints:', endpointError);
+            // Don't block loading other data if endpoints fail
+            setEndpoints([]);
+          }
 
           // Check if KvK registry data exists (for conditional tab display)
           try {
