@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, useBlocker } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@progress/kendo-react-buttons';
 import PDFViewer from '../components/PDFViewer';
@@ -33,12 +33,13 @@ const Validation: React.FC = () => {
   const requiredFields = ['carrierBookingReference', 'shipmentDetails.vesselName', 'shipmentDetails.portOfLoading', 'shipmentDetails.portOfDischarge', 'containers'];
 
   // Block navigation with unsaved changes
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      hasUnsavedChanges &&
-      corrections.length > 0 &&
-      currentLocation.pathname !== nextLocation.pathname
-  );
+  // TODO: Re-enable when useBlocker API is stable in react-router-dom v6
+  // const blocker = useBlocker(
+  //   ({ currentLocation, nextLocation }) =>
+  //     hasUnsavedChanges &&
+  //     corrections.length > 0 &&
+  //     currentLocation.pathname !== nextLocation.pathname
+  // );
 
   // Warn on page unload with unsaved changes
   useEffect(() => {
