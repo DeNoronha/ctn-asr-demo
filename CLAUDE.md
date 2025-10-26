@@ -256,6 +256,18 @@ UI/UX quality, WCAG 2.1 AA accessibility, responsive design, Kendo UI validation
 
 Schema review, query optimization, DDL management. Maintains `database/schema/current_schema.sql`. Review before migrations.
 
+### DevOps Guardian (DG)
+`.claude/agents/devops-guardian-dg.md` | Orange | Sonnet
+
+Git/Azure/Multi-repo specialist with strict security and cross-impact validation. Auto-invoke before: commits (secret scan), shared code changes (/shared, /packages), pipeline modifications, breaking changes affecting 3+ portals.
+
+**Responsibilities:**
+1. Cross-portal impact analysis (admin/member/booking/orchestrator)
+2. Secret detection and .gitignore validation
+3. Azure Pipeline and Bicep template validation
+4. Git workflow enforcement (conventional commits, feature branches)
+5. Monorepo dependency management
+
 ---
 
 ## Critical Lessons Learned
