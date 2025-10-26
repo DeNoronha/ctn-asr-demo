@@ -124,19 +124,6 @@ export const helpContent = {
     'Failed webhook deliveries are automatically retried up to 5 times with exponential backoff. Check the delivery log for retry history and error details.',
 
   // ==========================================
-  // API Tokens
-  // ==========================================
-
-  apiToken:
-    'API tokens authenticate programmatic access to CTN services. Treat them like passwords - never commit to git or share publicly.',
-
-  tokenExpiration:
-    'Tokens expire after 1 year for security. You will receive email notifications 30 days before expiration. Rotate tokens regularly.',
-
-  tokenScopes:
-    'Scopes limit what the token can access. Grant minimum necessary permissions. Examples: read:orchestrations, write:bookings',
-
-  // ==========================================
   // Document Upload
   // ==========================================
 

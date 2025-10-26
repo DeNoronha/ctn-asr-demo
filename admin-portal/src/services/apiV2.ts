@@ -241,13 +241,6 @@ interface MembersResponse {
   count: number;
 }
 
-interface TokenResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-  scope: string;
-}
-
 // =====================================================
 // API SERVICE (V2 with Enhanced Schema Support)
 // =====================================================
@@ -280,14 +273,6 @@ export const apiV2 = {
   async createMember(member: Partial<Member>): Promise<Member> {
     const axiosInstance = await getAuthenticatedAxios();
     const response = await axiosInstance.post<Member>('/members', member);
-    return response.data;
-  },
-
-  async issueToken(orgId: string): Promise<{ access_token: string }> {
-    const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.post<TokenResponse>('/oauth/token', {
-      org_id: orgId,
-    });
     return response.data;
   },
 

@@ -43,7 +43,6 @@ const AdminPortal: React.FC = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [totalMembers, setTotalMembers] = useState<number>(0);
   const [showForm, setShowForm] = useState(false);
-  const [token, setToken] = useState<string>('');
   const [drawerExpanded, setDrawerExpanded] = useState(true);
   const [selectedView, setSelectedView] = useState<string>('dashboard');
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
@@ -99,19 +98,6 @@ const AdminPortal: React.FC = () => {
     setSelectedView('members');
   }, []);
 
-  const handleIssueToken = useCallback(
-    async (orgId: string) => {
-      try {
-        const response = await api.issueToken(orgId);
-        setToken(response.access_token);
-        notification.showSuccess('Token issued successfully!', 'Token Generated');
-      } catch (_error) {
-        notification.showError('Failed to issue token');
-      }
-    },
-    [notification]
-  );
-
   const handleMenuSelect = useCallback((item: MenuItem) => {
     if (item.route) {
       setSelectedView(item.route);
@@ -152,7 +138,6 @@ const AdminPortal: React.FC = () => {
               <MembersGrid
                 members={members}
                 totalMembers={totalMembers}
-                onIssueToken={handleIssueToken}
                 onViewDetails={handleViewDetails}
                 onPageChange={loadMembersData}
                 loading={loading}
@@ -170,7 +155,6 @@ const AdminPortal: React.FC = () => {
           <MemberDetailView
             member={selectedMember}
             onBack={handleBackToMembers}
-            onIssueToken={handleIssueToken}
           />
         );
 
@@ -202,42 +186,6 @@ const AdminPortal: React.FC = () => {
                 </div>
               )}
             </RoleGuard>
-          </div>
-        );
-
-      case 'tokens':
-        return (
-          <div className="tokens-view">
-            <h2>{t('tokens.title')}</h2>
-            {token ? (
-              <div className="token-display">
-                <h3>{t('tokens.latestToken', 'Latest BVAD Token')}</h3>
-                <textarea readOnly value={token} rows={10} className="token-textarea" />
-                <Button
-                  onClick={() => setToken('')}
-                  themeColor="secondary"
-                  aria-label={t('tokens.clearToken', 'Clear Token')}
-                >
-                  {t('tokens.clearToken', 'Clear Token')}
-                </Button>
-              </div>
-            ) : (
-              <div className="empty-state">
-                <p>
-                  {t(
-                    'tokens.noTokensGenerated',
-                    'No tokens generated yet. Go to Members to issue a token.'
-                  )}
-                </p>
-                <Button
-                  onClick={() => setSelectedView('members')}
-                  themeColor="primary"
-                  aria-label={t('navigation.members')}
-                >
-                  {t('navigation.members')}
-                </Button>
-              </div>
-            )}
           </div>
         );
 

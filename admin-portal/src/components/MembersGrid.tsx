@@ -37,7 +37,6 @@ import './MembersGrid.css';
 interface MembersGridProps {
   members: Member[];
   totalMembers?: number;
-  onIssueToken: (orgId: string) => void;
   onViewDetails: (member: Member) => void;
   onPageChange?: (page: number, pageSize: number) => void;
   loading?: boolean;
@@ -54,7 +53,6 @@ interface ColumnSettings {
 const MembersGrid: React.FC<MembersGridProps> = ({
   members,
   totalMembers,
-  onIssueToken,
   onViewDetails,
   onPageChange,
   loading = false,
@@ -309,19 +307,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           notification.showSuccess(`Exported ${selectedIds.length} members to CSV`);
           break;
 
-        case 'token': {
-          const tokenResult = await performBulkOperation(selectedIds, 'token', async (id) => {
-            await onIssueToken(id);
-            return Promise.resolve();
-          });
-          notification.showSuccess(formatBulkOperationSummary(tokenResult, 'token issuance'));
-
-          if (tokenResult.errors.length > 0) {
-            console.error('Token issuance errors:', tokenResult.errors);
-          }
-          break;
-        }
-
         case 'suspend':
           notification.showInfo(
             `Suspend action for ${selectedIds.length} members (requires API implementation)`
@@ -509,8 +494,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         return `Export ${selectedIds.length} members to PDF?`;
       case 'export-csv':
         return `Export ${selectedIds.length} members to CSV?`;
-      case 'token':
-        return `Issue tokens for ${selectedIds.length} members? This action will generate new BVAD tokens.`;
       case 'suspend':
         return `Suspend ${selectedIds.length} members? They will lose access to CTN services.`;
       case 'delete':

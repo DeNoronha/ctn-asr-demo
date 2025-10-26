@@ -47,10 +47,6 @@ export const api = {
     return apiV2.createMember(member);
   },
 
-  async issueToken(orgId: string): Promise<{ access_token: string }> {
-    return apiV2.issueToken(orgId);
-  },
-
   // Legal Entity / Company endpoints
   async getLegalEntity(legalEntityId: string): Promise<LegalEntity> {
     return apiV2.getLegalEntity(legalEntityId);

@@ -24,13 +24,11 @@ import './MemberDetailView.css';
 interface MemberDetailViewProps {
   member: Member;
   onBack: () => void;
-  onIssueToken: (orgId: string) => Promise<void>;
 }
 
 export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
   member,
   onBack,
-  onIssueToken,
 }) => {
   console.log('Member with legal_entity_id:', member.legal_entity_id);
   const [selected, setSelected] = useState(0);
@@ -322,9 +320,6 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
               <APIAccessManager
                 legalEntityId={legalEntity.legal_entity_id!}
                 legalEntityName={legalEntity.primary_legal_name || member.legal_name}
-                orgId={member.org_id}
-                endpoints={endpoints}
-                onIssueToken={onIssueToken}
               />
             ) : (
               <div className="info-section">
