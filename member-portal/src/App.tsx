@@ -294,6 +294,28 @@ function AppContent({ instance }: AppContentProps) {
             </div>
           )}
 
+          {!loading && error && (
+            <div className="error-container" style={{
+              padding: '40px 20px',
+              maxWidth: '600px',
+              margin: '0 auto',
+              textAlign: 'center'
+            }}>
+              <h3 style={{ color: '#d32f2f', marginBottom: '16px' }}>Unable to Load Member Data</h3>
+              <p style={{ marginBottom: '8px' }}>{error}</p>
+              <p style={{ color: '#666', fontSize: '0.9em', marginTop: '16px' }}>
+                Please try refreshing the page. If the problem persists, contact support.
+              </p>
+              <Button
+                onClick={() => window.location.reload()}
+                themeColor="primary"
+                style={{ marginTop: '16px' }}
+              >
+                Refresh Page
+              </Button>
+            </div>
+          )}
+
           {!loading && !error && memberData && (
             <div className="content-container">{renderTabContent()}</div>
           )}
