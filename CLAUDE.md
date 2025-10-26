@@ -94,15 +94,41 @@ git push origin main
 2. **E2E tests (Playwright)** - Only after API tests pass
 3. Test pattern: Create → Verify → Clean up
 
-**Deployment:**
-- **API:** `func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote`
-- **Frontend:** See deployment procedures section
+**Deployment Architecture (October 26, 2025):**
+
+```
+┌──────────────────┐
+│ ASR API Pipeline │  Single source of truth for API
+└────────┬─────────┘
+         │ Triggers on: api/* changes
+         │ Deploys to: func-ctn-demo-asr-dev
+         │
+    ┌────┴────────────────────┐
+    ↓                         ↓
+┌─────────────┐      ┌──────────────┐
+│Admin Portal │      │Member Portal │
+│  Pipeline   │      │   Pipeline   │
+└─────────────┘      └──────────────┘
+Triggered by API      Triggered by API
+OR admin-portal/*     OR member-portal/*
+```
+
+**Deployment Workflow:**
+
+1. **API Changes** → Push to `api/*` → ASR API pipeline runs → Deploys API → Triggers both portal pipelines
+2. **Admin Portal Changes** → Push to `admin-portal/*` → Admin portal pipeline runs → Verifies API health → Deploys frontend
+3. **Member Portal Changes** → Push to `member-portal/*` → Member portal pipeline runs → Verifies API health → Deploys frontend
+
+**Manual Deployment (if needed):**
+- **API:** `cd api && func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote`
 - **Database:** `psql "host=..." -f database/migrations/XXX.sql`
 
 **Post-Deployment Workflow (MANDATORY):**
 ```
 Build → Deploy → Test (TE agent) → Document (TW agent)
 ```
+
+**Critical**: DocuFlow, Orchestrator, and Documentation portals are INDEPENDENT with own pipelines.
 
 ---
 
@@ -260,6 +286,9 @@ Schema review, query optimization, DDL management. Maintains `database/schema/cu
 
 ### Deployment Verification (October 25, 2025)
 31. **"Members not showing" = Check API deployment FIRST** - When user reports dashboard shows 0 members or data not appearing, this is a DEPLOYMENT issue 99% of the time, NOT a code issue. STOP debugging code immediately. **MANDATORY CHECK**: Test API endpoint health BEFORE debugging frontend. Run: `curl https://func-ctn-demo-asr-dev.azurewebsites.net/api/health` - If 404/empty response = API not deployed. **Pattern**: Frontend pipeline can succeed while API deployment silently fails, even when both are in same pipeline yml file (admin-portal.yml lines 197-220). **Root cause**: Pipeline shows green ✅ but AzureFunctionApp@2 task failed without blocking deployment. **Solution**: Manually deploy API with `func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote`. **Occurred**: 3rd time this pattern happened (Oct 25, 2025). Each time wasted 30-60 minutes debugging Dashboard.tsx, MembersGrid.tsx, api.ts when actual problem was backend not deployed. **Prevention**: Add API health check as pipeline verification step after deployment. **Test sequence**: (1) Check /api/health endpoint, (2) If healthy, test data endpoint with auth, (3) ONLY THEN debug frontend code if issue persists.
+
+### Pipeline Architecture & Isolation (October 26, 2025)
+32. **Separate API pipeline from portal pipelines** - Running two pipelines (admin/member) that both tried to deploy the same API caused conflicts and silent failures (Lesson #31 root cause). **Solution**: Create dedicated `asr-api.yml` pipeline as single source of truth for ASR API deployment. Portal pipelines (admin/member) now ONLY deploy frontend, and verify API health before building. **Benefits**: (1) Eliminates API deployment conflicts, (2) Clear separation of concerns, (3) API changes trigger cascading portal builds, (4) Portal changes don't unnecessarily redeploy API. **Architecture**: ASR API pipeline → triggers → Admin + Member portal pipelines. **Isolation**: Use path exclusions to prevent cross-contamination between ASR (admin/member/api), DocuFlow (booking-portal), Orchestrator (orchestrator-portal), and Documentation (ctn-docs-portal). **Critical**: Multi-tenant applications (DocuFlow, Orchestrator) are completely independent with own pipelines and backends. They consume ASR API as external service only if needed.
 
 ---
 
