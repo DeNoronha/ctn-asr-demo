@@ -198,7 +198,6 @@ export const LoginPage = () => {
             gap: '2rem',
             flexWrap: 'wrap'
           }}>
-            <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 500 }}>Portbase</div>
             <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 500 }}>Contargo</div>
             <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 500 }}>Inland Terminals</div>
             <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 500 }}>van Berkel</div>
