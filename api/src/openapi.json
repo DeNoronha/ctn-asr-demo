@@ -52,12 +52,18 @@
     {
       "name": "Events",
       "description": "Event Grid webhook handlers"
+    },
+    {
+      "name": "M2M Authentication",
+      "description": "OAuth 2.0 Client Credentials flow for machine-to-machine authentication"
     }
   ],
   "paths": {
     "/v1/legal-entities": {
       "get": {
-        "tags": ["Legal Entities"],
+        "tags": [
+          "Legal Entities"
+        ],
         "summary": "Get all legal entities",
         "description": "Retrieve a list of all legal entities registered in the system",
         "operationId": "getAllLegalEntities",
@@ -83,7 +89,9 @@
     },
     "/v1/legal-entities/{legalEntityId}": {
       "get": {
-        "tags": ["Legal Entities"],
+        "tags": [
+          "Legal Entities"
+        ],
         "summary": "Get legal entity by ID",
         "description": "Retrieve detailed information about a specific legal entity",
         "operationId": "getLegalEntityById",
@@ -121,7 +129,9 @@
     },
     "/v1/legal-entities/{legalEntityId}/endpoints": {
       "get": {
-        "tags": ["Endpoints"],
+        "tags": [
+          "Endpoints"
+        ],
         "summary": "Get endpoints for a legal entity",
         "description": "Retrieve all registered endpoints for a specific legal entity",
         "operationId": "getEndpointsByEntity",
@@ -160,7 +170,9 @@
         }
       },
       "post": {
-        "tags": ["Endpoints"],
+        "tags": [
+          "Endpoints"
+        ],
         "summary": "Create a new endpoint",
         "description": "Register a new endpoint for a legal entity",
         "operationId": "createEndpoint",
@@ -208,7 +220,9 @@
     },
     "/v1/legal-entities/{legalEntityId}/endpoints/{endpointId}": {
       "put": {
-        "tags": ["Endpoints"],
+        "tags": [
+          "Endpoints"
+        ],
         "summary": "Update an endpoint",
         "description": "Update an existing endpoint configuration",
         "operationId": "updateEndpoint",
@@ -264,7 +278,9 @@
     },
     "/v1/endpoints/{endpointId}/tokens": {
       "get": {
-        "tags": ["Tokens"],
+        "tags": [
+          "Tokens"
+        ],
         "summary": "Get tokens for an endpoint",
         "description": "Retrieve all tokens associated with a specific endpoint",
         "operationId": "getEndpointTokens",
@@ -302,7 +318,9 @@
         }
       },
       "post": {
-        "tags": ["Tokens"],
+        "tags": [
+          "Tokens"
+        ],
         "summary": "Issue a new token",
         "description": "Issue a new BVAD access token for an endpoint",
         "operationId": "issueEndpointToken",
@@ -349,7 +367,9 @@
     },
     "/v1/kvk/upload-document": {
       "post": {
-        "tags": ["KvK Verification"],
+        "tags": [
+          "KvK Verification"
+        ],
         "summary": "Upload KvK document",
         "description": "Upload a KvK document for verification",
         "operationId": "uploadKvkDocument",
@@ -373,7 +393,11 @@
                     "type": "string"
                   }
                 },
-                "required": ["file", "legalEntityId", "kvkNumber"]
+                "required": [
+                  "file",
+                  "legalEntityId",
+                  "kvkNumber"
+                ]
               }
             }
           }
@@ -400,7 +424,9 @@
     },
     "/v1/kvk/verification-status/{verificationId}": {
       "get": {
-        "tags": ["KvK Verification"],
+        "tags": [
+          "KvK Verification"
+        ],
         "summary": "Get KvK verification status",
         "description": "Check the status of a KvK document verification",
         "operationId": "getKvkVerificationStatus",
@@ -437,7 +463,9 @@
     },
     "/v1/kvk/flagged-entities": {
       "get": {
-        "tags": ["KvK Verification"],
+        "tags": [
+          "KvK Verification"
+        ],
         "summary": "Get flagged entities",
         "description": "Retrieve all entities flagged for KvK verification review",
         "operationId": "getFlaggedEntities",
@@ -463,7 +491,9 @@
     },
     "/EventGridHandler": {
       "post": {
-        "tags": ["Events"],
+        "tags": [
+          "Events"
+        ],
         "summary": "Event Grid webhook handler",
         "description": "Receives events from Azure Event Grid and triggers email notifications",
         "operationId": "handleEventGridEvents",
@@ -488,6 +518,263 @@
             "$ref": "#/components/responses/InternalServerError"
           }
         }
+      }
+    },
+    "/v1/legal-entities/{legal_entity_id}/m2m-clients": {
+      "get": {
+        "tags": [
+          "M2M Authentication"
+        ],
+        "summary": "List M2M clients for a legal entity",
+        "description": "Retrieve all M2M API clients registered for a specific legal entity",
+        "operationId": "listM2MClients",
+        "parameters": [
+          {
+            "name": "legal_entity_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the legal entity",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/M2MClient"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Valid authentication required"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "M2M Authentication"
+        ],
+        "summary": "Create M2M client",
+        "description": "Create a new M2M API client with OAuth 2.0 Client Credentials. Returns client_id and client_secret (shown only once).",
+        "operationId": "createM2MClient",
+        "parameters": [
+          {
+            "name": "legal_entity_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the legal entity",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateM2MClientRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "M2M client created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateM2MClientResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "description": "Unauthorized - Valid authentication required"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/m2m-clients/{client_id}/generate-secret": {
+      "post": {
+        "tags": [
+          "M2M Authentication"
+        ],
+        "summary": "Generate new client secret",
+        "description": "Generate a new secret for an existing M2M client. Previous secret is immediately invalidated. New secret is shown only once.",
+        "operationId": "generateM2MSecret",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the M2M client",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "New secret generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/M2MSecretResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Valid authentication required"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/m2m-clients/{client_id}/scopes": {
+      "patch": {
+        "tags": [
+          "M2M Authentication"
+        ],
+        "summary": "Update client scopes",
+        "description": "Update the assigned OAuth 2.0 scopes for an M2M client",
+        "operationId": "updateM2MClientScopes",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the M2M client",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateScopesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scopes updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/M2MClient"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "description": "Unauthorized - Valid authentication required"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/m2m-clients/{client_id}": {
+      "delete": {
+        "tags": [
+          "M2M Authentication"
+        ],
+        "summary": "Deactivate M2M client",
+        "description": "Deactivate an M2M client. Sets is_active=false and revokes API access immediately.",
+        "operationId": "deactivateM2MClient",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the M2M client",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Client deactivated successfully"
+          },
+          "401": {
+            "description": "Unauthorized - Valid authentication required"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     }
   },
@@ -554,11 +841,25 @@
           },
           "entity_type": {
             "type": "string",
-            "enum": ["BV", "NV", "Vereniging", "Stichting", "Eenmanszaak", "VOF", "CV", "Other"]
+            "enum": [
+              "BV",
+              "NV",
+              "Vereniging",
+              "Stichting",
+              "Eenmanszaak",
+              "VOF",
+              "CV",
+              "Other"
+            ]
           },
           "status": {
             "type": "string",
-            "enum": ["ACTIVE", "PENDING", "SUSPENDED", "TERMINATED"]
+            "enum": [
+              "ACTIVE",
+              "PENDING",
+              "SUSPENDED",
+              "TERMINATED"
+            ]
           },
           "primary_address": {
             "type": "string"
@@ -619,11 +920,21 @@
           },
           "endpoint_type": {
             "type": "string",
-            "enum": ["REST", "SOAP", "GraphQL", "gRPC"]
+            "enum": [
+              "REST",
+              "SOAP",
+              "GraphQL",
+              "gRPC"
+            ]
           },
           "authentication_method": {
             "type": "string",
-            "enum": ["Bearer", "API_Key", "OAuth2", "Basic"]
+            "enum": [
+              "Bearer",
+              "API_Key",
+              "OAuth2",
+              "Basic"
+            ]
           },
           "is_active": {
             "type": "boolean"
@@ -643,7 +954,12 @@
       },
       "CreateEndpointRequest": {
         "type": "object",
-        "required": ["endpointName", "endpointUrl", "endpointType", "authenticationMethod"],
+        "required": [
+          "endpointName",
+          "endpointUrl",
+          "endpointType",
+          "authenticationMethod"
+        ],
         "properties": {
           "endpointName": {
             "type": "string"
@@ -660,11 +976,21 @@
           },
           "endpointType": {
             "type": "string",
-            "enum": ["REST", "SOAP", "GraphQL", "gRPC"]
+            "enum": [
+              "REST",
+              "SOAP",
+              "GraphQL",
+              "gRPC"
+            ]
           },
           "authenticationMethod": {
             "type": "string",
-            "enum": ["Bearer", "API_Key", "OAuth2", "Basic"]
+            "enum": [
+              "Bearer",
+              "API_Key",
+              "OAuth2",
+              "Basic"
+            ]
           }
         }
       },
@@ -705,11 +1031,18 @@
           },
           "token_type": {
             "type": "string",
-            "enum": ["BVAD", "API"]
+            "enum": [
+              "BVAD",
+              "API"
+            ]
           },
           "token_status": {
             "type": "string",
-            "enum": ["ACTIVE", "EXPIRED", "REVOKED"]
+            "enum": [
+              "ACTIVE",
+              "EXPIRED",
+              "REVOKED"
+            ]
           },
           "valid_from": {
             "type": "string",
@@ -727,11 +1060,17 @@
       },
       "IssueTokenRequest": {
         "type": "object",
-        "required": ["tokenType", "validityPeriodDays"],
+        "required": [
+          "tokenType",
+          "validityPeriodDays"
+        ],
         "properties": {
           "tokenType": {
             "type": "string",
-            "enum": ["BVAD", "API"],
+            "enum": [
+              "BVAD",
+              "API"
+            ],
             "default": "BVAD"
           },
           "validityPeriodDays": {
@@ -754,7 +1093,12 @@
           },
           "status": {
             "type": "string",
-            "enum": ["PROCESSING", "VERIFIED", "FAILED", "FLAGGED"]
+            "enum": [
+              "PROCESSING",
+              "VERIFIED",
+              "FAILED",
+              "FLAGGED"
+            ]
           },
           "message": {
             "type": "string"
@@ -778,7 +1122,13 @@
           },
           "verification_status": {
             "type": "string",
-            "enum": ["PENDING", "PROCESSING", "VERIFIED", "FAILED", "FLAGGED"]
+            "enum": [
+              "PENDING",
+              "PROCESSING",
+              "VERIFIED",
+              "FAILED",
+              "FLAGGED"
+            ]
           },
           "kvk_number_extracted": {
             "type": "string"
@@ -904,7 +1254,161 @@
             "example": "https://docs.ctn.cloud/api"
           }
         },
-        "required": ["error", "message", "sunset_date", "current_version", "migration_guide"]
+        "required": [
+          "error",
+          "message",
+          "sunset_date",
+          "current_version",
+          "migration_guide"
+        ]
+      },
+      "M2MClient": {
+        "type": "object",
+        "properties": {
+          "m2m_client_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the M2M client"
+          },
+          "legal_entity_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Legal entity that owns this client"
+          },
+          "client_name": {
+            "type": "string",
+            "description": "Human-readable name for the client application"
+          },
+          "azure_client_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Azure AD application (client) ID for OAuth 2.0"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description of the client application"
+          },
+          "assigned_scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ETA.Read",
+                "Container.Read",
+                "Booking.Read",
+                "Booking.Write",
+                "Orchestration.Read"
+              ]
+            },
+            "description": "OAuth 2.0 scopes assigned to this client"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Whether the client is active and can authenticate"
+          },
+          "dt_created": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the client was created"
+          }
+        },
+        "required": [
+          "m2m_client_id",
+          "legal_entity_id",
+          "client_name",
+          "azure_client_id",
+          "assigned_scopes",
+          "is_active",
+          "dt_created"
+        ]
+      },
+      "CreateM2MClientRequest": {
+        "type": "object",
+        "properties": {
+          "client_name": {
+            "type": "string",
+            "description": "Name for the client application"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description"
+          },
+          "assigned_scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ETA.Read",
+                "Container.Read",
+                "Booking.Read",
+                "Booking.Write",
+                "Orchestration.Read"
+              ]
+            },
+            "minItems": 1,
+            "description": "At least one scope must be assigned"
+          }
+        },
+        "required": [
+          "client_name",
+          "assigned_scopes"
+        ]
+      },
+      "CreateM2MClientResponse": {
+        "type": "object",
+        "properties": {
+          "client": {
+            "$ref": "#/components/schemas/M2MClient"
+          },
+          "client_secret": {
+            "type": "string",
+            "description": "Client secret (shown only once, store securely)"
+          }
+        },
+        "required": [
+          "client",
+          "client_secret"
+        ]
+      },
+      "M2MSecretResponse": {
+        "type": "object",
+        "properties": {
+          "client_secret": {
+            "type": "string",
+            "description": "New client secret (shown only once, store securely)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Confirmation message"
+          }
+        },
+        "required": [
+          "client_secret",
+          "message"
+        ]
+      },
+      "UpdateScopesRequest": {
+        "type": "object",
+        "properties": {
+          "assigned_scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ETA.Read",
+                "Container.Read",
+                "Booking.Read",
+                "Booking.Write",
+                "Orchestration.Read"
+              ]
+            },
+            "minItems": 1,
+            "description": "Updated list of scopes"
+          }
+        },
+        "required": [
+          "assigned_scopes"
+        ]
       }
     },
     "responses": {
@@ -957,6 +1461,30 @@
               "current_version": "v2",
               "migration_guide": "https://docs.ctn.cloud/migrations/v1-to-v2",
               "documentation": "https://docs.ctn.cloud/api"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Azure AD JWT token for user authentication"
+      },
+      "OAuth2ClientCredentials": {
+        "type": "oauth2",
+        "description": "OAuth 2.0 Client Credentials flow for M2M authentication",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://login.microsoftonline.com/598664e7-725c-4daa-bd1f-89c4ada717ff/oauth2/v2.0/token",
+            "scopes": {
+              "ETA.Read": "Read ETA updates",
+              "Container.Read": "Read container status information",
+              "Booking.Read": "Read booking information",
+              "Booking.Write": "Create and update bookings",
+              "Orchestration.Read": "Access orchestration data"
             }
           }
         }

@@ -15,19 +15,19 @@ import './kendoLicense';
 import '@progress/kendo-theme-default/dist/all.css';
 import './App.css';
 
+import { APIAccessView } from './components/APIAccessView';
 import { ContactsView } from './components/ContactsView';
 import { Dashboard } from './components/Dashboard';
 import { EndpointsView } from './components/EndpointsView';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import { ProfileView } from './components/ProfileView';
 import { Support } from './components/Support';
-import { TokensView } from './components/TokensView';
 
 interface AppContentProps {
   instance: IPublicClientApplication;
 }
 
-type TabType = 'dashboard' | 'profile' | 'contacts' | 'endpoints' | 'tokens' | 'support';
+type TabType = 'dashboard' | 'profile' | 'contacts' | 'integrations' | 'api-access' | 'support';
 
 interface MemberData {
   organizationId: string;
@@ -161,10 +161,10 @@ function AppContent({ instance }: AppContentProps) {
         return <ProfileView {...commonProps} />;
       case 'contacts':
         return <ContactsView {...commonProps} />;
-      case 'endpoints':
+      case 'integrations':
         return <EndpointsView {...commonProps} />;
-      case 'tokens':
-        return <TokensView {...commonProps} />;
+      case 'api-access':
+        return <APIAccessView {...commonProps} />;
       case 'support':
         return <Support />;
       default:
@@ -241,17 +241,17 @@ function AppContent({ instance }: AppContentProps) {
               </button>
               <button
                 type="button"
-                className={`tab-button ${activeTab === 'endpoints' ? 'active' : ''}`}
-                onClick={() => setActiveTab('endpoints')}
+                className={`tab-button ${activeTab === 'integrations' ? 'active' : ''}`}
+                onClick={() => setActiveTab('integrations')}
               >
-                Endpoints
+                System Integrations
               </button>
               <button
                 type="button"
-                className={`tab-button ${activeTab === 'tokens' ? 'active' : ''}`}
-                onClick={() => setActiveTab('tokens')}
+                className={`tab-button ${activeTab === 'api-access' ? 'active' : ''}`}
+                onClick={() => setActiveTab('api-access')}
               >
-                API Tokens
+                API Access
               </button>
               <button
                 type="button"
@@ -271,8 +271,8 @@ function AppContent({ instance }: AppContentProps) {
             <div className="welcome-card">
               <h2>Welcome to CTN Member Portal</h2>
               <p>
-                Access your organization's CTN network dashboard, manage contacts, configure data
-                endpoints, and generate API tokens.
+                Access your organization's CTN network dashboard, manage contacts, configure system
+                integrations, and manage API access for secure data exchange.
               </p>
               <Button
                 onClick={handleLogin}
