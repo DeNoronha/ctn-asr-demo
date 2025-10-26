@@ -21,14 +21,13 @@ If you're reading this, stop and read the entire file NOW. Do not proceed with a
 cat CLAUDE.md  # Read the entire file
 
 # 2. CHECK CURRENT BRANCH
-git branch --show-current  # Must be on 'main' or feature branch
+git branch --show-current  # MUST be on 'main' - NO feature branches allowed
 
 # 3. CHECK LATEST BUILD STATUS
 git log -1 --format="%ar - %s"
 # Compare to: https://dev.azure.com/ctn-demo/ASR/_build
 
-# 4. SYNC WITH MAIN (if on feature branch)
-git fetch origin
+# 4. VERIFY CLEAN STATUS
 git status  # Check for uncommitted changes
 ```
 
@@ -77,11 +76,15 @@ git log -1 --format="%ar - %s"
 
 ### Development Workflow
 
-**Branch:** `main` (feature branches: `feature/descriptive-name`)
+**🚨 NO FEATURE BRANCHES - ALL WORK ON MAIN (October 26, 2025)**
 
-**🚨 MANDATORY WORKFLOW (October 26, 2025) - See `docs/WORKFLOW_PREVENTION_MANDATORY.md`**
+**Branch:** `main` ONLY - No feature branches allowed
 
-**Rule 1: Always Merge to Main** - Feature branches max 24 hours. If not ready, don't branch.
+**Rationale:** After multiple Git disasters from branch management in monorepo, all development now happens directly on main. CTN-documentation is a separate repository.
+
+**🚨 MANDATORY WORKFLOW:**
+
+**Rule 1: Work Directly on Main** - Commit frequently, push regularly. No feature branches. No exceptions.
 
 **Rule 2: Verify Deployment** - After push, wait 3-5min and verify build time = commit time at https://dev.azure.com/ctn-demo/ASR/_build
 
@@ -106,30 +109,51 @@ git push origin main
 2. **E2E tests (Playwright)** - Only after API tests pass
 3. Test pattern: Create → Verify → Clean up
 
-**Deployment Architecture (October 26, 2025):**
+**🚨 PIPELINE ARCHITECTURE (October 26, 2025) - 1 API + 4 Portals**
+
+**CTN-documentation is a SEPARATE repository** - Not in ASR monorepo.
+
+**ASR Monorepo Contains:**
 
 ```
-┌──────────────────┐
-│ ASR API Pipeline │  Single source of truth for API
-└────────┬─────────┘
-         │ Triggers on: api/* changes
-         │ Deploys to: func-ctn-demo-asr-dev
-         │
-    ┌────┴────────────────────┐
-    ↓                         ↓
-┌─────────────┐      ┌──────────────┐
-│Admin Portal │      │Member Portal │
-│  Pipeline   │      │   Pipeline   │
-└─────────────┘      └──────────────┘
-Triggered by API      Triggered by API
-OR admin-portal/*     OR member-portal/*
+┌──────────────────────────────────────────┐
+│      1. ASR API Pipeline (Central)       │
+│   Single source of truth for shared API  │
+└─────────────────┬────────────────────────┘
+                  │ Triggers on: api/* changes
+                  │ Deploys to: func-ctn-demo-asr-dev
+                  │
+    ┌─────────────┴──────────────┐
+    │   Triggers These Pipelines │
+    ↓                            ↓
+┌─────────────┐          ┌──────────────┐
+│2. Admin     │          │3. Member     │
+│   Portal    │          │   Portal     │
+└─────────────┘          └──────────────┘
+
+Independent Portal Pipelines (NOT triggered by API):
+┌─────────────┐          ┌──────────────┐
+│4. Booking   │          │5. Orchestrator│
+│   Portal    │          │   Portal      │
+│  (DocuFlow) │          │               │
+└─────────────┘          └──────────────┘
 ```
+
+**Pipeline Trigger Rules:**
+
+1. **ASR API Pipeline** → Deploys API → Triggers Admin + Member portal pipelines
+2. **Admin Portal Pipeline** → Triggered by API changes OR `admin-portal/*` changes
+3. **Member Portal Pipeline** → Triggered by API changes OR `member-portal/*` changes
+4. **Booking Portal Pipeline** → Independent, only `booking-portal/*` changes
+5. **Orchestrator Portal Pipeline** → Independent, only `orchestrator-portal/*` changes
 
 **Deployment Workflow:**
 
-1. **API Changes** → Push to `api/*` → ASR API pipeline runs → Deploys API → Triggers both portal pipelines
-2. **Admin Portal Changes** → Push to `admin-portal/*` → Admin portal pipeline runs → Verifies API health → Deploys frontend
-3. **Member Portal Changes** → Push to `member-portal/*` → Member portal pipeline runs → Verifies API health → Deploys frontend
+1. **API Changes** → Push to `api/*` → ASR API pipeline runs → Deploys API → Auto-triggers Admin + Member portal pipelines
+2. **Admin Portal Changes** → Push to `admin-portal/*` → Admin portal pipeline runs independently
+3. **Member Portal Changes** → Push to `member-portal/*` → Member portal pipeline runs independently
+4. **Booking Portal Changes** → Push to `booking-portal/*` → Booking portal pipeline runs independently
+5. **Orchestrator Changes** → Push to `orchestrator-portal/*` → Orchestrator pipeline runs independently
 
 **Manual Deployment (if needed):**
 - **API:** `cd api && func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote`
@@ -239,7 +263,7 @@ Schema review, query optimization, DDL management. Maintains `database/schema/cu
 **For complete lessons with examples, see `docs/LESSONS_LEARNED.md`**
 
 ### Deployment & Pipeline
-1. **Check deployment status BEFORE debugging** (saves hours) - When user reports "old version" or "missing features", this is a deployment sync issue, NOT a code issue. Run pre-work checklist step 3: compare `git log -1` to Azure DevOps last build. Solution: merge feature branches to main and push to trigger pipeline.
+1. **Check deployment status BEFORE debugging** (saves hours) - When user reports "old version" or "missing features", this is a deployment sync issue, NOT a code issue. Run pre-work checklist step 3: compare `git log -1` to Azure DevOps last build. **NEW WORKFLOW (October 26, 2025): All work on main. If deployment out of sync, push latest commits to trigger pipeline.**
 2. **Package.json "main" field** determines entry point (essential-index.ts vs index.ts)
 3. **API functions must import in entry file** to register
 4. **Pipeline quality checks** use continueOnError: true (inform, don't block)
@@ -271,16 +295,16 @@ Schema review, query optimization, DDL management. Maintains `database/schema/cu
 20. **Environment variable validation at startup** - Validate all required credentials at module initialization. Fail fast with clear error messages. Check presence, format, and protocol (HTTPS).
 
 ### Pipeline & Deployment (October 20, 2025)
-21. **Never test pipeline changes on main** - Always use feature branch + PR validation pipeline to catch issues before merge. 15+ failed builds = 2 hours wasted.
+21. **~~Never test pipeline changes on main~~ DEPRECATED (October 26, 2025)** - Feature branches are NO LONGER USED. All work happens directly on main. Test pipeline changes carefully in small commits and monitor build results immediately.
 22. **Azure Static Web Apps ≠ Integrated Functions** - TypeScript Azure Functions must be deployed separately to Function App. Don't add `api_location` to Static Web App deployment.
 23. **Service connection scope must match resources** - Query Azure DevOps for actual service connection names and verify scope (resource group vs subscription-wide). Don't guess names.
 24. **Never include node_modules in deployment packages** - Remove node_modules before packaging, enable remote build (`SCM_DO_BUILD_DURING_DEPLOYMENT=true`). Package size: 560MB → 5MB.
 25. **Query Azure resources, don't guess** - Use `az devops service-endpoint list`, `az functionapp list`, etc. to find actual names instead of guessing.
 
 ### Monorepo & Concurrent Development (October 22, 2025)
-26. **NEVER run multiple Claude Code sessions in same monorepo** - Running two sessions concurrently causes commits to mix changes from different projects, triggering all pipelines on every push. Use feature branches or work sequentially.
+26. **NEVER run multiple Claude Code sessions in same monorepo** - Running two sessions concurrently causes commits to mix changes from different projects, triggering all pipelines on every push. **NEW WORKFLOW (October 26, 2025): ALL work on main branch. Work sequentially - one task at a time.**
 27. **Mixed commits break pipeline path filters** - When Session A (admin portal) and Session B (booking portal) both push to main, ALL commits trigger ALL pipelines regardless of path filters, causing unnecessary deployments and potential conflicts.
-28. **Evidence of concurrent session contamination:** Commit `5524301` (booking-portal pdf-parse fix) inadvertently included `web/src/react-dom-server-stub.js` and `web/vite.config.ts` from parallel session. ALWAYS work in separate branches if concurrent development is needed.
+28. **Evidence of concurrent session contamination:** Commit `5524301` (booking-portal pdf-parse fix) inadvertently included `web/src/react-dom-server-stub.js` and `web/vite.config.ts` from parallel session. **NEW WORKFLOW (October 26, 2025): NO concurrent sessions allowed. Work sequentially on main branch only.**
 29. **Folder renames break pipeline builds (October 25, 2025)** - When renaming workspace folders (web/ → admin-portal/), pipelines fail with "module not found" because:
     - Root `npm ci` installs dependencies to root node_modules/
     - Workspaces use symlinks from root node_modules/
@@ -303,7 +327,7 @@ Schema review, query optimization, DDL management. Maintains `database/schema/cu
 32. **Separate API pipeline from portal pipelines** - Running two pipelines (admin/member) that both tried to deploy the same API caused conflicts and silent failures (Lesson #31 root cause). **Solution**: Create dedicated `asr-api.yml` pipeline as single source of truth for ASR API deployment. Portal pipelines (admin/member) now ONLY deploy frontend, and verify API health before building. **Benefits**: (1) Eliminates API deployment conflicts, (2) Clear separation of concerns, (3) API changes trigger cascading portal builds, (4) Portal changes don't unnecessarily redeploy API. **Architecture**: ASR API pipeline → triggers → Admin + Member portal pipelines. **Isolation**: Use path exclusions to prevent cross-contamination between ASR (admin/member/api), DocuFlow (booking-portal), Orchestrator (orchestrator-portal), and Documentation (ctn-docs-portal). **Critical**: Multi-tenant applications (DocuFlow, Orchestrator) are completely independent with own pipelines and backends. They consume ASR API as external service only if needed.
 
 ### Branch Management in Monorepos (October 26, 2025)
-33. **NEVER delete branches without verifying ALL project folders** - **CRITICAL DISASTER**: Deleted 6 feature branches assuming they were project-specific based on names (e.g., `feature/booking-portal-xyz` assumed to only contain booking-portal/ changes). In reality, monorepo branches can contain changes to MULTIPLE projects (admin-portal/, member-portal/, booking-portal/, api/). Lost 74 files (12,920 insertions) including multi-leg journey visualization, async document processing, Week 3 & 4 UX improvements, security fixes, and comprehensive test coverage. **Recovery took 3 hours.** **Prevention**: (1) Before deleting ANY branch, run `git log main..branch --name-only | cut -d/ -f1 | sort -u` to see ALL affected folders. (2) Verify ZERO unmerged commits with `git log main..branch --oneline`. (3) Create safety tag `git tag archive/branch-name-YYYYMMDD branch-tip` before deletion. (4) MANDATORY: Follow **docs/BRANCH_PROTECTION_PROTOCOL.md** - comprehensive checklist and monorepo folder structure reference. **Never assume branch names indicate content.** **Never delete based on folder path alone.** **Always verify merge status before deletion.** This is a **MANDATORY protocol violation = git access revocation** offense. See protocol for emergency recovery procedures (reflog, tags, Azure DevOps history).
+33. **NEVER delete branches without verifying ALL project folders** - **CRITICAL DISASTER**: Deleted 6 feature branches assuming they were project-specific based on names (e.g., `feature/booking-portal-xyz` assumed to only contain booking-portal/ changes). In reality, monorepo branches can contain changes to MULTIPLE projects (admin-portal/, member-portal/, booking-portal/, api/). Lost 74 files (12,920 insertions) including multi-leg journey visualization, async document processing, Week 3 & 4 UX improvements, security fixes, and comprehensive test coverage. **Recovery took 3 hours.** **NEW WORKFLOW (October 26, 2025)**: This disaster led to eliminating feature branches entirely. **ALL work now happens on main branch. NO feature branches allowed.** CTN-documentation is a separate repository. The **docs/BRANCH_PROTECTION_PROTOCOL.md** remains as reference for emergency recovery only (if old branches are discovered). Main branch is protected - never use `git reset --hard` or force push. Work sequentially, commit frequently, push regularly.
 
 ---
 

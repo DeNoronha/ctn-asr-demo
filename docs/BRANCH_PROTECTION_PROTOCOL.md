@@ -5,6 +5,29 @@
 
 ---
 
+## ⚠️ IMPORTANT UPDATE (October 26, 2025)
+
+**NEW WORKFLOW: NO FEATURE BRANCHES**
+
+After the October 2025 branch deletion disaster, the team has adopted a new workflow:
+
+- **ALL work happens on `main` branch**
+- **NO feature branches allowed**
+- **CTN-documentation is a separate repository**
+
+**This document is NOW FOR:**
+- **Emergency recovery reference** (if old branches are discovered)
+- **Historical context** (understanding what went wrong)
+- **Git reflog recovery procedures** (in case of accidental deletions)
+
+**This document is NO LONGER FOR:**
+- Active branch management (we don't create branches anymore)
+- Pre-deletion checklists (we don't delete branches anymore)
+
+If you're reading this for the current workflow, skip to the **Emergency Recovery** section below.
+
+---
+
 ## 🚨 MANDATORY CHECKLIST - Before Deleting ANY Branch
 
 **STOP. Run this checklist EVERY TIME before `git branch -D` or `git push origin --delete`:**
