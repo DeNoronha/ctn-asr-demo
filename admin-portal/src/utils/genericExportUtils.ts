@@ -89,10 +89,9 @@ export const exportGenericToPDF = <T extends Record<string, unknown>>(
       fillColor: [245, 245, 245],
     },
     margin: { left: 14, right: 14 },
-    didDrawPage: (_data) => {
+    didDrawPage: () => {
       // Add footer with page numbers
       const pageCount = doc.getNumberOfPages();
-      // @ts-expect-error - jsPDF internal API not properly typed
       const pageNumber = doc.internal.getCurrentPageInfo().pageNumber as number;
 
       doc.setFontSize(9);
