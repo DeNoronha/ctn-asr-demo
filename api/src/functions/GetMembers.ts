@@ -24,7 +24,7 @@ async function handler(
     const pagination = getPaginationParams(request);
 
     const baseQuery = `
-      SELECT org_id, legal_name, lei, kvk, domain, status, membership_level, created_at, legal_entity_id
+      SELECT org_id, legal_name, lei, kvk, euid, domain, status, membership_level, created_at, legal_entity_id
       FROM members
       ORDER BY created_at DESC
     `;
