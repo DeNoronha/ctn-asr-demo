@@ -1,5 +1,6 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import { BlobServiceClient, BlobSASPermissions, StorageSharedKeyCredential, generateBlobSASQueryParameters } from "@azure/storage-blob";
+import { getUserFromRequest } from "../shared/auth";
 
 // Environment variables
 const STORAGE_ACCOUNT_NAME = process.env.STORAGE_ACCOUNT_NAME;
@@ -10,7 +11,19 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     context.log('GetDocumentSasUrl triggered');
 
     try {
-        // No authentication required - SAS URLs are inherently secure (time-limited, read-only)
+        // CRITICAL: Authenticate user
+        const user = await getUserFromRequest(context, req);
+        if (!user) {
+            context.res = {
+                status: 401,
+                body: { error: 'Unauthorized' },
+                headers: { 'Content-Type': 'application/json' }
+            };
+            return;
+        }
+
+        context.log(`Authenticated user: ${user.email}`);
+
         const documentId = context.bindingData.documentId;
 
         if (!documentId) {
@@ -66,9 +79,10 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
 
     } catch (error: any) {
         context.log.error('Error in GetDocumentSasUrl:', error);
+        // SECURITY: Sanitized error message - don't expose internal details
         context.res = {
             status: 500,
-            body: { error: 'Internal server error', message: error.message },
+            body: { error: 'Internal server error' },
             headers: {
                 'Content-Type': 'application/json'
             }

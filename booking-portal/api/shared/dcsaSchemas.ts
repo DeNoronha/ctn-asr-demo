@@ -15,6 +15,7 @@
 export interface Location {
   UNLocationCode: string;  // e.g., NLRTM for Rotterdam
   locationName: string;
+  facilityType?: FacilityType;  // Type of inland terminal/facility
 }
 
 export interface Party {
@@ -22,6 +23,7 @@ export interface Party {
   address?: string;
   contact?: string;
   taxId?: string;
+  eoriNumber?: string;  // Economic Operator Registration Identification (EU customs)
 }
 
 export interface Container {
@@ -30,6 +32,7 @@ export interface Container {
   sealNumber?: string;
   grossWeightKg?: number;
   tareWeightKg?: number;
+  isHazmat?: boolean;       // Contains dangerous goods
 }
 
 export interface Cargo {
@@ -39,6 +42,50 @@ export interface Cargo {
   volumeCbm?: number;
   numberOfPackages?: number;
   packageType?: string;
+  hazmatDeclaration?: HazmatDeclaration;  // Dangerous goods information
+}
+
+// ============================================================================
+// DCSA Booking 2.0.2 - Multimodal Transport Modes (Added July 2025)
+// ============================================================================
+
+export type TransportMode =
+  | 'VESSEL'          // Ocean shipping
+  | 'RAIL'            // Rail transport
+  | 'TRUCK'           // Road transport
+  | 'BARGE'           // Inland waterway
+  | 'RAIL_TRUCK'      // Combined rail + truck
+  | 'BARGE_TRUCK'     // Combined barge + truck
+  | 'BARGE_RAIL';     // Combined barge + rail
+
+// ============================================================================
+// Inland Terminal Types (CTN Extension)
+// ============================================================================
+
+export type FacilityType =
+  | 'SEAPORT'                    // Ocean terminal
+  | 'RIVER_BARGE_TERMINAL'       // Inland waterway terminal
+  | 'RAIL_INTERMODAL_YARD'       // Rail container yard
+  | 'TRUCK_DEPOT'                // Trucking facility
+  | 'EMPTY_CONTAINER_DEPOT'      // Empty return location
+  | 'CROSS_DOCK'                 // Cross-docking facility
+  | 'WAREHOUSE'                  // Storage facility
+  | 'CUSTOMS_BONDED_WAREHOUSE';  // Bonded storage
+
+// ============================================================================
+// Hazardous Materials Declaration (CTN Extension)
+// ============================================================================
+
+export interface HazmatDeclaration {
+  unNumber: string;              // UN number (e.g., UN1203)
+  properShippingName: string;    // Official UN name
+  hazardClass: string;           // IMO class (e.g., "3" for flammable liquids)
+  packingGroup?: string;         // I, II, or III
+  marinePollutant: boolean;
+  emergencyContact: {
+    name: string;
+    phone: string;
+  };
 }
 
 // ============================================================================
@@ -185,6 +232,31 @@ export interface DeliveryOrderData {
 // 4. Transport Order
 // ============================================================================
 
+export interface TransportLeg {
+  legNumber: number;                    // Sequential leg number (1, 2, 3...)
+  origin: {
+    name: string;
+    address?: string;
+    UNLocationCode?: string;
+    facilityType?: FacilityType;
+  };
+  destination: {
+    name: string;
+    address?: string;
+    UNLocationCode?: string;
+    facilityType?: FacilityType;
+  };
+  transportMode: TransportMode;          // VESSEL, RAIL, TRUCK, BARGE
+  vesselName?: string;                   // For ocean/barge legs
+  voyageNumber?: string;                 // For ocean legs
+  railCarNumber?: string;                // For rail legs
+  licensePlate?: string;                 // For truck legs
+  departureDate: string;                 // ISO 8601
+  arrivalDate: string;                   // ISO 8601
+  etd?: string;                          // Estimated Time of Departure
+  eta?: string;                          // Estimated Time of Arrival
+}
+
 export interface TransportOrderData {
   documentType: 'transport_order';
   transportOrderNumber: string;
@@ -192,29 +264,36 @@ export interface TransportOrderData {
   carrierBookingReference?: string;
   orderDate: string;  // ISO 8601
 
+  // Transport modality (DCSA Booking 2.0.2 extension)
+  transportMode: TransportMode;  // TRUCK, RAIL, BARGE, RAIL_TRUCK, BARGE_TRUCK, BARGE_RAIL
+
   // Trucking company
   carrier: string;
   truckingCompany?: string;
   driverName?: string;
   driverContact?: string;
   licensePlate?: string;
+  railCarNumber?: string;    // For RAIL/RAIL_TRUCK modes
+  bargeVesselName?: string;  // For BARGE/BARGE_TRUCK/BARGE_RAIL modes
 
   // Consignee/Shipper
   shipper?: Party;
   consignee: Party;
 
-  // Route
+  // Route (Enhanced with facility types)
   pickupLocation: {
     name: string;
     address: string;
     UNLocationCode?: string;
     terminalCode?: string;
+    facilityType?: FacilityType;  // SEAPORT, RIVER_BARGE_TERMINAL, RAIL_INTERMODAL_YARD, etc.
   };
 
   deliveryLocation: {
     name: string;
     address: string;
     UNLocationCode?: string;
+    facilityType?: FacilityType;
   };
 
   // Timing
@@ -226,6 +305,14 @@ export interface TransportOrderData {
   // Cargo
   containers: Container[];
   cargoDescription: string;
+
+  // Multi-Leg Transport Plan (for complex journeys)
+  transportLegs?: TransportLeg[];  // Array of transport legs (ocean → barge → truck)
+
+  // Customs & Bonded Transport
+  customsBondNumber?: string;     // For bonded cargo movements
+  requiresCustomsEscort?: boolean;
+  customsReleaseReference?: string;
 
   // Instructions
   specialInstructions?: string;
@@ -255,6 +342,7 @@ export type DocumentData =
 
 export interface DocumentRecord {
   id: string;
+  tenantId: string;  // CRITICAL: Partition key for tenant isolation and query optimization
   documentType: DocumentType;
   documentNumber: string;
   carrier: string;
@@ -578,15 +666,45 @@ export function getJSONSchema(documentType: DocumentType): object {
         deliveryOrderNumber: 'string (optional)',
         carrierBookingReference: 'string (optional)',
         orderDate: 'YYYY-MM-DD',
+        transportMode: 'TRUCK|RAIL|BARGE|RAIL_TRUCK|BARGE_TRUCK|BARGE_RAIL',
         carrier: 'string',
         truckingCompany: 'string (optional)',
-        consignee: { name: 'string', address: 'string' },
-        pickupLocation: { name: 'string', address: 'string', terminalCode: 'string (optional)' },
-        deliveryLocation: { name: 'string', address: 'string' },
+        driverName: 'string (optional)',
+        licensePlate: 'string (optional)',
+        railCarNumber: 'string (optional - for rail transport)',
+        bargeVesselName: 'string (optional - for barge transport)',
+        consignee: { name: 'string', address: 'string', eoriNumber: 'string (optional)' },
+        pickupLocation: {
+          name: 'string',
+          address: 'string',
+          terminalCode: 'string (optional)',
+          facilityType: 'SEAPORT|RIVER_BARGE_TERMINAL|RAIL_INTERMODAL_YARD|TRUCK_DEPOT|EMPTY_CONTAINER_DEPOT|CROSS_DOCK|WAREHOUSE|CUSTOMS_BONDED_WAREHOUSE (optional)'
+        },
+        deliveryLocation: {
+          name: 'string',
+          address: 'string',
+          facilityType: 'SEAPORT|RIVER_BARGE_TERMINAL|RAIL_INTERMODAL_YARD|TRUCK_DEPOT|EMPTY_CONTAINER_DEPOT|CROSS_DOCK|WAREHOUSE|CUSTOMS_BONDED_WAREHOUSE (optional)'
+        },
         plannedPickupDate: 'YYYY-MM-DD',
         plannedDeliveryDate: 'YYYY-MM-DD',
-        containers: [{ containerNumber: 'string', containerType: 'string' }],
+        containers: [{
+          containerNumber: 'string',
+          containerType: 'string',
+          isHazmat: 'boolean (optional)'
+        }],
         cargoDescription: 'string',
+        transportLegs: [{
+          legNumber: 'number',
+          origin: { name: 'string', address: 'string (optional)', facilityType: 'SEAPORT|RIVER_BARGE_TERMINAL|... (optional)' },
+          destination: { name: 'string', address: 'string (optional)', facilityType: 'SEAPORT|RIVER_BARGE_TERMINAL|... (optional)' },
+          transportMode: 'VESSEL|RAIL|TRUCK|BARGE',
+          vesselName: 'string (optional - for ocean/barge)',
+          voyageNumber: 'string (optional - for ocean)',
+          departureDate: 'YYYY-MM-DD HH:MM',
+          arrivalDate: 'YYYY-MM-DD HH:MM'
+        }],
+        customsBondNumber: 'string (optional - for bonded cargo)',
+        requiresCustomsEscort: 'boolean (optional)',
         specialInstructions: 'string (optional)'
       };
 

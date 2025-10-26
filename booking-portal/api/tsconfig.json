@@ -20,7 +20,9 @@
     "GetTenants/**/*.ts",
     "ValidateBooking/**/*.ts",
     "GetDocumentSasUrl/**/*.ts",
-    "AddToKnowledgeBase/**/*.ts"
+    "AddToKnowledgeBase/**/*.ts",
+    "DiagnosticTest/**/*.ts",
+    "shared/**/*.ts"
   ],
   "exclude": ["node_modules", "dist", "**/*.js"]
 }

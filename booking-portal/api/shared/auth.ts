@@ -6,8 +6,14 @@ import { Context, HttpRequest } from "@azure/functions";
 import * as jwt from "jsonwebtoken";
 import * as jwksClient from "jwks-rsa";
 
-const TENANT_ID = process.env.AZURE_TENANT_ID || '598664e7-725c-4daa-bd1f-89c4ada717ff';
-const CLIENT_ID = process.env.AZURE_CLIENT_ID || 'd3037c11-a541-4f21-8862-8079137a0cde';
+// CRITICAL: No fallback values - fail fast if environment variables missing
+const TENANT_ID = process.env.AZURE_TENANT_ID;
+const CLIENT_ID = process.env.AZURE_CLIENT_ID;
+
+// Validate at module initialization
+if (!TENANT_ID || !CLIENT_ID) {
+    throw new Error('CRITICAL: AZURE_TENANT_ID and AZURE_CLIENT_ID must be configured in environment variables');
+}
 
 // JWKS client for getting public keys
 const client = jwksClient.default({

@@ -5,8 +5,8 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["post"],
-      "route": "v1/bookings/{bookingId}/validate"
+      "methods": ["post", "put"],
+      "route": "v1/validate/{bookingid}"
     },
     {
       "type": "http",

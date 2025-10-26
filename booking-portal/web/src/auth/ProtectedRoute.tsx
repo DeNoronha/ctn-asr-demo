@@ -4,7 +4,7 @@
  */
 
 import type React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { UserRole } from './authConfig';
 
@@ -18,6 +18,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRole,
 }) => {
   const { isAuthenticated, isLoading, hasRole } = useAuth();
+  const location = useLocation();
 
   // Show loading while checking auth
   if (isLoading) {
@@ -37,9 +38,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // Not authenticated - redirect to login
+  // Not authenticated - redirect to login with return URL
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Check specific role requirement

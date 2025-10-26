@@ -1,3 +1,7 @@
+# CTN DocuFlow (Booking Portal) - CI/CD Pipeline
+# Quality validation with Biome, npm audit, and Aikido security scanning
+# All quality checks use continueOnError: true (informational only, don't block deployment)
+
 trigger:
   branches:
     include:
@@ -19,10 +23,92 @@ variables:
     value: '20.x'
   - name: AZURE_SUBSCRIPTION
     value: 'azure-ctn-demo'
+  - name: keyVaultName
+    value: 'kv-ctn-demo-asr-dev'
+  - name: azureSubscription
+    value: 'Azure-CTN-ASR-ServiceConnection'
 
 stages:
+  - stage: QualityValidation
+    displayName: 'Quality & Security Validation'
+    jobs:
+      - job: CodeQuality
+        displayName: 'Code Quality Checks'
+        steps:
+          # Fetch secrets from Azure Key Vault
+          - task: AzureKeyVault@2
+            displayName: 'Fetch secrets from Key Vault'
+            inputs:
+              azureSubscription: $(azureSubscription)
+              KeyVaultName: $(keyVaultName)
+              SecretsFilter: 'AIKIDO-CI-API-KEY'
+              RunAsPreJob: true
+            continueOnError: true
+
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(NODE_VERSION)
+            displayName: 'Install Node.js'
+
+          - script: |
+              npm ci --legacy-peer-deps
+            displayName: 'Install all workspace dependencies'
+
+          # ESLint code quality checks - REPORT ONLY
+          - script: |
+              cd booking-portal/web
+              npm run lint
+            displayName: 'Run ESLint code quality checks (Frontend)'
+            continueOnError: true
+
+          # npm security audit
+          - script: |
+              cd booking-portal/web
+              npm audit --audit-level=moderate
+            displayName: 'Run npm security audit (Frontend)'
+            continueOnError: true
+
+          - script: |
+              cd booking-portal/api
+              npm audit --audit-level=moderate
+            displayName: 'Run npm security audit (API)'
+            continueOnError: true
+
+          # Aikido Security scan
+          - script: |
+              npm install -g @aikidosec/ci-api-client
+              aikido-api-client apikey $(AIKIDO-CI-API-KEY)
+            displayName: 'Install Aikido CI client'
+            continueOnError: true
+
+          - script: |
+              cd booking-portal
+              git fetch origin main --depth=50
+              BASE_COMMIT=$(git rev-parse HEAD~1)
+              HEAD_COMMIT=$(git rev-parse HEAD)
+              echo "Scanning commits: $BASE_COMMIT -> $HEAD_COMMIT"
+              aikido-api-client scan 1094319 $BASE_COMMIT $HEAD_COMMIT main \
+                --minimum-severity-level MEDIUM \
+                --fail-on-sast-scan \
+                --fail-on-secrets-scan
+            displayName: 'Run Aikido Security scan'
+            env:
+              AIKIDO_CI_API_KEY: $(AIKIDO-CI-API-KEY)
+            continueOnError: true
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish security reports'
+            condition: always()
+            inputs:
+              targetPath: 'booking-portal/reports'
+              artifact: 'security-reports-booking'
+              publishLocation: 'pipeline'
+            continueOnError: true
+
   - stage: Build
     displayName: 'Build Stage'
+    dependsOn: QualityValidation
+    condition: always()
     jobs:
       - job: BuildAPI
         displayName: 'Build Backend API'
@@ -33,8 +119,10 @@ stages:
             displayName: 'Install Node.js'
 
           - script: |
+              # Install all workspace dependencies from root
+              npm install
+              # Build API
               cd booking-portal/api
-              npm ci
               npm run build
             displayName: 'Install dependencies and build API'
 
@@ -69,8 +157,10 @@ stages:
             displayName: 'Install Node.js'
 
           - script: |
+              # Install all workspace dependencies from root (if not already done)
+              npm install
+              # Build frontend
               cd booking-portal/web
-              npm ci
               npm run build
             displayName: 'Install dependencies and build frontend'
 

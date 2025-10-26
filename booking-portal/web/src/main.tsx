@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import axios from 'axios'
 import App from './App'
+import '@progress/kendo-theme-default/dist/all.css'
 import './styles/index.css'
 import { API_CONFIG } from './config/api'
 

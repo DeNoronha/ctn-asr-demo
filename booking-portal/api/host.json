@@ -10,7 +10,15 @@
   },
   "extensions": {
     "http": {
-      "routePrefix": "api"
+      "routePrefix": "api",
+      "cors": {
+        "allowedOrigins": [
+          "https://swa-ctn-booking-prod.azurestaticapps.net",
+          "http://localhost:5173",
+          "http://localhost:3000"
+        ],
+        "supportCredentials": true
+      }
     }
   }
 }

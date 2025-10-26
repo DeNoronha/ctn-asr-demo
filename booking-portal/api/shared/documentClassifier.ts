@@ -372,7 +372,10 @@ function isValidContainerNumber(containerNumber: string): boolean {
     sum += parseInt(digits[i]) * Math.pow(2, i + 4);
   }
 
-  const calculatedCheckDigit = (sum % 11) % 10;
+  // FIXED: ISO 6346 correct check digit algorithm
+  // If sum % 11 == 10, check digit is 0, otherwise it's sum % 11
+  const remainder = sum % 11;
+  const calculatedCheckDigit = remainder === 10 ? 0 : remainder;
   return calculatedCheckDigit === checkDigit;
 }
 

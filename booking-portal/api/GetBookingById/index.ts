@@ -1,5 +1,6 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import { CosmosClient } from "@azure/cosmos";
+import { getUserFromRequest, hasRole } from "../shared/auth";
 
 // Environment variables
 const COSMOS_ENDPOINT = process.env.COSMOS_DB_ENDPOINT || process.env.COSMOS_ENDPOINT;
@@ -11,6 +12,19 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     context.log('GetBookingById triggered');
 
     try {
+        // CRITICAL: Authenticate user
+        const user = await getUserFromRequest(context, req);
+        if (!user) {
+            context.res = {
+                status: 401,
+                body: { error: 'Unauthorized' },
+                headers: { 'Content-Type': 'application/json' }
+            };
+            return;
+        }
+
+        context.log(`Authenticated user: ${user.email}`);
+
         // Validate environment variables
         if (!COSMOS_ENDPOINT || !COSMOS_KEY) {
             throw new Error('Cosmos DB credentials not configured');
@@ -60,6 +74,19 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         const booking = results[0];
         context.log(`Retrieved booking ${bookingId} from Cosmos DB`);
 
+        // CRITICAL: Authorization check - prevent IDOR vulnerability
+        // Verify booking belongs to user's tenant (unless admin)
+        if (booking.tenantId && user.tenantId && booking.tenantId !== user.tenantId && !hasRole(user, 'admin')) {
+            // Return 404 (not 403) to prevent information disclosure
+            context.log.warn(`IDOR attempt: User ${user.email} tried to access booking ${bookingId} from different tenant`);
+            context.res = {
+                status: 404,
+                body: { error: 'Booking not found' },
+                headers: { 'Content-Type': 'application/json' }
+            };
+            return;
+        }
+
         context.res = {
             status: 200,
             body: booking,
@@ -68,9 +95,10 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
 
     } catch (error: any) {
         context.log.error('Error in GetBookingById:', error);
+        // SECURITY: Sanitized error message - don't expose internal details
         context.res = {
             status: 500,
-            body: { error: 'Internal server error', message: error.message },
+            body: { error: 'Internal server error' },
             headers: {
                 'Content-Type': 'application/json'
             }

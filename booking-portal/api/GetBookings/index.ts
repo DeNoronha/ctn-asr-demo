@@ -1,94 +1,93 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import { CosmosClient } from "@azure/cosmos";
+import { getUserFromRequest } from "../shared/auth";
+import { CosmosDbService } from "../shared/services";
+import { STORAGE_CONFIG, PAGINATION_CONFIG, HTTP_STATUS, ERROR_MESSAGES } from "../shared/constants";
 
 // Environment variables
 const COSMOS_ENDPOINT = process.env.COSMOS_DB_ENDPOINT || process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_DB_KEY;
-const COSMOS_DATABASE_NAME = process.env.COSMOS_DATABASE_NAME || 'booking-portal';
-const COSMOS_CONTAINER_NAME = process.env.COSMOS_CONTAINER_NAME || 'bookings';
+const COSMOS_DATABASE_NAME = process.env.COSMOS_DATABASE_NAME || STORAGE_CONFIG.DEFAULT_DATABASE_NAME;
+const COSMOS_CONTAINER_NAME = process.env.COSMOS_CONTAINER_NAME || STORAGE_CONFIG.DEFAULT_CONTAINER;
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
     context.log('GetBookings triggered');
 
     try {
-        // Validate environment variables
-        if (!COSMOS_ENDPOINT || !COSMOS_KEY) {
-            throw new Error('Cosmos DB credentials not configured');
+        // CRITICAL: Authenticate user
+        const user = await getUserFromRequest(context, req);
+        if (!user) {
+            context.res = {
+                status: HTTP_STATUS.UNAUTHORIZED,
+                body: { error: ERROR_MESSAGES.UNAUTHORIZED },
+                headers: { 'Content-Type': 'application/json' }
+            };
+            return;
         }
 
-        const cosmosClient = new CosmosClient({
-            endpoint: COSMOS_ENDPOINT,
-            key: COSMOS_KEY
-        });
+        context.log(`Authenticated user: ${user.email}`);
 
-        const database = cosmosClient.database(COSMOS_DATABASE_NAME);
-        const container = database.container(COSMOS_CONTAINER_NAME);
+        // Validate environment variables
+        if (!COSMOS_ENDPOINT || !COSMOS_KEY) {
+            throw new Error(ERROR_MESSAGES.COSMOS_DB_NOT_CONFIGURED);
+        }
 
-        // Get filters from query parameters
+        // Initialize Cosmos DB service
+        const cosmosService = new CosmosDbService(
+            COSMOS_ENDPOINT,
+            COSMOS_KEY,
+            COSMOS_DATABASE_NAME,
+            COSMOS_CONTAINER_NAME
+        );
+
+        // Get query parameters
         const statusFilter = req.query.status;
         const documentTypeFilter = req.query.documentType;
         const carrierFilter = req.query.carrier;
+        const limit = parseInt(req.query.limit as string) || PAGINATION_CONFIG.DEFAULT_LIMIT;
+        const continuationToken = req.query.continuationToken;
 
-        context.log(`Filters - Status: ${statusFilter || 'all'}, DocumentType: ${documentTypeFilter || 'all'}, Carrier: ${carrierFilter || 'all'}`);
+        context.log(
+            `Filters - Status: ${statusFilter || 'all'}, ` +
+            `DocumentType: ${documentTypeFilter || 'all'}, ` +
+            `Carrier: ${carrierFilter || 'all'}, ` +
+            `Limit: ${limit}`
+        );
 
-        // Build query with optional filters
-        let query = "SELECT c.id, c.documentId, c.documentType, c.documentNumber, c.carrier, c.uploadTimestamp, c.processingStatus, c.extractionMetadata, c.data FROM c";
-        const parameters: any[] = [];
-        const conditions: string[] = [];
+        // Query documents with pagination
+        const result = await cosmosService.queryDocuments({
+            tenantId: user.tenantId,
+            status: statusFilter,
+            documentType: documentTypeFilter,
+            carrier: carrierFilter,
+            limit,
+            continuationToken
+        });
 
-        if (statusFilter) {
-            conditions.push("c.processingStatus = @status");
-            parameters.push({ name: "@status", value: statusFilter });
-        }
-
-        if (documentTypeFilter) {
-            conditions.push("c.documentType = @documentType");
-            parameters.push({ name: "@documentType", value: documentTypeFilter });
-        }
-
-        if (carrierFilter) {
-            conditions.push("c.carrier = @carrier");
-            parameters.push({ name: "@carrier", value: carrierFilter.toLowerCase() });
-        }
-
-        if (conditions.length > 0) {
-            query += " WHERE " + conditions.join(" AND ");
-        }
-
-        query += " ORDER BY c.uploadTimestamp DESC";
-
-        const querySpec = {
-            query,
-            parameters
-        };
-
-        const { resources: bookings } = await container.items
-            .query(querySpec)
-            .fetchAll();
-
-        context.log(`Retrieved ${bookings.length} bookings from Cosmos DB`);
+        context.log(`Retrieved ${result.items.length} bookings from Cosmos DB`);
 
         // Format response to match expected structure
-        const formattedBookings = bookings.map(booking => ({
+        const formattedBookings = result.items.map(booking => ({
             id: booking.id,
-            documentId: booking.documentId,
             documentType: booking.documentType,
             documentNumber: booking.documentNumber,
             carrier: booking.carrier,
-            containerNumber: booking.data?.containers?.[0]?.containerNumber ||
-                           booking.dcsaPlusData?.containers?.[0]?.containerNumber || '',
-            carrierBookingReference: booking.documentNumber ||
-                                   booking.dcsaPlusData?.carrierBookingReference || '',
+            containerNumber: booking.data?.containers?.[0]?.containerNumber || '',
+            carrierBookingReference: booking.documentNumber,
             uploadTimestamp: booking.uploadTimestamp,
             processingStatus: booking.processingStatus,
-            confidenceScore: booking.extractionMetadata?.confidenceScore || booking.overallConfidence,
-            uncertainFields: booking.extractionMetadata?.uncertainFields || []
+            confidenceScore: booking.extractionMetadata.confidenceScore,
+            uncertainFields: booking.extractionMetadata.uncertainFields
         }));
 
         context.res = {
-            status: 200,
+            status: HTTP_STATUS.OK,
             body: {
-                data: formattedBookings
+                data: formattedBookings,
+                pagination: {
+                    limit,
+                    hasMore: result.hasMore,
+                    continuationToken: result.continuationToken
+                }
             },
             headers: {
                 'Content-Type': 'application/json'
@@ -97,9 +96,10 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
 
     } catch (error: any) {
         context.log.error('Error in GetBookings:', error);
+        // SECURITY: Sanitized error message - don't expose internal details
         context.res = {
-            status: 500,
-            body: { error: 'Internal server error', message: error.message },
+            status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+            body: { error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR },
             headers: {
                 'Content-Type': 'application/json'
             }

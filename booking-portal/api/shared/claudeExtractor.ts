@@ -63,7 +63,7 @@ export async function extractWithClaude(request: ExtractionRequest): Promise<Ext
   try {
     // Call Claude API
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5-20250929',
       max_tokens: 4000,
       temperature: 0,  // Deterministic for data extraction
       messages: [
@@ -322,7 +322,7 @@ export async function testClaudeConnection(): Promise<boolean> {
 
     // Simple test message
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5-20250929',
       max_tokens: 10,
       messages: [
         {

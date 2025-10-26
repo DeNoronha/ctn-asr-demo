@@ -1,11 +1,11 @@
 /**
  * PDF Text Extraction Service
  *
- * Extracts text from PDFs using pdf-parse library.
- * Replaces previous PDF splitter functionality with text-based approach.
+ * Extracts text from PDFs using Azure Document Intelligence (Form Recognizer).
+ * Uses prebuilt-layout model for OCR and table extraction.
  */
 
-const pdfParse = require('pdf-parse');
+import { DocumentAnalysisClient, AzureKeyCredential } from '@azure/ai-form-recognizer';
 
 export interface PDFPage {
   pageNumber: number;
@@ -26,21 +26,72 @@ export interface PDFExtractionResult {
 }
 
 /**
- * Extracts text from entire PDF
+ * Get Document Intelligence client
+ */
+function getDocumentClient(): DocumentAnalysisClient {
+  const endpoint = process.env.DOCUMENT_INTELLIGENCE_ENDPOINT;
+  const key = process.env.DOCUMENT_INTELLIGENCE_KEY;
+
+  if (!endpoint || !key) {
+    throw new Error('DOCUMENT_INTELLIGENCE_ENDPOINT and DOCUMENT_INTELLIGENCE_KEY must be set');
+  }
+
+  return new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key));
+}
+
+/**
+ * Extracts text from entire PDF using Azure Document Intelligence
  */
 export async function extractTextFromPDF(buffer: Buffer): Promise<PDFExtractionResult> {
   try {
-    const data = await pdfParse(buffer);
+    const client = getDocumentClient();
+
+    // Analyze document with prebuilt-layout model
+    const poller = await client.beginAnalyzeDocument('prebuilt-layout', buffer);
+    const result = await poller.pollUntilDone();
+
+    if (!result) {
+      throw new Error('No result from Document Intelligence');
+    }
+
+    // Extract full text
+    const fullText = result.content || '';
+
+    // Extract pages
+    const pages: PDFPage[] = [];
+    const totalPages = result.pages?.length || 1;
+
+    if (result.pages) {
+      for (let i = 0; i < result.pages.length; i++) {
+        const page = result.pages[i];
+
+        // Extract text from this page by finding content in page span
+        const pageText = extractPageText(fullText, page.spans);
+
+        pages.push({
+          pageNumber: i + 1,
+          text: pageText,
+          totalPages
+        });
+      }
+    } else {
+      // Fallback: single page with all text
+      pages.push({
+        pageNumber: 1,
+        text: fullText,
+        totalPages: 1
+      });
+    }
 
     return {
-      text: data.text,
-      pages: [],  // Will populate with page-by-page extraction if needed
+      text: fullText.trim(),
+      pages,
       metadata: {
-        totalPages: data.numpages,
-        title: data.info?.Title,
-        author: data.info?.Author,
-        producer: data.info?.Producer,
-        creationDate: data.info?.CreationDate ? new Date(data.info.CreationDate) : undefined
+        totalPages,
+        title: undefined,
+        author: undefined,
+        producer: 'Azure Document Intelligence',
+        creationDate: new Date()
       }
     };
   } catch (error: any) {
@@ -49,92 +100,27 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<PDFExtractionR
 }
 
 /**
- * Extracts text page by page
- * Useful for multi-page PDFs where each page is a different document
+ * Extract text for a specific page using span information
  */
-export async function extractTextByPage(buffer: Buffer): Promise<PDFPage[]> {
-  try {
-    const result = await extractTextFromPDF(buffer);
-    const totalPages = result.metadata.totalPages;
-
-    // pdf-parse doesn't directly support page-by-page extraction
-    // We'll split the text based on page markers or use full text
-    // For now, we'll use full text with page detection
-    const pages: PDFPage[] = [];
-
-    // Try to detect page boundaries in the text
-    const pageMarkers = detectPageBoundaries(result.text, totalPages);
-
-    if (pageMarkers.length > 0) {
-      for (let i = 0; i < pageMarkers.length; i++) {
-        const start = pageMarkers[i];
-        const end = i < pageMarkers.length - 1 ? pageMarkers[i + 1] : result.text.length;
-        const pageText = result.text.substring(start, end).trim();
-
-        if (pageText) {
-          pages.push({
-            pageNumber: i + 1,
-            text: pageText,
-            totalPages
-          });
-        }
-      }
-    } else {
-      // If can't detect boundaries, return full text as single page
-      pages.push({
-        pageNumber: 1,
-        text: result.text,
-        totalPages
-      });
-    }
-
-    return pages;
-  } catch (error: any) {
-    throw new Error(`Failed to extract text by page: ${error.message}`);
+function extractPageText(fullText: string, spans: any[] | undefined): string {
+  if (!spans || spans.length === 0) {
+    return fullText;
   }
+
+  let pageText = '';
+  for (const span of spans) {
+    pageText += fullText.substring(span.offset, span.offset + span.length);
+  }
+
+  return pageText;
 }
 
 /**
- * Detects page boundaries in extracted text
- * Looks for common patterns like headers, footers, page numbers
+ * Extracts text page by page
  */
-function detectPageBoundaries(text: string, expectedPages: number): number[] {
-  const boundaries: number[] = [0]; // Always start at 0
-
-  // Common patterns that indicate new page
-  const pageIndicators = [
-    /Page \d+ of \d+/gi,
-    /\d+\/\d+/g,  // Page numbers like 1/3
-    /^\s*\d+\s*$/gm,  // Standalone numbers on a line
-    /BOOKING CONFIRMATION/gi,
-    /DELIVERY ORDER/gi,
-    /BILL OF LADING/gi,
-    /TRANSPORT ORDER/gi
-  ];
-
-  // Find all potential boundaries
-  const potentialBoundaries = new Set<number>();
-
-  for (const pattern of pageIndicators) {
-    let match;
-    while ((match = pattern.exec(text)) !== null) {
-      potentialBoundaries.add(match.index);
-    }
-  }
-
-  // Sort and filter boundaries
-  const sortedBoundaries = Array.from(potentialBoundaries).sort((a, b) => a - b);
-
-  // Only keep boundaries that are reasonably spaced
-  const minPageLength = 500;  // Minimum characters per page
-  for (const boundary of sortedBoundaries) {
-    const lastBoundary = boundaries[boundaries.length - 1];
-    if (boundary - lastBoundary > minPageLength) {
-      boundaries.push(boundary);
-    }
-  }
-
-  return boundaries;
+export async function extractTextByPage(buffer: Buffer): Promise<PDFPage[]> {
+  const result = await extractTextFromPDF(buffer);
+  return result.pages;
 }
 
 /**
@@ -142,8 +128,8 @@ function detectPageBoundaries(text: string, expectedPages: number): number[] {
  */
 export async function getPdfPageCount(buffer: Buffer): Promise<number> {
   try {
-    const data = await pdfParse(buffer);
-    return data.numpages;
+    const result = await extractTextFromPDF(buffer);
+    return result.metadata.totalPages;
   } catch (error: any) {
     throw new Error(`Failed to get PDF page count: ${error.message}`);
   }
@@ -151,7 +137,6 @@ export async function getPdfPageCount(buffer: Buffer): Promise<number> {
 
 /**
  * Detects if a new document starts in the text
- * Useful for identifying document boundaries in multi-document PDFs
  */
 export function detectDocumentStart(text: string): boolean {
   const documentHeaders = [
@@ -168,7 +153,6 @@ export function detectDocumentStart(text: string): boolean {
 
 /**
  * Groups pages into logical documents
- * Handles multi-page PDFs where each page or group of pages is a different document
  */
 export interface DocumentGroup {
   startPage: number;
@@ -185,9 +169,7 @@ export async function groupPagesIntoDocuments(buffer: Buffer): Promise<DocumentG
   let startPage = 1;
 
   for (const page of pages) {
-    // Check if this page starts a new document
     if (currentGroup.length > 0 && detectDocumentStart(page.text)) {
-      // Save current group
       groups.push({
         startPage,
         endPage: startPage + currentGroup.length - 1,
@@ -195,7 +177,6 @@ export async function groupPagesIntoDocuments(buffer: Buffer): Promise<DocumentG
         combinedText: currentGroup.map(p => p.text).join('\n\n')
       });
 
-      // Start new group
       currentGroup = [page];
       startPage = page.pageNumber;
     } else {
@@ -203,7 +184,6 @@ export async function groupPagesIntoDocuments(buffer: Buffer): Promise<DocumentG
     }
   }
 
-  // Add last group
   if (currentGroup.length > 0) {
     groups.push({
       startPage,
@@ -218,20 +198,18 @@ export async function groupPagesIntoDocuments(buffer: Buffer): Promise<DocumentG
 
 /**
  * Cleans extracted text
- * Removes excessive whitespace, control characters, etc.
  */
 export function cleanExtractedText(text: string): string {
   return text
-    .replace(/\r\n/g, '\n')  // Normalize line endings
-    .replace(/\n{3,}/g, '\n\n')  // Collapse multiple newlines
-    .replace(/[ \t]{2,}/g, ' ')  // Collapse multiple spaces
-    .replace(/^\s+|\s+$/gm, '')  // Trim lines
+    .replace(/\r\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/^\s+|\s+$/gm, '')
     .trim();
 }
 
 /**
- * Extracts snippet from text (first N characters)
- * Used for knowledge base examples
+ * Extracts snippet from text
  */
 export function extractSnippet(text: string, maxLength: number = 2000): string {
   const cleaned = cleanExtractedText(text);

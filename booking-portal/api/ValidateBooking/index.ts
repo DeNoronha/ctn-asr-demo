@@ -1,12 +1,17 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import { CosmosClient } from "@azure/cosmos";
 import { getUserFromRequest } from "../shared/auth";
+import { CosmosDbService } from "../shared/services";
+import {
+    STORAGE_CONFIG,
+    HTTP_STATUS,
+    ERROR_MESSAGES
+} from "../shared/constants";
 
 // Environment variables
 const COSMOS_ENDPOINT = process.env.COSMOS_DB_ENDPOINT || process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_DB_KEY;
-const COSMOS_DATABASE_NAME = process.env.COSMOS_DATABASE_NAME || 'booking-portal';
-const COSMOS_CONTAINER_NAME = process.env.COSMOS_CONTAINER_NAME || 'bookings';
+const COSMOS_DATABASE_NAME = process.env.COSMOS_DATABASE_NAME || STORAGE_CONFIG.DEFAULT_DATABASE_NAME;
+const COSMOS_CONTAINER_NAME = process.env.COSMOS_CONTAINER_NAME || STORAGE_CONFIG.DEFAULT_CONTAINER;
 
 interface ValidationRequest {
     action: 'approve' | 'correct' | 'reject';
@@ -22,21 +27,28 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         const user = await getUserFromRequest(context, req);
         if (!user) {
             context.res = {
-                status: 401,
-                body: { error: 'Unauthorized', message: 'Valid authentication token required' }
+                status: HTTP_STATUS.UNAUTHORIZED,
+                body: {
+                    error: ERROR_MESSAGES.UNAUTHORIZED,
+                    message: ERROR_MESSAGES.INVALID_TOKEN
+                }
             };
             return;
         }
 
         context.log(`Authenticated user: ${user.email}`);
 
-        const bookingId = context.bindingData.bookingId;
+        // Azure Functions v4 lowercases route parameters
+        const bookingId = context.bindingData.bookingid;
         const validation: ValidationRequest = req.body;
 
         if (!validation || !validation.action) {
             context.res = {
-                status: 400,
-                body: { error: 'Bad request', message: 'Validation action required' }
+                status: HTTP_STATUS.BAD_REQUEST,
+                body: {
+                    error: 'Bad request',
+                    message: 'Validation action required (approve, correct, or reject)'
+                }
             };
             return;
         }
@@ -45,50 +57,52 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
 
         // Validate environment variables
         if (!COSMOS_ENDPOINT || !COSMOS_KEY) {
-            throw new Error('Cosmos DB credentials not configured');
+            throw new Error(ERROR_MESSAGES.COSMOS_DB_NOT_CONFIGURED);
         }
 
-        const cosmosClient = new CosmosClient({
-            endpoint: COSMOS_ENDPOINT,
-            key: COSMOS_KEY
+        // Initialize Cosmos DB service
+        const cosmosService = new CosmosDbService(
+            COSMOS_ENDPOINT,
+            COSMOS_KEY,
+            COSMOS_DATABASE_NAME,
+            COSMOS_CONTAINER_NAME
+        );
+
+        // Find booking by ID (without needing partition key upfront)
+        const queryResult = await cosmosService.queryDocuments({
+            tenantId: user.tenantId
         });
 
-        const database = cosmosClient.database(COSMOS_DATABASE_NAME);
-        const container = database.container(COSMOS_CONTAINER_NAME);
+        const booking = queryResult.items.find(b => b.id === bookingId);
 
-        // Get existing booking using query (to avoid needing partition key upfront)
-        const querySpec = {
-            query: "SELECT * FROM c WHERE c.id = @bookingId",
-            parameters: [{ name: "@bookingId", value: bookingId }]
-        };
-
-        const { resources: results } = await container.items
-            .query(querySpec)
-            .fetchAll();
-
-        if (results.length === 0) {
+        if (!booking) {
             context.res = {
-                status: 404,
-                body: { error: 'Not found', message: `Booking ${bookingId} not found` }
+                status: HTTP_STATUS.NOT_FOUND,
+                body: {
+                    error: 'Not found',
+                    message: `Booking ${bookingId} not found`
+                }
             };
             return;
         }
 
-        const booking = results[0];
+        // Map validation action to past tense for ValidationEvent
+        const actionMap: Record<string, 'approved' | 'rejected' | 'corrected'> = {
+            'approve': 'approved',
+            'reject': 'rejected',
+            'correct': 'corrected'
+        };
 
         // Create validation record
         const validationRecord = {
             timestamp: new Date().toISOString(),
-            action: validation.action,
             validatedBy: user.email,
-            validatedByName: user.name,
-            validatedByUserId: user.userId,
-            corrections: validation.corrections || {},
-            notes: validation.notes || '',
-            previousStatus: booking.processingStatus
+            action: actionMap[validation.action],
+            changes: validation.corrections,
+            comments: validation.notes
         };
 
-        // Update booking
+        // Update validation history
         booking.validationHistory = booking.validationHistory || [];
         booking.validationHistory.push(validationRecord);
 
@@ -98,43 +112,36 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
                 booking.processingStatus = 'validated';
                 break;
             case 'correct':
-                booking.processingStatus = 'corrected';
-                // Apply corrections to dcsaPlusData
+                // Apply corrections to data
                 if (validation.corrections) {
-                    booking.dcsaPlusData = {
-                        ...booking.dcsaPlusData,
+                    booking.data = {
+                        ...booking.data,
                         ...validation.corrections
                     };
                 }
-                // Increase confidence for corrected fields
-                if (booking.extractionMetadata && validation.corrections) {
-                    Object.keys(validation.corrections).forEach(field => {
-                        if (booking.extractionMetadata.confidenceScores[field] !== undefined) {
-                            booking.extractionMetadata.confidenceScores[field] = 1.0; // Perfect confidence after manual correction
-                        }
-                    });
-                }
+                booking.processingStatus = 'validated'; // Corrected documents are validated
                 break;
             case 'reject':
                 booking.processingStatus = 'rejected';
                 break;
         }
 
-        booking.lastModified = new Date().toISOString();
-        booking.lastModifiedBy = user.email;
-
-        // Save updated booking (using correct partition key: tenantId)
-        await container.item(bookingId, booking.tenantId).replace(booking);
+        // Update document using service
+        const updatedBooking = await cosmosService.updateDocument(
+            bookingId,
+            booking.tenantId,
+            booking
+        );
 
         context.log(`Booking ${bookingId} validated successfully by ${user.email}`);
 
         context.res = {
-            status: 200,
+            status: HTTP_STATUS.OK,
             body: {
                 success: true,
                 bookingId,
                 action: validation.action,
-                newStatus: booking.processingStatus,
+                newStatus: updatedBooking.processingStatus,
                 message: 'Validation recorded successfully'
             },
             headers: {
@@ -144,9 +151,12 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
 
     } catch (error: any) {
         context.log.error('Error in ValidateBooking:', error);
+        // SECURITY: Sanitized error message - don't expose internal details
         context.res = {
-            status: 500,
-            body: { error: 'Internal server error', message: error.message, details: error.stack },
+            status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+            body: {
+                error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR
+            },
             headers: {
                 'Content-Type': 'application/json'
             }

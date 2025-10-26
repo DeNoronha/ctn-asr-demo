@@ -1,7 +1,7 @@
 {
-  "name": "ctn-booking-api",
+  "name": "ctn-docuflow-api",
   "version": "1.0.0",
-  "description": "CTN Booking Portal API",
+  "description": "CTN DocuFlow API - Intelligent Document Processing",
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
@@ -11,17 +11,18 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.67.0",
+    "@azure/ai-form-recognizer": "^5.0.0",
     "@azure/cosmos": "^4.0.0",
     "@azure/functions": "^3.5.1",
     "@azure/identity": "^4.0.0",
-    "@azure/storage-blob": "^12.17.0",
+    "@azure/storage-blob": "^12.29.1",
     "@types/busboy": "^1.5.4",
     "@types/jsonwebtoken": "^9.0.10",
     "busboy": "^1.6.0",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.2.0",
     "pdf-lib": "^1.17.1",
-    "pdf-parse": "^2.4.5"
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

@@ -1,0 +1,13 @@
+# Test results and temporary files
+*.log
+*.tmp
+test-results/
+playwright-report/
+/tmp/
+
+# Test fixtures (keep structure, ignore content)
+test-fixtures/*.pdf
+!test-fixtures/.gitkeep
+
+# Local test configuration
+.env.test.local

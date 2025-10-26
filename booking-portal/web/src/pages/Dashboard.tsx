@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import Breadcrumb from '../components/Breadcrumb';
+import EmptyState from '../components/EmptyState';
 
 interface Booking {
   id: string;
@@ -84,65 +86,99 @@ const Dashboard: React.FC = () => {
 
   return (
     <div>
+      <Breadcrumb />
       <div className="card-header" style={{ marginBottom: '24px' }}>
         <h2>Dashboard</h2>
         <Link to="/upload">
-          <button className="btn-primary">Upload Document</button>
+          <button className="btn-primary" aria-label="Upload new document">
+            Upload Document
+          </button>
         </Link>
       </div>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <h3>Total Bookings</h3>
-          <div className="stat-value">{stats.totalBookings}</div>
+      {stats.totalBookings === 0 ? (
+        <div className="card">
+          <EmptyState
+            title="No bookings yet"
+            description="Upload your first document to get started with automated booking extraction and validation."
+            actionButton={
+              <Link to="/upload">
+                <button className="btn-primary" aria-label="Upload your first document">
+                  Upload First Document
+                </button>
+              </Link>
+            }
+            icon="📄"
+          />
         </div>
+      ) : (
+        <>
+          <div className="stats-grid" role="region" aria-label="Dashboard statistics">
+            <div className="stat-card">
+              <h3>Total Bookings</h3>
+              <div className="stat-value" aria-label={`${stats.totalBookings} total bookings`}>
+                {stats.totalBookings}
+              </div>
+            </div>
 
-        <div className="stat-card" style={{ borderLeftColor: '#f59e0b' }}>
-          <h3>Pending Validation</h3>
-          <div className="stat-value" style={{ color: '#f59e0b' }}>
-            {stats.pendingValidation}
+            <div className="stat-card" style={{ borderLeftColor: '#f59e0b' }}>
+              <h3>Pending Validation</h3>
+              <div className="stat-value" style={{ color: '#f59e0b' }} aria-label={`${stats.pendingValidation} bookings pending validation`}>
+                {stats.pendingValidation}
+              </div>
+            </div>
+
+            <div className="stat-card" style={{ borderLeftColor: '#10b981' }}>
+              <h3>Validated Today</h3>
+              <div className="stat-value" style={{ color: '#10b981' }} aria-label={`${stats.validatedToday} bookings validated today`}>
+                {stats.validatedToday}
+              </div>
+            </div>
+
+            <div className="stat-card" style={{ borderLeftColor: '#00a3e0' }}>
+              <h3>Avg Confidence</h3>
+              <div className="stat-value" style={{ color: '#00a3e0' }} aria-label={`${stats.averageConfidence}% average confidence score`}>
+                {stats.averageConfidence}%
+              </div>
+            </div>
           </div>
-        </div>
+        </>
+      )}
 
-        <div className="stat-card" style={{ borderLeftColor: '#10b981' }}>
-          <h3>Validated Today</h3>
-          <div className="stat-value" style={{ color: '#10b981' }}>
-            {stats.validatedToday}
+      {stats.totalBookings > 0 && (
+        <>
+          <div className="card">
+            <h2 style={{ marginBottom: '16px' }}>Recent Activity</h2>
+            <div style={{ color: '#64748b', fontSize: '14px' }}>
+              <p>• 2 documents uploaded in the last hour</p>
+              <p>• 5 bookings validated today</p>
+              <p>• 3 documents pending review</p>
+              <p>• Model confidence improved by 2.1% this week</p>
+            </div>
           </div>
-        </div>
 
-        <div className="stat-card" style={{ borderLeftColor: '#00a3e0' }}>
-          <h3>Avg Confidence</h3>
-          <div className="stat-value" style={{ color: '#00a3e0' }}>
-            {stats.averageConfidence}%
+          <div className="card">
+            <h2 style={{ marginBottom: '16px' }}>Quick Actions</h2>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <Link to="/upload">
+                <button className="btn-primary" aria-label="Upload new document">
+                  Upload New Document
+                </button>
+              </Link>
+              <Link to="/bookings?status=pending">
+                <button className="btn-primary" aria-label={`Review ${stats.pendingValidation} pending bookings`}>
+                  Review Pending ({stats.pendingValidation})
+                </button>
+              </Link>
+              <Link to="/bookings">
+                <button className="btn-primary" aria-label="View all bookings">
+                  View All Bookings
+                </button>
+              </Link>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div className="card">
-        <h2 style={{ marginBottom: '16px' }}>Recent Activity</h2>
-        <div style={{ color: '#64748b', fontSize: '14px' }}>
-          <p>• 2 documents uploaded in the last hour</p>
-          <p>• 5 bookings validated today</p>
-          <p>• 3 documents pending review</p>
-          <p>• Model confidence improved by 2.1% this week</p>
-        </div>
-      </div>
-
-      <div className="card">
-        <h2 style={{ marginBottom: '16px' }}>Quick Actions</h2>
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <Link to="/upload">
-            <button className="btn-primary">Upload New Document</button>
-          </Link>
-          <Link to="/bookings?status=pending">
-            <button className="btn-primary">Review Pending ({stats.pendingValidation})</button>
-          </Link>
-          <Link to="/bookings">
-            <button className="btn-primary">View All Bookings</button>
-          </Link>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };
