@@ -51,7 +51,7 @@ export async function healthCheck(
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development',
+    environment: process.env.ENVIRONMENT || process.env.NODE_ENV || 'production',
     version: process.env.API_VERSION || '1.0.0',
     checks: {
       database: { status: 'up' },
