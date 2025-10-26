@@ -187,6 +187,7 @@ Build → Deploy → Test (TE agent) → Document (TW agent)
 - **SA (Security Analyst)**: Security-sensitive code, before merges
 - **DE (Database Expert)**: Before migrations, DB schema changes, performance issues
 - **DA (Design Analyst)**: UI/UX changes, accessibility checks
+- **AR (Architecture Reviewer)**: New Azure services, auth changes, Arc42/IcePanel updates, before major releases
 
 **Checklist:**
 - Bugs → TE (autonomous investigation)
@@ -194,6 +195,9 @@ Build → Deploy → Test (TE agent) → Document (TW agent)
 - After features → TE, CR, TW, DE (if DB changes)
 - Before PRs → CR, SA
 - After ROADMAP.md completion → TW (MANDATORY)
+- Infrastructure changes → AR (architecture alignment)
+- Auth/authz modifications → AR, SA (security + architecture)
+- Major releases → AR, TE, CR, SA (full validation)
 
 ---
 
@@ -205,7 +209,8 @@ Build → Deploy → Test (TE agent) → Document (TW agent)
 **Active Servers:**
 - `@playwright/mcp` - E2E testing (TE)
 - `chrome-devtools-mcp` - Browser debugging (TE, DA, SA)
-- `@icepanel/mcp-server` - Architecture diagrams (TW)
+- `@icepanel/mcp-server` - Architecture diagrams (TW, AR)
+- `ctn-mcp-server` - Arc42 documentation search (AR)
 
 ---
 
@@ -267,6 +272,25 @@ Git/Azure/Multi-repo specialist with strict security and cross-impact validation
 3. Azure Pipeline and Bicep template validation
 4. Git workflow enforcement (conventional commits, feature branches)
 5. Monorepo dependency management
+
+### Architecture Reviewer (AR)
+`.claude/agents/architecture-reviewer-ar.md` | Blue | Sonnet
+
+Validates alignment between codebase, Azure infrastructure, Arc42 documentation, and IcePanel diagrams. Ensures architectural consistency across the CTN ASR project. Uses @icepanel/mcp-server and ctn-mcp-server for documentation queries.
+
+**Auto-invoke when:**
+- New Azure service added to infrastructure/
+- Authentication/authorization code modified
+- New external integration added
+- Arc42 or IcePanel updated
+- Before major releases
+
+**Responsibilities:**
+1. Map documented architecture (Arc42 + IcePanel) vs actual implementation
+2. Validate Azure services: documented → declared → actually used
+3. Check authentication patterns match Arc42 security concepts
+4. Verify multi-tenant data isolation implementation
+5. Create docs/ARCHITECTURE_DISCREPANCIES.md with remediation plan
 
 ---
 
