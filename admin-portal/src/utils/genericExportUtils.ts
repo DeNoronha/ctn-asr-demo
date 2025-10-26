@@ -92,7 +92,7 @@ export const exportGenericToPDF = <T extends Record<string, unknown>>(
     didDrawPage: () => {
       // Add footer with page numbers
       const pageCount = doc.getNumberOfPages();
-      const pageNumber = doc.internal.getCurrentPageInfo().pageNumber as number;
+      const pageNumber = (doc.internal as any).getCurrentPageInfo().pageNumber as number;
 
       doc.setFontSize(9);
       doc.setTextColor(100);
