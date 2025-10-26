@@ -1,5 +1,6 @@
 # Admin Portal - CI/CD Pipeline
-# Triggers on changes to admin-portal/* or api/* directories
+# Triggers on changes to admin-portal/* directory ONLY
+# API deployment handled by separate asr-api.yml pipeline
 # Environment variables loaded from admin-portal/.env.production (tracked in git)
 
 trigger:
@@ -9,8 +10,13 @@ trigger:
   paths:
     include:
       - admin-portal/*
-      - api/*
       - .azure-pipelines/admin-portal.yml
+    exclude:
+      - api/**
+      - booking-portal/**
+      - orchestrator-portal/**
+      - ctn-docs-portal/**
+      - docuflow-portal/**
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -166,6 +172,38 @@ steps:
     continueOnError: true
 
   # ========================================
+  # Verify API Deployment
+  # Admin portal depends on ASR API - verify it's deployed and healthy
+  # ========================================
+  - script: |
+      echo "🔍 Verifying ASR API is deployed and healthy..."
+      HEALTH_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/health"
+      HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL")
+
+      if [ "$HEALTH_STATUS" != "200" ]; then
+        echo "❌ ERROR: ASR API is not healthy (HTTP $HEALTH_STATUS)"
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🚫 Admin Portal requires healthy ASR API"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "The Admin Portal depends on the Association Register API."
+        echo "The API must be deployed FIRST before building the portal."
+        echo ""
+        echo "To fix:"
+        echo "  1. Check ASR API pipeline status"
+        echo "  2. Ensure api/* changes triggered asr-api.yml pipeline"
+        echo "  3. Wait for API deployment to complete"
+        echo "  4. Re-run this pipeline"
+        echo ""
+        exit 1
+      fi
+
+      echo "✅ ASR API is healthy (HTTP 200)"
+      curl -s "$HEALTH_URL" | jq -r '"Database: \(.checks.database.status), KeyVault: \(.checks.azureKeyVault.status)"'
+    displayName: 'Verify ASR API health (dependency check)'
+
+  # ========================================
   # Build and Deployment Steps
   # Quality checks use continueOnError: true, so builds always run
   # Deployments require successful builds (condition: succeeded())
@@ -195,45 +233,20 @@ steps:
       azure_static_web_apps_api_token: $(AZURE-STATIC-WEB-APPS-API-TOKEN-ADMIN)
 
   # ========================================
-  # API Deployment Steps
+  # Post-Deployment Verification
   # ========================================
   - script: |
-      cd api
-      npm ci
-    displayName: 'Install API dependencies'
+      echo "⏳ Waiting for Static Web App to update..."
+      sleep 10
 
-  - script: |
-      cd api
-      npm run build
-    displayName: 'Build API (TypeScript compilation)'
+      echo "🔍 Verifying Admin Portal deployment..."
+      PORTAL_URL="https://calm-tree-03352ba03.1.azurestaticapps.net"
+      PORTAL_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PORTAL_URL")
 
-  - task: AzureFunctionApp@2
-    displayName: 'Deploy API to Azure Functions'
-    condition: succeeded()
-    inputs:
-      azureSubscription: $(azureSubscription)
-      appType: 'functionAppLinux'
-      appName: 'func-ctn-demo-asr-dev'
-      package: '$(System.DefaultWorkingDirectory)/api'
-      runtimeStack: 'NODE|20'
-      deploymentMethod: 'zipDeploy'
-
-  - script: |
-      echo "⏳ Waiting for Function App to warm up..."
-      sleep 15
-
-      echo "🔍 Verifying API deployment..."
-      HEALTH_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/health"
-      HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL")
-
-      if [ "$HEALTH_STATUS" != "200" ]; then
-        echo "❌ API health check failed (HTTP $HEALTH_STATUS)"
-        echo "   URL: $HEALTH_URL"
-        echo "   This indicates the API deployment did not complete successfully."
-        exit 1
+      if [ "$PORTAL_STATUS" != "200" ]; then
+        echo "⚠️  Admin Portal returned HTTP $PORTAL_STATUS (may need more time)"
+      else
+        echo "✅ Admin Portal is accessible (HTTP 200)"
       fi
-
-      echo "✅ API health check passed (HTTP 200)"
-      echo "   API is deployed and responding correctly"
-    displayName: 'Verify API deployment health'
-    condition: succeeded()
+    displayName: 'Verify portal deployment'
+    continueOnError: true

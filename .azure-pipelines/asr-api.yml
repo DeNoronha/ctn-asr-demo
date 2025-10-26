@@ -1,0 +1,167 @@
+# ASR API Pipeline - Association Register Backend
+# Single source of truth for API deployment
+# Serves: Admin Portal + Member Portal (tightly coupled)
+# Does NOT trigger: DocuFlow, Orchestrator, Documentation (independent)
+#
+# Triggers on API changes only, then cascades to dependent portals
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - api/*
+      - .azure-pipelines/asr-api.yml
+    exclude:
+      - booking-portal/**
+      - orchestrator-portal/**
+      - ctn-docs-portal/**
+      - docuflow-portal/**
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - name: azureSubscription
+    value: 'Azure-CTN-ASR-ServiceConnection'
+  - name: functionAppName
+    value: 'func-ctn-demo-asr-dev'
+
+stages:
+  - stage: BuildAndDeploy
+    displayName: 'Build and Deploy ASR API'
+    jobs:
+      - job: DeployAPI
+        displayName: 'Deploy Association Register API'
+        steps:
+          - task: NodeTool@0
+            displayName: 'Install Node.js 20.x'
+            inputs:
+              versionSpec: '20.x'
+
+          - script: |
+              node --version
+              npm --version
+            displayName: 'Display Node and NPM versions'
+
+          # Install dependencies at root level (monorepo)
+          - script: |
+              npm ci --legacy-peer-deps
+            displayName: 'Install monorepo dependencies'
+
+          # Install API-specific dependencies
+          - script: |
+              cd api
+              npm ci
+            displayName: 'Install API dependencies'
+
+          # Build API (TypeScript compilation)
+          - script: |
+              cd api
+              npm run build
+              ls -la dist/
+            displayName: 'Build API (TypeScript compilation)'
+
+          # Verify essential functions are compiled
+          - script: |
+              cd api
+              if [ ! -f "dist/index.js" ]; then
+                echo "❌ ERROR: dist/index.js not found"
+                exit 1
+              fi
+              if [ ! -d "dist/functions" ]; then
+                echo "❌ ERROR: dist/functions directory not found"
+                exit 1
+              fi
+              echo "✅ Build artifacts verified"
+            displayName: 'Verify build artifacts'
+
+          # Deploy to Azure Functions
+          - task: AzureFunctionApp@2
+            displayName: 'Deploy API to Azure Functions'
+            inputs:
+              azureSubscription: $(azureSubscription)
+              appType: 'functionAppLinux'
+              appName: $(functionAppName)
+              package: '$(System.DefaultWorkingDirectory)/api'
+              runtimeStack: 'NODE|20'
+              deploymentMethod: 'zipDeploy'
+
+          # Wait and verify deployment
+          - script: |
+              echo "⏳ Waiting for Function App to warm up..."
+              sleep 20
+
+              echo "🔍 Verifying API deployment..."
+              HEALTH_URL="https://$(functionAppName).azurewebsites.net/api/health"
+
+              # Retry health check up to 5 times
+              for i in {1..5}; do
+                echo "Attempt $i of 5..."
+                HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL")
+
+                if [ "$HEALTH_STATUS" = "200" ]; then
+                  echo "✅ API health check passed (HTTP 200)"
+
+                  # Get and display health details
+                  curl -s "$HEALTH_URL" | jq '.'
+
+                  # Extract commit hash from deployment
+                  GIT_COMMIT=$(git rev-parse --short HEAD)
+                  echo "📦 Deployed commit: $GIT_COMMIT"
+                  echo "##vso[task.setvariable variable=ApiCommitHash;isOutput=true]$GIT_COMMIT"
+
+                  exit 0
+                fi
+
+                echo "⚠️  Health check returned HTTP $HEALTH_STATUS, retrying in 10s..."
+                sleep 10
+              done
+
+              echo "❌ API health check failed after 5 attempts"
+              echo "   URL: $HEALTH_URL"
+              echo "   Last status: $HEALTH_STATUS"
+              exit 1
+            displayName: 'Verify API deployment health'
+            name: VerifyDeployment
+
+          # List deployed functions
+          - script: |
+              echo "📋 Listing deployed functions..."
+              az functionapp function list \
+                --name $(functionAppName) \
+                --resource-group rg-ctn-demo-asr-dev \
+                --output table || echo "⚠️  Could not list functions (non-critical)"
+            displayName: 'List deployed functions'
+            continueOnError: true
+
+  # Trigger downstream portal pipelines (Admin + Member only)
+  - stage: TriggerPortals
+    displayName: 'Trigger Portal Builds'
+    dependsOn: BuildAndDeploy
+    condition: succeeded()
+    jobs:
+      - job: TriggerAdminPortal
+        displayName: 'Trigger Admin Portal Pipeline'
+        steps:
+          - script: |
+              echo "🚀 Triggering Admin Portal pipeline..."
+              az pipelines run \
+                --org https://dev.azure.com/ctn-demo \
+                --project ASR \
+                --name "Association-Register-Admin" \
+                --branch main
+            displayName: 'Trigger Admin Portal build'
+
+      - job: TriggerMemberPortal
+        displayName: 'Trigger Member Portal Pipeline'
+        steps:
+          - script: |
+              echo "🚀 Triggering Member Portal pipeline..."
+              az pipelines run \
+                --org https://dev.azure.com/ctn-demo \
+                --project ASR \
+                --name "Association-Register-Member" \
+                --branch main
+            displayName: 'Trigger Member Portal build'
