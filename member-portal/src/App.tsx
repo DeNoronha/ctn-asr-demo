@@ -334,7 +334,6 @@ function AppContent({ instance }: AppContentProps) {
         <div className="footer-content">
           <div className="footer-logos">
             <img src="/assets/logos/DIL.png" alt="Data in Logistics" className="partner-logo-img" />
-            <img src="/assets/logos/portbase.png" alt="Portbase" className="partner-logo-img" />
             <img src="/assets/logos/contargo.png" alt="Contargo" className="partner-logo-img" />
             <img
               src="/assets/logos/Inland Terminals Group.png"

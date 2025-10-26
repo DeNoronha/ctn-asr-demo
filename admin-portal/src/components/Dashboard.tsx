@@ -262,7 +262,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
         <h3>{t('dashboard.partnersWith', 'In Partnership With')}</h3>
         <div className="logos-grid">
           <div className="logo-container">
-            <img src="/assets/logos/portbase.png" alt="Portbase" />
+            <img src="/assets/logos/DIL.png" alt="Data in Logistics" />
           </div>
           <div className="logo-container">
             <img src="/assets/logos/contargo.png" alt="Contargo" />

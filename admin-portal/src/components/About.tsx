@@ -293,7 +293,7 @@ const About: React.FC = () => {
         <h3>In Partnership With</h3>
         <div className="logos-grid">
           <div className="logo-container">
-            <img src="/assets/logos/portbase.png" alt="Portbase" />
+            <img src="/assets/logos/DIL.png" alt="Data in Logistics" />
           </div>
           <div className="logo-container">
             <img src="/assets/logos/contargo.png" alt="Contargo" />
