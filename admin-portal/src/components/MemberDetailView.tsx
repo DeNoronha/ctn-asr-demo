@@ -20,7 +20,6 @@ import { IdentifiersManager } from './IdentifiersManager';
 import { APIAccessManager } from './APIAccessManager';
 import { KvkDocumentUpload } from './KvkDocumentUpload';
 import { KvkRegistryDetails } from './KvkRegistryDetails';
-import { TokensManager } from './TokensManager';
 import './MemberDetailView.css';
 
 interface MemberDetailViewProps {
