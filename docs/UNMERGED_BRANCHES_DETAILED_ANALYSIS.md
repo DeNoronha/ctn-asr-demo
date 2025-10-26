@@ -54,7 +54,7 @@
 ### bbc6603 - feat: Implement async document processing to fix Claude timeout issue
 **Date:** 2025-10-24 00:07:26 +0200
 **Author:** Ramon
-**Status:** ✗ Not in main
+**Status:** ✅ Already in main (recovered via ee3cfd2, enhanced with rate limiting)
 
 ### 5432843 - docs: Update documentation after Week 1-3 completion
 **Date:** 2025-10-23 23:38:48 +0200
@@ -381,8 +381,5 @@
 **Author:** Ramon
 **Status:** ✗ Not in main
 
-### 42bccbb - docs: Add portal-specific branch strategy and workflow
-**Date:** 2025-10-22 11:05:36 +0200
-**Author:** Ramon
-**Status:** ✗ Not in main
+
 
