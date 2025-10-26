@@ -310,6 +310,21 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
               <strong style={{ marginBottom: '10px', display: 'block', fontSize: '1.05em' }}>
                 Verification Details:
               </strong>
+
+              {/* Legend - positioned ABOVE the table */}
+              <div style={{ marginBottom: '12px', fontSize: '0.85em', color: '#666' }}>
+                <strong>Legend:</strong>{' '}
+                <span style={{ backgroundColor: '#d4edda', padding: '2px 6px', borderRadius: '3px', marginRight: '10px' }}>
+                  Data matches
+                </span>
+                <span style={{ backgroundColor: '#fee2e2', padding: '2px 6px', borderRadius: '3px', marginRight: '10px' }}>
+                  PDF doesn't match entered data
+                </span>
+                <span style={{ backgroundColor: '#fef3c7', padding: '2px 6px', borderRadius: '3px' }}>
+                  KvK doesn't match PDF
+                </span>
+              </div>
+
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9em' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
@@ -343,7 +358,9 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                         padding: '10px',
                         backgroundColor:
                           verificationStatus.kvk_mismatch_flags?.includes('entered_name_mismatch')
-                            ? '#fee2e2'
+                            ? '#fee2e2'  // Red for mismatch
+                            : verificationStatus.kvk_extracted_company_name && verificationStatus.entered_company_name
+                            ? '#d4edda'  // Green for match
                             : 'inherit',
                       }}
                     >
@@ -356,7 +373,9 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                         padding: '10px',
                         backgroundColor:
                           verificationStatus.kvk_mismatch_flags?.includes('company_name_mismatch')
-                            ? '#fef3c7'
+                            ? '#fef3c7'  // Yellow for KvK mismatch
+                            : getKvkApiData()?.statutoryName && verificationStatus.kvk_extracted_company_name
+                            ? '#d4edda'  // Green for match
                             : 'inherit',
                       }}
                     >
@@ -381,7 +400,9 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                         padding: '10px',
                         backgroundColor:
                           verificationStatus.kvk_mismatch_flags?.includes('entered_kvk_mismatch')
-                            ? '#fee2e2'
+                            ? '#fee2e2'  // Red for mismatch
+                            : verificationStatus.kvk_extracted_number && verificationStatus.entered_kvk_number
+                            ? '#d4edda'  // Green for match
                             : 'inherit',
                       }}
                     >
@@ -389,7 +410,17 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                         <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
                       )}
                     </td>
-                    <td style={{ padding: '10px' }}>
+                    <td
+                      style={{
+                        padding: '10px',
+                        backgroundColor:
+                          verificationStatus.kvk_mismatch_flags?.includes('kvk_number_mismatch')
+                            ? '#fef3c7'  // Yellow for KvK mismatch
+                            : getKvkApiData()?.kvkNumber && verificationStatus.kvk_extracted_number
+                            ? '#d4edda'  // Green for match
+                            : 'inherit',
+                      }}
+                    >
                       {getKvkApiData()?.kvkNumber || (
                         <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
                       )}
@@ -397,15 +428,6 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                   </tr>
                 </tbody>
               </table>
-              <div style={{ marginTop: '8px', fontSize: '0.85em', color: '#666' }}>
-                <strong>Legend:</strong>{' '}
-                <span style={{ backgroundColor: '#fee2e2', padding: '2px 6px', borderRadius: '3px', marginRight: '10px' }}>
-                  PDF doesn't match entered data
-                </span>
-                <span style={{ backgroundColor: '#fef3c7', padding: '2px 6px', borderRadius: '3px' }}>
-                  KvK doesn't match PDF
-                </span>
-              </div>
             </div>
           )}
 
