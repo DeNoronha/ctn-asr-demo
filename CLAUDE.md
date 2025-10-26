@@ -79,6 +79,18 @@ git log -1 --format="%ar - %s"
 
 **Branch:** `main` (feature branches: `feature/descriptive-name`)
 
+**🚨 MANDATORY WORKFLOW (October 26, 2025) - See `docs/WORKFLOW_PREVENTION_MANDATORY.md`**
+
+**Rule 1: Always Merge to Main** - Feature branches max 24 hours. If not ready, don't branch.
+
+**Rule 2: Verify Deployment** - After push, wait 3-5min and verify build time = commit time at https://dev.azure.com/ctn-demo/ASR/_build
+
+**Rule 3: Test APIs with TE Agent** - After EVERY API deployment, invoke TE agent for curl tests. User tests frontend.
+
+**Rule 4: Document Everything** - Update docs/COMPLETED_ACTIONS.md (TW agent does this)
+
+**Rule 5: Recovery** - If fixes missing: `./scripts/find-missing-commits.sh 7`
+
 **CRITICAL: Commit Frequently**
 ```bash
 git add -A
