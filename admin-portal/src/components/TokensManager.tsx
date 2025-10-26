@@ -326,7 +326,7 @@ export const TokensManager: React.FC<TokensManagerProps> = ({
         <EmptyState
           icon={<Key size={48} />}
           message="No tokens issued yet"
-          hint="Tokens are issued per endpoint. Go to the Endpoints tab to register systems and issue tokens."
+          hint="Tokens are issued per endpoint. Go to the System Integrations tab to register systems and issue tokens."
         />
       )}
 
