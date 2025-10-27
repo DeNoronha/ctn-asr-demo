@@ -6,6 +6,7 @@ import PDFViewer from '../components/PDFViewer';
 import { TransportOrderForm } from '../components/validation/TransportOrderForm';
 import Breadcrumb from '../components/Breadcrumb';
 import { ConfidenceScore } from '../components/ConfidenceScore';
+import JourneyMap from '../components/JourneyMap';
 
 interface Booking {
   id: string;
@@ -353,6 +354,21 @@ const Validation: React.FC = () => {
 
         {/* Validation Form */}
         <div className="validation-form">
+          {/* Journey Visualization - Google Maps */}
+          {formData.documentType === 'transport_order' && formData.pickupLocation && formData.deliveryLocation && (
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '12px', color: '#1e293b' }}>
+                Journey Visualization
+              </h3>
+              <JourneyMap
+                origin={formData.pickupLocation}
+                destination={formData.deliveryLocation}
+                transportLegs={formData.transportLegs}
+                containerNumber={formData.containers?.[0]?.containerNumber}
+              />
+            </div>
+          )}
+
           {/* Corrections Summary */}
           {corrections.length > 0 && (
             <div style={{
