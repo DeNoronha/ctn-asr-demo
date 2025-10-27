@@ -19,6 +19,7 @@
     "GetBookings/**/*.ts",
     "GetBookingById/**/*.ts",
     "GetTenants/**/*.ts",
+    "GetProcessingJob/**/*.ts",
     "ValidateBooking/**/*.ts",
     "GetDocumentSasUrl/**/*.ts",
     "AddToKnowledgeBase/**/*.ts",
