@@ -247,8 +247,8 @@ const Validation: React.FC = () => {
     <div>
       <Breadcrumb />
 
-      {/* Unsaved Changes Dialog */}
-      {blocker.state === 'blocked' && (
+      {/* Unsaved Changes Dialog - Disabled until useBlocker API is stable */}
+      {/* {blocker.state === 'blocked' && (
         <div
           role="dialog"
           aria-labelledby="unsaved-dialog-title"
@@ -299,7 +299,7 @@ const Validation: React.FC = () => {
           }}
           onClick={() => blocker.reset()}
         />
-      )}
+      )} */}
 
       <div className="card-header" style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
