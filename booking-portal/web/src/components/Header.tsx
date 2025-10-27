@@ -28,9 +28,9 @@ const Header: React.FC = () => {
           <Link
             to="/bookings"
             style={{ color: 'white', textDecoration: 'none' }}
-            aria-label="View bookings"
+            aria-label="View documents"
           >
-            Bookings
+            Documents
           </Link>
           <Link
             to="/admin"

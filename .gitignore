@@ -54,7 +54,7 @@ logs/
 playwright-report/
 test-results/
 .playwright/
-booking-portal/api/deploy.zip
+booking-portal/api/deploy*.zip
 
 # Debug artifacts
 **/debug/
