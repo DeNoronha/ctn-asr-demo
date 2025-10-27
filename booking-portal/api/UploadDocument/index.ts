@@ -190,11 +190,12 @@ async function processDocumentAsync(
         context.log(`Background processing started for job ${jobId}`);
 
         // Initialize services
-        const credential = new DefaultAzureCredential();
+        const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
         const blobService = new BlobStorageService(
             storageAccountName,
             storageContainerName,
-            credential
+            connectionString, // Use connection string if available
+            connectionString ? undefined : new DefaultAzureCredential() // Fall back to credential
         );
 
         const cosmosService = new CosmosDbService(

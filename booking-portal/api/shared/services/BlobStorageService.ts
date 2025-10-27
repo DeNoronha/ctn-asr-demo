@@ -21,16 +21,26 @@ export class BlobStorageService {
     constructor(
         storageAccountName: string,
         containerName: string,
-        credential: DefaultAzureCredential = new DefaultAzureCredential()
+        connectionString?: string,
+        credential?: DefaultAzureCredential
     ) {
-        if (!storageAccountName) {
-            throw new Error('Storage account name is required');
+        if (!storageAccountName && !connectionString) {
+            throw new Error('Storage account name or connection string is required');
         }
 
-        const blobServiceClient = new BlobServiceClient(
-            `https://${storageAccountName}.blob.core.windows.net`,
-            credential
-        );
+        let blobServiceClient: BlobServiceClient;
+
+        // Prefer connection string if available (more reliable)
+        if (connectionString) {
+            blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+        } else {
+            // Fall back to credential-based auth
+            const cred = credential || new DefaultAzureCredential();
+            blobServiceClient = new BlobServiceClient(
+                `https://${storageAccountName}.blob.core.windows.net`,
+                cred
+            );
+        }
 
         this.containerClient = blobServiceClient.getContainerClient(containerName);
     }
