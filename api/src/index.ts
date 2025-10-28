@@ -18,6 +18,8 @@ import './functions/generateBvad';
 // Member portal (critical)
 import './functions/GetAuthenticatedMember';
 import './functions/UpdateMemberProfile';
+import './functions/GetMemberContacts';
+import './functions/GetMemberEndpoints';
 
 // Admin portal (critical)
 import './functions/GetMembers';
