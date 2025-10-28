@@ -500,6 +500,30 @@ export const apiV2 = {
     const response = await axiosInstance.get(`/legal-entities/${legalEntityId}/kvk-registry-data`);
     return response.data;
   },
+
+  // =====================================================
+  // TIER MANAGEMENT (Three-Tier Authentication)
+  // =====================================================
+
+  async getTierInfo(legalEntityId: string): Promise<{
+    tier: number;
+    method: string;
+    verifiedAt?: string;
+    reverificationDue?: string;
+    eherkenningLevel?: string;
+  }> {
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get(`/entities/${legalEntityId}/tier`);
+    return response.data;
+  },
+
+  async updateTier(
+    legalEntityId: string,
+    data: { tier: number; method: string; dnsVerifiedDomain?: string; eherkenningIdentifier?: string; eherkenningLevel?: string }
+  ): Promise<void> {
+    const axiosInstance = await getAuthenticatedAxios();
+    await axiosInstance.put(`/entities/${legalEntityId}/tier`, data);
+  },
 };
 
 // Export default for convenience

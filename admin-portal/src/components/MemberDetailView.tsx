@@ -20,6 +20,7 @@ import { IdentifiersManager } from './IdentifiersManager';
 import { APIAccessManager } from './APIAccessManager';
 import { KvkDocumentUpload } from './KvkDocumentUpload';
 import { KvkRegistryDetails } from './KvkRegistryDetails';
+import { TierManagement } from './TierManagement';
 import './MemberDetailView.css';
 
 interface MemberDetailViewProps {
@@ -392,6 +393,19 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
             ) : (
               <div className="info-section">
                 <h3>Document Verification</h3>
+                <p className="empty-message">No company linked to this member</p>
+              </div>
+            )}
+          </div>
+        </TabStripTab>
+
+        <TabStripTab title="Authentication Tier">
+          <div className="tab-content">
+            {legalEntity ? (
+              <TierManagement legalEntityId={legalEntity.legal_entity_id!} />
+            ) : (
+              <div className="info-section">
+                <h3>Authentication Tier Management</h3>
                 <p className="empty-message">No company linked to this member</p>
               </div>
             )}
