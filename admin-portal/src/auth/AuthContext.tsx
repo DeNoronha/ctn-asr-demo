@@ -36,10 +36,93 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastActivity, setLastActivity] = useState<number>(Date.now());
+  const [showIdleWarning, setShowIdleWarning] = useState(false);
+
+  // Session configuration (SEC-002)
+  const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+  const IDLE_WARNING_MS = 28 * 60 * 1000; // Warning at 28 minutes
+  const TOKEN_REFRESH_BEFORE_EXPIRY_MS = 5 * 60 * 1000; // Refresh 5 minutes before expiry
 
   useEffect(() => {
     initializeAuth();
   }, []);
+
+  // SEC-002: Track user activity for idle timeout
+  useEffect(() => {
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+
+    const updateActivity = () => {
+      setLastActivity(Date.now());
+      setShowIdleWarning(false);
+    };
+
+    events.forEach(event => window.addEventListener(event, updateActivity));
+
+    return () => {
+      events.forEach(event => window.removeEventListener(event, updateActivity));
+    };
+  }, []);
+
+  // SEC-002 & SEC-003: Check for idle timeout and token expiration
+  useEffect(() => {
+    if (!user) return;
+
+    const interval = setInterval(async () => {
+      const now = Date.now();
+      const idleTime = now - lastActivity;
+
+      // Check if user has been idle for too long
+      if (idleTime >= IDLE_TIMEOUT_MS) {
+        console.warn('Session timeout: User idle for 30 minutes');
+        await logout();
+        return;
+      }
+
+      // Show warning at 28 minutes
+      if (idleTime >= IDLE_WARNING_MS && !showIdleWarning) {
+        setShowIdleWarning(true);
+        console.warn('Idle timeout warning: 2 minutes remaining');
+      }
+
+      // SEC-001 & SEC-003: Check token expiration
+      try {
+        const account = msalInstance.getAllAccounts()[0];
+        if (account?.idTokenClaims?.exp) {
+          const expiryTime = (account.idTokenClaims.exp as number) * 1000; // Convert to ms
+          const timeUntilExpiry = expiryTime - now;
+
+          // Force logout if token expired (SEC-003)
+          if (timeUntilExpiry <= 0) {
+            console.warn('Token expired: Forcing logout');
+            await logout();
+            return;
+          }
+
+          // Refresh token if expiring soon (SEC-001)
+          if (timeUntilExpiry <= TOKEN_REFRESH_BEFORE_EXPIRY_MS) {
+            console.log('Token expiring soon: Attempting silent refresh');
+            try {
+              await msalInstance.acquireTokenSilent({
+                scopes: ['User.Read', 'openid', 'profile', 'email'],
+                account,
+                forceRefresh: true,
+              });
+              console.log('Token refreshed successfully');
+            } catch (refreshError) {
+              console.error('Token refresh failed:', refreshError);
+              // Force logout if refresh fails
+              await logout();
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking token expiration:', error);
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [user, lastActivity, showIdleWarning]);
 
   const initializeAuth = async () => {
     try {
