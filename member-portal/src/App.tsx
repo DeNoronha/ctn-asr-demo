@@ -273,14 +273,31 @@ function AppContent({ instance }: AppContentProps) {
                 Access your organization's CTN network dashboard, manage contacts, configure system
                 integrations, and manage API access for secure data exchange.
               </p>
-              <Button
-                onClick={handleLogin}
-                themeColor="primary"
-                size="large"
-                className="login-button"
-              >
-                Sign In with Azure AD
-              </Button>
+              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '24px' }}>
+                <Button
+                  onClick={handleLogin}
+                  themeColor="primary"
+                  size="large"
+                  className="login-button"
+                >
+                  Sign In with Azure AD
+                </Button>
+                <Button
+                  onClick={() => {
+                    window.location.href = 'mailto:support@ctn-network.com?subject=Member Registration Request&body=I would like to register my organization as a CTN member.';
+                  }}
+                  size="large"
+                  fillMode="outline"
+                  themeColor="primary"
+                  className="register-button"
+                >
+                  Register as Member
+                </Button>
+              </div>
+              <p style={{ marginTop: '24px', fontSize: '0.9em', color: '#666' }}>
+                New to CTN? Click "Register as Member" to start the registration process.
+                Already registered? Use "Sign In" to access your portal.
+              </p>
             </div>
           </div>
         </UnauthenticatedTemplate>
