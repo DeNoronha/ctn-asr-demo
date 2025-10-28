@@ -1,5 +1,12 @@
 import { query } from '../utils/database';
 
+// Simple console logger for services
+const log = {
+  info: (message: string, meta?: unknown) => console.log(`[TierService] ${message}`, meta || ''),
+  error: (message: string, error?: unknown, meta?: unknown) => console.error(`[TierService] ${message}`, error, meta || ''),
+  warn: (message: string, meta?: unknown) => console.warn(`[TierService] ${message}`, meta || ''),
+};
+
 export enum AuthenticationTier {
   TIER_1_EHERKENNING = 1, // Full access: read, write, publish
   TIER_2_DNS = 2,         // Sensitive data read + webhooks

@@ -2,9 +2,6 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/fu
 import { adminEndpoint, memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { tierService, AuthenticationTier, AuthenticationMethod } from '../services/tierService';
 import { dnsVerificationService } from '../services/dnsVerificationService';
-import { createLogger } from '../utils/logger';
-
-const logger = createLogger('TierManagement');
 
 // ===================================
 // GET Tier Info
@@ -43,7 +40,7 @@ async function getTierInfo(
       },
     };
   } catch (error) {
-    logger.error('Error fetching tier info', error, { legalEntityId });
+    context.error('Error fetching tier info', error);
     return {
       status: 500,
       jsonBody: { error: 'Failed to fetch tier information' },
@@ -75,7 +72,7 @@ async function updateTier(
   }
 
   try {
-    const body = await request.json();
+    const body = (await request.json()) as { tier?: number; method?: string; dnsVerifiedDomain?: string; eherkenningIdentifier?: string; eherkenningLevel?: string };
     const { tier, method, dnsVerifiedDomain, eherkenningIdentifier, eherkenningLevel } = body;
 
     if (!tier || !method) {
@@ -85,18 +82,17 @@ async function updateTier(
       };
     }
 
-    await tierService.updateTier(legalEntityId, tier, method, {
+    await tierService.updateTier(legalEntityId, tier, method as AuthenticationMethod, {
       dnsVerifiedDomain,
       dnsVerifiedAt: dnsVerifiedDomain ? new Date() : undefined,
       eherkenningIdentifier,
-      eherkenningLevel,
+      eherkenningLevel: eherkenningLevel as 'EH3' | 'EH4' | undefined,
     });
 
-    logger.info('Tier updated by admin', {
+    context.log('Tier updated by admin', {
       legalEntityId,
       tier,
       method,
-      adminUser: request.user?.userId,
     });
 
     return {
@@ -104,7 +100,7 @@ async function updateTier(
       jsonBody: { message: 'Tier updated successfully' },
     };
   } catch (error) {
-    logger.error('Error updating tier', error, { legalEntityId });
+    context.error('Error updating tier', error);
     return {
       status: 500,
       jsonBody: { error: 'Failed to update tier' },
@@ -136,7 +132,7 @@ async function generateDnsToken(
   }
 
   try {
-    const body = await request.json();
+    const body = (await request.json()) as { domain?: string };
     const { domain } = body;
 
     if (!domain) {
@@ -158,11 +154,7 @@ async function generateDnsToken(
     const token = await dnsVerificationService.generateToken(legalEntityId, domain);
     const instructions = dnsVerificationService.getDnsSetupInstructions(token);
 
-    logger.info('DNS token generated', {
-      legalEntityId,
-      domain,
-      tokenId: token.tokenId,
-    });
+    context.log('DNS token generated', legalEntityId, domain, token.tokenId);
 
     return {
       status: 200,
@@ -176,7 +168,7 @@ async function generateDnsToken(
       },
     };
   } catch (error) {
-    logger.error('Error generating DNS token', error, { legalEntityId });
+    context.error('Error generating DNS token', error);
     return {
       status: 500,
       jsonBody: { error: 'Failed to generate DNS token' },
@@ -210,11 +202,7 @@ async function verifyDnsToken(
   try {
     const result = await dnsVerificationService.verifyToken(tokenId);
 
-    logger.info('DNS token verification attempted', {
-      tokenId,
-      verified: result.verified,
-      user: request.user?.userId,
-    });
+    context.log('DNS token verification attempted', tokenId, result.verified);
 
     return {
       status: 200,
@@ -225,7 +213,7 @@ async function verifyDnsToken(
       },
     };
   } catch (error) {
-    logger.error('Error verifying DNS token', error, { tokenId });
+    context.error('Error verifying DNS token', error, { tokenId });
     return {
       status: 500,
       jsonBody: { error: 'Failed to verify DNS token' },
@@ -273,7 +261,7 @@ async function getPendingDnsTokens(
       },
     };
   } catch (error) {
-    logger.error('Error fetching pending DNS tokens', error, { legalEntityId });
+    context.error('Error fetching pending DNS tokens', error, { legalEntityId });
     return {
       status: 500,
       jsonBody: { error: 'Failed to fetch pending DNS tokens' },
@@ -303,7 +291,7 @@ async function getTierRequirements(
       jsonBody: { requirements },
     };
   } catch (error) {
-    logger.error('Error fetching tier requirements', error);
+    context.log('Error fetching tier requirements', error);
     return {
       status: 500,
       jsonBody: { error: 'Failed to fetch tier requirements' },
@@ -371,7 +359,7 @@ async function getAuthorizationLog(
       },
     };
   } catch (error) {
-    logger.error('Error fetching authorization log', error, { legalEntityId });
+    context.error('Error fetching authorization log', error);
     return {
       status: 500,
       jsonBody: { error: 'Failed to fetch authorization log' },

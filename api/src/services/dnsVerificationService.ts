@@ -3,6 +3,13 @@ import crypto from 'crypto';
 import { query, withTransaction } from '../utils/database';
 import { PoolClient } from 'pg';
 
+// Simple console logger for services
+const log = {
+  info: (message: string, meta?: unknown) => console.log(`[DnsVerificationService] ${message}`, meta || ''),
+  error: (message: string, error?: unknown, meta?: unknown) => console.error(`[DnsVerificationService] ${message}`, error, meta || ''),
+  warn: (message: string, meta?: unknown) => console.warn(`[DnsVerificationService] ${message}`, meta || ''),
+};
+
 export interface DNSToken {
   tokenId: string;
   domain: string;

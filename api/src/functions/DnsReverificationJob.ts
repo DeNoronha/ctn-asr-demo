@@ -1,8 +1,5 @@
 import { app, InvocationContext, Timer } from '@azure/functions';
 import { dnsVerificationService } from '../services/dnsVerificationService';
-import { createLogger } from '../utils/logger';
-
-const logger = createLogger('DnsReverificationJob');
 
 /**
  * Scheduled job to re-verify DNS records for Tier 2 members
@@ -17,8 +14,7 @@ async function dnsReverificationHandler(
 ): Promise<void> {
   const startTime = Date.now();
 
-  logger.info('DNS re-verification job started', {
-    trigger: myTimer.scheduleStatus,
+  context.log('DNS re-verification job started', {
     isPastDue: myTimer.isPastDue,
   });
 
@@ -27,7 +23,7 @@ async function dnsReverificationHandler(
 
     const duration = Date.now() - startTime;
 
-    logger.info('DNS re-verification job completed', {
+    context.log('DNS re-verification job completed', {
       total: result.total,
       verified: result.verified,
       failed: result.failed,
@@ -37,7 +33,7 @@ async function dnsReverificationHandler(
 
     // Log warnings if there were failures
     if (result.failed > 0) {
-      logger.warn('Some DNS re-verifications failed', {
+      context.warn('Some DNS re-verifications failed', {
         failedCount: result.failed,
         totalCount: result.total,
       });
@@ -45,12 +41,10 @@ async function dnsReverificationHandler(
 
     // Log if no entities needed reverification
     if (result.total === 0) {
-      logger.info('No entities required DNS re-verification');
+      context.log('No entities required DNS re-verification');
     }
   } catch (error) {
-    logger.error('DNS re-verification job failed', error, {
-      durationMs: Date.now() - startTime,
-    });
+    context.error('DNS re-verification job failed', error);
 
     // Don't throw - we don't want to fail the job completely
     // Individual entity failures are already logged in the service
