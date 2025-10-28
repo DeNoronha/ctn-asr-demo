@@ -49,9 +49,10 @@ async function handler(
         `INSERT INTO legal_entity (
            legal_entity_id, party_id, primary_legal_name,
            address_line1, postal_code, city, country_code,
-           entity_legal_form, registered_at
+           entity_legal_form, registered_at,
+           authentication_tier, authentication_method
          )
-         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8)
+         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          RETURNING legal_entity_id, party_id`,
         [
           partyId,
@@ -61,7 +62,9 @@ async function handler(
           body.city || null,
           body.country_code || 'NL',
           body.entity_legal_form || 'BV',
-          body.kvk || null
+          body.kvk || null,
+          body.authentication_tier || 3, // Default to Tier 3
+          body.authentication_method || 'EmailVerification'
         ]
       );
       const legalEntityId = legalEntityRows[0].legal_entity_id;

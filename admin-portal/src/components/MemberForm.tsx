@@ -1,5 +1,6 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Input, MaskedTextBox } from '@progress/kendo-react-inputs';
+import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Error, Hint, Label } from '@progress/kendo-react-labels';
 // MemberForm.tsx - Enhanced form with validation
 import type React from 'react';
@@ -25,6 +26,34 @@ interface MemberFormProps {
   initialData?: MemberFormData;
 }
 
+interface TierOption {
+  tier: number;
+  name: string;
+  access: string;
+  method: string;
+}
+
+const TIER_OPTIONS: TierOption[] = [
+  {
+    tier: 3,
+    name: 'Tier 3 - Email + KvK Verification',
+    access: 'Public data only',
+    method: 'EmailVerification',
+  },
+  {
+    tier: 2,
+    name: 'Tier 2 - DNS Verification',
+    access: 'Sensitive data read + webhooks',
+    method: 'DNS',
+  },
+  {
+    tier: 1,
+    name: 'Tier 1 - eHerkenning',
+    access: 'Full access (read, write, publish)',
+    method: 'eHerkenning',
+  },
+];
+
 const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData }) => {
   const notification = useNotification();
   const [formData, setFormData] = useState<MemberFormData>(
@@ -34,6 +63,8 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
       domain: '',
       lei: '',
       kvk: '',
+      authentication_tier: 3, // Default to Tier 3
+      authentication_method: 'EmailVerification',
     }
   );
 
@@ -156,6 +187,8 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
           domain: '',
           lei: '',
           kvk: '',
+          authentication_tier: 3,
+          authentication_method: 'EmailVerification',
         });
         setErrors({});
         setTouched({});
@@ -234,6 +267,42 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
             />
             {touched.domain && errors.domain && <Error>{errors.domain}</Error>}
             <Hint>Primary domain name (e.g., company.com)</Hint>
+          </div>
+
+          <div className="form-field required">
+            <Label>
+              Authentication Tier
+              <HelpTooltip content={helpContent.authenticationTier} dataTestId="tier-help" />
+            </Label>
+            <DropDownList
+              data={TIER_OPTIONS}
+              textField="name"
+              dataItemKey="tier"
+              value={TIER_OPTIONS.find(t => t.tier === formData.authentication_tier)}
+              onChange={(e) => {
+                const selectedTier = e.value as TierOption;
+                setFormData(prev => ({
+                  ...prev,
+                  authentication_tier: selectedTier.tier,
+                  authentication_method: selectedTier.method,
+                }));
+                setIsDirty(true);
+              }}
+              itemRender={(li, itemProps) => {
+                const item = itemProps.dataItem as TierOption;
+                return React.cloneElement(li, li.props, (
+                  <div style={{ padding: '0.5rem 0' }}>
+                    <div style={{ fontWeight: 600 }}>{item.name}</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--ctn-text-light)' }}>
+                      {item.access}
+                    </div>
+                  </div>
+                ));
+              }}
+            />
+            <Hint>
+              {TIER_OPTIONS.find(t => t.tier === formData.authentication_tier)?.access || 'Select tier to see access level'}
+            </Hint>
           </div>
         </div>
 

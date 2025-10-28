@@ -11,6 +11,8 @@ export interface MemberFormData {
   domain: string;
   lei?: string;
   kvk?: string;
+  authentication_tier?: number;
+  authentication_method?: string;
 }
 
 export const validateMemberForm = (data: MemberFormData): ValidationResult => {

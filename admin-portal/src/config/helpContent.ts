@@ -21,6 +21,13 @@ export const helpContent = {
   orgId:
     'Organization identifier in the format "org:company-name". This is auto-generated from your legal name and used as a unique key throughout the system.',
 
+  authenticationTier:
+    'Authentication tier determines data access level:\n\n' +
+    'Tier 1 (eHerkenning): Full access - read, write, publish sensitive data. Requires eHerkenning EH3/EH4 authentication.\n\n' +
+    'Tier 2 (DNS Verification): Sensitive data read + webhook configuration. Requires DNS TXT record verification. Re-verification every 90 days.\n\n' +
+    'Tier 3 (Email + KvK): Public data only. Default tier for email-verified members with KvK document upload.\n\n' +
+    'Members can upgrade their tier after registration by completing additional verification steps.',
+
   // ==========================================
   // Contact Management
   // ==========================================
