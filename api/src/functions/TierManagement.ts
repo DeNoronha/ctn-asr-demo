@@ -50,7 +50,7 @@ async function getTierInfo(
 
 app.http('GetTierInfo', {
   methods: ['GET', 'OPTIONS'],
-  route: 'v1/entities/{legalEntityId}/tier',
+  route: 'v1/entities/{legalentityid}/tier',
   authLevel: 'anonymous',
   handler: memberEndpoint(getTierInfo),
 });
@@ -110,7 +110,7 @@ async function updateTier(
 
 app.http('UpdateTier', {
   methods: ['PUT', 'OPTIONS'],
-  route: 'v1/entities/{legalEntityId}/tier',
+  route: 'v1/entities/{legalentityid}/tier',
   authLevel: 'anonymous',
   handler: adminEndpoint(updateTier),
 });
@@ -178,7 +178,7 @@ async function generateDnsToken(
 
 app.http('GenerateDnsToken', {
   methods: ['POST', 'OPTIONS'],
-  route: 'v1/entities/{legalEntityId}/dns/token',
+  route: 'v1/entities/{legalentityid}/dns/token',
   authLevel: 'anonymous',
   handler: memberEndpoint(generateDnsToken),
 });
@@ -223,7 +223,7 @@ async function verifyDnsToken(
 
 app.http('VerifyDnsToken', {
   methods: ['POST', 'OPTIONS'],
-  route: 'v1/dns/verify/{tokenId}',
+  route: 'v1/dns/verify/{tokenid}',
   authLevel: 'anonymous',
   handler: memberEndpoint(verifyDnsToken),
 });
@@ -271,7 +271,7 @@ async function getPendingDnsTokens(
 
 app.http('GetPendingDnsTokens', {
   methods: ['GET', 'OPTIONS'],
-  route: 'v1/entities/{legalEntityId}/dns/tokens',
+  route: 'v1/entities/{legalentityid}/dns/tokens',
   authLevel: 'anonymous',
   handler: memberEndpoint(getPendingDnsTokens),
 });
