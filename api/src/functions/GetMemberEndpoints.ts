@@ -10,18 +10,24 @@ async function handler(
 
   try {
     const pool = getPool();
-    const userEmail = request.userEmail;
+    const { partyId } = request;
 
-    // Get member's legal_entity_id
+    // SECURITY: Require partyId from JWT token (prevent IDOR)
+    if (!partyId) {
+      context.warn('GetMemberEndpoints: Missing partyId in JWT token', { userEmail: request.userEmail });
+      return { status: 403, body: JSON.stringify({ error: 'Forbidden: Missing party association' }) };
+    }
+
+    // Get member's legal_entity_id using partyId (NOT email)
     const memberResult = await pool.query(`
       SELECT le.legal_entity_id
       FROM legal_entity le
-      LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
-      WHERE c.email = $1 AND c.is_active = true
+      WHERE le.party_id = $1
       LIMIT 1
-    `, [userEmail]);
+    `, [partyId]);
 
     if (memberResult.rows.length === 0) {
+      context.warn('GetMemberEndpoints: Legal entity not found for partyId', { partyId });
       return { status: 404, body: JSON.stringify({ error: 'Member not found' }) };
     }
 
