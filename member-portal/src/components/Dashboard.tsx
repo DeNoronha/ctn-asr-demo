@@ -2,6 +2,14 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import type { ComponentProps, Contact, Endpoint, Token } from '../types';
 
+interface TierInfo {
+  tier: number;
+  method: string;
+  verifiedAt?: string;
+  reverificationDue?: string;
+  eherkenningLevel?: string;
+}
+
 export const Dashboard: React.FC<ComponentProps> = ({
   apiBaseUrl,
   getAccessToken,
@@ -11,6 +19,7 @@ export const Dashboard: React.FC<ComponentProps> = ({
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [tokens, setTokens] = useState<Token[]>([]);
+  const [tierInfo, setTierInfo] = useState<TierInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,6 +55,13 @@ export const Dashboard: React.FC<ComponentProps> = ({
         const tokensData = await tokensRes.json();
         setTokens(tokensData.tokens || []);
       }
+
+      // Load tier information
+      const tierRes = await fetch(`${apiBaseUrl}/entities/${memberData.organizationId}/tier`, { headers });
+      if (tierRes.ok) {
+        const tierData = await tierRes.json();
+        setTierInfo(tierData);
+      }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
@@ -68,6 +84,45 @@ export const Dashboard: React.FC<ComponentProps> = ({
   const activeTokens = tokens.filter(
     (t) => !t.revoked && new Date(t.expires_at) > new Date()
   ).length;
+
+  const getTierName = (tier: number) => {
+    switch (tier) {
+      case 1:
+        return 'Tier 1 - eHerkenning';
+      case 2:
+        return 'Tier 2 - DNS Verification';
+      case 3:
+        return 'Tier 3 - Email + KvK';
+      default:
+        return 'Unknown';
+    }
+  };
+
+  const getTierAccess = (tier: number) => {
+    switch (tier) {
+      case 1:
+        return 'Full access (read, write, publish)';
+      case 2:
+        return 'Sensitive data read + webhooks';
+      case 3:
+        return 'Public data only';
+      default:
+        return 'Unknown';
+    }
+  };
+
+  const getTierColor = (tier: number) => {
+    switch (tier) {
+      case 1:
+        return '#4CAF50'; // Green
+      case 2:
+        return '#2196F3'; // Blue
+      case 3:
+        return '#FF9800'; // Orange
+      default:
+        return '#9E9E9E'; // Grey
+    }
+  };
 
   if (loading) {
     return (
@@ -97,6 +152,34 @@ export const Dashboard: React.FC<ComponentProps> = ({
             Membership: {memberData.membershipLevel || 'Basic'}
           </p>
         </div>
+
+        {tierInfo && (
+          <div className="stat-card">
+            <h3>Authentication Tier</h3>
+            <div
+              className="tier-badge"
+              style={{
+                background: getTierColor(tierInfo.tier),
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                display: 'inline-block',
+                fontWeight: 600,
+                marginTop: '8px'
+              }}
+            >
+              {getTierName(tierInfo.tier)}
+            </div>
+            <p style={{ marginTop: '0.5rem', color: 'var(--ctn-text-light)', fontSize: '0.9rem' }}>
+              {getTierAccess(tierInfo.tier)}
+            </p>
+            {tierInfo.reverificationDue && (
+              <p style={{ marginTop: '0.5rem', color: '#ff9800', fontSize: '0.85rem' }}>
+                Re-verification: {new Date(tierInfo.reverificationDue).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="stat-card">
           <h3>Contacts</h3>

@@ -17,6 +17,7 @@ import './App.css';
 import { APIAccessView } from './components/APIAccessView';
 import { ContactsView } from './components/ContactsView';
 import { Dashboard } from './components/Dashboard';
+import { DnsVerificationView } from './components/DnsVerificationView';
 import { EndpointsView } from './components/EndpointsView';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import { ProfileView } from './components/ProfileView';
@@ -26,7 +27,7 @@ interface AppContentProps {
   instance: IPublicClientApplication;
 }
 
-type TabType = 'dashboard' | 'profile' | 'contacts' | 'integrations' | 'api-access' | 'support';
+type TabType = 'dashboard' | 'profile' | 'contacts' | 'integrations' | 'api-access' | 'dns-verification' | 'support';
 
 interface MemberData {
   organizationId: string;
@@ -164,6 +165,8 @@ function AppContent({ instance }: AppContentProps) {
         return <EndpointsView {...commonProps} />;
       case 'api-access':
         return <APIAccessView {...commonProps} />;
+      case 'dns-verification':
+        return <DnsVerificationView {...commonProps} />;
       case 'support':
         return <Support />;
       default:
@@ -251,6 +254,13 @@ function AppContent({ instance }: AppContentProps) {
                 onClick={() => setActiveTab('api-access')}
               >
                 API Access
+              </button>
+              <button
+                type="button"
+                className={`tab-button ${activeTab === 'dns-verification' ? 'active' : ''}`}
+                onClick={() => setActiveTab('dns-verification')}
+              >
+                DNS Verification
               </button>
               <button
                 type="button"
