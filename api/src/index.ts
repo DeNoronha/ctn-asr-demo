@@ -80,4 +80,7 @@ import './functions/GetETAUpdates';
 import './functions/GetContainerStatus';
 import './functions/ManageBookings';
 
+// Three-Tier Authentication System
+import './functions/TierManagement';
+
 console.log('✓ Essential functions loaded');
