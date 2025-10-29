@@ -150,7 +150,7 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
     <div className="contacts-manager">
       <div className="section-header">
         <h3>Contacts ({contactCount})</h3>
-        <Button themeColor="primary" onClick={handleAddContact}>
+        <Button themeColor="primary" onClick={handleAddContact} aria-label="Add new contact">
           <Plus size={16} />
           Add Contact
         </Button>

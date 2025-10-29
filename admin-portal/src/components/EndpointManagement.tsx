@@ -209,7 +209,12 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
           <h2>System Endpoints</h2>
           <p className="entity-name">{legalEntityName}</p>
         </div>
-        <Button themeColor="primary" onClick={() => setShowDialog(true)} disabled={loading}>
+        <Button
+          themeColor="primary"
+          onClick={() => setShowDialog(true)}
+          disabled={loading}
+          aria-label="Register new endpoint"
+        >
           <Plus size={16} />
           Register Endpoint
         </Button>
@@ -277,11 +282,14 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
           </div>
 
           <div className="dialog-actions">
-            <Button onClick={() => setShowDialog(false)}>Cancel</Button>
+            <Button onClick={() => setShowDialog(false)} aria-label="Cancel endpoint registration">
+              Cancel
+            </Button>
             <Button
               themeColor="primary"
               onClick={handleCreateEndpoint}
               disabled={!formData.endpoint_name || !formData.endpoint_url || loading}
+              aria-label="Save and register endpoint"
             >
               Register Endpoint
             </Button>
@@ -304,7 +312,11 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
               <label>Token Value:</label>
               <div className="token-value-container">
                 <code className="token-value">{newToken.token_value}</code>
-                <Button size="small" onClick={() => copyToClipboard(newToken.token_value)}>
+                <Button
+                  size="small"
+                  onClick={() => copyToClipboard(newToken.token_value)}
+                  aria-label="Copy token to clipboard"
+                >
                   Copy
                 </Button>
               </div>
@@ -328,7 +340,11 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
           </div>
 
           <div className="dialog-actions">
-            <Button themeColor="primary" onClick={() => setShowTokenDialog(false)}>
+            <Button
+              themeColor="primary"
+              onClick={() => setShowTokenDialog(false)}
+              aria-label="Close token dialog"
+            >
               Done
             </Button>
           </div>

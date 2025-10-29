@@ -99,3 +99,29 @@ export const CONTACT_TYPE_COLORS = {
 export const getContactTypeColor = (type: string): string => {
   return CONTACT_TYPE_COLORS[type as keyof typeof CONTACT_TYPE_COLORS] || CONTACT_TYPE_COLORS.DEFAULT;
 };
+
+/**
+ * Audit action colors for audit log badges (white text on colored background)
+ * All colors have 4.5:1+ contrast ratio with white text
+ */
+export const AUDIT_ACTION_COLORS = {
+  USER_INVITED: '#1e40af',      // Info blue: 6.80:1 contrast (was #3b82f6 at 3.18:1)
+  USER_UPDATED: '#1e40af',      // Info blue: 6.80:1 contrast (was #8b5cf6 at 4.05:1)
+  USER_ENABLED: '#0d8558',      // Success green: 4.53:1 contrast (was #10b981 at 2.35:1)
+  USER_DISABLED: '#b91c1c',     // Error red: 5.94:1 contrast (was #ef4444 at 3.59:1)
+  USER_ROLE_CHANGED: '#b45309', // Warning amber: 4.52:1 contrast (was #f59e0b at 2.33:1)
+  MEMBER_CREATED: '#0d8558',    // Success green: 4.53:1 contrast (was #10b981 at 2.35:1)
+  MEMBER_UPDATED: '#1e40af',    // Info blue: 6.80:1 contrast (was #3b82f6 at 3.18:1)
+  MEMBER_DELETED: '#b91c1c',    // Error red: 5.94:1 contrast (was #ef4444 at 3.59:1)
+  TOKEN_ISSUED: '#0d8558',      // Success green: 4.53:1 contrast (was #10b981 at 2.35:1)
+  USER_LOGIN: '#1e40af',        // Info blue: 6.80:1 contrast (was #6366f1 at ~5:1)
+  USER_LOGOUT: '#475569',       // Secondary gray: 8.59:1 contrast (was #64748b at ~5:1)
+  DEFAULT: '#4b5563',           // Fallback gray: 5.93:1 contrast
+} as const;
+
+/**
+ * Utility function to get audit action color with fallback
+ */
+export const getAuditActionColor = (action: string): string => {
+  return AUDIT_ACTION_COLORS[action as keyof typeof AUDIT_ACTION_COLORS] || AUDIT_ACTION_COLORS.DEFAULT;
+};

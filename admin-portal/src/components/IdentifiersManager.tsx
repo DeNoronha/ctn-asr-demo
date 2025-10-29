@@ -684,10 +684,15 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
             onClick={handleFetchLei}
             disabled={fetchingLei || identifiers.length === 0}
             title="Fetch LEI from GLEIF API"
+            aria-label={fetchingLei ? 'Fetching LEI from GLEIF API' : 'Fetch LEI from GLEIF API'}
           >
             {fetchingLei ? 'Fetching...' : 'Fetch LEI'}
           </Button>
-          <Button themeColor="primary" onClick={handleAdd}>
+          <Button
+            themeColor="primary"
+            onClick={handleAdd}
+            aria-label="Add new identifier"
+          >
             <Plus size={16} />
             Add Identifier
           </Button>

@@ -20,6 +20,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { RoleGuard } from '../../auth/ProtectedRoute';
 import { UserRole } from '../../auth/authConfig';
 import { AuditAction, type AuditLog, auditLogService } from '../../services/auditLogService';
+import { getAuditActionColor } from '../../utils/colors';
 import './AuditLogViewer.css';
 
 const AuditLogViewer: React.FC = () => {
@@ -128,22 +129,8 @@ const AuditLogViewer: React.FC = () => {
   };
 
   const ActionCell = (props: GridCellProps) => {
-    const actionColors: Record<string, string> = {
-      USER_INVITED: '#3b82f6',
-      USER_UPDATED: '#8b5cf6',
-      USER_ENABLED: '#10b981',
-      USER_DISABLED: '#ef4444',
-      USER_ROLE_CHANGED: '#f59e0b',
-      MEMBER_CREATED: '#10b981',
-      MEMBER_UPDATED: '#3b82f6',
-      MEMBER_DELETED: '#ef4444',
-      TOKEN_ISSUED: '#10b981',
-      USER_LOGIN: '#6366f1',
-      USER_LOGOUT: '#64748b',
-    };
-
     const action = props.dataItem.action;
-    const color = actionColors[action] || '#64748b';
+    const color = getAuditActionColor(action);
 
     return (
       <td>
