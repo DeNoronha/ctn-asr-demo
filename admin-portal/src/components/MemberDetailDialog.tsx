@@ -6,6 +6,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntity, type LegalEntityContact, type Member, api } from '../services/api';
+import { safeFormatDate } from '../utils/safeArray';
 import type { MemberFormData } from '../utils/validation';
 import { CompanyDetails } from './CompanyDetails';
 import { CompanyForm } from './CompanyForm';
@@ -132,8 +133,9 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
     );
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+  // CR-002: Use safe date formatting with null handling
+  const formatDate = (dateString: string | null | undefined) => {
+    return safeFormatDate(dateString);
   };
 
   return (

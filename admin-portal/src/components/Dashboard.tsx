@@ -22,6 +22,7 @@ import {
   YAxis,
 } from 'recharts';
 import type { Member } from '../services/api';
+import { safeArray, safeFilter, safeLength } from '../utils/safeArray';
 import './Dashboard.css';
 
 interface DashboardProps {
@@ -57,13 +58,14 @@ const MEMBERSHIP_COLORS: Record<string, string> = {
 const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = false }) => {
   const { t } = useTranslation();
 
-  // Calculate statistics
+  // Calculate statistics (CR-002: Safe array operations with null checks)
   const stats = useMemo(() => {
-    const total = totalMembers || members.length;
-    const active = members.filter((m) => m.status === 'ACTIVE').length;
-    const pending = members.filter((m) => m.status === 'PENDING').length;
-    const suspended = members.filter((m) => m.status === 'SUSPENDED').length;
-    const premium = members.filter((m) => m.membership_level === 'PREMIUM').length;
+    const safeMembersList = safeArray(members);
+    const total = totalMembers || safeLength(members);
+    const active = safeFilter(safeMembersList, (m) => m.status === 'ACTIVE').length;
+    const pending = safeFilter(safeMembersList, (m) => m.status === 'PENDING').length;
+    const suspended = safeFilter(safeMembersList, (m) => m.status === 'SUSPENDED').length;
+    const premium = safeFilter(safeMembersList, (m) => m.membership_level === 'PREMIUM').length;
 
     return {
       total,

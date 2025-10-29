@@ -5,6 +5,7 @@ import { AlertTriangle, Pencil, Plus, Trash2, Users } from './icons';
 import type React from 'react';
 import { useState } from 'react';
 import type { LegalEntityContact } from '../services/api';
+import { safeArray, safeLength } from '../utils/safeArray';
 import { sanitizeGridCell } from '../utils/sanitize';
 import { ConfirmDialog } from './ConfirmDialog';
 import { ContactForm } from './ContactForm';
@@ -114,7 +115,9 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
     }
   };
 
+  // CR-002: Add null safety for grid actions
   const ActionsCell = (props: GridCellProps) => {
+    const contactName = props.dataItem?.full_name || 'contact';
     return (
       <td>
         <div className="action-buttons">
@@ -122,7 +125,7 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
             fillMode="flat"
             size="small"
             title="Edit contact"
-            aria-label={`Edit ${props.dataItem.full_name}`}
+            aria-label={`Edit ${contactName}`}
             onClick={() => handleEditContact(props.dataItem)}
             onKeyDown={(e) => handleKeyDown(e, () => handleEditContact(props.dataItem))}
             tabIndex={0}
@@ -133,7 +136,7 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
             fillMode="flat"
             size="small"
             title="Delete contact"
-            aria-label={`Delete ${props.dataItem.full_name}`}
+            aria-label={`Delete ${contactName}`}
             onClick={() => handleDeleteClick(props.dataItem)}
             onKeyDown={(e) => handleKeyDown(e, () => handleDeleteClick(props.dataItem))}
             tabIndex={0}
@@ -145,19 +148,23 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
     );
   };
 
+  // CR-002: Safe array operations
+  const safeContacts = safeArray(contacts);
+  const contactCount = safeLength(contacts);
+
   return (
     <div className="contacts-manager">
       <div className="section-header">
-        <h3>Contacts ({contacts.length})</h3>
+        <h3>Contacts ({contactCount})</h3>
         <Button themeColor="primary" onClick={handleAddContact}>
           <Plus size={16} />
           Add Contact
         </Button>
       </div>
 
-      {contacts.length > 0 ? (
+      {contactCount > 0 ? (
         <Grid
-          data={contacts}
+          data={safeContacts}
           style={{ height: '400px', maxHeight: '400px' }}
           className="contacts-grid"
         >
