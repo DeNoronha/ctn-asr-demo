@@ -15,6 +15,7 @@ import { UserRole } from '../auth/authConfig';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAsync } from '../hooks/useAsync';
 import { type Member, api } from '../services/api';
+import { logger } from '../utils/logger';
 import type { MemberFormData } from '../utils/validation';
 import About from './About';
 import AdminSidebar, { type MenuItem } from './AdminSidebar';
@@ -67,8 +68,9 @@ const AdminPortal: React.FC = () => {
         };
         setMembers(result.data);
         setTotalMembers(result.total);
-      } catch (_error) {
-        // Handled by useAsync
+      } catch (error) {
+        // Handled by useAsync hook, but log for debugging (CR-004)
+        logger.error('Failed to load members data:', error);
       }
     },
     [loadMembers]

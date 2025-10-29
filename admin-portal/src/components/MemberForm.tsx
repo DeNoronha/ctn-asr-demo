@@ -6,6 +6,7 @@ import { Error, Hint, Label } from '@progress/kendo-react-labels';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
+import { logger } from '../utils/logger';
 import {
   type MemberFormData,
   formatDomain,
@@ -171,8 +172,9 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
       // Clear draft on successful submit
       localStorage.removeItem('memberFormDraft');
       setIsDirty(false);
-    } catch (_error) {
-      // Error handling done by parent
+    } catch (error) {
+      // Error handling done by parent, but log for debugging (CR-004)
+      logger.error('Failed to submit member form:', error);
     } finally {
       setIsSubmitting(false);
     }
