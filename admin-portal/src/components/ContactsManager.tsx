@@ -72,6 +72,14 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
   const ContactTypeCell = (props: GridCellProps) => {
     const type = props.dataItem.contact_type || 'General';
 
+    const contactTypeTooltips: Record<string, string> = {
+      Primary: 'Primary point of contact for this organization',
+      Technical: 'Technical contact for system integration and API issues',
+      Billing: 'Billing and invoicing contact',
+      Support: 'Customer support and service desk contact',
+      General: 'General contact for miscellaneous inquiries'
+    };
+
     return (
       <td>
         <span
@@ -79,6 +87,7 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
           style={{ backgroundColor: getContactTypeColor(type) }}
           role="status"
           aria-label={`Contact type: ${type}`}
+          title={contactTypeTooltips[type] || `${type} contact`}
         >
           {type}
         </span>

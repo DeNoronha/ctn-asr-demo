@@ -22,10 +22,33 @@ interface ContactFormProps {
 
 const contactTypes = ['Primary', 'Technical', 'Billing', 'Support'];
 
+/**
+ * Form validation functions with inline feedback (DA-007)
+ * - Immediate validation on blur
+ * - Clear error messages with ARIA support
+ * - Pattern-based validation for structured fields
+ */
 const emailValidator = (value: string) => {
   if (!value) return 'Email is required';
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(value) ? '' : 'Please enter a valid email address';
+  return emailRegex.test(value) ? '' : 'Please enter a valid email address (e.g., name@company.com)';
+};
+
+const nameValidator = (value: string, fieldName: string) => {
+  if (!value || value.trim().length === 0) {
+    return `${fieldName} is required`;
+  }
+  if (value.trim().length < 2) {
+    return `${fieldName} must be at least 2 characters`;
+  }
+  return '';
+};
+
+const phoneValidator = (value: string) => {
+  if (!value) return ''; // Optional field
+  // International phone format: +XX XX XXX XXXX or similar
+  const phoneRegex = /^\+?[\d\s\-()]{7,20}$/;
+  return phoneRegex.test(value) ? '' : 'Please enter a valid phone number (e.g., +31 20 123 4567)';
 };
 
 export const ContactForm: React.FC<ContactFormProps> = ({
@@ -124,9 +147,21 @@ export const ContactForm: React.FC<ContactFormProps> = ({
             <legend>Personal Information</legend>
 
             <div className="form-row-group">
-              <Field name="first_name" label="First Name" component={Input} required />
+              <Field
+                name="first_name"
+                label="First Name"
+                component={Input}
+                validator={(value: string) => nameValidator(value, 'First name')}
+                required
+              />
 
-              <Field name="last_name" label="Last Name" component={Input} required />
+              <Field
+                name="last_name"
+                label="Last Name"
+                component={Input}
+                validator={(value: string) => nameValidator(value, 'Last name')}
+                required
+              />
             </div>
 
             <Field
@@ -163,6 +198,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
                 )}
                 component={Input}
                 placeholder="+31 20 123 4567"
+                validator={phoneValidator}
               />
 
               <Field
@@ -176,6 +212,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
                 )}
                 component={Input}
                 placeholder="+31 6 12 34 56 78"
+                validator={phoneValidator}
               />
             </div>
 

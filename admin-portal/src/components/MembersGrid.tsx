@@ -383,11 +383,22 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   };
 
   const StatusCell = (props: GridCellProps) => {
+    const statusTooltips: Record<string, string> = {
+      ACTIVE: 'Member is active and in good standing',
+      PENDING: 'Membership application pending approval',
+      SUSPENDED: 'Member temporarily suspended - access restricted',
+      TERMINATED: 'Membership terminated - no longer active',
+      FLAGGED: 'Member flagged for review'
+    };
+
     return (
       <td>
         <span
           className="status-badge"
           style={{ backgroundColor: getStatusColor(props.dataItem.status) }}
+          title={statusTooltips[props.dataItem.status] || 'Member status'}
+          role="status"
+          aria-label={`Status: ${props.dataItem.status}`}
         >
           {props.dataItem.status}
         </span>
@@ -396,11 +407,20 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   };
 
   const MembershipCell = (props: GridCellProps) => {
+    const membershipTooltips: Record<string, string> = {
+      PREMIUM: 'Premium membership - full access to all services and priority support',
+      FULL: 'Full membership - access to all standard services',
+      BASIC: 'Basic membership - limited access to essential services'
+    };
+
     return (
       <td>
         <span
           className="membership-badge"
           style={{ backgroundColor: getMembershipColor(props.dataItem.membership_level) }}
+          title={membershipTooltips[props.dataItem.membership_level] || 'Membership level'}
+          role="status"
+          aria-label={`Membership: ${props.dataItem.membership_level}`}
         >
           {props.dataItem.membership_level}
         </span>

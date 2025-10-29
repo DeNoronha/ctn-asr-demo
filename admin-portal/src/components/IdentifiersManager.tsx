@@ -543,20 +543,41 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
   const getValidationBadge = (status?: string) => {
     if (!status) return null;
 
-    const config: Record<string, { color: string; icon: React.ReactNode }> = {
-      VALIDATED: { color: '#059669', icon: <CheckCircle size={14} /> }, // WCAG AA compliant (4.52:1)
-      PENDING: { color: '#b45309', icon: <AlertCircle size={14} /> }, // WCAG AA compliant (4.54:1)
-      FAILED: { color: '#dc2626', icon: <XCircle size={14} /> }, // WCAG AA compliant (4.52:1)
-      EXPIRED: { color: '#6b7280', icon: <XCircle size={14} /> }, // Already compliant (4.83:1)
+    const config: Record<string, { color: string; icon: React.ReactNode; tooltip: string }> = {
+      VALIDATED: {
+        color: '#059669',
+        icon: <CheckCircle size={14} />,
+        tooltip: 'This identifier has been verified against the official registry'
+      },
+      PENDING: {
+        color: '#b45309',
+        icon: <AlertCircle size={14} />,
+        tooltip: 'Validation pending - awaiting verification against registry'
+      },
+      FAILED: {
+        color: '#dc2626',
+        icon: <XCircle size={14} />,
+        tooltip: 'Validation failed - identifier could not be verified in registry'
+      },
+      EXPIRED: {
+        color: '#6b7280',
+        icon: <XCircle size={14} />,
+        tooltip: 'Validation expired - re-verification required'
+      },
     };
 
-    const { color, icon } = config[status] || { color: '#6b7280', icon: null };
+    const { color, icon, tooltip } = config[status] || {
+      color: '#6b7280',
+      icon: null,
+      tooltip: 'Unknown validation status'
+    };
     return (
       <span
         className="validation-badge"
         style={{ backgroundColor: color }}
         role="status"
         aria-label={`Validation status: ${status}`}
+        title={tooltip}
       >
         <span aria-hidden="true">{icon}</span>
         {status}
