@@ -2,6 +2,13 @@
 
 Association Register demonstration for the Connected Trade Network initiative.
 
+## ⚠️ IMPORTANT: Infrastructure Migration (October 29, 2025)
+
+**Active Infrastructure:** `infrastructure/bicep/` - Use this for all deployments
+**Deprecated:** `infrastructure/legacy/` - Old structure archived for reference only
+
+The legacy `infrastructure/main.bicep` and `infrastructure/parameters.dev.json` have been moved to `infrastructure/legacy/` and should **NOT** be used for deployments. All infrastructure management now happens in `infrastructure/bicep/`.
+
 ## Project Structure
 
 ```

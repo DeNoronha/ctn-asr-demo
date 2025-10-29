@@ -18,9 +18,25 @@ param adminPortalDeployToken string
 @secure()
 param memberPortalDeployToken string
 
+@description('Azure Static Web Apps API Token for Orchestrator Portal')
+@secure()
+param orchestratorPortalDeployToken string = ''
+
 @description('Database administrator password')
 @secure()
 param databaseAdminPassword string
+
+@description('KVK API Key for registry validation')
+@secure()
+param kvkApiKey string = ''
+
+@description('Azure Document Intelligence Key for KVK document processing')
+@secure()
+param docIntelligenceKey string = ''
+
+@description('Anthropic API Key for DocuFlow AI features')
+@secure()
+param anthropicApiKey string = ''
 
 @description('Enable secret creation (set to false to skip secrets on first deploy)')
 param enableSecretCreation bool = true
@@ -75,6 +91,58 @@ resource databasePasswordSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' =
   name: 'DATABASE-ADMIN-PASSWORD'
   properties: {
     value: databaseAdminPassword
+    contentType: 'text/plain'
+    attributes: {
+      enabled: true
+    }
+  }
+}
+
+// Orchestrator Portal Deploy Token
+resource orchestratorPortalTokenSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (enableSecretCreation && orchestratorPortalDeployToken != '') {
+  parent: keyVault
+  name: 'AZURE-STATIC-WEB-APPS-API-TOKEN-ORCHESTRATOR'
+  properties: {
+    value: orchestratorPortalDeployToken
+    contentType: 'text/plain'
+    attributes: {
+      enabled: true
+    }
+  }
+}
+
+// KVK API Key
+resource kvkApiKeySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (enableSecretCreation && kvkApiKey != '') {
+  parent: keyVault
+  name: 'KVK-API-KEY'
+  properties: {
+    value: kvkApiKey
+    contentType: 'text/plain'
+    attributes: {
+      enabled: true
+    }
+  }
+}
+
+// Document Intelligence Key
+resource docIntelligenceKeySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (enableSecretCreation && docIntelligenceKey != '') {
+  parent: keyVault
+  name: 'DOC-INTELLIGENCE-KEY'
+  properties: {
+    value: docIntelligenceKey
+    contentType: 'text/plain'
+    attributes: {
+      enabled: true
+    }
+  }
+}
+
+// Anthropic API Key
+resource anthropicApiKeySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (enableSecretCreation && anthropicApiKey != '') {
+  parent: keyVault
+  name: 'ANTHROPIC-API-KEY'
+  properties: {
+    value: anthropicApiKey
     contentType: 'text/plain'
     attributes: {
       enabled: true

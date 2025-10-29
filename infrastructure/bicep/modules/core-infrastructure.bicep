@@ -17,6 +17,7 @@ param tags object
 
 // Variables
 var storageAccountName = replace('st${resourcePrefix}${environment}', '-', '')
+var kvkStorageAccountName = replace('st${resourcePrefix}${environment}${uniqueString(resourceGroup().id)}', '-', '')
 var appServicePlanName = 'asp-${resourcePrefix}-${environment}'
 var appInsightsName = 'ai-${resourcePrefix}-${environment}'
 var keyVaultName = replace('kv-${resourcePrefix}-${environment}', '-', '')
@@ -82,6 +83,65 @@ resource kvkDocumentsContainer 'Microsoft.Storage/storageAccounts/blobServices/c
 resource applicationDocumentsContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
   parent: blobServices
   name: 'application-documents'
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
+// Dedicated Storage Account for KVK Documents (separate for security isolation)
+resource kvkStorageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+  name: kvkStorageAccountName
+  location: location
+  tags: union(tags, {
+    Purpose: 'KVK Document Storage'
+  })
+  sku: {
+    name: environment == 'prod' ? 'Standard_GRS' : 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+  properties: {
+    minimumTlsVersion: 'TLS1_2'
+    supportsHttpsTrafficOnly: true
+    allowBlobPublicAccess: false
+    accessTier: 'Hot'
+    encryption: {
+      services: {
+        blob: {
+          enabled: true
+        }
+        file: {
+          enabled: true
+        }
+      }
+      keySource: 'Microsoft.Storage'
+    }
+    networkAcls: {
+      defaultAction: 'Allow'
+      bypass: 'AzureServices'
+    }
+  }
+}
+
+// KVK Storage Blob Services
+resource kvkBlobServices 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = {
+  parent: kvkStorageAccount
+  name: 'default'
+  properties: {
+    deleteRetentionPolicy: {
+      enabled: true
+      days: 90 // Longer retention for KVK documents
+    }
+    containerDeleteRetentionPolicy: {
+      enabled: true
+      days: 90
+    }
+  }
+}
+
+// KVK Documents Container
+resource kvkDocsContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
+  parent: kvkBlobServices
+  name: 'kvk-documents'
   properties: {
     publicAccess: 'None'
   }
@@ -156,6 +216,9 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-01-01' = {
 output storageAccountName string = storageAccount.name
 output storageAccountId string = storageAccount.id
 output storageAccountKey string = storageAccount.listKeys().keys[0].value
+output kvkStorageAccountName string = kvkStorageAccount.name
+output kvkStorageAccountId string = kvkStorageAccount.id
+output kvkStorageAccountKey string = kvkStorageAccount.listKeys().keys[0].value
 output appServicePlanId string = appServicePlan.id
 output appInsightsInstrumentationKey string = appInsights.properties.InstrumentationKey
 output appInsightsConnectionString string = appInsights.properties.ConnectionString
