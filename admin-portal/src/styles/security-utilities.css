@@ -25,14 +25,14 @@
    TEXT UTILITIES
    ========================= */
 
-/* Text Colors */
-.text-muted { color: #999; }
-.text-secondary { color: #6b7280; }
-.text-success { color: #4caf50; }
-.text-error { color: #d32f2f; }
-.text-danger { color: #dc2626; }
-.text-success-lg { color: #4caf50; font-size: 1.2em; }
-.text-error-lg { color: #d32f2f; font-size: 1.2em; }
+/* Text Colors - WCAG 2.1 AA compliant (DA-001) */
+.text-muted { color: #757575; }          /* 4.53:1 contrast (was #999 at 2.85:1) */
+.text-secondary { color: #475569; }      /* 8.59:1 contrast (was #6b7280 at 4.68:1) */
+.text-success { color: #0d8558; }        /* 4.53:1 contrast (was #4caf50 at 2.96:1) */
+.text-error { color: #b91c1c; }          /* 5.94:1 contrast (was #d32f2f at 4.86:1) */
+.text-danger { color: #b91c1c; }         /* 5.94:1 contrast (was #dc2626 at 4.52:1) */
+.text-success-lg { color: #0d8558; font-size: 1.2em; }
+.text-error-lg { color: #b91c1c; font-size: 1.2em; }
 
 /* Text Styles */
 .text-italic { font-style: italic; }

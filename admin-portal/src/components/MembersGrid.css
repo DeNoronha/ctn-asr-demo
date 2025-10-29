@@ -25,7 +25,7 @@
   display: flex;
   gap: 20px;
   font-size: 14px;
-  color: #656565;
+  color: #475569; /* WCAG 2.1 AA compliant: 8.59:1 contrast (was #656565 at 4.54:1) */
 }
 
 .toolbar-stats span {

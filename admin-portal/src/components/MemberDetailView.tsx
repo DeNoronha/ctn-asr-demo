@@ -14,6 +14,7 @@ import { type LegalEntity, type LegalEntityContact, type Member, api } from '../
 import { type LegalEntityEndpoint, type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
 import { logger } from '../utils/logger';
+import { getStatusColor, getMembershipColor } from '../utils/colors';
 import { CompanyDetails } from './CompanyDetails';
 import { CompanyForm } from './CompanyForm';
 import { ContactsManager } from './ContactsManager';
@@ -154,27 +155,16 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
   };
 
   const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      ACTIVE: '#10b981',
-      PENDING: '#f59e0b',
-      SUSPENDED: '#ef4444',
-      TERMINATED: '#dc2626',
-    };
     return (
-      <span className="status-badge" style={{ backgroundColor: colors[status] || '#6b7280' }}>
+      <span className="status-badge" style={{ backgroundColor: getStatusColor(status) }}>
         {status}
       </span>
     );
   };
 
   const getMembershipBadge = (level: string) => {
-    const colors: Record<string, string> = {
-      PREMIUM: '#8b5cf6',
-      FULL: '#3b82f6',
-      BASIC: '#6b7280',
-    };
     return (
-      <span className="membership-badge" style={{ backgroundColor: colors[level] || '#9ca3af' }}>
+      <span className="membership-badge" style={{ backgroundColor: getMembershipColor(level) }}>
         {level}
       </span>
     );

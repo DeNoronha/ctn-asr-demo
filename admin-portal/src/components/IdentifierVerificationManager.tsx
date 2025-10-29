@@ -10,6 +10,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
 import type { LegalEntityIdentifier } from '../services/apiV2';
 import { formatDateTime } from '../utils/dateUtils';
+import { getVerificationColor } from '../utils/colors';
 import { EmptyState } from './EmptyState';
 import './IdentifierVerificationManager.css';
 
@@ -149,16 +150,16 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
   };
 
   const getStatusBadge = (status: string) => {
-    const config: Record<string, { color: string; icon: React.ReactNode; text: string }> = {
-      verified: { color: '#10b981', icon: <CheckCircle size={14} />, text: 'Verified' },
-      pending: { color: '#f59e0b', icon: <AlertTriangle size={14} />, text: 'Pending' },
-      failed: { color: '#ef4444', icon: <XCircle size={14} />, text: 'Failed' },
-      flagged: { color: '#f59e0b', icon: <AlertTriangle size={14} />, text: 'Flagged for Review' },
+    const config: Record<string, { icon: React.ReactNode; text: string }> = {
+      verified: { icon: <CheckCircle size={14} />, text: 'Verified' },
+      pending: { icon: <AlertTriangle size={14} />, text: 'Pending' },
+      failed: { icon: <XCircle size={14} />, text: 'Failed' },
+      flagged: { icon: <AlertTriangle size={14} />, text: 'Flagged for Review' },
     };
 
-    const { color, icon, text } = config[status] || { color: '#6b7280', icon: null, text: status };
+    const { icon, text } = config[status] || { icon: null, text: status };
     return (
-      <span className="verification-status-badge" style={{ backgroundColor: color }}>
+      <span className="verification-status-badge" style={{ backgroundColor: getVerificationColor(status) }}>
         {icon}
         {text}
       </span>

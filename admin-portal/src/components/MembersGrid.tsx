@@ -35,6 +35,7 @@ import {
   performBulkOperation,
 } from '../utils/exportUtils';
 import { sanitizeGridCell } from '../utils/sanitize';
+import { getStatusColor, getMembershipColor } from '../utils/colors';
 import { Eye, Pencil } from './icons';
 import AdvancedFilter from './AdvancedFilter';
 import './MembersGrid.css';
@@ -381,19 +382,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   };
 
   const StatusCell = (props: GridCellProps) => {
-    const getStatusColor = (status: string) => {
-      switch (status) {
-        case 'ACTIVE':
-          return '#10b981';
-        case 'PENDING':
-          return '#f59e0b';
-        case 'SUSPENDED':
-          return '#ef4444';
-        default:
-          return '#6b7280';
-      }
-    };
-
     return (
       <td>
         <span
@@ -407,19 +395,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   };
 
   const MembershipCell = (props: GridCellProps) => {
-    const getMembershipColor = (level: string) => {
-      switch (level) {
-        case 'PREMIUM':
-          return '#8b5cf6';
-        case 'FULL':
-          return '#3b82f6';
-        case 'BASIC':
-          return '#6b7280';
-        default:
-          return '#9ca3af';
-      }
-    };
-
     return (
       <td>
         <span
