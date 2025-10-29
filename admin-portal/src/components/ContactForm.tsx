@@ -6,6 +6,7 @@ import { Checkbox } from '@progress/kendo-react-inputs';
 // ContactForm.tsx - Form for creating/editing contacts
 import type React from 'react';
 import type { LegalEntityContact } from '../services/api';
+import { sanitizeFormData } from '../utils/sanitize';
 import { FieldLabel } from './help/FieldLabel';
 import { helpContent } from '../config/helpContent';
 import { ProgressiveSection } from './forms/ProgressiveSection';
@@ -34,25 +35,28 @@ export const ContactForm: React.FC<ContactFormProps> = ({
   onCancel,
 }) => {
   const handleSubmit = async (dataItem: Record<string, unknown>) => {
+    // SEC-006: Sanitize form data before processing to prevent XSS attacks
+    const sanitizedData = sanitizeFormData(dataItem);
+
     const contactData: LegalEntityContact = {
       legal_entity_contact_id: contact?.legal_entity_contact_id || crypto.randomUUID(),
       legal_entity_id: legalEntityId,
       dt_created: contact?.dt_created || new Date().toISOString(),
       dt_modified: new Date().toISOString(),
-      contact_type: dataItem.contact_type as
+      contact_type: sanitizedData.contact_type as
         | 'PRIMARY'
         | 'TECHNICAL'
         | 'BILLING'
         | 'SUPPORT'
         | 'COMPLIANCE'
         | 'ADMIN',
-      full_name: `${dataItem.first_name} ${dataItem.last_name}`,
-      email: dataItem.email as string,
-      phone: dataItem.phone as string,
-      mobile: dataItem.mobile as string,
-      job_title: dataItem.job_title as string,
-      department: dataItem.department as string,
-      is_primary: (dataItem.is_primary as boolean) || false,
+      full_name: `${sanitizedData.first_name} ${sanitizedData.last_name}`,
+      email: sanitizedData.email as string,
+      phone: sanitizedData.phone as string,
+      mobile: sanitizedData.mobile as string,
+      job_title: sanitizedData.job_title as string,
+      department: sanitizedData.department as string,
+      is_primary: (sanitizedData.is_primary as boolean) || false,
     };
 
     await onSave(contactData);

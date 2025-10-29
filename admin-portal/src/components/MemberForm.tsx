@@ -14,6 +14,7 @@ import {
   formatOrgId,
   validateMemberForm,
 } from '../utils/validation';
+import { sanitizeFormData } from '../utils/sanitize';
 import { HelpTooltip } from './help/HelpTooltip';
 import { helpContent } from '../config/helpContent';
 import { ProgressiveSection } from './forms/ProgressiveSection';
@@ -165,7 +166,8 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
     setIsSubmitting(true);
 
     try {
-      await onSubmit(formData);
+      // SEC-006: Sanitize form data before submission to prevent XSS attacks
+      await onSubmit(sanitizeFormData(formData));
       // Clear draft on successful submit
       localStorage.removeItem('memberFormDraft');
       setIsDirty(false);

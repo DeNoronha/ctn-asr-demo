@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { formatDate } from '../utils/dateUtils';
+import { sanitizeGridCell } from '../utils/sanitize';
 import { ConfirmDialog } from './ConfirmDialog';
 import { EmptyState } from './EmptyState';
 import './IdentifiersManager.css';
@@ -216,6 +217,13 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
     }));
   };
 
+  // SEC-007: Sanitize user-generated text fields in grid
+  const TextCell = (props: any) => {
+    const { field, dataItem } = props;
+    const value = dataItem[field];
+    return <td dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
+  };
+
   const StatusCell = (props: any) => {
     return (
       <td>
@@ -294,7 +302,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
         />
       ) : (
         <Grid data={clients} style={{ height: '400px' }}>
-          <GridColumn field="client_name" title="Client Name" width="200px" />
+          <GridColumn field="client_name" title="Client Name" width="200px" cell={TextCell} />
           <GridColumn field="azure_client_id" title="Client ID" width="280px" />
           <GridColumn field="assigned_scopes" title="Scopes" width="300px" cell={ScopesCell} />
           <GridColumn field="is_active" title="Status" width="100px" cell={StatusCell} />

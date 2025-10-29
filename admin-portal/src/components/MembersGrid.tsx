@@ -30,6 +30,7 @@ import {
   formatBulkOperationSummary,
   performBulkOperation,
 } from '../utils/exportUtils';
+import { sanitizeGridCell } from '../utils/sanitize';
 import { Eye, Pencil } from './icons';
 import AdvancedFilter from './AdvancedFilter';
 import './MembersGrid.css';
@@ -430,6 +431,12 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     return <td>{new Date(props.dataItem[props.field || '']).toLocaleDateString()}</td>;
   };
 
+  // SEC-007: Sanitize user-generated text fields in grid
+  const TextCell = (props: any) => {
+    const value = props.dataItem[props.field || ''];
+    return <td dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
+  };
+
   const SelectionCell = (props: any) => {
     const isSelected = selectedIds.includes(props.dataItem.org_id);
     return (
@@ -642,6 +649,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
               } else if (col.field === 'created_at') {
                 columnProps.cell = DateCell;
                 columnProps.filter = 'date';
+              } else if (col.field === 'legal_name' || col.field === 'domain') {
+                // SEC-007: Sanitize user-generated text fields
+                columnProps.cell = TextCell;
               }
 
               return <GridColumn {...columnProps} />;

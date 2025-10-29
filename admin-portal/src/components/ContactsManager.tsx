@@ -5,6 +5,7 @@ import { AlertTriangle, Pencil, Plus, Trash2, Users } from './icons';
 import type React from 'react';
 import { useState } from 'react';
 import type { LegalEntityContact } from '../services/api';
+import { sanitizeGridCell } from '../utils/sanitize';
 import { ConfirmDialog } from './ConfirmDialog';
 import { ContactForm } from './ContactForm';
 import { EmptyState } from './EmptyState';
@@ -95,8 +96,14 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
     );
   };
 
+  // SEC-007: Sanitize user-generated text fields in grid
   const NameCell = (props: GridCellProps) => {
-    return <td>{props.dataItem.full_name || '-'}</td>;
+    return <td dangerouslySetInnerHTML={{ __html: sanitizeGridCell(props.dataItem.full_name) }} />;
+  };
+
+  const TextCell = (props: GridCellProps) => {
+    const value = props.dataItem[props.field || ''];
+    return <td dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
   };
 
   const handleKeyDown = (event: React.KeyboardEvent, action: () => void) => {
@@ -162,9 +169,9 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
             cell={NameCell}
             minResizableWidth={120}
           />
-          <GridColumn field="email" title="Email" width="260px" minResizableWidth={200} />
-          <GridColumn field="phone" title="Phone" width="140px" />
-          <GridColumn field="job_title" title="Job Title" width="180px" minResizableWidth={120} />
+          <GridColumn field="email" title="Email" width="260px" minResizableWidth={200} cell={TextCell} />
+          <GridColumn field="phone" title="Phone" width="140px" cell={TextCell} />
+          <GridColumn field="job_title" title="Job Title" width="180px" minResizableWidth={120} cell={TextCell} />
           <GridColumn width="100px" title="Actions" cell={ActionsCell} />
         </Grid>
       ) : (

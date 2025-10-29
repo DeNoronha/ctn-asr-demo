@@ -9,6 +9,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import type { LegalEntity } from '../services/api';
 import { apiV2 } from '../services/api';
 import type { LegalEntityIdentifier } from '../services/apiV2';
+import { sanitizeFormData } from '../utils/sanitize';
 import './CompanyForm.css';
 
 interface CompanyFormProps {
@@ -54,7 +55,8 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
   });
 
   const handleSubmit = async (dataItem: Record<string, unknown>) => {
-    await onSave(dataItem as unknown as LegalEntity);
+    // SEC-006: Sanitize form data before submission to prevent XSS attacks
+    await onSave(sanitizeFormData(dataItem) as unknown as LegalEntity);
   };
 
   const handleAddIdentifier = async () => {
