@@ -23,6 +23,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGridState } from '../hooks/useGridState';
+import { useApiError } from '../hooks/useApiError';
 import type { Member } from '../services/api';
 import {
   exportToCSV,
@@ -60,6 +61,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 }) => {
   const { t } = useTranslation();
   const notification = useNotification();
+  const { handleError } = useApiError();
 
   // Use grid state hook for URL-based pagination persistence
   const { page, pageSize, skip, updatePage, updatePageSize } = useGridState('members-grid', {
@@ -323,7 +325,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
       setSelectedIds([]);
     } catch (error: any) {
-      notification.showError(`Bulk action failed: ${error.message}`);
+      handleError(error, 'performing bulk action');
     } finally {
       setIsBulkProcessing(false);
       setShowBulkDialog(false);

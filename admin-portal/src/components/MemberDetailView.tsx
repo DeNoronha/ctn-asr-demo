@@ -9,6 +9,7 @@ import { ArrowLeft, Plus } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
+import { useApiError } from '../hooks/useApiError';
 import { type LegalEntity, type LegalEntityContact, type Member, api } from '../services/api';
 import { type LegalEntityEndpoint, type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
@@ -42,6 +43,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
   const [loading, setLoading] = useState(false);
   const [hasKvkRegistryData, setHasKvkRegistryData] = useState(false);
   const notification = useNotification();
+  const { handleError } = useApiError();
 
   // Load legal entity, contacts, identifiers, and endpoints
   useEffect(() => {
@@ -144,10 +146,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
       const entityContacts = await api.getContacts(member.legal_entity_id);
       setContacts(entityContacts);
     } catch (error: any) {
-      console.error('Failed to create legal entity:', error);
-      notification.showError(
-        `Failed to create legal entity: ${error.response?.data?.error || error.message || 'Unknown error'}`
-      );
+      handleError(error, 'creating legal entity');
     } finally {
       setLoading(false);
     }
