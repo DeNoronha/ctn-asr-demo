@@ -18,9 +18,10 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
+import { useApiError } from '../hooks/useApiError';
 import { type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
-import { sanitizeFormData } from '../utils/sanitize';
+import { sanitizeFormData, sanitizeGridCell } from '../utils/sanitize';
 import { ConfirmDialog } from './ConfirmDialog';
 import { EmptyState } from './EmptyState';
 import { HelpTooltip } from './help/HelpTooltip';
@@ -211,6 +212,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
   const [hasKvkDocument, setHasKvkDocument] = useState(false);
   const [fetchingLei, setFetchingLei] = useState(false);
   const notification = useNotification();
+  const { handleError } = useApiError();
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
 
@@ -393,8 +395,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
       onUpdate(updated);
       notification.showSuccess('Identifier deleted successfully');
     } catch (error) {
-      console.error('Failed to delete identifier:', error);
-      notification.showError('Failed to delete identifier');
+      handleError(error, 'deleting identifier');
     }
   };
 
@@ -465,17 +466,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
       }
       setIsDialogOpen(false);
     } catch (error: any) {
-      console.error('Failed to save identifier:', error);
-
-      // Show specific error message from API if available
-      if (error.response?.status === 409) {
-        const errorMsg = error.response?.data?.error || 'This identifier already exists for this entity';
-        notification.showError(errorMsg);
-      } else if (error.response?.data?.error) {
-        notification.showError(error.response.data.error);
-      } else {
-        notification.showError('Failed to save identifier');
-      }
+      handleError(error, 'saving identifier');
     }
   };
 
@@ -531,12 +522,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
         notification.showInfo(`LEI already exists: ${result.lei}`);
       }
     } catch (error: any) {
-      console.error('Failed to fetch LEI:', error);
-      if (error.response?.status === 404) {
-        notification.showWarning('No LEI found for this organization in GLEIF database');
-      } else {
-        notification.showError('Failed to fetch LEI from GLEIF API');
-      }
+      handleError(error, 'fetching LEI from GLEIF API');
     } finally {
       setFetchingLei(false);
     }

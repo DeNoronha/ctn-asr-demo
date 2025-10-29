@@ -6,6 +6,7 @@ import axios from 'axios';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { msalInstance } from '../auth/AuthContext';
+import { useApiError } from '../hooks/useApiError';
 
 interface KvkApiResponse {
   kvkNumber: string;
@@ -47,6 +48,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
     type: 'success' | 'error' | 'info';
     message: string;
   } | null>(null);
+  const { getError } = useApiError();
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
 
@@ -168,11 +170,9 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
         onVerificationComplete();
       }
     } catch (error: any) {
-      console.error('Upload failed:', error);
-      console.error('Error response:', error.response?.data);
       setNotification({
         type: 'error',
-        message: error.response?.data?.error || 'Failed to upload document',
+        message: getError(error, 'uploading document'),
       });
     } finally {
       setUploading(false);

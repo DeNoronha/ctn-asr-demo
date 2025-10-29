@@ -7,6 +7,7 @@ import { AlertTriangle, CheckCircle, FileText, FolderOpen, XCircle } from './ico
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
+import { useApiError } from '../hooks/useApiError';
 import type { LegalEntityIdentifier } from '../services/apiV2';
 import { formatDateTime } from '../utils/dateUtils';
 import { EmptyState } from './EmptyState';
@@ -42,6 +43,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const notification = useNotification();
+  const { handleError } = useApiError();
 
   const _API_BASE =
     import.meta.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
@@ -140,8 +142,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
         onUpdate?.();
       }, 2000);
     } catch (error: any) {
-      console.error('Upload failed:', error);
-      notification.showError(error.response?.data?.error || 'Failed to upload document');
+      handleError(error, 'uploading verification document');
     } finally {
       setUploading(false);
     }
