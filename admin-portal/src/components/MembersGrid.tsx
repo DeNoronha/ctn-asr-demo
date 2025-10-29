@@ -36,6 +36,7 @@ import {
 } from '../utils/exportUtils';
 import { sanitizeGridCell } from '../utils/sanitize';
 import { getStatusColor, getMembershipColor } from '../utils/colors';
+import { getGridActionLabel } from '../utils/aria';
 import { Eye, Pencil } from './icons';
 import AdvancedFilter from './AdvancedFilter';
 import './MembersGrid.css';
@@ -448,6 +449,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             fillMode="flat"
             onClick={() => onViewDetails(props.dataItem)}
             title={t('members.viewMember', 'View Member')}
+            aria-label={getGridActionLabel('view', { itemName: props.dataItem.legal_name })}
           >
             <Eye size={16} />
           </Button>
