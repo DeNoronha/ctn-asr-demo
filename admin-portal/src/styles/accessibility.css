@@ -160,6 +160,82 @@ a:focus {
 }
 
 /* ========================
+   TOUCH TARGETS (DA-006)
+   ======================== */
+
+/* Ensure minimum 44x44px touch targets per WCAG 2.1 Level AAA (2.5.5) */
+/* This improves usability on touch devices and for users with motor impairments */
+
+/* Grid action buttons - minimum 44px height */
+.k-grid td button,
+.k-grid td .k-button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 12px;
+}
+
+/* Icon-only buttons */
+.k-button.k-button-icon,
+.k-button[fillMode="flat"] {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Small buttons adjusted for touch */
+.k-button.k-button-sm,
+.k-button-small {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px 16px;
+}
+
+/* Clickable icons and action items */
+button,
+a[role="button"],
+[onclick],
+[role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Checkbox and radio inputs */
+input[type="checkbox"],
+input[type="radio"] {
+  min-width: 24px;
+  min-height: 24px;
+  /* Ensure 44px clickable area with padding */
+  margin: 10px;
+}
+
+/* Grid column headers (sortable) */
+.k-grid-header th {
+  min-height: 44px;
+  padding: 12px;
+}
+
+/* Tab strip tabs */
+.k-tabstrip-items .k-item {
+  min-height: 44px;
+  padding: 12px 20px;
+}
+
+/* Dropdown triggers */
+.k-dropdown-wrap,
+.k-picker-wrap {
+  min-height: 44px;
+}
+
+/* Menu items */
+.k-menu-item,
+.k-menu-link {
+  min-height: 44px;
+  padding: 12px 16px;
+}
+
+/* ========================
    SCREEN READER ONLY (DA-002)
    ======================== */
 
