@@ -1,6 +1,6 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { Grid, GridColumn } from '@progress/kendo-react-grid';
+import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
 import { Loader } from '@progress/kendo-react-indicators';
 import { TextArea } from '@progress/kendo-react-inputs';
 import axios from 'axios';
@@ -192,7 +192,7 @@ export const ReviewTasks: React.FC = () => {
     );
   };
 
-  const IssuesCell = (props: any) => {
+  const IssuesCell = (props: GridCellProps) => {
     const flags = props.dataItem.kvk_mismatch_flags || [];
     return (
       <td>
@@ -212,11 +212,11 @@ export const ReviewTasks: React.FC = () => {
     );
   };
 
-  const DocVerificationCell = (props: any) => {
+  const DocVerificationCell = (props: GridCellProps) => {
     return <td>{getDocumentVerificationBadge(props.dataItem.kvk_mismatch_flags || [])}</td>;
   };
 
-  const ActionCell = (props: any) => {
+  const ActionCell = (props: GridCellProps) => {
     return (
       <td>
         <Button themeColor="primary" size="small" onClick={() => handleReview(props.dataItem)}>

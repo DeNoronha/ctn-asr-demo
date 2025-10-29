@@ -3,7 +3,7 @@ import { Button } from '@progress/kendo-react-buttons';
 import { DatePicker } from '@progress/kendo-react-dateinputs';
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
+import { Grid, type GridCellProps, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { Input, TextArea } from '@progress/kendo-react-inputs';
 import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
 import axios from 'axios';
@@ -295,7 +295,7 @@ const TasksGrid: React.FC = () => {
     return new Date(task.due_date) < new Date();
   };
 
-  const PriorityCell = (props: any) => {
+  const PriorityCell = (props: GridCellProps) => {
     const priority = props.dataItem.priority;
     const priorityClass = `priority-badge priority-${priority}`;
     return (
@@ -305,7 +305,7 @@ const TasksGrid: React.FC = () => {
     );
   };
 
-  const StatusCell = (props: any) => {
+  const StatusCell = (props: GridCellProps) => {
     const status = props.dataItem.status;
     const statusClass = `status-badge status-${status.replace('_', '-')}`;
     return (
@@ -315,7 +315,7 @@ const TasksGrid: React.FC = () => {
     );
   };
 
-  const DueDateCell = (props: any) => {
+  const DueDateCell = (props: GridCellProps) => {
     const task = props.dataItem;
     const overdue = isOverdue(task);
     return (
@@ -326,7 +326,7 @@ const TasksGrid: React.FC = () => {
     );
   };
 
-  const ActionsCell = (props: any) => {
+  const ActionsCell = (props: GridCellProps) => {
     const task = props.dataItem;
     return (
       <td>

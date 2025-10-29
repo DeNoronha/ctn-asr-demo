@@ -1,7 +1,7 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { Grid, GridColumn } from '@progress/kendo-react-grid';
+import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
 import { Input } from '@progress/kendo-react-inputs';
 import axios from 'axios';
 import {
@@ -624,7 +624,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     }
   };
 
-  const ActionsCell = (props: any) => {
+  const ActionsCell = (props: GridCellProps) => {
     return (
       <td className="actions-cell">
         <Button
@@ -653,22 +653,22 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     );
   };
 
-  const ValidationCell = (props: any) => {
+  const ValidationCell = (props: GridCellProps) => {
     return <td>{getValidationBadge(props.dataItem.validation_status)}</td>;
   };
 
-  const DocumentVerificationCell = (props: any) => {
+  const DocumentVerificationCell = (props: GridCellProps) => {
     return <td>{getDocumentVerificationBadge(props.dataItem.identifier_type)}</td>;
   };
 
-  const DateCell = (props: any) => {
+  const DateCell = (props: GridCellProps) => {
     const { field, dataItem } = props;
     const value = dataItem[field];
     return <td>{value ? formatDate(value) : '-'}</td>;
   };
 
   // SEC-007: Sanitize user-generated text fields in grid
-  const TextCell = (props: any) => {
+  const TextCell = (props: GridCellProps) => {
     const { field, dataItem } = props;
     const value = dataItem[field];
     return <td dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;

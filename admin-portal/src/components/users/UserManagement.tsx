@@ -198,7 +198,7 @@ const UserManagement: React.FC = () => {
     await loadUsers();
   };
 
-  const RoleBadgeCell = (props: any) => {
+  const RoleBadgeCell = (props: GridCellProps) => {
     const roleColors: Record<UserRole, string> = {
       [UserRole.SYSTEM_ADMIN]: 'role-system-admin',
       [UserRole.ASSOCIATION_ADMIN]: 'role-association-admin',
@@ -214,7 +214,7 @@ const UserManagement: React.FC = () => {
     );
   };
 
-  const StatusCell = (props: any) => {
+  const StatusCell = (props: GridCellProps) => {
     const enabled = props.dataItem.enabled;
 
     return (
@@ -226,7 +226,7 @@ const UserManagement: React.FC = () => {
     );
   };
 
-  const ActionsCell = (props: any) => {
+  const ActionsCell = (props: GridCellProps) => {
     const user = props.dataItem;
     const isCurrentUser = user.id === currentUser?.account.localAccountId;
 

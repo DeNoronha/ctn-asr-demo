@@ -1,7 +1,7 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { Grid, GridColumn } from '@progress/kendo-react-grid';
+import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
 import { Input, TextArea } from '@progress/kendo-react-inputs';
 import { Plus } from './icons';
 import type React from 'react';
@@ -175,7 +175,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
     notification.showSuccess('Token copied to clipboard');
   };
 
-  const StatusCell = (props: any) => {
+  const StatusCell = (props: GridCellProps) => {
     return (
       <td>
         <span className={`status-badge ${props.dataItem.is_active ? 'active' : 'inactive'}`}>
@@ -185,7 +185,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
     );
   };
 
-  const ActionsCell = (props: any) => {
+  const ActionsCell = (props: GridCellProps) => {
     return (
       <td>
         <Button

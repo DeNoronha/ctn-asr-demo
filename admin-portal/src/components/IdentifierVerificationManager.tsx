@@ -1,6 +1,6 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { Grid, GridColumn } from '@progress/kendo-react-grid';
+import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
 import { Loader } from '@progress/kendo-react-indicators';
 import { Upload } from '@progress/kendo-react-upload';
 import { AlertTriangle, CheckCircle, FileText, FolderOpen, XCircle } from './icons';
@@ -165,17 +165,17 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
     );
   };
 
-  const StatusCell = (props: any) => {
+  const StatusCell = (props: GridCellProps) => {
     return <td>{getStatusBadge(props.dataItem.verification_status)}</td>;
   };
 
-  const DateCell = (props: any) => {
+  const DateCell = (props: GridCellProps) => {
     const { field, dataItem } = props;
     const value = dataItem[field];
     return <td>{value ? formatDateTime(value) : '-'}</td>;
   };
 
-  const ActionsCell = (props: any) => {
+  const ActionsCell = (props: GridCellProps) => {
     return (
       <td>
         {props.dataItem.document_url && (

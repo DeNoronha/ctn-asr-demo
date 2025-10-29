@@ -1,6 +1,6 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { Grid, GridColumn } from '@progress/kendo-react-grid';
+import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
 import { Loader } from '@progress/kendo-react-indicators';
 import { TextArea } from '@progress/kendo-react-inputs';
 import axios from 'axios';
@@ -138,7 +138,7 @@ export const KvkReviewQueue: React.FC = () => {
     return flag === 'entered_kvk_mismatch' || flag === 'entered_name_mismatch';
   };
 
-  const FlagsCell = (props: any) => {
+  const FlagsCell = (props: GridCellProps) => {
     const flags = props.dataItem.kvk_mismatch_flags || [];
     return (
       <td>
@@ -158,7 +158,7 @@ export const KvkReviewQueue: React.FC = () => {
     );
   };
 
-  const ActionCell = (props: any) => {
+  const ActionCell = (props: GridCellProps) => {
     return (
       <td>
         <Button themeColor="primary" size="small" onClick={() => handleReview(props.dataItem)}>

@@ -110,7 +110,7 @@ const AuditLogViewer: React.FC = () => {
     setDataState({ ...dataState, skip: event.page.skip, take: event.page.take });
   };
 
-  const RoleCell = (props: any) => {
+  const RoleCell = (props: GridCellProps) => {
     const roleClasses: Record<string, string> = {
       SystemAdmin: 'role-system-admin',
       AssociationAdmin: 'role-association-admin',
@@ -127,7 +127,7 @@ const AuditLogViewer: React.FC = () => {
     );
   };
 
-  const ActionCell = (props: any) => {
+  const ActionCell = (props: GridCellProps) => {
     const actionColors: Record<string, string> = {
       USER_INVITED: '#3b82f6',
       USER_UPDATED: '#8b5cf6',
@@ -154,7 +154,7 @@ const AuditLogViewer: React.FC = () => {
     );
   };
 
-  const DetailsCell = (props: any) => {
+  const DetailsCell = (props: GridCellProps) => {
     return (
       <td>
         <div className="details-cell">

@@ -11,6 +11,7 @@ import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 // import { ExcelExport } from '@progress/kendo-react-excel-export';
 import {
   Grid,
+  type GridCellProps,
   GridColumn,
   GridColumnMenuCheckboxFilter,
   GridColumnMenuFilter,
@@ -377,7 +378,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     );
   };
 
-  const StatusCell = (props: any) => {
+  const StatusCell = (props: GridCellProps) => {
     const getStatusColor = (status: string) => {
       switch (status) {
         case 'ACTIVE':
@@ -403,7 +404,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     );
   };
 
-  const MembershipCell = (props: any) => {
+  const MembershipCell = (props: GridCellProps) => {
     const getMembershipColor = (level: string) => {
       switch (level) {
         case 'PREMIUM':
@@ -429,17 +430,17 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     );
   };
 
-  const DateCell = (props: any) => {
+  const DateCell = (props: GridCellProps) => {
     return <td>{new Date(props.dataItem[props.field || '']).toLocaleDateString()}</td>;
   };
 
   // SEC-007: Sanitize user-generated text fields in grid
-  const TextCell = (props: any) => {
+  const TextCell = (props: GridCellProps) => {
     const value = props.dataItem[props.field || ''];
     return <td dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
   };
 
-  const SelectionCell = (props: any) => {
+  const SelectionCell = (props: GridCellProps) => {
     const isSelected = selectedIds.includes(props.dataItem.org_id);
     return (
       <td>
@@ -461,7 +462,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     );
   };
 
-  const ActionCell = (props: any) => {
+  const ActionCell = (props: GridCellProps) => {
     return (
       <td>
         <div style={{ display: 'flex', gap: '8px' }}>

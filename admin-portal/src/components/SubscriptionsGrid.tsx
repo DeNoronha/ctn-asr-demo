@@ -2,7 +2,7 @@ import { Button } from '@progress/kendo-react-buttons';
 import { DatePicker } from '@progress/kendo-react-dateinputs';
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
+import { Grid, type GridCellProps, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { Input } from '@progress/kendo-react-inputs';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -187,7 +187,7 @@ const SubscriptionsGrid: React.FC = () => {
     return formatDateUtil(dateString);
   };
 
-  const StatusCell = (props: any) => {
+  const StatusCell = (props: GridCellProps) => {
     const status = props.dataItem.status;
     const statusClass = `status-badge status-${status}`;
     return (
@@ -197,7 +197,7 @@ const SubscriptionsGrid: React.FC = () => {
     );
   };
 
-  const ActionsCell = (props: any) => {
+  const ActionsCell = (props: GridCellProps) => {
     const subscription = props.dataItem;
     return (
       <td>

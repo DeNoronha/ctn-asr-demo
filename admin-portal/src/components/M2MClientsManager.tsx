@@ -1,6 +1,6 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { Grid, GridColumn } from '@progress/kendo-react-grid';
+import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
 import { Input, TextArea } from '@progress/kendo-react-inputs';
 import { Checkbox } from '@progress/kendo-react-inputs';
 import { Key, Plus, Trash2, Copy, AlertTriangle } from './icons';
@@ -218,13 +218,13 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
   };
 
   // SEC-007: Sanitize user-generated text fields in grid
-  const TextCell = (props: any) => {
+  const TextCell = (props: GridCellProps) => {
     const { field, dataItem } = props;
     const value = dataItem[field];
     return <td dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
   };
 
-  const StatusCell = (props: any) => {
+  const StatusCell = (props: GridCellProps) => {
     return (
       <td>
         <span className={`status-badge ${props.dataItem.is_active ? 'active' : 'inactive'}`}>
@@ -234,7 +234,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
     );
   };
 
-  const ScopesCell = (props: any) => {
+  const ScopesCell = (props: GridCellProps) => {
     return (
       <td>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -256,7 +256,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
     );
   };
 
-  const ActionsCell = (props: any) => {
+  const ActionsCell = (props: GridCellProps) => {
     return (
       <td>
         <div className="actions-cell">
