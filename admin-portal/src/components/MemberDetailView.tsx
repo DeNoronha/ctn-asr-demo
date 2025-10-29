@@ -65,7 +65,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           try {
             const entityEndpoints = await apiV2.getEndpoints(member.legal_entity_id);
             setEndpoints(entityEndpoints);
-          } catch (endpointError: any) {
+          } catch (endpointError: unknown) {
             logger.error('Failed to load endpoints:', endpointError);
             // Don't block loading other data if endpoints fail
             setEndpoints([]);
@@ -75,7 +75,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           try {
             await apiV2.getKvkRegistryData(member.legal_entity_id);
             setHasKvkRegistryData(true);
-          } catch (kvkError: any) {
+          } catch (kvkError: unknown) {
             // 404 means no data, that's okay
             if (kvkError.response?.status !== 404) {
               logger.error('Error checking KvK registry data:', kvkError);
@@ -146,7 +146,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
 
       const entityContacts = await api.getContacts(member.legal_entity_id);
       setContacts(entityContacts);
-    } catch (error: any) {
+    } catch (error: unknown) {
       handleError(error, 'creating legal entity');
     } finally {
       setLoading(false);

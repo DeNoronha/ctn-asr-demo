@@ -1,7 +1,7 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Loader } from '@progress/kendo-react-indicators';
 import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
-import { Upload } from '@progress/kendo-react-upload';
+import { Upload, type UploadOnAddEvent } from '@progress/kendo-react-upload';
 import axios from 'axios';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -117,7 +117,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
     }
   };
 
-  const handleUpload = async (event: any) => {
+  const handleUpload = async (event: UploadOnAddEvent) => {
     const files = event.affectedFiles || event.newState || [];
     if (!files || files.length === 0) return;
 
@@ -170,7 +170,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
       if (onVerificationComplete) {
         onVerificationComplete();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setNotification({
         type: 'error',
         message: getError(error, 'uploading document'),

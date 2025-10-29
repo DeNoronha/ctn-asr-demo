@@ -3,23 +3,23 @@ import { Stepper } from '@progress/kendo-react-layout';
 import type React from 'react';
 import { useState } from 'react';
 
-interface StepperFormProps {
+interface StepperFormProps<T = Record<string, unknown>> {
   steps: Array<{
     label: string;
     component: React.ReactNode;
     isValid?: () => boolean;
   }>;
-  onComplete: (data: any) => void;
-  formData?: any;
-  onFormDataChange?: (data: any) => void;
+  onComplete: (data: T) => void;
+  formData?: T;
+  onFormDataChange?: (data: T) => void;
 }
 
-export const StepperForm: React.FC<StepperFormProps> = ({
+export const StepperForm = <T = Record<string, unknown>>({
   steps,
   onComplete,
-  formData = {},
+  formData = {} as T,
   onFormDataChange,
-}) => {
+}: StepperFormProps<T>) => {
   const [currentStep, setCurrentStep] = useState(0);
 
   const handleNext = () => {

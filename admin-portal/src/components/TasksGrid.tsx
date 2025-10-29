@@ -139,7 +139,7 @@ const TasksGrid: React.FC = () => {
       );
       logger.log(`TasksGrid: Loaded ${response.data.length} review tasks`, response.data);
       setReviewTasks(response.data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('TasksGrid: Error loading review tasks:', error);
       if (error.response) {
         logger.error('TasksGrid: API error details:', {

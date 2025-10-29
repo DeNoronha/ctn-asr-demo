@@ -2,7 +2,7 @@ import { Button } from '@progress/kendo-react-buttons';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
 import { Loader } from '@progress/kendo-react-indicators';
-import { Upload } from '@progress/kendo-react-upload';
+import { Upload, type UploadOnAddEvent } from '@progress/kendo-react-upload';
 import { AlertTriangle, CheckCircle, FileText, FolderOpen, XCircle } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -79,7 +79,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
     setSelectedIdentifier(value);
   };
 
-  const handleUpload = async (event: any) => {
+  const handleUpload = async (event: UploadOnAddEvent) => {
     if (!selectedIdentifier) {
       notification.showError('Please select an identifier first');
       return;
@@ -141,7 +141,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
         loadVerificationRecords();
         onUpdate?.();
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       handleError(error, 'uploading verification document');
     } finally {
       setUploading(false);

@@ -12,6 +12,8 @@ import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import {
   Grid,
   type GridCellProps,
+  type GridPageChangeEvent,
+  type GridSortChangeEvent,
   GridColumn,
   GridColumnMenuCheckboxFilter,
   GridColumnMenuFilter,
@@ -174,7 +176,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   }, [page, pageSize, onPageChange]);
 
   // Page change handler for server-side pagination
-  const handlePageChange = (event: any) => {
+  const handlePageChange = (event: GridPageChangeEvent) => {
     const newSkip = event.page.skip;
     const newTake = event.page.take;
 
@@ -190,7 +192,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     }
   };
 
-  const handleSearchChange = (e: any) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchValue(value);
 
@@ -211,7 +213,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     }
   };
 
-  const handleSortChange = (e: any) => {
+  const handleSortChange = (e: GridSortChangeEvent) => {
     setSort(e.sort);
     saveGridState();
   };
@@ -263,7 +265,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   };
 
   // Selection handlers
-  const handleSelectAll = (e: any) => {
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
       setSelectedIds(gridData.map((m) => m.org_id));
     } else {
@@ -325,7 +327,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       }
 
       setSelectedIds([]);
-    } catch (error: any) {
+    } catch (error: unknown) {
       handleError(error, 'performing bulk action');
     } finally {
       setIsBulkProcessing(false);
@@ -369,7 +371,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   };
 
   // Column menu
-  const ColumnMenu = (props: any) => {
+  const ColumnMenu = (props: React.ComponentProps<typeof GridColumnMenuSort>) => {
     return (
       <div>
         <GridColumnMenuSort {...props} />
@@ -637,7 +639,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           {columns
             .filter((col) => col.show)
             .map((col) => {
-              const columnProps: any = {
+              const columnProps: Partial<React.ComponentProps<typeof GridColumn>> = {
                 key: col.field,
                 field: col.field,
                 title: getColumnTitle(col.field),

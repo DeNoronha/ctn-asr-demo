@@ -2,8 +2,8 @@
 import { useCallback, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 
-interface UseAsyncOptions {
-  onSuccess?: (data: any) => void;
+interface UseAsyncOptions<T = unknown> {
+  onSuccess?: (data: T) => void;
   onError?: (error: Error) => void;
   showSuccessNotification?: boolean;
   showErrorNotification?: boolean;
@@ -11,7 +11,7 @@ interface UseAsyncOptions {
   errorMessage?: string;
 }
 
-export const useAsync = <T = any>(options: UseAsyncOptions = {}) => {
+export const useAsync = <T = unknown>(options: UseAsyncOptions<T> = {}) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [data, setData] = useState<T | null>(null);

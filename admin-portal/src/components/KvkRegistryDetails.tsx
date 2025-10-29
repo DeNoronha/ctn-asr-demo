@@ -65,7 +65,7 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
 
       const data = await apiV2.getKvkRegistryData(legalEntityId);
       setRegistryData(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load KvK registry data:', err);
 
       // 404 means no data available yet

@@ -466,7 +466,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
         }
       }
       setIsDialogOpen(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       handleError(error, 'saving identifier');
     }
   };
@@ -522,7 +522,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
       } else if (result.status === 'already_exists') {
         notification.showInfo(`LEI already exists: ${result.lei}`);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       handleError(error, 'fetching LEI from GLEIF API');
     } finally {
       setFetchingLei(false);

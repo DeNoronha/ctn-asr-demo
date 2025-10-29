@@ -27,7 +27,7 @@ export const LoginPage: React.FC = () => {
       setError('');
       await login();
       navigate('/'); // Redirect to home after successful login
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Login failed:', err);
       setError(err.message || 'Login failed. Please try again.');
     }
