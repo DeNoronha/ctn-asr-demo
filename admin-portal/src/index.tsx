@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import './styles/security-utilities.css'; // SEC-005: Utility classes to reduce inline styles
 import './i18n'; // Initialize i18n
 import App from './App';
 import { msalInstance } from './auth/AuthContext';

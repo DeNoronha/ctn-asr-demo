@@ -1,0 +1,137 @@
+/**
+ * Security Utilities (SEC-005)
+ * CSS classes to replace common inline styles
+ * Reduces attack surface by minimizing inline style usage
+ */
+
+/* =========================
+   SPACING UTILITIES
+   ========================= */
+
+/* Margins */
+.mb-15 { margin-bottom: 15px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-20 { margin-bottom: 20px; }
+.mb-30 { margin-bottom: 30px; }
+.mt-20 { margin-top: 20px; }
+.mr-8 { margin-right: 8px; }
+
+/* Padding */
+.p-8 { padding: 8px; }
+.p-10 { padding: 10px; }
+.p-12 { padding: 12px; }
+
+/* =========================
+   TEXT UTILITIES
+   ========================= */
+
+/* Text Colors */
+.text-muted { color: #999; }
+.text-secondary { color: #6b7280; }
+.text-success { color: #4caf50; }
+.text-error { color: #d32f2f; }
+.text-danger { color: #dc2626; }
+.text-success-lg { color: #4caf50; font-size: 1.2em; }
+.text-error-lg { color: #d32f2f; font-size: 1.2em; }
+
+/* Text Styles */
+.text-italic { font-style: italic; }
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.fw-600 { font-weight: 600; }
+.fw-bold { font-weight: bold; }
+
+/* =========================
+   TABLE UTILITIES
+   ========================= */
+
+/* Table Cells */
+.table-cell-base {
+  padding: 8px;
+  border: 1px solid #ddd;
+}
+
+.table-cell-left {
+  padding: 8px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.table-cell-center {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.table-cell-header {
+  padding: 8px;
+  border: 1px solid #ddd;
+  font-weight: bold;
+}
+
+.table-full-width {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+}
+
+/* =========================
+   LAYOUT UTILITIES
+   ========================= */
+
+/* Containers */
+.container-centered {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+/* Heights */
+.h-600 { height: 600px; }
+
+/* Widths */
+.w-full { width: 100%; }
+.max-w-600 { max-width: 600px; }
+.max-w-800 { max-width: 800px; }
+
+/* Centering */
+.mx-auto { margin-left: auto; margin-right: auto; }
+
+/* =========================
+   STATUS BADGES (STATIC)
+   ========================= */
+
+/* Note: Dynamic background colors still need inline styles */
+/* These are fallback classes for when colors are static */
+
+.badge-base {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+/* =========================
+   EMPTY STATE UTILITIES
+   ========================= */
+
+.empty-state-text {
+  color: #6b7280;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.empty-state-error {
+  color: #dc2626;
+  margin-bottom: 20px;
+}
+
+/* =========================
+   FORM UTILITIES
+   ========================= */
+
+.field-hint {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 8px 0 0 0;
+}
