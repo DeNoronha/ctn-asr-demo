@@ -35,6 +35,9 @@ export default defineConfig({
   build: {
     outDir: 'build',
     sourcemap: true,
+    // SEC-009: Remove console.log/debug/info in production builds (keep error/warn for monitoring)
+    minify: 'esbuild',
+    target: 'es2020',
     // Suppress warnings about server-side modules being externalized
     rollupOptions: {
       onwarn(warning, warn) {
@@ -48,6 +51,11 @@ export default defineConfig({
         warn(warning);
       },
     },
+  },
+  esbuild: {
+    // SEC-009: Strip console.log, console.debug, console.info in production
+    // Keep console.error and console.warn for error monitoring
+    drop: process.env.NODE_ENV === 'production' ? ['console.log', 'console.debug', 'console.info'] : [],
   },
   server: {
     port: 3000,
