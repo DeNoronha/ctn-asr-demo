@@ -30,6 +30,7 @@ import MembersGrid from './MembersGrid';
 import NewslettersGrid from './NewslettersGrid';
 import { ReviewTasks } from './ReviewTasks';
 import Settings from './Settings';
+import { SkipToContent } from './SkipToContent';
 import SubscriptionsGrid from './SubscriptionsGrid';
 import TasksGrid from './TasksGrid';
 import AuditLogViewer from './audit/AuditLogViewer';
@@ -275,52 +276,58 @@ const AdminPortal: React.FC = () => {
   };
 
   return (
-    <div className="app-container">
-      <AdminSidebar
-        expanded={drawerExpanded}
-        onSelect={handleMenuSelect}
-        selectedItem={selectedView === 'member-detail' ? 'members' : selectedView}
-      />
-      <DrawerContent>
-        <div className="main-content">
-          <header className="app-header">
-            <div className="header-left">
-              <Button
-                icon="menu"
-                fillMode="flat"
-                onClick={() => setDrawerExpanded(!drawerExpanded)}
-                className="menu-button"
-              >
-                {drawerExpanded ? '◀' : '▶'}
-              </Button>
-              <img src="/assets/logos/ctn.png" alt="CTN Logo" className="header-logo" />
-              <h1>{t('common.appNameShort')}</h1>
-            </div>
-            <div className="header-right">
-              <LanguageSwitcher />
-              {user && (
-                <div className="user-info">
-                  <User size={18} />
-                  <div className="user-details">
-                    <span className="user-name">{user.account.name}</span>
-                    <span className="user-role">{user.primaryRole}</span>
+    <>
+      <SkipToContent />
+      <div className="app-container">
+        <AdminSidebar
+          expanded={drawerExpanded}
+          onSelect={handleMenuSelect}
+          selectedItem={selectedView === 'member-detail' ? 'members' : selectedView}
+        />
+        <DrawerContent>
+          <div className="main-content">
+            <header className="app-header">
+              <div className="header-left">
+                <Button
+                  icon="menu"
+                  fillMode="flat"
+                  onClick={() => setDrawerExpanded(!drawerExpanded)}
+                  className="menu-button"
+                  aria-label={drawerExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+                >
+                  {drawerExpanded ? '◀' : '▶'}
+                </Button>
+                <img src="/assets/logos/ctn.png" alt="CTN Logo" className="header-logo" />
+                <h1>{t('common.appNameShort')}</h1>
+              </div>
+              <div className="header-right">
+                <LanguageSwitcher />
+                {user && (
+                  <div className="user-info">
+                    <User size={18} />
+                    <div className="user-details">
+                      <span className="user-name">{user.account.name}</span>
+                      <span className="user-role">{user.primaryRole}</span>
+                    </div>
+                    <Button
+                      fillMode="flat"
+                      onClick={handleLogout}
+                      title="Sign out"
+                      aria-label="Sign out"
+                    >
+                      <LogOut size={16} />
+                    </Button>
                   </div>
-                  <Button
-                    fillMode="flat"
-                    onClick={handleLogout}
-                    title="Sign out"
-                    aria-label="Sign out"
-                  >
-                    <LogOut size={16} />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </header>
-          <main className="content-area">{renderContent()}</main>
-        </div>
-      </DrawerContent>
-    </div>
+                )}
+              </div>
+            </header>
+            <main id="main-content" className="content-area" tabIndex={-1}>
+              {renderContent()}
+            </main>
+          </div>
+        </DrawerContent>
+      </div>
+    </>
   );
 };
 
