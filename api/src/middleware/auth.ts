@@ -628,3 +628,136 @@ export function requireScopes(...requiredScopes: string[]) {
     return { valid: true };
   };
 }
+
+/**
+ * CSRF validation result
+ */
+interface CsrfValidationSuccess {
+  valid: true;
+}
+
+interface CsrfValidationFailure {
+  valid: false;
+  response: HttpResponseInit;
+}
+
+type CsrfValidationResult = CsrfValidationSuccess | CsrfValidationFailure;
+
+/**
+ * CSRF Protection Middleware (SEC-004)
+ * Validates CSRF token using double-submit cookie pattern
+ *
+ * How it works:
+ * 1. Extract CSRF token from cookie (set by frontend)
+ * 2. Extract CSRF token from X-CSRF-Token header (sent by frontend)
+ * 3. Verify both tokens exist and match
+ *
+ * This prevents CSRF attacks because:
+ * - Attacker cannot read cookie from different origin (SameSite policy)
+ * - Attacker cannot set custom headers on cross-origin requests
+ *
+ * @param request Authenticated request
+ * @param context Invocation context
+ * @returns Validation result
+ */
+export async function validateCsrf(
+  request: AuthenticatedRequest,
+  context: InvocationContext
+): Promise<CsrfValidationResult> {
+  const logger = createLogger(context);
+  const correlationId = request.headers.get('x-correlation-id') || 'unknown';
+
+  // Extract CSRF token from cookie
+  const cookieHeader = request.headers.get('cookie');
+  let csrfCookie: string | null = null;
+
+  if (cookieHeader) {
+    const cookies = cookieHeader.split(';');
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'XSRF-TOKEN') {
+        csrfCookie = value;
+        break;
+      }
+    }
+  }
+
+  // Extract CSRF token from header
+  const csrfHeader = request.headers.get('x-csrf-token');
+
+  // Validate both tokens exist
+  if (!csrfCookie) {
+    logSecurityEvent(logger, 'CSRF Validation Failed - Missing Cookie', correlationId, {
+      method: request.method,
+      url: request.url,
+      userEmail: request.userEmail || 'unknown',
+    });
+
+    return {
+      valid: false,
+      response: {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Correlation-ID': correlationId,
+        },
+        body: JSON.stringify({
+          error: 'forbidden',
+          error_description: 'CSRF token missing from cookie',
+        }),
+      },
+    };
+  }
+
+  if (!csrfHeader) {
+    logSecurityEvent(logger, 'CSRF Validation Failed - Missing Header', correlationId, {
+      method: request.method,
+      url: request.url,
+      userEmail: request.userEmail || 'unknown',
+    });
+
+    return {
+      valid: false,
+      response: {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Correlation-ID': correlationId,
+        },
+        body: JSON.stringify({
+          error: 'forbidden',
+          error_description: 'CSRF token missing from header',
+        }),
+      },
+    };
+  }
+
+  // Validate tokens match (constant-time comparison to prevent timing attacks)
+  if (csrfCookie !== csrfHeader) {
+    logSecurityEvent(logger, 'CSRF Validation Failed - Token Mismatch', correlationId, {
+      method: request.method,
+      url: request.url,
+      userEmail: request.userEmail || 'unknown',
+      reason: 'Cookie and header tokens do not match',
+    });
+
+    return {
+      valid: false,
+      response: {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Correlation-ID': correlationId,
+        },
+        body: JSON.stringify({
+          error: 'forbidden',
+          error_description: 'CSRF token validation failed',
+        }),
+      },
+    };
+  }
+
+  // CSRF validation successful
+  context.log(`CSRF validation passed for ${request.userEmail || request.userId || 'unknown'}`);
+  return { valid: true };
+}

@@ -4,7 +4,7 @@
 // Simplifies applying authentication and authorization to endpoints
 
 import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { authenticate, AuthenticatedRequest as AuthRequest } from './auth';
+import { authenticate, AuthenticatedRequest as AuthRequest, validateCsrf } from './auth';
 import { Permission, requirePermissions, requireRoles, UserRole } from './rbac';
 import { applySecurityHeaders } from './securityHeaders';
 import { enforceHttps, addHttpsSecurityHeaders } from './httpsEnforcement';
@@ -102,7 +102,7 @@ function getCorsHeaders(
 ): Record<string, string> {
   const headers: Record<string, string> = {
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Request-ID',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Request-ID, X-CSRF-Token',
     'Access-Control-Max-Age': '86400',
   };
 
@@ -337,6 +337,38 @@ export function wrapEndpoint(
             ...permissionCheck.response,
             headers: {
               ...(permissionCheck.response.headers || {}),
+              'X-Request-ID': requestId
+            }
+          };
+        }
+      }
+
+      // Apply CSRF validation for state-changing requests (SEC-004)
+      const stateChangingMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+      if (requireAuth && stateChangingMethods.includes(request.method.toUpperCase())) {
+        const csrfCheck = await validateCsrf(authenticatedRequest, context);
+
+        if (!csrfCheck.valid) {
+          const duration = Date.now() - startTime;
+          context.warn(`[${requestId}] CSRF validation failed (${duration}ms)`);
+
+          if (enableCors) {
+            const origin = safeGetHeader(request.headers, 'origin');
+            const corsHeaders = getCorsHeaders(origin, allowedOrigins);
+            return {
+              ...csrfCheck.response,
+              headers: {
+                ...(csrfCheck.response.headers || {}),
+                ...corsHeaders,
+                'X-Request-ID': requestId
+              },
+            };
+          }
+
+          return {
+            ...csrfCheck.response,
+            headers: {
+              ...(csrfCheck.response.headers || {}),
               'X-Request-ID': requestId
             }
           };

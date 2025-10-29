@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { msalInstance } from '../auth/AuthContext';
+import { csrfService } from './csrfService';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
 
@@ -21,13 +22,27 @@ async function getAccessToken(): Promise<string | null> {
   return null;
 }
 
-// Create axios instance with authentication
+// Create axios instance with authentication and CSRF protection (SEC-004)
 async function getAuthenticatedAxios() {
   const token = await getAccessToken();
-  return axios.create({
+  const instance = axios.create({
     baseURL: API_BASE_URL,
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
+
+  // Add CSRF header to state-changing requests (POST, PUT, PATCH, DELETE)
+  instance.interceptors.request.use((config) => {
+    const method = config.method?.toLowerCase();
+    if (method && ['post', 'put', 'patch', 'delete'].includes(method)) {
+      const csrfToken = csrfService.getToken();
+      if (csrfToken) {
+        config.headers[csrfService.getHeaderName()] = csrfToken;
+      }
+    }
+    return config;
+  });
+
+  return instance;
 }
 
 // =====================================================

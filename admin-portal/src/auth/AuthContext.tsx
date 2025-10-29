@@ -6,6 +6,7 @@
 import { type AccountInfo, PublicClientApplication } from '@azure/msal-browser';
 import type React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { csrfService } from '../services/csrfService';
 import { type UserRole, msalConfig, portalAccess, roleHierarchy } from './authConfig';
 
 // Initialize MSAL instance
@@ -108,7 +109,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 account,
                 forceRefresh: true,
               });
-              console.log('Token refreshed successfully');
+              // Rotate CSRF token on successful refresh (SEC-004)
+              csrfService.generateToken();
+              console.log('Token refreshed successfully, CSRF token rotated');
             } catch (refreshError) {
               console.error('Token refresh failed:', refreshError);
               // Force logout if refresh fails
@@ -191,7 +194,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         associationId,
       });
 
-      console.log('User loaded successfully');
+      // Generate CSRF token for secure API requests (SEC-004)
+      csrfService.generateToken();
+      console.log('User loaded successfully, CSRF token generated');
     } catch (error) {
       console.error('Error loading user roles:', error);
       setUser(null);
@@ -215,6 +220,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       setIsLoading(true);
+      // Clear CSRF token (SEC-004)
+      csrfService.clearToken();
       await msalInstance.logoutRedirect();
       setUser(null);
     } catch (error) {
