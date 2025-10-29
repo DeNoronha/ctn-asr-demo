@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 import { useApiError } from '../hooks/useApiError';
 import { logger } from '../utils/logger';
+import { TEXT_COLORS } from '../utils/colors';
 
 interface KvkApiResponse {
   kvkNumber: string;
@@ -205,16 +206,16 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
   const getCompanyStatus = (): { text: string; color: string; icon: string } => {
     const kvkData = getKvkApiData();
     if (!kvkData?.status) {
-      return { text: 'Active', color: '#10b981', icon: '✓' };
+      return { text: 'Active', color: TEXT_COLORS.success, icon: '✓' };
     }
 
     if (kvkData.status === 'Faillissement') {
-      return { text: 'Bankrupt', color: '#dc2626', icon: '⚠' };
+      return { text: 'Bankrupt', color: TEXT_COLORS.error, icon: '⚠' };
     }
     if (kvkData.status === 'Ontbonden') {
-      return { text: 'Dissolved', color: '#dc2626', icon: '⚠' };
+      return { text: 'Dissolved', color: TEXT_COLORS.error, icon: '⚠' };
     }
-    return { text: 'Active', color: '#10b981', icon: '✓' };
+    return { text: 'Active', color: TEXT_COLORS.success, icon: '✓' };
   };
 
   const getFlagDescription = (flag: string): string => {
@@ -273,7 +274,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
           </div>
 
           {verificationStatus.kvk_verification_status === 'pending' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#666', marginBottom: '15px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: TEXT_COLORS.muted, marginBottom: '15px' }}>
               <Loader size="small" />
               <span>Verifying document...</span>
             </div>
@@ -285,7 +286,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
               style={{
                 marginBottom: '20px',
                 padding: '15px',
-                backgroundColor: getCompanyStatus().color === '#10b981' ? '#f0fdf4' : '#fef2f2',
+                backgroundColor: getCompanyStatus().color === TEXT_COLORS.success ? '#f0fdf4' : '#fef2f2',
                 border: `2px solid ${getCompanyStatus().color}`,
                 borderRadius: '6px',
               }}
@@ -297,7 +298,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                     Company Status (KvK Registry):{' '}
                     <span style={{ color: getCompanyStatus().color }}>{getCompanyStatus().text}</span>
                   </strong>
-                  <div style={{ fontSize: '0.9em', color: '#666', marginTop: '5px' }}>
+                  <div style={{ fontSize: '0.9em', color: TEXT_COLORS.muted, marginTop: '5px' }}>
                     {getKvkApiData()?.statutoryName}
                     {verificationStatus?.kvk_verified_at && (
                       <span style={{ marginLeft: '10px', fontSize: '0.95em' }}>
@@ -318,7 +319,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
               </strong>
 
               {/* Legend - positioned ABOVE the table */}
-              <div style={{ marginBottom: '12px', fontSize: '0.85em', color: '#666' }}>
+              <div style={{ marginBottom: '12px', fontSize: '0.85em', color: TEXT_COLORS.muted }}>
                 <strong>Legend:</strong>{' '}
                 <span style={{ backgroundColor: '#d4edda', padding: '2px 6px', borderRadius: '3px', marginRight: '10px' }}>
                   Data matches
@@ -356,7 +357,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                     </td>
                     <td style={{ padding: '10px' }}>
                       {verificationStatus.entered_company_name || (
-                        <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
+                        <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
                       )}
                     </td>
                     <td
@@ -371,7 +372,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                       }}
                     >
                       {verificationStatus.kvk_extracted_company_name || (
-                        <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
+                        <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
                       )}
                     </td>
                     <td
@@ -386,7 +387,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                       }}
                     >
                       {getKvkApiData()?.statutoryName || (
-                        <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
+                        <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
                       )}
                     </td>
                   </tr>
@@ -398,7 +399,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                     </td>
                     <td style={{ padding: '10px' }}>
                       {verificationStatus.entered_kvk_number || (
-                        <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
+                        <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
                       )}
                     </td>
                     <td
@@ -413,7 +414,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                       }}
                     >
                       {verificationStatus.kvk_extracted_number || (
-                        <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
+                        <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
                       )}
                     </td>
                     <td
@@ -428,7 +429,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                       }}
                     >
                       {getKvkApiData()?.kvkNumber || (
-                        <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
+                        <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
                       )}
                     </td>
                   </tr>
@@ -470,7 +471,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
           )}
 
           {verificationStatus.kvk_verified_at && (
-            <div style={{ marginTop: '10px', fontSize: '0.9em', color: '#666' }}>
+            <div style={{ marginTop: '10px', fontSize: '0.9em', color: TEXT_COLORS.muted }}>
               Verified: {new Date(verificationStatus.kvk_verified_at).toLocaleString()}
               {verificationStatus.kvk_verified_by && ` by ${verificationStatus.kvk_verified_by}`}
             </div>
@@ -516,7 +517,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
             </div>
           )}
 
-          <div style={{ marginTop: '15px', fontSize: '0.9em', color: '#666' }}>
+          <div style={{ marginTop: '15px', fontSize: '0.9em', color: TEXT_COLORS.muted }}>
             <strong>Requirements:</strong>
             <ul>
               <li>PDF format only</li>

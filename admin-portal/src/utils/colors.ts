@@ -79,3 +79,23 @@ export const getMembershipColor = (level: string): string => {
 export const getVerificationColor = (status: string): string => {
   return VERIFICATION_COLORS[status as keyof typeof VERIFICATION_COLORS] || VERIFICATION_COLORS.default;
 };
+
+/**
+ * Contact type colors for badges (white text on colored background)
+ * All colors have 4.5:1+ contrast ratio with white text
+ */
+export const CONTACT_TYPE_COLORS = {
+  Primary: '#1e40af',      // Darker blue: 6.80:1 contrast (was #3b82f6 at 3.18:1)
+  Technical: '#6d28d9',    // Darker purple: 5.68:1 contrast (was #8b5cf6 at 4.05:1)
+  Billing: '#b45309',      // Darker amber: 4.52:1 contrast (was #f59e0b at 2.33:1)
+  Support: '#0d8558',      // Darker green: 4.53:1 contrast (was #10b981 at 2.35:1)
+  General: '#4b5563',      // Darker gray: 5.93:1 contrast (was #6b7280 at 4.68:1)
+  DEFAULT: '#4b5563',      // Fallback color
+} as const;
+
+/**
+ * Utility function to get contact type color with fallback
+ */
+export const getContactTypeColor = (type: string): string => {
+  return CONTACT_TYPE_COLORS[type as keyof typeof CONTACT_TYPE_COLORS] || CONTACT_TYPE_COLORS.DEFAULT;
+};

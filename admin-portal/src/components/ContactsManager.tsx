@@ -7,6 +7,7 @@ import { useState } from 'react';
 import type { LegalEntityContact } from '../services/api';
 import { safeArray, safeLength } from '../utils/safeArray';
 import { sanitizeGridCell } from '../utils/sanitize';
+import { getContactTypeColor } from '../utils/colors';
 import { ConfirmDialog } from './ConfirmDialog';
 import { ContactForm } from './ContactForm';
 import { EmptyState } from './EmptyState';
@@ -69,20 +70,13 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
   };
 
   const ContactTypeCell = (props: GridCellProps) => {
-    const types: Record<string, string> = {
-      Primary: '#3b82f6',
-      Technical: '#8b5cf6',
-      Billing: '#f59e0b',
-      Support: '#10b981',
-    };
     const type = props.dataItem.contact_type || 'General';
-    const color = types[type] || '#6b7280';
 
     return (
       <td>
         <span
           className="contact-type-badge"
-          style={{ backgroundColor: color }}
+          style={{ backgroundColor: getContactTypeColor(type) }}
           role="status"
           aria-label={`Contact type: ${type}`}
         >
