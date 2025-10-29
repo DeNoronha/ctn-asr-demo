@@ -105,7 +105,7 @@ const TasksGrid: React.FC = () => {
       const data = await response.json();
       setTasks(data);
     } catch (error) {
-      console.error('Error loading tasks:', error);
+      logger.error('Error loading tasks:', error);
     } finally {
       setLoading(false);
     }
@@ -115,11 +115,11 @@ const TasksGrid: React.FC = () => {
     try {
       const account = accounts[0];
       if (!account) {
-        console.log('TasksGrid: No MSAL account available for review tasks');
+        logger.log('TasksGrid: No MSAL account available for review tasks');
         return;
       }
 
-      console.log('TasksGrid: Acquiring token for review tasks...');
+      logger.log('TasksGrid: Acquiring token for review tasks...');
       const tokenResponse = await instance.acquireTokenSilent({
         scopes: ['api://5c0c3b9e-0e4b-47b8-8e4f-9b0e6c0c3b9e/.default'],
         account: account,
@@ -133,16 +133,16 @@ const TasksGrid: React.FC = () => {
         },
       });
 
-      console.log('TasksGrid: Fetching review tasks from API...');
+      logger.log('TasksGrid: Fetching review tasks from API...');
       const response = await axiosInstance.get<ReviewTask[]>(
         '/v1/admin/kvk-verification/flagged-entities'
       );
-      console.log(`TasksGrid: Loaded ${response.data.length} review tasks`, response.data);
+      logger.log(`TasksGrid: Loaded ${response.data.length} review tasks`, response.data);
       setReviewTasks(response.data);
     } catch (error: any) {
-      console.error('TasksGrid: Error loading review tasks:', error);
+      logger.error('TasksGrid: Error loading review tasks:', error);
       if (error.response) {
-        console.error('TasksGrid: API error details:', {
+        logger.error('TasksGrid: API error details:', {
           status: error.response.status,
           statusText: error.response.statusText,
           data: error.response.data,
@@ -168,7 +168,7 @@ const TasksGrid: React.FC = () => {
       resetForm();
       loadTasks();
     } catch (error) {
-      console.error('Error creating task:', error);
+      logger.error('Error creating task:', error);
       alert('Failed to create task');
     }
   };
@@ -197,7 +197,7 @@ const TasksGrid: React.FC = () => {
       resetForm();
       loadTasks();
     } catch (error) {
-      console.error('Error updating task:', error);
+      logger.error('Error updating task:', error);
       alert('Failed to update task');
     }
   };
@@ -214,7 +214,7 @@ const TasksGrid: React.FC = () => {
 
       loadTasks();
     } catch (error) {
-      console.error('Error completing task:', error);
+      logger.error('Error completing task:', error);
       alert('Failed to complete task');
     }
   };
@@ -249,7 +249,7 @@ const TasksGrid: React.FC = () => {
       setSelectedReviewTask(null);
       loadReviewTasks();
     } catch (error) {
-      console.error('Error submitting review:', error);
+      logger.error('Error submitting review:', error);
       alert('Failed to submit review decision');
     }
   };

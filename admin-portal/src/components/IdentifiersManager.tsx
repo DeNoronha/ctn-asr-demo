@@ -19,6 +19,7 @@ import { useEffect, useState } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
+import { logger } from '../utils/logger';
 import { type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
 import { sanitizeFormData, sanitizeGridCell } from '../utils/sanitize';
@@ -229,7 +230,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
         return response.accessToken;
       }
     } catch (error) {
-      console.error('Failed to acquire token:', error);
+      logger.error('Failed to acquire token:', error);
     }
     return null;
   }
@@ -257,7 +258,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
         }
       } catch (_error) {
         // Silently fail if no document uploaded yet
-        console.debug('No KvK verification status available yet');
+        logger.debug('No KvK verification status available yet');
       }
     };
 

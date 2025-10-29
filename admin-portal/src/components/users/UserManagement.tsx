@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger';
 /**
  * User Management Page
  * System Admins can view and manage all users
@@ -105,7 +106,7 @@ const UserManagement: React.FC = () => {
       const processed = process(mockUsers, dataState);
       setProcessedData(processed);
     } catch (error) {
-      console.error('Error loading users:', error);
+      logger.error('Error loading users:', error);
     } finally {
       setLoading(false);
     }
@@ -113,7 +114,7 @@ const UserManagement: React.FC = () => {
 
   const handleInviteUser = async (userData: { email: string; name: string; role: UserRole }) => {
     // TODO: Implement actual user invitation via Microsoft Graph API
-    console.log('Inviting user:', userData);
+    logger.log('Inviting user:', userData);
 
     // Log the action
     if (currentUser) {
@@ -152,7 +153,7 @@ const UserManagement: React.FC = () => {
 
   const handleUpdateUser = async (userId: string, updates: Partial<User>) => {
     // TODO: Implement user update via Microsoft Graph API
-    console.log('Updating user:', userId, updates);
+    logger.log('Updating user:', userId, updates);
 
     // Log the action
     if (currentUser) {
@@ -177,7 +178,7 @@ const UserManagement: React.FC = () => {
 
   const handleToggleUserStatus = async (userId: string, enabled: boolean) => {
     // TODO: Implement enable/disable user via Microsoft Graph API
-    console.log('Toggle user status:', userId, enabled);
+    logger.log('Toggle user status:', userId, enabled);
 
     // Log the action
     if (currentUser) {

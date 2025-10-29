@@ -7,6 +7,7 @@ import { type AccountInfo, PublicClientApplication } from '@azure/msal-browser';
 import type React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { csrfService } from '../services/csrfService';
+import { logger } from '../utils/logger';
 import { type UserRole, msalConfig, portalAccess, roleHierarchy } from './authConfig';
 
 // Initialize MSAL instance
@@ -75,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Check if user has been idle for too long
       if (idleTime >= IDLE_TIMEOUT_MS) {
-        console.warn('Session timeout: User idle for 30 minutes');
+        logger.warn('Session timeout: User idle for 30 minutes');
         await logout();
         return;
       }
@@ -83,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Show warning at 28 minutes
       if (idleTime >= IDLE_WARNING_MS && !showIdleWarning) {
         setShowIdleWarning(true);
-        console.warn('Idle timeout warning: 2 minutes remaining');
+        logger.warn('Idle timeout warning: 2 minutes remaining');
       }
 
       // SEC-001 & SEC-003: Check token expiration
@@ -95,14 +96,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           // Force logout if token expired (SEC-003)
           if (timeUntilExpiry <= 0) {
-            console.warn('Token expired: Forcing logout');
+            logger.warn('Token expired: Forcing logout');
             await logout();
             return;
           }
 
           // Refresh token if expiring soon (SEC-001)
           if (timeUntilExpiry <= TOKEN_REFRESH_BEFORE_EXPIRY_MS) {
-            console.log('Token expiring soon: Attempting silent refresh');
+            logger.log('Token expiring soon: Attempting silent refresh');
             try {
               await msalInstance.acquireTokenSilent({
                 scopes: ['User.Read', 'openid', 'profile', 'email'],
@@ -111,16 +112,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               });
               // Rotate CSRF token on successful refresh (SEC-004)
               csrfService.generateToken();
-              console.log('Token refreshed successfully, CSRF token rotated');
+              logger.log('Token refreshed successfully, CSRF token rotated');
             } catch (refreshError) {
-              console.error('Token refresh failed:', refreshError);
+              logger.error('Token refresh failed:', refreshError);
               // Force logout if refresh fails
               await logout();
             }
           }
         }
       } catch (error) {
-        console.error('Error checking token expiration:', error);
+        logger.error('Error checking token expiration:', error);
       }
     }, 60000); // Check every minute
 
@@ -142,7 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     } catch (error) {
-      console.error('Auth initialization error:', error);
+      logger.error('Auth initialization error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -150,7 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loadUserRoles = async (account: AccountInfo) => {
     try {
-      console.log('Loading user roles for account:', account);
+      logger.log('Loading user roles for account:', account);
 
       // Extract roles from ID token claims
       interface IdTokenClaims extends Record<string, unknown> {
@@ -159,22 +160,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         extension_AssociationId?: string;
       }
       const idTokenClaims = (account.idTokenClaims || {}) as IdTokenClaims;
-      console.log('ID Token Claims:', idTokenClaims);
+      logger.log('ID Token Claims:', idTokenClaims);
 
       const roles = (idTokenClaims?.roles || []) as UserRole[];
-      console.log('Extracted roles:', roles);
+      logger.log('Extracted roles:', roles);
 
       // Check MFA status from claims
       // TODO: Re-enable strict MFA checking once Conditional Access policy is fully enforced
       const mfaEnabled = true; // Temporarily bypassed - idTokenClaims?.amr?.includes('mfa') || false;
-      console.log('MFA enabled:', mfaEnabled, '(bypassed until CA policy active)');
+      logger.log('MFA enabled:', mfaEnabled, '(bypassed until CA policy active)');
 
       // Get association ID from custom claim
       const associationId = idTokenClaims?.extension_AssociationId;
 
       // If no roles, user cannot proceed
       if (roles.length === 0) {
-        console.error('No roles found for user');
+        logger.error('No roles found for user');
         setUser(null);
         return;
       }
@@ -184,7 +185,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return roleHierarchy[role] > roleHierarchy[highest] ? role : highest;
       }, roles[0]);
 
-      console.log('Primary role:', primaryRole);
+      logger.log('Primary role:', primaryRole);
 
       setUser({
         account,
@@ -196,9 +197,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Generate CSRF token for secure API requests (SEC-004)
       csrfService.generateToken();
-      console.log('User loaded successfully, CSRF token generated');
+      logger.log('User loaded successfully, CSRF token generated');
     } catch (error) {
-      console.error('Error loading user roles:', error);
+      logger.error('Error loading user roles:', error);
       setUser(null);
     }
   };
@@ -211,7 +212,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         prompt: 'select_account',
       });
     } catch (error) {
-      console.error('Login error:', error);
+      logger.error('Login error:', error);
       setIsLoading(false);
       throw error;
     }
@@ -225,7 +226,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await msalInstance.logoutRedirect();
       setUser(null);
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error:', error);
       throw error;
     } finally {
       setIsLoading(false);

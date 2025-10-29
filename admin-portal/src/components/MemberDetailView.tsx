@@ -13,6 +13,7 @@ import { useApiError } from '../hooks/useApiError';
 import { type LegalEntity, type LegalEntityContact, type Member, api } from '../services/api';
 import { type LegalEntityEndpoint, type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
+import { logger } from '../utils/logger';
 import { CompanyDetails } from './CompanyDetails';
 import { CompanyForm } from './CompanyForm';
 import { ContactsManager } from './ContactsManager';
@@ -33,7 +34,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
   member,
   onBack,
 }) => {
-  console.log('Member with legal_entity_id:', member.legal_entity_id);
+  logger.log('Member with legal_entity_id:', member.legal_entity_id);
   const [selected, setSelected] = useState(0);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(null);
@@ -65,7 +66,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
             const entityEndpoints = await apiV2.getEndpoints(member.legal_entity_id);
             setEndpoints(entityEndpoints);
           } catch (endpointError: any) {
-            console.error('Failed to load endpoints:', endpointError);
+            logger.error('Failed to load endpoints:', endpointError);
             // Don't block loading other data if endpoints fail
             setEndpoints([]);
           }
@@ -77,12 +78,12 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           } catch (kvkError: any) {
             // 404 means no data, that's okay
             if (kvkError.response?.status !== 404) {
-              console.error('Error checking KvK registry data:', kvkError);
+              logger.error('Error checking KvK registry data:', kvkError);
             }
             setHasKvkRegistryData(false);
           }
         } catch (error) {
-          console.error('Failed to load legal entity data:', error);
+          logger.error('Failed to load legal entity data:', error);
           notification.showError('Failed to load company information');
         } finally {
           setLoading(false);
@@ -101,7 +102,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
       setIsEditingCompany(false);
       notification.showSuccess('Company information updated successfully');
     } catch (error) {
-      console.error('Failed to update company:', error);
+      logger.error('Failed to update company:', error);
       notification.showError('Failed to update company information');
     }
   };
@@ -113,7 +114,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
       setContacts(updatedContacts);
       notification.showSuccess('Contacts updated successfully');
     } catch (error) {
-      console.error('Failed to update contacts:', error);
+      logger.error('Failed to update contacts:', error);
       notification.showError('Failed to update contacts');
     }
   };

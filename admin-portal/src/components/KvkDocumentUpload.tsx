@@ -7,6 +7,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 import { useApiError } from '../hooks/useApiError';
+import { logger } from '../utils/logger';
 
 interface KvkApiResponse {
   kvkNumber: string;
@@ -65,7 +66,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
         return response.accessToken;
       }
     } catch (error) {
-      console.error('Failed to acquire token:', error);
+      logger.error('Failed to acquire token:', error);
     }
     return null;
   }
@@ -104,14 +105,14 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
         try {
           data.kvk_api_response = JSON.parse(data.kvk_api_response);
         } catch (e) {
-          console.warn('Failed to parse kvk_api_response:', e);
+          logger.warn('Failed to parse kvk_api_response:', e);
         }
       }
 
       setVerificationStatus(data);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch verification status:', error);
+      logger.error('Failed to fetch verification status:', error);
       setLoading(false);
     }
   };
@@ -155,7 +156,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
         }
       );
 
-      console.log('Upload response:', response.data);
+      logger.log('Upload response:', response.data);
       setNotification({
         type: 'success',
         message: 'Document uploaded successfully. Verification in progress...',

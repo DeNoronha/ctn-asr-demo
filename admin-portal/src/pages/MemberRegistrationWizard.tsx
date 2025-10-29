@@ -8,6 +8,7 @@ import { StepperForm } from '../components/forms/StepperForm';
 import { HelpTooltip } from '../components/help/HelpTooltip';
 import { helpContent } from '../config/helpContent';
 import { useNotification } from '../contexts/NotificationContext';
+import { logger } from '../utils/logger';
 import {
   type MemberFormData,
   formatDomain,
@@ -127,11 +128,11 @@ export const MemberRegistrationWizard: React.FC = () => {
   const handleComplete = async (data: MemberFormData) => {
     try {
       // TODO: Replace with actual API call
-      console.log('Submitting member registration:', data);
+      logger.log('Submitting member registration:', data);
       notification.showSuccess('Member registered successfully!');
       navigate('/members');
     } catch (error) {
-      console.error('Failed to register member:', error);
+      logger.error('Failed to register member:', error);
       notification.showError('Failed to register member');
     }
   };

@@ -1,3 +1,4 @@
+import { logger } from './logger';
 /**
  * Audit Log Service
  * Fetches and manages audit logs from the API
@@ -21,7 +22,7 @@ async function getAccessToken(): Promise<string | null> {
       return response.accessToken;
     }
   } catch (error) {
-    console.error('Failed to acquire token:', error);
+    logger.error('Failed to acquire token:', error);
   }
   return null;
 }
@@ -162,7 +163,7 @@ class AuditLogService {
 
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch audit logs:', error);
+      logger.error('Failed to fetch audit logs:', error);
       throw error;
     }
   }
@@ -266,7 +267,7 @@ class AuditLogService {
     details: string;
     metadata?: Record<string, any>;
   }): void {
-    console.log('[AUDIT] Client-side logging (backend handles persistence):', params);
+    logger.log('[AUDIT] Client-side logging (backend handles persistence):', params);
     // Note: Actual audit logging happens on backend via auditMiddleware
   }
 }
