@@ -90,7 +90,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
     if (!files || files.length === 0) return;
 
     const fileInfo = files[0];
-    const file = fileInfo.getRawFile ? fileInfo.getRawFile() : (fileInfo as File);
+    const file = fileInfo.getRawFile ? fileInfo.getRawFile() : (fileInfo as unknown as File);
 
     // Type guard - ensure we have a File object
     if (!(file instanceof File)) {

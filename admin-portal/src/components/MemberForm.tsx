@@ -167,7 +167,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
 
     try {
       // SEC-006: Sanitize form data before submission to prevent XSS attacks
-      await onSubmit(sanitizeFormData(formData as Record<string, unknown>) as MemberFormData);
+      await onSubmit(sanitizeFormData(formData as unknown as Record<string, unknown>) as unknown as MemberFormData);
       // Clear draft on successful submit
       localStorage.removeItem('memberFormDraft');
       setIsDirty(false);
