@@ -20,6 +20,7 @@ import NotFound from './components/NotFound';
 import '@progress/kendo-theme-default/dist/all.css';
 import './App.css';
 import './components/help/help.css';
+import './styles/responsive.css';
 
 function App() {
   return (
