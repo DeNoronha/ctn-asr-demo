@@ -7,7 +7,7 @@ import { Button } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Grid, GridColumn } from '@progress/kendo-react-grid';
 import { Input, TextArea, Checkbox } from '@progress/kendo-react-inputs';
-import { Key, Plus, Trash2, Copy, AlertTriangle } from 'lucide-react';
+import { Key, Plus, Trash2, Copy, AlertTriangle } from './icons';
 import React, { useEffect, useState } from 'react';
 
 interface M2MClient {
@@ -299,7 +299,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
 
       {clients.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f9fafb', borderRadius: '8px' }}>
-          <Key size={48} color="#9ca3af" />
+          <Key size={48} style={{ color: '#9ca3af' }} />
           <p style={{ fontSize: '1.125rem', fontWeight: 500, margin: '16px 0 8px 0' }}>
             No M2M clients configured
           </p>

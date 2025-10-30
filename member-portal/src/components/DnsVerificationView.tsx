@@ -1,8 +1,7 @@
-import type React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@progress/kendo-react-buttons';
 import { Input } from '@progress/kendo-react-inputs';
-import { Label, Error, Hint } from '@progress/kendo-react-labels';
+import { Label, Error as ErrorLabel, Hint } from '@progress/kendo-react-labels';
 import type { ComponentProps } from '../types';
 
 interface DnsToken {
@@ -188,7 +187,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
               {loading ? 'Generating...' : 'Generate Token'}
             </Button>
           </div>
-          {error && <Error>{error}</Error>}
+          {error && <ErrorLabel>{error}</ErrorLabel>}
           <Hint>
             Enter your organization's domain name (e.g., company.com). You will need to add a TXT
             record to your DNS.
