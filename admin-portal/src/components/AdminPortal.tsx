@@ -114,6 +114,14 @@ const AdminPortal: React.FC = () => {
     await logout();
   }, [logout]);
 
+  // Redirect to members view if trying to view member-detail without a selected member
+  // This prevents setState during render (React anti-pattern)
+  useEffect(() => {
+    if (selectedView === 'member-detail' && !selectedMember) {
+      setSelectedView('members');
+    }
+  }, [selectedView, selectedMember]);
+
   const renderContent = () => {
     switch (selectedView) {
       case 'dashboard':
@@ -152,8 +160,8 @@ const AdminPortal: React.FC = () => {
         );
 
       case 'member-detail':
+        // If no member selected, useEffect will redirect to members view
         if (!selectedMember) {
-          setSelectedView('members');
           return null;
         }
         return (
