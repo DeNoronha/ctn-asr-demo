@@ -373,7 +373,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   };
 
   // Column menu
-  const ColumnMenu = (props: React.ComponentProps<typeof GridColumnMenuSort>) => {
+  const ColumnMenu = (props: any) => {
     return (
       <div>
         <GridColumnMenuSort {...props} />

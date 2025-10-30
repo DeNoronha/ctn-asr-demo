@@ -3,8 +3,7 @@ import { Input, MaskedTextBox } from '@progress/kendo-react-inputs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Error, Hint, Label } from '@progress/kendo-react-labels';
 // MemberForm.tsx - Enhanced form with validation
-import type React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { logger } from '../utils/logger';
 import {
@@ -168,7 +167,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
 
     try {
       // SEC-006: Sanitize form data before submission to prevent XSS attacks
-      await onSubmit(sanitizeFormData(formData));
+      await onSubmit(sanitizeFormData(formData as Record<string, unknown>) as MemberFormData);
       // Clear draft on successful submit
       localStorage.removeItem('memberFormDraft');
       setIsDirty(false);

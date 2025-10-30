@@ -122,11 +122,14 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
     const files = event.affectedFiles || event.newState || [];
     if (!files || files.length === 0) return;
 
-    // Prevent default upload behavior
-    event.preventDefault?.();
-
     const fileInfo = files[0];
-    const file = fileInfo.getRawFile ? fileInfo.getRawFile() : fileInfo;
+    const file = fileInfo.getRawFile ? fileInfo.getRawFile() : (fileInfo as File);
+
+    // Type guard - ensure we have a File object
+    if (!(file instanceof File)) {
+      setNotification({ type: 'error', message: 'Invalid file' });
+      return;
+    }
 
     // Validate file type
     if (file.type !== 'application/pdf') {

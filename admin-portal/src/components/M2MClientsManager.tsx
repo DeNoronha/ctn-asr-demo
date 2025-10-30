@@ -220,7 +220,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
   // SEC-007: Sanitize user-generated text fields in grid
   const TextCell = (props: GridCellProps) => {
     const { field, dataItem } = props;
-    const value = dataItem[field];
+    const value = field ? dataItem[field] : '';
     return <td dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
   };
 

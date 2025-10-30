@@ -69,8 +69,13 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
       console.error('Failed to load KvK registry data:', err);
 
       // 404 means no data available yet
-      if (err.response?.status === 404) {
-        setRegistryData(null);
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosError = err as { response?: { status: number } };
+        if (axiosError.response?.status === 404) {
+          setRegistryData(null);
+        } else {
+          setError('Failed to load KvK registry data');
+        }
       } else {
         setError('Failed to load KvK registry data');
       }

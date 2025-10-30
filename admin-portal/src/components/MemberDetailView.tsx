@@ -78,8 +78,11 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
             setHasKvkRegistryData(true);
           } catch (kvkError: unknown) {
             // 404 means no data, that's okay
-            if (kvkError.response?.status !== 404) {
-              logger.error('Error checking KvK registry data:', kvkError);
+            if (kvkError && typeof kvkError === 'object' && 'response' in kvkError) {
+              const axiosError = kvkError as { response?: { status: number } };
+              if (axiosError.response?.status !== 404) {
+                logger.error('Error checking KvK registry data:', kvkError);
+              }
             }
             setHasKvkRegistryData(false);
           }
