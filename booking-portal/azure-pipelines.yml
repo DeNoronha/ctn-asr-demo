@@ -9,6 +9,16 @@ trigger:
   paths:
     include:
       - booking-portal/**
+    exclude:
+      - admin-portal/**
+      - member-portal/**
+      - api/**
+      - orchestrator-portal/**
+      - ctn-docs-portal/**
+      - docs/**
+      - infrastructure/**
+      - '**/*.md'
+      - .azure-pipelines/**
 
 pool:
   vmImage: 'ubuntu-latest'
