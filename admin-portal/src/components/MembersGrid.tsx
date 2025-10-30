@@ -460,23 +460,19 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   };
 
   const ActionCell = (props: GridCellProps) => {
+    const handleClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      alert(`Button clicked! Member: ${props.dataItem?.org_id}`);
+      console.log('View button clicked for member:', props.dataItem?.org_id);
+      onViewDetails(props.dataItem);
+    };
+
     return (
-      <td>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <Button
-            size="small"
-            fillMode="flat"
-            onClick={(e) => {
-              e.stopPropagation();
-              alert(`Button clicked! Member: ${props.dataItem?.org_id}`);
-              console.log('View button clicked for member:', props.dataItem?.org_id);
-              onViewDetails(props.dataItem);
-            }}
-            title={t('members.viewMember', 'View Member')}
-            aria-label={getGridActionLabel('view', { itemName: props.dataItem.legal_name })}
-          >
-            <Eye size={16} />
-          </Button>
+      <td onClick={handleClick} style={{ cursor: 'pointer' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <Eye size={16} />
+          <span style={{ fontSize: '12px' }}>View</span>
         </div>
       </td>
     );
