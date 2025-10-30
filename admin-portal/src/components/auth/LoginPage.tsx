@@ -29,7 +29,7 @@ export const LoginPage: React.FC = () => {
       navigate('/'); // Redirect to home after successful login
     } catch (err: unknown) {
       console.error('Login failed:', err);
-      setError(err.message || 'Login failed. Please try again.');
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
     }
   };
 

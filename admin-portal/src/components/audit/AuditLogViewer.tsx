@@ -9,6 +9,7 @@ import { DropDownList } from '@progress/kendo-react-dropdowns';
 import {
   Grid,
   GridColumn,
+  type GridCellProps,
   type GridFilterChangeEvent,
   type GridPageChangeEvent,
   type GridSortChangeEvent,

@@ -9,6 +9,7 @@ import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
 import axios from 'axios';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { logger } from '../utils/logger';
 import { formatDate } from '../utils/dateUtils';
 import './TasksGrid.css';
 
@@ -141,7 +142,7 @@ const TasksGrid: React.FC = () => {
       setReviewTasks(response.data);
     } catch (error: unknown) {
       logger.error('TasksGrid: Error loading review tasks:', error);
-      if (error.response) {
+      if (axios.isAxiosError(error) && error.response) {
         logger.error('TasksGrid: API error details:', {
           status: error.response.status,
           statusText: error.response.statusText,

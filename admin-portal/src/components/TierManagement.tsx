@@ -5,8 +5,7 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Label, Hint } from '@progress/kendo-react-labels';
-import type React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { apiV2 } from '../services/apiV2';
 
@@ -223,7 +222,7 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
             disabled={
               updating ||
               !selectedTier ||
-              (tierInfo && selectedTier.tier === tierInfo.tier)
+              !!(tierInfo && selectedTier.tier === tierInfo.tier)
             }
           >
             {updating ? 'Updating...' : 'Update Tier'}
