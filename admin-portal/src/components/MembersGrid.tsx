@@ -461,10 +461,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
   const ActionCell = (props: GridCellProps) => {
     const handleClick = (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      alert(`Button clicked! Member: ${props.dataItem?.org_id}`);
-      console.log('View button clicked for member:', props.dataItem?.org_id);
+      e.stopPropagation(); // Prevent row click from also firing
       onViewDetails(props.dataItem);
     };
 
@@ -562,8 +559,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           style={{ height: '600px' }}
           resizable={true}
           onRowClick={(e) => {
-            alert(`Row clicked! Member: ${e.dataItem?.org_id}`);
-            console.log('Row clicked:', e.dataItem);
             onViewDetails(e.dataItem);
           }}
         >
