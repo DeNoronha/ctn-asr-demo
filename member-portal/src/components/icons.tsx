@@ -79,3 +79,4 @@ export const Mail: React.FC<IconProps> = (props) => <Icon {...props} icon="✉�
 export const Plug: React.FC<IconProps> = (props) => <Icon {...props} icon="🔌" label="Plug" />;
 export const Eye: React.FC<IconProps> = (props) => <Icon {...props} icon="👁️" label="View" />;
 export const MapPin: React.FC<IconProps> = (props) => <Icon {...props} icon="📍" label="Location" />;
+export const Upload: React.FC<IconProps> = (props) => <Icon {...props} icon="⬆️" label="Upload" />;
