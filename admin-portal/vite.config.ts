@@ -53,9 +53,10 @@ export default defineConfig({
     },
   },
   esbuild: {
-    // SEC-009: Strip console.log, console.debug, console.info in production
-    // Keep console.error and console.warn for error monitoring
-    drop: process.env.NODE_ENV === 'production' ? ['console.log', 'console.debug', 'console.info'] : [],
+    // SEC-009: esbuild drop only supports ['console'] (all methods) or ['debugger']
+    // Cannot selectively drop console.log/debug/info while keeping error/warn
+    // TODO: Implement selective console stripping with a Vite plugin or Terser
+    // drop: process.env.NODE_ENV === 'production' ? ['console'] : [],
   },
   server: {
     port: 3000,
