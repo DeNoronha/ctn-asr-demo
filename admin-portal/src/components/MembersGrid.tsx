@@ -460,13 +460,8 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   };
 
   const ActionCell = (props: GridCellProps) => {
-    const handleClick = (e: React.MouseEvent) => {
-      e.stopPropagation(); // Prevent row click from also firing
-      onViewDetails(props.dataItem);
-    };
-
     return (
-      <td onClick={handleClick} style={{ cursor: 'pointer' }}>
+      <td style={{ cursor: 'pointer' }}>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <Eye size={16} />
           <span style={{ fontSize: '12px' }}>View</span>
@@ -559,6 +554,8 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           style={{ height: '600px' }}
           resizable={true}
           onRowClick={(e) => {
+            window.alert(`ROW CLICKED: ${e.dataItem?.org_id || 'NO ID'}`);
+            console.log('Grid onRowClick fired:', e.dataItem);
             onViewDetails(e.dataItem);
           }}
         >
