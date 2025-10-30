@@ -59,6 +59,7 @@ export enum AuditEventType {
   ADMIN_APPROVAL = 'admin_approval',
   ADMIN_REJECTION = 'admin_rejection',
   ADMIN_REVIEW = 'admin_review',
+  APPLICATION_SUBMITTED = 'application_submitted',
 
   // Subscription operations
   SUBSCRIPTION_CREATED = 'subscription_created',

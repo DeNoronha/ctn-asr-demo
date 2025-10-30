@@ -150,33 +150,30 @@ function AppContent({ instance }: AppContentProps) {
     setRegistrationLoading(true);
 
     try {
-      // TODO: Replace with actual API call when backend is ready
-      // const response = await fetch(`${process.env.VITE_API_BASE_URL}/register-member`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
+      const response = await fetch(`${process.env.VITE_API_BASE_URL}/v1/register-member`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
 
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const result = await response.json();
 
-      // Show success message
+      if (!response.ok) {
+        throw new Error(result.error || 'Registration failed');
+      }
+
+      // Show success message with application ID
       showNotification(
-        'Registration submitted successfully! You will receive a confirmation email shortly.',
+        `Registration submitted successfully! Application ID: ${result.applicationId}. You will receive a confirmation email shortly.`,
         'success'
       );
 
       // Close registration modal
       setShowRegistration(false);
-
-      // TODO: When API is ready, handle response and show application reference number
-      console.log('Registration data:', formData);
     } catch (error) {
       console.error('Registration error:', error);
-      showNotification(
-        'Registration failed. Please try again or contact support.',
-        'error'
-      );
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed. Please try again or contact support.';
+      showNotification(errorMessage, 'error');
     } finally {
       setRegistrationLoading(false);
     }
