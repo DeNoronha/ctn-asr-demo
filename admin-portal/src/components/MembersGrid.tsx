@@ -466,7 +466,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           <Button
             size="small"
             fillMode="flat"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
+              alert(`Button clicked! Member: ${props.dataItem?.org_id}`);
               console.log('View button clicked for member:', props.dataItem?.org_id);
               onViewDetails(props.dataItem);
             }}
