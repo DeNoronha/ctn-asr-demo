@@ -21,8 +21,7 @@ import {
   GridToolbar,
 } from '@progress/kendo-react-grid';
 import { Input, type InputChangeEvent } from '@progress/kendo-react-inputs';
-import type React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGridState } from '../hooks/useGridState';
