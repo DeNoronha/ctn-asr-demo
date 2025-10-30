@@ -92,8 +92,10 @@ const AdminPortal: React.FC = () => {
   );
 
   const handleViewDetails = useCallback((member: Member) => {
+    console.log('handleViewDetails called with member:', member?.org_id, member?.legal_name);
     setSelectedMember(member);
     setSelectedView('member-detail');
+    console.log('View switched to member-detail');
   }, []);
 
   const handleBackToMembers = useCallback(() => {

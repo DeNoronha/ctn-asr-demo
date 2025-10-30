@@ -467,7 +467,10 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           <Button
             size="small"
             fillMode="flat"
-            onClick={() => onViewDetails(props.dataItem)}
+            onClick={() => {
+              console.log('View button clicked for member:', props.dataItem?.org_id);
+              onViewDetails(props.dataItem);
+            }}
             title={t('members.viewMember', 'View Member')}
             aria-label={getGridActionLabel('view', { itemName: props.dataItem.legal_name })}
           >
