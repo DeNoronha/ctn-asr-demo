@@ -1,5 +1,5 @@
 # Admin Portal - CI/CD Pipeline
-# Triggers on changes to admin-portal/* directory ONLY
+# Triggers on changes to admin-portal/** (including subdirectories)
 # API deployment handled by separate asr-api.yml pipeline
 # Environment variables loaded from admin-portal/.env.production (tracked in git)
 
@@ -9,14 +9,17 @@ trigger:
       - main
   paths:
     include:
-      - admin-portal/*
+      - admin-portal/**
       - .azure-pipelines/admin-portal.yml
     exclude:
       - api/**
       - booking-portal/**
+      - member-portal/**
       - orchestrator-portal/**
       - ctn-docs-portal/**
       - docuflow-portal/**
+      - docs/**
+      - '**/*.md'
 
 pool:
   vmImage: 'ubuntu-latest'

@@ -1,5 +1,5 @@
 # Member Portal - CI/CD Pipeline
-# Triggers on changes to member-portal/* directory ONLY
+# Triggers on changes to member-portal/** (including subdirectories)
 # API deployment handled by separate asr-api.yml pipeline
 # Environment variables loaded from member-portal/.env.production (tracked in git)
 
@@ -9,7 +9,7 @@ trigger:
       - main
   paths:
     include:
-      - member-portal/*
+      - member-portal/**
       - .azure-pipelines/member-portal.yml
     exclude:
       - api/**
@@ -18,6 +18,8 @@ trigger:
       - orchestrator-portal/**
       - ctn-docs-portal/**
       - docuflow-portal/**
+      - docs/**
+      - '**/*.md'
 
 pool:
   vmImage: 'ubuntu-latest'
