@@ -1,6 +1,7 @@
 /**
  * Login Page - CTN DocuFlow
  * Azure AD authentication entry point
+ * Auto-trigger test - October 30, 2025
  */
 
 import { useEffect } from 'react';
