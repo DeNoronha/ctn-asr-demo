@@ -561,6 +561,11 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           onPageChange={handlePageChange}
           style={{ height: '600px' }}
           resizable={true}
+          onRowClick={(e) => {
+            alert(`Row clicked! Member: ${e.dataItem?.org_id}`);
+            console.log('Row clicked:', e.dataItem);
+            onViewDetails(e.dataItem);
+          }}
         >
           <GridToolbar>
             <div className="grid-toolbar">
