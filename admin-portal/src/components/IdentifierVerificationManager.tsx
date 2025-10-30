@@ -89,10 +89,14 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
     const files = event.affectedFiles || event.newState || [];
     if (!files || files.length === 0) return;
 
-    event.preventDefault?.();
-
     const fileInfo = files[0];
-    const file = fileInfo.getRawFile ? fileInfo.getRawFile() : fileInfo;
+    const file = fileInfo.getRawFile ? fileInfo.getRawFile() : (fileInfo as File);
+
+    // Type guard - ensure we have a File object
+    if (!(file instanceof File)) {
+      notification.showError('Invalid file');
+      return;
+    }
 
     // Validate file type
     if (file.type !== 'application/pdf') {
@@ -172,7 +176,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
 
   const DateCell = (props: GridCellProps) => {
     const { field, dataItem } = props;
-    const value = dataItem[field];
+    const value = field ? dataItem[field] : '';
     return <td>{value ? formatDateTime(value) : '-'}</td>;
   };
 

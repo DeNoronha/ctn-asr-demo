@@ -684,7 +684,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
 
   const DateCell = (props: GridCellProps) => {
     const { field, dataItem } = props;
-    const value = dataItem[field];
+    const value = field ? dataItem[field] : '';
     return <td>{value ? formatDate(value) : '-'}</td>;
   };
 

@@ -71,13 +71,13 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       title={title}
       onClose={onCancel}
       width={450}
-      onKeyDown={handleKeyDown}
     >
       <div
         className="confirm-dialog-content"
         role="alertdialog"
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-message"
+        onKeyDown={handleKeyDown}
       >
         {icon && <div className="confirm-dialog-icon" aria-hidden="true">{icon}</div>}
         <p id="confirm-dialog-message" className="confirm-dialog-message">{message}</p>
@@ -86,7 +86,6 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       <DialogActionsBar>
         <Button
           onClick={onCancel}
-          ref={cancelButtonRef}
           aria-label={`${cancelLabel} - Press Escape to cancel`}
         >
           {cancelLabel}
