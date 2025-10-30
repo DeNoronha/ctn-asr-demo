@@ -1,4 +1,5 @@
 # CTN Booking Document Processing Portal
+**Auto-trigger test - October 30, 2025**
 
 Multi-tenant SaaS portal for processing multimodal transport booking documents using AI extraction and human validation.
 
