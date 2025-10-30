@@ -21,6 +21,7 @@ import { DnsVerificationView } from './components/DnsVerificationView';
 import { EndpointsView } from './components/EndpointsView';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import { ProfileView } from './components/ProfileView';
+import { RegistrationForm } from './components/RegistrationForm';
 import { Support } from './components/Support';
 
 interface AppContentProps {
@@ -59,6 +60,8 @@ function AppContent({ instance }: AppContentProps) {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [notificationId, setNotificationId] = useState(1);
+  const [showRegistration, setShowRegistration] = useState(false);
+  const [registrationLoading, setRegistrationLoading] = useState(false);
 
   useEffect(() => {
     if (accounts.length > 0) {
@@ -141,6 +144,46 @@ function AppContent({ instance }: AppContentProps) {
     msal.logoutRedirect().catch((err) => {
       console.error('Logout failed:', err);
     });
+  };
+
+  const handleRegistrationSubmit = async (formData: any) => {
+    setRegistrationLoading(true);
+
+    try {
+      // TODO: Replace with actual API call when backend is ready
+      // const response = await fetch(`${process.env.VITE_API_BASE_URL}/register-member`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(formData),
+      // });
+
+      // Simulate API call for now
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Show success message
+      showNotification(
+        'Registration submitted successfully! You will receive a confirmation email shortly.',
+        'success'
+      );
+
+      // Close registration modal
+      setShowRegistration(false);
+
+      // TODO: When API is ready, handle response and show application reference number
+      console.log('Registration data:', formData);
+    } catch (error) {
+      console.error('Registration error:', error);
+      showNotification(
+        'Registration failed. Please try again or contact support.',
+        'error'
+      );
+    } finally {
+      setRegistrationLoading(false);
+    }
+  };
+
+  const handleRegistrationCancel = () => {
+    setShowRegistration(false);
   };
 
   const renderTabContent = () => {
@@ -293,9 +336,7 @@ function AppContent({ instance }: AppContentProps) {
                   Sign In with Azure AD
                 </Button>
                 <Button
-                  onClick={() => {
-                    window.location.href = 'mailto:support@ctn-network.com?subject=Member Registration Request&body=I would like to register my organization as a CTN member.';
-                  }}
+                  onClick={() => setShowRegistration(true)}
                   size="large"
                   fillMode="outline"
                   themeColor="primary"
@@ -354,6 +395,19 @@ function AppContent({ instance }: AppContentProps) {
             </div>
           )}
         </AuthenticatedTemplate>
+
+        {/* Registration Modal */}
+        {showRegistration && (
+          <div className="registration-modal-overlay" onClick={handleRegistrationCancel}>
+            <div className="registration-modal-content" onClick={(e) => e.stopPropagation()}>
+              <RegistrationForm
+                onSubmit={handleRegistrationSubmit}
+                onCancel={handleRegistrationCancel}
+                loading={registrationLoading}
+              />
+            </div>
+          </div>
+        )}
       </main>
 
       <footer className="App-footer">
