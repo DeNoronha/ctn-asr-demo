@@ -1,3 +1,4 @@
+// Member Portal Entry Point - Testing auto-trigger (2025-10-30)
 import { PublicClientApplication } from '@azure/msal-browser';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
