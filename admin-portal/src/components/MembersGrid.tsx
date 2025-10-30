@@ -20,7 +20,7 @@ import {
   GridColumnMenuSort,
   GridToolbar,
 } from '@progress/kendo-react-grid';
-import { Input } from '@progress/kendo-react-inputs';
+import { Input, type InputChangeEvent } from '@progress/kendo-react-inputs';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -194,8 +194,8 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     }
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const handleSearchChange = (e: InputChangeEvent) => {
+    const value = e.value;
     setSearchValue(value);
 
     if (value) {
@@ -637,7 +637,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             .filter((col) => col.show)
             .map((col) => {
               const columnProps: Partial<React.ComponentProps<typeof GridColumn>> = {
-                key: col.field,
                 field: col.field,
                 title: getColumnTitle(col.field),
                 width: col.width,
@@ -656,7 +655,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                 columnProps.cell = TextCell;
               }
 
-              return <GridColumn {...columnProps} />;
+              return <GridColumn key={col.field} {...columnProps} />;
             })}
 
           <GridColumn

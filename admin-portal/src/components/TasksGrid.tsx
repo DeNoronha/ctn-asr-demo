@@ -142,12 +142,15 @@ const TasksGrid: React.FC = () => {
       setReviewTasks(response.data);
     } catch (error: unknown) {
       logger.error('TasksGrid: Error loading review tasks:', error);
-      if (axios.isAxiosError(error) && error.response) {
-        logger.error('TasksGrid: API error details:', {
-          status: error.response.status,
-          statusText: error.response.statusText,
-          data: error.response.data,
-        });
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status: number; statusText: string; data: any } };
+        if (axiosError.response) {
+          logger.error('TasksGrid: API error details:', {
+            status: axiosError.response.status,
+            statusText: axiosError.response.statusText,
+            data: axiosError.response.data,
+          });
+        }
       }
     }
   };
