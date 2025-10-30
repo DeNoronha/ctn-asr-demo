@@ -63,24 +63,16 @@ export const LoginPage = () => {
         width: '100%'
       }}>
         {/* CTN Logo */}
-        <div style={{
-          width: '80px',
-          height: '80px',
-          margin: '0 auto 1.5rem',
-          background: '#2c5a7a',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '32px',
-          fontWeight: 'bold',
-          color: 'white',
-          fontFamily: 'Arial, sans-serif'
-        }}>
-          <span style={{ color: '#5a9bc5' }}>c</span>
-          <span style={{ color: 'white' }}>t</span>
-          <span style={{ color: '#f5a623' }}>n</span>
-        </div>
+        <img
+          src="/assets/logos/ctn.png"
+          alt="CTN"
+          style={{
+            width: '120px',
+            height: 'auto',
+            margin: '0 auto 1.5rem',
+            display: 'block'
+          }}
+        />
 
         {/* Title */}
         <h1 style={{
@@ -198,9 +190,9 @@ export const LoginPage = () => {
             gap: '2rem',
             flexWrap: 'wrap'
           }}>
-            <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 500 }}>Contargo</div>
-            <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 500 }}>Inland Terminals</div>
-            <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 500 }}>van Berkel</div>
+            <img src="/assets/logos/contargo.png" alt="Contargo" style={{ height: '30px', opacity: 0.7 }} />
+            <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" style={{ height: '30px', opacity: 0.7 }} />
+            <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" style={{ height: '30px', opacity: 0.7 }} />
           </div>
         </div>
       </div>

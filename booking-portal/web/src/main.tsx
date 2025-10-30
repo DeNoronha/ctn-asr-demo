@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import axios from 'axios'
+import './kendoLicense'
 import App from './App'
 import '@progress/kendo-theme-default/dist/all.css'
 import './styles/index.css'

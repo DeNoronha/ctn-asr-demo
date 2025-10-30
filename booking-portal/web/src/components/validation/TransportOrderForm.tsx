@@ -158,11 +158,11 @@ export const TransportOrderForm: React.FC<TransportOrderFormProps> = ({
           </div>
           <div className="form-field">
             <label>
-              Planned Pickup Date
+              Planned Pickup Date & Time
               {renderConfidenceBadge('plannedPickupDate')}
             </label>
             <input
-              type="date"
+              type="datetime-local"
               value={formData.plannedPickupDate || ''}
               onChange={(e) => handleFieldChange('plannedPickupDate', e.target.value)}
               className={`form-input ${getFieldConfidence('plannedPickupDate') !== null && getFieldConfidence('plannedPickupDate')! < 0.8 ? 'low-confidence' : ''}`}
@@ -206,11 +206,11 @@ export const TransportOrderForm: React.FC<TransportOrderFormProps> = ({
           </div>
           <div className="form-field">
             <label>
-              Planned Delivery Date
+              Planned Delivery Date & Time
               {renderConfidenceBadge('plannedDeliveryDate')}
             </label>
             <input
-              type="date"
+              type="datetime-local"
               value={formData.plannedDeliveryDate || ''}
               onChange={(e) => handleFieldChange('plannedDeliveryDate', e.target.value)}
               className={`form-input ${getFieldConfidence('plannedDeliveryDate') !== null && getFieldConfidence('plannedDeliveryDate')! < 0.8 ? 'low-confidence' : ''}`}
