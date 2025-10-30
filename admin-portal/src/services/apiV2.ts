@@ -35,7 +35,7 @@ async function getAuthenticatedAxios() {
     const method = config.method?.toLowerCase();
     if (method && ['post', 'put', 'patch', 'delete'].includes(method)) {
       const csrfToken = csrfService.getToken();
-      if (csrfToken) {
+      if (csrfToken && config.headers) {
         config.headers[csrfService.getHeaderName()] = csrfToken;
       }
     }
@@ -528,7 +528,13 @@ export const apiV2 = {
     eherkenningLevel?: string;
   }> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.get(`/entities/${legalEntityId}/tier`);
+    const response = await axiosInstance.get<{
+      tier: number;
+      method: string;
+      verifiedAt?: string;
+      reverificationDue?: string;
+      eherkenningLevel?: string;
+    }>(`/entities/${legalEntityId}/tier`);
     return response.data;
   },
 

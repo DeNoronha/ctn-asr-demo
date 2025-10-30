@@ -9,6 +9,7 @@ import { Button } from '@progress/kendo-react-buttons';
 import {
   Grid,
   GridColumn,
+  type GridCellProps,
   type GridFilterChangeEvent,
   type GridPageChangeEvent,
   type GridSortChangeEvent,

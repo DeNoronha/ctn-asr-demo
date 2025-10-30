@@ -306,10 +306,10 @@ export const getSuccessMessage = (
   };
 
   const messages = categoryMap[category];
-  const messageFn = messages[operation as keyof typeof messages];
+  const messageFn = messages[operation as keyof typeof messages] as any;
 
   if (typeof messageFn === 'function') {
-    return messageFn(...args);
+    return messageFn(...args) as SuccessMessageConfig;
   }
 
   return genericSuccessMessages.saved();

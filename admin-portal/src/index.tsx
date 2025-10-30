@@ -6,6 +6,7 @@ import './styles/accessibility.css'; // DA-001: WCAG 2.1 AA compliant colors and
 import './i18n'; // Initialize i18n
 import App from './App';
 import { msalInstance } from './auth/AuthContext';
+import { logger } from './utils/logger';
 import reportWebVitals from './reportWebVitals';
 
 // Expose msalInstance globally for debugging (development only)

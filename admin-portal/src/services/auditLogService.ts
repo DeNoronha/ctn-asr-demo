@@ -1,4 +1,3 @@
-import { logger } from './logger';
 /**
  * Audit Log Service
  * Fetches and manages audit logs from the API
@@ -6,6 +5,7 @@ import { logger } from './logger';
 
 import axios from 'axios';
 import { msalInstance } from '../auth/AuthContext';
+import { logger } from '../utils/logger';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
 
