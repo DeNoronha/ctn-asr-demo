@@ -560,7 +560,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           style={{ height: '600px' }}
           resizable={true}
           onRowClick={(e) => {
-            window.alert(`ROW CLICKED: ${e.dataItem?.org_id || 'NO ID'}`);
             console.log('Grid onRowClick fired:', e.dataItem);
             onViewDetails(e.dataItem);
           }}
