@@ -105,7 +105,8 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
 
   const TextCell = (props: GridCellProps) => {
     const value = props.dataItem[props.field || ''];
-    return <td dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
+    const singleLine = sanitizeText(String(value || '')).replace(/\s+/g, ' ').trim();
+    return <td>{singleLine}</td>;
   };
 
   const handleKeyDown = (event: React.KeyboardEvent, action: () => void) => {
