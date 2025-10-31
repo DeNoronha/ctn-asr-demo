@@ -1,4 +1,5 @@
 import { Button } from '@progress/kendo-react-buttons';
+import { EmptyState } from './EmptyState';
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
@@ -10,6 +11,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { HelpTooltip } from './help/HelpTooltip';
 import { helpContent } from '../config/helpContent';
 import './EndpointManagement.css';
+import { getEmptyState } from '../utils/emptyStates';
 
 // Auth helper
 const getAccessToken = async (): Promise<string> => {
@@ -220,20 +222,33 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
         </Button>
       </div>
 
-      <Grid data={endpoints} style={{ height: '500px' }}>
-        <GridColumn field="endpoint_name" title="Endpoint Name" width="250px" />
-        <GridColumn field="endpoint_url" title="URL" width="300px" />
-        <GridColumn field="data_category" title="Category" width="150px" />
-        <GridColumn field="endpoint_type" title="Type" width="120px" />
-        <GridColumn field="is_active" title="Status" width="120px" cell={StatusCell} />
-        <GridColumn
-          field="dt_created"
-          title="Created"
-          width="180px"
-          format="{0:yyyy-MM-dd HH:mm}"
-        />
-        <GridColumn title="Actions" width="150px" cell={ActionsCell} />
-      </Grid>
+      {endpoints.length === 0 ? (
+        (() => {
+          const es = getEmptyState('endpoint', 'noEndpoints');
+          return (
+            <EmptyState
+              message={es.message}
+              hint={es.hint}
+              action={es.action ? { label: es.action.label, onClick: () => setShowDialog(true) } : undefined}
+            />
+          );
+        })()
+      ) : (
+        <Grid data={endpoints} style={{ height: '500px' }}>
+          <GridColumn field="endpoint_name" title="Endpoint Name" width="250px" />
+          <GridColumn field="endpoint_url" title="URL" width="300px" />
+          <GridColumn field="data_category" title="Category" width="150px" />
+          <GridColumn field="endpoint_type" title="Type" width="120px" />
+          <GridColumn field="is_active" title="Status" width="120px" cell={StatusCell} />
+          <GridColumn
+            field="dt_created"
+            title="Created"
+            width="180px"
+            format="{0:yyyy-MM-dd HH:mm}"
+          />
+          <GridColumn title="Actions" width="150px" cell={ActionsCell} />
+        </Grid>
+      )}
 
       {showDialog && (
         <Dialog title="Register New Endpoint" onClose={() => setShowDialog(false)} width={600}>

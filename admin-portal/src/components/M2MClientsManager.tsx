@@ -12,6 +12,7 @@ import { formatDate } from '../utils/dateUtils';
 import { sanitizeGridCell } from '../utils/sanitize';
 import { ConfirmDialog } from './ConfirmDialog';
 import { EmptyState } from './EmptyState';
+import { getEmptyState } from '../utils/emptyStates';
 import './IdentifiersManager.css';
 
 interface M2MClient {
@@ -295,11 +296,17 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
       </div>
 
       {clients.length === 0 ? (
-        <EmptyState
-          icon={<Key size={48} />}
-          message="No M2M clients configured"
-          hint="Create API clients to allow external systems to access CTN data"
-        />
+        (() => {
+          const es = getEmptyState('token', 'noM2MClients');
+          return (
+            <EmptyState
+              icon={<Key size={48} />}
+              message={es.message}
+              hint={es.hint}
+              action={es.action ? { label: es.action.label, onClick: () => setShowAddDialog(true) } : undefined}
+            />
+          );
+        })()
       ) : (
         <Grid data={clients} style={{ height: '400px' }}>
           <GridColumn field="client_name" title="Client Name" width="200px" cell={TextCell} />

@@ -12,6 +12,7 @@ import { ConfirmDialog } from './ConfirmDialog';
 import { ContactForm } from './ContactForm';
 import { EmptyState } from './EmptyState';
 import './ContactsManager.css';
+import { getEmptyState } from '../utils/emptyStates';
 
 interface ContactsManagerProps {
   legalEntityId: string;
@@ -184,11 +185,17 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
           <GridColumn width="120px" title="Actions" cell={ActionsCell} />
         </Grid>
       ) : (
-        <EmptyState
-          icon={<Users size={48} />}
-          message="No contacts added yet"
-          hint="Add contacts to maintain communication channels with this member"
-        />
+        (() => {
+          const es = getEmptyState('contact', 'noContacts');
+          return (
+            <EmptyState
+              icon={<Users size={48} />}
+              message={es.message}
+              hint={es.hint}
+              action={es.action ? { label: es.action.label, onClick: handleAddContact } : undefined}
+            />
+          );
+        })()
       )}
 
       {showDialog && (

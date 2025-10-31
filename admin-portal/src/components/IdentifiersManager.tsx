@@ -29,6 +29,7 @@ import { HelpTooltip } from './help/HelpTooltip';
 import { helpContent } from '../config/helpContent';
 import { ConditionalField } from './forms/ConditionalField';
 import './IdentifiersManager.css';
+import { getEmptyState } from '../utils/emptyStates';
 import '../styles/progressive-forms.css';
 
 interface IdentifiersManagerProps {
@@ -717,11 +718,17 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
           />
         </Grid>
       ) : (
-        <EmptyState
-          icon={<FileCheck size={48} />}
-          message="No identifiers registered yet"
-          hint="Add legal identifiers like KVK, LEI, or EORI numbers to verify this member's identity"
-        />
+        (() => {
+          const es = getEmptyState('identifier', 'noIdentifiers');
+          return (
+            <EmptyState
+              icon={<FileCheck size={48} />}
+              message={es.message}
+              hint={es.hint}
+              action={es.action ? { label: es.action.label, onClick: handleAdd } : undefined}
+            />
+          );
+        })()
       )}
 
       {isDialogOpen && (
