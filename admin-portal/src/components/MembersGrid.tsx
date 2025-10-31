@@ -71,6 +71,8 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   const { page, pageSize, skip, updatePage, updatePageSize } = useGridState('members-grid', {
     defaultPage: 1,
     defaultPageSize: 20,
+    enableFilterPersistence: true,
+    resetPageOnFilterChange: false,
   });
 
   const [gridData, setGridData] = useState<Member[]>(members);

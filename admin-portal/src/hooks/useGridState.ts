@@ -35,6 +35,7 @@ export interface UseGridStateOptions {
   defaultPageSize?: number;
   defaultFilters?: GridFilters;
   enableFilterPersistence?: boolean;
+  resetPageOnFilterChange?: boolean; // default: true
 }
 
 /**
@@ -51,6 +52,7 @@ export function useGridState(
     defaultPageSize = 20,
     defaultFilters = {},
     enableFilterPersistence = true,
+    resetPageOnFilterChange = true,
   } = options;
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -130,8 +132,10 @@ export function useGridState(
   // Update filters (resets to page 1)
   const updateFilters = useCallback((newFilters: GridFilters) => {
     setFilters(newFilters);
-    setPage(1); // Reset to first page when filters change
-  }, []);
+    if (resetPageOnFilterChange) {
+      setPage(1); // Optional reset when filters change
+    }
+  }, [resetPageOnFilterChange]);
 
   // Clear filters (resets to page 1)
   const clearFilters = useCallback(() => {
