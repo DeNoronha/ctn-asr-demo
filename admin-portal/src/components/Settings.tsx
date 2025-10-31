@@ -12,6 +12,17 @@ import './Settings.css';
 const Settings: React.FC = () => {
   const { t } = useTranslation();
 
+  // Derive environment and API details from configuration
+  const apiBase = import.meta.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
+  const apiHost = (() => {
+    try {
+      return new URL(apiBase).host;
+    } catch {
+      return apiBase;
+    }
+  })();
+  const environmentLabel = 'Production';
+
   const handleLokaliseClick = () => {
     // Open Lokalise translation management platform
     window.open('https://app.lokalise.com', '_blank', 'noopener,noreferrer');
@@ -139,11 +150,11 @@ const Settings: React.FC = () => {
           <div className="app-info-grid">
             <div className="info-item">
               <span className="info-label">{t('settings.environment', 'Environment')}:</span>
-              <span className="info-value">Development</span>
+              <span className="info-value">{environmentLabel}</span>
             </div>
             <div className="info-item">
               <span className="info-label">{t('settings.apiUrl', 'API URL')}:</span>
-              <span className="info-value">func-ctn-demo-asr-dev.azurewebsites.net</span>
+              <span className="info-value">{apiHost}</span>
             </div>
             <div className="info-item">
               <span className="info-label">{t('settings.region', 'Region')}:</span>

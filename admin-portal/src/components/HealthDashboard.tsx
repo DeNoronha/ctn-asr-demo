@@ -192,11 +192,7 @@ export const HealthDashboard: React.FC = () => {
           <div className="status-details">
             <div className="status-detail">
               <span className="detail-label">Environment:</span>
-              <span className="detail-value">
-                {health.environment === 'production' || health.environment === 'prod'
-                  ? 'Production'
-                  : health.environment}
-              </span>
+              <span className="detail-value">Production</span>
             </div>
             <div className="status-detail">
               <span className="detail-label">Version:</span>
