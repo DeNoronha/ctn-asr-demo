@@ -153,6 +153,9 @@ export const ContactForm: React.FC<ContactFormProps> = ({
                 component={Input}
                 validator={(value: string) => nameValidator(value, 'First name')}
                 required
+                aria-required
+                placeholder=""
+                autoComplete="given-name"
               />
 
               <Field
@@ -161,24 +164,30 @@ export const ContactForm: React.FC<ContactFormProps> = ({
                 component={Input}
                 validator={(value: string) => nameValidator(value, 'Last name')}
                 required
+                aria-required
+                placeholder=""
+                autoComplete="family-name"
               />
             </div>
 
-            <Field
-              name="email"
-              label={() => (
-                <FieldLabel
-                  text="Email"
-                  helpText={helpContent.emailFormat}
-                  required
-                  dataTestId="email-help"
-                />
-              )}
-              component={Input}
-              type="email"
-              validator={emailValidator}
-              required
-            />
+              <Field
+                name="email"
+                label={() => (
+                  <FieldLabel
+                    text="Email"
+                    helpText={helpContent.emailFormat}
+                    required
+                    dataTestId="email-help"
+                  />
+                )}
+                component={Input}
+                type="email"
+                validator={emailValidator}
+                required
+                aria-required
+                placeholder=""
+                autoComplete="email"
+              />
           </fieldset>
 
           <ProgressiveSection
