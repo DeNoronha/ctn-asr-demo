@@ -24,6 +24,7 @@ import { type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
 import { sanitizeFormData, sanitizeGridCell } from '../utils/sanitize';
 import { ConfirmDialog } from './ConfirmDialog';
+import { identifierSuccessMessages } from '../utils/successMessages';
 import { EmptyState } from './EmptyState';
 import { HelpTooltip } from './help/HelpTooltip';
 import { helpContent } from '../config/helpContent';
@@ -393,6 +394,8 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
   const handleDeleteConfirm = async () => {
     if (!identifierToDelete?.legal_entity_reference_id) return;
     await onIdentifierDelete(identifierToDelete.legal_entity_reference_id);
+    const msg = identifierSuccessMessages.deleted(String(identifierToDelete.identifier_type));
+    notification.showSuccess(msg.title);
   };
 
   const handleSave = async () => {
@@ -414,6 +417,8 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
       if (editingIdentifier) {
         // Update existing identifier
         await onIdentifierUpdate(editingIdentifier.legal_entity_reference_id!, sanitizedFormData);
+        const msg = identifierSuccessMessages.updated(String(sanitizedFormData.identifier_type || 'Identifier'));
+        notification.showSuccess(msg.title);
       } else {
         // Add new identifier
         await onIdentifierCreate({
@@ -428,6 +433,11 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
           validation_date: sanitizedFormData.validation_date,
           verification_notes: sanitizedFormData.verification_notes,
         });
+        const msg = identifierSuccessMessages.created(
+          String(sanitizedFormData.identifier_type || 'Identifier'),
+          String(sanitizedFormData.identifier_value || '')
+        );
+        notification.showSuccess(msg.title);
       }
       setIsDialogOpen(false);
     } catch (error: unknown) {

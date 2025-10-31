@@ -13,6 +13,7 @@ import { sanitizeGridCell } from '../utils/sanitize';
 import { ConfirmDialog } from './ConfirmDialog';
 import { EmptyState } from './EmptyState';
 import { getEmptyState } from '../utils/emptyStates';
+import { tokenSuccessMessages } from '../utils/successMessages';
 import './IdentifiersManager.css';
 
 interface M2MClient {
@@ -366,7 +367,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
             <Button onClick={() => setShowAddDialog(false)}>Cancel</Button>
             <Button
               themeColor="primary"
-              onClick={handleAddClient}
+              onClick={async () => { await handleAddClient(); const msg = tokenSuccessMessages.m2mCreated(formData.client_name); (window as any).notification?.showSuccess ? (window as any).notification.showSuccess(msg.title) : null; }}
               disabled={!formData.client_name || formData.scopes.length === 0 || loading}
             >
               Create Client
