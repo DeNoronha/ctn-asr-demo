@@ -80,18 +80,6 @@ module cosmosDb './modules/cosmos-db.bicep' = {
   }
 }
 
-// Deploy Automation Account for PostgreSQL start/stop
-module automationAccount './modules/automation-account.bicep' = {
-  name: 'automation-account-deployment'
-  scope: resourceGroup
-  params: {
-    environment: environment
-    location: location
-    resourcePrefix: resourcePrefix
-    tags: tags
-  }
-}
-
 // Deploy database
 @description('Database administrator password')
 @secure()
