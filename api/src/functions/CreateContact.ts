@@ -19,13 +19,14 @@ async function handler(
 
     const result = await pool.query(
       `INSERT INTO legal_entity_contact
-       (legal_entity_id, contact_type, first_name, last_name, email, phone, mobile,
+       (legal_entity_id, contact_type, full_name, first_name, last_name, email, phone, mobile,
         job_title, department, is_primary, created_by, dt_created, dt_modified)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
        RETURNING *`,
       [
         body.legal_entity_id,
         body.contact_type || 'Primary',
+        body.full_name,
         body.first_name,
         body.last_name,
         body.email,

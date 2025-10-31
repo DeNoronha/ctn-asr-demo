@@ -22,20 +22,22 @@ async function handler(
     const result = await pool.query(
       `UPDATE legal_entity_contact
        SET contact_type = COALESCE($1, contact_type),
-           first_name = COALESCE($2, first_name),
-           last_name = COALESCE($3, last_name),
-           email = COALESCE($4, email),
-           phone = COALESCE($5, phone),
-           mobile = COALESCE($6, mobile),
-           job_title = COALESCE($7, job_title),
-           department = COALESCE($8, department),
-           is_primary = COALESCE($9, is_primary),
+           full_name = COALESCE($2, full_name),
+           first_name = COALESCE($3, first_name),
+           last_name = COALESCE($4, last_name),
+           email = COALESCE($5, email),
+           phone = COALESCE($6, phone),
+           mobile = COALESCE($7, mobile),
+           job_title = COALESCE($8, job_title),
+           department = COALESCE($9, department),
+           is_primary = COALESCE($10, is_primary),
            dt_modified = CURRENT_TIMESTAMP,
-           modified_by = $10
-       WHERE legal_entity_contact_id = $11
+           modified_by = $11
+       WHERE legal_entity_contact_id = $12
        RETURNING *`,
       [
         body.contact_type,
+        body.full_name,
         body.first_name,
         body.last_name,
         body.email,
