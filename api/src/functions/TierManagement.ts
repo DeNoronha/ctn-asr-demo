@@ -10,7 +10,7 @@ async function getTierInfo(
   request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  const legalEntityId = request.params.legalEntityId;
+  const legalEntityId = (request.params as any).legalentityid || (request.params as any).legalEntityId;
 
   if (!legalEntityId) {
     return {
@@ -62,7 +62,7 @@ async function updateTier(
   request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  const legalEntityId = request.params.legalEntityId;
+  const legalEntityId = (request.params as any).legalentityid || (request.params as any).legalEntityId;
 
   if (!legalEntityId) {
     return {
@@ -122,7 +122,7 @@ async function generateDnsToken(
   request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  const legalEntityId = request.params.legalEntityId;
+  const legalEntityId = (request.params as any).legalentityid || (request.params as any).legalEntityId;
 
   if (!legalEntityId) {
     return {
@@ -190,7 +190,7 @@ async function verifyDnsToken(
   request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  const tokenId = request.params.tokenId;
+  const tokenId = (request.params as any).tokenid || (request.params as any).tokenId;
 
   if (!tokenId) {
     return {
@@ -235,7 +235,7 @@ async function getPendingDnsTokens(
   request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  const legalEntityId = request.params.legalEntityId;
+  const legalEntityId = (request.params as any).legalentityid || (request.params as any).legalEntityId;
 
   if (!legalEntityId) {
     return {
