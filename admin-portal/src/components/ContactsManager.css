@@ -37,6 +37,26 @@
   overflow: hidden;
 }
 
+/* Fix row height - Kendo Grid default is too tall */
+.contacts-grid .k-grid-table {
+  table-layout: fixed;
+}
+
+.contacts-grid .k-grid-table tr {
+  height: 48px;
+}
+
+.contacts-grid .k-grid-table td {
+  padding: 8px 12px;
+  vertical-align: middle;
+  line-height: 1.5;
+}
+
+.contacts-grid .k-grid-table th {
+  padding: 12px;
+  vertical-align: middle;
+}
+
 .contact-type-badge {
   padding: 4px 12px;
   border-radius: 12px;
