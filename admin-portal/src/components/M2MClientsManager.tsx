@@ -123,7 +123,8 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
 
       if (response.ok) {
         const newClient = await response.json();
-        notification.showSuccess('M2M client created successfully');
+        const msg = tokenSuccessMessages.m2mCreated(newClient?.client?.client_name || formData.client_name);
+        notification.showSuccess(msg.title);
         setShowAddDialog(false);
         setFormData({ client_name: '', description: '', scopes: [] });
 
@@ -190,7 +191,8 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
       });
 
       if (response.ok) {
-        notification.showSuccess('M2M client deactivated successfully');
+        const msg = tokenSuccessMessages.revoked(selectedClient.client_name);
+        notification.showSuccess(msg.title);
         setShowDeleteDialog(false);
         setSelectedClient(null);
         loadClients();
@@ -207,7 +209,8 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    notification.showSuccess('Copied to clipboard');
+    const msg = tokenSuccessMessages.copied();
+    notification.showSuccess(msg.title);
   };
 
   const handleScopeToggle = (scope: string) => {
@@ -367,7 +370,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
             <Button onClick={() => setShowAddDialog(false)}>Cancel</Button>
             <Button
               themeColor="primary"
-              onClick={async () => { await handleAddClient(); const msg = tokenSuccessMessages.m2mCreated(formData.client_name); (window as any).notification?.showSuccess ? (window as any).notification.showSuccess(msg.title) : null; }}
+              onClick={handleAddClient}
               disabled={!formData.client_name || formData.scopes.length === 0 || loading}
             >
               Create Client

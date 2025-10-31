@@ -178,7 +178,8 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    notification.showSuccess('Token copied to clipboard');
+    const msg = tokenSuccessMessages.copied();
+    notification.showSuccess(msg.title);
   };
 
   const StatusCell = (props: GridCellProps) => {

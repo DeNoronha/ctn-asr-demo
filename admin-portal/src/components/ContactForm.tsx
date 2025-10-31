@@ -121,7 +121,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
               name="contact_type"
               label={() => (
                 <FieldLabel
-                  text="Type"
+                  text="Contact Type"
                   helpText={helpContent.contactType}
                   dataTestId="contact-type-help"
                 />
@@ -154,7 +154,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
                 validator={(value: string) => nameValidator(value, 'First name')}
                 required
                 aria-required
-                placeholder=""
+                placeholder="e.g., Jane"
                 autoComplete="given-name"
               />
 
@@ -165,7 +165,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
                 validator={(value: string) => nameValidator(value, 'Last name')}
                 required
                 aria-required
-                placeholder=""
+                placeholder="e.g., Doe"
                 autoComplete="family-name"
               />
             </div>
@@ -185,7 +185,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
                 validator={emailValidator}
                 required
                 aria-required
-                placeholder=""
+                placeholder="name@company.com"
                 autoComplete="email"
               />
           </fieldset>

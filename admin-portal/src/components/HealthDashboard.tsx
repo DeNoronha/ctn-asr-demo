@@ -41,6 +41,7 @@ export const HealthDashboard: React.FC = () => {
 
   const API_URL = import.meta.env.VITE_API_URL?.replace('/v1', '') ||
                   'https://func-ctn-demo-asr-dev.azurewebsites.net/api';
+  const environmentName = (import.meta.env as any).VITE_ENVIRONMENT_NAME || (import.meta.env.MODE === 'production' ? 'Production' : 'Development');
 
   const fetchHealth = async () => {
     try {
@@ -155,7 +156,7 @@ export const HealthDashboard: React.FC = () => {
       <div className="health-header">
         <div className="health-title">
           <Activity size={32} />
-          <h1>System Health Dashboard</h1>
+          <h1>System Health</h1>
         </div>
         <div className="health-actions">
           <div className="auto-refresh-toggle">
@@ -192,7 +193,7 @@ export const HealthDashboard: React.FC = () => {
           <div className="status-details">
             <div className="status-detail">
               <span className="detail-label">Environment:</span>
-              <span className="detail-value">Production</span>
+              <span className="detail-value">{environmentName}</span>
             </div>
             <div className="status-detail">
               <span className="detail-label">Version:</span>
@@ -213,8 +214,10 @@ export const HealthDashboard: React.FC = () => {
       </Card>
 
       {/* Individual Checks Grid */}
+      {health.checks && (
       <div className="health-checks-grid">
         {/* Database Check */}
+        {health.checks.database && (
         <Card className={`health-check status-${getStatusClass(health.checks.database.status)}`}>
           <CardHeader>
             <div className="check-header">
@@ -243,8 +246,10 @@ export const HealthDashboard: React.FC = () => {
             </div>
           </CardBody>
         </Card>
+        )}
 
         {/* Application Insights Check */}
+        {health.checks.applicationInsights && (
         <Card className={`health-check status-${getStatusClass(health.checks.applicationInsights.status)}`}>
           <CardHeader>
             <div className="check-header">
@@ -273,8 +278,10 @@ export const HealthDashboard: React.FC = () => {
             </div>
           </CardBody>
         </Card>
+        )}
 
         {/* Azure Key Vault Check */}
+        {health.checks.azureKeyVault && (
         <Card className={`health-check status-${getStatusClass(health.checks.azureKeyVault.status)}`}>
           <CardHeader>
             <div className="check-header">
@@ -303,8 +310,10 @@ export const HealthDashboard: React.FC = () => {
             </div>
           </CardBody>
         </Card>
+        )}
 
         {/* Static Web Apps Check */}
+        {health.checks.staticWebApps && (
         <Card className={`health-check status-${getStatusClass(health.checks.staticWebApps.status)}`}>
           <CardHeader>
             <div className="check-header">
@@ -345,50 +354,9 @@ export const HealthDashboard: React.FC = () => {
             </div>
           </CardBody>
         </Card>
+        )}
       </div>
-
-      {/* Quick Links */}
-      <Card className="quick-links">
-        <CardHeader>
-          <h3>Quick Links</h3>
-        </CardHeader>
-        <CardBody>
-          <div className="links-grid">
-            <a
-              href="https://portal.azure.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="quick-link"
-            >
-              Azure Portal
-            </a>
-            <a
-              href="https://portal.azure.com/#view/Microsoft_Azure_Monitoring/AzureMonitoringBrowseBlade/~/overview"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="quick-link"
-            >
-              Azure Monitor
-            </a>
-            <a
-              href="https://dev.azure.com/ctn-demo/ASR/_build"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="quick-link"
-            >
-              Build Pipeline
-            </a>
-            <a
-              href={`${API_URL}/health`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="quick-link"
-            >
-              Raw Health Endpoint
-            </a>
-          </div>
-        </CardBody>
-      </Card>
+      )}
     </div>
   );
 };
