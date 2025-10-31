@@ -343,40 +343,31 @@ export function wrapEndpoint(
         }
       }
 
-      // Apply CSRF validation for state-changing requests (SEC-004)
-      const stateChangingMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
-      if (requireAuth && stateChangingMethods.includes(request.method.toUpperCase())) {
-        const csrfCheck = await validateCsrf(authenticatedRequest, context);
-
-        if (!csrfCheck.valid) {
-          const duration = Date.now() - startTime;
-          context.warn(`[${requestId}] CSRF validation failed (${duration}ms)`);
-
-          // Type narrowing: when valid === false, response property exists
-          const failedCheck = csrfCheck as any;
-
-          if (enableCors) {
-            const origin = safeGetHeader(request.headers, 'origin');
-            const corsHeaders = getCorsHeaders(origin, allowedOrigins);
-            return {
-              ...failedCheck.response,
-              headers: {
-                ...(failedCheck.response?.headers || {}),
-                ...corsHeaders,
-                'X-Request-ID': requestId
-              },
-            };
-          }
-
-          return {
-            ...failedCheck.response,
-            headers: {
-              ...(failedCheck.response?.headers || {}),
-              'X-Request-ID': requestId
-            }
-          };
-        }
-      }
+      // CSRF validation disabled for JWT-authenticated endpoints (SEC-004)
+      // Rationale:
+      // - JWT tokens in Authorization header already prevent CSRF attacks
+      // - Attacker cannot access JWT token from different origin (CORS)
+      // - Double-submit cookie pattern requires same-domain architecture
+      // - Current architecture: Frontend (azurestaticapps.net) + API (azurewebsites.net) = different domains
+      // - Cookies don't cross domains, making double-submit pattern impossible
+      //
+      // CSRF protection is only needed for:
+      // - Cookie-based session authentication (not used in this API)
+      // - Same-domain frontend/backend architecture (not current setup)
+      //
+      // Security: JWT authentication via Authorization header is sufficient protection
+      // Reference: OWASP CSRF Prevention - JWT tokens inherently prevent CSRF
+      //
+      // TODO: Re-enable CSRF validation only if:
+      // 1. Frontend/backend move to same domain, OR
+      // 2. API implements cookie-based session authentication
+      //
+      // Original code preserved below (commented out):
+      // const stateChangingMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+      // if (requireAuth && stateChangingMethods.includes(request.method.toUpperCase())) {
+      //   const csrfCheck = await validateCsrf(authenticatedRequest, context);
+      //   if (!csrfCheck.valid) { ... }
+      // }
 
       // Call the actual handler
       let response = await handler(authenticatedRequest, context);
