@@ -13,6 +13,7 @@ import { ContactForm } from './ContactForm';
 import { EmptyState } from './EmptyState';
 import './ContactsManager.css';
 import { getEmptyState } from '../utils/emptyStates';
+import { contactSuccessMessages } from '../utils/successMessages';
 
 interface ContactsManagerProps {
   legalEntityId: string;
@@ -47,10 +48,16 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
   const handleSaveContact = async (contact: LegalEntityContact) => {
     if (editingContact && editingContact.legal_entity_contact_id) {
       // Update existing contact
-      await onContactUpdate(editingContact.legal_entity_contact_id, contact);
+      const updated = await onContactUpdate(editingContact.legal_entity_contact_id, contact);
+      const msg = contactSuccessMessages.updated(updated.full_name || 'Contact');
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      msg && (window as any).notification?.showSuccess ? (window as any).notification.showSuccess(msg.title) : null;
     } else {
       // Create new contact
-      await onContactCreate(contact);
+      const created = await onContactCreate(contact);
+      const msg = contactSuccessMessages.created(created.full_name || 'Contact');
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      msg && (window as any).notification?.showSuccess ? (window as any).notification.showSuccess(msg.title) : null;
     }
     setShowDialog(false);
   };

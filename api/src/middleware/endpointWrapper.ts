@@ -343,31 +343,33 @@ export function wrapEndpoint(
         }
       }
 
-      // CSRF validation disabled for JWT-authenticated endpoints (SEC-004)
-      // Rationale:
-      // - JWT tokens in Authorization header already prevent CSRF attacks
-      // - Attacker cannot access JWT token from different origin (CORS)
-      // - Double-submit cookie pattern requires same-domain architecture
-      // - Current architecture: Frontend (azurestaticapps.net) + API (azurewebsites.net) = different domains
-      // - Cookies don't cross domains, making double-submit pattern impossible
-      //
-      // CSRF protection is only needed for:
-      // - Cookie-based session authentication (not used in this API)
-      // - Same-domain frontend/backend architecture (not current setup)
-      //
-      // Security: JWT authentication via Authorization header is sufficient protection
-      // Reference: OWASP CSRF Prevention - JWT tokens inherently prevent CSRF
-      //
-      // TODO: Re-enable CSRF validation only if:
-      // 1. Frontend/backend move to same domain, OR
-      // 2. API implements cookie-based session authentication
-      //
-      // Original code preserved below (commented out):
-      // const stateChangingMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
-      // if (requireAuth && stateChangingMethods.includes(request.method.toUpperCase())) {
-      //   const csrfCheck = await validateCsrf(authenticatedRequest, context);
-      //   if (!csrfCheck.valid) { ... }
-      // }
+      // SEC-004: CSRF protection for state-changing requests
+      // Minimal enforcement for current cross-domain architecture:
+      // - Require presence of custom X-CSRF-Token header on POST/PUT/PATCH/DELETE
+      // - This header cannot be set by cross-site forms, mitigating CSRF
+      // - When/if same-domain cookies are feasible, switch to validateCsrf()
+      const stateChangingMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+      if (requireAuth && stateChangingMethods.includes(request.method.toUpperCase())) {
+        const csrfHeader = authenticatedRequest.headers.get('x-csrf-token');
+        if (!csrfHeader) {
+          const duration = Date.now() - startTime;
+          context.warn(`[${requestId}] CSRF header missing (${duration}ms)`);
+          if (enableCors) {
+            const origin = safeGetHeader(request.headers, 'origin');
+            const corsHeaders = getCorsHeaders(origin, allowedOrigins);
+            return {
+              status: 403,
+              headers: { 'Content-Type': 'application/json', ...corsHeaders, 'X-Request-ID': requestId },
+              jsonBody: { error: 'forbidden', error_description: 'Missing X-CSRF-Token header' },
+            };
+          }
+          return {
+            status: 403,
+            headers: { 'Content-Type': 'application/json', 'X-Request-ID': requestId },
+            jsonBody: { error: 'forbidden', error_description: 'Missing X-CSRF-Token header' },
+          };
+        }
+      }
 
       // Call the actual handler
       let response = await handler(authenticatedRequest, context);

@@ -34,7 +34,10 @@ async function getAuthenticatedAxios() {
   instance.interceptors.request.use((config) => {
     const method = config.method?.toLowerCase();
     if (method && ['post', 'put', 'patch', 'delete'].includes(method)) {
-      const csrfToken = csrfService.getToken();
+      let csrfToken = csrfService.getToken();
+      if (!csrfToken) {
+        csrfToken = csrfService.generateToken();
+      }
       if (csrfToken && config.headers) {
         config.headers[csrfService.getHeaderName()] = csrfToken;
       }

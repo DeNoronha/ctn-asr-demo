@@ -12,6 +12,7 @@ import { HelpTooltip } from './help/HelpTooltip';
 import { helpContent } from '../config/helpContent';
 import './EndpointManagement.css';
 import { getEmptyState } from '../utils/emptyStates';
+import { endpointSuccessMessages, tokenSuccessMessages } from '../utils/successMessages';
 
 // Auth helper
 const getAccessToken = async (): Promise<string> => {
@@ -119,7 +120,8 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
       });
 
       if (response.ok) {
-        notification.showSuccess('Endpoint created successfully');
+        const msg = endpointSuccessMessages.created(formData.endpoint_url);
+        notification.showSuccess(msg.title);
         setShowDialog(false);
         setFormData({
           endpoint_name: '',
@@ -161,6 +163,8 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
         setNewToken(token);
         setSelectedEndpoint(endpoint);
         setShowTokenDialog(true);
+        const msg = tokenSuccessMessages.generated();
+        notification.showSuccess(msg.title);
       } else {
         notification.showError('Failed to issue token');
       }
