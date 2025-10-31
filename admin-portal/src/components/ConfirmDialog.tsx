@@ -1,7 +1,7 @@
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import type React from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import './ConfirmDialog.css';
 
 interface ConfirmDialogProps {
@@ -34,17 +34,17 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onCancel,
   icon,
 }) => {
-  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+  const [cancelButtonElement, setCancelButtonElement] = useState<HTMLElement | null>(null);
 
   // Auto-focus cancel button when dialog opens (safe default for destructive actions)
   useEffect(() => {
-    if (isOpen && cancelButtonRef.current) {
+    if (isOpen && cancelButtonElement) {
       // Small delay to ensure dialog is fully rendered
       setTimeout(() => {
-        cancelButtonRef.current?.focus();
+        cancelButtonElement.focus();
       }, 100);
     }
-  }, [isOpen]);
+  }, [isOpen, cancelButtonElement]);
 
   // Handle keyboard shortcuts
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -61,9 +61,15 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   if (!isOpen) return null;
 
-  const handleConfirm = () => {
-    onConfirm();
-    onCancel(); // Close dialog after action
+  const handleConfirm = async () => {
+    try {
+      await onConfirm();
+      onCancel(); // Close dialog after successful action
+    } catch (error) {
+      // Error will be handled by the parent component's onConfirm handler
+      // Don't close dialog if there's an error
+      console.error('ConfirmDialog: Error in onConfirm:', error);
+    }
   };
 
   return (
@@ -88,7 +94,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           onClick={onCancel}
           aria-label={`${cancelLabel} - Press Escape to cancel`}
         >
-          {cancelLabel}
+          <span ref={(el) => setCancelButtonElement(el?.closest('button') || null)}>{cancelLabel}</span>
         </Button>
         <Button
           themeColor={confirmTheme}
