@@ -22,7 +22,10 @@
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https:; font-src 'self' data: https://unpkg.com; connect-src 'self' https://func-ctn-demo-asr-dev.azurewebsites.net https://login.microsoftonline.com https://graph.microsoft.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
-    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload"
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0"
   },
   "mimeTypes": {
     ".json": "application/json"
