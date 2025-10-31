@@ -16,13 +16,17 @@ import './ContactsManager.css';
 interface ContactsManagerProps {
   legalEntityId: string;
   contacts: LegalEntityContact[];
-  onUpdate: (contacts: LegalEntityContact[]) => Promise<void>;
+  onContactCreate: (contact: Omit<LegalEntityContact, 'legal_entity_contact_id' | 'dt_created' | 'dt_modified'>) => Promise<LegalEntityContact>;
+  onContactUpdate: (contactId: string, contact: Partial<LegalEntityContact>) => Promise<LegalEntityContact>;
+  onContactDelete: (contactId: string) => Promise<void>;
 }
 
 export const ContactsManager: React.FC<ContactsManagerProps> = ({
   legalEntityId,
   contacts,
-  onUpdate,
+  onContactCreate,
+  onContactUpdate,
+  onContactDelete,
 }) => {
   const [showDialog, setShowDialog] = useState(false);
   const [editingContact, setEditingContact] = useState<LegalEntityContact | null>(null);
@@ -40,19 +44,13 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
   };
 
   const handleSaveContact = async (contact: LegalEntityContact) => {
-    let updatedContacts: LegalEntityContact[];
-
-    if (editingContact) {
-      // Update existing
-      updatedContacts = contacts.map((c) =>
-        c.legal_entity_contact_id === editingContact.legal_entity_contact_id ? contact : c
-      );
+    if (editingContact && editingContact.legal_entity_contact_id) {
+      // Update existing contact
+      await onContactUpdate(editingContact.legal_entity_contact_id, contact);
     } else {
-      // Add new
-      updatedContacts = [...contacts, contact];
+      // Create new contact
+      await onContactCreate(contact);
     }
-
-    await onUpdate(updatedContacts);
     setShowDialog(false);
   };
 
@@ -62,11 +60,8 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
   };
 
   const handleDeleteConfirm = async () => {
-    if (!contactToDelete) return;
-    const updatedContacts = contacts.filter(
-      (c) => c.legal_entity_contact_id !== contactToDelete.legal_entity_contact_id
-    );
-    await onUpdate(updatedContacts);
+    if (!contactToDelete?.legal_entity_contact_id) return;
+    await onContactDelete(contactToDelete.legal_entity_contact_id);
   };
 
   const ContactTypeCell = (props: GridCellProps) => {
