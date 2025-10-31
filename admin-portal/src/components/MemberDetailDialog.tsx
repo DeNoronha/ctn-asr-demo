@@ -88,18 +88,41 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
     }
   };
 
-  const handleUpdateContacts = async (_updatedContacts: LegalEntityContact[]) => {
+  const handleContactCreate = async (contact: Omit<LegalEntityContact, 'legal_entity_contact_id' | 'dt_created' | 'dt_modified'>): Promise<LegalEntityContact> => {
     try {
-      // Contacts are managed by ContactsManager component which handles API calls
-      // Reload the contacts from API to ensure we have the latest data
-      if (member.legal_entity_id) {
-        const contactsData = await api.getContacts(member.legal_entity_id);
-        setContacts(contactsData);
-        notification.showSuccess('Contacts updated successfully');
-      }
+      const newContact = await api.createContact(contact);
+      setContacts((prev) => [...prev, newContact]);
+      notification.showSuccess('Contact created successfully');
+      return newContact;
     } catch (error) {
-      console.error('Failed to update contacts:', error);
-      notification.showError('Failed to update contacts');
+      console.error('Failed to create contact:', error);
+      notification.showError('Failed to create contact');
+      throw error;
+    }
+  };
+
+  const handleContactUpdate = async (contactId: string, data: Partial<LegalEntityContact>): Promise<LegalEntityContact> => {
+    try {
+      const updated = await api.updateContact(contactId, data);
+      setContacts((prev) => prev.map((c) => (c.legal_entity_contact_id === contactId ? updated : c)));
+      notification.showSuccess('Contact updated successfully');
+      return updated;
+    } catch (error) {
+      console.error('Failed to update contact:', error);
+      notification.showError('Failed to update contact');
+      throw error;
+    }
+  };
+
+  const handleContactDelete = async (contactId: string): Promise<void> => {
+    try {
+      await api.deleteContact(contactId);
+      setContacts((prev) => prev.filter((c) => c.legal_entity_contact_id !== contactId));
+      notification.showSuccess('Contact deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete contact:', error);
+      notification.showError('Failed to delete contact');
+      throw error;
     }
   };
 
@@ -263,7 +286,9 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
               <ContactsManager
                 legalEntityId={legalEntity.legal_entity_id}
                 contacts={contacts}
-                onUpdate={handleUpdateContacts}
+                onContactCreate={handleContactCreate}
+                onContactUpdate={handleContactUpdate}
+                onContactDelete={handleContactDelete}
               />
             )}
           </div>
