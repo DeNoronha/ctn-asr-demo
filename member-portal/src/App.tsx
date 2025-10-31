@@ -150,7 +150,7 @@ function AppContent({ instance }: AppContentProps) {
     setRegistrationLoading(true);
 
     try {
-      const response = await fetch(`${process.env.VITE_API_BASE_URL}/v1/register-member`, {
+      const response = await fetch(`${process.env.VITE_API_BASE_URL}/register-member`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
