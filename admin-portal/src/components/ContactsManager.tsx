@@ -177,7 +177,7 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
           <GridColumn field="email" title="Email" width="260px" minResizableWidth={200} cell={TextCell} />
           <GridColumn field="phone" title="Phone" width="140px" cell={TextCell} />
           <GridColumn field="job_title" title="Job Title" width="180px" minResizableWidth={120} cell={TextCell} />
-          <GridColumn width="100px" title="Actions" cell={ActionsCell} />
+          <GridColumn width="120px" title="Actions" cell={ActionsCell} />
         </Grid>
       ) : (
         <EmptyState
