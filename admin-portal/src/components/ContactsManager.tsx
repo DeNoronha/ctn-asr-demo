@@ -167,8 +167,8 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
       {contactCount > 0 ? (
         <Grid
           data={safeContacts}
-          style={{ height: '400px', maxHeight: '400px' }}
           className="contacts-grid k-grid-sm"
+          scrollable="none"
         >
           <GridColumn field="contact_type" title="Type" width="140px" cell={ContactTypeCell} />
           <GridColumn
