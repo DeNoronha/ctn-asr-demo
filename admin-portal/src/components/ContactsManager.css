@@ -38,27 +38,33 @@
 }
 
 /* Fix row height - Kendo Grid default is too tall */
+/* Using !important to override Kendo's default styles */
 .contacts-grid .k-grid-table {
-  table-layout: fixed;
+  table-layout: fixed !important;
 }
 
 .contacts-grid .k-grid-table tr {
-  height: 48px;
-  max-height: 48px;
+  height: 48px !important;
+  max-height: 48px !important;
+}
+
+.contacts-grid .k-grid-table tbody tr {
+  height: 48px !important;
+  max-height: 48px !important;
 }
 
 .contacts-grid .k-grid-table td {
-  padding: 8px 12px;
-  vertical-align: middle;
-  line-height: 1.5;
-  height: 48px;
-  max-height: 48px;
+  padding: 8px 12px !important;
+  vertical-align: middle !important;
+  line-height: 1.5 !important;
+  height: 48px !important;
+  max-height: 48px !important;
 }
 
 .contacts-grid .k-grid-table th {
-  padding: 12px;
-  vertical-align: middle;
-  height: 48px;
+  padding: 12px !important;
+  vertical-align: middle !important;
+  height: 48px !important;
 }
 
 .contact-type-badge {
@@ -77,27 +83,28 @@
 }
 
 .action-buttons {
-  display: flex;
-  flex-direction: row;
-  gap: 4px;
-  align-items: center;
-  flex-wrap: nowrap;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 4px !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
 }
 
 .action-buttons button {
-  color: #6b7280;
-  transition: color 0.2s;
-  flex-shrink: 0;
-  min-width: auto;
+  color: #6b7280 !important;
+  transition: color 0.2s !important;
+  flex-shrink: 0 !important;
+  min-width: auto !important;
+  display: inline-flex !important;
 }
 
 .action-buttons button svg,
 .action-buttons button svg * {
-  pointer-events: none;
+  pointer-events: none !important;
 }
 
 .action-buttons button:hover {
-  color: #3b82f6;
+  color: #3b82f6 !important;
 }
 
 /* Keyboard navigation focus indicators (WCAG 2.1 Level AA) */
