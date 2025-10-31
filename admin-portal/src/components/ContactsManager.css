@@ -89,7 +89,11 @@
   transition: color 0.2s;
   flex-shrink: 0;
   min-width: auto;
-  padding: 4px 8px;
+}
+
+.action-buttons button svg,
+.action-buttons button svg * {
+  pointer-events: none;
 }
 
 .action-buttons button:hover {
