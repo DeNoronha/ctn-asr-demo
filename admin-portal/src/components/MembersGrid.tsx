@@ -178,6 +178,15 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     }
   }, [page, pageSize, onPageChange]);
 
+  // Guard: if current page exceeds max pages after data/total change, snap to last page
+  useEffect(() => {
+    if (!onPageChange) return;
+    const maxPage = Math.max(1, Math.ceil(total / pageSize));
+    if (page > maxPage) {
+      updatePage(maxPage);
+    }
+  }, [total, pageSize, page, onPageChange, updatePage]);
+
   // Page change handler for server-side pagination
   const handlePageChange = (event: GridPageChangeEvent) => {
     const newSkip = event.page.skip;
@@ -542,7 +551,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       > */}
         <Grid
           data={gridData}
-          sortable={true}
+          sortable={!onPageChange}
           sort={sort}
           onSortChange={handleSortChange}
           filterable={!onPageChange} // Disable client-side filtering if server-side pagination enabled
@@ -568,21 +577,25 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           <GridToolbar>
             <div className="grid-toolbar">
               <div className="toolbar-left">
-                <Input
-                  value={searchValue}
-                  onChange={handleSearchChange}
-                  placeholder={t('members.searchMembers')}
-                  style={{ width: '300px' }}
-                />
-                <Button
-                  themeColor={showAdvancedFilter ? 'primary' : 'base'}
-                  fillMode={showAdvancedFilter ? 'solid' : 'outline'}
-                  onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
-                  icon="filter"
-                >
-                  {showAdvancedFilter ? t('common.hide', 'Hide') : t('common.advanced', 'Advanced')}{' '}
-                  {t('common.filter')}
-                </Button>
+                {!onPageChange && (
+                  <>
+                    <Input
+                      value={searchValue}
+                      onChange={handleSearchChange}
+                      placeholder={t('members.searchMembers')}
+                      style={{ width: '300px' }}
+                    />
+                    <Button
+                      themeColor={showAdvancedFilter ? 'primary' : 'base'}
+                      fillMode={showAdvancedFilter ? 'solid' : 'outline'}
+                      onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
+                      icon="filter"
+                    >
+                      {showAdvancedFilter ? t('common.hide', 'Hide') : t('common.advanced', 'Advanced')}{' '}
+                      {t('common.filter')}
+                    </Button>
+                  </>
+                )}
                 <DropDownButton
                   text={t('common.export')}
                   icon="download"
