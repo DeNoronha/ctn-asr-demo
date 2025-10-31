@@ -168,7 +168,7 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
         >
           <GridColumn field="contact_type" title="Type" width="140px" cell={ContactTypeCell} />
           <GridColumn
-            field="name"
+            field="full_name"
             title="Name"
             width="180px"
             cell={NameCell}
