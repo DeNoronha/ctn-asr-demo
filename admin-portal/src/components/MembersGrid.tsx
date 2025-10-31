@@ -440,11 +440,12 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   const SelectionCell = (props: GridCellProps) => {
     const isSelected = selectedIds.includes(props.dataItem.org_id);
     return (
-      <td>
+      <td onClick={(e) => e.stopPropagation()}>
         <input
           type="checkbox"
           checked={isSelected}
           onChange={() => handleSelectRow(props.dataItem.org_id)}
+          onClick={(e) => e.stopPropagation()}
         />
       </td>
     );
@@ -453,8 +454,13 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   const SelectionHeaderCell = () => {
     const allSelected = gridData.length > 0 && selectedIds.length === gridData.length;
     return (
-      <th>
-        <input type="checkbox" checked={allSelected} onChange={handleSelectAll} />
+      <th onClick={(e) => e.stopPropagation()}>
+        <input
+          type="checkbox"
+          checked={allSelected}
+          onChange={handleSelectAll}
+          onClick={(e) => e.stopPropagation()}
+        />
       </th>
     );
   };

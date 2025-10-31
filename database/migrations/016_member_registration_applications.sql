@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS applications (
     -- Review Process
     submitted_at TIMESTAMP DEFAULT NOW(),
     reviewed_at TIMESTAMP,
-    reviewed_by UUID REFERENCES users(user_id),
+    reviewed_by UUID,  -- Admin user ID (no FK - users table doesn't exist)
     review_notes TEXT,
     rejection_reason TEXT,
 
