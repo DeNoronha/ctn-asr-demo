@@ -48,25 +48,25 @@
 .contacts-grid .k-grid-table tr,
 .contacts-grid .k-table-row,
 .contacts-grid .k-master-row {
-  height: 44px !important;
-  max-height: 44px !important;
+  height: 36px !important;
+  max-height: 36px !important;
 }
 
 /* Body rows */
 .contacts-grid .k-grid-table tbody tr,
 .contacts-grid .k-table-tbody .k-table-row {
-  height: 44px !important;
-  max-height: 44px !important;
+  height: 36px !important;
+  max-height: 36px !important;
 }
 
 /* Cells */
 .contacts-grid .k-grid-table td,
 .contacts-grid .k-table-td {
-  padding: 8px 12px !important;
+  padding: 6px 10px !important;
   vertical-align: middle !important;
-  line-height: 1.4 !important;
-  height: 44px !important;
-  max-height: 44px !important;
+  line-height: 1.3 !important;
+  height: 36px !important;
+  max-height: 36px !important;
   white-space: nowrap !important;
   text-overflow: ellipsis !important;
   overflow: hidden !important;
@@ -75,9 +75,9 @@
 /* Headers */
 .contacts-grid .k-grid-table th,
 .contacts-grid .k-table-th {
-  padding: 12px !important;
+  padding: 10px !important;
   vertical-align: middle !important;
-  height: 44px !important;
+  height: 36px !important;
 }
 
 .contact-type-badge {
@@ -112,8 +112,8 @@
   flex-shrink: 0 !important;
   min-width: auto !important;
   display: inline-flex !important;
-  width: 28px !important;
-  height: 28px !important;
+  width: 24px !important;
+  height: 24px !important;
   padding: 0 !important;
   justify-content: center !important;
   align-items: center !important;
