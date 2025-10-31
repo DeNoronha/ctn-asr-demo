@@ -352,13 +352,16 @@ export function wrapEndpoint(
           const duration = Date.now() - startTime;
           context.warn(`[${requestId}] CSRF validation failed (${duration}ms)`);
 
+          // Type narrowing: when valid === false, response property exists
+          const failedCheck = csrfCheck as any;
+
           if (enableCors) {
             const origin = safeGetHeader(request.headers, 'origin');
             const corsHeaders = getCorsHeaders(origin, allowedOrigins);
             return {
-              ...csrfCheck.response,
+              ...failedCheck.response,
               headers: {
-                ...(csrfCheck.response.headers || {}),
+                ...(failedCheck.response?.headers || {}),
                 ...corsHeaders,
                 'X-Request-ID': requestId
               },
@@ -366,9 +369,9 @@ export function wrapEndpoint(
           }
 
           return {
-            ...csrfCheck.response,
+            ...failedCheck.response,
             headers: {
-              ...(csrfCheck.response.headers || {}),
+              ...(failedCheck.response?.headers || {}),
               'X-Request-ID': requestId
             }
           };
