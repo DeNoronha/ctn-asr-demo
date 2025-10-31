@@ -6,7 +6,7 @@ import type React from 'react';
 import { useState } from 'react';
 import type { LegalEntityContact } from '../services/api';
 import { safeArray, safeLength } from '../utils/safeArray';
-import { sanitizeGridCell } from '../utils/sanitize';
+import { sanitizeGridCell, sanitizeText } from '../utils/sanitize';
 import { getContactTypeColor } from '../utils/colors';
 import { ConfirmDialog } from './ConfirmDialog';
 import { ContactForm } from './ContactForm';
@@ -97,7 +97,10 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
 
   // SEC-007: Sanitize user-generated text fields in grid
   const NameCell = (props: GridCellProps) => {
-    return <td dangerouslySetInnerHTML={{ __html: sanitizeGridCell(props.dataItem.full_name) }} />;
+    const raw = props.dataItem.full_name as string;
+    // Strip any line breaks or <br> that could increase row height
+    const singleLine = sanitizeText(raw || '').replace(/\s+/g, ' ').trim();
+    return <td>{singleLine}</td>;
   };
 
   const TextCell = (props: GridCellProps) => {
