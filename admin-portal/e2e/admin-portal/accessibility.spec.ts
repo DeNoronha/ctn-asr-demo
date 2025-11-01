@@ -48,7 +48,7 @@ test.describe('Accessibility - Keyboard Navigation', () => {
   });
 
   test('should activate buttons with Enter key', async ({ page }) => {
-    await page.locator('.admin-sidebar').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
     // Tab to Register New Member button
@@ -74,7 +74,7 @@ test.describe('Accessibility - Keyboard Navigation', () => {
   });
 
   test('should activate buttons with Space key', async ({ page }) => {
-    await page.locator('.admin-sidebar').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
     const registerButton = page.getByRole('button', { name: /Register New Member/i });
@@ -125,7 +125,7 @@ test.describe('Accessibility - Keyboard Navigation', () => {
   });
 
   test('should maintain tab order in grids', async ({ page }) => {
-    await page.locator('.admin-sidebar').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
     const grid = page.locator('.k-grid').first();
@@ -144,7 +144,7 @@ test.describe('Accessibility - Keyboard Navigation', () => {
   });
 
   test('should allow keyboard navigation within dialogs', async ({ page }) => {
-    await page.locator('.admin-sidebar').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
     const registerButton = page.getByRole('button', { name: /Register New Member/i });
@@ -200,7 +200,7 @@ test.describe('Accessibility - ARIA Labels and Roles', () => {
   });
 
   test('should use semantic HTML roles', async ({ page }) => {
-    await page.locator('.admin-sidebar').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
     // Check for semantic roles
@@ -221,7 +221,7 @@ test.describe('Accessibility - ARIA Labels and Roles', () => {
   });
 
   test('should have role="status" for loading states', async ({ page }) => {
-    await page.locator('.admin-sidebar').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
 
     const statusElements = page.locator('[role="status"]');
     const count = await statusElements.count();
@@ -237,7 +237,7 @@ test.describe('Accessibility - ARIA Labels and Roles', () => {
   });
 
   test('should have accessible form labels', async ({ page }) => {
-    await page.locator('.admin-sidebar').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
     const registerButton = page.getByRole('button', { name: /Register New Member/i });
@@ -307,7 +307,7 @@ test.describe('Accessibility - Color Contrast', () => {
   });
 
   test('should have sufficient contrast on badges (4.5:1 minimum)', async ({ page }) => {
-    await page.locator('.admin-sidebar').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
     const badges = page.locator('.badge, .k-chip, [class*="status"]');
@@ -332,7 +332,7 @@ test.describe('Accessibility - Color Contrast', () => {
   });
 
   test('should have readable text on all backgrounds', async ({ page }) => {
-    await page.locator('.admin-sidebar').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
     // Get colors from various UI elements
@@ -438,7 +438,7 @@ test.describe('Accessibility - Screen Reader Support', () => {
 test.describe('Accessibility - Form Accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.locator('.admin-sidebar').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
   });
 
