@@ -224,6 +224,23 @@ export const TransportOrderForm: React.FC<TransportOrderFormProps> = ({
           </div>
           <div className="form-field">
             <label>
+              DCSA Location Code (UNLOCODE)
+              {renderConfidenceBadge('pickupLocation.UNLocationCode')}
+            </label>
+            <input
+              type="text"
+              value={formData.pickupLocation?.UNLocationCode || formData.pickupLocation?.terminalCode || ''}
+              onChange={(e) => handleFieldChange('pickupLocation.UNLocationCode', e.target.value)}
+              className={`form-input ${getFieldConfidence('pickupLocation.UNLocationCode') !== null && getFieldConfidence('pickupLocation.UNLocationCode')! < 0.8 ? 'low-confidence' : ''}`}
+              placeholder="e.g., NLRTM"
+              maxLength={5}
+              style={{ textTransform: 'uppercase' }}
+            />
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-field">
+            <label>
               Planned Pickup Date & Time
               {renderConfidenceBadge('plannedPickupDate')}
             </label>
@@ -234,24 +251,24 @@ export const TransportOrderForm: React.FC<TransportOrderFormProps> = ({
               className={`form-input ${getFieldConfidence('plannedPickupDate') !== null && getFieldConfidence('plannedPickupDate')! < 0.8 ? 'low-confidence' : ''}`}
             />
           </div>
+          <div className="form-field">
+            <label>
+              Address
+              {renderConfidenceBadge('pickupLocation.address')}
+            </label>
+            <input
+              type="text"
+              value={formData.pickupLocation?.address || ''}
+              onChange={(e) => handleFieldChange('pickupLocation.address', e.target.value)}
+              className={`form-input ${getFieldConfidence('pickupLocation.address') !== null && getFieldConfidence('pickupLocation.address')! < 0.8 ? 'low-confidence' : ''}`}
+            />
+          </div>
         </div>
-        <div className="form-field">
-          <label>
-            Address
-            {renderConfidenceBadge('pickupLocation.address')}
-          </label>
-          <input
-            type="text"
-            value={formData.pickupLocation?.address || ''}
-            onChange={(e) => handleFieldChange('pickupLocation.address', e.target.value)}
-            className={`form-input ${getFieldConfidence('pickupLocation.address') !== null && getFieldConfidence('pickupLocation.address')! < 0.8 ? 'low-confidence' : ''}`}
-          />
-          {isFieldUncertain('pickupLocation.terminalCode') && (
-            <div className="confidence-indicator">
-              ⚠️ Terminal code uncertain - Please verify
-            </div>
-          )}
-        </div>
+        {isFieldUncertain('pickupLocation.terminalCode') && (
+          <div className="confidence-indicator" style={{ marginTop: '8px' }}>
+            ⚠️ Terminal code uncertain - Please verify
+          </div>
+        )}
       </div>
 
       {/* Delivery Location */}
@@ -272,6 +289,23 @@ export const TransportOrderForm: React.FC<TransportOrderFormProps> = ({
           </div>
           <div className="form-field">
             <label>
+              DCSA Location Code (UNLOCODE)
+              {renderConfidenceBadge('deliveryLocation.UNLocationCode')}
+            </label>
+            <input
+              type="text"
+              value={formData.deliveryLocation?.UNLocationCode || formData.deliveryLocation?.terminalCode || ''}
+              onChange={(e) => handleFieldChange('deliveryLocation.UNLocationCode', e.target.value)}
+              className={`form-input ${getFieldConfidence('deliveryLocation.UNLocationCode') !== null && getFieldConfidence('deliveryLocation.UNLocationCode')! < 0.8 ? 'low-confidence' : ''}`}
+              placeholder="e.g., NLRTM"
+              maxLength={5}
+              style={{ textTransform: 'uppercase' }}
+            />
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-field">
+            <label>
               Planned Delivery Date & Time
               {renderConfidenceBadge('plannedDeliveryDate')}
             </label>
@@ -282,18 +316,18 @@ export const TransportOrderForm: React.FC<TransportOrderFormProps> = ({
               className={`form-input ${getFieldConfidence('plannedDeliveryDate') !== null && getFieldConfidence('plannedDeliveryDate')! < 0.8 ? 'low-confidence' : ''}`}
             />
           </div>
-        </div>
-        <div className="form-field">
-          <label>
-            Address
-            {renderConfidenceBadge('deliveryLocation.address')}
-          </label>
-          <input
-            type="text"
-            value={formData.deliveryLocation?.address || ''}
-            onChange={(e) => handleFieldChange('deliveryLocation.address', e.target.value)}
-            className={`form-input ${getFieldConfidence('deliveryLocation.address') !== null && getFieldConfidence('deliveryLocation.address')! < 0.8 ? 'low-confidence' : ''}`}
-          />
+          <div className="form-field">
+            <label>
+              Address
+              {renderConfidenceBadge('deliveryLocation.address')}
+            </label>
+            <input
+              type="text"
+              value={formData.deliveryLocation?.address || ''}
+              onChange={(e) => handleFieldChange('deliveryLocation.address', e.target.value)}
+              className={`form-input ${getFieldConfidence('deliveryLocation.address') !== null && getFieldConfidence('deliveryLocation.address')! < 0.8 ? 'low-confidence' : ''}`}
+            />
+          </div>
         </div>
       </div>
 
