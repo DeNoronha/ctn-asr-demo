@@ -32,6 +32,8 @@ import { ConditionalField } from './forms/ConditionalField';
 import './IdentifiersManager.css';
 import { getEmptyState } from '../utils/emptyStates';
 import '../styles/progressive-forms.css';
+import { TEXT_COLORS, getStatusColor, getMembershipColor } from '../utils/colors';
+import { getGridActionLabel, getValidationProps, getDescribedById } from '../utils/aria';
 
 interface IdentifiersManagerProps {
   legalEntityId: string;
@@ -779,19 +781,19 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
               {!formData.country_code ? (
                 <span
                   className="field-hint field-hint-warning"
-                  style={{ color: '#dc2626', fontWeight: 500 }}
+                  style={{ color: TEXT_COLORS.error, fontWeight: 500 }}
                 >
                   ⚠️ Please enter country code first to see applicable types
                 </span>
               ) : availableIdentifierTypes.length === 0 ? (
                 <span
                   className="field-hint field-hint-warning"
-                  style={{ color: '#dc2626', fontWeight: 500 }}
+                  style={{ color: TEXT_COLORS.error, fontWeight: 500 }}
                 >
                   ⚠️ No identifier types available for country code "{formData.country_code}"
                 </span>
               ) : (
-                <span className="field-hint" style={{ color: '#059669', fontWeight: 500 }}>
+                <span className="field-hint" style={{ color: getStatusColor('ACTIVE'), fontWeight: 500 }}>
                   ✓ Available types for {formData.country_code.toUpperCase()}:{' '}
                   {availableIdentifierTypes.join(', ')}
                 </span>
@@ -804,6 +806,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
                 <HelpTooltip content={helpContent.identifierValue} dataTestId="identifier-value-help" />
               </label>
               <Input
+                id="identifier_value"
                 value={formData.identifier_value || ''}
                 onChange={(e) => handleIdentifierValueChange(e.value)}
                 placeholder="Enter identifier value"
@@ -814,14 +817,19 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
                       ? 'input-success'
                       : ''
                 }
+                {...getValidationProps('identifier_value', validationError || undefined)}
               />
               {formData.identifier_type && IDENTIFIER_VALIDATION[formData.identifier_type] && (
-                <span className="field-hint validation-hint">
+                <span id={getDescribedById('identifier_value', 'hint')} className="field-hint validation-hint">
                   Format: {IDENTIFIER_VALIDATION[formData.identifier_type].description} (e.g.,{' '}
                   {IDENTIFIER_VALIDATION[formData.identifier_type].example})
                 </span>
               )}
-              {validationError && <span className="field-error">{validationError}</span>}
+              {validationError && (
+                <span id={getDescribedById('identifier_value', 'error')} className="field-error">
+                  {validationError}
+                </span>
+              )}
               {isValidIdentifier && formData.identifier_value && formData.identifier_type && (
                 <span className="field-success">✓ Valid format</span>
               )}
