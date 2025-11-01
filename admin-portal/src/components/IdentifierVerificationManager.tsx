@@ -291,12 +291,12 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
                   field="verification_status"
                   title="Status"
                   width="140px"
-                  cell={StatusCell}
+                  cells={{ data: StatusCell }}
                 />
-                <GridColumn field="uploaded_at" title="Uploaded" width="160px" cell={DateCell} />
-                <GridColumn field="verified_at" title="Verified" width="160px" cell={DateCell} />
+                <GridColumn field="uploaded_at" title="Uploaded" width="160px" cells={{ data: DateCell }} />
+                <GridColumn field="verified_at" title="Verified" width="160px" cells={{ data: DateCell }} />
                 <GridColumn field="verified_by" title="Verified By" width="150px" />
-                <GridColumn title="Actions" width="100px" cell={ActionsCell} />
+                <GridColumn title="Actions" width="100px" cells={{ data: ActionsCell }} />
               </Grid>
             ) : (
               <EmptyState

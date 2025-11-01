@@ -247,14 +247,14 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
           <GridColumn field="endpoint_url" title="URL" width="300px" />
           <GridColumn field="data_category" title="Category" width="150px" />
           <GridColumn field="endpoint_type" title="Type" width="120px" />
-          <GridColumn field="is_active" title="Status" width="120px" cell={StatusCell} />
+          <GridColumn field="is_active" title="Status" width="120px" cells={{ data: StatusCell }} />
           <GridColumn
             field="dt_created"
             title="Created"
             width="180px"
             format="{0:yyyy-MM-dd HH:mm}"
           />
-          <GridColumn title="Actions" width="150px" cell={ActionsCell} />
+          <GridColumn title="Actions" width="150px" cells={{ data: ActionsCell }} />
         </Grid>
       )}
 

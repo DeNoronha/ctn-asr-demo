@@ -325,8 +325,8 @@ const UserManagement: React.FC = () => {
           >
             <GridColumn field="name" title="Name" width="200px" />
             <GridColumn field="email" title="Email" width="250px" />
-            <GridColumn field="primaryRole" title="Role" width="180px" cell={RoleBadgeCell} />
-            <GridColumn field="enabled" title="Status" width="120px" cell={StatusCell} />
+            <GridColumn field="primaryRole" title="Role" width="180px" cells={{ data: RoleBadgeCell }} />
+            <GridColumn field="enabled" title="Status" width="120px" cells={{ data: StatusCell }} />
             <GridColumn
               field="lastLogin"
               title="Last Login"
@@ -344,7 +344,7 @@ const UserManagement: React.FC = () => {
             <GridColumn
               title="Actions"
               width="120px"
-              cell={ActionsCell}
+              cells={{ data: ActionsCell }}
               filterable={false}
               sortable={false}
             />

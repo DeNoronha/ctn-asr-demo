@@ -257,10 +257,10 @@ const AuditLogViewer: React.FC = () => {
             format="{0:dd/MM/yyyy HH:mm:ss}"
             filter="date"
           />
-          <GridColumn field="action" title="Action" width="200px" cell={ActionCell} />
+          <GridColumn field="action" title="Action" width="200px" cells={{ data: ActionCell }} />
           <GridColumn field="userName" title="User" width="180px" />
-          <GridColumn field="userRole" title="Role" width="150px" cell={RoleCell} />
-          <GridColumn field="details" title="Details" cell={DetailsCell} />
+          <GridColumn field="userRole" title="Role" width="150px" cells={{ data: RoleCell }} />
+          <GridColumn field="details" title="Details" cells={{ data: DetailsCell }} />
           <GridColumn field="targetType" title="Target Type" width="120px" />
         </Grid>
       </div>

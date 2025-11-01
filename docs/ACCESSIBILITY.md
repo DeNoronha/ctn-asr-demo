@@ -339,6 +339,7 @@ Dynamic content updates announced to screen readers.
 | 2025-11-01 | Implemented form validation ARIA in MemberForm | CA Agent |
 | 2025-11-01 | Fixed accessibility.spec.ts test selectors | TE Agent |
 | 2025-11-01 | Achieved 100% test pass rate (24/24 tests) | TE Agent |
+| 2025-11-01 | Migrated E2E tests to semantic ARIA selectors (19 selectors replaced) | TE Agent |
 
 ---
 

@@ -241,9 +241,9 @@ export const ReviewTasks: React.FC = () => {
           field="entered_legal_id"
           title="Entered Legal ID"
           width="140px"
-          cell={(props) => (
+          cells={{ data: (props) => (
             <td>{props.dataItem.entered_legal_id || <span style={{ color: '#999' }}>—</span>}</td>
-          )}
+          ) }}
         />
         <GridColumn field="extracted_company_name" title="Extracted Name" width="180px" />
         <GridColumn field="extracted_legal_id" title="Extracted Legal ID" width="140px" />
@@ -251,27 +251,27 @@ export const ReviewTasks: React.FC = () => {
           field="registry_type"
           title="Registry"
           width="100px"
-          cell={(props) => <td>{props.dataItem.registry_type || 'KVK'}</td>}
+          cells={{ data: (props) => <td>{props.dataItem.registry_type || 'KVK'}</td> }}
         />
         <GridColumn
           field="country_code"
           title="Country"
           width="90px"
-          cell={(props) => (
+          cells={{ data: (props) => (
             <td>{props.dataItem.country_code || <span style={{ color: '#999' }}>—</span>}</td>
-          )}
+          ) }}
         />
-        <GridColumn field="kvk_mismatch_flags" title="Issues" cell={IssuesCell} width="280px" />
-        <GridColumn title="Doc Verification" cell={DocVerificationCell} width="160px" />
+        <GridColumn field="kvk_mismatch_flags" title="Issues" cells={{ data: IssuesCell }} width="280px" />
+        <GridColumn title="Doc Verification" cells={{ data: DocVerificationCell }} width="160px" />
         <GridColumn
           field="document_uploaded_at"
           title="Upload Date"
           width="120px"
-          cell={(props) => (
+          cells={{ data: (props) => (
             <td>{new Date(props.dataItem.document_uploaded_at).toLocaleDateString()}</td>
-          )}
+          ) }}
         />
-        <GridColumn title="Actions" cell={ActionCell} width="100px" />
+        <GridColumn title="Actions" cells={{ data: ActionCell }} width="100px" />
       </Grid>
 
       {reviewDialog.visible && reviewDialog.task && (

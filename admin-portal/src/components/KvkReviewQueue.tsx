@@ -183,22 +183,22 @@ export const KvkReviewQueue: React.FC = () => {
           field="entered_kvk_number"
           title="Entered KvK"
           width="110px"
-          cell={(props) => (
+          cells={{ data: (props) => (
             <td>{props.dataItem.entered_kvk_number || <span style={{ color: '#999' }}>—</span>}</td>
-          )}
+          ) }}
         />
         <GridColumn field="kvk_extracted_company_name" title="Extracted Company" width="200px" />
         <GridColumn field="kvk_extracted_number" title="Extracted KvK" width="110px" />
-        <GridColumn field="kvk_mismatch_flags" title="Issues" cell={FlagsCell} width="280px" />
+        <GridColumn field="kvk_mismatch_flags" title="Issues" cells={{ data: FlagsCell }} width="280px" />
         <GridColumn
           field="document_uploaded_at"
           title="Upload Date"
           width="120px"
-          cell={(props) => (
+          cells={{ data: (props) => (
             <td>{new Date(props.dataItem.document_uploaded_at).toLocaleDateString()}</td>
-          )}
+          ) }}
         />
-        <GridColumn title="Actions" cell={ActionCell} width="100px" />
+        <GridColumn title="Actions" cells={{ data: ActionCell }} width="100px" />
       </Grid>
 
       {reviewDialog.visible && reviewDialog.entity && (

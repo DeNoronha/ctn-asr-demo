@@ -318,17 +318,17 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
         })()
       ) : (
         <Grid data={clients} style={{ height: '400px' }}>
-          <GridColumn field="client_name" title="Client Name" width="200px" cell={TextCell} />
+          <GridColumn field="client_name" title="Client Name" width="200px" cells={{ data: TextCell }} />
           <GridColumn field="azure_client_id" title="Client ID" width="280px" />
-          <GridColumn field="assigned_scopes" title="Scopes" width="300px" cell={ScopesCell} />
-          <GridColumn field="is_active" title="Status" width="100px" cell={StatusCell} />
+          <GridColumn field="assigned_scopes" title="Scopes" width="300px" cells={{ data: ScopesCell }} />
+          <GridColumn field="is_active" title="Status" width="100px" cells={{ data: StatusCell }} />
           <GridColumn
             field="dt_created"
             title="Created"
             width="150px"
-            cell={(props) => <td>{formatDate(props.dataItem.dt_created)}</td>}
+            cells={{ data: (props) => <td>{formatDate(props.dataItem.dt_created)}</td> }}
           />
-          <GridColumn title="Actions" width="200px" cell={ActionsCell} />
+          <GridColumn title="Actions" width="200px" cells={{ data: ActionsCell }} />
         </Grid>
       )}
 

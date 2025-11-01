@@ -648,8 +648,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           <GridColumn
             field="selected"
             width="50px"
-            cell={SelectionCell}
-            headerCell={SelectionHeaderCell}
+            cells={{ data: SelectionCell }}
             sortable={false}
             filterable={false}
           />
@@ -665,15 +664,15 @@ const MembersGrid: React.FC<MembersGridProps> = ({
               };
 
               if (col.field === 'status') {
-                columnProps.cell = StatusCell;
+                columnProps.cells = { data: StatusCell };
               } else if (col.field === 'membership_level') {
-                columnProps.cell = MembershipCell;
+                columnProps.cells = { data: MembershipCell };
               } else if (col.field === 'created_at') {
-                columnProps.cell = DateCell;
+                columnProps.cells = { data: DateCell };
                 columnProps.filter = 'date';
               } else if (col.field === 'legal_name' || col.field === 'domain') {
                 // SEC-007: Sanitize user-generated text fields
-                columnProps.cell = TextCell;
+                columnProps.cells = { data: TextCell };
               }
 
               return <GridColumn key={col.field} {...columnProps} />;
@@ -682,7 +681,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           <GridColumn
             title={t('common.actions')}
             width="180px"
-            cell={ActionCell}
+            cells={{ data: ActionCell }}
             sortable={false}
             filterable={false}
           />

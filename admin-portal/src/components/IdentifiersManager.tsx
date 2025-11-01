@@ -703,7 +703,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
             title="Identifier Value"
             width="180px"
             minResizableWidth={120}
-            cell={TextCell}
+            cells={{ data: TextCell }}
           />
           <GridColumn field="country_code" title="Country" width="100px" />
           <GridColumn
@@ -711,21 +711,21 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
             title="Registry"
             width="220px"
             minResizableWidth={150}
-            cell={TextCell}
+            cells={{ data: TextCell }}
           />
           <GridColumn
             field="validation_status"
             title="Status"
             width="140px"
-            cell={ValidationCell}
+            cells={{ data: ValidationCell }}
           />
-          <GridColumn title="Doc Verification" width="160px" cell={DocumentVerificationCell} />
-          <GridColumn field="validation_date" title="Last Verified" width="140px" cell={DateCell} />
-          <GridColumn field="dt_modified" title="Last Edited" width="140px" cell={DateCell} />
+          <GridColumn title="Doc Verification" width="160px" cells={{ data: DocumentVerificationCell }} />
+          <GridColumn field="validation_date" title="Last Verified" width="140px" cells={{ data: DateCell }} />
+          <GridColumn field="dt_modified" title="Last Edited" width="140px" cells={{ data: DateCell }} />
           <GridColumn
             title="Actions"
             width="120px"
-            cell={ActionsCell}
+            cells={{ data: ActionsCell }}
             headerClassName="center-header"
           />
         </Grid>

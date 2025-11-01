@@ -392,24 +392,24 @@ const TasksGrid: React.FC = () => {
               field="task_type"
               title="Type"
               width="150px"
-              cell={(props) => <td>{props.dataItem.task_type.replace('_', ' ')}</td>}
+              cells={{ data: (props) => <td>{props.dataItem.task_type.replace('_', ' ')}</td> }}
             />
-            <GridColumn field="priority" title="Priority" width="100px" cell={PriorityCell} />
-            <GridColumn field="status" title="Status" width="120px" cell={StatusCell} />
+            <GridColumn field="priority" title="Priority" width="100px" cells={{ data: PriorityCell }} />
+            <GridColumn field="status" title="Status" width="120px" cells={{ data: StatusCell }} />
             <GridColumn
               field="assigned_to_email"
               title="Assigned To"
               width="200px"
-              cell={(props) => <td>{props.dataItem.assigned_to_email || 'Unassigned'}</td>}
+              cells={{ data: (props) => <td>{props.dataItem.assigned_to_email || 'Unassigned'}</td> }}
             />
             <GridColumn
               field="related_entity_name"
               title="Related Entity"
               width="180px"
-              cell={(props) => <td>{props.dataItem.related_entity_name || '-'}</td>}
+              cells={{ data: (props) => <td>{props.dataItem.related_entity_name || '-'}</td> }}
             />
-            <GridColumn field="due_date" title="Due Date" width="130px" cell={DueDateCell} />
-            <GridColumn title="Actions" width="220px" cell={ActionsCell} />
+            <GridColumn field="due_date" title="Due Date" width="130px" cells={{ data: DueDateCell }} />
+            <GridColumn title="Actions" width="220px" cells={{ data: ActionsCell }} />
           </Grid>
         </TabStripTab>
 
@@ -426,24 +426,24 @@ const TasksGrid: React.FC = () => {
               field="kvk_mismatch_flags"
               title="Mismatches"
               width="150px"
-              cell={(props) => (
+              cells={{ data: (props) => (
                 <td>
                   <span className="priority-badge priority-urgent">
                     {props.dataItem.kvk_mismatch_flags.length} Issues
                   </span>
                 </td>
-              )}
+              ) }}
             />
             <GridColumn
               field="document_uploaded_at"
               title="Uploaded"
               width="150px"
-              cell={(props) => <td>{formatTaskDate(props.dataItem.document_uploaded_at)}</td>}
+              cells={{ data: (props) => <td>{formatTaskDate(props.dataItem.document_uploaded_at)}</td> }}
             />
             <GridColumn
               title="Actions"
               width="180px"
-              cell={(props) => (
+              cells={{ data: (props) => (
                 <td>
                   <Button
                     icon="preview"
@@ -453,7 +453,7 @@ const TasksGrid: React.FC = () => {
                     Review
                   </Button>
                 </td>
-              )}
+              ) }}
             />
           </Grid>
         </TabStripTab>
