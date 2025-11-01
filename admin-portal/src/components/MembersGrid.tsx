@@ -635,7 +635,11 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                     {t('grid.selected', 'Selected')}: {selectedIds.length}
                   </span>
                 )}
-                {loading && <span className="loading-indicator">⏳ {t('common.loading')}</span>}
+                {loading && (
+                  <span className="loading-indicator" role="status" aria-live="polite" aria-label="Loading members data">
+                    ⏳ {t('common.loading')}
+                  </span>
+                )}
               </div>
             </div>
           </GridToolbar>

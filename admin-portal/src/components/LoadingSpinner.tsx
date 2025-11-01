@@ -21,7 +21,12 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   };
 
   const content = (
-    <div className={`loading-spinner-content ${fullScreen ? 'fullscreen' : ''}`}>
+    <div
+      className={`loading-spinner-content ${fullScreen ? 'fullscreen' : ''}`}
+      role="status"
+      aria-live="polite"
+      aria-label={message || 'Loading'}
+    >
       <Loader size={sizeMap[size]} type="infinite-spinner" />
       {message && <div className="loading-message">{message}</div>}
     </div>

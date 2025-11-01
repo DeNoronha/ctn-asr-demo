@@ -51,6 +51,13 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
     }
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent, item: MenuItem) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleItemClick(item);
+    }
+  };
+
   return (
     <nav className={`admin-sidebar ${expanded ? '' : 'collapsed'}`} aria-label="Main navigation">
       <div className="sidebar-nav">
@@ -67,6 +74,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
               key={index}
               className={`drawer-item ${isSelected ? 'selected' : ''}`}
               onClick={() => handleItemClick(item)}
+              onKeyDown={(e) => handleKeyDown(e, item)}
+              role="button"
+              tabIndex={0}
+              aria-label={item.text}
+              aria-pressed={isSelected}
             >
               {IconComponent && (
                 <span className="item-icon">

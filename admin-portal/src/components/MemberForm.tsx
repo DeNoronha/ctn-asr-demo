@@ -231,9 +231,13 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               required
               valid={!errors.org_id}
               className={touched.org_id && errors.org_id ? 'k-invalid' : ''}
+              aria-invalid={touched.org_id && Boolean(errors.org_id)}
+              aria-describedby={`org-id-hint${touched.org_id && errors.org_id ? ' org-id-error' : ''}`}
             />
-            {touched.org_id && errors.org_id && <Error>{errors.org_id}</Error>}
-            <Hint>Format: org:company-name (lowercase, letters, numbers, hyphens only)</Hint>
+            {touched.org_id && errors.org_id && (
+              <Error id="org-id-error">{errors.org_id}</Error>
+            )}
+            <Hint id="org-id-hint">Format: org:company-name (lowercase, letters, numbers, hyphens only)</Hint>
           </div>
 
           <div className="form-field required">
@@ -249,9 +253,13 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               required
               valid={!errors.legal_name}
               className={touched.legal_name && errors.legal_name ? 'k-invalid' : ''}
+              aria-invalid={touched.legal_name && Boolean(errors.legal_name)}
+              aria-describedby={`legal-name-hint${touched.legal_name && errors.legal_name ? ' legal-name-error' : ''}`}
             />
-            {touched.legal_name && errors.legal_name && <Error>{errors.legal_name}</Error>}
-            <Hint>Official registered business name</Hint>
+            {touched.legal_name && errors.legal_name && (
+              <Error id="legal-name-error">{errors.legal_name}</Error>
+            )}
+            <Hint id="legal-name-hint">Official registered business name</Hint>
           </div>
 
           <div className="form-field required">
@@ -267,9 +275,13 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               required
               valid={!errors.domain}
               className={touched.domain && errors.domain ? 'k-invalid' : ''}
+              aria-invalid={touched.domain && Boolean(errors.domain)}
+              aria-describedby={`domain-hint${touched.domain && errors.domain ? ' domain-error' : ''}`}
             />
-            {touched.domain && errors.domain && <Error>{errors.domain}</Error>}
-            <Hint>Primary domain name (e.g., company.com)</Hint>
+            {touched.domain && errors.domain && (
+              <Error id="domain-error">{errors.domain}</Error>
+            )}
+            <Hint id="domain-hint">Primary domain name (e.g., company.com)</Hint>
           </div>
 
           <div className="form-field required">
@@ -327,9 +339,13 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               placeholder="20 character LEI code"
               valid={!errors.lei}
               className={touched.lei && errors.lei ? 'k-invalid' : ''}
+              aria-invalid={touched.lei && Boolean(errors.lei)}
+              aria-describedby={`lei-hint${touched.lei && errors.lei ? ' lei-error' : ''}`}
             />
-            {touched.lei && errors.lei && <Error>{errors.lei}</Error>}
-            <Hint>20-character alphanumeric code (optional)</Hint>
+            {touched.lei && errors.lei && (
+              <Error id="lei-error">{errors.lei}</Error>
+            )}
+            <Hint id="lei-hint">20-character alphanumeric code (optional)</Hint>
           </div>
 
           <div className="form-field">
@@ -345,9 +361,13 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               placeholder="12345678"
               valid={!errors.kvk}
               className={touched.kvk && errors.kvk ? 'k-invalid' : ''}
+              aria-invalid={touched.kvk && Boolean(errors.kvk)}
+              aria-describedby={`kvk-hint${touched.kvk && errors.kvk ? ' kvk-error' : ''}`}
             />
-            {touched.kvk && errors.kvk && <Error>{errors.kvk}</Error>}
-            <Hint>8-digit number (optional)</Hint>
+            {touched.kvk && errors.kvk && (
+              <Error id="kvk-error">{errors.kvk}</Error>
+            )}
+            <Hint id="kvk-hint">8-digit number (optional)</Hint>
           </div>
         </ProgressiveSection>
 

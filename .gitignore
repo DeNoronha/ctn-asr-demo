@@ -13,6 +13,7 @@ build/
 # Environment
 .env
 .env.local
+.env.test
 # .env.production - TRACKED in git for deployment (contains non-secret config)
 .env.production.local
 *.local
@@ -55,6 +56,16 @@ playwright-report/
 test-results/
 .playwright/
 booking-portal/api/deploy*.zip
+
+# E2E Test Reports (may contain sensitive test data)
+**/E2E_TEST_REPORT_*.md
+**/E2E_TEST_SUMMARY.md
+
+# Playwright Authentication State (contains session tokens)
+playwright/.auth/
+**/playwright/.auth/
+*.auth.json
+user.json
 
 # Debug artifacts
 **/debug/
