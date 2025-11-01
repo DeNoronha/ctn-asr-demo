@@ -302,7 +302,7 @@ const UserManagement: React.FC = () => {
         </div>
 
         {loading ? (
-          <LoadingSpinner size="lg" message="Loading users..." />
+          <LoadingSpinner size="large" message="Loading users..." />
         ) : (
           <Grid
             data={processedData}

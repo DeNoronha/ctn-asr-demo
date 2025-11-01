@@ -192,21 +192,11 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
         <div className="form-field">
           <Label>Select New Tier</Label>
           <Select
-            data={TIER_OPTIONS}
-            textField="name"
-            dataItemKey="tier"
-            value={selectedTier}
-            onChange={(value) => setSelectedTier(value as TierOption)}
-            itemRender={(li, itemProps) => {
-              const item = itemProps.dataItem as TierOption;
-              return React.cloneElement(
-                li,
-                li.props,
-                <div style={{ padding: '8px 0' }}>
-                  <div style={{ fontWeight: 600 }}>{item.name}</div>
-                  <div style={{ fontSize: '0.85rem', color: '#666' }}>{item.access}</div>
-                </div>
-              );
+            data={TIER_OPTIONS.map(t => ({ value: t.tier.toString(), label: t.name }))}
+            value={selectedTier?.tier.toString() || null}
+            onChange={(value) => {
+              const tier = TIER_OPTIONS.find(t => t.tier.toString() === value);
+              setSelectedTier(tier || null);
             }}
           />
           <Hint>

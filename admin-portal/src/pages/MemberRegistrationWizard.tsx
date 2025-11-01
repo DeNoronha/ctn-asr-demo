@@ -159,7 +159,7 @@ export const MemberRegistrationWizard: React.FC = () => {
               onBlur={() => handleBlur('org_id')}
               placeholder="org:company-name"
               required
-              valid={!errors.org_id}
+              error={touched.org_id && errors.org_id}
               className={touched.org_id && errors.org_id ? 'k-invalid' : ''}
             />
             {touched.org_id && errors.org_id && <Error>{errors.org_id}</Error>}
@@ -177,7 +177,7 @@ export const MemberRegistrationWizard: React.FC = () => {
               onBlur={() => handleBlur('legal_name')}
               placeholder="Company Legal Name BV"
               required
-              valid={!errors.legal_name}
+              error={touched.legal_name && errors.legal_name}
               className={touched.legal_name && errors.legal_name ? 'k-invalid' : ''}
             />
             {touched.legal_name && errors.legal_name && <Error>{errors.legal_name}</Error>}
@@ -195,7 +195,7 @@ export const MemberRegistrationWizard: React.FC = () => {
               onBlur={() => handleBlur('domain')}
               placeholder="company.com"
               required
-              valid={!errors.domain}
+              error={touched.domain && errors.domain}
               className={touched.domain && errors.domain ? 'k-invalid' : ''}
             />
             {touched.domain && errors.domain && <Error>{errors.domain}</Error>}
