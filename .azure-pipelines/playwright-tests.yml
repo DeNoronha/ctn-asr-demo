@@ -82,6 +82,8 @@ stages:
             env:
               CI: true
               PLAYWRIGHT_BASE_URL: $(PlaywrightBaseURL)
+              E2E_TEST_USER_EMAIL: $(E2ETestUserEmail)
+              E2E_TEST_USER_PASSWORD: $(E2ETestUserPassword)
             continueOnError: true
 
           - task: PublishTestResults@2
@@ -129,15 +131,24 @@ stages:
 #    Name: playwright-secrets
 #    Variables:
 #      - PlaywrightBaseURL: https://calm-tree-03352ba03.1.azurestaticapps.net
+#      - E2ETestUserEmail: test-e2@denoronha.consulting
+#      - E2ETestUserPassword: [Link to Key Vault secret E2E-TEST-USER-PASSWORD]
 #
-# 2. Upload Auth State as Secure File:
+# 2. Link Key Vault Secrets to Variable Group:
+#    In variable group 'playwright-secrets':
+#    - Add variable 'E2ETestUserPassword'
+#    - Click "Link secrets from an Azure key vault as variables"
+#    - Select Key Vault: kv-ctn-demo-asr-dev
+#    - Add secret: E2E-TEST-USER-PASSWORD → E2ETestUserPassword
+#
+# 3. Upload Auth State as Secure File:
 #    Pipelines → Library → Secure files → + Secure file
 #    Upload: playwright/.auth/user.json (captured locally)
 #    Name it: playwright-auth.json
 #    Authorize for all pipelines
 #
-# 3. Grant Permissions:
+# 4. Grant Permissions:
 #    Ensure service connection has access to variable group
 #
-# 4. Enable Pipeline:
+# 5. Enable Pipeline:
 #    Pipelines → New pipeline → Select this YAML file

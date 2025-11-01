@@ -11,6 +11,8 @@ import { apiV2 } from '../services/api';
 import type { LegalEntityIdentifier } from '../services/apiV2';
 import { sanitizeFormData } from '../utils/sanitize';
 import './CompanyForm.css';
+import { FieldLabel } from './help/FieldLabel';
+import { helpContent } from '../config/helpContent';
 
 interface CompanyFormProps {
   data: LegalEntity;
@@ -99,6 +101,10 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
     }
   };
 
+  // Simple validators (DA-007)
+  const required = (value: string) => (value && value.trim().length > 0 ? '' : 'This field is required');
+  const cc2Validator = (value: string) => (!value || /^[A-Za-z]{2}$/.test(value) ? '' : 'Enter 2-letter country code');
+
   return (
     <Form
       initialValues={data}
@@ -108,7 +114,15 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
           <fieldset className="k-form-fieldset">
             <legend>Company Information</legend>
 
-            <Field name="primary_legal_name" label="Legal Name" component={Input} required />
+            <Field
+              name="primary_legal_name"
+              label={() => (
+                <FieldLabel text="Legal Name" helpText={helpContent.legalName} required dataTestId="company-legal-name-help" />
+              )}
+              component={Input}
+              validator={required}
+              required
+            />
 
             <Field
               name="entity_legal_form"
@@ -119,7 +133,9 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
 
             <Field
               name="registered_at"
-              label="Registration Number"
+              label={() => (
+                <FieldLabel text="Registration Number" helpText={helpContent.kvk} dataTestId="company-reg-help" />
+              )}
               component={Input}
               placeholder="Chamber of Commerce number"
             />
@@ -163,10 +179,13 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
 
               <Field
                 name="country_code"
-                label="Country Code"
+                label={() => (
+                  <FieldLabel text="Country Code" helpText={helpContent.identifierCountry} dataTestId="company-country-help" />
+                )}
                 component={Input}
                 maxLength={2}
                 placeholder="NL"
+                validator={cc2Validator}
               />
             </div>
           </fieldset>

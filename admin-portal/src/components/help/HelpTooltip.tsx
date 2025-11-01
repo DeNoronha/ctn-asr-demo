@@ -1,6 +1,7 @@
 import type React from 'react';
 import { Tooltip } from '@progress/kendo-react-tooltip';
 import { Icon } from '@progress/kendo-react-common';
+import { TEXT_COLORS } from '../../utils/colors';
 
 interface HelpTooltipProps {
   content: string | React.ReactNode;
@@ -30,7 +31,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
         role="tooltip"
         aria-label="Help information"
       >
-        <Icon name={iconMap[icon]} style={{ color: '#0078d4', fontSize: '16px' }} />
+        <Icon name={iconMap[icon]} style={{ color: TEXT_COLORS.info, fontSize: '16px' }} />
       </span>
     </Tooltip>
   );

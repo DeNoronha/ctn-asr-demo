@@ -1,5 +1,6 @@
 import type React from 'react';
 import { HelpTooltip } from './HelpTooltip';
+import { TEXT_COLORS } from '../../utils/colors';
 
 interface FieldLabelProps {
   text: string;
@@ -21,7 +22,7 @@ export const FieldLabel: React.FC<FieldLabelProps> = ({
   return (
     <span className="field-label-with-help">
       {text}
-      {required && <span className="required" style={{ color: '#d13438', marginLeft: '4px' }}>*</span>}
+      {required && <span className="required" style={{ color: TEXT_COLORS.error, marginLeft: '4px' }}>*</span>}
       {helpText && <HelpTooltip content={helpText} dataTestId={dataTestId} />}
     </span>
   );
