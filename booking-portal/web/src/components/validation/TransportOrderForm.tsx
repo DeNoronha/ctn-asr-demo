@@ -9,6 +9,72 @@ interface TransportOrderFormProps {
   isFieldUncertain: (field: string) => boolean;
 }
 
+/**
+ * Normalize datetime value to HTML5 datetime-local format (YYYY-MM-DDTHH:mm)
+ * Supports multiple input formats:
+ * - ISO 8601: 2020-12-08T14:30:00Z → 2020-12-08T14:30
+ * - European: 08-12-2020 14:30 → 2020-12-08T14:30
+ * - US: 12/08/2020 14:30 → 2020-12-08T14:30
+ * - Date only: 2020-12-08 → 2020-12-08T00:00
+ */
+function normalizeDatetime(value: string | null | undefined): string {
+  if (!value) return '';
+
+  try {
+    // Already in correct format (YYYY-MM-DDTHH:mm)?
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) {
+      return value;
+    }
+
+    // Try parsing as ISO 8601 (from PDF extraction)
+    if (value.includes('T') || value.includes('Z')) {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm
+      }
+    }
+
+    // European format: dd-mm-yyyy hh:mm or dd/mm/yyyy hh:mm
+    const europeanMatch = value.match(/^(\d{2})[-/](\d{2})[-/](\d{4})\s*(\d{2}):(\d{2})/);
+    if (europeanMatch) {
+      const [, day, month, year, hour, minute] = europeanMatch;
+      return `${year}-${month}-${day}T${hour}:${minute}`;
+    }
+
+    // US format: mm/dd/yyyy hh:mm
+    const usMatch = value.match(/^(\d{2})\/(\d{2})\/(\d{4})\s*(\d{2}):(\d{2})/);
+    if (usMatch) {
+      const [, month, day, year, hour, minute] = usMatch;
+      return `${year}-${month}-${day}T${hour}:${minute}`;
+    }
+
+    // Date only formats (add midnight time)
+    // ISO: YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return `${value}T00:00`;
+    }
+
+    // European: dd-mm-yyyy
+    const europeanDateMatch = value.match(/^(\d{2})[-/](\d{2})[-/](\d{4})$/);
+    if (europeanDateMatch) {
+      const [, day, month, year] = europeanDateMatch;
+      return `${year}-${month}-${day}T00:00`;
+    }
+
+    // Fallback: try native Date parsing
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().slice(0, 16);
+    }
+
+    console.warn('Failed to parse datetime:', value);
+    return value; // Return original if can't parse
+  } catch (error) {
+    console.error('Date parsing error:', error);
+    return value;
+  }
+}
+
 export const TransportOrderForm: React.FC<TransportOrderFormProps> = ({
   formData,
   handleFieldChange,
@@ -163,7 +229,7 @@ export const TransportOrderForm: React.FC<TransportOrderFormProps> = ({
             </label>
             <input
               type="datetime-local"
-              value={formData.plannedPickupDate || ''}
+              value={normalizeDatetime(formData.plannedPickupDate)}
               onChange={(e) => handleFieldChange('plannedPickupDate', e.target.value)}
               className={`form-input ${getFieldConfidence('plannedPickupDate') !== null && getFieldConfidence('plannedPickupDate')! < 0.8 ? 'low-confidence' : ''}`}
             />
@@ -211,7 +277,7 @@ export const TransportOrderForm: React.FC<TransportOrderFormProps> = ({
             </label>
             <input
               type="datetime-local"
-              value={formData.plannedDeliveryDate || ''}
+              value={normalizeDatetime(formData.plannedDeliveryDate)}
               onChange={(e) => handleFieldChange('plannedDeliveryDate', e.target.value)}
               className={`form-input ${getFieldConfidence('plannedDeliveryDate') !== null && getFieldConfidence('plannedDeliveryDate')! < 0.8 ? 'low-confidence' : ''}`}
             />
