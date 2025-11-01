@@ -195,12 +195,32 @@ const JourneyMap: React.FC<JourneyMapProps> = ({
 
       // Use focus bounds (last 200km) for better zoom, or all bounds if journey is short
       console.log(`[JourneyMap] Focus distance: ${focusDistanceKm.toFixed(1)}km, Total legs: ${legsWithCoords.length}, Focus bounds empty: ${focusBounds.isEmpty()}`);
-      if (!focusBounds.isEmpty() && focusDistanceKm >= 50) {
+
+      // Apply zoom with padding for better visibility
+      const paddingOptions = {
+        top: 50,
+        right: 50,
+        bottom: 50,
+        left: 50
+      };
+
+      if (!focusBounds.isEmpty() && focusDistanceKm >= 20) {
+        // Use last 200km zoom for journeys with at least 20km in final legs
         console.log('[JourneyMap] Using focus bounds (last 200km zoom)');
-        map.fitBounds(focusBounds);
+        map.fitBounds(focusBounds, paddingOptions);
+
+        // Cap maximum zoom level to prevent excessive zoom-in
+        google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
+          const currentZoom = map.getZoom();
+          if (currentZoom > 12) {
+            console.log(`[JourneyMap] Capping zoom from ${currentZoom} to 12`);
+            map.setZoom(12);
+          }
+        });
       } else if (!bounds.isEmpty()) {
+        // Show entire journey for short trips
         console.log(`[JourneyMap] Using all bounds (journey too short: ${focusDistanceKm.toFixed(1)}km)`);
-        map.fitBounds(bounds);
+        map.fitBounds(bounds, paddingOptions);
       }
     } else {
       // Fallback: plot simple origin-destination route
