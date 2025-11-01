@@ -1,7 +1,8 @@
-import { Button } from '@progress/kendo-react-buttons';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
+import { Button, TextInput, Select } from '@mantine/core';
+
+
 import { Field, Form, FormElement, type FormRenderProps } from '@progress/kendo-react-form';
-import { Input } from '@progress/kendo-react-inputs';
+
 // CompanyForm.tsx - Edit company/legal entity information
 import type React from 'react';
 import { useState } from 'react';
@@ -212,8 +213,8 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
                     </div>
                     <Button
                       type="button"
-                      fillMode="flat"
-                      themeColor="error"
+                      variant="subtle"
+                      color="red"
                       onClick={() => handleRemoveIdentifier(identifier.legal_entity_reference_id!)}
                     >
                       Remove
@@ -228,21 +229,21 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
               <div className="identifier-form-grid">
                 <div className="form-field">
                   <label>Type</label>
-                  <DropDownList
+                  <Select
                     data={IDENTIFIER_TYPES}
                     value={newIdentifier.identifier_type}
                     onChange={(e) =>
-                      setNewIdentifier({ ...newIdentifier, identifier_type: e.value })
+                      setNewIdentifier({ ...newIdentifier, identifier_type: e.target.value })
                     }
                   />
                 </div>
 
                 <div className="form-field">
                   <label>Identifier Value</label>
-                  <Input
+                  <TextInput
                     value={newIdentifier.identifier_value || ''}
                     onChange={(e) =>
-                      setNewIdentifier({ ...newIdentifier, identifier_value: e.value })
+                      setNewIdentifier({ ...newIdentifier, identifier_value: e.target.value })
                     }
                     placeholder="Enter identifier value"
                   />
@@ -250,22 +251,22 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
 
                 <div className="form-field">
                   <label>Country</label>
-                  <DropDownList
+                  <Select
                     data={COUNTRY_CODES}
                     textField="name"
                     dataItemKey="code"
                     value={COUNTRY_CODES.find((c) => c.code === newIdentifier.country_code)}
                     onChange={(e) =>
-                      setNewIdentifier({ ...newIdentifier, country_code: e.value.code })
+                      setNewIdentifier({ ...newIdentifier, country_code: e.target.value.code })
                     }
                   />
                 </div>
 
                 <div className="form-field">
                   <label>Registry Name</label>
-                  <Input
+                  <TextInput
                     value={newIdentifier.registry_name || ''}
-                    onChange={(e) => setNewIdentifier({ ...newIdentifier, registry_name: e.value })}
+                    onChange={(e) => setNewIdentifier({ ...newIdentifier, registry_name: e.target.value })}
                     placeholder="e.g., Kamer van Koophandel"
                   />
                 </div>
@@ -273,8 +274,8 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
 
               <Button
                 type="button"
-                themeColor="primary"
-                fillMode="outline"
+                color="blue"
+                variant="outline"
                 onClick={handleAddIdentifier}
               >
                 Add Identifier
@@ -283,7 +284,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
           </fieldset>
 
           <div className="k-form-buttons">
-            <Button type="submit" themeColor="primary">
+            <Button type="submit" color="blue">
               Save Changes
             </Button>
             <Button type="button" onClick={onCancel}>

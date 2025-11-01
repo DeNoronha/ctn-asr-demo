@@ -3,7 +3,8 @@
  * System Admins can invite new users (Association Admins or Members)
  */
 
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { UserPlus } from '../icons';
 import type React from 'react';
@@ -89,7 +90,7 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ onClose, onInvite }
 
         <div className="dialog-actions">
           <Button onClick={onClose}>Cancel</Button>
-          <Button themeColor="primary" onClick={handleSubmit}>
+          <Button color="blue" onClick={handleSubmit}>
             <UserPlus size={16} style={{ marginRight: 8 }} />
             Send Invitation
           </Button>

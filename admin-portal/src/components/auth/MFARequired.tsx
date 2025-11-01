@@ -3,7 +3,8 @@
  * Shown when user doesn't have MFA enabled
  */
 
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { ShieldAlert } from '../icons';
 import type React from 'react';
 import { useAuth } from '../../auth/AuthContext';
@@ -49,7 +50,7 @@ export const MFARequiredPage: React.FC = () => {
           </ol>
         </div>
 
-        <Button themeColor="primary" size="large" onClick={handleLogout}>
+        <Button color="blue" size="lg" onClick={handleLogout}>
           Sign Out
         </Button>
       </div>

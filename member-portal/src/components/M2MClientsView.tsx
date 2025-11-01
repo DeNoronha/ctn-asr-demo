@@ -3,10 +3,11 @@
  * Member-scoped M2M client management (members see only their own clients)
  */
 
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Grid, GridColumn } from '@progress/kendo-react-grid';
-import { Input, TextArea, Checkbox } from '@progress/kendo-react-inputs';
+
 import { Key, Plus, Trash2, Copy, AlertTriangle } from './icons';
 import React, { useEffect, useState } from 'react';
 
@@ -259,7 +260,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
       <td>
         <div style={{ display: 'flex', gap: '8px' }}>
           <Button
-            size="small"
+            size="sm"
             onClick={() => handleGenerateSecret(props.dataItem)}
             disabled={loading || !props.dataItem.is_active}
             title="Generate new secret"
@@ -267,8 +268,8 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
             <Key size={16} /> New Secret
           </Button>
           <Button
-            size="small"
-            fillMode="flat"
+            size="sm"
+            variant="subtle"
             onClick={() => {
               setSelectedClient(props.dataItem);
               setShowDeleteDialog(true);
@@ -292,7 +293,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
             Manage OAuth 2.0 API clients for secure system-to-system integration
           </p>
         </div>
-        <Button themeColor="primary" onClick={() => setShowAddDialog(true)} disabled={loading}>
+        <Button color="blue" onClick={() => setShowAddDialog(true)} disabled={loading}>
           <Plus size={16} /> Add M2M Client
         </Button>
       </div>
@@ -329,9 +330,9 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
           <div style={{ padding: '20px 0' }}>
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Client Name *</label>
-              <Input
+              <TextInput
                 value={formData.client_name}
-                onChange={(e) => setFormData({ ...formData, client_name: e.value })}
+                onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
                 placeholder="e.g., Container Tracking System"
                 style={{ width: '100%' }}
               />
@@ -339,9 +340,9 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
 
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Description</label>
-              <TextArea
+              <Textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.value })}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Brief description of this client application"
                 rows={3}
                 style={{ width: '100%' }}
@@ -355,7 +356,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
                   <label key={scope.value} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Checkbox
                       checked={formData.scopes.includes(scope.value)}
-                      onChange={() => handleScopeToggle(scope.value)}
+                      onChange={() => handleScopeToggle(scope.target.value)}
                     />
                     <span>{scope.label}</span>
                   </label>
@@ -367,7 +368,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
           <DialogActionsBar>
             <Button onClick={() => setShowAddDialog(false)}>Cancel</Button>
             <Button
-              themeColor="primary"
+              color="blue"
               onClick={handleAddClient}
               disabled={!formData.client_name || formData.scopes.length === 0 || loading}
             >
@@ -419,7 +420,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
                 >
                   {selectedClient.azure_client_id}
                 </code>
-                <Button size="small" onClick={() => copyToClipboard(selectedClient.azure_client_id)}>
+                <Button size="sm" onClick={() => copyToClipboard(selectedClient.azure_client_id)}>
                   <Copy size={14} /> Copy
                 </Button>
               </div>
@@ -441,7 +442,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
                 >
                   {generatedSecret}
                 </code>
-                <Button size="small" themeColor="primary" onClick={() => copyToClipboard(generatedSecret)}>
+                <Button size="sm" color="blue" onClick={() => copyToClipboard(generatedSecret)}>
                   <Copy size={14} /> Copy
                 </Button>
               </div>
@@ -450,7 +451,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
 
           <DialogActionsBar>
             <Button
-              themeColor="primary"
+              color="blue"
               onClick={() => {
                 setShowSecretDialog(false);
                 setGeneratedSecret('');
@@ -491,7 +492,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
             >
               Cancel
             </Button>
-            <Button themeColor="error" onClick={handleDeleteClient} disabled={loading}>
+            <Button color="red" onClick={handleDeleteClient} disabled={loading}>
               Deactivate
             </Button>
           </DialogActionsBar>

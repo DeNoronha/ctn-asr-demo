@@ -1,10 +1,11 @@
 import { useMsal } from '@azure/msal-react';
-import { Button } from '@progress/kendo-react-buttons';
+import { Button, TextInput, Textarea, Select } from '@mantine/core';
+
 import { DatePicker } from '@progress/kendo-react-dateinputs';
 import { Dialog } from '@progress/kendo-react-dialogs';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
+
 import { Grid, type GridCellProps, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
-import { Input, TextArea } from '@progress/kendo-react-inputs';
+
 import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
 import axios from 'axios';
 import type React from 'react';
@@ -334,11 +335,11 @@ const TasksGrid: React.FC = () => {
     const task = props.dataItem;
     return (
       <td>
-        <Button icon="edit" fillMode="flat" onClick={() => openEditDialog(task)}>
+        <Button leftSection="edit" variant="subtle" onClick={() => openEditDialog(task)}>
           Edit
         </Button>
         {task.status !== 'completed' && task.status !== 'cancelled' && (
-          <Button icon="check" fillMode="flat" onClick={() => handleCompleteTask(task.task_id)}>
+          <Button leftSection="check" variant="subtle" onClick={() => handleCompleteTask(task.task_id)}>
             Complete
           </Button>
         )}
@@ -356,7 +357,7 @@ const TasksGrid: React.FC = () => {
     <div className="tasks-grid">
       <div className="grid-header">
         <h2>Admin Tasks & Reviews</h2>
-        <Button icon="plus" themeColor="primary" onClick={() => setShowCreateDialog(true)}>
+        <Button leftSection="plus" color="blue" onClick={() => setShowCreateDialog(true)}>
           New Task
         </Button>
       </div>
@@ -446,8 +447,8 @@ const TasksGrid: React.FC = () => {
               cells={{ data: (props) => (
                 <td>
                   <Button
-                    icon="preview"
-                    fillMode="flat"
+                    leftSection="preview"
+                    variant="subtle"
                     onClick={() => openReviewDialog(props.dataItem)}
                   >
                     Review
@@ -465,29 +466,29 @@ const TasksGrid: React.FC = () => {
           <div className="dialog-content">
             <div className="form-field">
               <label>Task Type</label>
-              <DropDownList
+              <Select
                 data={taskTypeOptions}
                 textField="text"
                 dataItemKey="value"
                 value={taskTypeOptions.find((o) => o.value === formData.task_type)}
-                onChange={(e) => setFormData({ ...formData, task_type: e.value.value })}
+                onChange={(e) => setFormData({ ...formData, task_type: e.target.value.target.value })}
               />
             </div>
 
             <div className="form-field">
               <label>Title</label>
-              <Input
+              <TextInput
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.value })}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Task title"
               />
             </div>
 
             <div className="form-field">
               <label>Description</label>
-              <TextArea
+              <Textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.value })}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Task description..."
                 rows={4}
               />
@@ -495,20 +496,20 @@ const TasksGrid: React.FC = () => {
 
             <div className="form-field">
               <label>Priority</label>
-              <DropDownList
+              <Select
                 data={priorityOptions}
                 textField="text"
                 dataItemKey="value"
                 value={priorityOptions.find((o) => o.value === formData.priority)}
-                onChange={(e) => setFormData({ ...formData, priority: e.value.value })}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value.target.value })}
               />
             </div>
 
             <div className="form-field">
               <label>Assign To (Email)</label>
-              <Input
+              <TextInput
                 value={formData.assigned_to_email}
-                onChange={(e) => setFormData({ ...formData, assigned_to_email: e.value })}
+                onChange={(e) => setFormData({ ...formData, assigned_to_email: e.target.value })}
                 placeholder="admin@ctn.nl"
               />
             </div>
@@ -517,7 +518,7 @@ const TasksGrid: React.FC = () => {
               <label>Due Date</label>
               <DatePicker
                 value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.value })}
+                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
                 format="dd/MM/yyyy"
               />
             </div>
@@ -525,7 +526,7 @@ const TasksGrid: React.FC = () => {
 
           <div className="dialog-actions">
             <Button onClick={() => setShowCreateDialog(false)}>Cancel</Button>
-            <Button themeColor="primary" onClick={handleCreate}>
+            <Button color="blue" onClick={handleCreate}>
               Create Task
             </Button>
           </div>
@@ -538,37 +539,37 @@ const TasksGrid: React.FC = () => {
           <div className="dialog-content">
             <div className="form-field">
               <label>Title</label>
-              <Input
+              <TextInput
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.value })}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
             </div>
 
             <div className="form-field">
               <label>Description</label>
-              <TextArea
+              <Textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.value })}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={4}
               />
             </div>
 
             <div className="form-field">
               <label>Priority</label>
-              <DropDownList
+              <Select
                 data={priorityOptions}
                 textField="text"
                 dataItemKey="value"
                 value={priorityOptions.find((o) => o.value === formData.priority)}
-                onChange={(e) => setFormData({ ...formData, priority: e.value.value })}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value.target.value })}
               />
             </div>
 
             <div className="form-field">
               <label>Assign To (Email)</label>
-              <Input
+              <TextInput
                 value={formData.assigned_to_email}
-                onChange={(e) => setFormData({ ...formData, assigned_to_email: e.value })}
+                onChange={(e) => setFormData({ ...formData, assigned_to_email: e.target.value })}
                 placeholder="admin@ctn.nl"
               />
             </div>
@@ -577,7 +578,7 @@ const TasksGrid: React.FC = () => {
               <label>Due Date</label>
               <DatePicker
                 value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.value })}
+                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
                 format="dd/MM/yyyy"
               />
             </div>
@@ -585,7 +586,7 @@ const TasksGrid: React.FC = () => {
 
           <div className="dialog-actions">
             <Button onClick={() => setShowEditDialog(false)}>Cancel</Button>
-            <Button themeColor="primary" onClick={() => handleUpdate()}>
+            <Button color="blue" onClick={() => handleUpdate()}>
               Update Task
             </Button>
           </div>
@@ -702,10 +703,10 @@ const TasksGrid: React.FC = () => {
 
           <div className="dialog-actions">
             <Button onClick={() => setShowReviewDialog(false)}>Cancel</Button>
-            <Button themeColor="error" onClick={() => handleReviewDecision('reject')}>
+            <Button color="red" onClick={() => handleReviewDecision('reject')}>
               Reject
             </Button>
-            <Button themeColor="primary" onClick={() => handleReviewDecision('approve')}>
+            <Button color="blue" onClick={() => handleReviewDecision('approve')}>
               Approve
             </Button>
           </div>

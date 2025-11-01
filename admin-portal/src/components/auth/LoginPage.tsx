@@ -3,7 +3,7 @@
  * Azure Entra ID authentication with MFA requirement notice
  */
 
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
 import { AlertCircle, Key, Shield } from '../icons';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -63,10 +63,11 @@ export const LoginPage: React.FC = () => {
 
         <Button
           className="login-button"
-          themeColor="primary"
-          size="large"
+          color="blue"
+          size="lg"
           onClick={handleLogin}
           disabled={isLoading}
+          loading={isLoading}
         >
           {isLoading ? 'Signing in...' : 'Sign in with Microsoft'}
         </Button>

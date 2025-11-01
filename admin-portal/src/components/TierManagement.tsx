@@ -2,8 +2,9 @@
  * Tier Management Component - Admin view for managing member authentication tiers
  */
 
-import { Button } from '@progress/kendo-react-buttons';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
+import { Button, Select } from '@mantine/core';
+
+
 import { Label, Hint } from '@progress/kendo-react-labels';
 import React, { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
@@ -190,12 +191,12 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
       <div className="tier-selector" style={{ marginTop: '24px' }}>
         <div className="form-field">
           <Label>Select New Tier</Label>
-          <DropDownList
+          <Select
             data={TIER_OPTIONS}
             textField="name"
             dataItemKey="tier"
             value={selectedTier}
-            onChange={(e) => setSelectedTier(e.value as TierOption)}
+            onChange={(value) => setSelectedTier(value as TierOption)}
             itemRender={(li, itemProps) => {
               const item = itemProps.dataItem as TierOption;
               return React.cloneElement(
@@ -218,7 +219,7 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
         <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
           <Button
             onClick={handleUpdateTier}
-            themeColor="primary"
+            color="blue"
             disabled={
               updating ||
               !selectedTier ||
@@ -230,7 +231,7 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
           <Button
             onClick={loadTierInfo}
             disabled={updating}
-            fillMode="outline"
+            variant="outline"
           >
             Refresh
           </Button>

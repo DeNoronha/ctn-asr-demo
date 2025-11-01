@@ -1,8 +1,9 @@
-import { Button } from '@progress/kendo-react-buttons';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
+import { Button } from '@mantine/core';
+
+
 import { Field, Form, FormElement, type FormRenderProps } from '@progress/kendo-react-form';
-import { Input } from '@progress/kendo-react-inputs';
-import { Checkbox } from '@progress/kendo-react-inputs';
+
+
 // ContactForm.tsx - Form for creating/editing contacts
 import type React from 'react';
 import type { LegalEntityContact } from '../services/api';
@@ -253,7 +254,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
           </ProgressiveSection>
 
           <div className="k-form-buttons">
-            <Button type="submit" themeColor="primary" disabled={!formRenderProps.allowSubmit}>
+            <Button type="submit" color="blue" disabled={!formRenderProps.allowSubmit}>
               Save Contact
             </Button>
             <Button type="button" onClick={onCancel}>

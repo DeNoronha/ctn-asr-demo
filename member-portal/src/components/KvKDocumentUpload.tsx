@@ -4,7 +4,8 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { Upload, FileText, XCircle, CheckCircle, AlertTriangle } from './icons';
 
 interface KvKDocumentUploadProps {
@@ -173,7 +174,7 @@ export const KvKDocumentUpload: React.FC<KvKDocumentUploadProps> = ({
               </div>
             </div>
             <Button
-              fillMode="flat"
+              variant="subtle"
               onClick={handleClear}
               disabled={disabled}
               title="Remove file"

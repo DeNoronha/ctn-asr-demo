@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import PDFViewer from '../components/PDFViewer';
 import { TransportOrderForm } from '../components/validation/TransportOrderForm';
 import Breadcrumb from '../components/Breadcrumb';
@@ -278,7 +279,7 @@ const Validation: React.FC = () => {
             <Button themeColor="base" onClick={() => blocker.reset()}>
               Stay
             </Button>
-            <Button themeColor="error" onClick={() => {
+            <Button color="red" onClick={() => {
               setHasUnsavedChanges(false);
               blocker.proceed();
             }}>
@@ -590,7 +591,7 @@ const Validation: React.FC = () => {
 
           <div style={{ display: 'flex', gap: '12px', marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
             <Button
-              themeColor="primary"
+              color="blue"
               onClick={() => handleSubmit('approved-with-corrections')}
               disabled={validating}
               aria-label={`Approve with ${corrections.length} corrections`}
@@ -598,7 +599,7 @@ const Validation: React.FC = () => {
               Approve with Corrections ({corrections.length})
             </Button>
             <Button
-              themeColor="success"
+              color="green"
               onClick={() => handleSubmit('approved')}
               disabled={validating || corrections.length > 0}
               aria-label="Approve booking as-is"
@@ -606,7 +607,7 @@ const Validation: React.FC = () => {
               Approve as-is
             </Button>
             <Button
-              themeColor="error"
+              color="red"
               onClick={() => handleSubmit('rejected')}
               disabled={validating}
               aria-label="Reject booking"

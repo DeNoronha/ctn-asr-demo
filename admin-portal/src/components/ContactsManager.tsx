@@ -1,4 +1,5 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
 import { AlertTriangle, Pencil, Plus, Trash2, Users } from './icons';
@@ -132,8 +133,8 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
       <td>
         <div className="action-buttons">
           <Button
-            fillMode="flat"
-            size="small"
+            variant="subtle"
+            size="sm"
             title="Edit contact"
             aria-label={`Edit ${contactName}`}
             onClick={() => handleEditContact(props.dataItem)}
@@ -143,8 +144,8 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
             <Pencil size={16} />
           </Button>
           <Button
-            fillMode="flat"
-            size="small"
+            variant="subtle"
+            size="sm"
             title="Delete contact"
             aria-label={`Delete ${contactName}`}
             onClick={() => handleDeleteClick(props.dataItem)}
@@ -166,7 +167,7 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
     <div className="contacts-manager">
       <div className="section-header">
         <h3>Contacts ({contactCount})</h3>
-        <Button themeColor="primary" onClick={handleAddContact} aria-label="Add new contact">
+        <Button color="blue" onClick={handleAddContact} aria-label="Add new contact">
           <Plus size={16} />
           Add Contact
         </Button>

@@ -3,7 +3,8 @@
  * Shown when user doesn't have required permissions
  */
 
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { Home, LogOut, ShieldX } from '../icons';
 import type React from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -43,7 +44,7 @@ export const UnauthorizedPage: React.FC = () => {
         )}
 
         <div className="unauthorized-actions">
-          <Button themeColor="primary" onClick={handleGoHome}>
+          <Button color="blue" onClick={handleGoHome}>
             <Home size={18} style={{ marginRight: 8 }} />
             Go to Home
           </Button>

@@ -2,8 +2,9 @@
  * Member Detail View - Full page member details with tabs
  */
 
-import { Button } from '@progress/kendo-react-buttons';
-import { Loader } from '@progress/kendo-react-indicators';
+import { Button, Loader } from '@mantine/core';
+
+
 import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
 import { ArrowLeft, Plus } from './icons';
 import type React from 'react';
@@ -292,7 +293,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           <div className="tab-content">
             {loading ? (
               <div className="loading-state">
-                <Loader size="medium" />
+                <Loader size="md" />
                 <span>Loading company information...</span>
               </div>
             ) : legalEntity ? (
@@ -371,7 +372,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           <div className="tab-content">
             {loading ? (
               <div className="loading-state">
-                <Loader size="medium" />
+                <Loader size="md" />
                 <span>Loading identifiers...</span>
               </div>
             ) : legalEntity ? (
@@ -449,7 +450,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           <div className="tab-content">
             {loading ? (
               <div className="loading-state">
-                <Loader size="medium" />
+                <Loader size="md" />
                 <span>Loading contacts...</span>
               </div>
             ) : legalEntity ? (

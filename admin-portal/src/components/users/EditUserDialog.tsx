@@ -3,7 +3,8 @@
  * System Admins can edit user roles and status
  */
 
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { Dialog } from '@progress/kendo-react-dialogs';
 import { Save } from '../icons';
 import type React from 'react';
@@ -94,7 +95,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ user, onClose, onUpdate
 
         <div className="dialog-actions">
           <Button onClick={onClose}>Cancel</Button>
-          <Button themeColor="primary" onClick={handleSubmit}>
+          <Button color="blue" onClick={handleSubmit}>
             <Save size={16} style={{ marginRight: 8 }} />
             Save Changes
           </Button>

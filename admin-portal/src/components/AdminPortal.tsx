@@ -3,7 +3,8 @@
  * Main container for authenticated admin interface
  */
 
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { DrawerContent } from '@progress/kendo-react-layout';
 import { LogOut, User } from './icons';
 import type React from 'react';
@@ -131,7 +132,7 @@ const AdminPortal: React.FC = () => {
               <h2>{t('members.title')}</h2>
               <RoleGuard allowedRoles={[UserRole.ASSOCIATION_ADMIN, UserRole.SYSTEM_ADMIN]}>
                 <Button
-                  themeColor="primary"
+                  color="blue"
                   onClick={() => setShowForm(!showForm)}
                   aria-label={showForm ? t('common.cancel') : t('members.addMember')}
                 >
@@ -188,7 +189,7 @@ const AdminPortal: React.FC = () => {
                   </p>
                   <Button
                     onClick={() => setSelectedView('members')}
-                    themeColor="primary"
+                    color="blue"
                     aria-label={t('navigation.members')}
                   >
                     {t('navigation.members')}
@@ -257,7 +258,7 @@ const AdminPortal: React.FC = () => {
               {t('errors.pageNotFoundMessage', 'The view you\'re looking for doesn\'t exist.')}
             </p>
             <Button
-              themeColor="primary"
+              color="blue"
               onClick={() => setSelectedView('dashboard')}
               aria-label={t('navigation.dashboard')}
             >
@@ -282,8 +283,8 @@ const AdminPortal: React.FC = () => {
             <header className="app-header">
               <div className="header-left">
                 <Button
-                  icon="menu"
-                  fillMode="flat"
+                  leftSection="menu"
+                  variant="subtle"
                   onClick={() => setDrawerExpanded(!drawerExpanded)}
                   className="menu-button"
                   aria-label={drawerExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
@@ -303,7 +304,7 @@ const AdminPortal: React.FC = () => {
                       <span className="user-role">{user.primaryRole}</span>
                     </div>
                     <Button
-                      fillMode="flat"
+                      variant="subtle"
                       onClick={handleLogout}
                       title="Sign out"
                       aria-label="Sign out"

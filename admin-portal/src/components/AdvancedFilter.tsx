@@ -4,10 +4,11 @@
  */
 
 import type { CompositeFilterDescriptor } from '@progress/kendo-data-query';
-import { Button } from '@progress/kendo-react-buttons';
+import { Button, TextInput, Select } from '@mantine/core';
+
 import { DatePicker } from '@progress/kendo-react-dateinputs';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { Input } from '@progress/kendo-react-inputs';
+
+
 import type React from 'react';
 import { useState } from 'react';
 import './AdvancedFilter.css';
@@ -97,7 +98,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
       return (
         <DatePicker
           value={criterion.value ? new Date(criterion.value) : null}
-          onChange={(e) => updateCriteria(criterion.id, { value: e.value })}
+          onChange={(e) => updateCriteria(criterion.id, { value: e.target.value })}
           format="yyyy-MM-dd"
         />
       );
@@ -106,16 +107,16 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
     if (fieldType === 'select') {
       const options = criterion.field === 'status' ? statusOptions : membershipOptions;
       return (
-        <DropDownList
+        <Select
           data={options}
           value={criterion.value}
-          onChange={(e) => updateCriteria(criterion.id, { value: e.value })}
+          onChange={(e) => updateCriteria(criterion.id, { value: e.target.value })}
         />
       );
     }
 
     return (
-      <Input
+      <TextInput
         value={(criterion.value as string) || ''}
         onChange={(e) => updateCriteria(criterion.id, { value: String(e.target.value || '') })}
         placeholder="Enter value..."
@@ -158,10 +159,10 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
         <h3>Advanced Filters</h3>
         <div className="logic-selector">
           <label>Match: </label>
-          <DropDownList
+          <Select
             data={['and', 'or']}
             value={logic}
-            onChange={(e) => setLogic(e.value)}
+            onChange={(e) => setLogic(e.target.value)}
             style={{ width: '100px' }}
           />
         </div>
@@ -172,27 +173,27 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
           <div key={criterion.id} className="filter-criterion">
             <span className="criterion-index">{index + 1}</span>
 
-            <DropDownList
+            <Select
               data={fields}
               textField="label"
               dataItemKey="value"
               value={fields.find((f) => f.value === criterion.field)}
               onChange={(e) => {
                 updateCriteria(criterion.id, {
-                  field: e.value.value,
-                  operator: getOperators(e.value.value)[0].value,
+                  field: e.target.value.target.value,
+                  operator: getOperators(e.target.value.target.value)[0].value,
                   value: '',
                 });
               }}
               style={{ width: '180px' }}
             />
 
-            <DropDownList
+            <Select
               data={getOperators(criterion.field)}
               textField="label"
               dataItemKey="value"
               value={getOperators(criterion.field).find((o) => o.value === criterion.operator)}
-              onChange={(e) => updateCriteria(criterion.id, { operator: e.value.value })}
+              onChange={(e) => updateCriteria(criterion.id, { operator: e.target.value.target.value })}
               style={{ width: '150px' }}
             />
 
@@ -200,8 +201,8 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
 
             {criteria.length > 1 && (
               <Button
-                icon="delete"
-                fillMode="flat"
+                leftSection="delete"
+                variant="subtle"
                 onClick={() => removeCriteria(criterion.id)}
                 title="Remove criterion"
               />
@@ -211,12 +212,12 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
       </div>
 
       <div className="filter-actions">
-        <Button icon="plus" onClick={addCriteria} fillMode="outline">
+        <Button leftSection="plus" onClick={addCriteria} variant="outline">
           Add Criterion
         </Button>
         <div className="filter-buttons">
           <Button onClick={handleClear}>Clear</Button>
-          <Button themeColor="primary" onClick={handleApply}>
+          <Button color="blue" onClick={handleApply}>
             Apply Filters
           </Button>
         </div>

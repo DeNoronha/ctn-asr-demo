@@ -1,4 +1,5 @@
-import { Loader, type LoaderSize } from '@progress/kendo-react-indicators';
+import { Loader } from '@mantine/core';
+import { type LoaderSize } from '@progress/kendo-react-indicators';
 // LoadingSpinner.tsx - Reusable loading component
 import type React from 'react';
 import './LoadingSpinner.css';

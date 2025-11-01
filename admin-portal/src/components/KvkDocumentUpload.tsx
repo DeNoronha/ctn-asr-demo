@@ -1,5 +1,6 @@
-import { Button } from '@progress/kendo-react-buttons';
-import { Loader } from '@progress/kendo-react-indicators';
+import { Button, Loader } from '@mantine/core';
+
+
 import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
 import { Upload, type UploadOnAddEvent } from '@progress/kendo-react-upload';
 import axios from 'axios';
@@ -249,7 +250,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
   };
 
   if (loading) {
-    return <Loader size="large" />;
+    return <Loader size="lg" />;
   }
 
   return (
@@ -278,7 +279,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
 
           {verificationStatus.kvk_verification_status === 'pending' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: TEXT_COLORS.muted, marginBottom: '15px' }}>
-              <Loader size="small" />
+              <Loader size="sm" />
               <span>Verifying document...</span>
             </div>
           )}
@@ -482,14 +483,14 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
 
           <div style={{ marginTop: '15px' }}>
             <a href={verificationStatus.kvk_document_url} target="_blank" rel="noopener noreferrer">
-              <Button themeColor="info" size="small">
+              <Button color="cyan" size="sm">
                 View Uploaded Document
               </Button>
             </a>
           </div>
 
           <div style={{ marginTop: '10px' }}>
-            <Button themeColor="primary" size="small" onClick={() => setVerificationStatus(null)}>
+            <Button color="blue" size="sm" onClick={() => setVerificationStatus(null)}>
               Upload New Document
             </Button>
           </div>
@@ -515,7 +516,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
 
           {uploading && (
             <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Loader size="small" />
+              <Loader size="sm" />
               <span>Uploading and verifying document...</span>
             </div>
           )}

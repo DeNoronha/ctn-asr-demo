@@ -5,7 +5,8 @@ import { logger } from '../../utils/logger';
  */
 
 import { type State, process } from '@progress/kendo-data-query';
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import {
   Grid,
   GridColumn,
@@ -235,8 +236,8 @@ const UserManagement: React.FC = () => {
       <td>
         <div className="action-buttons">
           <Button
-            fillMode="flat"
-            size="small"
+            variant="subtle"
+            size="sm"
             onClick={() => handleEditUser(user)}
             title="Edit user"
           >
@@ -244,9 +245,9 @@ const UserManagement: React.FC = () => {
           </Button>
           {!isCurrentUser && (
             <Button
-              fillMode="flat"
-              size="small"
-              themeColor="error"
+              variant="subtle"
+              size="sm"
+              color="red"
               onClick={() => handleToggleUserStatus(user.id, !user.enabled)}
               title={user.enabled ? 'Disable user' : 'Enable user'}
             >
@@ -269,7 +270,7 @@ const UserManagement: React.FC = () => {
               <p className="header-description">Manage user access and roles</p>
             </div>
           </div>
-          <Button themeColor="primary" onClick={() => setShowInviteDialog(true)}>
+          <Button color="blue" onClick={() => setShowInviteDialog(true)}>
             <UserPlus size={18} style={{ marginRight: 8 }} />
             Invite User
           </Button>
@@ -301,7 +302,7 @@ const UserManagement: React.FC = () => {
         </div>
 
         {loading ? (
-          <LoadingSpinner size="large" message="Loading users..." />
+          <LoadingSpinner size="lg" message="Loading users..." />
         ) : (
           <Grid
             data={processedData}

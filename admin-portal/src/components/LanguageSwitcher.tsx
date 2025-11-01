@@ -1,8 +1,5 @@
-import {
-  DropDownList,
-  type DropDownListChangeEvent,
-  type ListItemProps,
-} from '@progress/kendo-react-dropdowns';
+import { Select } from '@mantine/core';
+import { type DropDownListChangeEvent, type ListItemProps,  } from '@progress/kendo-react-dropdowns';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import './LanguageSwitcher.css';
@@ -94,7 +91,7 @@ const LanguageSwitcher: React.FC = () => {
 
   return (
     <div className="language-switcher" role="region" aria-label="Language selection">
-      <DropDownList
+      <Select
         data={languages}
         textField="name"
         dataItemKey="code"

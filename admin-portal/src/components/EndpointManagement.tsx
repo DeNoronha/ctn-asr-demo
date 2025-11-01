@@ -1,9 +1,10 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button, TextInput, Textarea, Select } from '@mantine/core';
+
 import { EmptyState } from './EmptyState';
 import { Dialog } from '@progress/kendo-react-dialogs';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
+
 import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-import { Input, TextArea } from '@progress/kendo-react-inputs';
+
 import { Plus } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -199,8 +200,8 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
     return (
       <td>
         <Button
-          themeColor="primary"
-          size="small"
+          color="blue"
+          size="sm"
           title="Issue token for this endpoint"
           aria-label={`Issue token for ${props.dataItem.endpoint_name}`}
           onClick={() => handleIssueToken(props.dataItem)}
@@ -220,7 +221,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
           <p className="entity-name">{legalEntityName}</p>
         </div>
         <Button
-          themeColor="primary"
+          color="blue"
           onClick={() => setShowDialog(true)}
           disabled={loading}
           aria-label="Register new endpoint"
@@ -263,9 +264,9 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
           <div className="endpoint-form">
             <div className="form-field">
               <label>Endpoint Name *</label>
-              <Input
+              <TextInput
                 value={formData.endpoint_name}
-                onChange={(e) => setFormData({ ...formData, endpoint_name: e.value })}
+                onChange={(e) => setFormData({ ...formData, endpoint_name: e.target.value })}
                 placeholder="e.g., Container Tracking System"
               />
             </div>
@@ -275,18 +276,18 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
                 Endpoint URL *
                 <HelpTooltip content={helpContent.endpointUrl} dataTestId="endpoint-url-help" />
               </label>
-              <Input
+              <TextInput
                 value={formData.endpoint_url}
-                onChange={(e) => setFormData({ ...formData, endpoint_url: e.value })}
+                onChange={(e) => setFormData({ ...formData, endpoint_url: e.target.value })}
                 placeholder="https://your-system.com/api"
               />
             </div>
 
             <div className="form-field">
               <label>Description</label>
-              <TextArea
+              <Textarea
                 value={formData.endpoint_description}
-                onChange={(e) => setFormData({ ...formData, endpoint_description: e.value })}
+                onChange={(e) => setFormData({ ...formData, endpoint_description: e.target.value })}
                 placeholder="Brief description of this endpoint"
                 rows={3}
               />
@@ -294,12 +295,12 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
 
             <div className="form-field">
               <label>Data Category *</label>
-              <DropDownList
+              <Select
                 data={DATA_CATEGORIES}
                 textField="label"
                 dataItemKey="value"
                 value={DATA_CATEGORIES.find((c) => c.value === formData.data_category)}
-                onChange={(e) => setFormData({ ...formData, data_category: e.value.value })}
+                onChange={(e) => setFormData({ ...formData, data_category: e.target.value.target.value })}
               />
             </div>
           </div>
@@ -309,7 +310,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
               Cancel
             </Button>
             <Button
-              themeColor="primary"
+              color="blue"
               onClick={handleCreateEndpoint}
               disabled={!formData.endpoint_name || !formData.endpoint_url || loading}
               aria-label="Save and register endpoint"
@@ -336,7 +337,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
               <div className="token-value-container">
                 <code className="token-value">{newToken.token_value}</code>
                 <Button
-                  size="small"
+                  size="sm"
                   onClick={() => copyToClipboard(newToken.token_value)}
                   aria-label="Copy token to clipboard"
                 >
@@ -364,7 +365,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
 
           <div className="dialog-actions">
             <Button
-              themeColor="primary"
+              color="blue"
               onClick={() => setShowTokenDialog(false)}
               aria-label="Close token dialog"
             >

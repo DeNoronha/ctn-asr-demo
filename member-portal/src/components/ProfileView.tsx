@@ -1,4 +1,5 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { Dialog } from '@progress/kendo-react-dialogs';
 import type React from 'react';
 import { useState } from 'react';
@@ -63,7 +64,7 @@ export const ProfileView: React.FC<ComponentProps> = ({
           <p className="page-subtitle">Manage your organization's information</p>
         </div>
         {!editMode && (
-          <Button themeColor="primary" onClick={() => setEditMode(true)}>
+          <Button color="blue" onClick={() => setEditMode(true)}>
             Edit Profile
           </Button>
         )}
@@ -238,7 +239,7 @@ export const ProfileView: React.FC<ComponentProps> = ({
               <Button type="button" onClick={() => setEditMode(false)}>
                 Cancel
               </Button>
-              <Button type="submit" themeColor="primary" disabled={saving}>
+              <Button type="submit" color="blue" disabled={saving}>
                 {saving ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>

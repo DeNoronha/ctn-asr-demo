@@ -4,7 +4,8 @@ import {
   filterBy,
   orderBy,
 } from '@progress/kendo-data-query';
-import { Button } from '@progress/kendo-react-buttons';
+import { Button, TextInput } from '@mantine/core';
+
 import { DropDownButton } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 // TEMPORARILY DISABLED: Excel export causes react-dom/server Node.js build issues
@@ -20,7 +21,7 @@ import {
   GridColumnMenuSort,
   GridToolbar,
 } from '@progress/kendo-react-grid';
-import { Input, type InputChangeEvent } from '@progress/kendo-react-inputs';
+import { type InputChangeEvent } from '@progress/kendo-react-inputs';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../contexts/NotificationContext';
@@ -534,7 +535,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           <p style={{ margin: '20px', fontSize: '16px' }}>{getBulkActionConfirmation()}</p>
           <DialogActionsBar>
             <Button onClick={() => setShowBulkDialog(false)}>Cancel</Button>
-            <Button themeColor="primary" onClick={executeBulkAction} disabled={isBulkProcessing}>
+            <Button color="blue" onClick={executeBulkAction} disabled={isBulkProcessing}>
               {isBulkProcessing ? 'Processing...' : 'Confirm'}
             </Button>
           </DialogActionsBar>
@@ -580,14 +581,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({
               <div className="toolbar-left">
                 {!onPageChange && (
                   <>
-                    <Input
+                    <TextInput
                       value={searchValue}
                       onChange={handleSearchChange}
                       placeholder={t('members.searchMembers')}
                       style={{ width: '300px' }}
                     />
                     <Button
-                      themeColor={showAdvancedFilter ? 'primary' : 'base'}
+                      color={showAdvancedFilter ? 'primary' : 'base' === 'error' ? 'red' : showAdvancedFilter ? 'primary' : 'base' === 'success' ? 'green' : showAdvancedFilter ? 'primary' : 'base' === 'warning' ? 'orange' : showAdvancedFilter ? 'primary' : 'base' === 'info' ? 'cyan' : 'blue'}
                       fillMode={showAdvancedFilter ? 'solid' : 'outline'}
                       onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
                       icon="filter"
@@ -601,14 +602,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                   text={t('common.export')}
                   icon="download"
                   items={exportMenuItems}
-                  themeColor="primary"
-                  fillMode="outline"
+                  color="blue"
+                  variant="outline"
                 />
                 {selectedIds.length > 0 && (
                   <DropDownButton
                     text={`${t('members.bulkActions')} (${selectedIds.length})`}
                     items={bulkActions}
-                    themeColor="info"
+                    color="cyan"
                   />
                 )}
                 <DropDownButton
@@ -617,7 +618,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                   items={columnMenuItems}
                 />
                 <Button
-                  fillMode="flat"
+                  variant="subtle"
                   onClick={resetColumns}
                   title={t('grid.resetLayout', 'Reset layout')}
                 >

@@ -1,6 +1,7 @@
-import { Button } from '@progress/kendo-react-buttons';
-import { Input, MaskedTextBox } from '@progress/kendo-react-inputs';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
+import { Button, TextInput, Select } from '@mantine/core';
+
+import { MaskedTextBox } from '@progress/kendo-react-inputs';
+
 import { Error, Hint, Label } from '@progress/kendo-react-labels';
 // MemberForm.tsx - Enhanced form with validation
 import React, { useEffect, useState } from 'react';
@@ -223,9 +224,9 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               Organization ID
               <HelpTooltip content={helpContent.orgId} dataTestId="org-id-help" />
             </Label>
-            <Input
+            <TextInput
               value={formData.org_id}
-              onChange={(e) => handleFieldChange('org_id', e.value || '')}
+              onChange={(e) => handleFieldChange('org_id', e.target.value || '')}
               onBlur={() => handleBlur('org_id')}
               placeholder="org:company-name"
               required
@@ -245,9 +246,9 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               Legal Name
               <HelpTooltip content={helpContent.legalName} dataTestId="legal-name-help" />
             </Label>
-            <Input
+            <TextInput
               value={formData.legal_name}
-              onChange={(e) => handleFieldChange('legal_name', e.value || '')}
+              onChange={(e) => handleFieldChange('legal_name', e.target.value || '')}
               onBlur={() => handleBlur('legal_name')}
               placeholder="Company Legal Name BV"
               required
@@ -267,9 +268,9 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               Domain
               <HelpTooltip content={helpContent.domain} dataTestId="domain-help" />
             </Label>
-            <Input
+            <TextInput
               value={formData.domain}
-              onChange={(e) => handleFieldChange('domain', e.value || '')}
+              onChange={(e) => handleFieldChange('domain', e.target.value || '')}
               onBlur={() => handleBlur('domain')}
               placeholder="company.com"
               required
@@ -289,13 +290,13 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               Authentication Tier
               <HelpTooltip content={helpContent.authenticationTier} dataTestId="tier-help" />
             </Label>
-            <DropDownList
+            <Select
               data={TIER_OPTIONS}
               textField="name"
               dataItemKey="tier"
               value={TIER_OPTIONS.find(t => t.tier === formData.authentication_tier)}
               onChange={(e) => {
-                const selectedTier = e.value as TierOption;
+                const selectedTier = e.target.value as TierOption;
                 setFormData(prev => ({
                   ...prev,
                   authentication_tier: selectedTier.tier,
@@ -333,7 +334,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
             </Label>
             <MaskedTextBox
               value={formData.lei}
-              onChange={(e) => handleFieldChange('lei', e.value || '')}
+              onChange={(e) => handleFieldChange('lei', e.target.value || '')}
               onBlur={() => handleBlur('lei')}
               mask="AAAAAAAAAAAAAAAAAAAA"
               placeholder="20 character LEI code"
@@ -355,7 +356,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
             </Label>
             <MaskedTextBox
               value={formData.kvk}
-              onChange={(e) => handleFieldChange('kvk', e.value || '')}
+              onChange={(e) => handleFieldChange('kvk', e.target.value || '')}
               onBlur={() => handleBlur('kvk')}
               mask="00000000"
               placeholder="12345678"
@@ -372,14 +373,14 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
         </ProgressiveSection>
 
         <div className="form-actions">
-          <Button type="submit" themeColor="primary" disabled={isSubmitting}>
+          <Button type="submit" color="blue" disabled={isSubmitting}>
             {isSubmitting ? 'Submitting...' : initialData ? 'Update Member' : 'Register Member'}
           </Button>
           <Button type="button" onClick={handleCancel} disabled={isSubmitting}>
             Cancel
           </Button>
           {isDirty && !initialData && (
-            <Button type="button" fillMode="flat" onClick={handleReset} disabled={isSubmitting}>
+            <Button type="button" variant="subtle" onClick={handleReset} disabled={isSubmitting}>
               Reset Form
             </Button>
           )}

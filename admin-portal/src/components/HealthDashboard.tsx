@@ -3,9 +3,10 @@
  * Displays comprehensive system health monitoring with real-time status checks
  */
 
-import { Button } from '@progress/kendo-react-buttons';
+import { Button, Loader } from '@mantine/core';
+
 import { Card, CardBody, CardHeader } from '@progress/kendo-react-layout';
-import { Loader } from '@progress/kendo-react-indicators';
+
 import { Activity, AlertTriangle, CheckCircle, RefreshCw, XCircle } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -130,7 +131,7 @@ export const HealthDashboard: React.FC = () => {
   if (loading && !health) {
     return (
       <div className="health-dashboard-loading">
-        <Loader type="infinite-spinner" size="large" />
+        <Loader type="infinite-spinner" size="lg" />
         <p>Loading health status...</p>
       </div>
     );
@@ -142,7 +143,7 @@ export const HealthDashboard: React.FC = () => {
         <XCircle className="error-icon" size={48} />
         <h2>Error Loading Health Status</h2>
         <p>{error}</p>
-        <Button onClick={fetchHealth} themeColor="primary">
+        <Button onClick={fetchHealth} color="blue">
           <RefreshCw size={16} /> Retry
         </Button>
       </div>
@@ -173,8 +174,8 @@ export const HealthDashboard: React.FC = () => {
           <Button
             onClick={fetchHealth}
             disabled={loading}
-            themeColor="primary"
-            icon="refresh"
+            color="blue"
+            leftSection="refresh"
           >
             {loading ? 'Refreshing...' : 'Refresh Now'}
           </Button>

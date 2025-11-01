@@ -1,4 +1,5 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import type React from 'react';
 import { useState } from 'react';
 
@@ -41,9 +42,9 @@ export const ProgressiveSection: React.FC<ProgressiveSectionProps> = ({
     <div className={`progressive-section ${className}`}>
       <Button
         onClick={toggle}
-        fillMode="flat"
+        variant="subtle"
         className="progressive-toggle"
-        icon={expanded ? 'chevron-down' : 'chevron-right'}
+        leftSection={expanded ? 'chevron-down' : 'chevron-right'}
         aria-expanded={expanded}
         aria-controls={sectionId}
         type="button"

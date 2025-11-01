@@ -1,4 +1,5 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import type React from 'react';
 
 interface NotFoundProps {
@@ -37,8 +38,8 @@ const NotFound: React.FC<NotFoundProps> = ({ onGoHome }) => {
         The page you're looking for doesn't exist or has been moved.
       </p>
       <Button
-        themeColor="primary"
-        size="large"
+        color="blue"
+        size="lg"
         onClick={handleGoHome}
       >
         🏠 Go to Dashboard

@@ -1,4 +1,5 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 // CompanyDetails.tsx - Display company/legal entity information
 import type React from 'react';
 import type { LegalEntity } from '../services/api';
@@ -14,7 +15,7 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit 
     <div className="company-details">
       <div className="detail-header">
         <h3>{company.primary_legal_name || 'Company Information'}</h3>
-        <Button themeColor="primary" onClick={onEdit}>
+        <Button color="blue" onClick={onEdit}>
           Edit Company
         </Button>
       </div>

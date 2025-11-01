@@ -1,4 +1,5 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 // ExampleUsage.tsx - Demo of all loading & feedback features
 import type React from 'react';
 import { useState } from 'react';
@@ -56,7 +57,7 @@ const ExampleUsage: React.FC = () => {
         <Button onClick={handleSimpleOperation} disabled={simpleLoading}>
           {simpleLoading ? 'Loading...' : 'Start Simple Operation'}
         </Button>
-        {simpleLoading && <LoadingSpinner size="small" message="Processing..." />}
+        {simpleLoading && <LoadingSpinner size="sm" message="Processing..." />}
       </div>
 
       {/* Example 2: Progress Indicator */}
@@ -82,7 +83,7 @@ const ExampleUsage: React.FC = () => {
         <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
           <div>
             <p>Small:</p>
-            <LoadingSpinner size="small" />
+            <LoadingSpinner size="sm" />
           </div>
           <div>
             <p>Medium:</p>
@@ -90,7 +91,7 @@ const ExampleUsage: React.FC = () => {
           </div>
           <div>
             <p>Large:</p>
-            <LoadingSpinner size="large" />
+            <LoadingSpinner size="lg" />
           </div>
         </div>
       </div>

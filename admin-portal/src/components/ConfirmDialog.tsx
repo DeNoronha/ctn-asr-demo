@@ -1,4 +1,4 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -92,14 +92,14 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       <DialogActionsBar>
         <Button
           onClick={onCancel}
+          variant="default"
           aria-label={`${cancelLabel} - Press Escape to cancel`}
         >
           <span ref={(el) => setCancelButtonElement(el?.closest('button') || null)}>{cancelLabel}</span>
         </Button>
         <Button
-          themeColor={confirmTheme}
+          color={confirmTheme === 'error' ? 'red' : 'blue'}
           onClick={handleConfirm}
-          className={confirmTheme === 'error' ? 'k-button-error' : ''}
           aria-label={`${confirmLabel} - This action ${confirmTheme === 'error' ? 'is destructive and ' : ''}cannot be undone`}
         >
           {confirmLabel}

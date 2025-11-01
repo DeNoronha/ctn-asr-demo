@@ -1,8 +1,9 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button, Textarea, Loader } from '@mantine/core';
+
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-import { Loader } from '@progress/kendo-react-indicators';
-import { TextArea } from '@progress/kendo-react-inputs';
+
+
 import axios from 'axios';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -161,7 +162,7 @@ export const KvkReviewQueue: React.FC = () => {
   const ActionCell = (props: GridCellProps) => {
     return (
       <td>
-        <Button themeColor="primary" size="small" onClick={() => handleReview(props.dataItem)}>
+        <Button color="blue" size="sm" onClick={() => handleReview(props.dataItem)}>
           Review
         </Button>
       </td>
@@ -169,7 +170,7 @@ export const KvkReviewQueue: React.FC = () => {
   };
 
   if (loading) {
-    return <Loader size="large" />;
+    return <Loader size="lg" />;
   }
 
   return (
@@ -321,7 +322,7 @@ export const KvkReviewQueue: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Button themeColor="info" size="small">
+                <Button color="cyan" size="sm">
                   📄 View Uploaded Document
                 </Button>
               </a>
@@ -332,9 +333,9 @@ export const KvkReviewQueue: React.FC = () => {
               <label>
                 <strong>Review Notes:</strong>
               </label>
-              <TextArea
+              <Textarea
                 value={reviewNotes}
-                onChange={(e) => setReviewNotes(e.value || '')}
+                onChange={(e) => setReviewNotes(e.target.value || '')}
                 rows={4}
                 style={{ width: '100%', marginTop: '5px' }}
                 placeholder="Enter your review notes here (optional)..."
@@ -343,10 +344,10 @@ export const KvkReviewQueue: React.FC = () => {
           </div>
 
           <DialogActionsBar>
-            <Button onClick={() => submitReview(false)} disabled={submitting} themeColor="error">
+            <Button onClick={() => submitReview(false)} disabled={submitting} color="red">
               Reject
             </Button>
-            <Button onClick={() => submitReview(true)} disabled={submitting} themeColor="success">
+            <Button onClick={() => submitReview(true)} disabled={submitting} color="green">
               Approve
             </Button>
             <Button

@@ -4,7 +4,8 @@
  */
 
 import { Card, CardBody, CardHeader, CardTitle } from '@progress/kendo-react-layout';
-import { Loader } from '@progress/kendo-react-indicators';
+import { Loader } from '@mantine/core';
+
 import { Calendar, MapPin, Building2, Users, FileText, ExternalLink, CheckCircle, AlertCircle } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -117,7 +118,7 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
   if (loading) {
     return (
       <div className="kvk-registry-loading">
-        <Loader size="large" />
+        <Loader size="lg" />
         <p>Loading KvK registry data...</p>
       </div>
     );

@@ -3,7 +3,8 @@
  * Application settings with external documentation links and translation management
  */
 
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { BookOpen, ExternalLink, FileText, Globe, HelpCircle } from './icons';
 import type React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -136,7 +137,7 @@ const Settings: React.FC = () => {
               </ul>
             </div>
             <div className="translation-action">
-              <Button themeColor="primary" size="large" onClick={handleLokaliseClick} icon="globe">
+              <Button color="blue" size="lg" onClick={handleLokaliseClick} leftSection="globe">
                 <Globe size={18} style={{ marginRight: '8px' }} />
                 {t('settings.openLokalise', 'Open Lokalise')}
               </Button>

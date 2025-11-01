@@ -1,5 +1,6 @@
-import { Button } from '@progress/kendo-react-buttons';
-import { Input, MaskedTextBox } from '@progress/kendo-react-inputs';
+import { Button, TextInput } from '@mantine/core';
+
+import { MaskedTextBox } from '@progress/kendo-react-inputs';
 import { Error, Hint, Label } from '@progress/kendo-react-labels';
 import type React from 'react';
 import { useState } from 'react';
@@ -152,9 +153,9 @@ export const MemberRegistrationWizard: React.FC = () => {
               Organization ID
               <HelpTooltip content={helpContent.orgId} dataTestId="org-id-help" />
             </Label>
-            <Input
+            <TextInput
               value={formData.org_id}
-              onChange={(e) => handleFieldChange('org_id', e.value || '')}
+              onChange={(e) => handleFieldChange('org_id', e.target.value || '')}
               onBlur={() => handleBlur('org_id')}
               placeholder="org:company-name"
               required
@@ -170,9 +171,9 @@ export const MemberRegistrationWizard: React.FC = () => {
               Legal Name
               <HelpTooltip content={helpContent.legalName} dataTestId="legal-name-help" />
             </Label>
-            <Input
+            <TextInput
               value={formData.legal_name}
-              onChange={(e) => handleFieldChange('legal_name', e.value || '')}
+              onChange={(e) => handleFieldChange('legal_name', e.target.value || '')}
               onBlur={() => handleBlur('legal_name')}
               placeholder="Company Legal Name BV"
               required
@@ -188,9 +189,9 @@ export const MemberRegistrationWizard: React.FC = () => {
               Domain
               <HelpTooltip content={helpContent.domain} dataTestId="domain-help" />
             </Label>
-            <Input
+            <TextInput
               value={formData.domain}
-              onChange={(e) => handleFieldChange('domain', e.value || '')}
+              onChange={(e) => handleFieldChange('domain', e.target.value || '')}
               onBlur={() => handleBlur('domain')}
               placeholder="company.com"
               required
@@ -221,7 +222,7 @@ export const MemberRegistrationWizard: React.FC = () => {
             </Label>
             <MaskedTextBox
               value={formData.lei}
-              onChange={(e) => handleFieldChange('lei', e.value || '')}
+              onChange={(e) => handleFieldChange('lei', e.target.value || '')}
               onBlur={() => handleBlur('lei')}
               mask="AAAAAAAAAAAAAAAAAAAA"
               placeholder="20 character LEI code"
@@ -239,7 +240,7 @@ export const MemberRegistrationWizard: React.FC = () => {
             </Label>
             <MaskedTextBox
               value={formData.kvk}
-              onChange={(e) => handleFieldChange('kvk', e.value || '')}
+              onChange={(e) => handleFieldChange('kvk', e.target.value || '')}
               onBlur={() => handleBlur('kvk')}
               mask="00000000"
               placeholder="12345678"
@@ -319,7 +320,7 @@ export const MemberRegistrationWizard: React.FC = () => {
       <StepperForm steps={steps} onComplete={handleComplete} formData={formData} />
 
       <div className="wizard-footer">
-        <Button onClick={() => navigate('/members')} fillMode="flat">
+        <Button onClick={() => navigate('/members')} variant="subtle">
           Cancel Registration
         </Button>
       </div>

@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Grid, GridColumn as Column, GridCellProps, GridNoRecords } from '@progress/kendo-react-grid';
-import { Button } from '@progress/kendo-react-buttons';
-import { Loader } from '@progress/kendo-react-indicators';
+import { Button } from '@mantine/core';
+
+
 import Breadcrumb from '../components/Breadcrumb';
 import EmptyState from '../components/EmptyState';
 
@@ -94,8 +95,8 @@ const Bookings: React.FC = () => {
       <td>
         {booking.processingStatus === 'pending' ? (
           <Button
-            themeColor="primary"
-            size="small"
+            color="blue"
+            size="sm"
             onClick={() => navigate(`/validate/${booking.id}`)}
             aria-label={`Validate booking ${booking.carrierBookingReference || booking.documentNumber}`}
           >
@@ -104,7 +105,7 @@ const Bookings: React.FC = () => {
         ) : (
           <Button
             themeColor="base"
-            size="small"
+            size="sm"
             onClick={() => navigate(`/validate/${booking.id}`)}
             aria-label={`View booking ${booking.carrierBookingReference || booking.documentNumber}`}
           >
@@ -149,7 +150,7 @@ const Bookings: React.FC = () => {
         <h2>Bookings</h2>
         <div role="group" aria-label="Filter bookings by status" style={{ display: 'flex', gap: '8px' }}>
           <Button
-            themeColor={!statusFilter ? 'primary' : 'base'}
+            color={!statusFilter ? 'primary' : 'base' === 'error' ? 'red' : !statusFilter ? 'primary' : 'base' === 'success' ? 'green' : !statusFilter ? 'primary' : 'base' === 'warning' ? 'orange' : !statusFilter ? 'primary' : 'base' === 'info' ? 'cyan' : 'blue'}
             fillMode={!statusFilter ? 'solid' : 'flat'}
             onClick={() => navigate('/bookings')}
             aria-label="Show all bookings"
@@ -158,7 +159,7 @@ const Bookings: React.FC = () => {
             All
           </Button>
           <Button
-            themeColor={statusFilter === 'pending' ? 'primary' : 'base'}
+            color={statusFilter === 'pending' ? 'primary' : 'base' === 'error' ? 'red' : statusFilter === 'pending' ? 'primary' : 'base' === 'success' ? 'green' : statusFilter === 'pending' ? 'primary' : 'base' === 'warning' ? 'orange' : statusFilter === 'pending' ? 'primary' : 'base' === 'info' ? 'cyan' : 'blue'}
             fillMode={statusFilter === 'pending' ? 'solid' : 'flat'}
             onClick={() => navigate('/bookings?status=pending')}
             aria-label="Show pending bookings"
@@ -167,7 +168,7 @@ const Bookings: React.FC = () => {
             Pending
           </Button>
           <Button
-            themeColor={statusFilter === 'validated' ? 'primary' : 'base'}
+            color={statusFilter === 'validated' ? 'primary' : 'base' === 'error' ? 'red' : statusFilter === 'validated' ? 'primary' : 'base' === 'success' ? 'green' : statusFilter === 'validated' ? 'primary' : 'base' === 'warning' ? 'orange' : statusFilter === 'validated' ? 'primary' : 'base' === 'info' ? 'cyan' : 'blue'}
             fillMode={statusFilter === 'validated' ? 'solid' : 'flat'}
             onClick={() => navigate('/bookings?status=validated')}
             aria-label="Show validated bookings"
@@ -181,7 +182,7 @@ const Bookings: React.FC = () => {
       <div className="card">
         {loading ? (
           <div style={{ textAlign: 'center', padding: '60px' }}>
-            <Loader size="large" type="infinite-spinner" />
+            <Loader size="lg" type="infinite-spinner" />
             <p style={{ color: '#64748b', marginTop: '16px' }}>Loading bookings...</p>
           </div>
         ) : error ? (
@@ -189,7 +190,7 @@ const Bookings: React.FC = () => {
             <div style={{ color: '#ef4444', fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
             <h3 style={{ color: '#ef4444', marginBottom: '8px' }}>Error Loading Bookings</h3>
             <p style={{ color: '#64748b', marginBottom: '24px' }}>{error}</p>
-            <Button themeColor="primary" onClick={loadBookings}>
+            <Button color="blue" onClick={loadBookings}>
               Retry
             </Button>
           </div>

@@ -4,10 +4,11 @@
  */
 
 import React, { useState } from 'react';
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { Form, Field, FormElement, FieldWrapper } from '@progress/kendo-react-form';
-import { Input, TextArea, Checkbox } from '@progress/kendo-react-inputs';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
+
+
 import { Label, Error, Hint } from '@progress/kendo-react-labels';
 import { KvKDocumentUpload } from './KvKDocumentUpload';
 
@@ -236,7 +237,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     Cancel
                   </Button>
                   <Button
-                    themeColor="primary"
+                    color="blue"
                     onClick={handleNext}
                     disabled={
                       !formRenderProps.valueGetter('legalName') ||
@@ -293,7 +294,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     Previous
                   </Button>
                   <Button
-                    themeColor="primary"
+                    color="blue"
                     onClick={handleNext}
                     disabled={
                       !formRenderProps.valueGetter('contactName') ||
@@ -370,7 +371,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     Previous
                   </Button>
                   <Button
-                    themeColor="primary"
+                    color="blue"
                     type="submit"
                     disabled={
                       loading ||

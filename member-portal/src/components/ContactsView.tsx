@@ -1,4 +1,5 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { Dialog } from '@progress/kendo-react-dialogs';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -116,7 +117,7 @@ export const ContactsView: React.FC<ComponentProps> = ({
           <h2>Contacts</h2>
           <p className="page-subtitle">Manage your organization's contact persons</p>
         </div>
-        <Button themeColor="primary" onClick={handleAdd}>
+        <Button color="blue" onClick={handleAdd}>
           Add Contact
         </Button>
       </div>
@@ -162,7 +163,7 @@ export const ContactsView: React.FC<ComponentProps> = ({
                   </td>
                   <td>
                     <div className="table-actions">
-                      <Button size="small" onClick={() => handleEdit(contact)}>
+                      <Button size="sm" onClick={() => handleEdit(contact)}>
                         Edit
                       </Button>
                     </div>
@@ -303,7 +304,7 @@ export const ContactsView: React.FC<ComponentProps> = ({
               <Button type="button" onClick={() => setShowDialog(false)}>
                 Cancel
               </Button>
-              <Button type="submit" themeColor="primary">
+              <Button type="submit" color="blue">
                 Save Contact
               </Button>
             </div>

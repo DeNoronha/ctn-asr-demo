@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Button } from '@progress/kendo-react-buttons';
-import { Input } from '@progress/kendo-react-inputs';
+import { Button } from '@mantine/core';
+
+
 import { Label, Error as ErrorLabel, Hint } from '@progress/kendo-react-labels';
 import type { ComponentProps } from '../types';
 
@@ -169,10 +170,10 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
         <div className="form-field">
           <Label>Domain Name</Label>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <Input
+            <TextInput
               value={domain}
               onChange={(e) => {
-                setDomain(e.value || '');
+                setDomain(e.target.value || '');
                 setError(null);
               }}
               placeholder="company.com"
@@ -181,7 +182,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
             />
             <Button
               onClick={handleGenerateToken}
-              themeColor="primary"
+              color="blue"
               disabled={loading || !domain.trim()}
             >
               {loading ? 'Generating...' : 'Generate Token'}
@@ -227,7 +228,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
                     <div className="copy-field">
                       <code>{token.recordName}</code>
                       <Button
-                        fillMode="flat"
+                        variant="subtle"
                         onClick={() => copyToClipboard(token.recordName, 'Record name')}
                       >
                         📋 Copy
@@ -240,7 +241,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
                     <div className="copy-field">
                       <code>{token.token}</code>
                       <Button
-                        fillMode="flat"
+                        variant="subtle"
                         onClick={() => copyToClipboard(token.token, 'Token value')}
                       >
                         📋 Copy
@@ -265,7 +266,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
                 <div style={{ marginTop: '16px' }}>
                   <Button
                     onClick={() => handleVerifyToken(token.tokenId)}
-                    themeColor="primary"
+                    color="blue"
                     disabled={verifying === token.tokenId}
                   >
                     {verifying === token.tokenId ? 'Verifying...' : 'Verify DNS Record'}

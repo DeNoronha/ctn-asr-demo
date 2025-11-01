@@ -1,7 +1,8 @@
-import { Button } from '@progress/kendo-react-buttons';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
+import { Button, Select, Loader } from '@mantine/core';
+
+
 import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-import { Loader } from '@progress/kendo-react-indicators';
+
 import { Upload, type UploadOnAddEvent } from '@progress/kendo-react-upload';
 import { AlertTriangle, CheckCircle, FileText, FolderOpen, XCircle } from './icons';
 import type React from 'react';
@@ -185,7 +186,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
       <td>
         {props.dataItem.document_url && (
           <a href={props.dataItem.document_url} target="_blank" rel="noopener noreferrer">
-            <Button fillMode="flat" size="small" title="View document">
+            <Button variant="subtle" size="sm" title="View document">
               <FileText size={16} />
             </Button>
           </a>
@@ -217,7 +218,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
           <div className="verification-upload-section">
             <div className="form-field">
               <label>Select Identifier to Verify</label>
-              <DropDownList
+              <Select
                 data={identifierOptions}
                 textField="displayText"
                 dataItemKey="legal_entity_reference_id"
@@ -225,7 +226,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
                   (opt) =>
                     opt.legal_entity_reference_id === selectedIdentifier?.legal_entity_reference_id
                 )}
-                onChange={(e) => handleIdentifierChange(e.value)}
+                onChange={(value) => handleIdentifierChange(value)}
                 style={{ width: '100%' }}
               />
             </div>
@@ -260,7 +261,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
 
                 {uploading && (
                   <div className="upload-progress">
-                    <Loader size="small" />
+                    <Loader size="sm" />
                     <span>Uploading and verifying document...</span>
                   </div>
                 )}
@@ -281,7 +282,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
             <h4>Verification History</h4>
             {loading ? (
               <div className="loading-state">
-                <Loader size="medium" />
+                <Loader size="md" />
               </div>
             ) : verificationRecords.length > 0 ? (
               <Grid data={verificationRecords} style={{ height: '400px' }}>
@@ -303,7 +304,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
                 icon={<FolderOpen size={32} />}
                 message="No verification records yet"
                 hint="Upload documents to verify identifiers"
-                size="small"
+                size="sm"
               />
             )}
           </div>

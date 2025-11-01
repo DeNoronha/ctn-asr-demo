@@ -1,4 +1,5 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 // ErrorBoundary.tsx - Error boundary with retry functionality
 import type React from 'react';
 import { Component, type ReactNode } from 'react';
@@ -68,7 +69,7 @@ class ErrorBoundary extends Component<Props, State> {
               {this.state.error?.message || 'An unexpected error occurred'}
             </p>
             <div className="error-actions">
-              <Button themeColor="primary" icon="refresh" onClick={this.handleReset}>
+              <Button color="blue" leftSection="refresh" onClick={this.handleReset}>
                 Try Again
               </Button>
               <Button onClick={() => window.location.reload()}>Reload Page</Button>

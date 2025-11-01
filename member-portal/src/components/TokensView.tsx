@@ -1,4 +1,5 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { Dialog } from '@progress/kendo-react-dialogs';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -102,7 +103,7 @@ export const TokensView: React.FC<ComponentProps> = ({
           <h2>API Tokens</h2>
           <p className="page-subtitle">Generate and manage your API authentication tokens</p>
         </div>
-        <Button themeColor="primary" onClick={handleGenerateToken} disabled={generating}>
+        <Button color="blue" onClick={handleGenerateToken} disabled={generating}>
           {generating ? 'Generating...' : 'Generate New Token'}
         </Button>
       </div>
@@ -222,7 +223,7 @@ export const TokensView: React.FC<ComponentProps> = ({
           </div>
 
           <div className="k-form-buttons k-justify-content-end">
-            <Button onClick={copyToClipboard} themeColor="primary">
+            <Button onClick={copyToClipboard} color="blue">
               Copy to Clipboard
             </Button>
             <Button

@@ -1,8 +1,9 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button, TextInput, Textarea, Checkbox } from '@mantine/core';
+
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-import { Input, TextArea } from '@progress/kendo-react-inputs';
-import { Checkbox } from '@progress/kendo-react-inputs';
+
+
 import { Key, Plus, Trash2, Copy, AlertTriangle } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -269,7 +270,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
       <td>
         <div className="actions-cell">
           <Button
-            size="small"
+            size="sm"
             onClick={() => handleGenerateSecret(props.dataItem)}
             disabled={loading || !props.dataItem.is_active}
             title="Generate new secret"
@@ -278,8 +279,8 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
             <Key size={16} /> New Secret
           </Button>
           <Button
-            size="small"
-            fillMode="flat"
+            size="sm"
+            variant="subtle"
             onClick={() => {
               setSelectedClient(props.dataItem);
               setShowDeleteDialog(true);
@@ -299,7 +300,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
     <div className="identifiers-manager">
       <div className="section-header">
         <h3>API Clients (M2M Authentication)</h3>
-        <Button themeColor="primary" onClick={() => setShowAddDialog(true)} disabled={loading}>
+        <Button color="blue" onClick={() => setShowAddDialog(true)} disabled={loading}>
           <Plus size={16} /> Add M2M Client
         </Button>
       </div>
@@ -338,18 +339,18 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
           <div className="identifier-form">
             <div className="form-field">
               <label>Client Name *</label>
-              <Input
+              <TextInput
                 value={formData.client_name}
-                onChange={(e) => setFormData({ ...formData, client_name: e.value })}
+                onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
                 placeholder="e.g., Container Tracking System"
               />
             </div>
 
             <div className="form-field">
               <label>Description</label>
-              <TextArea
+              <Textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.value })}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Brief description of this client application"
                 rows={3}
               />
@@ -362,7 +363,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
                   <label key={scope.value} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Checkbox
                       checked={formData.scopes.includes(scope.value)}
-                      onChange={() => handleScopeToggle(scope.value)}
+                      onChange={() => handleScopeToggle(scope.target.value)}
                     />
                     <span>{scope.label}</span>
                   </label>
@@ -374,7 +375,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
           <DialogActionsBar>
             <Button onClick={() => setShowAddDialog(false)}>Cancel</Button>
             <Button
-              themeColor="primary"
+              color="blue"
               onClick={handleAddClient}
               disabled={!formData.client_name || formData.scopes.length === 0 || loading}
             >
@@ -426,7 +427,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
                 >
                   {selectedClient.azure_client_id}
                 </code>
-                <Button size="small" onClick={() => copyToClipboard(selectedClient.azure_client_id)}>
+                <Button size="sm" onClick={() => copyToClipboard(selectedClient.azure_client_id)}>
                   <Copy size={14} /> Copy
                 </Button>
               </div>
@@ -448,7 +449,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
                 >
                   {generatedSecret}
                 </code>
-                <Button size="small" themeColor="primary" onClick={() => copyToClipboard(generatedSecret)}>
+                <Button size="sm" color="blue" onClick={() => copyToClipboard(generatedSecret)}>
                   <Copy size={14} /> Copy
                 </Button>
               </div>
@@ -457,7 +458,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
 
           <DialogActionsBar>
             <Button
-              themeColor="primary"
+              color="blue"
               onClick={() => {
                 setShowSecretDialog(false);
                 setGeneratedSecret('');

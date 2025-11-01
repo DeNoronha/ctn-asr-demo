@@ -21,6 +21,8 @@
 		"test:e2e:report": "playwright show-report"
 	},
 	"dependencies": {
+		"@mantine/core": "^7.17.8",
+		"@mantine/hooks": "^7.17.8",
 		"@progress/kendo-data-query": "^1.7.1",
 		"@progress/kendo-date-math": "^1.5.15",
 		"@progress/kendo-drawing": "^1.22.1",
@@ -48,12 +50,15 @@
 		"@progress/kendo-svg-icons": "^3.3.0",
 		"@progress/kendo-theme-default": "^8.0.0",
 		"@tanstack/react-query": "^5.32.0",
+		"@tanstack/react-table": "^8.21.3",
 		"axios": "^1.12.2",
 		"date-fns": "^3.6.0",
 		"lucide-react": "^0.545.0",
+		"mantine-react-table": "^2.0.0-beta.9",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"react-router-dom": "^7.9.3",
+		"recharts": "^3.3.0",
 		"zustand": "^4.5.2"
 	},
 	"devDependencies": {

@@ -1,4 +1,5 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { Stepper } from '@progress/kendo-react-layout';
 import type React from 'react';
 import { useState } from 'react';
@@ -63,7 +64,7 @@ export const StepperForm = <T = Record<string, unknown>>({
         <Button onClick={handleBack} disabled={currentStep === 0} type="button">
           Back
         </Button>
-        <Button onClick={handleNext} themeColor="primary" type="button">
+        <Button onClick={handleNext} color="blue" type="button">
           {currentStep === steps.length - 1 ? 'Complete' : 'Next'}
         </Button>
       </div>

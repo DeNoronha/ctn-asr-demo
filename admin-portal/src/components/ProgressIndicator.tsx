@@ -1,4 +1,4 @@
-import { ProgressBar } from '@progress/kendo-react-progressbars';
+import { Progress } from '@mantine/core';
 // ProgressIndicator.tsx - Progress bar for long operations
 import type React from 'react';
 import './ProgressIndicator.css';
@@ -41,7 +41,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
       aria-busy={variant === 'indeterminate' ? 'true' : 'false'}
     >
       {label && <div className="progress-label" aria-hidden="true">{label}</div>}
-      <ProgressBar
+      <Progress
         value={variant === 'determinate' ? value : undefined}
         animation={variant === 'indeterminate'}
       />

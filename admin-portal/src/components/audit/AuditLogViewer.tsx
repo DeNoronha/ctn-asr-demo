@@ -4,8 +4,9 @@
  */
 
 import { type State, process } from '@progress/kendo-data-query';
-import { Button } from '@progress/kendo-react-buttons';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
+import { Button, Select } from '@mantine/core';
+
+
 import {
   Grid,
   GridColumn,
@@ -172,11 +173,11 @@ const AuditLogViewer: React.FC = () => {
             </div>
           </div>
           <div className="header-actions">
-            <Button onClick={loadLogs} fillMode="outline">
+            <Button onClick={loadLogs} variant="outline">
               <RefreshCw size={18} style={{ marginRight: 8 }} />
               Refresh
             </Button>
-            <Button themeColor="primary" onClick={handleExport}>
+            <Button color="blue" onClick={handleExport}>
               <Download size={18} style={{ marginRight: 8 }} />
               Export Logs
             </Button>
@@ -209,22 +210,22 @@ const AuditLogViewer: React.FC = () => {
         <div className="filters-panel">
           <div className="filter-group">
             <label>Action Type</label>
-            <DropDownList
+            <Select
               data={actions}
               value={selectedAction}
-              onChange={(e) => setSelectedAction(e.value)}
+              onChange={(value) => setSelectedAction(value)}
             />
           </div>
           <div className="filter-group">
             <label>Target Type</label>
-            <DropDownList
+            <Select
               data={targetTypes}
               value={selectedTargetType}
-              onChange={(e) => setSelectedTargetType(e.value)}
+              onChange={(value) => setSelectedTargetType(value)}
             />
           </div>
           <div className="filter-actions">
-            <Button onClick={handleClearFilters} fillMode="flat">
+            <Button onClick={handleClearFilters} variant="subtle">
               Clear Filters
             </Button>
           </div>

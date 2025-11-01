@@ -1,4 +1,5 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { Dialog } from '@progress/kendo-react-dialogs';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -126,7 +127,7 @@ export const EndpointsView: React.FC<ComponentProps> = ({
           <h2>Data Endpoints</h2>
           <p className="page-subtitle">Manage your organization's data endpoints</p>
         </div>
-        <Button themeColor="primary" onClick={handleAdd}>
+        <Button color="blue" onClick={handleAdd}>
           Add Endpoint
         </Button>
       </div>
@@ -276,7 +277,7 @@ export const EndpointsView: React.FC<ComponentProps> = ({
               <Button type="button" onClick={() => setShowDialog(false)}>
                 Cancel
               </Button>
-              <Button type="submit" themeColor="primary">
+              <Button type="submit" color="blue">
                 Create Endpoint
               </Button>
             </div>

@@ -1,4 +1,5 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
 // MemberDetailDialog.tsx - Modal for member details and editing
@@ -221,11 +222,11 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
                 </div>
 
                 <div className="detail-actions">
-                  <Button themeColor="primary" onClick={() => setIsEditing(true)}>
+                  <Button color="blue" onClick={() => setIsEditing(true)}>
                     Edit Member
                   </Button>
                   <Button
-                    themeColor="success"
+                    color="green"
                     onClick={handleIssueToken}
                     disabled={member.status !== 'ACTIVE'}
                   >
@@ -333,7 +334,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
               <p>Issue and manage access tokens for this member.</p>
               <div className="token-actions">
                 <Button
-                  themeColor="primary"
+                  color="blue"
                   onClick={handleIssueToken}
                   disabled={member.status !== 'ACTIVE'}
                 >

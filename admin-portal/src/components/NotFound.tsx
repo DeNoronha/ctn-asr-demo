@@ -1,4 +1,5 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button } from '@mantine/core';
+
 import { Home, Search } from './icons';
 import type React from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -18,16 +19,16 @@ const NotFound: React.FC = () => {
 
         <div className="action-buttons">
           <Button
-            themeColor="primary"
-            size="large"
+            color="blue"
+            size="lg"
             onClick={() => navigate('/')}
           >
             <Home size={18} style={{ marginRight: '0.5rem' }} />
             Go to Dashboard
           </Button>
           <Button
-            fillMode="outline"
-            size="large"
+            variant="outline"
+            size="lg"
             onClick={() => navigate(-1)}
           >
             <Search size={18} style={{ marginRight: '0.5rem' }} />

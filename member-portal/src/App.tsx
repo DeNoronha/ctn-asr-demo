@@ -6,13 +6,27 @@ import {
   useMsal,
 } from '@azure/msal-react';
 import { Fade } from '@progress/kendo-react-animation';
-import { Button } from '@progress/kendo-react-buttons';
+
 import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
 import React, { useEffect, useState } from 'react';
+
+// Mantine imports
+import { MantineProvider, createTheme } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
+import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
+import '@mantine/dates/styles.css';
 
 import './kendoLicense';
 import '@progress/kendo-theme-default/dist/all.css';
 import './App.css';
+
+// Mantine theme configuration
+const theme = createTheme({
+  primaryColor: 'blue',
+  defaultRadius: 'md',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+});
 
 import { APIAccessView } from './components/APIAccessView';
 import { ContactsView } from './components/ContactsView';
@@ -245,7 +259,7 @@ function AppContent({ instance }: AppContentProps) {
               <div className="user-info">
                 <span className="user-name">{accounts[0]?.name || accounts[0]?.username}</span>
                 <Button
-                  fillMode="flat"
+                  variant="subtle"
                   onClick={handleLogout}
                   title="Sign out"
                   className="logout-button"
@@ -326,17 +340,17 @@ function AppContent({ instance }: AppContentProps) {
               <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '24px' }}>
                 <Button
                   onClick={handleLogin}
-                  themeColor="primary"
-                  size="large"
+                  color="blue"
+                  size="lg"
                   className="login-button"
                 >
                   Sign In with Azure AD
                 </Button>
                 <Button
                   onClick={() => setShowRegistration(true)}
-                  size="large"
-                  fillMode="outline"
-                  themeColor="primary"
+                  size="lg"
+                  variant="outline"
+                  color="blue"
                   className="register-button"
                 >
                   Register as Member
@@ -372,7 +386,7 @@ function AppContent({ instance }: AppContentProps) {
               </p>
               <Button
                 onClick={() => window.location.reload()}
-                themeColor="primary"
+                color="blue"
                 style={{ marginTop: '16px' }}
               >
                 Refresh Page
@@ -435,9 +449,12 @@ interface AppProps {
 
 function App({ instance }: AppProps) {
   return (
-    <MsalProvider instance={instance}>
-      <AppContent instance={instance} />
-    </MsalProvider>
+    <MantineProvider theme={theme}>
+      <Notifications position="top-right" zIndex={10001} />
+      <MsalProvider instance={instance}>
+        <AppContent instance={instance} />
+      </MsalProvider>
+    </MantineProvider>
   );
 }
 

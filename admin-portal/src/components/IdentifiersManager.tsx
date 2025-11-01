@@ -1,8 +1,9 @@
-import { Button } from '@progress/kendo-react-buttons';
+import { Button, TextInput, Select } from '@mantine/core';
+
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { DropDownList } from '@progress/kendo-react-dropdowns';
+
 import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-import { Input } from '@progress/kendo-react-inputs';
+
 import axios from 'axios';
 import {
   AlertCircle,
@@ -624,8 +625,8 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     return (
       <td className="actions-cell">
         <Button
-          fillMode="flat"
-          size="small"
+          variant="subtle"
+          size="sm"
           title="Edit identifier"
           aria-label={`Edit ${props.dataItem.identifier_type} identifier`}
           onClick={() => handleEdit(props.dataItem)}
@@ -635,8 +636,8 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
           <Pencil size={16} />
         </Button>
         <Button
-          fillMode="flat"
-          size="small"
+          variant="subtle"
+          size="sm"
           title="Delete identifier"
           aria-label={`Delete ${props.dataItem.identifier_type} identifier`}
           onClick={() => handleDeleteClick(props.dataItem)}
@@ -676,7 +677,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
         <h3>Legal Identifiers</h3>
         <div style={{ display: 'flex', gap: '8px' }}>
           <Button
-            themeColor="info"
+            color="cyan"
             onClick={handleFetchLei}
             disabled={fetchingLei || identifiers.length === 0}
             title="Fetch LEI from GLEIF API"
@@ -685,7 +686,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
             {fetchingLei ? 'Fetching...' : 'Fetch LEI'}
           </Button>
           <Button
-            themeColor="primary"
+            color="blue"
             onClick={handleAdd}
             aria-label="Add new identifier"
           >
@@ -755,9 +756,9 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
                 Country Code *
                 <HelpTooltip content={helpContent.identifierCountry} dataTestId="country-code-help" />
               </label>
-              <Input
+              <TextInput
                 value={formData.country_code || ''}
-                onChange={(e) => handleCountryCodeChange(e.value)}
+                onChange={(e) => handleCountryCodeChange(e.target.value)}
                 placeholder="e.g., NL, DE, BE, FR, GB"
                 maxLength={2}
               />
@@ -771,10 +772,10 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
                 Identifier Type *
                 <HelpTooltip content={helpContent.identifierType} dataTestId="identifier-type-help" />
               </label>
-              <DropDownList
+              <Select
                 data={availableIdentifierTypes}
                 value={formData.identifier_type}
-                onChange={(e) => handleIdentifierTypeChange(e.value)}
+                onChange={(e) => handleIdentifierTypeChange(e.target.value)}
                 disabled={!formData.country_code || availableIdentifierTypes.length === 0}
                 defaultItem={formData.country_code ? 'Select type...' : 'Enter country code first'}
               />
@@ -805,10 +806,10 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
                 Identifier Value *
                 <HelpTooltip content={helpContent.identifierValue} dataTestId="identifier-value-help" />
               </label>
-              <Input
+              <TextInput
                 id="identifier_value"
                 value={formData.identifier_value || ''}
-                onChange={(e) => handleIdentifierValueChange(e.value)}
+                onChange={(e) => handleIdentifierValueChange(e.target.value)}
                 placeholder="Enter identifier value"
                 className={
                   validationError
@@ -838,9 +839,9 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
             <ConditionalField show={!!formData.identifier_type}>
               <div className="form-field">
                 <label>Registry Name</label>
-                <Input
+                <TextInput
                   value={formData.registry_name || ''}
-                  onChange={(e) => setFormData({ ...formData, registry_name: e.value })}
+                  onChange={(e) => setFormData({ ...formData, registry_name: e.target.value })}
                   placeholder="Auto-populated based on identifier type"
                 />
                 <span className="field-hint">Auto-populated when identifier type is selected</span>
@@ -848,9 +849,9 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
 
               <div className="form-field">
                 <label>Registry URL</label>
-                <Input
+                <TextInput
                   value={formData.registry_url || ''}
-                  onChange={(e) => setFormData({ ...formData, registry_url: e.value })}
+                  onChange={(e) => setFormData({ ...formData, registry_url: e.target.value })}
                   placeholder="Auto-populated based on identifier type"
                 />
                 <span className="field-hint">Auto-populated when identifier type is selected</span>
@@ -860,18 +861,18 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
             <ConditionalField show={!!formData.identifier_value && !!formData.identifier_type}>
               <div className="form-field">
                 <label>Validation Status</label>
-                <DropDownList
+                <Select
                   data={VALIDATION_STATUSES}
                   value={formData.validation_status}
-                  onChange={(e) => setFormData({ ...formData, validation_status: e.value })}
+                  onChange={(e) => setFormData({ ...formData, validation_status: e.target.value })}
                 />
               </div>
 
               <div className="form-field">
                 <label>Verification Notes</label>
-                <Input
+                <TextInput
                   value={formData.verification_notes || ''}
-                  onChange={(e) => setFormData({ ...formData, verification_notes: e.value })}
+                  onChange={(e) => setFormData({ ...formData, verification_notes: e.target.value })}
                   placeholder="Any notes about verification"
                 />
               </div>
@@ -881,7 +882,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
           <DialogActionsBar>
             <Button onClick={handleCancel}>Cancel</Button>
             <Button
-              themeColor="primary"
+              color="blue"
               onClick={handleSave}
               disabled={
                 !isValidIdentifier || !formData.identifier_type || !formData.identifier_value
