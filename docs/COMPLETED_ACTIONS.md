@@ -4,6 +4,11 @@ This file tracks all completed work in chronological order (most recent first).
 
 | Date | Description |
 |------|-------------|
+|| 2025-11-01 | Admin Portal: Members grid pagination fixes — snap to last valid page after data changes; disable client-side sorting; hide client-side search/filters when server paging is active. |
+|| 2025-11-01 | Admin Portal (DA-010): Standardized success toasts for token flows — EndpointManagement token copy uses “Token copied”; token issuance dialog confirmation; M2MClientsManager uses “M2M client created” and “Token revoked”. |
+|| 2025-11-01 | Admin Portal: Health Monitor cleanup — simplified header, environment label from VITE_ENVIRONMENT_NAME, conditional rendering of checks, removed external quick links block. |
+|| 2025-11-01 | Admin Portal: Contacts tab UX — compact grid density, auto-height (no fixed height), single-line cell sanitization, clearer labels/placeholders in ContactForm. |
+|| 2025-11-01 | Admin Portal: Sidebar cleanup — removed “Token Management” menu item (API access managed via dedicated tab). |
 | 2025-10-31 | Admin Portal: Fixed tier info load error on Member Detail → Authentication Tier tab by correcting Azure Functions v4 route param casing (legalentityid/tokenid). Deployed and API health verified. |
 | 2025-10-31 | Admin Portal: Removed sidebar separator under "Token Management". Cleaner sidepanel without stray line. |
 | 2025-10-31 | Admin Portal: Clarified Contact modal — added explicit required indicators (aria-required), removed placeholders, set proper autocomplete for First/Last name and Email. |
