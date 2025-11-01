@@ -109,6 +109,20 @@ git push origin main
 2. **E2E tests (Playwright)** - Only after API tests pass
 3. Test pattern: Create → Verify → Clean up
 
+**E2E Test User (MFA Excluded):**
+- Email: `test-e2@denoronha.consulting`
+- Password: `Madu5952`
+- Object ID: `7e093589-f654-4e53-9522-898995d1201b`
+- Role: SystemAdmin
+- Purpose: Automated Playwright tests without MFA interruption
+
+**E2E Test User (MFA Excluded):**
+- Email: `test-e2@denoronha.consulting`
+- Password: `Madu5952`
+- Object ID: `7e093589-f654-4e53-9522-898995d1201b`
+- Role: SystemAdmin
+- Purpose: Automated Playwright tests without MFA interruption
+
 **🚨 PIPELINE ARCHITECTURE (October 26, 2025) - 1 API + 4 Portals**
 
 **CTN-documentation is a SEPARATE repository** - Not in ASR monorepo.
@@ -491,7 +505,7 @@ Isolation:   NO dependencies on ASR, DocuFlow, or Orchestrator
 - API 404 → Check essential-index.ts imports
 - Auth errors → Verify scope: `api://{client-id}/.default`
 - DB connection → Check .credentials file first
-- Tests fail → Check web/e2e/MFA_WORKAROUND.md
+- E2E tests → Use test-e2@denoronha.consulting (MFA excluded)
 
 **Resources:**
 - Azure DevOps: https://dev.azure.com/ctn-demo/ASR

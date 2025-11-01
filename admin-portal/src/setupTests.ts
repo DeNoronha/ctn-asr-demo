@@ -3,3 +3,6 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
+
+// Import Kendo license to prevent warnings during tests
+import './kendoLicense';
