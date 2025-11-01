@@ -8,6 +8,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntity, type LegalEntityContact, type Member, api } from '../services/api';
 import { safeFormatDate } from '../utils/safeArray';
 import type { MemberFormData } from '../utils/validation';
+import { getStatusColor, getMembershipColor } from '../utils/colors';
 import { CompanyDetails } from './CompanyDetails';
 import { CompanyForm } from './CompanyForm';
 import { ContactsManager } from './ContactsManager';
@@ -131,26 +132,16 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
   };
 
   const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      ACTIVE: '#10b981',
-      PENDING: '#f59e0b',
-      SUSPENDED: '#ef4444',
-    };
     return (
-      <span className="detail-badge" style={{ backgroundColor: colors[status] || '#6b7280' }}>
+      <span className="detail-badge" style={{ backgroundColor: getStatusColor(status), color: '#ffffff' }}>
         {status}
       </span>
     );
   };
 
   const getMembershipBadge = (level: string) => {
-    const colors: Record<string, string> = {
-      PREMIUM: '#8b5cf6',
-      FULL: '#3b82f6',
-      BASIC: '#6b7280',
-    };
     return (
-      <span className="detail-badge" style={{ backgroundColor: colors[level] || '#9ca3af' }}>
+      <span className="detail-badge" style={{ backgroundColor: getMembershipColor(level), color: '#ffffff' }}>
         {level}
       </span>
     );

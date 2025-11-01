@@ -24,6 +24,8 @@ import { APIAccessManager } from './APIAccessManager';
 import { KvkDocumentUpload } from './KvkDocumentUpload';
 import { KvkRegistryDetails } from './KvkRegistryDetails';
 import { TierManagement } from './TierManagement';
+import { EmptyState } from './EmptyState';
+import { getEmptyState } from '../utils/emptyStates';
 import './MemberDetailView.css';
 
 interface MemberDetailViewProps {
@@ -351,7 +353,15 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
                     {getMembershipBadge(member.membership_level)}
                   </div>
                 </div>
-                <p className="empty-message">No company information available</p>
+                {(() => {
+                  const es = getEmptyState('generic', 'noData');
+                  return (
+                    <EmptyState
+                      message={es.message}
+                      hint={es.hint}
+                    />
+                  );
+                })()}
               </div>
             )}
           </div>
@@ -374,38 +384,29 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
                 onRefresh={handleRefreshIdentifiers}
               />
             ) : member.legal_entity_id ? (
-              <div className="info-section" style={{ textAlign: 'center', padding: '40px 20px' }}>
-                <h3>Legal Identifiers</h3>
-                <p className="empty-message" style={{ marginBottom: '20px' }}>
-                  No legal entity record found for this member
-                </p>
-                <p
-                  style={{
-                    color: '#6b7280',
-                    marginBottom: '30px',
-                    maxWidth: '600px',
-                    margin: '0 auto 30px',
-                  }}
-                >
-                  A legal entity is required to manage business identifiers like KVK, LEI, EORI, and
-                  VAT numbers. You can create one now using this member's information.
-                </p>
-                <Button themeColor="primary" onClick={handleCreateLegalEntity} disabled={loading}>
-                  <Plus size={16} />
-                  Create Legal Entity
-                </Button>
-              </div>
+              (() => {
+                const es = getEmptyState('identifier', 'noIdentifiers');
+                return (
+                  <div className="info-section" style={{ textAlign: 'center', padding: '40px 20px' }}>
+                    <h3>Legal Identifiers</h3>
+                    <EmptyState
+                      message={es.message}
+                      hint={es.hint}
+                      action={{ label: 'Create Legal Entity', onClick: handleCreateLegalEntity }}
+                    />
+                  </div>
+                );
+              })()
             ) : (
-              <div className="info-section" style={{ textAlign: 'center', padding: '40px 20px' }}>
-                <h3>Legal Identifiers</h3>
-                <p className="empty-message" style={{ color: '#dc2626', marginBottom: '20px' }}>
-                  This member has no legal entity ID configured
-                </p>
-                <p style={{ color: '#6b7280', maxWidth: '600px', margin: '0 auto' }}>
-                  Please contact your system administrator to link a legal entity to this member
-                  before managing identifiers.
-                </p>
-              </div>
+              (() => {
+                const es = getEmptyState('generic', 'noData');
+                return (
+                  <div className="info-section" style={{ textAlign: 'center', padding: '40px 20px' }}>
+                    <h3>Legal Identifiers</h3>
+                    <EmptyState message={es.message} hint={es.hint} />
+                  </div>
+                );
+              })()
             )}
           </div>
         </TabStripTab>
@@ -431,10 +432,15 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
                 legalEntityName={legalEntity.primary_legal_name || member.legal_name}
               />
             ) : (
-              <div className="info-section">
-                <h3>API Access</h3>
-                <p className="empty-message">No company linked to this member</p>
-              </div>
+              (() => {
+                const es = getEmptyState('generic', 'noData');
+                return (
+                  <div className="info-section">
+                    <h3>API Access</h3>
+                    <EmptyState message={es.message} hint={es.hint} />
+                  </div>
+                );
+              })()
             )}
           </div>
         </TabStripTab>
@@ -455,10 +461,15 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
                 onContactDelete={handleContactDelete}
               />
             ) : (
-              <div className="info-section">
-                <h3>Contact Information</h3>
-                <p className="empty-message">No company linked to this member</p>
-              </div>
+              (() => {
+                const es = getEmptyState('contact', 'noContacts');
+                return (
+                  <div className="info-section">
+                    <h3>Contact Information</h3>
+                    <EmptyState message={es.message} hint={es.hint} />
+                  </div>
+                );
+              })()
             )}
           </div>
         </TabStripTab>
@@ -481,10 +492,15 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
                 }}
               />
             ) : (
-              <div className="info-section">
-                <h3>Document Verification</h3>
-                <p className="empty-message">No company linked to this member</p>
-              </div>
+              (() => {
+                const es = getEmptyState('generic', 'noData');
+                return (
+                  <div className="info-section">
+                    <h3>Document Verification</h3>
+                    <EmptyState message={es.message} hint={es.hint} />
+                  </div>
+                );
+              })()
             )}
           </div>
         </TabStripTab>
@@ -494,10 +510,15 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
             {legalEntity ? (
               <TierManagement legalEntityId={legalEntity.legal_entity_id!} />
             ) : (
-              <div className="info-section">
-                <h3>Authentication Tier Management</h3>
-                <p className="empty-message">No company linked to this member</p>
-              </div>
+              (() => {
+                const es = getEmptyState('generic', 'noData');
+                return (
+                  <div className="info-section">
+                    <h3>Authentication Tier Management</h3>
+                    <EmptyState message={es.message} hint={es.hint} />
+                  </div>
+                );
+              })()
             )}
           </div>
         </TabStripTab>
@@ -508,10 +529,15 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
               {legalEntity ? (
                 <KvkRegistryDetails legalEntityId={legalEntity.legal_entity_id!} />
               ) : (
-                <div className="info-section">
-                  <h3>KvK Registry Data</h3>
-                  <p className="empty-message">No company linked to this member</p>
-                </div>
+                (() => {
+                  const es = getEmptyState('generic', 'noData');
+                  return (
+                    <div className="info-section">
+                      <h3>KvK Registry Data</h3>
+                      <EmptyState message={es.message} hint={es.hint} />
+                    </div>
+                  );
+                })()
               )}
             </div>
           </TabStripTab>

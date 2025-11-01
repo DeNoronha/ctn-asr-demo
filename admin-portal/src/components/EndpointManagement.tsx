@@ -13,6 +13,7 @@ import { helpContent } from '../config/helpContent';
 import './EndpointManagement.css';
 import { getEmptyState } from '../utils/emptyStates';
 import { endpointSuccessMessages, tokenSuccessMessages } from '../utils/successMessages';
+import { announceToScreenReader } from '../utils/aria';
 
 // Auth helper
 const getAccessToken = async (): Promise<string> => {
@@ -165,6 +166,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
         setShowTokenDialog(true);
         const msg = tokenSuccessMessages.generated();
         notification.showSuccess(msg.title);
+        try { announceToScreenReader('API token generated. Copy it now, it will not be shown again.', 'assertive'); } catch {}
       } else {
         notification.showError('Failed to issue token');
       }
@@ -180,6 +182,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
     navigator.clipboard.writeText(text);
     const msg = tokenSuccessMessages.copied();
     notification.showSuccess(msg.title);
+    try { announceToScreenReader('Token copied to clipboard.'); } catch {}
   };
 
   const StatusCell = (props: GridCellProps) => {

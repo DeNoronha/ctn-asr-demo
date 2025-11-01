@@ -36,6 +36,7 @@ import TasksGrid from './TasksGrid';
 import AuditLogViewer from './audit/AuditLogViewer';
 import UserManagement from './users/UserManagement';
 import './AdminPortal.css';
+import { TEXT_COLORS } from '../utils/colors';
 
 const AdminPortal: React.FC = () => {
   const { t } = useTranslation();
@@ -266,9 +267,9 @@ const AdminPortal: React.FC = () => {
             textAlign: 'center',
             padding: '2rem'
           }}>
-            <h2 style={{ fontSize: '3rem', color: '#667eea', marginBottom: '1rem' }}>404</h2>
+            <h2 style={{ fontSize: '3rem', color: TEXT_COLORS.info, marginBottom: '1rem' }}>404</h2>
             <h3>{t('errors.pageNotFound', 'Page Not Found')}</h3>
-            <p style={{ color: '#4a5568', marginBottom: '2rem' }}>
+            <p style={{ color: TEXT_COLORS.secondary, marginBottom: '2rem' }}>
               {t('errors.pageNotFoundMessage', 'The view you\'re looking for doesn\'t exist.')}
             </p>
             <Button

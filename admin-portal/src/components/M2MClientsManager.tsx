@@ -14,6 +14,7 @@ import { ConfirmDialog } from './ConfirmDialog';
 import { EmptyState } from './EmptyState';
 import { getEmptyState } from '../utils/emptyStates';
 import { tokenSuccessMessages } from '../utils/successMessages';
+import { announceToScreenReader } from '../utils/aria';
 import './IdentifiersManager.css';
 
 interface M2MClient {
@@ -166,6 +167,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
         setGeneratedSecret(data.client_secret);
         setShowSecretDialog(true);
         notification.showSuccess('New secret generated successfully');
+        try { announceToScreenReader('Client secret generated. Save this secret now; it will not be shown again.', 'assertive'); } catch {}
       } else {
         notification.showError('Failed to generate secret');
       }
@@ -211,6 +213,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
     navigator.clipboard.writeText(text);
     const msg = tokenSuccessMessages.copied();
     notification.showSuccess(msg.title);
+    try { announceToScreenReader('Copied to clipboard.'); } catch {}
   };
 
   const handleScopeToggle = (scope: string) => {
@@ -270,6 +273,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
             onClick={() => handleGenerateSecret(props.dataItem)}
             disabled={loading || !props.dataItem.is_active}
             title="Generate new secret"
+            aria-label={`Generate new secret for ${props.dataItem.client_name}`}
           >
             <Key size={16} /> New Secret
           </Button>
@@ -282,6 +286,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
             }}
             disabled={loading}
             title="Deactivate client"
+            aria-label={`Deactivate client ${props.dataItem.client_name}`}
           >
             <Trash2 size={16} />
           </Button>

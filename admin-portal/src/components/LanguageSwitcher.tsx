@@ -6,6 +6,7 @@ import {
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import './LanguageSwitcher.css';
+import { TEXT_COLORS, MEMBERSHIP_COLORS } from '../utils/colors';
 
 interface Language {
   code: string;
@@ -53,9 +54,9 @@ const LanguageSwitcher: React.FC = () => {
       display: 'flex',
       alignItems: 'center',
       gap: '8px',
-      color: isSelected ? '#ffffff' : '#1a1a1a',
+      color: isSelected ? '#ffffff' : TEXT_COLORS.primary,
       fontWeight: isSelected ? 600 : 500,
-      backgroundColor: isSelected ? '#0066B3' : '#ffffff',
+      backgroundColor: isSelected ? MEMBERSHIP_COLORS.FULL : '#ffffff',
       padding: '8px 12px',
       width: '100%',
     };
@@ -67,7 +68,7 @@ const LanguageSwitcher: React.FC = () => {
         <span className="language-flag" aria-hidden="true">
           {language.flag}
         </span>
-        <span className="language-name" style={{ color: isSelected ? '#ffffff' : '#1a1a1a' }}>
+        <span className="language-name" style={{ color: isSelected ? '#ffffff' : TEXT_COLORS.primary }}>
           {language.name}
         </span>
       </span>
@@ -84,7 +85,7 @@ const LanguageSwitcher: React.FC = () => {
         <span className="language-flag" aria-hidden="true">
           {value.flag}
         </span>
-        <span className="language-name" style={{ color: '#1a1a1a', fontWeight: 500 }}>
+        <span className="language-name" style={{ color: TEXT_COLORS.primary, fontWeight: 500 }}>
           {value.name}
         </span>
       </span>
