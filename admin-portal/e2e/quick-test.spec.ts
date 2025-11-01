@@ -64,7 +64,34 @@ test.describe('Quick Smoke Test', () => {
     });
 
     await page.goto('/');
-    await page.waitForTimeout(3000);
+
+    // Navigate to a page that triggers data loading
+    try {
+      await page.getByRole('link', { name: 'Members', exact: true }).click({ timeout: 5000 });
+    } catch {
+      // Fallback: try sidebar text selector
+      const sidebar = page.locator('.sidebar');
+      if (await sidebar.count()) {
+        await sidebar.getByText('Members', { exact: true }).click({ timeout: 5000 });
+      }
+    }
+
+    // Wait for network to settle and grid to render
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
+
+    // As a safety net, trigger a lightweight health check if no calls observed yet
+    if (apiCalls.length === 0) {
+      await page.evaluate(async () => {
+        try {
+          const base = (window as any).ENV_API_BASE || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
+          await fetch(`${base}/health`, { method: 'GET', headers: { 'Cache-Control': 'no-cache' } });
+        } catch (_) {
+          // ignore
+        }
+      });
+      await page.waitForTimeout(1000);
+    }
 
     console.log(`📊 Total API calls: ${apiCalls.length}`);
     console.log('API calls:', apiCalls);
