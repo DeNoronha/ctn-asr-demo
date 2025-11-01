@@ -696,7 +696,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
       </div>
 
       {identifiers.length > 0 ? (
-        <Grid data={identifiers} style={{ height: '450px' }}>
+        <Grid data={identifiers} style={{ height: '450px' }} navigatable={true}>
           <GridColumn field="identifier_type" title="Type" width="100px" />
           <GridColumn
             field="identifier_value"

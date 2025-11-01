@@ -242,7 +242,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
           );
         })()
       ) : (
-        <Grid data={endpoints} style={{ height: '500px' }}>
+        <Grid data={endpoints} style={{ height: '500px' }} navigatable={true}>
           <GridColumn field="endpoint_name" title="Endpoint Name" width="250px" />
           <GridColumn field="endpoint_url" title="URL" width="300px" />
           <GridColumn field="data_category" title="Category" width="150px" />

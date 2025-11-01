@@ -122,6 +122,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
               component={Input}
               validator={required}
               required
+              aria-required
             />
 
             <Field

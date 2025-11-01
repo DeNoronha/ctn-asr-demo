@@ -570,6 +570,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           onPageChange={handlePageChange}
           style={{ height: '600px' }}
           resizable={true}
+          navigatable={true}
           onRowClick={(e) => {
             onViewDetails(e.dataItem);
           }}
