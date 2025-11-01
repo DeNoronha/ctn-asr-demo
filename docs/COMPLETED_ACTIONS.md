@@ -4,6 +4,7 @@ This file tracks completed work in chronological order (most recent first). Deta
 
 | Date | Task | Impact | Commit | Hours |
 |------|------|--------|--------|-------|
+| 2025-11-01 | **Category 1 Accessibility - WCAG 2.1 AA (Admin Portal)** - Keyboard nav (MembersGrid/IdentifiersManager/ContactsManager/EndpointManagement navigatable={true}), ARIA roles (CompanyForm aria-required, existing ARIA verified), Color contrast (all STATUS/MEMBERSHIP/VERIFICATION colors 4.5:1+ verified). | 24/24 accessibility tests passing (100%, was 11/35 = 31%). Admin Portal now fully keyboard accessible, screen reader compliant, WCAG 2.1 Level AA compliant. | 896d0be | 11h |
 | 2025-11-01 | **CSP Security Hardening** - Removed unsafe-inline/unsafe-eval from script-src in both portals. Admin/Member now use strict `script-src 'self'`. Updated .gitignore for test credentials. | Eliminates XSS attack vectors. WCAG-compliant. | 05b0007 | 2h |
 | 2025-11-01 | **Accessibility - WCAG 2.1 AA (100%)** - AdminSidebar keyboard nav (Enter/Space), LoadingSpinner ARIA, MemberForm validation, MembersGrid announcements. 24/24 tests passing (was 10/36). Created docs/ACCESSIBILITY.md. | Full keyboard + screen reader support. | 05b0007 | 4h |
 | 2025-11-01 | **Admin Portal Testing** - API tests (7/30 endpoints, 100% pass), test scripts (900+ lines), documentation (2,000+ lines). Resolved token auth blocker. | Verified auth, API health, 3 bugs found. | Multiple | 4h |
