@@ -92,37 +92,6 @@ export const issueTokenSchema = z.object({
   scopes: z.array(z.string()).optional(),
 });
 
-// ========================================
-// Subscription Validation
-// ========================================
-
-export const createSubscriptionSchema = z.object({
-  plan_name: z.string().min(1, 'Plan name is required').max(100),
-  billing_cycle: z.enum(['MONTHLY', 'QUARTERLY', 'YEARLY']),
-  price: z.number().positive('Price must be positive'),
-  currency: z.string().length(3, 'Currency must be 3-letter code (e.g., EUR)').default('EUR'),
-  start_date: dateSchema,
-  end_date: dateSchema.optional(),
-  auto_renew: z.boolean().default(true),
-  status: z.enum(['ACTIVE', 'TRIAL', 'CANCELLED', 'EXPIRED', 'SUSPENDED']).default('ACTIVE'),
-});
-
-export const updateSubscriptionSchema = createSubscriptionSchema.partial();
-
-// ========================================
-// Newsletter Validation
-// ========================================
-
-export const createNewsletterSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(255),
-  content: z.string().min(1, 'Content is required'),
-  subject: z.string().min(1, 'Subject is required').max(255),
-  scheduled_at: dateSchema.optional(),
-  target_audience: z.enum(['ALL_MEMBERS', 'PREMIUM_ONLY', 'ACTIVE_ONLY', 'CUSTOM']).default('ALL_MEMBERS'),
-  status: z.enum(['DRAFT', 'SCHEDULED', 'SENT', 'CANCELLED']).default('DRAFT'),
-});
-
-export const updateNewsletterSchema = createNewsletterSchema.partial();
 
 // ========================================
 // Task Validation
@@ -137,7 +106,7 @@ export const createTaskSchema = z.object({
   assigned_to: emailSchema.optional(),
   due_date: dateSchema.optional(),
   related_entity_id: uuidSchema.optional(),
-  related_entity_type: z.enum(['MEMBER', 'SUBSCRIPTION', 'NEWSLETTER', 'KVK_VERIFICATION']).optional(),
+  related_entity_type: z.enum(['MEMBER', 'KVK_VERIFICATION']).optional(),
 });
 
 export const updateTaskSchema = createTaskSchema.partial();

@@ -49,11 +49,6 @@ import './functions/generateBvad';
 import './functions/validateBvod';
 
 // Admin portal expansion
-import './functions/getSubscriptions';
-import './functions/createSubscription';
-import './functions/updateSubscription';
-import './functions/getNewsletters';
-import './functions/createNewsletter';
 import './functions/getTasks';
 import './functions/createTask';
 import './functions/updateTask';

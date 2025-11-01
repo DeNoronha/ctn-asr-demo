@@ -136,23 +136,6 @@ export const taskEmptyStates = {
   },
 } as const;
 
-/**
- * Empty states for subscription/newsletter management
- */
-export const subscriptionEmptyStates = {
-  noSubscriptions: {
-    message: 'No active subscriptions',
-    hint: 'Manage email subscriptions and communication preferences',
-  },
-  noNewsletters: {
-    message: 'No newsletters configured',
-    hint: 'Create newsletter campaigns to communicate with members',
-    action: {
-      label: 'Create Newsletter',
-      suggestion: 'Set up a new newsletter campaign',
-    },
-  },
-} as const;
 
 /**
  * Empty states for audit/logging
@@ -217,7 +200,7 @@ export const genericEmptyStates = {
  * Provides type-safe access to empty state messages
  */
 export const getEmptyState = (
-  category: 'member' | 'contact' | 'identifier' | 'endpoint' | 'token' | 'task' | 'subscription' | 'audit' | 'user' | 'generic',
+  category: 'member' | 'contact' | 'identifier' | 'endpoint' | 'token' | 'task' | 'audit' | 'user' | 'generic',
   type: string
 ): EmptyStateConfig => {
   const categoryMap = {
@@ -227,7 +210,6 @@ export const getEmptyState = (
     endpoint: endpointEmptyStates,
     token: tokenEmptyStates,
     task: taskEmptyStates,
-    subscription: subscriptionEmptyStates,
     audit: auditEmptyStates,
     user: userEmptyStates,
     generic: genericEmptyStates,

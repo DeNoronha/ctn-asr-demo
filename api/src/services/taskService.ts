@@ -25,8 +25,6 @@ export interface AdminTask {
   assigned_to_email?: string;
   assigned_at?: string;
   related_entity_id?: string;
-  related_subscription_id?: string;
-  related_newsletter_id?: string;
   due_date?: string;
   completed_at?: string;
   completed_by?: string;
@@ -47,8 +45,6 @@ export interface CreateTaskInput {
   assigned_to?: string;
   assigned_to_email?: string;
   related_entity_id?: string;
-  related_subscription_id?: string;
-  related_newsletter_id?: string;
   due_date?: string;
   created_by?: string;
   tags?: string[];
@@ -202,13 +198,11 @@ export class TaskService {
         assigned_to,
         assigned_to_email,
         related_entity_id,
-        related_subscription_id,
-        related_newsletter_id,
         due_date,
         created_by,
         tags,
         metadata
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *`,
       [
         input.task_type,
@@ -218,8 +212,6 @@ export class TaskService {
         input.assigned_to,
         input.assigned_to_email,
         input.related_entity_id,
-        input.related_subscription_id,
-        input.related_newsletter_id,
         input.due_date,
         input.created_by,
         input.tags,

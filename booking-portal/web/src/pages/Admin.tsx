@@ -6,11 +6,7 @@ interface Tenant {
   tenantId: string;
   organizationName: string;
   terminalName: string;
-  subscription: {
-    type: string;
-    status: string;
-    monthlyFee: number;
-  };
+  status: string;
 }
 
 const Admin: React.FC = () => {
@@ -40,22 +36,14 @@ const Admin: React.FC = () => {
           tenantId: 'itg-hengelo',
           organizationName: 'ITG',
           terminalName: 'ITG Hengelo',
-          subscription: {
-            type: 'saas',
-            status: 'active',
-            monthlyFee: 499
-          }
+          status: 'active'
         },
         {
           id: 'itv-venlo',
           tenantId: 'itv-venlo',
           organizationName: 'ITV',
           terminalName: 'ITV Venlo',
-          subscription: {
-            type: 'saas',
-            status: 'trial',
-            monthlyFee: 0
-          }
+          status: 'trial'
         }
       ]);
     }
@@ -90,15 +78,13 @@ const Admin: React.FC = () => {
                 <th style={{ width: '180px' }}>Tenant ID</th>
                 <th style={{ width: '150px' }}>Organization</th>
                 <th style={{ width: '200px' }}>Terminal</th>
-                <th style={{ width: '120px' }}>Type</th>
                 <th style={{ width: '120px' }}>Status</th>
-                <th style={{ width: '150px' }}>Monthly Fee</th>
               </tr>
             </thead>
             <tbody>
               {tenants.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                  <td colSpan={4} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
                     No tenants found
                   </td>
                 </tr>
@@ -108,13 +94,11 @@ const Admin: React.FC = () => {
                     <td>{tenant.tenantId}</td>
                     <td>{tenant.organizationName}</td>
                     <td>{tenant.terminalName}</td>
-                    <td>{tenant.subscription.type}</td>
                     <td>
-                      <span className={`status-badge status-${tenant.subscription.status}`}>
-                        {tenant.subscription.status}
+                      <span className={`status-badge status-${tenant.status}`}>
+                        {tenant.status}
                       </span>
                     </td>
-                    <td>€{tenant.subscription.monthlyFee}/month</td>
                   </tr>
                 ))
               )}
@@ -225,7 +209,7 @@ const Admin: React.FC = () => {
         <div style={{ color: '#64748b' }}>
           <p><strong>Mode:</strong> SaaS Multi-Tenant</p>
           <p><strong>Total Tenants:</strong> {tenants.length}</p>
-          <p><strong>Active Subscriptions:</strong> {tenants.filter(t => t.subscription.status === 'active').length}</p>
+          <p><strong>Active Tenants:</strong> {tenants.filter(t => t.status === 'active').length}</p>
           <p><strong>Model Version:</strong> v1.3.2 (shared)</p>
         </div>
       </div>

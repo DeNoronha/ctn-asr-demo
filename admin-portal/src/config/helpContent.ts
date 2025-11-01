@@ -140,15 +140,6 @@ export const helpContent = {
   documentVerification:
     'Documents are reviewed by CTN staff within 2 business days. You will receive email notification when verification is complete.',
 
-  // ==========================================
-  // Newsletter & Subscriptions
-  // ==========================================
-
-  newsletterFrequency:
-    'How often you receive updates: Daily (all updates), Weekly (digest), Monthly (summary). Change anytime in settings.',
-
-  subscriptionCategories:
-    'Subscribe to topics relevant to your role: Technical Updates, Business News, Regulatory Changes, Platform Updates.',
 };
 
 export type HelpContentKey = keyof typeof helpContent;

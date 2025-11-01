@@ -27,11 +27,9 @@ import LoadingSpinner from './LoadingSpinner';
 import { MemberDetailView } from './MemberDetailView';
 import MemberForm from './MemberForm';
 import MembersGrid from './MembersGrid';
-import NewslettersGrid from './NewslettersGrid';
 import { ReviewTasks } from './ReviewTasks';
 import Settings from './Settings';
 import { SkipToContent } from './SkipToContent';
-import SubscriptionsGrid from './SubscriptionsGrid';
 import TasksGrid from './TasksGrid';
 import AuditLogViewer from './audit/AuditLogViewer';
 import UserManagement from './users/UserManagement';
@@ -226,20 +224,6 @@ const AdminPortal: React.FC = () => {
         return (
           <div className="review-tasks-view">
             <ReviewTasks />
-          </div>
-        );
-
-      case 'subscriptions':
-        return (
-          <div className="subscriptions-view">
-            <SubscriptionsGrid />
-          </div>
-        );
-
-      case 'newsletters':
-        return (
-          <div className="newsletters-view">
-            <NewslettersGrid />
           </div>
         );
 

@@ -45,8 +45,6 @@ export enum Permission {
   // Admin permissions
   MANAGE_USERS = 'manage:users',
   VIEW_AUDIT_LOGS = 'view:audit_logs',
-  MANAGE_SUBSCRIPTIONS = 'manage:subscriptions',
-  MANAGE_NEWSLETTERS = 'manage:newsletters',
   MANAGE_TASKS = 'manage:tasks',
 
   // KvK verification permissions
@@ -86,8 +84,6 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     // Admin functions
     Permission.MANAGE_USERS,
     Permission.VIEW_AUDIT_LOGS,
-    Permission.MANAGE_SUBSCRIPTIONS,
-    Permission.MANAGE_NEWSLETTERS,
     Permission.MANAGE_TASKS,
 
     // KvK verification
