@@ -74,16 +74,78 @@ You maintain and organize all markdown documentation in the repository according
 5. Update README.md if the new documentation represents a significant feature or change.
 
 ### When Updating ROADMAP.md
-1. Keep only next actions - remove completed items.
-2. Prioritize items in order of importance/urgency.
-3. Be specific about what needs to be done (not vague goals).
-4. Each item should be actionable by a team member or agent.
+
+**CRITICAL: Follow the documented procedure to avoid filesystem caching issues.**
+
+**Reference:** See `/Users/ramondenoronha/Desktop/Projects/Data in Logistics/CTN/.claude/ROADMAP_UPDATE_PROCEDURE.md` for complete details.
+
+**Quick Procedure:**
+
+1. **Move completed tasks to COMPLETED_ACTIONS.md**
+   - Add at TOP with: task ID, status ✅, commit hash, date (YYYY-MM-DD), description, locations, impact, time spent
+   - Include remaining work percentage if partial (e.g., "Infrastructure 100%, Implementation 60%")
+
+2. **Remove [DONE] tasks from ROADMAP.md**
+   - Delete entire task block including all sub-items
+   - Use `Filesystem:write_file` (most reliable) to rewrite the entire file
+
+3. **Update timestamps in BOTH files**
+   - Format: `**Last Updated:** November 1, 2025 14:10 CET`
+   - Always use Amsterdam time (CET/CEST)
+   - Get current time: `TZ='Europe/Amsterdam' date '+%B %d, %Y %H:%M %Z'`
+
+4. **CRITICAL: Verify with bash_tool (NOT Filesystem tools)**
+   ```bash
+   # Check timestamps
+   head -5 /Users/ramondenoronha/Desktop/ROADMAP.md
+   head -5 /Users/ramondenoronha/Desktop/COMPLETED_ACTIONS.md
+   
+   # Verify task was removed
+   grep "TASK-ID" /Users/ramondenoronha/Desktop/ROADMAP.md
+   
+   # Verify task was added
+   grep "TASK-ID" /Users/ramondenoronha/Desktop/COMPLETED_ACTIONS.md
+   ```
+
+5. **Keep only next actions in ROADMAP.md**
+   - Prioritize by importance/urgency
+   - Be specific and actionable
+   - No completed items
+
+**⚠️ IMPORTANT: Filesystem Tool Caching**
+- `Filesystem:read_file` may show STALE content even after successful writes
+- ALWAYS verify updates using `bash_tool` commands
+- If user says file not updated, show bash output proving it IS updated (they need to refresh their editor)
 
 ### When Updating COMPLETED_ACTIONS.md
-1. Add new entries at the TOP of the table (most recent first).
-2. Use YYYY-MM-DD format for dates.
-3. Keep descriptions brief but informative (one clear sentence).
-4. Ensure the table formatting remains consistent.
+
+**Location:** `/Users/ramondenoronha/Desktop/COMPLETED_ACTIONS.md`
+
+1. **Add new entries at the TOP** (most recent first)
+2. **Required fields for each completed task:**
+   - Task ID (e.g., SEC-004, DA-001)
+   - Status: ✅ COMPLETED
+   - Commit hash(es)
+   - Date: YYYY-MM-DD format
+   - Description: What was done
+   - Location(s): Files modified
+   - Impact: What this fixes/improves
+   - Time spent: X hours
+   - Remaining: Y% if partial completion
+
+3. **Format example:**
+   ```markdown
+   #### SEC-004: CSRF Protection (CRITICAL)
+   - **Status:** ✅ COMPLETED
+   - **Commit:** 2726a69
+   - **Date:** 2025-11-01
+   - **Description:** Added CSRF tokens to all state-changing operations
+   - **Location:** admin-portal/src/services/api.ts
+   - **Impact:** Critical security vulnerability resolved
+   - **Time Spent:** 4 hours
+   ```
+
+4. **Update timestamp** to current Amsterdam time (CET/CEST)
 
 ### When Updating CLAUDE.md
 1. **Way of Working**: Document development practices, coding standards, and team processes.

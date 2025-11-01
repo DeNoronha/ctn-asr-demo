@@ -33,12 +33,55 @@ async function getTokenAndTestAPI() {
     // Wait for Dashboard to appear
     await page.waitForSelector('text=Dashboard', { timeout: 300000 }); // 5 minutes
 
-    console.log('✅ Dashboard detected! Waiting for MSAL tokens...');
-    await page.waitForTimeout(5000);
+    console.log('✅ Dashboard detected! Waiting for API call...');
 
-    // Extract access token from localStorage and sessionStorage
-    console.log('\n🔍 Extracting access token from MSAL cache...');
-    const tokenData = await page.evaluate(() => {
+    // CRITICAL: Intercept network requests to capture the API access token
+    console.log('\n🔄 Setting up network interception to capture API token...');
+
+    let capturedToken = null;
+
+    // Listen for API requests and capture the Authorization header
+    page.on('request', (request) => {
+      const url = request.url();
+      if (url.includes('func-ctn-demo-asr-dev.azurewebsites.net/api')) {
+        const headers = request.headers();
+        if (headers.authorization && headers.authorization.startsWith('Bearer ')) {
+          capturedToken = headers.authorization.substring(7); // Remove "Bearer " prefix
+          console.log('✅ Captured API token from network request!');
+        }
+      }
+    });
+
+    //Navigate to members page which will trigger API call
+    console.log('📄 Navigating to Members page to trigger API call...');
+    await page.click('text=Members').catch(() => console.log('Members link not found, trying alternative navigation...'));
+
+    // Wait for API call to happen
+    await page.waitForTimeout(3000);
+
+    let tokenData;
+
+    if (capturedToken) {
+      console.log('✅ Successfully captured API token from network request!');
+
+      // Decode token to get expiry
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.decode(capturedToken, { complete: true });
+
+      tokenData = {
+        accessToken: capturedToken,
+        tokenType: 'Bearer',
+        expiresOn: decoded?.payload?.exp,
+        account: decoded?.payload?.upn || decoded?.payload?.email || 'Unknown',
+        source: 'Network Request Interception',
+      };
+    } else {
+      console.error('\n❌ ERROR: Failed to capture API token from network requests');
+      console.error('Falling back to cache extraction...\n');
+
+      // Extract access token from localStorage and sessionStorage
+      console.log('\n🔍 Extracting access token from MSAL cache...');
+      tokenData = await page.evaluate(() => {
       const result = {
         accessToken: null,
         tokenType: null,
@@ -52,6 +95,11 @@ async function getTokenAndTestAPI() {
         const keys = Object.keys(storage);
         console.log(`Searching ${storageName}: ${keys.length} keys`);
 
+        // CRITICAL: Look for the API-specific access token, not the Microsoft Graph token
+        // The CTN ASR API client ID is: d3037c11-a541-4f21-8862-8079137a0cde
+        // MSAL keys include the scope/audience in the key name
+        const apiClientId = 'd3037c11-a541-4f21-8862-8079137a0cde';
+
         for (const key of keys) {
           if (key?.includes('accesstoken')) {
             console.log(`  Found accesstoken key in ${storageName}:`, key);
@@ -59,14 +107,24 @@ async function getTokenAndTestAPI() {
               const value = storage.getItem(key);
               const parsed = JSON.parse(value);
 
-              // Look for the API scope token
+              // Check if this token is for our API (not Microsoft Graph)
               if (parsed.credentialType === 'AccessToken' || parsed.secret) {
-                result.accessToken = parsed.secret || parsed.accessToken;
-                result.tokenType = parsed.tokenType || 'Bearer';
-                result.expiresOn = parsed.expiresOn;
-                result.source = storageName;
-                console.log(`  ✅ Extracted token from ${storageName}`);
-                return true;
+                const token = parsed.secret || parsed.accessToken;
+
+                // Verify it's for the correct audience by checking the key or decoding token
+                // MSAL keys contain the scope/resource in the key name (e.g., includes client ID)
+                const isApiToken = key.includes(apiClientId) || key.includes('api://');
+
+                if (isApiToken) {
+                  result.accessToken = token;
+                  result.tokenType = parsed.tokenType || 'Bearer';
+                  result.expiresOn = parsed.expiresOn;
+                  result.source = storageName;
+                  console.log(`  ✅ Extracted API token from ${storageName} (key contains API client ID)`);
+                  return true;
+                } else {
+                  console.log(`  ⏩ Skipping token (not for CTN ASR API, likely Microsoft Graph)`);
+                }
               }
             } catch (e) {
               console.log(`  Error parsing key: ${key}`, e.message);
@@ -104,6 +162,7 @@ async function getTokenAndTestAPI() {
 
       return result;
     });
+    }  // End of else block (fallback to cache extraction)
 
     if (!tokenData.accessToken) {
       console.error('\n❌ ERROR: Could not find access token in MSAL cache');

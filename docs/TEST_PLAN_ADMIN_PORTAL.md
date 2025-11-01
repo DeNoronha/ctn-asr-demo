@@ -31,7 +31,7 @@
 ### Authentication & Authorization
 | Endpoint | Method | Auth | Expected Response | Priority |
 |----------|--------|------|-------------------|----------|
-| `/api/v1/authenticated-member` | GET | Yes | 200 - Current user info | CRITICAL |
+| `/api/v1/member` | GET | Yes | 200 - Current user info | CRITICAL |
 | Azure AD Login | - | - | Redirect + token | CRITICAL |
 | CSRF Token Generation | - | - | Token in headers | HIGH |
 
