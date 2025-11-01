@@ -33,7 +33,7 @@ test.describe('Authentication & Authorization - Critical Path', () => {
     await page.goto('/', { waitUntil: 'networkidle' });
 
     // Verify user is authenticated (check for user info in header)
-    await expect(page.locator('.user-info, .user-name')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.user-name').first()).toBeVisible({ timeout: 10000 });
 
     // Verify we're not on a login page
     const currentUrl = page.url();

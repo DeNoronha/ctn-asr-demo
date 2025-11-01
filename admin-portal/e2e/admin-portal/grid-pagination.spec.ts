@@ -33,7 +33,7 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     await page.goto('/', { waitUntil: 'networkidle' });
 
     // Navigate to members page
-    await page.locator('.sidebar, .drawer-content').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible({
       timeout: 10000,
     });
@@ -108,11 +108,11 @@ test.describe('Grid Pagination - URL State Persistence', () => {
       console.log('URL after going to page 2:', urlAfterPageChange);
 
       // Navigate to Dashboard
-      await page.locator('.sidebar, .drawer-content').getByText('Dashboard', { exact: true }).click();
+      await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Dashboard', { exact: true }).click();
       await page.waitForTimeout(1000);
 
       // Navigate back to Members
-      await page.locator('.sidebar, .drawer-content').getByText('Members', { exact: true }).click();
+      await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
       await page.waitForTimeout(2000);
 
       // Check if page parameter is still in URL
@@ -141,7 +141,7 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     await page.goto(`${baseUrl}/?page=2&pageSize=20`, { waitUntil: 'networkidle' });
 
     // Navigate to members
-    await page.locator('.sidebar, .drawer-content').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
     // Wait for grid to load
@@ -275,7 +275,7 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     await page.goto(`${baseUrl}/?page=1&pageSize=10`, { waitUntil: 'networkidle' });
 
     // Go to members page
-    await page.locator('.sidebar, .drawer-content').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
     // Grid should load
@@ -303,7 +303,7 @@ test.describe('Grid Pagination - URL State Persistence', () => {
 test.describe('Grid Pagination - Edge Cases', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/', { waitUntil: 'networkidle' });
-    await page.locator('.sidebar, .drawer-content').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible({
       timeout: 10000,
     });
@@ -319,7 +319,7 @@ test.describe('Grid Pagination - Edge Cases', () => {
 
     // Navigate to impossible page number
     await page.goto(`${baseUrl}/?page=9999`, { waitUntil: 'networkidle' });
-    await page.locator('.sidebar, .drawer-content').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
     // Should gracefully handle (show last page or page 1)
@@ -339,7 +339,7 @@ test.describe('Grid Pagination - Edge Cases', () => {
 
     // Test page=0
     await page.goto(`${baseUrl}/?page=0`, { waitUntil: 'networkidle' });
-    await page.locator('.sidebar, .drawer-content').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
     const grid = page.locator('.k-grid, [role="grid"]').first();
@@ -359,7 +359,7 @@ test.describe('Grid Pagination - Edge Cases', () => {
 
     // Navigate with very large page size
     await page.goto(`${baseUrl}/?pageSize=1000`, { waitUntil: 'networkidle' });
-    await page.locator('.sidebar, .drawer-content').getByText('Members', { exact: true }).click();
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(3000);
 
     const grid = page.locator('.k-grid, [role="grid"]').first();
