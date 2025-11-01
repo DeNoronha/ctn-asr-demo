@@ -98,7 +98,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
       return (
         <DatePicker
           value={criterion.value ? new Date(criterion.value) : null}
-          onChange={(e) => updateCriteria(criterion.id, { value: e.target.value })}
+          onChange={(value) => updateCriteria(criterion.id, { value: value })}
           format="yyyy-MM-dd"
         />
       );
@@ -110,7 +110,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
         <Select
           data={options}
           value={criterion.value}
-          onChange={(e) => updateCriteria(criterion.id, { value: e.target.value })}
+          onChange={(value) => updateCriteria(criterion.id, { value: value })}
         />
       );
     }
@@ -118,7 +118,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
     return (
       <TextInput
         value={(criterion.value as string) || ''}
-        onChange={(e) => updateCriteria(criterion.id, { value: String(e.target.value || '') })}
+        onChange={(value) => updateCriteria(criterion.id, { value: String(value || '') })}
         placeholder="Enter value..."
       />
     );
@@ -162,7 +162,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
           <Select
             data={['and', 'or']}
             value={logic}
-            onChange={(e) => setLogic(e.target.value)}
+            onChange={(value) => setLogic(value)}
             style={{ width: '100px' }}
           />
         </div>
@@ -178,10 +178,10 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
               textField="label"
               dataItemKey="value"
               value={fields.find((f) => f.value === criterion.field)}
-              onChange={(e) => {
+              onChange={(value) => {
                 updateCriteria(criterion.id, {
-                  field: e.target.value.target.value,
-                  operator: getOperators(e.target.value.target.value)[0].value,
+                  field: value,
+                  operator: getOperators(value)[0].value,
                   value: '',
                 });
               }}
@@ -193,7 +193,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
               textField="label"
               dataItemKey="value"
               value={getOperators(criterion.field).find((o) => o.value === criterion.operator)}
-              onChange={(e) => updateCriteria(criterion.id, { operator: e.target.value.target.value })}
+              onChange={(value) => updateCriteria(criterion.id, { operator: value })}
               style={{ width: '150px' }}
             />
 

@@ -271,7 +271,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
   return (
     <div className="member-detail-view">
       <div className="detail-header">
-        <Button themeColor="secondary" onClick={onBack} className="back-button">
+        <Button color="gray" onClick={onBack} className="back-button">
           <ArrowLeft size={16} />
           Back to Members
         </Button>

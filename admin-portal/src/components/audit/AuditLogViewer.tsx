@@ -213,7 +213,7 @@ const AuditLogViewer: React.FC = () => {
             <Select
               data={actions}
               value={selectedAction}
-              onChange={(value) => setSelectedAction(value)}
+              onChange={(value) => setSelectedAction(value || '')}
             />
           </div>
           <div className="filter-group">
@@ -221,7 +221,7 @@ const AuditLogViewer: React.FC = () => {
             <Select
               data={targetTypes}
               value={selectedTargetType}
-              onChange={(value) => setSelectedTargetType(value)}
+              onChange={(value) => setSelectedTargetType(value || '')}
             />
           </div>
           <div className="filter-actions">

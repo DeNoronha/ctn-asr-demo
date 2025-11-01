@@ -775,9 +775,9 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
               <Select
                 data={availableIdentifierTypes}
                 value={formData.identifier_type}
-                onChange={(e) => handleIdentifierTypeChange(e.target.value)}
+                onChange={(value) => handleIdentifierTypeChange(value || '')}
                 disabled={!formData.country_code || availableIdentifierTypes.length === 0}
-                defaultItem={formData.country_code ? 'Select type...' : 'Enter country code first'}
+                placeholder={formData.country_code ? 'Select type...' : 'Enter country code first'}
               />
               {!formData.country_code ? (
                 <span
@@ -864,7 +864,7 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
                 <Select
                   data={VALIDATION_STATUSES}
                   value={formData.validation_status}
-                  onChange={(e) => setFormData({ ...formData, validation_status: e.target.value })}
+                  onChange={(value) => setFormData({ ...formData, validation_status: value as any })}
                 />
               </div>
 

@@ -57,7 +57,7 @@ const ExampleUsage: React.FC = () => {
         <Button onClick={handleSimpleOperation} disabled={simpleLoading}>
           {simpleLoading ? 'Loading...' : 'Start Simple Operation'}
         </Button>
-        {simpleLoading && <LoadingSpinner size="sm" message="Processing..." />}
+        {simpleLoading && <LoadingSpinner size="small" message="Processing..." />}
       </div>
 
       {/* Example 2: Progress Indicator */}
@@ -83,7 +83,7 @@ const ExampleUsage: React.FC = () => {
         <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
           <div>
             <p>Small:</p>
-            <LoadingSpinner size="sm" />
+            <LoadingSpinner size="small" />
           </div>
           <div>
             <p>Medium:</p>
@@ -91,7 +91,7 @@ const ExampleUsage: React.FC = () => {
           </div>
           <div>
             <p>Large:</p>
-            <LoadingSpinner size="lg" />
+            <LoadingSpinner size="large" />
           </div>
         </div>
       </div>

@@ -232,8 +232,8 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
                   <Select
                     data={IDENTIFIER_TYPES}
                     value={newIdentifier.identifier_type}
-                    onChange={(e) =>
-                      setNewIdentifier({ ...newIdentifier, identifier_type: e.target.value })
+                    onChange={(value) =>
+                      setNewIdentifier({ ...newIdentifier, identifier_type: value as any })
                     }
                   />
                 </div>
@@ -242,8 +242,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
                   <label>Identifier Value</label>
                   <TextInput
                     value={newIdentifier.identifier_value || ''}
-                    onChange={(e) =>
-                      setNewIdentifier({ ...newIdentifier, identifier_value: e.target.value })
+                    onChange={(e) => setNewIdentifier({ ...newIdentifier, identifier_value: e.target.value })
                     }
                     placeholder="Enter identifier value"
                   />
@@ -252,12 +251,10 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
                 <div className="form-field">
                   <label>Country</label>
                   <Select
-                    data={COUNTRY_CODES}
-                    textField="name"
-                    dataItemKey="code"
-                    value={COUNTRY_CODES.find((c) => c.code === newIdentifier.country_code)}
-                    onChange={(e) =>
-                      setNewIdentifier({ ...newIdentifier, country_code: e.target.value.code })
+                    data={COUNTRY_CODES.map((c) => ({ value: c.code, label: c.name }))}
+                    value={newIdentifier.country_code}
+                    onChange={(value) =>
+                      setNewIdentifier({ ...newIdentifier, country_code: value || '' })
                     }
                   />
                 </div>

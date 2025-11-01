@@ -230,7 +230,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               onBlur={() => handleBlur('org_id')}
               placeholder="org:company-name"
               required
-              valid={!errors.org_id}
+              error={touched.org_id && errors.org_id}
               className={touched.org_id && errors.org_id ? 'k-invalid' : ''}
               aria-invalid={touched.org_id && Boolean(errors.org_id)}
               aria-describedby={`org-id-hint${touched.org_id && errors.org_id ? ' org-id-error' : ''}`}
@@ -252,7 +252,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               onBlur={() => handleBlur('legal_name')}
               placeholder="Company Legal Name BV"
               required
-              valid={!errors.legal_name}
+              error={touched.legal_name && errors.legal_name}
               className={touched.legal_name && errors.legal_name ? 'k-invalid' : ''}
               aria-invalid={touched.legal_name && Boolean(errors.legal_name)}
               aria-describedby={`legal-name-hint${touched.legal_name && errors.legal_name ? ' legal-name-error' : ''}`}
@@ -274,7 +274,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               onBlur={() => handleBlur('domain')}
               placeholder="company.com"
               required
-              valid={!errors.domain}
+              error={touched.domain && errors.domain}
               className={touched.domain && errors.domain ? 'k-invalid' : ''}
               aria-invalid={touched.domain && Boolean(errors.domain)}
               aria-describedby={`domain-hint${touched.domain && errors.domain ? ' domain-error' : ''}`}
@@ -295,8 +295,8 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               textField="name"
               dataItemKey="tier"
               value={TIER_OPTIONS.find(t => t.tier === formData.authentication_tier)}
-              onChange={(e) => {
-                const selectedTier = e.target.value as TierOption;
+              onChange={(value) => {
+                const selectedTier = value as TierOption;
                 setFormData(prev => ({
                   ...prev,
                   authentication_tier: selectedTier.tier,
@@ -334,7 +334,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
             </Label>
             <MaskedTextBox
               value={formData.lei}
-              onChange={(e) => handleFieldChange('lei', e.target.value || '')}
+              onChange={(value) => handleFieldChange('lei', value || '')}
               onBlur={() => handleBlur('lei')}
               mask="AAAAAAAAAAAAAAAAAAAA"
               placeholder="20 character LEI code"
@@ -356,7 +356,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
             </Label>
             <MaskedTextBox
               value={formData.kvk}
-              onChange={(e) => handleFieldChange('kvk', e.target.value || '')}
+              onChange={(value) => handleFieldChange('kvk', value || '')}
               onBlur={() => handleBlur('kvk')}
               mask="00000000"
               placeholder="12345678"

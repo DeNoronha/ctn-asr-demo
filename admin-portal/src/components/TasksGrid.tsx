@@ -471,7 +471,7 @@ const TasksGrid: React.FC = () => {
                 textField="text"
                 dataItemKey="value"
                 value={taskTypeOptions.find((o) => o.value === formData.task_type)}
-                onChange={(e) => setFormData({ ...formData, task_type: e.target.value.target.value })}
+                onChange={(value) => setFormData({ ...formData, task_type: value })}
               />
             </div>
 
@@ -501,7 +501,7 @@ const TasksGrid: React.FC = () => {
                 textField="text"
                 dataItemKey="value"
                 value={priorityOptions.find((o) => o.value === formData.priority)}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value.target.value })}
+                onChange={(value) => setFormData({ ...formData, priority: value })}
               />
             </div>
 
@@ -518,7 +518,7 @@ const TasksGrid: React.FC = () => {
               <label>Due Date</label>
               <DatePicker
                 value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                onChange={(value) => setFormData({ ...formData, due_date: value })}
                 format="dd/MM/yyyy"
               />
             </div>
@@ -561,7 +561,7 @@ const TasksGrid: React.FC = () => {
                 textField="text"
                 dataItemKey="value"
                 value={priorityOptions.find((o) => o.value === formData.priority)}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value.target.value })}
+                onChange={(value) => setFormData({ ...formData, priority: value })}
               />
             </div>
 
@@ -578,7 +578,7 @@ const TasksGrid: React.FC = () => {
               <label>Due Date</label>
               <DatePicker
                 value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                onChange={(value) => setFormData({ ...formData, due_date: value })}
                 format="dd/MM/yyyy"
               />
             </div>
