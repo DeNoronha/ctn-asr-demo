@@ -3,7 +3,7 @@
  * Member-scoped M2M client management (members see only their own clients)
  */
 
-import { Button } from '@mantine/core';
+import { Button, TextInput, Textarea, Checkbox } from '@mantine/core';
 
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Grid, GridColumn } from '@progress/kendo-react-grid';
@@ -356,7 +356,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
                   <label key={scope.value} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Checkbox
                       checked={formData.scopes.includes(scope.value)}
-                      onChange={() => handleScopeToggle(scope.target.value)}
+                      onChange={() => handleScopeToggle(scope.value)}
                     />
                     <span>{scope.label}</span>
                   </label>

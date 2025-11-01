@@ -11,7 +11,7 @@ import { Notification, NotificationGroup } from '@progress/kendo-react-notificat
 import React, { useEffect, useState } from 'react';
 
 // Mantine imports
-import { MantineProvider, createTheme } from '@mantine/core';
+import { MantineProvider, createTheme, Button } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
