@@ -52,6 +52,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   });
   const [query, setQuery] = useState('');
   const [sortedData, setSortedData] = useState<Member[]>(members);
+  const [filteredCount, setFilteredCount] = useState(members.length);
 
   // Helper function to get translated column title
   const getColumnTitle = (field: string) => {
@@ -95,7 +96,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     }
   }, [total, pageSize, page, onPageChange, updatePage]);
 
-  // Client-side sorting and filtering
+  // Client-side sorting, filtering, and pagination
   useEffect(() => {
     let filtered = [...gridData];
 
@@ -133,8 +134,16 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       });
     }
 
-    setSortedData(filtered);
-  }, [gridData, sortStatus, query]);
+    // Store filtered count before pagination
+    setFilteredCount(filtered.length);
+
+    // Apply pagination (slice data for current page)
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginated = filtered.slice(startIndex, endIndex);
+
+    setSortedData(paginated);
+  }, [gridData, sortStatus, query, page, pageSize]);
 
   const handleBulkAction = (action: string) => {
     if (selectedIds.length === 0) {
@@ -446,31 +455,13 @@ const MembersGrid: React.FC<MembersGridProps> = ({
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
-
-          {/* Bulk Actions (when rows selected) */}
-          {selectedIds.length > 0 && (
-            <Menu>
-              <Menu.Target>
-                <Button color="cyan" size="sm">
-                  {`Actions (${selectedIds.length})`}
-                </Button>
-              </Menu.Target>
-              <Menu.Dropdown>
-                {bulkActions.map((item, index) => (
-                  <Menu.Item key={index} onClick={item.click}>
-                    {item.text}
-                  </Menu.Item>
-                ))}
-              </Menu.Dropdown>
-            </Menu>
-          )}
         </div>
 
         {/* Toolbar Stats */}
         <div className="toolbar-stats">
           <span>Total: {total}</span>
-          <span>Showing: {sortedData.length}</span>
-          <span>Page {page} of {Math.ceil(total / pageSize)}</span>
+          <span>Showing: {filteredCount}</span>
+          <span>Page {page} of {Math.ceil(filteredCount / pageSize)}</span>
         </div>
       </div>
 
