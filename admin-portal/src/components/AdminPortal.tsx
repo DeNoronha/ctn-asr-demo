@@ -63,12 +63,12 @@ const AdminPortal: React.FC = () => {
     async () => {
       try {
         // Load ALL members for client-side pagination (no pagination params)
-        const result = (await loadMembers(() => api.getMembers())) as {
-          data: Member[];
-          total: number;
-        };
-        setMembers(result.data);
-        setTotalMembers(result.total);
+        const result = await loadMembers(() => api.getMembers()) as Member[] | { data: Member[]; total: number };
+
+        // api.getMembers() without params returns Member[] directly (not { data, total })
+        const membersArray = Array.isArray(result) ? result : result.data;
+        setMembers(membersArray);
+        setTotalMembers(membersArray.length);
       } catch (error) {
         // Handled by useAsync hook, but log for debugging (CR-004)
         logger.error('Failed to load members data:', error);
