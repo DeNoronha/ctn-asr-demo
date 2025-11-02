@@ -96,7 +96,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     }
   }, [total, pageSize, page, onPageChange, updatePage]);
 
-  // Client-side sorting and filtering (DataTable handles pagination)
+  // Client-side sorting, filtering, and pagination (controlled mode)
   useEffect(() => {
     let filtered = [...gridData];
 
@@ -134,10 +134,16 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       });
     }
 
-    // Store filtered count and let DataTable handle pagination
+    // Store filtered count
     setFilteredCount(filtered.length);
-    setSortedData(filtered); // Pass ALL filtered/sorted data to DataTable
-  }, [gridData, sortStatus, query]);
+
+    // Apply pagination - required when using controlled mode (page prop)
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginated = filtered.slice(startIndex, endIndex);
+
+    setSortedData(paginated);
+  }, [gridData, sortStatus, query, page, pageSize]);
 
   const handleBulkAction = (action: string) => {
     if (selectedIds.length === 0) {
