@@ -4,7 +4,7 @@
 
 .about-view {
   padding: 2rem;
-  max-width: 1200px;
+  /* max-width removed for consistent full-width layout */
   margin: 0 auto;
 }
 

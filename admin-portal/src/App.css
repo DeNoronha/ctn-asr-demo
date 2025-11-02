@@ -93,6 +93,12 @@ body {
   background-color: var(--ctn-bg);
 }
 
+/* Consistent view container - all views use full width */
+.view-container {
+  width: 100%;
+  max-width: none;
+}
+
 /* View Styles */
 .view-header {
   display: flex;

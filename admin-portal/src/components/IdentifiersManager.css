@@ -1,6 +1,6 @@
 .identifiers-manager {
   padding: 0;
-  max-width: 1400px;
+  /* max-width removed for consistent full-width layout */
   margin: 0 auto;
 }
 
