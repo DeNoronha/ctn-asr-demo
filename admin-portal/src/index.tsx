@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import 'mantine-datatable/styles.css'; // Mantine DataTable styles (load before overrides)
 import './styles/security-utilities.css'; // SEC-005: Utility classes to reduce inline styles
-import './styles/accessibility.css'; // DA-001: WCAG 2.1 AA compliant colors and styles
-import 'mantine-datatable/styles.css'; // Mantine DataTable styles
+import './styles/accessibility.css'; // DA-001, DA-006: WCAG 2.1 AA compliant colors and touch targets (must load after Mantine)
 import './i18n'; // Initialize i18n
 import App from './App';
 import { msalInstance } from './auth/AuthContext';
