@@ -154,28 +154,55 @@ test.describe('Admin Portal - Security Headers', () => {
     expect(contentTypeOptions).toBe('nosniff');
   });
 
-  test('CSP should not allow unsafe-inline or unsafe-eval', async ({ page }) => {
+  test('CSP should not allow unsafe-inline or unsafe-eval in script-src', async ({ page }) => {
     const response = await page.goto(ADMIN_PORTAL_URL);
 
     const csp = response?.headers()['content-security-policy'];
 
     expect(csp).toBeTruthy();
 
-    // Check if CSP contains unsafe directives
-    const hasUnsafeInline = csp?.includes("'unsafe-inline'");
-    const hasUnsafeEval = csp?.includes("'unsafe-eval'");
+    // Parse CSP directives
+    const directives = csp?.split(';').map(d => d.trim()) || [];
 
-    // Log warning if unsafe directives found (not a hard failure as some frameworks require them)
-    if (hasUnsafeInline) {
-      console.warn('⚠️  CSP contains unsafe-inline - consider using nonces or hashes');
+    // Find script-src directive
+    const scriptSrcDirective = directives.find(d => d.startsWith('script-src'));
+
+    expect(scriptSrcDirective).toBeTruthy();
+
+    // Script-src should NOT contain unsafe-inline
+    if (scriptSrcDirective?.includes("'unsafe-inline'")) {
+      throw new Error('❌ SECURITY VIOLATION: CSP script-src contains unsafe-inline (enables XSS attacks)');
     }
 
-    if (hasUnsafeEval) {
-      console.warn('⚠️  CSP contains unsafe-eval - should be avoided if possible');
+    // Script-src should NOT contain unsafe-eval
+    if (scriptSrcDirective?.includes("'unsafe-eval'")) {
+      throw new Error('❌ SECURITY VIOLATION: CSP script-src contains unsafe-eval (enables code injection)');
     }
 
-    // For now, just verify CSP exists (strict checking may break functionality)
-    expect(csp).toContain('default-src');
+    // Verify script-src is restrictive (contains 'self' or specific sources)
+    expect(scriptSrcDirective).toMatch(/'self'|https:/);
+
+    console.log('✅ CSP script-src is secure:', scriptSrcDirective);
+  });
+
+  test('CSP style-src can contain unsafe-inline (acceptable for React components)', async ({ page }) => {
+    const response = await page.goto(ADMIN_PORTAL_URL);
+
+    const csp = response?.headers()['content-security-policy'];
+
+    expect(csp).toBeTruthy();
+
+    // Parse CSP directives
+    const directives = csp?.split(';').map(d => d.trim()) || [];
+
+    // Find style-src directive
+    const styleSrcDirective = directives.find(d => d.startsWith('style-src'));
+
+    // Style-src is allowed to have unsafe-inline for React components and Kendo UI
+    // This is acceptable trade-off for UI libraries that inject styles
+    if (styleSrcDirective?.includes("'unsafe-inline'")) {
+      console.log('ℹ️  CSP style-src contains unsafe-inline (acceptable for React/Kendo UI)');
+    }
   });
 });
 
