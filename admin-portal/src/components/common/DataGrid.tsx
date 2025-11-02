@@ -37,9 +37,11 @@ interface DataGridProps<TData extends Record<string, any>> {
   enableRowSelection?: boolean;
   enableColumnResizing?: boolean;
   enableColumnOrdering?: boolean;
+  enableHiding?: boolean;
   enableGlobalFilter?: boolean;
   onRowSelectionChange?: (selectedRows: Record<string, boolean>) => void;
   initialState?: MRT_TableOptions<TData>['initialState'];
+  renderTopToolbarCustomActions?: MRT_TableOptions<TData>['renderTopToolbarCustomActions'];
 }
 
 export function DataGrid<TData extends Record<string, any>>({
@@ -51,20 +53,28 @@ export function DataGrid<TData extends Record<string, any>>({
   enableRowSelection = false,
   enableColumnResizing = true,
   enableColumnOrdering = true,
+  enableHiding = true,
   enableGlobalFilter = true,
   onRowSelectionChange,
   initialState,
+  renderTopToolbarCustomActions,
 }: DataGridProps<TData>) {
   const table = useMantineReactTable({
     columns,
     data,
+
+    // Standard features - Consistent across all grids
     enablePagination,
     enableSorting,
     enableFilters: enableFiltering,
+    enableColumnFilters: enableFiltering,
     enableRowSelection,
     enableColumnResizing,
     enableColumnOrdering,
+    enableHiding, // Column show/hide via header menu
     enableGlobalFilter,
+
+    // Callbacks
     onRowSelectionChange: onRowSelectionChange
       ? (updater) => {
           const newSelection =
@@ -74,20 +84,34 @@ export function DataGrid<TData extends Record<string, any>>({
           onRowSelectionChange(newSelection);
         }
       : undefined,
+
+    // Initial state
     initialState: {
       pagination: { pageSize: 20, pageIndex: 0 },
       ...initialState,
     },
+
+    // Standardized table styling
     mantineTableProps: {
       striped: true,
       highlightOnHover: true,
-      withColumnBorders: false,
+      withColumnBorders: true, // Show column separators for resizing
       withTableBorder: true,
     },
+
+    // Pagination options
     mantinePaginationProps: {
       showRowsPerPage: true,
       rowsPerPageOptions: ['10', '20', '50', '100'],
     },
+
+    // Toolbar positioning - Consistent layout
+    positionGlobalFilter: 'left', // Search on left
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
+
+    // Custom actions (if provided)
+    renderTopToolbarCustomActions,
   });
 
   return <MantineReactTable table={table} />;
