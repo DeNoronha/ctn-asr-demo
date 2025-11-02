@@ -25,46 +25,59 @@
   height: 14px !important;
 }
 
-/* Center checkboxes in table cells - more aggressive targeting */
-.members-grid-container thead th:first-child,
-.members-grid-container tbody td:first-child {
+/* Ultra-specific DataTable checkbox column targeting */
+.members-grid-container table.mantine-Table-table thead tr th:first-child,
+.members-grid-container table.mantine-Table-table tbody tr td:first-child,
+.members-grid-container .mantine-Table-table thead tr th:first-child,
+.members-grid-container .mantine-Table-table tbody tr td:first-child {
   text-align: center !important;
   vertical-align: middle !important;
-  padding: 0 !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 }
 
-.members-grid-container thead th:first-child > *,
-.members-grid-container tbody td:first-child > * {
+/* Flex container for checkbox cells */
+.members-grid-container table thead tr th:first-child > div,
+.members-grid-container table tbody tr td:first-child > div,
+.members-grid-container table thead tr th:first-child > label,
+.members-grid-container table tbody tr td:first-child > label {
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
   width: 100% !important;
-  height: 100% !important;
   margin: 0 !important;
 }
 
-/* DataTable-specific checkbox cell targeting */
-.members-grid-container .mantine-datatable-header-cell-sortable:first-child,
-.members-grid-container .mantine-datatable-row-cell:first-child {
+/* Additional specificity for mantine-datatable-specific classes */
+.members-grid-container [data-mantine-datatable] thead [data-first-column="true"],
+.members-grid-container [data-mantine-datatable] tbody [data-first-column="true"],
+.members-grid-container .mantine-DataTable-header [data-cell-index="0"],
+.members-grid-container .mantine-DataTable-row [data-cell-index="0"] {
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
 }
 
-/* Column selector (context menu) improvements */
-.members-grid-container .mantine-Menu-dropdown {
-  max-height: 400px;
+/* Column selector (context menu) improvements - ultra-specific */
+.members-grid-container .mantine-Menu-dropdown,
+.mantine-Menu-dropdown[data-context-menu="true"],
+div.mantine-Menu-dropdown,
+div[role="menu"].mantine-Menu-dropdown {
+  max-height: 400px !important;
   overflow-y: scroll !important; /* Force scrollbar to always show */
+  overflow-x: hidden !important;
 }
 
-.members-grid-container .mantine-Menu-item {
-  padding: 8px 12px;
+.members-grid-container .mantine-Menu-item,
+.mantine-Menu-dropdown .mantine-Menu-item {
+  padding: 8px 12px !important;
 }
 
-.members-grid-container .mantine-Menu-itemLabel {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.members-grid-container .mantine-Menu-itemLabel,
+.mantine-Menu-dropdown .mantine-Menu-itemLabel {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
 }
 
 .grid-toolbar {
