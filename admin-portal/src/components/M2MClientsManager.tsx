@@ -176,7 +176,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
     }
   }, [notification]);
 
-  const handleDeleteClient = async () => {
+  const handleDeleteClient = useCallback(async () => {
     if (!selectedClient) return;
 
     setLoading(true);
@@ -204,23 +204,23 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedClient, notification, loadClients]);
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = useCallback((text: string) => {
     navigator.clipboard.writeText(text);
     const msg = tokenSuccessMessages.copied();
     notification.showSuccess(msg.title);
     try { announceToScreenReader('Copied to clipboard.'); } catch {}
-  };
+  }, [notification]);
 
-  const handleScopeToggle = (scope: string) => {
+  const handleScopeToggle = useCallback((scope: string) => {
     setFormData(prev => ({
       ...prev,
       scopes: prev.scopes.includes(scope)
         ? prev.scopes.filter(s => s !== scope)
         : [...prev.scopes, scope],
     }));
-  };
+  }, []);
 
   // mantine-datatable column definitions
   const { effectiveColumns } = useDataTableColumns<M2MClient>({
