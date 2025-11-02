@@ -6,6 +6,7 @@
 import { HttpRequest, InvocationContext } from '@azure/functions';
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 import { AuthenticatedRequest } from './endpointWrapper';
+import { createLogger, logSecurityEvent } from '../utils/logger';
 
 /**
  * Rate limiter configurations
@@ -136,6 +137,16 @@ export async function checkRateLimit(
 
     context.log(`Rate limit check passed for ${key}: ${result.remainingPoints} remaining`);
 
+    // Log rate limit headers for monitoring
+    const logger = createLogger(context);
+    logger.info('Rate Limit Headers', {
+      key,
+      type,
+      'X-RateLimit-Limit': rateLimiter.points.toString(),
+      'X-RateLimit-Remaining': result.remainingPoints.toString(),
+      'X-RateLimit-Reset': new Date(Date.now() + result.msBeforeNext).toISOString(),
+    });
+
     return {
       allowed: true,
       remaining: result.remainingPoints,
@@ -145,6 +156,24 @@ export async function checkRateLimit(
     if (error instanceof Error && 'msBeforeNext' in error) {
       const rateLimitError = error as any;
       const resetTime = new Date(Date.now() + rateLimitError.msBeforeNext);
+      const retryAfter = Math.ceil(rateLimitError.msBeforeNext / 1000);
+
+      // Log rate limit exceeded to Application Insights with severity=warning
+      const logger = createLogger(context);
+      const correlationId = safeGetHeader(request.headers, 'x-correlation-id') || 'unknown';
+
+      logSecurityEvent(logger, 'Rate Limit Exceeded', correlationId, {
+        key,
+        type,
+        'X-RateLimit-Limit': rateLimiter.points.toString(),
+        'X-RateLimit-Remaining': '0',
+        'X-RateLimit-Reset': resetTime.toISOString(),
+        'Retry-After': retryAfter.toString(),
+        ipAddress: safeGetHeader(request.headers, 'x-forwarded-for') || 'unknown',
+        userAgent: safeGetHeader(request.headers, 'user-agent') || 'unknown',
+        url: request.url,
+        method: request.method,
+      });
 
       context.warn(`Rate limit exceeded for ${key}, reset at ${resetTime.toISOString()}`);
 
@@ -156,7 +185,7 @@ export async function checkRateLimit(
           status: 429,
           headers: {
             'Content-Type': 'application/json',
-            'Retry-After': Math.ceil(rateLimitError.msBeforeNext / 1000).toString(),
+            'Retry-After': retryAfter.toString(),
             'X-RateLimit-Limit': rateLimiter.points.toString(),
             'X-RateLimit-Remaining': '0',
             'X-RateLimit-Reset': resetTime.toISOString(),
@@ -164,7 +193,7 @@ export async function checkRateLimit(
           body: JSON.stringify({
             error: 'rate_limit_exceeded',
             error_description: 'Too many requests. Please try again later.',
-            retry_after: Math.ceil(rateLimitError.msBeforeNext / 1000),
+            retry_after: retryAfter,
             reset_time: resetTime.toISOString(),
           }),
         },

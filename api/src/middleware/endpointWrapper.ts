@@ -11,6 +11,7 @@ import { enforceHttps, addHttpsSecurityHeaders } from './httpsEnforcement';
 import { handleError } from '../utils/errors';
 import { getRequestId } from '../utils/requestId';
 import { checkRateLimit, RateLimiterType } from './rateLimiter';
+import { validateContentType } from './contentTypeValidator';
 
 // Re-export AuthenticatedRequest for convenience
 export type AuthenticatedRequest = AuthRequest;
@@ -42,6 +43,9 @@ export interface EndpointOptions {
 
   /** Rate limiter type (default: API) */
   rateLimiterType?: RateLimiterType;
+
+  /** Enable Content-Type validation (default: true) */
+  enableContentTypeValidation?: boolean;
 }
 
 /**
@@ -144,6 +148,7 @@ export function wrapEndpoint(
     allowedOrigins = DEFAULT_CORS_ORIGINS,
     enableRateLimit = true,
     rateLimiterType = RateLimiterType.API,
+    enableContentTypeValidation = true,
   } = options;
 
   return async (
@@ -221,6 +226,38 @@ export function wrapEndpoint(
             ...rateLimitResult.response,
             headers: {
               ...(rateLimitResult.response.headers || {}),
+              'X-Request-ID': requestId
+            }
+          };
+        }
+      }
+
+      // Apply Content-Type validation for mutation methods
+      if (enableContentTypeValidation) {
+        const contentTypeResult = await validateContentType(request, context);
+
+        if (!contentTypeResult.valid && contentTypeResult.response) {
+          const duration = Date.now() - startTime;
+          context.warn(`[${requestId}] Content-Type validation failed (${duration}ms)`);
+
+          // Add CORS headers and request ID to error response
+          if (enableCors) {
+            const origin = safeGetHeader(request.headers, 'origin');
+            const corsHeaders = getCorsHeaders(origin, allowedOrigins);
+            return {
+              ...contentTypeResult.response,
+              headers: {
+                ...(contentTypeResult.response.headers || {}),
+                ...corsHeaders,
+                'X-Request-ID': requestId
+              },
+            };
+          }
+
+          return {
+            ...contentTypeResult.response,
+            headers: {
+              ...(contentTypeResult.response.headers || {}),
               'X-Request-ID': requestId
             }
           };
