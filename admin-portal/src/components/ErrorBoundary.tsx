@@ -1,92 +1,98 @@
-import { Button } from '@mantine/core';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Alert, Button, Stack, Text } from '@mantine/core';
+import { IconAlertCircle } from '@tabler/icons-react';
 
-// ErrorBoundary.tsx - Error boundary with retry functionality
-import type React from 'react';
-import { Component, type ReactNode } from 'react';
-import './ErrorBoundary.css';
-
-interface Props {
+interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
-  onReset?: () => void;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
-interface State {
+interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
-  errorInfo: React.ErrorInfo | null;
 }
 
-class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
+/**
+ * Error Boundary Component
+ *
+ * Catches React errors in child components and displays a fallback UI
+ * instead of crashing the entire application.
+ *
+ * Usage:
+ * ```tsx
+ * <ErrorBoundary>
+ *   <DataTable {...props} />
+ * </ErrorBoundary>
+ * ```
+ */
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {
       hasError: false,
       error: null,
-      errorInfo: null,
     };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return {
       hasError: true,
       error,
-      errorInfo: null,
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    // Log error to console in development
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    this.setState({
-      error,
-      errorInfo,
-    });
+
+    // Call optional error handler
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    }
+
+    // In production, you could send this to an error reporting service
+    // Example: Sentry.captureException(error, { extra: errorInfo });
   }
 
-  handleReset = () => {
+  handleReset = (): void => {
     this.setState({
       hasError: false,
       error: null,
-      errorInfo: null,
     });
-    this.props.onReset?.();
   };
 
-  render() {
+  render(): ReactNode {
     if (this.state.hasError) {
+      // Custom fallback UI
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
+      // Default fallback UI
       return (
-        <div className="error-boundary-container">
-          <div className="error-boundary-content">
-            <div className="error-icon" role="img" aria-label="Error">
-              ⚠️
-            </div>
-            <h2>Something went wrong</h2>
-            <p className="error-message">
-              {this.state.error?.message || 'An unexpected error occurred'}
-            </p>
-            <div className="error-actions">
-              <Button color="blue" leftSection="refresh" onClick={this.handleReset}>
-                Try Again
-              </Button>
-              <Button onClick={() => window.location.reload()}>Reload Page</Button>
-            </div>
-            {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
-              <details className="error-details">
-                <summary>Error Details (Development Only)</summary>
-                <pre>{this.state.errorInfo.componentStack}</pre>
-              </details>
-            )}
-          </div>
-        </div>
+        <Alert
+          icon={<IconAlertCircle size={16} />}
+          title="Something went wrong"
+          color="red"
+          variant="light"
+        >
+          <Stack gap="sm">
+            <Text size="sm">
+              {this.state.error?.message || 'An unexpected error occurred while rendering this component.'}
+            </Text>
+            <Button
+              size="xs"
+              variant="light"
+              onClick={this.handleReset}
+            >
+              Try Again
+            </Button>
+          </Stack>
+        </Alert>
       );
     }
 
     return this.props.children;
   }
 }
-
-export default ErrorBoundary;

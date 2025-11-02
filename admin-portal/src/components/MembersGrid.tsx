@@ -11,6 +11,7 @@ import type { Member } from '../services/api';
 import { exportToCSV, exportToPDF } from '../utils/exportUtils';
 import { sanitizeGridCell } from '../utils/sanitize';
 import { getStatusColor, getMembershipColor } from '../utils/colors';
+import { ErrorBoundary } from './ErrorBoundary';
 import './MembersGrid.css';
 
 interface MembersGridProps {
@@ -469,29 +470,31 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         </Group>
       </Modal>
 
-      {/* DataTable from mantine-datatable */}
-      <DataTable
-        withTableBorder
-        withColumnBorders
-        striped
-        highlightOnHover
-        records={sortedData}
-        columns={effectiveColumns}
-        fetching={loading}
-        totalRecords={filteredCount}
-        recordsPerPage={pageSize}
-        page={page}
-        onPageChange={updatePage}
-        recordsPerPageOptions={[10, 20, 50, 100]}
-        onRecordsPerPageChange={updatePageSize}
-        sortStatus={sortStatus}
-        onSortStatusChange={setSortStatus}
-        selectedRecords={sortedData.filter((m) => selectedIds.includes(m.org_id))}
-        onSelectedRecordsChange={(records) => setSelectedIds(records.map((r) => r.org_id))}
-        storeColumnsKey="members-grid"
-        onRowClick={({ record }) => onViewDetails(record)}
-        rowStyle={() => ({ cursor: 'pointer' })}
-      />
+      {/* DataTable from mantine-datatable wrapped in ErrorBoundary */}
+      <ErrorBoundary>
+        <DataTable
+          withTableBorder
+          withColumnBorders
+          striped
+          highlightOnHover
+          records={sortedData}
+          columns={effectiveColumns}
+          fetching={loading}
+          totalRecords={filteredCount}
+          recordsPerPage={pageSize}
+          page={page}
+          onPageChange={updatePage}
+          recordsPerPageOptions={[10, 20, 50, 100]}
+          onRecordsPerPageChange={updatePageSize}
+          sortStatus={sortStatus}
+          onSortStatusChange={setSortStatus}
+          selectedRecords={sortedData.filter((m) => selectedIds.includes(m.org_id))}
+          onSelectedRecordsChange={(records) => setSelectedIds(records.map((r) => r.org_id))}
+          storeColumnsKey="members-grid"
+          onRowClick={({ record }) => onViewDetails(record)}
+          rowStyle={() => ({ cursor: 'pointer' })}
+        />
+      </ErrorBoundary>
     </div>
   );
 };
