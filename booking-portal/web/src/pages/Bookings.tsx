@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Grid, GridColumn as Column, GridCellProps, GridNoRecords } from '@progress/kendo-react-grid';
-import { Button } from '@mantine/core';
-
+import { DataTable, useDataTableColumns } from 'mantine-datatable';
+import { Button, Loader } from '@mantine/core';
 
 import Breadcrumb from '../components/Breadcrumb';
 import EmptyState from '../components/EmptyState';
@@ -61,87 +60,98 @@ const Bookings: React.FC = () => {
 
   const statusFilter = searchParams.get('status');
 
-  // Custom cell renderers
-  const StatusCell = (props: GridCellProps) => {
-    const status = props.dataItem.processingStatus;
-    return (
-      <td>
-        <span className={`k-badge k-badge-solid ${
-          status === 'validated' ? 'k-badge-success' :
-          status === 'pending' ? 'k-badge-warning' :
-          'k-badge-info'
-        }`}>
-          {status}
-        </span>
-      </td>
-    );
-  };
+  // Column definitions for mantine-datatable
+  const { effectiveColumns } = useDataTableColumns<Booking>({
+    key: 'bookings-grid',
+    columns: [
+      {
+        accessor: 'carrierBookingReference',
+        title: 'Booking Reference',
+        width: 180,
+        sortable: true,
+        render: (booking) => booking.carrierBookingReference || booking.documentNumber || '-',
+      },
+      {
+        accessor: 'containerNumber',
+        title: 'Container',
+        width: 150,
+        sortable: true,
+        render: (booking) => booking.containerNumber || '-',
+      },
+      {
+        accessor: 'uploadTimestamp',
+        title: 'Uploaded',
+        width: 180,
+        sortable: true,
+        render: (booking) => new Date(booking.uploadTimestamp).toLocaleString(),
+      },
+      {
+        accessor: 'processingStatus',
+        title: 'Status',
+        width: 120,
+        sortable: true,
+        render: (booking) => {
+          const status = booking.processingStatus;
+          const badgeColor =
+            status === 'validated' ? '#10b981' :
+            status === 'pending' ? '#f59e0b' :
+            '#3b82f6';
 
-  const ConfidenceCell = (props: GridCellProps) => {
-    const confidence = props.dataItem.confidenceScore || 0;
-    const percentage = (confidence * 100).toFixed(1);
-    const color = confidence >= 0.90 ? '#10b981' : confidence >= 0.80 ? '#f59e0b' : '#ef4444';
+          return (
+            <span
+              style={{
+                display: 'inline-block',
+                padding: '4px 12px',
+                borderRadius: '12px',
+                backgroundColor: badgeColor,
+                color: 'white',
+                fontSize: '12px',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+              }}
+            >
+              {status}
+            </span>
+          );
+        },
+      },
+      {
+        accessor: 'confidenceScore',
+        title: 'Confidence',
+        width: 120,
+        sortable: true,
+        render: (booking) => {
+          const confidence = booking.confidenceScore || 0;
+          const percentage = (confidence * 100).toFixed(1);
+          const color = confidence >= 0.90 ? '#10b981' : confidence >= 0.80 ? '#f59e0b' : '#ef4444';
 
-    return (
-      <td style={{ color, fontWeight: 600 }}>
-        {percentage}%
-      </td>
-    );
-  };
-
-  const ActionsCell = (props: GridCellProps) => {
-    const booking = props.dataItem;
-    return (
-      <td>
-        {booking.processingStatus === 'pending' ? (
+          return (
+            <span style={{ color, fontWeight: 600 }}>
+              {percentage}%
+            </span>
+          );
+        },
+      },
+      {
+        accessor: 'actions',
+        title: 'Actions',
+        width: 120,
+        render: (booking) => (
           <Button
-            color="blue"
-            size="sm"
-            onClick={() => navigate(`/validate/${booking.id}`)}
-            aria-label={`Validate booking ${booking.carrierBookingReference || booking.documentNumber}`}
+            color={booking.processingStatus === 'pending' ? 'blue' : 'gray'}
+            size="xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/validate/${booking.id}`);
+            }}
+            aria-label={`${booking.processingStatus === 'pending' ? 'Validate' : 'View'} booking ${booking.carrierBookingReference || booking.documentNumber}`}
           >
-            Validate
+            {booking.processingStatus === 'pending' ? 'Validate' : 'View'}
           </Button>
-        ) : (
-          <Button
-            themeColor="base"
-            size="sm"
-            onClick={() => navigate(`/validate/${booking.id}`)}
-            aria-label={`View booking ${booking.carrierBookingReference || booking.documentNumber}`}
-          >
-            View
-          </Button>
-        )}
-      </td>
-    );
-  };
-
-  const DateCell = (props: GridCellProps) => {
-    const date = new Date(props.dataItem[props.field!]);
-    return (
-      <td>
-        {date.toLocaleString()}
-      </td>
-    );
-  };
-
-  const BookingRefCell = (props: GridCellProps) => {
-    const booking = props.dataItem;
-    return (
-      <td>
-        {booking.carrierBookingReference || booking.documentNumber || '-'}
-      </td>
-    );
-  };
-
-  const ContainerCell = (props: GridCellProps) => {
-    const booking = props.dataItem;
-    return (
-      <td>
-        {booking.containerNumber || '-'}
-      </td>
-    );
-  };
+        ),
+      },
+    ],
+  });
 
   return (
     <div>
@@ -150,8 +160,8 @@ const Bookings: React.FC = () => {
         <h2>Bookings</h2>
         <div role="group" aria-label="Filter bookings by status" style={{ display: 'flex', gap: '8px' }}>
           <Button
-            color={!statusFilter ? 'primary' : 'base' === 'error' ? 'red' : !statusFilter ? 'primary' : 'base' === 'success' ? 'green' : !statusFilter ? 'primary' : 'base' === 'warning' ? 'orange' : !statusFilter ? 'primary' : 'base' === 'info' ? 'cyan' : 'blue'}
-            fillMode={!statusFilter ? 'solid' : 'flat'}
+            color={!statusFilter ? 'blue' : 'gray'}
+            variant={!statusFilter ? 'filled' : 'outline'}
             onClick={() => navigate('/bookings')}
             aria-label="Show all bookings"
             aria-pressed={!statusFilter}
@@ -159,8 +169,8 @@ const Bookings: React.FC = () => {
             All
           </Button>
           <Button
-            color={statusFilter === 'pending' ? 'primary' : 'base' === 'error' ? 'red' : statusFilter === 'pending' ? 'primary' : 'base' === 'success' ? 'green' : statusFilter === 'pending' ? 'primary' : 'base' === 'warning' ? 'orange' : statusFilter === 'pending' ? 'primary' : 'base' === 'info' ? 'cyan' : 'blue'}
-            fillMode={statusFilter === 'pending' ? 'solid' : 'flat'}
+            color={statusFilter === 'pending' ? 'blue' : 'gray'}
+            variant={statusFilter === 'pending' ? 'filled' : 'outline'}
             onClick={() => navigate('/bookings?status=pending')}
             aria-label="Show pending bookings"
             aria-pressed={statusFilter === 'pending'}
@@ -168,8 +178,8 @@ const Bookings: React.FC = () => {
             Pending
           </Button>
           <Button
-            color={statusFilter === 'validated' ? 'primary' : 'base' === 'error' ? 'red' : statusFilter === 'validated' ? 'primary' : 'base' === 'success' ? 'green' : statusFilter === 'validated' ? 'primary' : 'base' === 'warning' ? 'orange' : statusFilter === 'validated' ? 'primary' : 'base' === 'info' ? 'cyan' : 'blue'}
-            fillMode={statusFilter === 'validated' ? 'solid' : 'flat'}
+            color={statusFilter === 'validated' ? 'blue' : 'gray'}
+            variant={statusFilter === 'validated' ? 'filled' : 'outline'}
             onClick={() => navigate('/bookings?status=validated')}
             aria-label="Show validated bookings"
             aria-pressed={statusFilter === 'validated'}
@@ -212,25 +222,16 @@ const Bookings: React.FC = () => {
             icon="📋"
           />
         ) : (
-          <Grid
-            data={bookings}
-            style={{ height: 'auto' }}
-            scrollable="virtual"
-            rowHeight={40}
-            pageSize={50}
-          >
-            <GridNoRecords>
-              <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-                No bookings found
-              </div>
-            </GridNoRecords>
-            <Column field="carrierBookingReference" title="Booking Reference" cells={{ data: BookingRefCell }} />
-            <Column field="containerNumber" title="Container" cells={{ data: ContainerCell }} />
-            <Column field="uploadTimestamp" title="Uploaded" cells={{ data: DateCell }} width="180px" />
-            <Column field="processingStatus" title="Status" cells={{ data: StatusCell }} width="120px" />
-            <Column field="confidenceScore" title="Confidence" cells={{ data: ConfidenceCell }} width="120px" />
-            <Column title="Actions" cells={{ data: ActionsCell }} width="120px" />
-          </Grid>
+          <DataTable
+            records={bookings}
+            columns={effectiveColumns}
+            storeColumnsKey="bookings-grid"
+            withTableBorder
+            striped
+            highlightOnHover
+            noRecordsText="No bookings found"
+            minHeight={200}
+          />
         )}
       </div>
     </div>
