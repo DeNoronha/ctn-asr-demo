@@ -4,9 +4,7 @@ import {
   filterBy,
   orderBy,
 } from '@progress/kendo-data-query';
-import { Button, TextInput } from '@mantine/core';
-
-import { DropDownButton } from '@progress/kendo-react-buttons';
+import { Button, TextInput, Menu } from '@mantine/core';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 // TEMPORARILY DISABLED: Excel export causes react-dom/server Node.js build issues
 // import { ExcelExport } from '@progress/kendo-react-excel-export';
@@ -21,7 +19,6 @@ import {
   GridColumnMenuSort,
   GridToolbar,
 } from '@progress/kendo-react-grid';
-import { type InputChangeEvent } from '@progress/kendo-react-inputs';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../contexts/NotificationContext';
@@ -205,8 +202,8 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     }
   };
 
-  const handleSearchChange = (e: InputChangeEvent) => {
-    const value = e.value;
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
     setSearchValue(value);
 
     if (value) {
@@ -588,35 +585,59 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                       style={{ width: '300px' }}
                     />
                     <Button
-                      color={showAdvancedFilter ? 'primary' : 'base' === 'error' ? 'red' : showAdvancedFilter ? 'primary' : 'base' === 'success' ? 'green' : showAdvancedFilter ? 'primary' : 'base' === 'warning' ? 'orange' : showAdvancedFilter ? 'primary' : 'base' === 'info' ? 'cyan' : 'blue'}
-                      fillMode={showAdvancedFilter ? 'solid' : 'outline'}
+                      color="blue"
+                      variant={showAdvancedFilter ? 'filled' : 'outline'}
                       onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
-                      icon="filter"
                     >
                       {showAdvancedFilter ? t('common.hide', 'Hide') : t('common.advanced', 'Advanced')}{' '}
                       {t('common.filter')}
                     </Button>
                   </>
                 )}
-                <DropDownButton
-                  text={t('common.export')}
-                  icon="download"
-                  items={exportMenuItems}
-                  color="blue"
-                  variant="outline"
-                />
+                <Menu>
+                  <Menu.Target>
+                    <Button variant="outline" color="blue">
+                      {t('common.export')}
+                    </Button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    {exportMenuItems.map((item, index) => (
+                      <Menu.Item key={index} onClick={item.click}>
+                        {item.text}
+                      </Menu.Item>
+                    ))}
+                  </Menu.Dropdown>
+                </Menu>
                 {selectedIds.length > 0 && (
-                  <DropDownButton
-                    text={`${t('members.bulkActions')} (${selectedIds.length})`}
-                    items={bulkActions}
-                    color="cyan"
-                  />
+                  <Menu>
+                    <Menu.Target>
+                      <Button color="cyan">
+                        {`${t('members.bulkActions')} (${selectedIds.length})`}
+                      </Button>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      {bulkActions.map((item, index) => (
+                        <Menu.Item key={index} onClick={item.click}>
+                          {item.text}
+                        </Menu.Item>
+                      ))}
+                    </Menu.Dropdown>
+                  </Menu>
                 )}
-                <DropDownButton
-                  text={t('grid.columns', 'Columns')}
-                  icon="columns"
-                  items={columnMenuItems}
-                />
+                <Menu>
+                  <Menu.Target>
+                    <Button variant="default">
+                      {t('grid.columns', 'Columns')}
+                    </Button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    {columnMenuItems.map((item, index) => (
+                      <Menu.Item key={index} onClick={item.click}>
+                        {item.text} {item.icon === 'check' ? '✓' : ''}
+                      </Menu.Item>
+                    ))}
+                  </Menu.Dropdown>
+                </Menu>
                 <Button
                   variant="subtle"
                   onClick={resetColumns}
