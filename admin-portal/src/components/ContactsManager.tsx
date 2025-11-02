@@ -1,8 +1,7 @@
 import { Button, Modal } from '@mantine/core';
 import { DataTable, useDataTableColumns } from 'mantine-datatable';
 import { AlertTriangle, Pencil, Plus, Trash2, Users } from './icons';
-import type React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import type { LegalEntityContact } from '../services/api';
 import { safeArray, safeLength } from '../utils/safeArray';
 import { sanitizeText } from '../utils/sanitize';
@@ -22,7 +21,7 @@ interface ContactsManagerProps {
   onContactDelete: (contactId: string) => Promise<void>;
 }
 
-export const ContactsManager: React.FC<ContactsManagerProps> = ({
+const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
   legalEntityId,
   contacts,
   onContactCreate,
@@ -260,3 +259,5 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
     </div>
   );
 };
+
+export const ContactsManager = React.memo(ContactsManagerComponent);

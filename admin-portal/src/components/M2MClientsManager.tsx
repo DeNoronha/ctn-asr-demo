@@ -1,8 +1,7 @@
 import { Button, TextInput, Textarea, Checkbox, Modal, Group } from '@mantine/core';
 import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import { Key, Plus, Trash2, Copy, AlertTriangle } from './icons';
-import type React from 'react';
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { formatDate } from '../utils/dateUtils';
@@ -38,7 +37,7 @@ const AVAILABLE_SCOPES = [
   { value: 'Orchestration.Read', label: 'Orchestration.Read - Access orchestration data' },
 ];
 
-export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
+const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
   legalEntityId,
   legalEntityName,
 }) => {
@@ -523,3 +522,5 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
     </div>
   );
 };
+
+export const M2MClientsManager = React.memo(M2MClientsManagerComponent);
