@@ -98,7 +98,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
       return (
         <DatePicker
           value={criterion.value ? new Date(criterion.value) : null}
-          onChange={(value) => updateCriteria(criterion.id, { value: value })}
+          onChange={(e) => updateCriteria(criterion.id, { value: e.value })}
           format="yyyy-MM-dd"
         />
       );
@@ -109,8 +109,8 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
       return (
         <Select
           data={options}
-          value={criterion.value}
-          onChange={(value) => updateCriteria(criterion.id, { value: value })}
+          value={(criterion.value as string) || null}
+          onChange={(value) => updateCriteria(criterion.id, { value: value || '' })}
         />
       );
     }
@@ -162,7 +162,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
           <Select
             data={['and', 'or']}
             value={logic}
-            onChange={(value) => setLogic(value)}
+            onChange={(value) => setLogic((value as 'and' | 'or') || 'and')}
             style={{ width: '100px' }}
           />
         </div>
@@ -175,25 +175,23 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
 
             <Select
               data={fields}
-              textField="label"
-              dataItemKey="value"
-              value={fields.find((f) => f.value === criterion.field)}
+              value={criterion.field}
               onChange={(value) => {
-                updateCriteria(criterion.id, {
-                  field: value,
-                  operator: getOperators(value)[0].value,
-                  value: '',
-                });
+                if (value) {
+                  updateCriteria(criterion.id, {
+                    field: value,
+                    operator: getOperators(value)[0].value,
+                    value: '',
+                  });
+                }
               }}
               style={{ width: '180px' }}
             />
 
             <Select
               data={getOperators(criterion.field)}
-              textField="label"
-              dataItemKey="value"
-              value={getOperators(criterion.field).find((o) => o.value === criterion.operator)}
-              onChange={(value) => updateCriteria(criterion.id, { operator: value })}
+              value={criterion.operator}
+              onChange={(value) => updateCriteria(criterion.id, { operator: value || '' })}
               style={{ width: '150px' }}
             />
 

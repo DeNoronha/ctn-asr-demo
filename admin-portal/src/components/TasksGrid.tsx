@@ -67,22 +67,22 @@ const TasksGrid: React.FC = () => {
   });
 
   const taskTypeOptions = [
-    { text: 'KvK Verification', value: 'kvk_verification' },
-    { text: 'Member Approval', value: 'member_approval' },
-    { text: 'Document Review', value: 'document_review' },
-    { text: 'Support Ticket', value: 'support_ticket' },
-    { text: 'Token Renewal', value: 'token_renewal' },
-    { text: 'Billing Issue', value: 'billing_issue' },
-    { text: 'Compliance Check', value: 'compliance_check' },
-    { text: 'Manual Review', value: 'manual_review' },
-    { text: 'Other', value: 'other' },
+    { label: 'KvK Verification', value: 'kvk_verification' },
+    { label: 'Member Approval', value: 'member_approval' },
+    { label: 'Document Review', value: 'document_review' },
+    { label: 'Support Ticket', value: 'support_ticket' },
+    { label: 'Token Renewal', value: 'token_renewal' },
+    { label: 'Billing Issue', value: 'billing_issue' },
+    { label: 'Compliance Check', value: 'compliance_check' },
+    { label: 'Manual Review', value: 'manual_review' },
+    { label: 'Other', value: 'other' },
   ];
 
   const priorityOptions = [
-    { text: 'Low', value: 'low' },
-    { text: 'Medium', value: 'medium' },
-    { text: 'High', value: 'high' },
-    { text: 'Urgent', value: 'urgent' },
+    { label: 'Low', value: 'low' },
+    { label: 'Medium', value: 'medium' },
+    { label: 'High', value: 'high' },
+    { label: 'Urgent', value: 'urgent' },
   ];
 
   const _statusOptions = [
@@ -468,10 +468,8 @@ const TasksGrid: React.FC = () => {
               <label>Task Type</label>
               <Select
                 data={taskTypeOptions}
-                textField="text"
-                dataItemKey="value"
-                value={taskTypeOptions.find((o) => o.value === formData.task_type)}
-                onChange={(value) => setFormData({ ...formData, task_type: value })}
+                value={formData.task_type}
+                onChange={(value) => setFormData({ ...formData, task_type: value || '' })}
               />
             </div>
 
@@ -498,10 +496,8 @@ const TasksGrid: React.FC = () => {
               <label>Priority</label>
               <Select
                 data={priorityOptions}
-                textField="text"
-                dataItemKey="value"
-                value={priorityOptions.find((o) => o.value === formData.priority)}
-                onChange={(value) => setFormData({ ...formData, priority: value })}
+                value={formData.priority}
+                onChange={(value) => setFormData({ ...formData, priority: (value as 'low' | 'medium' | 'high' | 'urgent') || 'medium' })}
               />
             </div>
 
@@ -518,7 +514,7 @@ const TasksGrid: React.FC = () => {
               <label>Due Date</label>
               <DatePicker
                 value={formData.due_date}
-                onChange={(value) => setFormData({ ...formData, due_date: value })}
+                onChange={(e) => setFormData({ ...formData, due_date: e.value })}
                 format="dd/MM/yyyy"
               />
             </div>
@@ -558,10 +554,8 @@ const TasksGrid: React.FC = () => {
               <label>Priority</label>
               <Select
                 data={priorityOptions}
-                textField="text"
-                dataItemKey="value"
-                value={priorityOptions.find((o) => o.value === formData.priority)}
-                onChange={(value) => setFormData({ ...formData, priority: value })}
+                value={formData.priority}
+                onChange={(value) => setFormData({ ...formData, priority: (value as 'low' | 'medium' | 'high' | 'urgent') || 'medium' })}
               />
             </div>
 
@@ -578,7 +572,7 @@ const TasksGrid: React.FC = () => {
               <label>Due Date</label>
               <DatePicker
                 value={formData.due_date}
-                onChange={(value) => setFormData({ ...formData, due_date: value })}
+                onChange={(e) => setFormData({ ...formData, due_date: e.value })}
                 format="dd/MM/yyyy"
               />
             </div>
