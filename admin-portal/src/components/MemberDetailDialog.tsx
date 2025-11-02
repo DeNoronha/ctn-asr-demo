@@ -1,7 +1,4 @@
-import { Button } from '@mantine/core';
-
-import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
+import { Button, Modal, Tabs } from '@mantine/core';
 // MemberDetailDialog.tsx - Modal for member details and editing
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -30,7 +27,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
   onUpdate,
   onIssueToken,
 }) => {
-  const [selected, setSelected] = useState(0);
+  const [activeTab, setActiveTab] = useState<string | null>('overview');
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
 
@@ -154,14 +151,24 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
   };
 
   return (
-    <Dialog
-      title={`Member Details: ${member.legal_name}`}
+    <Modal
+      opened
       onClose={onClose}
-      width={1000}
-      height={700}
+      title={`Member Details: ${member.legal_name}`}
+      size="xl"
+      styles={{ body: { minHeight: '600px' } }}
     >
-      <TabStrip selected={selected} onSelect={(e) => setSelected(e.selected)}>
-        <TabStripTab title="Overview">
+      <Tabs value={activeTab} onChange={setActiveTab}>
+        <Tabs.List>
+          <Tabs.Tab value="overview">Overview</Tabs.Tab>
+          <Tabs.Tab value="company">Company</Tabs.Tab>
+          <Tabs.Tab value="contacts">Contacts</Tabs.Tab>
+          <Tabs.Tab value="endpoints">Endpoints</Tabs.Tab>
+          <Tabs.Tab value="activity">Activity</Tabs.Tab>
+          <Tabs.Tab value="tokens">Tokens</Tabs.Tab>
+        </Tabs.List>
+
+        <Tabs.Panel value="overview" pt="md">
           <div className="detail-content">
             {!isEditing ? (
               <div className="detail-view">
@@ -248,9 +255,9 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
               />
             )}
           </div>
-        </TabStripTab>
+        </Tabs.Panel>
 
-        <TabStripTab title="Company">
+        <Tabs.Panel value="company" pt="md">
           <div className="detail-content">
             {loading ? (
               <div className="loading-state">Loading company information...</div>
@@ -266,9 +273,9 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
               />
             )}
           </div>
-        </TabStripTab>
+        </Tabs.Panel>
 
-        <TabStripTab title="Contacts">
+        <Tabs.Panel value="contacts" pt="md">
           <div className="detail-content">
             {loading ? (
               <div className="loading-state">Loading contacts...</div>
@@ -284,15 +291,15 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
               />
             )}
           </div>
-        </TabStripTab>
+        </Tabs.Panel>
 
-        <TabStripTab title="Endpoints">
+        <Tabs.Panel value="endpoints" pt="md">
           <div className="detail-content">
             <EndpointManagement legalEntityId={member.org_id} legalEntityName={member.legal_name} />
           </div>
-        </TabStripTab>
+        </Tabs.Panel>
 
-        <TabStripTab title="Activity">
+        <Tabs.Panel value="activity" pt="md">
           <div className="detail-content">
             <div className="activity-timeline">
               <div className="timeline-item">
@@ -325,9 +332,9 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
               )}
             </div>
           </div>
-        </TabStripTab>
+        </Tabs.Panel>
 
-        <TabStripTab title="Tokens">
+        <Tabs.Panel value="tokens" pt="md">
           <div className="detail-content">
             <div className="tokens-section">
               <h3>Token Management</h3>
@@ -348,13 +355,13 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
               )}
             </div>
           </div>
-        </TabStripTab>
-      </TabStrip>
+        </Tabs.Panel>
+      </Tabs>
 
-      <DialogActionsBar>
-        <Button onClick={onClose}>Close</Button>
-      </DialogActionsBar>
-    </Dialog>
+      <Button onClick={onClose} mt="xl" fullWidth>
+        Close
+      </Button>
+    </Modal>
   );
 };
 

@@ -1,7 +1,6 @@
-import { Button } from '@mantine/core';
-import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
+import { Button, Modal, Group } from '@mantine/core';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import './ConfirmDialog.css';
 
 interface ConfirmDialogProps {
@@ -34,32 +33,17 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onCancel,
   icon,
 }) => {
-  const [cancelButtonElement, setCancelButtonElement] = useState<HTMLElement | null>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
   // Auto-focus cancel button when dialog opens (safe default for destructive actions)
   useEffect(() => {
-    if (isOpen && cancelButtonElement) {
-      // Small delay to ensure dialog is fully rendered
+    if (isOpen && cancelButtonRef.current) {
+      // Small delay to ensure modal is fully rendered
       setTimeout(() => {
-        cancelButtonElement.focus();
+        cancelButtonRef.current?.focus();
       }, 100);
     }
-  }, [isOpen, cancelButtonElement]);
-
-  // Handle keyboard shortcuts
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    // Escape key handled by Kendo Dialog onClose
-    // Enter key on focused button handled by button's onClick
-
-    // Additional shortcuts for convenience
-    if (event.key === 'Enter' && event.target === event.currentTarget) {
-      // If Enter pressed on dialog itself (not on button), default to cancel for safety
-      event.preventDefault();
-      onCancel();
-    }
-  };
-
-  if (!isOpen) return null;
+  }, [isOpen]);
 
   const handleConfirm = async () => {
     try {
@@ -73,29 +57,26 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   };
 
   return (
-    <Dialog
-      title={title}
+    <Modal
+      opened={isOpen}
       onClose={onCancel}
-      width={450}
+      title={title}
+      size="md"
+      centered
     >
-      <div
-        className="confirm-dialog-content"
-        role="alertdialog"
-        aria-labelledby="confirm-dialog-title"
-        aria-describedby="confirm-dialog-message"
-        onKeyDown={handleKeyDown}
-      >
+      <div className="confirm-dialog-content">
         {icon && <div className="confirm-dialog-icon" aria-hidden="true">{icon}</div>}
-        <p id="confirm-dialog-message" className="confirm-dialog-message">{message}</p>
+        <p className="confirm-dialog-message">{message}</p>
       </div>
 
-      <DialogActionsBar>
+      <Group mt="xl" justify="flex-end">
         <Button
+          ref={cancelButtonRef}
           onClick={onCancel}
           variant="default"
           aria-label={`${cancelLabel} - Press Escape to cancel`}
         >
-          <span ref={(el) => setCancelButtonElement(el?.closest('button') || null)}>{cancelLabel}</span>
+          {cancelLabel}
         </Button>
         <Button
           color={confirmTheme === 'error' ? 'red' : 'blue'}
@@ -104,7 +85,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         >
           {confirmLabel}
         </Button>
-      </DialogActionsBar>
-    </Dialog>
+      </Group>
+    </Modal>
   );
 };
