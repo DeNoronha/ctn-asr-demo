@@ -1,4 +1,4 @@
-import { Button, TextInput, Select, Modal, Group } from '@mantine/core';
+import { Button, TextInput, Select, Modal, Group, Stack, Skeleton } from '@mantine/core';
 import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import axios from 'axios';
 import {
@@ -31,6 +31,7 @@ import '../styles/progressive-forms.css';
 import { TEXT_COLORS, getStatusColor, getMembershipColor } from '../utils/colors';
 import { getGridActionLabel, getValidationProps, getDescribedById } from '../utils/aria';
 import { ErrorBoundary } from './ErrorBoundary';
+import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
 
 interface IdentifiersManagerProps {
   legalEntityId: string;

@@ -10,6 +10,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { apiV2 } from '../services/apiV2';
 import './KvkRegistryDetails.css';
+import { formatDate } from '../utils/dateFormat';
 
 interface KvkRegistryData {
   registry_data_id: string;
@@ -82,14 +83,6 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
   };
 
   const getStatusBadge = (status?: string) => {

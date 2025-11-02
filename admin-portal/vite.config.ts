@@ -52,6 +52,31 @@ export default defineConfig({
         }
         warn(warning);
       },
+      output: {
+        // Manual chunk splitting for better caching and code splitting
+        manualChunks: {
+          // Core React libraries
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+
+          // Mantine UI libraries (largest vendor dependency)
+          'mantine-core': ['@mantine/core', '@mantine/hooks'],
+          'mantine-datatable': ['mantine-datatable'],
+          'mantine-forms': ['@mantine/form', '@mantine/dates'],
+          'mantine-notifications': ['@mantine/notifications'],
+
+          // Icon libraries (can be large)
+          'icons': ['@tabler/icons-react'],
+
+          // Authentication libraries
+          'auth': ['@azure/msal-browser', '@azure/msal-react'],
+
+          // i18n libraries
+          'i18n': ['i18next', 'react-i18next', 'i18next-http-backend'],
+
+          // Excel/export libraries (large, rarely used)
+          'excel-vendor': ['exceljs'],
+        },
+      },
     },
   },
   server: {

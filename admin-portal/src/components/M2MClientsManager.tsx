@@ -12,6 +12,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { getEmptyState } from '../utils/emptyStates';
 import { tokenSuccessMessages } from '../utils/successMessages';
 import { announceToScreenReader } from '../utils/aria';
+import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
 import './IdentifiersManager.css';
 
 interface M2MClient {

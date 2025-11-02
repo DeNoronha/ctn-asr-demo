@@ -3,6 +3,7 @@ import { MantineProvider } from '@mantine/core';
 import { DataTable, type DataTableColumn } from 'mantine-datatable';
 import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
+import { defaultDataTableProps } from '../shared/DataTableConfig';
 
 // Test data
 interface TestRecord {
@@ -74,6 +75,7 @@ const TestDataTable: React.FC<{
   return (
     <MantineProvider>
       <DataTable
+        {...defaultDataTableProps}
         records={paginatedData}
         columns={defaultColumns}
         onRowClick={onRowClick ? ({ record }) => onRowClick(record) : undefined}
@@ -335,6 +337,7 @@ describe('DataTable - Empty State', () => {
     const { container } = render(
       <MantineProvider>
         <DataTable
+          {...defaultDataTableProps}
           records={[]}
           columns={customColumns}
           noRecordsText="No users found"

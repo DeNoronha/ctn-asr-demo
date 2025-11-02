@@ -1,4 +1,4 @@
-import { Button, Modal } from '@mantine/core';
+import { Button, Modal, Stack, Skeleton } from '@mantine/core';
 import { DataTable, useDataTableColumns } from 'mantine-datatable';
 import { AlertTriangle, Pencil, Plus, Trash2, Users } from './icons';
 import React, { useState, useCallback } from 'react';
@@ -9,6 +9,7 @@ import { getContactTypeColor } from '../utils/colors';
 import { ConfirmDialog } from './ConfirmDialog';
 import { ContactForm } from './ContactForm';
 import { EmptyState } from './EmptyState';
+import { defaultDataTableProps } from './shared/DataTableConfig';
 import './ContactsManager.css';
 import { getEmptyState } from '../utils/emptyStates';
 import { contactSuccessMessages } from '../utils/successMessages';
@@ -224,10 +225,7 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
       {contactCount > 0 ? (
         <ErrorBoundary>
           <DataTable
-            withTableBorder
-            withColumnBorders
-            striped
-            highlightOnHover
+            {...defaultDataTableProps}
             records={safeContacts}
             columns={effectiveColumns}
             storeColumnsKey="contacts-grid"

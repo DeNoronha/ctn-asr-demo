@@ -5,6 +5,8 @@ import { AlertCircle, AlertTriangle, CheckCircle, XCircle } from './icons';
 import React, { useEffect, useState, useMemo } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 import { ErrorBoundary } from './ErrorBoundary';
+import { formatDate } from '../utils/dateFormat';
+import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
 
 interface ReviewTask {
   legal_entity_id: string;
@@ -285,7 +287,7 @@ const ReviewTasksComponent: React.FC = () => {
         toggleable: true,
         resizable: true,
         sortable: true,
-        render: (record) => <div>{new Date(record.document_uploaded_at).toLocaleDateString()}</div>,
+        render: (record) => <div>{formatDate(record.document_uploaded_at)}</div>,
       },
       {
         accessor: 'actions' as any,

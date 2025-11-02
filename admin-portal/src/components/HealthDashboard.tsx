@@ -3,11 +3,12 @@
  * Displays comprehensive system health monitoring with real-time status checks
  */
 
-import { Button, Card, Loader } from '@mantine/core';
-
-import { Activity, AlertTriangle, CheckCircle, RefreshCw, XCircle } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { Button, Card, Checkbox, Loader } from '@mantine/core';
+
+import { Activity, AlertTriangle, CheckCircle, RefreshCw, XCircle } from './icons';
+import { formatDateTime } from '../utils/dateFormat';
 import './HealthDashboard.css';
 
 interface HealthCheck {
@@ -159,14 +160,11 @@ export const HealthDashboard: React.FC = () => {
         </div>
         <div className="health-actions">
           <div className="auto-refresh-toggle">
-            <label>
-              <input
-                type="checkbox"
-                checked={autoRefresh}
-                onChange={(e) => setAutoRefresh(e.target.checked)}
-              />
-              <span>Auto-refresh (30s)</span>
-            </label>
+            <Checkbox
+              label="Auto-refresh (30s)"
+              checked={autoRefresh}
+              onChange={(e) => setAutoRefresh(e.currentTarget.checked)}
+            />
             <span className="last-refresh">Last: {formatTimeSince(lastRefresh)}</span>
           </div>
           <Button
@@ -205,7 +203,7 @@ export const HealthDashboard: React.FC = () => {
             <div className="status-detail">
               <span className="detail-label">Last Updated:</span>
               <span className="detail-value">
-                {new Date(health.timestamp).toLocaleString()}
+                {formatDateTime(health.timestamp)}
               </span>
             </div>
           </div>

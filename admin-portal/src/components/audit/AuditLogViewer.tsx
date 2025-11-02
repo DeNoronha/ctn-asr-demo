@@ -3,7 +3,7 @@
  * View and filter all system activity logs
  */
 
-import { Button, Select } from '@mantine/core';
+import { Button, Select, Stack, Skeleton } from '@mantine/core';
 import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import { Download, FileText, RefreshCw } from '../icons';
 import React, { useEffect, useState, useMemo } from 'react';
@@ -13,7 +13,9 @@ import { UserRole } from '../../auth/authConfig';
 import { AuditAction, type AuditLog, auditLogService } from '../../services/auditLogService';
 import { getAuditActionColor } from '../../utils/colors';
 import './AuditLogViewer.css';
+import { formatDateTimeGB } from '../../utils/dateFormat';
 import { ErrorBoundary } from '../ErrorBoundary';
+import { defaultDataTableProps, defaultPaginationOptions } from '../shared/DataTableConfig';
 
 const AuditLogViewer: React.FC = () => {
   const { user } = useAuth();
@@ -80,7 +82,7 @@ const AuditLogViewer: React.FC = () => {
         toggleable: true,
         resizable: true,
         sortable: true,
-        render: (record) => <div>{new Date(record.timestamp).toLocaleString('en-GB')}</div>,
+        render: (record) => <div>{formatDateTimeGB(record.timestamp)}</div>,
       },
       {
         accessor: 'action',
@@ -233,15 +235,26 @@ const AuditLogViewer: React.FC = () => {
         </div>
 
         <ErrorBoundary>
-          <DataTable
-            records={filteredLogs}
-            columns={effectiveColumns}
-            storeColumnsKey="audit-log-grid"
-            withTableBorder
-            withColumnBorders
-            striped
-            highlightOnHover
-          />
+          {_loading && filteredLogs.length === 0 ? (
+            <Stack gap="xs">
+              <Skeleton height={50} radius="md" />
+              <Skeleton height={50} radius="md" />
+              <Skeleton height={50} radius="md" />
+              <Skeleton height={50} radius="md" />
+              <Skeleton height={50} radius="md" />
+              <Skeleton height={50} radius="md" />
+            </Stack>
+          ) : (
+            <DataTable
+              records={filteredLogs}
+              columns={effectiveColumns}
+              storeColumnsKey="audit-log-grid"
+              withTableBorder
+              withColumnBorders
+              striped
+              highlightOnHover
+            />
+          )}
         </ErrorBoundary>
       </div>
     </RoleGuard>

@@ -8,6 +8,7 @@ import { Button, Select } from '@mantine/core';
 import React, { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { apiV2 } from '../services/apiV2';
+import { formatDate, formatDateTime } from '../utils/dateFormat';
 
 // Form label components
 const Label: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
@@ -171,7 +172,7 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
               <div>
                 <strong>Verified:</strong>
                 <p style={{ margin: '4px 0 0 0', color: '#666' }}>
-                  {new Date(tierInfo.verifiedAt).toLocaleString()}
+                  {formatDateTime(tierInfo.verifiedAt)}
                 </p>
               </div>
             )}
@@ -179,7 +180,7 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
               <div>
                 <strong>Re-verification Due:</strong>
                 <p style={{ margin: '4px 0 0 0', color: '#ff9800' }}>
-                  {new Date(tierInfo.reverificationDue).toLocaleDateString()}
+                  {formatDate(tierInfo.reverificationDue)}
                 </p>
               </div>
             )}

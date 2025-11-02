@@ -1,4 +1,4 @@
-import { Button, Menu, Modal, Group, TextInput } from '@mantine/core';
+import { Button, Menu, Modal, Group, TextInput, Stack, Skeleton } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import { DataTable, useDataTableColumns, type DataTableSortStatus } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
@@ -12,6 +12,7 @@ import { exportToCSV, exportToPDF } from '../utils/exportUtils';
 import { sanitizeGridCell } from '../utils/sanitize';
 import { getStatusColor, getMembershipColor } from '../utils/colors';
 import { ErrorBoundary } from './ErrorBoundary';
+import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
 import './MembersGrid.css';
 
 interface MembersGridProps {
@@ -299,11 +300,11 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         resizable: true,
         sortable: true,
         filter: (
-          <input
-            type="text"
+          <TextInput
             placeholder="Search legal name..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => setQuery(e.currentTarget.value)}
+            size="xs"
           />
         ),
         filtering: query !== '',
@@ -488,28 +489,38 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
       {/* DataTable from mantine-datatable wrapped in ErrorBoundary */}
       <ErrorBoundary>
-        <DataTable
-          withTableBorder
-          withColumnBorders
-          striped
-          highlightOnHover
-          records={sortedData}
-          columns={effectiveColumns}
-          fetching={loading}
-          totalRecords={filteredCount}
-          recordsPerPage={pageSize}
-          page={page}
-          onPageChange={updatePage}
-          recordsPerPageOptions={[10, 20, 50, 100]}
-          onRecordsPerPageChange={updatePageSize}
-          sortStatus={sortStatus}
-          onSortStatusChange={setSortStatus}
-          selectedRecords={sortedData.filter((m) => selectedIds.includes(m.org_id))}
-          onSelectedRecordsChange={handleSelectedRecordsChange}
-          storeColumnsKey="members-grid"
-          onRowClick={handleRowClick}
-          rowStyle={() => ({ cursor: 'pointer' })}
-        />
+        {loading && sortedData.length === 0 ? (
+          <Stack gap="xs">
+            <Skeleton height={50} radius="md" />
+            <Skeleton height={50} radius="md" />
+            <Skeleton height={50} radius="md" />
+            <Skeleton height={50} radius="md" />
+            <Skeleton height={50} radius="md" />
+            <Skeleton height={50} radius="md" />
+            <Skeleton height={50} radius="md" />
+            <Skeleton height={50} radius="md" />
+          </Stack>
+        ) : (
+          <DataTable
+            {...defaultDataTableProps}
+            records={sortedData}
+            columns={effectiveColumns}
+            fetching={loading}
+            totalRecords={filteredCount}
+            recordsPerPage={pageSize}
+            page={page}
+            onPageChange={updatePage}
+            recordsPerPageOptions={[...defaultPaginationOptions]}
+            onRecordsPerPageChange={updatePageSize}
+            sortStatus={sortStatus}
+            onSortStatusChange={setSortStatus}
+            selectedRecords={sortedData.filter((m) => selectedIds.includes(m.org_id))}
+            onSelectedRecordsChange={handleSelectedRecordsChange}
+            storeColumnsKey="members-grid"
+            onRowClick={handleRowClick}
+            rowStyle={() => ({ cursor: 'pointer' })}
+          />
+        )}
       </ErrorBoundary>
     </div>
   );

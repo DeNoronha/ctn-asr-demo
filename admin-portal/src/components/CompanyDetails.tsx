@@ -1,8 +1,9 @@
-import { Button } from '@mantine/core';
-
 // CompanyDetails.tsx - Display company/legal entity information
 import type React from 'react';
+import { Button } from '@mantine/core';
+
 import type { LegalEntity } from '../services/api';
+import { formatDateTime } from '../utils/dateFormat';
 import './CompanyDetails.css';
 
 interface CompanyDetailsProps {
@@ -62,14 +63,14 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit 
             <div className="detail-row">
               <div className="detail-label">Created:</div>
               <span>
-                {company.dt_created ? new Date(company.dt_created).toLocaleString() : '-'}
+                {formatDateTime(company.dt_created)}
               </span>
             </div>
 
             <div className="detail-row">
               <div className="detail-label">Last Modified:</div>
               <span>
-                {company.dt_modified ? new Date(company.dt_modified).toLocaleString() : '-'}
+                {formatDateTime(company.dt_modified)}
               </span>
             </div>
 

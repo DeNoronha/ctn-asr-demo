@@ -17,6 +17,8 @@ import EditUserDialog from './EditUserDialog';
 import InviteUserDialog from './InviteUserDialog';
 import './UserManagement.css';
 import { ErrorBoundary } from '../ErrorBoundary';
+import { defaultDataTableProps, defaultPaginationOptions } from '../shared/DataTableConfig';
+import { formatDateTimeGB } from '../../utils/dateFormat';
 
 interface User {
   id: string;
@@ -228,7 +230,7 @@ const UserManagement: React.FC = () => {
         sortable: true,
         render: (record) => {
           if (!record.lastLogin) return <div>—</div>;
-          return <div>{new Date(record.lastLogin).toLocaleString('en-GB')}</div>;
+          return <div>{formatDateTimeGB(record.lastLogin)}</div>;
         },
       },
       {

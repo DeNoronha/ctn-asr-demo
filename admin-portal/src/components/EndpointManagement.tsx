@@ -1,16 +1,19 @@
-import { Button, TextInput, Textarea, Select, Modal, Group } from '@mantine/core';
-import { DataTable, useDataTableColumns } from 'mantine-datatable';
-import { EmptyState } from './EmptyState';
-import { Plus } from './icons';
 import React, { useEffect, useState } from 'react';
-import { useNotification } from '../contexts/NotificationContext';
+import { Button, Group, Modal, Select, Textarea, TextInput } from '@mantine/core';
+import { DataTable, useDataTableColumns } from 'mantine-datatable';
+
+import { EmptyState } from './EmptyState';
+import { ErrorBoundary } from './ErrorBoundary';
+import { Plus } from './icons';
 import { HelpTooltip } from './help/HelpTooltip';
-import { helpContent } from '../config/helpContent';
-import './EndpointManagement.css';
+import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
+import { announceToScreenReader } from '../utils/aria';
+import { formatDateTime } from '../utils/dateFormat';
 import { getEmptyState } from '../utils/emptyStates';
 import { endpointSuccessMessages, tokenSuccessMessages } from '../utils/successMessages';
-import { announceToScreenReader } from '../utils/aria';
-import { ErrorBoundary } from './ErrorBoundary';
+import { helpContent } from '../config/helpContent';
+import { useNotification } from '../contexts/NotificationContext';
+import './EndpointManagement.css';
 
 // Auth helper
 const getAccessToken = async (): Promise<string> => {
@@ -240,7 +243,7 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
         toggleable: true,
         resizable: true,
         sortable: true,
-        render: (endpoint) => <div>{new Date(endpoint.dt_created).toLocaleString()}</div>,
+        render: (endpoint) => <div>{formatDateTime(endpoint.dt_created)}</div>,
       },
       {
         accessor: 'legal_entity_endpoint_id',
@@ -298,10 +301,7 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
       ) : (
         <ErrorBoundary>
           <DataTable
-            withTableBorder
-            withColumnBorders
-            striped
-            highlightOnHover
+            {...defaultDataTableProps}
             records={endpoints}
             columns={effectiveColumns}
             fetching={loading}
@@ -405,10 +405,10 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
                   <strong>Type:</strong> {newToken.token_type}
                 </div>
                 <div className="token-detail">
-                  <strong>Issued:</strong> {new Date(newToken.issued_at).toLocaleString()}
+                  <strong>Issued:</strong> {formatDateTime(newToken.issued_at)}
                 </div>
                 <div className="token-detail">
-                  <strong>Expires:</strong> {new Date(newToken.expires_at).toLocaleString()}
+                  <strong>Expires:</strong> {formatDateTime(newToken.expires_at)}
                 </div>
               </div>
 

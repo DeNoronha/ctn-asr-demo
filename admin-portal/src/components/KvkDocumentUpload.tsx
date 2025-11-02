@@ -9,6 +9,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
 import { logger } from '../utils/logger';
 import { TEXT_COLORS } from '../utils/colors';
+import { formatDate, formatDateTime } from '../utils/dateFormat';
 
 interface KvkApiResponse {
   kvkNumber: string;
@@ -265,7 +266,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                     {getKvkApiData()?.statutoryName}
                     {verificationStatus?.kvk_verified_at && (
                       <span style={{ marginLeft: '10px', fontSize: '0.95em' }}>
-                        • Last verified: {new Date(verificationStatus.kvk_verified_at).toLocaleDateString()}
+                        • Last verified: {formatDate(verificationStatus.kvk_verified_at)}
                       </span>
                     )}
                   </div>
@@ -435,7 +436,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
 
           {verificationStatus.kvk_verified_at && (
             <div style={{ marginTop: '10px', fontSize: '0.9em', color: TEXT_COLORS.muted }}>
-              Verified: {new Date(verificationStatus.kvk_verified_at).toLocaleString()}
+              Verified: {formatDateTime(verificationStatus.kvk_verified_at)}
               {verificationStatus.kvk_verified_by && ` by ${verificationStatus.kvk_verified_by}`}
             </div>
           )}
