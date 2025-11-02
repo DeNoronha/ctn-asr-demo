@@ -1,8 +1,7 @@
 import { Button, Textarea, Loader, Modal, Group } from '@mantine/core';
 import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import axios from 'axios';
-import type React from 'react';
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 
 interface FlaggedEntity {
@@ -16,7 +15,7 @@ interface FlaggedEntity {
   document_uploaded_at: string;
 }
 
-export const KvkReviewQueue: React.FC = () => {
+const KvkReviewQueueComponent: React.FC = () => {
   const [entities, setEntities] = useState<FlaggedEntity[]>([]);
   const [loading, setLoading] = useState(true);
   const [reviewDialog, setReviewDialog] = useState<{
@@ -406,3 +405,5 @@ export const KvkReviewQueue: React.FC = () => {
     </div>
   );
 };
+
+export const KvkReviewQueue = React.memo(KvkReviewQueueComponent);

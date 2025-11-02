@@ -3,8 +3,7 @@ import { Button, TextInput, Textarea, Select, Modal, Group, Tabs } from '@mantin
 import { DatePickerInput } from '@mantine/dates';
 import { DataTable, useDataTableColumns } from 'mantine-datatable';
 import axios from 'axios';
-import type React from 'react';
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { logger } from '../utils/logger';
 import { formatDate } from '../utils/dateUtils';
 import './TasksGrid.css';
@@ -811,4 +810,4 @@ const TasksGrid: React.FC = () => {
   );
 };
 
-export default TasksGrid;
+export default React.memo(TasksGrid);

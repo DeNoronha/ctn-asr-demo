@@ -2,8 +2,7 @@ import { Button, Select, Loader, Group, Text } from '@mantine/core';
 import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
 import { AlertTriangle, CheckCircle, FileText, FolderOpen, XCircle } from './icons';
-import type React from 'react';
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
 import type { LegalEntityIdentifier } from '../services/apiV2';
@@ -32,7 +31,7 @@ interface IdentifierVerificationManagerProps {
   onUpdate?: () => void;
 }
 
-export const IdentifierVerificationManager: React.FC<IdentifierVerificationManagerProps> = ({
+const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationManagerProps> = ({
   legalEntityId,
   identifiers,
   onUpdate,
@@ -362,3 +361,5 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
     </div>
   );
 };
+
+export const IdentifierVerificationManager = React.memo(IdentifierVerificationManagerComponent);
