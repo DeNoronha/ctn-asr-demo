@@ -3,6 +3,7 @@ import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-da
 import axios from 'axios';
 import React, { useEffect, useState, useMemo } from 'react';
 import { msalInstance } from '../auth/AuthContext';
+import { ErrorBoundary } from './ErrorBoundary';
 
 interface FlaggedEntity {
   legal_entity_id: string;
@@ -231,15 +232,17 @@ const KvkReviewQueueComponent: React.FC = () => {
       <h2>KvK Verification Review Queue</h2>
       <p>Entities flagged for manual review ({entities.length})</p>
 
-      <DataTable
-        records={entities}
-        columns={effectiveColumns}
-        storeColumnsKey="kvk-review-grid"
-        withTableBorder
-        withColumnBorders
-        striped
-        highlightOnHover
-      />
+      <ErrorBoundary>
+        <DataTable
+          records={entities}
+          columns={effectiveColumns}
+          storeColumnsKey="kvk-review-grid"
+          withTableBorder
+          withColumnBorders
+          striped
+          highlightOnHover
+        />
+      </ErrorBoundary>
 
       <Modal
         opened={reviewDialog.visible && !!reviewDialog.entity}
