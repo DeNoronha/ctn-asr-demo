@@ -249,7 +249,7 @@ Security validation: secrets, auth/authz, injections, dependencies. Merge gate r
 ### Design Analyst (DA)
 `.claude/agents/design-analyst-da.md` | Green | Sonnet
 
-UI/UX quality, WCAG 2.1 AA accessibility, responsive design, Kendo UI validation.
+UI/UX quality, WCAG 2.1 AA accessibility, responsive design, Mantine v8 validation.
 
 ### Test Engineer (TE)
 `.claude/agents/test-engineer-te.md` | Purple | Sonnet
@@ -389,6 +389,9 @@ Validates alignment between codebase, Azure infrastructure, Arc42 documentation,
 ### Content Security Policy (CSP) Hardening (November 1, 2025)
 36. **Modern frameworks eliminate need for unsafe CSP directives** - Removed 'unsafe-inline' from script-src in both admin and member portals, and removed 'unsafe-eval' from member portal, achieving strict CSP (script-src 'self') without breaking functionality. **Key insight**: Modern MSAL v3/v4 doesn't require 'unsafe-eval', Vite-built apps don't need 'unsafe-inline' for scripts. **Common misconception**: Developers assume UI libraries like Kendo UI require unsafe CSP directives - NOT TRUE for React components. Kendo UI React works perfectly with strict CSP; only style-src needs 'unsafe-inline' for component styling (acceptable trade-off). **Testing approach**: (1) Remove directive, (2) Test all functionality, (3) Check browser console for CSP violations, (4) Run full E2E test suite. **Result**: Zero CSP violations, all 24 accessibility tests passing, all Kendo UI components functional. **Security impact**: Eliminates script injection attack vectors (unsafe-inline prevents inline `<script>` tags, unsafe-eval prevents `eval()` and `new Function()`). **Bonus**: Also secured .gitignore by excluding E2E test reports (admin-portal/e2e-results/, playwright-report/, test-results/) containing credentials and authentication tokens. **Pattern**: CSP hardening should be gradual - remove one directive at a time, test thoroughly, measure impact. Don't assume libraries need unsafe directives without testing. **Documentation**: Updated staticwebapp.config.json in both portals. **Commit**: 05b0007. **Effort**: 2 hours (Kendo UI compatibility testing + CSP validation). **Files**: admin-portal/public/staticwebapp.config.json, member-portal/public/staticwebapp.config.json, .gitignore.
 
+### Kendo UI to Mantine v8 Migration (November 2, 2025)
+37. **Plan massive UI migrations portal-by-portal with proven patterns** - Successfully migrated all 4 CTN portals (admin, member, orchestrator, booking) from Kendo UI to Mantine v8 in a single coordinated effort, eliminating ~100 Kendo packages and all licensing costs. **Pattern**: (1) Migrate first portal completely, document all issues/solutions (CSS specificity, pagination patterns, column management), (2) Copy exact patterns to remaining portals, (3) Use specialized agents (CA) for autonomous migration execution. **Key insight**: After solving CSS specificity battles (.mantine-Popover-dropdown vs .mantine-Menu-dropdown) and pagination issues (manual data slicing with `records={data.slice(from, to)}`) in admin portal, remaining migrations were straightforward ("walk in the park"). **Technical details**: mantine-datatable 8.2.0 requires useDataTableColumns hook for column toggle/resize/persistence, controlled pagination needs manual slicing (calculate `from = (page - 1) * pageSize`), storeColumnsKey enables localStorage persistence. **Results**: Total ~100 Kendo packages removed, 15+ grids migrated to mantine-datatable, all portals now on stable Mantine v8.3.6, 0 TypeScript errors across all builds. **Critical**: Document solutions as you go - each portal took ~1-2 hours after first portal pioneered solutions. **Benefits**: Eliminated licensing fees (~$1000+/year), bundle size reduction, single UI library for maintainability, modern TypeScript support. **Commits**: 16b4008, e8dc337, 85c4ae1, 75c7de1 (admin), 6d85289 (member), 9b9ac2e (orchestrator), bbfe687 (booking). **Effort**: 6 hours total (all 4 portals). **Documentation**: Updated docs/GRID_STANDARDIZATION_TODO.md with complete 4-portal summary and migration lessons.
+
 ---
 
 ## Pipeline & Portal Isolation Reference
@@ -483,7 +486,7 @@ Isolation:   NO dependencies on ASR, DocuFlow, or Orchestrator
 
 **CTN ASR** - Member management system for container transport ecosystem
 
-**Tech Stack:** React 18 + TypeScript + Kendo UI | Azure Functions (Node.js 20) | PostgreSQL | Azure AD | Playwright
+**Tech Stack:** React 18 + TypeScript + Mantine v8 | Azure Functions (Node.js 20) | PostgreSQL | Azure AD | Playwright
 
 **Azure Resources:**
 - Admin: https://calm-tree-03352ba03.1.azurestaticapps.net
