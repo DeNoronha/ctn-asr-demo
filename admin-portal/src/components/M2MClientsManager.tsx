@@ -8,6 +8,7 @@ import { formatDate } from '../utils/dateUtils';
 import { sanitizeGridCell } from '../utils/sanitize';
 import { ConfirmDialog } from './ConfirmDialog';
 import { EmptyState } from './EmptyState';
+import { ErrorBoundary } from './ErrorBoundary';
 import { getEmptyState } from '../utils/emptyStates';
 import { tokenSuccessMessages } from '../utils/successMessages';
 import { announceToScreenReader } from '../utils/aria';
@@ -348,15 +349,17 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
           );
         })()
       ) : (
-        <DataTable
-          records={clients}
-          columns={effectiveColumns}
-          storeColumnsKey="m2m-clients-grid"
-          withTableBorder
-          withColumnBorders
-          striped
-          highlightOnHover
-        />
+        <ErrorBoundary>
+          <DataTable
+            records={clients}
+            columns={effectiveColumns}
+            storeColumnsKey="m2m-clients-grid"
+            withTableBorder
+            withColumnBorders
+            striped
+            highlightOnHover
+          />
+        </ErrorBoundary>
       )}
 
       {/* Add M2M Client Dialog */}
