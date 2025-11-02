@@ -1,7 +1,7 @@
 import { Button, TextInput, Textarea, Checkbox, Modal, Group } from '@mantine/core';
 import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import { Key, Plus, Trash2, Copy, AlertTriangle } from './icons';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { formatDate } from '../utils/dateUtils';
@@ -72,11 +72,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
     return response.accessToken;
   };
 
-  useEffect(() => {
-    loadClients();
-  }, [legalEntityId]);
-
-  const loadClients = async () => {
+  const loadClients = useCallback(async () => {
     setLoading(true);
     try {
       const token = await getAccessToken();
@@ -95,9 +91,13 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [legalEntityId, notification]);
 
-  const handleAddClient = async () => {
+  useEffect(() => {
+    loadClients();
+  }, [loadClients]);
+
+  const handleAddClient = useCallback(async () => {
     if (!formData.client_name || formData.scopes.length === 0) {
       notification.showError('Please provide client name and select at least one scope');
       return;
@@ -142,9 +142,9 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [formData, legalEntityId, notification, loadClients]);
 
-  const handleGenerateSecret = async (client: M2MClient) => {
+  const handleGenerateSecret = useCallback(async (client: M2MClient) => {
     setLoading(true);
     try {
       const token = await getAccessToken();
@@ -174,7 +174,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [notification]);
 
   const handleDeleteClient = async () => {
     if (!selectedClient) return;

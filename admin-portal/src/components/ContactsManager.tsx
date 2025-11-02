@@ -1,7 +1,7 @@
 import { Button, Modal } from '@mantine/core';
 import { DataTable, useDataTableColumns } from 'mantine-datatable';
 import { AlertTriangle, Pencil, Plus, Trash2, Users } from './icons';
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import type { LegalEntityContact } from '../services/api';
 import { safeArray, safeLength } from '../utils/safeArray';
 import { sanitizeText } from '../utils/sanitize';
@@ -34,17 +34,17 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [contactToDelete, setContactToDelete] = useState<LegalEntityContact | null>(null);
 
-  const handleAddContact = () => {
+  const handleAddContact = useCallback(() => {
     setEditingContact(null);
     setShowDialog(true);
-  };
+  }, []);
 
-  const handleEditContact = (contact: LegalEntityContact) => {
+  const handleEditContact = useCallback((contact: LegalEntityContact) => {
     setEditingContact(contact);
     setShowDialog(true);
-  };
+  }, []);
 
-  const handleSaveContact = async (contact: LegalEntityContact) => {
+  const handleSaveContact = useCallback(async (contact: LegalEntityContact) => {
     if (editingContact && editingContact.legal_entity_contact_id) {
       // Update existing contact
       const updated = await onContactUpdate(editingContact.legal_entity_contact_id, contact);
@@ -59,17 +59,29 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
       msg && (window as any).notification?.showSuccess ? (window as any).notification.showSuccess(msg.title) : null;
     }
     setShowDialog(false);
-  };
+  }, [editingContact, onContactUpdate, onContactCreate]);
 
-  const handleDeleteClick = (contact: LegalEntityContact) => {
+  const handleDeleteClick = useCallback((contact: LegalEntityContact) => {
     setContactToDelete(contact);
     setDeleteConfirmOpen(true);
-  };
+  }, []);
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = useCallback(async () => {
     if (!contactToDelete?.legal_entity_contact_id) return;
     await onContactDelete(contactToDelete.legal_entity_contact_id);
-  };
+  }, [contactToDelete, onContactDelete]);
+
+  const handleDialogClose = useCallback(() => {
+    setShowDialog(false);
+  }, []);
+
+  const handleCancelForm = useCallback(() => {
+    setShowDialog(false);
+  }, []);
+
+  const handleCancelDelete = useCallback(() => {
+    setDeleteConfirmOpen(false);
+  }, []);
 
   // mantine-datatable column definitions
   const contactTypeTooltips: Record<string, string> = {
@@ -237,7 +249,7 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
 
       <Modal
         opened={showDialog}
-        onClose={() => setShowDialog(false)}
+        onClose={handleDialogClose}
         title={editingContact ? 'Edit Contact' : 'Add Contact'}
         size="lg"
       >
@@ -245,7 +257,7 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
           contact={editingContact}
           legalEntityId={legalEntityId}
           onSave={handleSaveContact}
-          onCancel={() => setShowDialog(false)}
+          onCancel={handleCancelForm}
         />
       </Modal>
 
@@ -257,7 +269,7 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
         confirmTheme="error"
         icon={<AlertTriangle size={24} />}
         onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteConfirmOpen(false)}
+        onCancel={handleCancelDelete}
       />
     </div>
   );

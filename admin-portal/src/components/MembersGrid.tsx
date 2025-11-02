@@ -473,13 +473,13 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {/* Bulk Action Confirmation Dialog */}
       <Modal
         opened={showBulkDialog}
-        onClose={() => setShowBulkDialog(false)}
+        onClose={handleDialogClose}
         title="Confirm Bulk Action"
         size="md"
       >
         <p style={{ margin: '20px', fontSize: '16px' }}>{getBulkActionConfirmation()}</p>
         <Group mt="xl" justify="flex-end">
-          <Button onClick={() => setShowBulkDialog(false)} variant="default">Cancel</Button>
+          <Button onClick={handleDialogClose} variant="default">Cancel</Button>
           <Button color="blue" onClick={executeBulkAction} disabled={isBulkProcessing}>
             {isBulkProcessing ? 'Processing...' : 'Confirm'}
           </Button>

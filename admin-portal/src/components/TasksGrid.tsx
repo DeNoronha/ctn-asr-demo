@@ -7,6 +7,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { logger } from '../utils/logger';
 import { formatDate } from '../utils/dateUtils';
 import './TasksGrid.css';
+import { ErrorBoundary } from './ErrorBoundary';
 
 interface AdminTask {
   task_id: string;
@@ -520,30 +521,34 @@ const TasksGrid: React.FC = () => {
           <div className="grid-toolbar-info" style={{ marginBottom: '10px' }}>
             Total Tasks: {tasks.length}
           </div>
-          <DataTable
-            withTableBorder
-            withColumnBorders
-            striped
-            highlightOnHover
-            records={tasks}
-            columns={tasksEffectiveColumns}
-            storeColumnsKey="tasks-grid"
-          />
+          <ErrorBoundary>
+            <DataTable
+              withTableBorder
+              withColumnBorders
+              striped
+              highlightOnHover
+              records={tasks}
+              columns={tasksEffectiveColumns}
+              storeColumnsKey="tasks-grid"
+            />
+          </ErrorBoundary>
         </Tabs.Panel>
 
         <Tabs.Panel value="verify" pt="md">
           <div className="grid-toolbar-info" style={{ marginBottom: '10px' }}>
             Total Reviews: {reviewTasks.length}
           </div>
-          <DataTable
-            withTableBorder
-            withColumnBorders
-            striped
-            highlightOnHover
-            records={reviewTasks}
-            columns={reviewEffectiveColumns}
-            storeColumnsKey="review-tasks-grid"
-          />
+          <ErrorBoundary>
+            <DataTable
+              withTableBorder
+              withColumnBorders
+              striped
+              highlightOnHover
+              records={reviewTasks}
+              columns={reviewEffectiveColumns}
+              storeColumnsKey="review-tasks-grid"
+            />
+          </ErrorBoundary>
         </Tabs.Panel>
       </Tabs>
 
