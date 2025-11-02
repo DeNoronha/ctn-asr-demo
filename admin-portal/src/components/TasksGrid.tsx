@@ -1,11 +1,12 @@
 import { useMsal } from '@azure/msal-react';
-import { Button, TextInput, Textarea, Select, Modal, Group, Tabs } from '@mantine/core';
+import { Button, TextInput, Textarea, Select, Modal, Group, Tabs, Stack, Skeleton } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { DataTable, useDataTableColumns } from 'mantine-datatable';
 import axios from 'axios';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import { formatDate } from '../utils/dateUtils';
+import { defaultDataTableProps } from './shared/DataTableConfig';
 import './TasksGrid.css';
 import { ErrorBoundary } from './ErrorBoundary';
 
@@ -94,7 +95,7 @@ const TasksGrid: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loadTasks = async () => {
+  const loadTasks = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/v1/admin/tasks?limit=100`);
@@ -106,9 +107,9 @@ const TasksGrid: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadReviewTasks = async () => {
+  const loadReviewTasks = useCallback(async () => {
     try {
       const account = accounts[0];
       if (!account) {
@@ -149,9 +150,20 @@ const TasksGrid: React.FC = () => {
         }
       }
     }
-  };
+  }, [accounts, instance]);
 
-  const handleCreate = async () => {
+  const resetForm = useCallback(() => {
+    setFormData({
+      task_type: 'other',
+      title: '',
+      description: '',
+      priority: 'medium',
+      assigned_to_email: '',
+      due_date: null,
+    });
+  }, []);
+
+  const handleCreate = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/v1/admin/tasks`, {
         method: 'POST',
@@ -171,9 +183,9 @@ const TasksGrid: React.FC = () => {
       logger.error('Error creating task:', error);
       alert('Failed to create task');
     }
-  };
+  }, [formData, resetForm, loadTasks]);
 
-  const handleUpdate = async (status?: string) => {
+  const handleUpdate = useCallback(async (status?: string) => {
     if (!selectedTask) return;
 
     try {
@@ -200,9 +212,9 @@ const TasksGrid: React.FC = () => {
       logger.error('Error updating task:', error);
       alert('Failed to update task');
     }
-  };
+  }, [selectedTask, formData, resetForm, loadTasks]);
 
-  const handleCompleteTask = async (taskId: string) => {
+  const handleCompleteTask = useCallback(async (taskId: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/v1/admin/tasks/${taskId}`, {
         method: 'PUT',
@@ -217,9 +229,9 @@ const TasksGrid: React.FC = () => {
       logger.error('Error completing task:', error);
       alert('Failed to complete task');
     }
-  };
+  }, [loadTasks]);
 
-  const handleReviewDecision = async (decision: 'approve' | 'reject', notes?: string) => {
+  const handleReviewDecision = useCallback(async (decision: 'approve' | 'reject', notes?: string) => {
     if (!selectedReviewTask) return;
 
     try {
@@ -252,25 +264,14 @@ const TasksGrid: React.FC = () => {
       logger.error('Error submitting review:', error);
       alert('Failed to submit review decision');
     }
-  };
+  }, [selectedReviewTask, accounts, instance, loadReviewTasks]);
 
-  const openReviewDialog = (task: ReviewTask) => {
+  const openReviewDialog = useCallback((task: ReviewTask) => {
     setSelectedReviewTask(task);
     setShowReviewDialog(true);
-  };
+  }, []);
 
-  const resetForm = () => {
-    setFormData({
-      task_type: 'other',
-      title: '',
-      description: '',
-      priority: 'medium',
-      assigned_to_email: '',
-      due_date: null,
-    });
-  };
-
-  const openEditDialog = (task: AdminTask) => {
+  const openEditDialog = useCallback((task: AdminTask) => {
     setSelectedTask(task);
     setFormData({
       task_type: task.task_type,
@@ -281,19 +282,19 @@ const TasksGrid: React.FC = () => {
       due_date: task.due_date ? new Date(task.due_date) : null,
     });
     setShowEditDialog(true);
-  };
+  }, []);
 
-  const formatTaskDate = (dateString?: string) => {
+  const formatTaskDate = useCallback((dateString?: string) => {
     if (!dateString) return 'N/A';
     return formatDate(dateString);
-  };
+  }, []);
 
-  const isOverdue = (task: AdminTask) => {
+  const isOverdue = useCallback((task: AdminTask) => {
     if (!task.due_date || task.status === 'completed' || task.status === 'cancelled') {
       return false;
     }
     return new Date(task.due_date) < new Date();
-  };
+  }, []);
 
   // Column definitions for "My Tasks" grid using mantine-datatable
   const { effectiveColumns: tasksEffectiveColumns } = useDataTableColumns<AdminTask>({
@@ -522,15 +523,22 @@ const TasksGrid: React.FC = () => {
             Total Tasks: {tasks.length}
           </div>
           <ErrorBoundary>
-            <DataTable
-              withTableBorder
-              withColumnBorders
-              striped
-              highlightOnHover
-              records={tasks}
-              columns={tasksEffectiveColumns}
-              storeColumnsKey="tasks-grid"
-            />
+            {_loading && tasks.length === 0 ? (
+              <Stack gap="xs">
+                <Skeleton height={50} radius="md" />
+                <Skeleton height={50} radius="md" />
+                <Skeleton height={50} radius="md" />
+                <Skeleton height={50} radius="md" />
+                <Skeleton height={50} radius="md" />
+              </Stack>
+            ) : (
+              <DataTable
+            {...defaultDataTableProps}
+            records={tasks}
+                columns={tasksEffectiveColumns}
+                storeColumnsKey="tasks-grid"
+              />
+            )}
           </ErrorBoundary>
         </Tabs.Panel>
 
@@ -539,15 +547,22 @@ const TasksGrid: React.FC = () => {
             Total Reviews: {reviewTasks.length}
           </div>
           <ErrorBoundary>
-            <DataTable
-              withTableBorder
-              withColumnBorders
-              striped
-              highlightOnHover
-              records={reviewTasks}
-              columns={reviewEffectiveColumns}
-              storeColumnsKey="review-tasks-grid"
-            />
+            {_loading && reviewTasks.length === 0 ? (
+              <Stack gap="xs">
+                <Skeleton height={50} radius="md" />
+                <Skeleton height={50} radius="md" />
+                <Skeleton height={50} radius="md" />
+                <Skeleton height={50} radius="md" />
+                <Skeleton height={50} radius="md" />
+              </Stack>
+            ) : (
+              <DataTable
+            {...defaultDataTableProps}
+            records={reviewTasks}
+                columns={reviewEffectiveColumns}
+                storeColumnsKey="review-tasks-grid"
+              />
+            )}
           </ErrorBoundary>
         </Tabs.Panel>
       </Tabs>
