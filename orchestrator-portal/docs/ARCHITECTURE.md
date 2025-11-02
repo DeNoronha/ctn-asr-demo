@@ -1,7 +1,7 @@
 # Orchestrator Portal - Technical Architecture
 
-**Version:** 1.0.0
-**Last Updated:** October 18, 2025
+**Version:** 2.0.0
+**Last Updated:** November 2, 2025
 
 ---
 
@@ -15,7 +15,7 @@
 6. [Data Fetching Strategy](#data-fetching-strategy)
 7. [Routing Structure](#routing-structure)
 8. [Mock API Design](#mock-api-design)
-9. [Kendo UI Integration](#kendo-ui-integration)
+9. [Mantine UI Integration](#mantine-ui-integration)
 10. [Testing Architecture](#testing-architecture)
 11. [Build and Deployment](#build-and-deployment)
 12. [Performance Optimization](#performance-optimization)
@@ -24,14 +24,15 @@
 
 ## Overview
 
-The Orchestrator Portal is a modern React 18 application built with TypeScript, Vite, and Kendo React UI. It provides real-time monitoring and management of container transport orchestrations for the CTN (Connected Trade Network) ecosystem.
+The Orchestrator Portal is a modern React 18 application built with TypeScript, Vite, and Mantine v8. It provides real-time monitoring and management of container transport orchestrations for the CTN (Connected Trade Network) ecosystem.
 
 ### Key Architectural Decisions
 
 - **React 18 with Hooks** - Modern functional components, no class components
 - **TypeScript** - Strict type safety, minimal use of `any`
 - **Vite** - Fast build tool with HMR (Hot Module Replacement)
-- **Kendo React UI** - Professional UI components for grids, charts, and forms
+- **Mantine v8** - Modern UI component library with mantine-datatable for data grids
+- **Recharts** - React charting library for data visualization
 - **TanStack Query** - Server state management with caching and auto-refetch
 - **Zustand** - Lightweight client state management
 - **React Router v7** - Client-side routing with nested routes
@@ -151,7 +152,6 @@ orchestrator-portal/
 │   ├── App.tsx                       # Root component
 │   ├── main.tsx                      # Application entry point
 │   ├── index.css                     # Global styles
-│   ├── kendoLicense.ts               # Kendo license configuration
 │   └── vite-env.d.ts                 # Vite type definitions
 │
 ├── e2e/                              # Playwright E2E tests
@@ -521,71 +521,94 @@ const timestamp = new Date(Date.now() - randomDays * 24 * 60 * 60 * 1000);
 
 ---
 
-## Kendo UI Integration
+## Mantine UI Integration
 
-### Grid Integration
+### DataTable Integration
 
 **Features Used:**
 - Pagination with customizable page sizes
 - Sorting on all columns
+- Column toggling and resizing
 - Row click handling
 - Custom cell renderers
 
 ```typescript
-<Grid
-  data={orchestrations}
-  pageable={{
-    buttonCount: 5,
-    pageSizes: [10, 20, 50],
-  }}
-  sortable={true}
-  onRowClick={handleRowClick}
->
-  <GridColumn field="id" title="ID" width="100px" />
-  <GridColumn field="status" title="Status" cell={StatusCell} />
-</Grid>
+import { DataTable, useDataTableColumns } from 'mantine-datatable';
+
+const { effectiveColumns } = useDataTableColumns({
+  key: 'orchestrations-grid',
+  columns: [
+    { accessor: 'id', title: 'ID', width: 100, sortable: true },
+    { accessor: 'status', title: 'Status', render: StatusCell, sortable: true },
+  ],
+});
+
+<DataTable
+  records={orchestrations}
+  columns={effectiveColumns}
+  page={page}
+  onPageChange={setPage}
+  recordsPerPage={pageSize}
+  onRecordsPerPageChange={setPageSize}
+  recordsPerPageOptions={[10, 20, 50]}
+  onRowClick={({ record }) => handleRowClick(record)}
+  withTableBorder
+  striped
+  highlightOnHover
+/>
 ```
 
-### Chart Integration
+### Chart Integration (Recharts)
 
 **Donut Chart** (Dashboard):
 
 ```typescript
-<Chart>
-  <ChartSeries>
-    <ChartSeriesItem
-      type="donut"
-      data={statusData}
-      categoryField="status"
-      field="count"
-    />
-  </ChartSeries>
-  <ChartLegend position="bottom" />
-</Chart>
+import { PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
+
+<PieChart width={400} height={400}>
+  <Pie
+    data={statusData}
+    dataKey="count"
+    nameKey="status"
+    cx="50%"
+    cy="50%"
+    innerRadius={60}
+    outerRadius={80}
+  >
+    {statusData.map((entry, index) => (
+      <Cell key={`cell-${index}`} fill={COLORS[index]} />
+    ))}
+  </Pie>
+  <Tooltip />
+  <Legend />
+</PieChart>
 ```
 
 **Column Chart** (Analytics):
 
 ```typescript
-<Chart>
-  <ChartCategoryAxis>
-    <ChartCategoryAxisItem categories={priorities} />
-  </ChartCategoryAxis>
-  <ChartSeries>
-    <ChartSeriesItem type="column" data={counts} />
-  </ChartSeries>
-</Chart>
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+
+<BarChart width={600} height={400} data={data}>
+  <CartesianGrid strokeDasharray="3 3" />
+  <XAxis dataKey="priority" />
+  <YAxis />
+  <Tooltip />
+  <Bar dataKey="count" fill="#00a3e0" />
+</BarChart>
 ```
 
-### Kendo Theme Integration
+### Mantine Theme Integration
 
 ```typescript
-// index.css
-import '@progress/kendo-theme-default/dist/all.css';
+// main.tsx
+import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
+import 'mantine-datatable/styles.css';
 
 // Custom CSS overrides for CTN branding
-.k-grid { ... }
-.k-chart { ... }
+.mantine-DataTable-table { ... }
+.recharts-wrapper { ... }
 ```
 
 ---
@@ -674,10 +697,13 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
-          kendo: [
-            '@progress/kendo-react-grid',
-            '@progress/kendo-react-charts',
+          mantine: [
+            '@mantine/core',
+            '@mantine/hooks',
+            '@mantine/notifications',
+            'mantine-datatable',
           ],
+          charts: ['recharts'],
         },
       },
     },
@@ -705,7 +731,7 @@ export default defineConfig({
 ### Code Splitting
 
 - Route-based code splitting via React Router
-- Manual chunks for large dependencies (Kendo UI)
+- Manual chunks for large dependencies (Mantine, Recharts)
 - Lazy loading of heavy components
 
 ### Caching Strategy
@@ -728,7 +754,7 @@ export default defineConfig({
 - **React.memo** for expensive components
 - **useMemo** for expensive calculations
 - **useCallback** for event handlers
-- Virtual scrolling for large lists (Kendo Grid)
+- Virtual scrolling for large lists (mantine-datatable)
 
 ### Bundle Analysis
 
@@ -741,9 +767,9 @@ npx vite-bundle-visualizer
 ```
 
 **Current Bundle Size:**
-- Main bundle: ~1.5MB (uncompressed)
-- Gzipped: ~400KB
-- Kendo UI: ~60% of bundle size
+- Main bundle: ~1.2MB (uncompressed)
+- Gzipped: ~320KB
+- Mantine + Recharts: ~40% of bundle size
 
 ---
 
@@ -776,7 +802,6 @@ app.use(cors({
 ```bash
 # .env (not committed)
 VITE_API_BASE_URL=http://localhost:3001/api/v1
-VITE_KENDO_LICENSE_KEY=xxxxx
 ```
 
 ### Production Hardening
@@ -820,7 +845,7 @@ The Orchestrator Portal is a well-architected, production-ready application buil
 - Efficient data fetching with TanStack Query
 - Comprehensive E2E test coverage
 - Fast build times with Vite
-- Professional UI with Kendo React
+- Professional UI with Mantine v8
 
 **Next Steps:**
 - Deploy to Azure Static Web Apps
@@ -830,6 +855,6 @@ The Orchestrator Portal is a well-architected, production-ready application buil
 
 ---
 
-**Document Version:** 1.0.0
-**Last Updated:** October 18, 2025
+**Document Version:** 2.0.0
+**Last Updated:** November 2, 2025 (Migrated to Mantine v8)
 **Maintained By:** CTN Development Team

@@ -1,6 +1,6 @@
 # CTN Orchestrator Portal
 
-A modern, real-time monitoring and management portal for Container Transport Network (CTN) orchestrations, built with React 18, TypeScript, and Kendo React UI.
+A modern, real-time monitoring and management portal for Container Transport Network (CTN) orchestrations, built with React 18, TypeScript, and Mantine v8.
 
 **Status:** ⚠️ **IN DEVELOPMENT - API NOT DEPLOYED**
 
@@ -63,17 +63,17 @@ The Orchestrator Portal provides real-time visibility into container transport o
 - **React 18.3.1** - Modern React with hooks
 - **TypeScript 5.9.3** - Type-safe development
 - **Vite 7.1.10** - Lightning-fast build tool
-- **Kendo React UI 8.5.0** - Professional UI components
-  - Grid with pagination, sorting, filtering
-  - Donut and Column charts
-  - Buttons, inputs, dialogs
+- **Mantine 8.3.6** - Professional UI component library
+  - mantine-datatable for data grids
+  - Buttons, inputs, modals, notifications
+- **Recharts** - React charting library for data visualization
 - **TanStack Query 5.32.0** - Powerful data fetching and caching
 - **Zustand 4.5.2** - Lightweight state management
 - **React Router 7.9.3** - Client-side routing
 
 ### Styling
 - **Tailwind CSS 3.4.3** - Utility-first CSS framework
-- **Kendo Theme Default 8.0.0** - Consistent Kendo styling
+- **Mantine Styles** - Built-in Mantine styling system
 - **Lucide React 0.545.0** - Beautiful icon library
 
 ### Development Tools
@@ -113,9 +113,6 @@ Create a `.env` file in the project root:
 ```bash
 # API Configuration
 VITE_API_BASE_URL=http://localhost:3001/api/v1
-
-# Kendo License (optional for development)
-VITE_KENDO_LICENSE_KEY=your-license-key-here
 ```
 
 ---
@@ -248,7 +245,7 @@ App
         │   ├── StatusDonutChart
         │   └── RecentActivityFeed
         ├── OrchestrationsPage
-        │   ├── OrchestrationsGrid (Kendo)
+        │   ├── OrchestrationsGrid (mantine-datatable)
         │   ├── StatusFilter
         │   └── SearchBar
         ├── OrchestrationDetailPage
@@ -353,43 +350,59 @@ See `mock-api/docs/` for full API specification and integration examples.
 
 ---
 
-## Kendo UI Integration Patterns
+## Mantine UI Integration Patterns
 
 ### Grid Usage
 
 ```typescript
-import { Grid, GridColumn } from '@progress/kendo-react-grid';
+import { DataTable, useDataTableColumns } from 'mantine-datatable';
 
-<Grid
-  data={orchestrations}
-  pageable={{
-    pageSizes: [10, 20, 50],
-  }}
-  sortable={true}
-  filterable={true}
-  onRowClick={handleRowClick}
->
-  <GridColumn field="id" title="ID" width="100px" />
-  <GridColumn field="containerNumber" title="Container" />
-  <GridColumn field="status" title="Status" cell={StatusCell} />
-</Grid>
+const { effectiveColumns } = useDataTableColumns({
+  key: 'orchestrations-grid',
+  columns: [
+    { accessor: 'id', title: 'ID', width: 100, sortable: true },
+    { accessor: 'containerNumber', title: 'Container', sortable: true },
+    { accessor: 'status', title: 'Status', render: StatusCell, sortable: true },
+  ],
+});
+
+<DataTable
+  records={orchestrations}
+  columns={effectiveColumns}
+  page={page}
+  onPageChange={setPage}
+  recordsPerPage={pageSize}
+  onRecordsPerPageChange={setPageSize}
+  recordsPerPageOptions={[10, 20, 50]}
+  onRowClick={({ record }) => handleRowClick(record)}
+  withTableBorder
+  striped
+  highlightOnHover
+/>
 ```
 
-### Charts Usage
+### Charts Usage (Recharts)
 
 ```typescript
-import { Chart, ChartSeries, ChartSeriesItem } from '@progress/kendo-react-charts';
+import { PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
 
-<Chart>
-  <ChartSeries>
-    <ChartSeriesItem
-      type="donut"
-      data={statusData}
-      categoryField="status"
-      field="count"
-    />
-  </ChartSeries>
-</Chart>
+<PieChart width={400} height={400}>
+  <Pie
+    data={statusData}
+    dataKey="count"
+    nameKey="status"
+    cx="50%"
+    cy="50%"
+    innerRadius={60}
+    outerRadius={80}
+  >
+    {statusData.map((entry, index) => (
+      <Cell key={`cell-${index}`} fill={COLORS[index]} />
+    ))}
+  </Pie>
+  <Tooltip />
+  <Legend />
+</PieChart>
 ```
 
 ---
@@ -481,7 +494,7 @@ npm run build
 - Type checking with TypeScript
 - Vite production build
 - Optimized bundle in `dist/` folder
-- Build size: ~1.5MB (includes Kendo UI)
+- Build size: ~1.2MB (includes Mantine + Recharts)
 
 ### Build Artifacts
 
@@ -601,17 +614,6 @@ kill -9 <PID>
 npm run mock-api:generate
 ```
 
-### Kendo License Warning
-
-If you see Kendo license warnings in the console:
-
-1. Obtain a license from [Telerik](https://www.telerik.com/kendo-react-ui)
-2. Add to `.env`:
-   ```bash
-   VITE_KENDO_LICENSE_KEY=your-license-key
-   ```
-3. Import license in `src/kendoLicense.ts`
-
 ### Build Errors
 
 ```bash
@@ -691,4 +693,4 @@ For questions or issues:
 
 ---
 
-**Built with React, TypeScript, and Kendo React UI**
+**Built with React, TypeScript, and Mantine v8**

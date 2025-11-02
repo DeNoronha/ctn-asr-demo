@@ -11,7 +11,7 @@ The CTN Booking Portal processes PDF/email/Excel booking documents from inland t
 
 ### Frontend
 - **Technology**: React 18 + TypeScript + Vite
-- **UI Framework**: Kendo React UI
+- **UI Framework**: Mantine v8 + mantine-datatable
 - **Styling**: CTN brand colors (Dark Blue #1a4d6d, Orange #ff8c00, Light Blue #00a3e0)
 - **Authentication**: Azure AD B2B (External Identities)
 - **Deployment**: Azure Static Web Apps

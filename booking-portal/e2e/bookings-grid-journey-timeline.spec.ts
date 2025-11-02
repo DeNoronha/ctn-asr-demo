@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
  * Bookings Grid and Transport Journey Timeline E2E Test
  *
  * Tests the bookings data grid and multi-leg transport journey visualization:
- * - Bookings grid display with Kendo UI Grid
+ * - Bookings grid display with mantine-datatable
  * - Document type badges (Bill of Lading, Transport Order, etc.)
  * - Confidence score visualization
  * - Processing status indicators
@@ -30,14 +30,14 @@ test.describe('Bookings Grid Display', () => {
 
   test('should display bookings grid with data', async ({ page }) => {
     // Wait for grid to load
-    await page.waitForSelector('.k-grid, [role="grid"], .bookings-grid', { timeout: 10000 });
+    await page.waitForSelector('[role="grid"], .bookings-grid, .mantine-DataTable', { timeout: 10000 });
 
     // Check for grid presence
-    const grid = page.locator('.k-grid, [role="grid"]');
+    const grid = page.locator('[role="grid"], .mantine-DataTable');
     await expect(grid.first()).toBeVisible();
 
     // Check for data rows
-    const rows = page.locator('.k-grid-content tr, [role="row"]');
+    const rows = page.locator('[role="row"]');
     const rowCount = await rows.count();
 
     console.log(`✓ Bookings grid displayed with ${rowCount} row(s)`);
@@ -45,7 +45,7 @@ test.describe('Bookings Grid Display', () => {
   });
 
   test('should display document type badges in grid', async ({ page }) => {
-    await page.waitForSelector('.k-grid, [role="grid"]', { timeout: 10000 });
+    await page.waitForSelector('[role="grid"], .mantine-DataTable', { timeout: 10000 });
 
     // Look for document type indicators
     const documentTypeBadges = page.locator(
@@ -75,7 +75,7 @@ test.describe('Bookings Grid Display', () => {
   });
 
   test('should display confidence scores in grid', async ({ page }) => {
-    await page.waitForSelector('.k-grid, [role="grid"]', { timeout: 10000 });
+    await page.waitForSelector('[role="grid"], .mantine-DataTable', { timeout: 10000 });
 
     // Look for confidence score indicators
     const confidenceScores = page.locator(
@@ -99,7 +99,7 @@ test.describe('Bookings Grid Display', () => {
   });
 
   test('should display processing status for each booking', async ({ page }) => {
-    await page.waitForSelector('.k-grid, [role="grid"]', { timeout: 10000 });
+    await page.waitForSelector('[role="grid"], .mantine-DataTable', { timeout: 10000 });
 
     // Look for status indicators
     const statusBadges = page.locator(
@@ -130,7 +130,7 @@ test.describe('Bookings Grid Display', () => {
   });
 
   test('should display container numbers in grid', async ({ page }) => {
-    await page.waitForSelector('.k-grid, [role="grid"]', { timeout: 10000 });
+    await page.waitForSelector('[role="grid"], .mantine-DataTable', { timeout: 10000 });
 
     // Look for container number columns
     const containerNumbers = page.locator('[data-field="containerNumber"], .container-number');
@@ -152,7 +152,7 @@ test.describe('Bookings Grid Display', () => {
   });
 
   test('should allow clicking on booking to view details', async ({ page }) => {
-    await page.waitForSelector('.k-grid, [role="grid"]', { timeout: 10000 });
+    await page.waitForSelector('[role="grid"], .mantine-DataTable', { timeout: 10000 });
 
     // Find "View" button in first row
     const viewButton = page.locator('button:has-text("View"), button:has-text("Details")').first();
@@ -179,7 +179,7 @@ test.describe('Bookings Grid Display', () => {
   });
 
   test('should display upload timestamps', async ({ page }) => {
-    await page.waitForSelector('.k-grid, [role="grid"]', { timeout: 10000 });
+    await page.waitForSelector('[role="grid"], .mantine-DataTable', { timeout: 10000 });
 
     // Look for timestamp columns
     const timestamps = page.locator(
@@ -209,7 +209,7 @@ test.describe('Transport Journey Timeline Visualization', () => {
 
   test('should display journey timeline for multi-leg transport', async ({ page }) => {
     // Open a booking with journey details
-    await page.waitForSelector('.k-grid, [role="grid"]', { timeout: 10000 });
+    await page.waitForSelector('[role="grid"], .mantine-DataTable', { timeout: 10000 });
 
     const viewButton = page.locator('button:has-text("View")').first();
     const viewButtonExists = (await viewButton.count()) > 0;
@@ -250,7 +250,7 @@ test.describe('Transport Journey Timeline Visualization', () => {
   });
 
   test('should display transport modes (truck/barge/rail)', async ({ page }) => {
-    await page.waitForSelector('.k-grid, [role="grid"]', { timeout: 10000 });
+    await page.waitForSelector('[role="grid"], .mantine-DataTable', { timeout: 10000 });
 
     const viewButton = page.locator('button:has-text("View")').first();
     if ((await viewButton.count()) === 0) {
@@ -285,7 +285,7 @@ test.describe('Transport Journey Timeline Visualization', () => {
   });
 
   test('should display origin and destination for each leg', async ({ page }) => {
-    await page.waitForSelector('.k-grid, [role="grid"]', { timeout: 10000 });
+    await page.waitForSelector('[role="grid"], .mantine-DataTable', { timeout: 10000 });
 
     const viewButton = page.locator('button:has-text("View")').first();
     if ((await viewButton.count()) === 0) {
@@ -317,7 +317,7 @@ test.describe('Transport Journey Timeline Visualization', () => {
   });
 
   test('should display departure and arrival dates/times', async ({ page }) => {
-    await page.waitForSelector('.k-grid, [role="grid"]', { timeout: 10000 });
+    await page.waitForSelector('[role="grid"], .mantine-DataTable', { timeout: 10000 });
 
     const viewButton = page.locator('button:has-text("View")').first();
     if ((await viewButton.count()) === 0) {
@@ -345,7 +345,7 @@ test.describe('Transport Journey Timeline Visualization', () => {
   });
 
   test('should visualize journey progress/status', async ({ page }) => {
-    await page.waitForSelector('.k-grid, [role="grid"]', { timeout: 10000 });
+    await page.waitForSelector('[role="grid"], .mantine-DataTable', { timeout: 10000 });
 
     const viewButton = page.locator('button:has-text("View")').first();
     if ((await viewButton.count()) === 0) {
@@ -377,7 +377,7 @@ test.describe('Transport Journey Timeline Visualization', () => {
       }
     });
 
-    await page.waitForSelector('.k-grid, [role="grid"]', { timeout: 10000 });
+    await page.waitForSelector('[role="grid"], .mantine-DataTable', { timeout: 10000 });
 
     const viewButton = page.locator('button:has-text("View")').first();
     if ((await viewButton.count()) > 0) {
