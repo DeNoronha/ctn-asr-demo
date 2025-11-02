@@ -1,4 +1,4 @@
-import { Button } from "@mantine/core";
+import { Button, Stack, Group, Title, Paper, TextInput, Select, Badge } from "@mantine/core";
 import { DataTable, useDataTableColumns } from "mantine-datatable";
 import { Plus } from "lucide-react";
 import { useState } from "react";
@@ -43,19 +43,17 @@ export default function OrchestrationsPage() {
 				width: 120,
 				sortable: true,
 				render: (record) => {
-					const colors = {
-						active: "bg-green-100 text-green-800",
-						completed: "bg-blue-100 text-blue-800",
-						cancelled: "bg-red-100 text-red-800",
-						draft: "bg-gray-100 text-gray-800",
-						delayed: "bg-yellow-100 text-yellow-800",
+					const colors: Record<string, string> = {
+						active: "green",
+						completed: "blue",
+						cancelled: "red",
+						draft: "gray",
+						delayed: "yellow",
 					};
 					return (
-						<span
-							className={`px-2 py-1 rounded text-xs font-medium ${colors[record.status as keyof typeof colors]}`}
-						>
+						<Badge color={colors[record.status] || "gray"} variant="light">
 							{record.status.toUpperCase()}
-						</span>
+						</Badge>
 					);
 				},
 			},
@@ -86,60 +84,63 @@ export default function OrchestrationsPage() {
 	});
 
 	return (
-		<div className="space-y-4">
-			<div className="flex justify-between items-center">
-				<h1 className="text-2xl font-bold">Orchestrations</h1>
+		<Stack gap="md">
+			<Group justify="space-between" align="center">
+				<Title order={1}>Orchestrations</Title>
 				<Button leftSection={<Plus size={16} />}>
 					Create Orchestration
 				</Button>
-			</div>
+			</Group>
 
-			<div className="bg-white p-4 rounded-lg shadow space-y-4">
-				<div className="flex gap-4">
-					<input
-						type="text"
-						placeholder="Search by Container ID or BOL..."
-						className="flex-1 px-3 py-2 border rounded"
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
+			<Paper shadow="sm" p="md" radius="md" withBorder>
+				<Stack gap="md">
+					<Group gap="md">
+						<TextInput
+							flex={1}
+							placeholder="Search by Container ID or BOL..."
+							value={search}
+							onChange={(e) => setSearch(e.currentTarget.value)}
+						/>
+						<Select
+							placeholder="All Statuses"
+							value={statusFilter}
+							onChange={(value) => setStatusFilter(value || "")}
+							data={[
+								{ value: "", label: "All Statuses" },
+								{ value: "active", label: "Active" },
+								{ value: "completed", label: "Completed" },
+								{ value: "delayed", label: "Delayed" },
+								{ value: "cancelled", label: "Cancelled" },
+								{ value: "draft", label: "Draft" },
+							]}
+							clearable
+						/>
+					</Group>
+
+					<DataTable
+						records={data?.data || []}
+						columns={effectiveColumns}
+						fetching={isLoading}
+						totalRecords={data?.total || 0}
+						recordsPerPage={pageSize}
+						page={page}
+						onPageChange={setPage}
+						recordsPerPageOptions={[10, 20, 50]}
+						onRecordsPerPageChange={setPageSize}
+						paginationActiveBackgroundColor="blue"
+						storeColumnsKey="orchestrations-grid"
+						withTableBorder
+						striped
+						highlightOnHover
+						onRowClick={({ record }) => navigate(`/orchestrations/${record.id}`)}
+						styles={{
+							table: {
+								cursor: "pointer",
+							},
+						}}
 					/>
-					<select
-						className="px-3 py-2 border rounded"
-						value={statusFilter}
-						onChange={(e) => setStatusFilter(e.target.value)}
-					>
-						<option value="">All Statuses</option>
-						<option value="active">Active</option>
-						<option value="completed">Completed</option>
-						<option value="delayed">Delayed</option>
-						<option value="cancelled">Cancelled</option>
-						<option value="draft">Draft</option>
-					</select>
-				</div>
-
-				<DataTable
-					records={data?.data || []}
-					columns={effectiveColumns}
-					fetching={isLoading}
-					totalRecords={data?.total || 0}
-					recordsPerPage={pageSize}
-					page={page}
-					onPageChange={setPage}
-					recordsPerPageOptions={[10, 20, 50]}
-					onRecordsPerPageChange={setPageSize}
-					paginationActiveBackgroundColor="blue"
-					storeColumnsKey="orchestrations-grid"
-					withTableBorder
-					striped
-					highlightOnHover
-					onRowClick={({ record }) => navigate(`/orchestrations/${record.id}`)}
-					styles={{
-						table: {
-							cursor: "pointer",
-						},
-					}}
-				/>
-			</div>
-		</div>
+				</Stack>
+			</Paper>
+		</Stack>
 	);
 }
