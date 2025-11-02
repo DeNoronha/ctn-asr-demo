@@ -1,5 +1,4 @@
-import { Button, TextInput, Menu } from '@mantine/core';
-import { Modal, Group } from '@mantine/core';
+import { Button, Menu, Modal, Group } from '@mantine/core';
 import {
   MantineReactTable,
   type MRT_ColumnDef,
@@ -9,23 +8,15 @@ import {
   type MRT_RowSelectionState,
   useMantineReactTable,
 } from 'mantine-react-table';
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGridState } from '../hooks/useGridState';
 import { useApiError } from '../hooks/useApiError';
 import type { Member } from '../services/api';
-import {
-  exportToCSV,
-  exportToPDF,
-  formatBulkOperationSummary,
-  performBulkOperation,
-} from '../utils/exportUtils';
+import { exportToCSV, exportToPDF } from '../utils/exportUtils';
 import { sanitizeGridCell } from '../utils/sanitize';
 import { getStatusColor, getMembershipColor } from '../utils/colors';
-import { getGridActionLabel } from '../utils/aria';
-import { Eye, Pencil } from './icons';
-import AdvancedFilter from './AdvancedFilter';
 import './MembersGrid.css';
 
 interface MembersGridProps {
@@ -34,14 +25,6 @@ interface MembersGridProps {
   onViewDetails: (member: Member) => void;
   onPageChange?: (page: number, pageSize: number) => void;
   loading?: boolean;
-}
-
-interface ColumnSettings {
-  field: string;
-  title: string;
-  show: boolean;
-  width?: string;
-  orderIndex: number;
 }
 
 const MembersGrid: React.FC<MembersGridProps> = ({
@@ -64,28 +47,11 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   });
 
   const [gridData, setGridData] = useState<Member[]>(members);
-  const [searchValue, setSearchValue] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
   const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [bulkAction, setBulkAction] = useState<string>('');
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
-  // TEMPORARILY DISABLED
-  // const excelExportRef = useRef<ExcelExport | null>(null);
   const [total, setTotal] = useState(totalMembers || members.length);
-
-  // Column visibility state - Default shows: Legal Name, Status, LEI, EUID, KVK, Member Since, Actions
-  const [columns, setColumns] = useState<ColumnSettings[]>([
-    { field: 'legal_name', title: 'Legal Name', show: true, width: '200px', orderIndex: 0 },
-    { field: 'status', title: 'Status', show: true, width: '120px', orderIndex: 1 },
-    { field: 'lei', title: 'LEI', show: true, width: '150px', orderIndex: 2 },
-    { field: 'euid', title: 'EUID', show: true, width: '150px', orderIndex: 3 },
-    { field: 'kvk', title: 'KVK', show: true, width: '120px', orderIndex: 4 },
-    { field: 'created_at', title: 'Member Since', show: true, width: '140px', orderIndex: 5 },
-    { field: 'org_id', title: 'Organization ID', show: false, width: '180px', orderIndex: 6 },
-    { field: 'domain', title: 'Domain', show: false, width: '150px', orderIndex: 7 },
-    { field: 'membership_level', title: 'Membership', show: false, width: '120px', orderIndex: 8 },
-  ]);
 
   // Helper function to get translated column title
   const getColumnTitle = (field: string) => {
@@ -101,26 +67,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       created_at: t('members.memberSince', 'Member Since'),
     };
     return titleMap[field] || field;
-  };
-
-  // Load saved grid state from localStorage
-  useEffect(() => {
-    const savedColumns = localStorage.getItem('gridColumns');
-    const savedSort = localStorage.getItem('gridSort');
-
-    if (savedColumns) {
-      try {
-        setColumns(JSON.parse(savedColumns));
-      } catch (e) {
-        console.error('Failed to load column settings', e);
-      }
-    }
-
-  }, []);
-
-  // Save grid state to localStorage
-  const saveGridState = () => {
-    localStorage.setItem('gridColumns', JSON.stringify(columns));
   };
 
   // Update total when totalMembers prop changes
@@ -149,72 +95,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     }
   }, [total, pageSize, page, onPageChange, updatePage]);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchValue(value);
-    setGlobalFilter(value);
-  };
-
-  // TEMPORARILY DISABLED
-  const handleExcelExport = () => {
-    alert('Excel export temporarily disabled');
-    // notification.showInfo('Excel export temporarily disabled');
-    // if (excelExportRef.current) {
-    //   excelExportRef.current.save();
-    //   notification.showSuccess(`Exported ${gridData.length} members to Excel`);
-    // }
-  };
-
-  const toggleColumn = (field: string) => {
-    const updatedColumns = columns.map((col) =>
-      col.field === field ? { ...col, show: !col.show } : col
-    );
-    setColumns(updatedColumns);
-    saveGridState();
-    notification.showInfo(
-      `Column "${columns.find((c) => c.field === field)?.title}" ${updatedColumns.find((c) => c.field === field)?.show ? 'shown' : 'hidden'}`
-    );
-  };
-
-  const resetColumns = () => {
-    const defaultColumns: ColumnSettings[] = [
-      { field: 'legal_name', title: 'Legal Name', show: true, width: '200px', orderIndex: 0 },
-      { field: 'status', title: 'Status', show: true, width: '120px', orderIndex: 1 },
-      { field: 'lei', title: 'LEI', show: true, width: '150px', orderIndex: 2 },
-      { field: 'euid', title: 'EUID', show: true, width: '150px', orderIndex: 3 },
-      { field: 'kvk', title: 'KVK', show: true, width: '120px', orderIndex: 4 },
-      { field: 'created_at', title: 'Member Since', show: true, width: '140px', orderIndex: 5 },
-      { field: 'org_id', title: 'Organization ID', show: false, width: '180px', orderIndex: 6 },
-      { field: 'domain', title: 'Domain', show: false, width: '150px', orderIndex: 7 },
-      {
-        field: 'membership_level',
-        title: 'Membership',
-        show: false,
-        width: '120px',
-        orderIndex: 8,
-      },
-    ];
-    setColumns(defaultColumns);
-    localStorage.removeItem('gridColumns');
-    notification.showSuccess('Grid layout reset to defaults');
-  };
-
-  // Selection handlers
-  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      setSelectedIds(gridData.map((m) => m.org_id));
-    } else {
-      setSelectedIds([]);
-    }
-  };
-
-  const handleSelectRow = (orgId: string) => {
-    if (selectedIds.includes(orgId)) {
-      setSelectedIds(selectedIds.filter((id) => id !== orgId));
-    } else {
-      setSelectedIds([...selectedIds, orgId]);
-    }
-  };
 
   const handleBulkAction = (action: string) => {
     if (selectedIds.length === 0) {
@@ -286,27 +166,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     notification.showSuccess(`Exported to ${fileName}`);
   };
 
-  const handleCSVExport = () => {
-    const dataToExport =
-      selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
-
-    exportToCSV(dataToExport);
-    notification.showSuccess(`Exported ${dataToExport.length} members to CSV`);
-  };
-
-  const handleAdvancedFilterApply = (advancedFilter: any) => {
-    // TODO: Implement advanced filter with Mantine column filters
-    setSearchValue(''); // Clear simple search when applying advanced filter
-    notification.showSuccess('Advanced filters applied');
-  };
-
-  const handleAdvancedFilterClear = () => {
-    // TODO: Implement advanced filter clear with Mantine column filters
-    setGlobalFilter('');
-    setColumnFilters([]);
-    notification.showInfo('Filters cleared');
-  };
-
   // Mantine React Table state
   const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: page - 1,
@@ -332,7 +191,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     setRowSelection(selection);
   }, [selectedIds, gridData]);
 
-  // Mantine React Table column definitions
+  // Mantine React Table column definitions - ALL columns defined, visibility controlled by table
   const mantineColumns = useMemo<MRT_ColumnDef<Member>[]>(() => {
     const statusTooltips: Record<string, string> = {
       ACTIVE: 'Member is active and in good standing',
@@ -348,73 +207,124 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       BASIC: 'Basic membership - limited access to essential services'
     };
 
-    const visibleColumns = columns.filter(col => col.show);
-
-    return visibleColumns.map(col => {
-      const baseColumn: MRT_ColumnDef<Member> = {
-        accessorKey: col.field as any,
-        header: getColumnTitle(col.field),
-        size: col.width ? parseInt(col.width) : 150,
-      };
-
-      // Add custom cell renderers based on field type
-      if (col.field === 'status') {
-        baseColumn.Cell = ({ row }) => (
-          <div>
-            <span
-              className="status-badge"
-              style={{ backgroundColor: getStatusColor(row.original.status) }}
-              title={statusTooltips[row.original.status] || 'Member status'}
-              role="status"
-              aria-label={`Status: ${row.original.status}`}
-            >
-              {row.original.status}
-            </span>
-          </div>
-        );
-      } else if (col.field === 'membership_level') {
-        baseColumn.Cell = ({ row }) => (
-          <div>
-            <span
-              className="membership-badge"
-              style={{ backgroundColor: getMembershipColor(row.original.membership_level) }}
-              title={membershipTooltips[row.original.membership_level] || 'Membership level'}
-              role="status"
-              aria-label={`Membership: ${row.original.membership_level}`}
-            >
-              {row.original.membership_level}
-            </span>
-          </div>
-        );
-      } else if (col.field === 'created_at') {
-        baseColumn.Cell = ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{new Date(value).toLocaleDateString()}</div>;
-        };
-      } else if (col.field === 'legal_name' || col.field === 'domain') {
-        // SEC-007: Sanitize user-generated text fields
-        baseColumn.Cell = ({ cell }) => {
+    return [
+      {
+        accessorKey: 'legal_name',
+        header: getColumnTitle('legal_name'),
+        size: 200,
+        enableHiding: false, // Always visible
+        Cell: ({ cell }) => {
           const value = cell.getValue<string>();
           return <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
-        };
-      }
+        },
+      },
+      {
+        accessorKey: 'status',
+        header: getColumnTitle('status'),
+        size: 120,
+        Cell: ({ row }) => (
+          <span
+            className="status-badge"
+            style={{ backgroundColor: getStatusColor(row.original.status) }}
+            title={statusTooltips[row.original.status] || 'Member status'}
+            role="status"
+            aria-label={`Status: ${row.original.status}`}
+          >
+            {row.original.status}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'lei',
+        header: 'LEI',
+        size: 150,
+      },
+      {
+        accessorKey: 'euid',
+        header: 'EUID',
+        size: 150,
+      },
+      {
+        accessorKey: 'kvk',
+        header: 'KVK',
+        size: 120,
+      },
+      {
+        accessorKey: 'created_at',
+        header: getColumnTitle('created_at'),
+        size: 140,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          return <div>{new Date(value).toLocaleDateString()}</div>;
+        },
+      },
+      {
+        accessorKey: 'org_id',
+        header: getColumnTitle('org_id'),
+        size: 180,
+      },
+      {
+        accessorKey: 'domain',
+        header: getColumnTitle('domain'),
+        size: 150,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          return <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
+        },
+      },
+      {
+        accessorKey: 'membership_level',
+        header: getColumnTitle('membership_level'),
+        size: 120,
+        Cell: ({ row }) => (
+          <span
+            className="membership-badge"
+            style={{ backgroundColor: getMembershipColor(row.original.membership_level) }}
+            title={membershipTooltips[row.original.membership_level] || 'Membership level'}
+            role="status"
+            aria-label={`Membership: ${row.original.membership_level}`}
+          >
+            {row.original.membership_level}
+          </span>
+        ),
+      },
+    ];
+  }, []);
 
-      return baseColumn;
-    });
-  }, [columns]);
-
-  // Mantine React Table instance
+  // Mantine React Table instance with ONLY standard features
   const table = useMantineReactTable({
     columns: mantineColumns,
     data: gridData,
+
+    // Row Selection - Standard feature
     enableRowSelection: true,
+
+    // Column Features - All standard
     enableColumnResizing: true,
-    enableSorting: !onPageChange, // Disable client-side sorting if server-side pagination
-    enableColumnFilters: !onPageChange, // Disable client-side filtering if server-side
-    enableGlobalFilter: !onPageChange, // Enable global filter for client-side only
+    enableColumnOrdering: true,
+    enableHiding: true, // Enable column show/hide via column menu
+    enableColumnFilters: !onPageChange,
+
+    // Sorting & Filtering - Standard features
+    enableSorting: !onPageChange,
+    enableGlobalFilter: !onPageChange,
+    enableFilters: !onPageChange,
+
+    // Pagination - Standard feature
     enablePagination: true,
-    manualPagination: !!onPageChange, // Use manual pagination if server-side
+    manualPagination: !!onPageChange,
     pageCount: onPageChange ? Math.ceil(total / pageSize) : undefined,
+
+    // Initial state - Set default column visibility
+    initialState: {
+      columnVisibility: {
+        org_id: false, // Hidden by default
+        domain: false, // Hidden by default
+        membership_level: false, // Hidden by default
+      },
+    },
+
+    // State management
     state: {
       pagination,
       sorting,
@@ -422,87 +332,53 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       rowSelection,
       globalFilter,
     },
+
+    // State change handlers
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
+
+    // Table styling
     mantineTableProps: {
       striped: true,
-      style: { height: '600px' },
+      withColumnBorders: true,
+      withTableBorder: true,
     },
+
+    // Row click handler
     mantineTableBodyRowProps: ({ row }) => ({
       onClick: () => onViewDetails(row.original),
       style: { cursor: 'pointer' },
     }),
+
+    // Top toolbar - Only essential custom actions, use built-in features for rest
     renderTopToolbarCustomActions: () => (
-      <div className="grid-toolbar">
-        <div className="toolbar-left">
-          {!onPageChange && (
-            <>
-              <TextInput
-                value={searchValue}
-                onChange={handleSearchChange}
-                placeholder={t('members.searchMembers')}
-                style={{ width: '300px' }}
-              />
-              <Button
-                color="blue"
-                variant={showAdvancedFilter ? 'filled' : 'outline'}
-                onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
-              >
-                {showAdvancedFilter ? t('common.hide', 'Hide') : t('common.advanced', 'Advanced')}{' '}
-                {t('common.filter')}
-              </Button>
-            </>
-          )}
+      <Group gap="sm">
+        {Object.keys(rowSelection).length > 0 && (
           <Menu>
             <Menu.Target>
-              <Button variant="outline" color="blue">
-                {t('common.export')}
+              <Button color="cyan" size="sm">
+                {`${t('members.bulkActions')} (${Object.keys(rowSelection).length})`}
               </Button>
             </Menu.Target>
             <Menu.Dropdown>
-              {exportMenuItems.map((item, index) => (
+              {bulkActions.map((item, index) => (
                 <Menu.Item key={index} onClick={item.click}>
                   {item.text}
                 </Menu.Item>
               ))}
             </Menu.Dropdown>
           </Menu>
-          {Object.keys(rowSelection).length > 0 && (
-            <Menu>
-              <Menu.Target>
-                <Button color="cyan">
-                  {`${t('members.bulkActions')} (${Object.keys(rowSelection).length})`}
-                </Button>
-              </Menu.Target>
-              <Menu.Dropdown>
-                {bulkActions.map((item, index) => (
-                  <Menu.Item key={index} onClick={item.click}>
-                    {item.text}
-                  </Menu.Item>
-                ))}
-              </Menu.Dropdown>
-            </Menu>
-          )}
-        </div>
-        <div className="toolbar-right">
-          <Menu>
-            <Menu.Target>
-              <Button variant="outline">{t('common.columns')}</Button>
-            </Menu.Target>
-            <Menu.Dropdown>
-              {columnMenuItems.map((item, index) => (
-                <Menu.Item key={index} onClick={item.click}>
-                  {item.icon && '✓ '}{item.text}
-                </Menu.Item>
-              ))}
-            </Menu.Dropdown>
-          </Menu>
-        </div>
-      </div>
+        )}
+      </Group>
     ),
+
+    // Position toolbar icons consistently
+    positionToolbarAlertBanner: 'bottom',
+    positionGlobalFilter: 'left', // Search on left
+    positionActionsColumn: 'last',
   });
 
   // Sync row selection changes back to selectedIds
@@ -527,23 +403,11 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     }
   }, [pagination]);
 
-  const columnMenuItems = columns.map((col) => ({
-    text: col.title,
-    icon: col.show ? 'check' : '',
-    click: () => toggleColumn(col.field),
-  }));
-
   const bulkActions = [
     { text: 'Export to PDF', icon: 'file-pdf', click: () => handleBulkAction('export-pdf') },
     { text: 'Export to CSV', icon: 'file-txt', click: () => handleBulkAction('export-csv') },
     { text: 'Suspend Selected', icon: 'pause', click: () => handleBulkAction('suspend') },
     { text: 'Delete Selected', icon: 'trash', click: () => handleBulkAction('delete') },
-  ];
-
-  const exportMenuItems = [
-    { text: 'Export to Excel (Coming Soon)', icon: 'file-excel', click: () => {} },
-    { text: 'Export to PDF', icon: 'file-pdf', click: handlePDFExport },
-    { text: 'Export to CSV', icon: 'file-txt', click: handleCSVExport },
   ];
 
   const getBulkActionConfirmation = () => {
@@ -563,11 +427,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
   return (
     <div className="members-grid-container">
-      {/* Advanced Filter Panel */}
-      {showAdvancedFilter && (
-        <AdvancedFilter onApply={handleAdvancedFilterApply} onClear={handleAdvancedFilterClear} />
-      )}
-
       {/* Bulk Action Confirmation Dialog */}
       <Modal
         opened={showBulkDialog}
