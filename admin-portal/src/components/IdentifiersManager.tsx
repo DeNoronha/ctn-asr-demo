@@ -30,6 +30,7 @@ import { getEmptyState } from '../utils/emptyStates';
 import '../styles/progressive-forms.css';
 import { TEXT_COLORS, getStatusColor, getMembershipColor } from '../utils/colors';
 import { getGridActionLabel, getValidationProps, getDescribedById } from '../utils/aria';
+import { ErrorBoundary } from './ErrorBoundary';
 
 interface IdentifiersManagerProps {
   legalEntityId: string;
@@ -748,15 +749,17 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
       </div>
 
       {identifiers.length > 0 ? (
-        <DataTable
-          records={identifiers}
-          columns={effectiveColumns}
-          storeColumnsKey="identifiers-grid"
-          withTableBorder
-          withColumnBorders
-          striped
-          highlightOnHover
-        />
+        <ErrorBoundary>
+          <DataTable
+            records={identifiers}
+            columns={effectiveColumns}
+            storeColumnsKey="identifiers-grid"
+            withTableBorder
+            withColumnBorders
+            striped
+            highlightOnHover
+          />
+        </ErrorBoundary>
       ) : (
         (() => {
           const es = getEmptyState('identifier', 'noIdentifiers');
