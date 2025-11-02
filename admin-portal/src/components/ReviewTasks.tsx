@@ -291,19 +291,39 @@ export const ReviewTasks: React.FC = () => {
     []
   );
 
-  // Mantine React Table instance
+  // Mantine React Table instance with standard features
   const table = useMantineReactTable({
     columns,
     data: tasks,
+
+    // Row Selection
+    enableRowSelection: true,
+
+    // Column Features
     enableColumnResizing: true,
+    enableColumnOrdering: true,
+    enableHiding: true,
+    enableColumnFilters: true,
+
+    // Sorting & Filtering
     enableSorting: true,
-    enablePagination: false,
-    enableBottomToolbar: false,
-    enableTopToolbar: false,
+    enableGlobalFilter: true,
+    enableFilters: true,
+
+    // Pagination
+    enablePagination: true,
+
+    // Table styling
     mantineTableProps: {
       striped: true,
-      style: { marginTop: '20px' },
+      withColumnBorders: true,
+      withTableBorder: true,
     },
+
+    // Toolbar positioning
+    positionGlobalFilter: 'left',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
   });
 
   if (loading) {

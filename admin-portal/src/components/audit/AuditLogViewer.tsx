@@ -153,23 +153,45 @@ const AuditLogViewer: React.FC = () => {
     []
   );
 
-  // Mantine React Table instance
+  // Mantine React Table instance with standard features
   const table = useMantineReactTable({
     columns,
     data: filteredLogs,
+
+    // Row Selection - disabled for read-only audit logs
     enableRowSelection: false,
+
+    // Column Features
     enableColumnResizing: true,
-    enableSorting: true,
+    enableColumnOrdering: true,
+    enableHiding: true,
     enableColumnFilters: true,
+
+    // Sorting & Filtering
+    enableSorting: true,
+    enableGlobalFilter: true,
+    enableFilters: true,
+
+    // Pagination
     enablePagination: true,
+
+    // Initial state
     initialState: {
       sorting: [{ id: 'timestamp', desc: true }],
       pagination: { pageIndex: 0, pageSize: 20 },
     },
+
+    // Table styling
     mantineTableProps: {
       striped: true,
-      style: { height: '500px' },
+      withColumnBorders: true,
+      withTableBorder: true,
     },
+
+    // Toolbar positioning
+    positionGlobalFilter: 'left',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
   });
 
   const actions = ['All', ...Object.values(AuditAction)];

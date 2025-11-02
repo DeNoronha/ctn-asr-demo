@@ -456,33 +456,73 @@ const TasksGrid: React.FC = () => {
     []
   );
 
-  // Table instances
+  // Table instances with standard features
   const tasksTable = useMantineReactTable({
     columns: tasksColumns,
     data: tasks,
+
+    // Row Selection
+    enableRowSelection: true,
+
+    // Column Features
     enableColumnResizing: true,
+    enableColumnOrdering: true,
+    enableHiding: true,
+    enableColumnFilters: true,
+
+    // Sorting & Filtering
     enableSorting: true,
-    enablePagination: false,
-    enableBottomToolbar: false,
-    enableTopToolbar: false,
+    enableGlobalFilter: true,
+    enableFilters: true,
+
+    // Pagination
+    enablePagination: true,
+
+    // Table styling
     mantineTableProps: {
       striped: true,
-      style: { height: '550px' },
+      withColumnBorders: true,
+      withTableBorder: true,
     },
+
+    // Toolbar positioning
+    positionGlobalFilter: 'left',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
   });
 
   const reviewTable = useMantineReactTable({
     columns: reviewColumns,
     data: reviewTasks,
+
+    // Row Selection
+    enableRowSelection: true,
+
+    // Column Features
     enableColumnResizing: true,
+    enableColumnOrdering: true,
+    enableHiding: true,
+    enableColumnFilters: true,
+
+    // Sorting & Filtering
     enableSorting: true,
-    enablePagination: false,
-    enableBottomToolbar: false,
-    enableTopToolbar: false,
+    enableGlobalFilter: true,
+    enableFilters: true,
+
+    // Pagination
+    enablePagination: true,
+
+    // Table styling
     mantineTableProps: {
       striped: true,
-      style: { height: '550px' },
+      withColumnBorders: true,
+      withTableBorder: true,
     },
+
+    // Toolbar positioning
+    positionGlobalFilter: 'left',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
   });
 
   // Count tasks by status

@@ -271,23 +271,45 @@ const UserManagement: React.FC = () => {
     [currentUser]
   );
 
-  // Mantine React Table instance
+  // Mantine React Table instance with standard features
   const table = useMantineReactTable({
     columns,
     data: users,
+
+    // Row Selection - disabled for user management (actions via buttons)
     enableRowSelection: false,
+
+    // Column Features
     enableColumnResizing: true,
-    enableSorting: true,
+    enableColumnOrdering: true,
+    enableHiding: true,
     enableColumnFilters: true,
+
+    // Sorting & Filtering
+    enableSorting: true,
+    enableGlobalFilter: true,
+    enableFilters: true,
+
+    // Pagination
     enablePagination: true,
+
+    // Initial state
     initialState: {
       sorting: [{ id: 'createdAt', desc: true }],
       pagination: { pageIndex: 0, pageSize: 20 },
     },
+
+    // Table styling
     mantineTableProps: {
       striped: true,
-      style: { height: '600px' },
+      withColumnBorders: true,
+      withTableBorder: true,
     },
+
+    // Toolbar positioning
+    positionGlobalFilter: 'left',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
   });
 
   return (

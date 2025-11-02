@@ -212,19 +212,39 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
     []
   );
 
-  // Mantine React Table instance
+  // Mantine React Table instance with standard features
   const table = useMantineReactTable({
     columns,
     data: verificationRecords,
+
+    // Row Selection - disabled for read-only verification history
+    enableRowSelection: false,
+
+    // Column Features
     enableColumnResizing: true,
+    enableColumnOrdering: true,
+    enableHiding: true,
+    enableColumnFilters: true,
+
+    // Sorting & Filtering
     enableSorting: true,
-    enablePagination: false,
-    enableBottomToolbar: false,
-    enableTopToolbar: false,
+    enableGlobalFilter: true,
+    enableFilters: true,
+
+    // Pagination
+    enablePagination: true,
+
+    // Table styling
     mantineTableProps: {
       striped: true,
-      style: { height: '400px' },
+      withColumnBorders: true,
+      withTableBorder: true,
     },
+
+    // Toolbar positioning
+    positionGlobalFilter: 'left',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
   });
 
   // Format identifiers for dropdown display

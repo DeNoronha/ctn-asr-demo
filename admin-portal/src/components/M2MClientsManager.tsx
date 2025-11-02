@@ -318,19 +318,39 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
     [loading]
   );
 
-  // Mantine React Table instance
+  // Mantine React Table instance with standard features
   const table = useMantineReactTable({
     columns,
     data: clients,
+
+    // Row Selection
+    enableRowSelection: true,
+
+    // Column Features
     enableColumnResizing: true,
+    enableColumnOrdering: true,
+    enableHiding: true,
+    enableColumnFilters: true,
+
+    // Sorting & Filtering
     enableSorting: true,
-    enablePagination: false,
-    enableBottomToolbar: false,
-    enableTopToolbar: false,
+    enableGlobalFilter: true,
+    enableFilters: true,
+
+    // Pagination
+    enablePagination: true,
+
+    // Table styling
     mantineTableProps: {
       striped: true,
-      style: { height: '400px' },
+      withColumnBorders: true,
+      withTableBorder: true,
     },
+
+    // Toolbar positioning
+    positionGlobalFilter: 'left',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
   });
 
   return (

@@ -191,19 +191,40 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
   const safeContacts = safeArray(contacts);
   const contactCount = safeLength(contacts);
 
-  // Mantine React Table instance
+  // Mantine React Table instance with standard features
   const table = useMantineReactTable({
     columns,
     data: safeContacts,
+
+    // Row Selection
+    enableRowSelection: true,
+
+    // Column Features
     enableColumnResizing: true,
+    enableColumnOrdering: true,
+    enableHiding: true,
+    enableColumnFilters: true,
+
+    // Sorting & Filtering
     enableSorting: true,
-    enablePagination: false,
-    enableBottomToolbar: false,
-    enableTopToolbar: false,
+    enableGlobalFilter: true,
+    enableFilters: true,
+
+    // Pagination
+    enablePagination: true,
+
+    // Table styling
     mantineTableProps: {
       className: 'contacts-grid',
       striped: true,
+      withColumnBorders: true,
+      withTableBorder: true,
     },
+
+    // Toolbar positioning
+    positionGlobalFilter: 'left',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
   });
 
   return (
