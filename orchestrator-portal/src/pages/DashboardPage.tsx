@@ -1,9 +1,5 @@
-import {
-	Chart,
-	ChartSeries,
-	ChartSeriesItem,
-} from "@progress/kendo-react-charts";
 import { Activity, AlertTriangle, Clock, Package } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import { useOrchestrations } from "../hooks/useOrchestrations";
 import { useAuthStore } from "../stores/authStore";
 
@@ -19,9 +15,9 @@ export default function DashboardPage() {
 	};
 
 	const statusData = [
-		{ status: "Active", count: stats.active, color: "#10b981" },
-		{ status: "Completed", count: stats.completed, color: "#3b82f6" },
-		{ status: "Delayed", count: stats.delayed, color: "#f59e0b" },
+		{ name: "Active", value: stats.active, color: "#10b981" },
+		{ name: "Completed", value: stats.completed, color: "#3b82f6" },
+		{ name: "Delayed", value: stats.delayed, color: "#f59e0b" },
 	];
 
 	return (
@@ -72,17 +68,26 @@ export default function DashboardPage() {
 			<div className="grid grid-cols-2 gap-6">
 				<div className="bg-white p-6 rounded-lg shadow">
 					<h2 className="text-lg font-bold mb-4">Status Breakdown</h2>
-					<Chart>
-						<ChartSeries>
-							<ChartSeriesItem
-								type="donut"
+					<ResponsiveContainer width="100%" height={300}>
+						<PieChart>
+							<Pie
 								data={statusData}
-								field="count"
-								categoryField="status"
-								colorField="color"
-							/>
-						</ChartSeries>
-					</Chart>
+								cx="50%"
+								cy="50%"
+								innerRadius={60}
+								outerRadius={100}
+								paddingAngle={5}
+								dataKey="value"
+								label
+							>
+								{statusData.map((entry, index) => (
+									<Cell key={`cell-${index}`} fill={entry.color} />
+								))}
+							</Pie>
+							<Tooltip />
+							<Legend />
+						</PieChart>
+					</ResponsiveContainer>
 				</div>
 
 				<div className="bg-white p-6 rounded-lg shadow">

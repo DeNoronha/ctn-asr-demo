@@ -1,5 +1,5 @@
-import "./kendoLicense";
-import "@progress/kendo-theme-default/dist/all.css";
+import '@mantine/core/styles.css';
+import 'mantine-datatable/styles.css';
 import "./index.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

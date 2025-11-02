@@ -1,5 +1,4 @@
-import { Button } from "@progress/kendo-react-buttons";
-import { Input } from "@progress/kendo-react-inputs";
+import { Button, TextInput, PasswordInput } from "@mantine/core";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
@@ -34,31 +33,23 @@ export default function LoginPage() {
 					CTN Orchestrator Portal
 				</h1>
 				<form onSubmit={handleSubmit} className="space-y-4">
-					<div>
-						<label className="block text-sm font-medium mb-1">Email</label>
-						<Input
-							value={email}
-							onChange={(e) => setEmail(e.value as string)}
-							placeholder="Email"
-							className="w-full"
-						/>
-					</div>
-					<div>
-						<label className="block text-sm font-medium mb-1">Password</label>
-						<Input
-							value={password}
-							onChange={(e) => setPassword(e.value as string)}
-							type="password"
-							placeholder="Password"
-							className="w-full"
-						/>
-					</div>
+					<TextInput
+						label="Email"
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
+						placeholder="Email"
+					/>
+					<PasswordInput
+						label="Password"
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
+						placeholder="Password"
+					/>
 					{error && <div className="text-red-600 text-sm">{error}</div>}
 					<Button
 						type="submit"
-						themeColor="primary"
-						size="large"
-						className="w-full"
+						fullWidth
+						size="lg"
 						disabled={loading}
 					>
 						{loading ? "Signing in..." : "Sign In"}

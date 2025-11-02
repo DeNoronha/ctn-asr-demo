@@ -1,10 +1,12 @@
 import {
-	Chart,
-	ChartCategoryAxis,
-	ChartCategoryAxisItem,
-	ChartSeries,
-	ChartSeriesItem,
-} from "@progress/kendo-react-charts";
+	BarChart,
+	Bar,
+	XAxis,
+	YAxis,
+	CartesianGrid,
+	Tooltip,
+	ResponsiveContainer,
+} from "recharts";
 import { useOrchestrations } from "../hooks/useOrchestrations";
 import { useAuthStore } from "../stores/authStore";
 
@@ -38,20 +40,15 @@ export default function AnalyticsPage() {
 			<div className="grid grid-cols-2 gap-6">
 				<div className="bg-white p-6 rounded-lg shadow">
 					<h2 className="text-lg font-bold mb-4">Orchestrations by Priority</h2>
-					<Chart>
-						<ChartCategoryAxis>
-							<ChartCategoryAxisItem
-								categories={priorityData.map((d) => d.priority)}
-							/>
-						</ChartCategoryAxis>
-						<ChartSeries>
-							<ChartSeriesItem
-								type="column"
-								data={priorityData.map((d) => d.count)}
-								color="#4a90e2"
-							/>
-						</ChartSeries>
-					</Chart>
+					<ResponsiveContainer width="100%" height={300}>
+						<BarChart data={priorityData}>
+							<CartesianGrid strokeDasharray="3 3" />
+							<XAxis dataKey="priority" />
+							<YAxis />
+							<Tooltip />
+							<Bar dataKey="count" fill="#4a90e2" />
+						</BarChart>
+					</ResponsiveContainer>
 				</div>
 
 				<div className="bg-white p-6 rounded-lg shadow">

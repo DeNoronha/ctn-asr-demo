@@ -1,4 +1,4 @@
-import { Button } from "@progress/kendo-react-buttons";
+import { Button } from "@mantine/core";
 import { LogOut, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
@@ -23,8 +23,7 @@ export default function Header() {
 					<User size={16} />
 					<span className="text-sm">{user?.name}</span>
 				</div>
-				<Button fillMode="flat" onClick={handleLogout}>
-					<LogOut size={16} className="mr-2" />
+				<Button variant="subtle" onClick={handleLogout} leftSection={<LogOut size={16} />}>
 					Logout
 				</Button>
 			</div>

@@ -1,4 +1,4 @@
-import { Button } from "@progress/kendo-react-buttons";
+import { Button } from "@mantine/core";
 import { ArrowLeft, Package } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useOrchestration } from "../hooks/useOrchestrations";
@@ -27,8 +27,7 @@ export default function OrchestrationDetailPage() {
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center gap-4">
-				<Button fillMode="flat" onClick={() => navigate("/orchestrations")}>
-					<ArrowLeft size={16} className="mr-2" />
+				<Button variant="subtle" onClick={() => navigate("/orchestrations")} leftSection={<ArrowLeft size={16} />}>
 					Back
 				</Button>
 				<h1 className="text-2xl font-bold">Orchestration Details</h1>

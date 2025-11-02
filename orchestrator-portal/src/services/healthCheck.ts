@@ -112,12 +112,10 @@ class HealthCheckService {
 			}
 
 			return this.status.healthy;
-		} catch (error) {
+		} catch (error: unknown) {
 			const responseTime = Date.now() - startTime;
 			const wasHealthy = this.status.healthy;
-			const errorMessage = axios.isAxiosError(error)
-				? error.message
-				: "Unknown error";
+			const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
 			this.status = {
 				healthy: false,
