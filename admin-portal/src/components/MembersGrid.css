@@ -4,10 +4,11 @@
   height: 100%;
 }
 
-/* Fix checkbox sizes in mantine-datatable */
+/* Fix checkbox sizes and centering in mantine-datatable */
 .members-grid-container .mantine-Checkbox-root {
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .members-grid-container .mantine-Checkbox-input {
@@ -15,11 +16,43 @@
   height: 18px !important;
   min-width: 18px !important;
   min-height: 18px !important;
+  cursor: pointer;
 }
 
 .members-grid-container .mantine-Checkbox-icon {
   width: 14px !important;
   height: 14px !important;
+}
+
+/* Center checkboxes in table cells */
+.members-grid-container thead th:first-child,
+.members-grid-container tbody td:first-child {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.members-grid-container thead th:first-child > div,
+.members-grid-container tbody td:first-child > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+/* Column selector (context menu) improvements */
+.members-grid-container .mantine-Menu-dropdown {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.members-grid-container .mantine-Menu-item {
+  padding: 8px 12px;
+}
+
+.members-grid-container .mantine-Menu-itemLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .grid-toolbar {
