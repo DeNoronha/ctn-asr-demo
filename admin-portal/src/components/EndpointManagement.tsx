@@ -10,6 +10,7 @@ import './EndpointManagement.css';
 import { getEmptyState } from '../utils/emptyStates';
 import { endpointSuccessMessages, tokenSuccessMessages } from '../utils/successMessages';
 import { announceToScreenReader } from '../utils/aria';
+import { ErrorBoundary } from './ErrorBoundary';
 
 // Auth helper
 const getAccessToken = async (): Promise<string> => {
@@ -295,16 +296,18 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
           );
         })()
       ) : (
-        <DataTable
-          withTableBorder
-          withColumnBorders
-          striped
-          highlightOnHover
-          records={endpoints}
-          columns={effectiveColumns}
-          fetching={loading}
-          storeColumnsKey="endpoints-grid"
-        />
+        <ErrorBoundary>
+          <DataTable
+            withTableBorder
+            withColumnBorders
+            striped
+            highlightOnHover
+            records={endpoints}
+            columns={effectiveColumns}
+            fetching={loading}
+            storeColumnsKey="endpoints-grid"
+          />
+        </ErrorBoundary>
       )}
 
       <Modal
