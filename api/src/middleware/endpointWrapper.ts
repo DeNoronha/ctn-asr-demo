@@ -11,7 +11,7 @@ import { enforceHttps, addHttpsSecurityHeaders } from './httpsEnforcement';
 import { handleError } from '../utils/errors';
 import { getRequestId } from '../utils/requestId';
 import { checkRateLimit, RateLimiterType } from './rateLimiter';
-import { validateContentType } from './contentTypeValidator';
+import { validateContentType, ContentTypeValidationResult } from './contentTypeValidator';
 
 // Re-export AuthenticatedRequest for convenience
 export type AuthenticatedRequest = AuthRequest;
@@ -234,9 +234,10 @@ export function wrapEndpoint(
 
       // Apply Content-Type validation for mutation methods
       if (enableContentTypeValidation) {
-        const contentTypeResult = await validateContentType(request, context);
+        const contentTypeResult: ContentTypeValidationResult = await validateContentType(request, context);
 
-        if (!contentTypeResult.valid && contentTypeResult.response) {
+        if (!contentTypeResult.valid) {
+          const failureResult = contentTypeResult as { valid: false; response: HttpResponseInit };
           const duration = Date.now() - startTime;
           context.warn(`[${requestId}] Content-Type validation failed (${duration}ms)`);
 
@@ -245,9 +246,9 @@ export function wrapEndpoint(
             const origin = safeGetHeader(request.headers, 'origin');
             const corsHeaders = getCorsHeaders(origin, allowedOrigins);
             return {
-              ...contentTypeResult.response,
+              ...failureResult.response,
               headers: {
-                ...(contentTypeResult.response.headers || {}),
+                ...(failureResult.response.headers || {}),
                 ...corsHeaders,
                 'X-Request-ID': requestId
               },
@@ -255,9 +256,9 @@ export function wrapEndpoint(
           }
 
           return {
-            ...contentTypeResult.response,
+            ...failureResult.response,
             headers: {
-              ...(contentTypeResult.response.headers || {}),
+              ...(failureResult.response.headers || {}),
               'X-Request-ID': requestId
             }
           };

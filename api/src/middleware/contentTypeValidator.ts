@@ -22,16 +22,16 @@ function safeGetHeader(headers: any, name: string): string | null {
 /**
  * Content-Type validation result
  */
-interface ContentTypeValidationSuccess {
+export interface ContentTypeValidationSuccess {
   valid: true;
 }
 
-interface ContentTypeValidationFailure {
+export interface ContentTypeValidationFailure {
   valid: false;
   response: HttpResponseInit;
 }
 
-type ContentTypeValidationResult = ContentTypeValidationSuccess | ContentTypeValidationFailure;
+export type ContentTypeValidationResult = ContentTypeValidationSuccess | ContentTypeValidationFailure;
 
 /**
  * Validate Content-Type header on mutation requests (POST/PUT/PATCH/DELETE)
