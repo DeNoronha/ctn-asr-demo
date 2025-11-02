@@ -5,11 +5,29 @@
 
 import type { Configuration, PopupRequest } from '@azure/msal-browser';
 
+// Validate required environment variables at startup
+const requiredEnvVars = {
+  VITE_AZURE_CLIENT_ID: import.meta.env.VITE_AZURE_CLIENT_ID,
+  VITE_AZURE_TENANT_ID: import.meta.env.VITE_AZURE_TENANT_ID,
+};
+
+// Check for missing environment variables
+const missingVars = Object.entries(requiredEnvVars)
+  .filter(([, value]) => !value)
+  .map(([key]) => key);
+
+if (missingVars.length > 0) {
+  throw new Error(
+    `Missing required environment variables: ${missingVars.join(', ')}. ` +
+    'Please check your .env file and ensure all required variables are set.'
+  );
+}
+
 // Azure Entra ID Configuration
 export const msalConfig: Configuration = {
   auth: {
-    clientId: import.meta.env.VITE_AZURE_CLIENT_ID || 'd3037c11-a541-4f21-8862-8079137a0cde',
-    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_AZURE_TENANT_ID || '598664e7-725c-4daa-bd1f-89c4ada717ff'}`,
+    clientId: import.meta.env.VITE_AZURE_CLIENT_ID,
+    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_AZURE_TENANT_ID}`,
     redirectUri: import.meta.env.VITE_REDIRECT_URI || window.location.origin,
     postLogoutRedirectUri: window.location.origin,
   },
@@ -26,7 +44,7 @@ export const loginRequest: PopupRequest = {
 
 // API scopes for backend calls
 export const apiRequest = {
-  scopes: [`api://${import.meta.env.VITE_AZURE_CLIENT_ID || 'd3037c11-a541-4f21-8862-8079137a0cde'}/access_as_user`],
+  scopes: [`api://${import.meta.env.VITE_AZURE_CLIENT_ID}/access_as_user`],
 };
 
 // User Roles for Booking Portal
