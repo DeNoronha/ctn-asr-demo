@@ -3,7 +3,7 @@ import { IconSearch } from '@tabler/icons-react';
 import { DataTable, useDataTableColumns, type DataTableSortStatus } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as XLSX from 'xlsx';
+import { Workbook } from 'exceljs';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGridState } from '../hooks/useGridState';
 import { useApiError } from '../hooks/useApiError';
@@ -189,48 +189,54 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     notification.showSuccess(`Exported ${dataToExport.length} members to CSV`);
   };
 
-  const handleExcelExport = () => {
+  const handleExcelExport = async () => {
     const dataToExport =
       selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
 
-    // Prepare data for Excel
-    const excelData = dataToExport.map((member) => ({
-      'Legal Name': member.legal_name,
-      'Status': member.status,
-      'LEI': member.lei || '',
-      'EUID': member.euid || '',
-      'KVK': member.kvk || '',
-      'Organization ID': member.org_id,
-      'Domain': member.domain || '',
-      'Membership': member.membership_level || '',
-      'Member Since': new Date(member.created_at).toLocaleDateString(),
-    }));
+    // Create workbook and worksheet
+    const workbook = new Workbook();
+    const worksheet = workbook.addWorksheet('Members');
 
-    // Create worksheet
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-
-    // Set column widths
-    worksheet['!cols'] = [
-      { wch: 30 }, // Legal Name
-      { wch: 12 }, // Status
-      { wch: 20 }, // LEI
-      { wch: 20 }, // EUID
-      { wch: 12 }, // KVK
-      { wch: 25 }, // Organization ID
-      { wch: 20 }, // Domain
-      { wch: 12 }, // Membership
-      { wch: 15 }, // Member Since
+    // Define columns with headers and widths
+    worksheet.columns = [
+      { header: 'Legal Name', key: 'legalName', width: 30 },
+      { header: 'Status', key: 'status', width: 12 },
+      { header: 'LEI', key: 'lei', width: 20 },
+      { header: 'EUID', key: 'euid', width: 20 },
+      { header: 'KVK', key: 'kvk', width: 12 },
+      { header: 'Organization ID', key: 'orgId', width: 25 },
+      { header: 'Domain', key: 'domain', width: 20 },
+      { header: 'Membership', key: 'membership', width: 12 },
+      { header: 'Member Since', key: 'memberSince', width: 15 },
     ];
 
-    // Create workbook
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Members');
+    // Add data rows
+    dataToExport.forEach((member) => {
+      worksheet.addRow({
+        legalName: member.legal_name,
+        status: member.status,
+        lei: member.lei || '',
+        euid: member.euid || '',
+        kvk: member.kvk || '',
+        orgId: member.org_id,
+        domain: member.domain || '',
+        membership: member.membership_level || '',
+        memberSince: new Date(member.created_at).toLocaleDateString(),
+      });
+    });
 
     // Generate filename with timestamp
     const fileName = `CTN_Members_${new Date().toISOString().split('T')[0]}.xlsx`;
 
-    // Write file
-    XLSX.writeFile(workbook, fileName);
+    // Write to buffer and download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    window.URL.revokeObjectURL(url);
 
     notification.showSuccess(`Exported ${dataToExport.length} members to ${fileName}`);
   };
