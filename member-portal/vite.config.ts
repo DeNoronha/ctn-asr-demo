@@ -3,6 +3,7 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
+import { terser } from '@rollup/plugin-terser';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -32,6 +33,13 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: 'build',
     sourcemap: true,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        // SEC-VUL-003: Remove console.log/debug/info in production (keep error/warn for monitoring)
+        pure_funcs: ['console.log', 'console.debug', 'console.info'],
+      },
+    },
   },
   server: {
     port: 3001,

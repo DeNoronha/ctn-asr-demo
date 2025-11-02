@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { terser } from '@rollup/plugin-terser'
 
 export default defineConfig({
   plugins: [react()],
@@ -13,6 +14,13 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'build'
+    outDir: 'build',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        // SEC-VUL-003: Remove console.log/debug/info in production (keep error/warn for monitoring)
+        pure_funcs: ['console.log', 'console.debug', 'console.info'],
+      },
+    },
   }
 })

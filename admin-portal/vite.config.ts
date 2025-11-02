@@ -3,6 +3,7 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
+import { terser } from '@rollup/plugin-terser';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -31,9 +32,14 @@ export default defineConfig({
   build: {
     outDir: 'build',
     sourcemap: true,
-    // SEC-009: Remove console.log/debug/info in production builds (keep error/warn for monitoring)
-    minify: 'esbuild',
+    minify: 'terser',
     target: 'es2020',
+    terserOptions: {
+      compress: {
+        // SEC-VUL-003: Remove console.log/debug/info in production (keep error/warn for monitoring)
+        pure_funcs: ['console.log', 'console.debug', 'console.info'],
+      },
+    },
     // Suppress warnings about server-side modules being externalized
     rollupOptions: {
       onwarn(warning, warn) {
@@ -47,12 +53,6 @@ export default defineConfig({
         warn(warning);
       },
     },
-  },
-  esbuild: {
-    // SEC-009: esbuild drop only supports ['console'] (all methods) or ['debugger']
-    // Cannot selectively drop console.log/debug/info while keeping error/warn
-    // TODO: Implement selective console stripping with a Vite plugin or Terser
-    // drop: process.env.NODE_ENV === 'production' ? ['console'] : [],
   },
   server: {
     port: 3000,
