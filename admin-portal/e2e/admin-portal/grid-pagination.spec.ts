@@ -39,7 +39,7 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     });
 
     // Wait for grid to load
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible', timeout: 15000 });
   });
 
@@ -50,7 +50,7 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     await page.waitForTimeout(2000);
 
     // Click to go to page 2
-    const page2Button = page.locator('.k-pager-nav').filter({ hasText: '2' }).first();
+    const page2Button = page.locator('.mantine-Pagination-root-nav').filter({ hasText: '2' }).first();
     if (await page2Button.isVisible({ timeout: 2000 })) {
       await page2Button.click();
       await page.waitForTimeout(1000);
@@ -70,7 +70,7 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     console.log('Test: Page size persistence in URL');
 
     // Find and click page size dropdown
-    const pageSizeDropdown = page.locator('.k-pager-sizes select, .k-dropdownlist').first();
+    const pageSizeDropdown = page.locator('.mantine-Pagination-root-sizes select, .mantine-Select-rootlist').first();
     if (await pageSizeDropdown.isVisible({ timeout: 2000 })) {
       // Try to change page size to 50
       await pageSizeDropdown.click();
@@ -99,7 +99,7 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     console.log('Test: Page state preservation across navigation');
 
     // Navigate to page 2 (if available)
-    const page2Button = page.locator('.k-pager-nav').filter({ hasText: '2' }).first();
+    const page2Button = page.locator('.mantine-Pagination-root-nav').filter({ hasText: '2' }).first();
     if (await page2Button.isVisible({ timeout: 2000 })) {
       await page2Button.click();
       await page.waitForTimeout(1000);
@@ -145,11 +145,11 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     await page.waitForTimeout(2000);
 
     // Wait for grid to load
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible', timeout: 10000 });
 
     // Check if pager shows page 2 is active
-    const activePage = page.locator('.k-pager-nav.k-state-selected, .k-pager-numbers .k-state-selected');
+    const activePage = page.locator('.mantine-Pagination-root-nav.mantine-Pagination-control--active, .mantine-Pagination-root-numbers .mantine-Pagination-control--active');
     const activePageText = await activePage.textContent().catch(() => '1');
     console.log('Active page indicator:', activePageText);
 
@@ -164,7 +164,7 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     console.log('Test: Filter application behavior');
 
     // Navigate to page 2 first (if available)
-    const page2Button = page.locator('.k-pager-nav').filter({ hasText: '2' }).first();
+    const page2Button = page.locator('.mantine-Pagination-root-nav').filter({ hasText: '2' }).first();
     if (await page2Button.isVisible({ timeout: 2000 })) {
       await page2Button.click();
       await page.waitForTimeout(1000);
@@ -206,13 +206,13 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     await page.waitForTimeout(2000);
 
     // Check for pagination info (e.g., "Showing: 20", "Total: 45")
-    const pagerInfo = page.locator('.k-pager-info, .toolbar-stats').first();
+    const pagerInfo = page.locator('.mantine-Pagination-root-info, .toolbar-stats').first();
     if (await pagerInfo.isVisible({ timeout: 2000 })) {
       const infoText = await pagerInfo.textContent();
       console.log('Pagination info:', infoText);
 
       // Navigate to next page if available
-      const nextButton = page.locator('.k-pager-nav[aria-label*="next"], button:has-text("Next")').first();
+      const nextButton = page.locator('.mantine-Pagination-root-nav[aria-label*="next"], button:has-text("Next")').first();
       if (await nextButton.isVisible({ timeout: 1000 }) && !(await nextButton.isDisabled())) {
         await nextButton.click();
         await page.waitForTimeout(1500);
@@ -235,7 +235,7 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     console.log('Test: Page size maintained across page changes');
 
     // Change page size first
-    const pageSizeDropdown = page.locator('.k-pager-sizes select').first();
+    const pageSizeDropdown = page.locator('.mantine-Pagination-root-sizes select').first();
     if (await pageSizeDropdown.isVisible({ timeout: 2000 })) {
       await pageSizeDropdown.selectOption('50');
       await page.waitForTimeout(1000);
@@ -245,7 +245,7 @@ test.describe('Grid Pagination - URL State Persistence', () => {
       expect(urlAfterSizeChange).toContain('pageSize=50');
 
       // Now change page
-      const page2Button = page.locator('.k-pager-nav').filter({ hasText: '2' }).first();
+      const page2Button = page.locator('.mantine-Pagination-root-nav').filter({ hasText: '2' }).first();
       if (await page2Button.isVisible({ timeout: 2000 })) {
         await page2Button.click();
         await page.waitForTimeout(1000);
@@ -279,7 +279,7 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     await page.waitForTimeout(2000);
 
     // Grid should load
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible', timeout: 10000 });
 
     // Check if URL parameters are respected
@@ -308,7 +308,7 @@ test.describe('Grid Pagination - Edge Cases', () => {
       timeout: 10000,
     });
 
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible', timeout: 15000 });
   });
 
@@ -323,7 +323,7 @@ test.describe('Grid Pagination - Edge Cases', () => {
     await page.waitForTimeout(2000);
 
     // Should gracefully handle (show last page or page 1)
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible', timeout: 10000 });
 
     const hasError = await page.locator('text=/error|failed/i').isVisible({ timeout: 1000 }).catch(() => false);
@@ -342,7 +342,7 @@ test.describe('Grid Pagination - Edge Cases', () => {
     await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible', timeout: 10000 });
 
     // Should default to page 1
@@ -362,7 +362,7 @@ test.describe('Grid Pagination - Edge Cases', () => {
     await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(3000);
 
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible', timeout: 10000 });
 
     // Should handle gracefully (might cap at max like 1000)

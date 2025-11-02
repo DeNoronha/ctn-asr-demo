@@ -86,12 +86,12 @@ test.describe('Admin Portal - Navigation', () => {
       .click();
     await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible();
 
-    // Wait for grid to load (Kendo Grid)
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    // Wait for grid to load (Mantine DataTable)
+    const grid = page.locator('.mantine-DataTable-root, [role="table"]').first();
     await grid.waitFor({ state: 'visible', timeout: 15000 });
 
     // Verify grid has rows
-    const rows = grid.locator('.k-grid-content tr, [role="row"]');
+    const rows = grid.locator('tbody tr, [role="row"]');
     const rowCount = await rows.count();
 
     console.log(`Found ${rowCount} rows in members grid`);
@@ -228,7 +228,7 @@ test.describe('Admin Portal - Member Management', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
 
     // Wait for grid
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    const grid = page.locator('.mantine-DataTable-root, [role="table"]').first();
     await grid.waitFor({ state: 'visible', timeout: 15000 });
 
     // Check for column headers
@@ -236,7 +236,7 @@ test.describe('Admin Portal - Member Management', () => {
     await expect(grid.locator('text=/Status/i')).toBeVisible();
 
     // Verify grid has data rows
-    const dataRows = grid.locator('.k-grid-content tr, [role="row"]').filter({ hasText: /.+/ });
+    const dataRows = grid.locator('tbody tr, [role="row"]').filter({ hasText: /.+/ });
     const count = await dataRows.count();
 
     console.log(`Members grid has ${count} data rows`);

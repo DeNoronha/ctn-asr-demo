@@ -60,7 +60,7 @@ test.describe('Critical E2E Flows - Admin Portal', () => {
       const hasContent = await Promise.race([
         page.locator('text=Dashboard').isVisible().catch(() => false),
         page.locator('text=Sign in with Microsoft').isVisible().catch(() => false),
-        page.locator('.k-button').isVisible().catch(() => false),
+        page.locator('.mantine-Button-root').isVisible().catch(() => false),
       ]);
 
       console.log(`✅ Page has content visible: ${hasContent}`);
@@ -136,7 +136,7 @@ test.describe('Critical E2E Flows - Admin Portal', () => {
       // Check for grid container
       const gridSelectors = [
         '[data-testid="members-grid"]',
-        '.k-grid',
+        '.mantine-DataTable-root',
         'table',
         '[role="grid"]',
       ];

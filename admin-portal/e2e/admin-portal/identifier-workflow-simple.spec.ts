@@ -93,7 +93,7 @@ test.describe('Production Smoke Test - Identifier Workflow', () => {
     await page.waitForTimeout(2000);
 
     // Click first member row
-    const firstMemberRow = page.locator('.k-grid-content tr').first();
+    const firstMemberRow = page.locator('tbody tr').first();
     await firstMemberRow.waitFor({ state: 'visible', timeout: 10000 });
     await firstMemberRow.click();
     await page.waitForTimeout(2000);
@@ -148,7 +148,7 @@ test.describe('Production Smoke Test - Identifier Workflow', () => {
     await page.waitForTimeout(2000);
 
     // Open first member
-    const firstMemberRow = page.locator('.k-grid-content tr').first();
+    const firstMemberRow = page.locator('tbody tr').first();
     await firstMemberRow.click();
     await page.waitForTimeout(2000);
 
@@ -252,7 +252,7 @@ test.describe('Production Smoke Test - Identifier Workflow', () => {
     await page.waitForTimeout(2000);
 
     // Open first member
-    const firstMemberRow = page.locator('.k-grid-content tr').first();
+    const firstMemberRow = page.locator('tbody tr').first();
     await firstMemberRow.click();
     await page.waitForTimeout(2000);
 
@@ -267,14 +267,14 @@ test.describe('Production Smoke Test - Identifier Workflow', () => {
     }
 
     // Check for identifier grid
-    const grid = page.locator('.k-grid').last();
+    const grid = page.locator('.mantine-DataTable-root').last();
     const hasGrid = await grid.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (hasGrid) {
       console.log('✅ Identifier grid visible');
 
       // Count rows
-      const rows = grid.locator('.k-grid-content tr');
+      const rows = grid.locator('tbody tr');
       const rowCount = await rows.count();
       console.log(`📊 Found ${rowCount} identifier rows`);
 

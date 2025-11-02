@@ -93,7 +93,7 @@ test.describe('Progressive Disclosure', () => {
     await page.waitForTimeout(500);
 
     // Click on first member to view details
-    await page.click('.k-grid-table tbody tr:first-child td:first-child');
+    await page.click('.mantine-DataTable-root-table tbody tr:first-child td:first-child');
     await page.waitForTimeout(1000);
 
     // Navigate to Contacts tab
@@ -119,7 +119,7 @@ test.describe('Progressive Disclosure', () => {
     await page.waitForTimeout(500);
 
     // Click on first member to view details
-    await page.click('.k-grid-table tbody tr:first-child td:first-child');
+    await page.click('.mantine-DataTable-root-table tbody tr:first-child td:first-child');
     await page.waitForTimeout(1000);
 
     // Navigate to Contacts tab
@@ -150,7 +150,7 @@ test.describe('Progressive Disclosure', () => {
     await page.waitForTimeout(500);
 
     // Click on first member to view details
-    await page.click('.k-grid-table tbody tr:first-child td:first-child');
+    await page.click('.mantine-DataTable-root-table tbody tr:first-child td:first-child');
     await page.waitForTimeout(1000);
 
     // Navigate to Identifiers tab
@@ -170,7 +170,7 @@ test.describe('Progressive Disclosure', () => {
     await page.waitForTimeout(300);
 
     // Select identifier type
-    await page.click('.k-dropdown');
+    await page.click('.mantine-Select-root');
     await page.click('text=KVK');
     await page.waitForTimeout(300);
 
@@ -246,7 +246,7 @@ test.describe('Progressive Disclosure', () => {
     await page.waitForTimeout(500);
 
     // Click on first member
-    await page.click('.k-grid-table tbody tr:first-child td:first-child');
+    await page.click('.mantine-DataTable-root-table tbody tr:first-child td:first-child');
     await page.waitForTimeout(1000);
 
     // Navigate to Identifiers tab
@@ -268,7 +268,7 @@ test.describe('Progressive Disclosure', () => {
     await page.fill('input[placeholder*="NL, DE, BE"]', 'NL');
     await page.waitForTimeout(100);
 
-    await page.click('.k-dropdown');
+    await page.click('.mantine-Select-root');
     await page.click('text=KVK');
     await page.waitForTimeout(400); // Wait for animation
 

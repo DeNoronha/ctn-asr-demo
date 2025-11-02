@@ -116,7 +116,7 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
       'input[name*="country"]',
       'select[name*="country"]',
       'input[placeholder*="Country"]',
-      '.k-dropdown:has-text("Country")',
+      '.mantine-Select-root:has-text("Country")',
       'label:has-text("Country") + input',
       'label:has-text("Country") ~ input',
     ];
@@ -148,7 +148,7 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
     // Click on the Identifier Type dropdown to open it
     // The dropdown is right after the "Identifier Type *" label
     const typeDropdownSelector =
-      'label:has-text("Identifier Type") ~ span.k-dropdown, label:has-text("Identifier Type") + * span.k-dropdown';
+      'label:has-text("Identifier Type") ~ span.mantine-Select-root, label:has-text("Identifier Type") + * span.mantine-Select-root';
     let typeDropdown = page.locator(typeDropdownSelector).first();
 
     // Try various methods to find and click the dropdown
@@ -180,7 +180,7 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
       const dropdownArrow = page
         .locator('text=Identifier Type')
         .locator('..')
-        .locator('.k-dropdown-wrap, .k-select')
+        .locator('.mantine-Select-root-wrap, .mantine-Select-dropdown')
         .first();
       if (await dropdownArrow.isVisible({ timeout: 1000 }).catch(() => false)) {
         await dropdownArrow.click();
@@ -203,7 +203,7 @@ test.describe('Add KvK 95944192 to Contargo - FIXED', () => {
     // Now select KVK from the dropdown list
     console.log('Selecting KVK from dropdown list...');
     const kvkOption = page
-      .locator('li:has-text("KVK"), .k-list-item:has-text("KVK"), [role="option"]:has-text("KVK")')
+      .locator('li:has-text("KVK"), [role="option"]:has-text("KVK"), [role="option"]:has-text("KVK")')
       .first();
 
     if (await kvkOption.isVisible({ timeout: 3000 }).catch(() => false)) {

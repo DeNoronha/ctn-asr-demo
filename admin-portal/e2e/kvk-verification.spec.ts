@@ -270,7 +270,7 @@ test.describe('KvK Verification - Review Queue Component', () => {
     await page.goto('/', { waitUntil: 'networkidle' });
 
     // Look for grid or table containing flagged entities
-    const possibleGridSelectors = ['[role="grid"]', 'table', '[data-testid="kvk-grid"]', '.k-grid'];
+    const possibleGridSelectors = ['[role="grid"]', 'table', '[data-testid="kvk-grid"]', '.mantine-DataTable-root'];
 
     let gridFound = false;
     for (const selector of possibleGridSelectors) {
@@ -408,7 +408,7 @@ test.describe('KvK Verification - Review Queue Component', () => {
       await page.waitForTimeout(1000);
 
       // Look for dialog
-      const dialog = page.locator('[role="dialog"], .k-dialog, .modal');
+      const dialog = page.locator('[role="dialog"], .mantine-Modal-root, .modal');
       const dialogVisible = await dialog.isVisible({ timeout: 2000 }).catch(() => false);
 
       console.log(`Review dialog opened: ${dialogVisible}`);

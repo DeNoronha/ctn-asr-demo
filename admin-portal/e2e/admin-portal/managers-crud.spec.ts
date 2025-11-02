@@ -24,10 +24,10 @@ test.describe('Contacts Manager - CRUD Operations', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
 
-    const firstRow = memberGrid.locator('.k-grid-content tr').first();
+    const firstRow = memberGrid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
   });
@@ -137,7 +137,7 @@ test.describe('Contacts Manager - CRUD Operations', () => {
         await submitButton.click();
         await page.waitForTimeout(1000);
 
-        const validationError = page.locator('.k-invalid, .error, [role="alert"]').first();
+        const validationError = page.locator('.mantine-Input-error, .error, [role="alert"]').first();
         const hasError = await validationError.isVisible({ timeout: 2000 }).catch(() => false);
 
         console.log(`Contact validation error shown: ${hasError}`);
@@ -163,10 +163,10 @@ test.describe('Endpoints Manager - CRUD Operations', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
 
-    const firstRow = memberGrid.locator('.k-grid-content tr').first();
+    const firstRow = memberGrid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
   });
@@ -195,7 +195,7 @@ test.describe('Endpoints Manager - CRUD Operations', () => {
       await addButton.click();
       await page.waitForTimeout(1000);
 
-      const dialog = page.locator('[role="dialog"], .k-dialog').first();
+      const dialog = page.locator('[role="dialog"], .mantine-Modal-root').first();
       await expect(dialog).toBeVisible({ timeout: 5000 });
 
       console.log('✅ Create endpoint dialog opened');
@@ -248,7 +248,7 @@ test.describe('Endpoints Manager - CRUD Operations', () => {
         await urlInput.blur();
         await page.waitForTimeout(500);
 
-        const validationError = page.locator('.k-invalid, .error').first();
+        const validationError = page.locator('.mantine-Input-error, .error').first();
         const hasError = await validationError.isVisible({ timeout: 1000 }).catch(() => false);
 
         console.log(`URL validation error shown: ${hasError}`);
@@ -269,10 +269,10 @@ test.describe('Tokens Manager - View and Manage Tokens', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
 
-    const firstRow = memberGrid.locator('.k-grid-content tr').first();
+    const firstRow = memberGrid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
   });
@@ -292,7 +292,7 @@ test.describe('Tokens Manager - View and Manage Tokens', () => {
   });
 
   test('should display status badges (Active, Expiring, Expired, Revoked)', async ({ page }) => {
-    const statusBadges = page.locator('.badge, .k-chip, [class*="status"]');
+    const statusBadges = page.locator('.badge, .mantine-Badge-root, [class*="status"]');
     const badgeCount = await statusBadges.count();
 
     console.log(`Found ${badgeCount} status badges`);
@@ -325,7 +325,7 @@ test.describe('Tokens Manager - View and Manage Tokens', () => {
   });
 
   test('should allow filtering tokens by endpoint', async ({ page }) => {
-    const filterDropdown = page.locator('select, .k-dropdown').first();
+    const filterDropdown = page.locator('select, .mantine-Select-root').first();
     const hasFilter = await filterDropdown.isVisible({ timeout: 2000 }).catch(() => false);
 
     if (hasFilter) {
@@ -368,7 +368,7 @@ test.describe('Tokens Manager - View and Manage Tokens', () => {
       await issueButton.click();
       await page.waitForTimeout(1000);
 
-      const dialog = page.locator('[role="dialog"], .k-dialog').first();
+      const dialog = page.locator('[role="dialog"], .mantine-Modal-root').first();
       const hasDialog = await dialog.isVisible({ timeout: 2000 }).catch(() => false);
 
       console.log(`✅ Issue token dialog: ${hasDialog}`);
@@ -389,7 +389,7 @@ test.describe('Tokens Manager - View and Manage Tokens', () => {
   test('should sort tokens by last_used_at by default', async ({ page }) => {
     // Look for sorted column indicator
     const sortedColumn = page
-      .locator('.k-sorted, [aria-sort="descending"], [aria-sort="ascending"]')
+      .locator('[aria-sort], [aria-sort="descending"], [aria-sort="ascending"]')
       .first();
     const hasSorted = await sortedColumn.isVisible({ timeout: 2000 }).catch(() => false);
 
@@ -400,7 +400,7 @@ test.describe('Tokens Manager - View and Manage Tokens', () => {
   });
 
   test('should have color contrast on status badges (4.5:1 minimum)', async ({ page }) => {
-    const badges = page.locator('.badge, .k-chip').first();
+    const badges = page.locator('.badge, .mantine-Badge-root').first();
     const hasBadge = await badges.isVisible({ timeout: 2000 }).catch(() => false);
 
     if (hasBadge) {
@@ -468,7 +468,7 @@ test.describe('Managers - Loading States', () => {
     await page.goto('/');
 
     // Look for loading indicator
-    const loader = page.locator('.k-loader, .k-loading-mask, [role="progressbar"]').first();
+    const loader = page.locator('.mantine-Loader-root, .mantine-Loader-root, [role="progressbar"]').first();
 
     // Navigate to trigger loading
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();

@@ -128,7 +128,7 @@ test.describe('Accessibility - Keyboard Navigation', () => {
     await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const grid = page.locator('.k-grid').first();
+    const grid = page.locator('.mantine-DataTable-root').first();
     await grid.waitFor({ state: 'visible' });
 
     // Tab through grid
@@ -137,7 +137,7 @@ test.describe('Accessibility - Keyboard Navigation', () => {
 
     const focusedInGrid = await page.evaluate(() => {
       const active = document.activeElement;
-      return active?.closest('.k-grid') !== null;
+      return active?.closest('.mantine-DataTable-root') !== null;
     });
 
     console.log(`Focus within grid: ${focusedInGrid}`);
@@ -310,7 +310,7 @@ test.describe('Accessibility - Color Contrast', () => {
     await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const badges = page.locator('.badge, .k-chip, [class*="status"]');
+    const badges = page.locator('.badge, .mantine-Badge-root, [class*="status"]');
     const badgeCount = await badges.count();
 
     if (badgeCount > 0) {
@@ -336,7 +336,7 @@ test.describe('Accessibility - Color Contrast', () => {
     await page.waitForTimeout(2000);
 
     // Get colors from various UI elements
-    const elements = ['.admin-sidebar', '.k-grid-header', '.k-button', 'h1, h2, h3'];
+    const elements = ['.admin-sidebar', '.mantine-DataTable-root-header', '.mantine-Button-root', 'h1, h2, h3'];
 
     for (const selector of elements) {
       const element = page.locator(selector).first();

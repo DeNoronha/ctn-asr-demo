@@ -57,11 +57,11 @@ test.describe('Debug Identifier 500 Error', () => {
 
     // Wait for members grid to load
     console.log('Waiting for members grid...');
-    await page.waitForSelector('.k-grid', { timeout: 10000 });
+    await page.waitForSelector('.mantine-DataTable-root', { timeout: 10000 });
 
     // Find and click on a member (first row)
     console.log('Clicking on first member...');
-    const firstRow = page.locator('.k-grid tbody tr').first();
+    const firstRow = page.locator('.mantine-DataTable-root tbody tr').first();
     await firstRow.click();
 
     // Wait for member detail view
@@ -97,7 +97,7 @@ test.describe('Debug Identifier 500 Error', () => {
 
       // Select KVK as identifier type
       const typeDropdown = page
-        .locator('select, .k-dropdown')
+        .locator('select, .mantine-Select-root')
         .filter({ hasText: /type|identifier type/i })
         .first();
       if (await typeDropdown.isVisible({ timeout: 2000 })) {
@@ -131,7 +131,7 @@ test.describe('Debug Identifier 500 Error', () => {
       await page.waitForTimeout(3000);
 
       // Check for error messages
-      const errorMessage = page.locator('.k-notification-error, .error, [role="alert"]').first();
+      const errorMessage = page.locator('.mantine-Notification-root-error, .error, [role="alert"]').first();
       if (await errorMessage.isVisible({ timeout: 2000 })) {
         const errorText = await errorMessage.textContent();
         console.log('ERROR MESSAGE ON PAGE:', errorText);

@@ -60,11 +60,11 @@ test.describe('Member Grid Row Click Investigation', () => {
 
     // Wait for grid to load with data
     console.log('\nStep 2: Wait for grid to load...');
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible', timeout: 15000 });
 
     // Wait for data rows (not header row)
-    const dataRows = grid.locator('.k-grid-content tr, tbody tr').filter({ hasNot: page.locator('.k-grid-norecords') });
+    const dataRows = grid.locator('tbody tr, tbody tr').filter({ hasNot: page.locator('.mantine-DataTable-root-norecords') });
     await expect(dataRows.first()).toBeVisible({ timeout: 10000 });
 
     const rowCount = await dataRows.count();
@@ -192,11 +192,11 @@ test.describe('Member Grid Row Click Investigation', () => {
     await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible();
 
     // Wait for grid
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible', timeout: 15000 });
 
     // Wait for data rows
-    const dataRows = grid.locator('.k-grid-content tr, tbody tr').filter({ hasNot: page.locator('.k-grid-norecords') });
+    const dataRows = grid.locator('tbody tr, tbody tr').filter({ hasNot: page.locator('.mantine-DataTable-root-norecords') });
     await expect(dataRows.first()).toBeVisible();
 
     // Clear logs
@@ -238,17 +238,17 @@ test.describe('Member Grid Row Click Investigation', () => {
     await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible();
 
     // Wait for grid
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible', timeout: 15000 });
 
     // Get the HTML structure of the first few rows
-    const gridHTML = await grid.locator('.k-grid-content').innerHTML();
+    const gridHTML = await grid.locator('.mantine-DataTable-root-content').innerHTML();
     console.log('\n=== Grid HTML (first 2000 chars) ===');
     console.log(gridHTML.substring(0, 2000));
     console.log('...\n');
 
     // Check for any overlaying elements that might be blocking clicks
-    const firstRow = grid.locator('.k-grid-content tr, tbody tr').first();
+    const firstRow = grid.locator('tbody tr, tbody tr').first();
     const rowBoundingBox = await firstRow.boundingBox();
 
     if (rowBoundingBox) {

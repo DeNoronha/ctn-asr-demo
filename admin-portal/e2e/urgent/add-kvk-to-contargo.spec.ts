@@ -45,7 +45,7 @@ test.describe('URGENT: Add KvK to Contargo', () => {
 
     // Step 2: Wait for grid to load
     console.log('Step 2: Wait for grid to load');
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible', timeout: 15000 });
     console.log('✅ Grid loaded');
 
@@ -144,7 +144,7 @@ test.describe('URGENT: Add KvK to Contargo', () => {
 
     // Country Code: NL
     const countryDropdown = page
-      .locator('select[name*="country"], .k-dropdown:has-text("Country")')
+      .locator('select[name*="country"], .mantine-Select-root:has-text("Country")')
       .first();
     const hasCountryDropdown = await countryDropdown
       .isVisible({ timeout: 3000 })
@@ -173,7 +173,7 @@ test.describe('URGENT: Add KvK to Contargo', () => {
     await page.waitForTimeout(500);
 
     // Identifier Type: KVK
-    const typeDropdown = page.locator('select[name*="type"], .k-dropdown:has-text("Type")').first();
+    const typeDropdown = page.locator('select[name*="type"], .mantine-Select-root:has-text("Type")').first();
     const hasTypeDropdown = await typeDropdown.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasTypeDropdown) {

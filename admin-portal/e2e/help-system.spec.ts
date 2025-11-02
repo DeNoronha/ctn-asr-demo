@@ -23,10 +23,10 @@ test.describe('Help System - Tooltips', () => {
     await helpIcon.hover();
 
     // Wait for tooltip to appear
-    await page.waitForSelector('.k-tooltip', { timeout: 2000 });
+    await page.waitForSelector('.mantine-Tooltip-root', { timeout: 2000 });
 
     // Verify tooltip is visible
-    const tooltip = page.locator('.k-tooltip');
+    const tooltip = page.locator('.mantine-Tooltip-root');
     await expect(tooltip).toBeVisible();
 
     // Verify tooltip contains expected help text
@@ -38,9 +38,9 @@ test.describe('Help System - Tooltips', () => {
     await expect(helpIcon).toBeVisible();
 
     await helpIcon.hover();
-    await page.waitForSelector('.k-tooltip', { timeout: 2000 });
+    await page.waitForSelector('.mantine-Tooltip-root', { timeout: 2000 });
 
-    const tooltip = page.locator('.k-tooltip');
+    const tooltip = page.locator('.mantine-Tooltip-root');
     await expect(tooltip).toContainText('Organization identifier');
   });
 
@@ -49,9 +49,9 @@ test.describe('Help System - Tooltips', () => {
     await expect(helpIcon).toBeVisible();
 
     await helpIcon.hover();
-    await page.waitForSelector('.k-tooltip', { timeout: 2000 });
+    await page.waitForSelector('.mantine-Tooltip-root', { timeout: 2000 });
 
-    const tooltip = page.locator('.k-tooltip');
+    const tooltip = page.locator('.mantine-Tooltip-root');
     await expect(tooltip).toContainText('email domain');
   });
 
@@ -60,9 +60,9 @@ test.describe('Help System - Tooltips', () => {
     await expect(helpIcon).toBeVisible();
 
     await helpIcon.hover();
-    await page.waitForSelector('.k-tooltip', { timeout: 2000 });
+    await page.waitForSelector('.mantine-Tooltip-root', { timeout: 2000 });
 
-    const tooltip = page.locator('.k-tooltip');
+    const tooltip = page.locator('.mantine-Tooltip-root');
     await expect(tooltip).toContainText('Legal Entity Identifier');
     await expect(tooltip).toContainText('20-character');
   });
@@ -72,9 +72,9 @@ test.describe('Help System - Tooltips', () => {
     await expect(helpIcon).toBeVisible();
 
     await helpIcon.hover();
-    await page.waitForSelector('.k-tooltip', { timeout: 2000 });
+    await page.waitForSelector('.mantine-Tooltip-root', { timeout: 2000 });
 
-    const tooltip = page.locator('.k-tooltip');
+    const tooltip = page.locator('.mantine-Tooltip-root');
     await expect(tooltip).toContainText('Chamber of Commerce');
     await expect(tooltip).toContainText('8-digit');
   });
@@ -84,13 +84,13 @@ test.describe('Help System - Tooltips', () => {
 
     // Show tooltip
     await helpIcon.hover();
-    await page.waitForSelector('.k-tooltip', { timeout: 2000 });
+    await page.waitForSelector('.mantine-Tooltip-root', { timeout: 2000 });
 
     // Move mouse away
     await page.mouse.move(0, 0);
 
     // Tooltip should disappear
-    await expect(page.locator('.k-tooltip')).toBeHidden({ timeout: 2000 });
+    await expect(page.locator('.mantine-Tooltip-root')).toBeHidden({ timeout: 2000 });
   });
 });
 
@@ -105,7 +105,7 @@ test.describe('Help System - Contact Form', () => {
 
   test('should display help tooltip on contact type field', async ({ page }) => {
     // Click on a member to open detail view (adjust selector as needed)
-    const firstMember = page.locator('tr.k-grid-row').first();
+    const firstMember = page.locator('tr.mantine-DataTable-root-row').first();
     if (await firstMember.isVisible()) {
       await firstMember.click();
       await page.waitForTimeout(1000);
@@ -114,9 +114,9 @@ test.describe('Help System - Contact Form', () => {
       const helpIcon = page.locator('[data-testid="contact-type-help"]');
       if (await helpIcon.isVisible()) {
         await helpIcon.hover();
-        await page.waitForSelector('.k-tooltip', { timeout: 2000 });
+        await page.waitForSelector('.mantine-Tooltip-root', { timeout: 2000 });
 
-        const tooltip = page.locator('.k-tooltip');
+        const tooltip = page.locator('.mantine-Tooltip-root');
         await expect(tooltip).toContainText('Primary contacts');
       }
     }
@@ -157,9 +157,9 @@ test.describe('Help System - Accessibility', () => {
   test('tooltips should have sufficient color contrast', async ({ page }) => {
     const helpIcon = page.locator('[data-testid="legal-name-help"]');
     await helpIcon.hover();
-    await page.waitForSelector('.k-tooltip', { timeout: 2000 });
+    await page.waitForSelector('.mantine-Tooltip-root', { timeout: 2000 });
 
-    const tooltip = page.locator('.k-tooltip');
+    const tooltip = page.locator('.mantine-Tooltip-root');
 
     // Get computed styles
     const bgColor = await tooltip.evaluate((el) => {
@@ -185,7 +185,7 @@ test.describe('Help System - Multiple Forms', () => {
     await page.waitForLoadState('networkidle');
 
     // This test is conditional - only runs if identifier form is accessible
-    const firstMember = page.locator('tr.k-grid-row').first();
+    const firstMember = page.locator('tr.mantine-DataTable-root-row').first();
     if (await firstMember.isVisible()) {
       // Click to view member details
       await firstMember.click();
@@ -195,9 +195,9 @@ test.describe('Help System - Multiple Forms', () => {
       const identifierTypeHelp = page.locator('[data-testid="identifier-type-help"]');
       if (await identifierTypeHelp.isVisible()) {
         await identifierTypeHelp.hover();
-        await page.waitForSelector('.k-tooltip', { timeout: 2000 });
+        await page.waitForSelector('.mantine-Tooltip-root', { timeout: 2000 });
 
-        const tooltip = page.locator('.k-tooltip');
+        const tooltip = page.locator('.mantine-Tooltip-root');
         await expect(tooltip).toContainText('EORI');
       }
     }
@@ -211,9 +211,9 @@ test.describe('Help System - Multiple Forms', () => {
     const endpointUrlHelp = page.locator('[data-testid="endpoint-url-help"]');
     if (await endpointUrlHelp.isVisible()) {
       await endpointUrlHelp.hover();
-      await page.waitForSelector('.k-tooltip', { timeout: 2000 });
+      await page.waitForSelector('.mantine-Tooltip-root', { timeout: 2000 });
 
-      const tooltip = page.locator('.k-tooltip');
+      const tooltip = page.locator('.mantine-Tooltip-root');
       await expect(tooltip).toContainText('HTTPS URL');
     }
   });
@@ -227,7 +227,7 @@ test.describe('Help System - Visual Regression', () => {
     const helpIcon = page.locator('[data-testid="legal-name-help"]');
 
     // Check icon color
-    const iconColor = await helpIcon.locator('.k-icon').evaluate((el) => {
+    const iconColor = await helpIcon.locator('svg').evaluate((el) => {
       return window.getComputedStyle(el).color;
     });
 
@@ -240,7 +240,7 @@ test.describe('Help System - Visual Regression', () => {
     await page.waitForSelector('form', { timeout: 10000 });
 
     const helpIcon = page.locator('[data-testid="legal-name-help"]');
-    const icon = helpIcon.locator('.k-icon');
+    const icon = helpIcon.locator('svg');
 
     // Get initial color
     const initialColor = await icon.evaluate((el) => {

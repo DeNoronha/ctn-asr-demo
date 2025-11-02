@@ -95,7 +95,7 @@ test.describe('Bug Investigation - Identifier 404/500 Error', () => {
     console.log('✅ Navigated to Members page');
 
     // Wait for member grid
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
 
     console.log('✅ Member grid loaded');
@@ -114,7 +114,7 @@ test.describe('Bug Investigation - Identifier 404/500 Error', () => {
     console.log('✅ Detail view loaded, looking for Identifiers tab');
 
     // Click on the "Identifiers" tab
-    const identifiersTab = page.locator('.k-tabstrip-items').getByText('Identifiers').first();
+    const identifiersTab = page.locator('.mantine-Tabs-list').getByText('Identifiers').first();
     const hasIdentifiersTab = await identifiersTab.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasIdentifiersTab) {
@@ -158,7 +158,7 @@ test.describe('Bug Investigation - Identifier 404/500 Error', () => {
     console.log('✅ Clicked "Add Identifier"');
 
     // Verify dialog opened
-    const dialog = page.locator('[role="dialog"], .k-dialog, .modal').first();
+    const dialog = page.locator('[role="dialog"], .mantine-Modal-root, .modal').first();
     await expect(dialog).toBeVisible({ timeout: 5000 });
 
     console.log('✅ Dialog opened');
@@ -273,8 +273,8 @@ test.describe('Bug Investigation - Identifier 404/500 Error', () => {
     }
 
     // Look for success/error toast
-    const successToast = page.locator('.k-notification.success, .toast.success').first();
-    const errorToast = page.locator('.k-notification.error, .toast.error').first();
+    const successToast = page.locator('.mantine-Notification-root.success, .toast.success').first();
+    const errorToast = page.locator('.mantine-Notification-root.error, .toast.error').first();
 
     const hasSuccess = await successToast.isVisible({ timeout: 1000 }).catch(() => false);
     const hasError = await errorToast.isVisible({ timeout: 1000 }).catch(() => false);
@@ -329,7 +329,7 @@ test.describe('Bug Investigation - Identifier 404/500 Error', () => {
     await membersLink.click();
     await page.waitForTimeout(2000);
 
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
 
     // Click the "View" button on the first member
@@ -340,7 +340,7 @@ test.describe('Bug Investigation - Identifier 404/500 Error', () => {
 
     // Wait for detail view and click Identifiers tab
     await page.waitForSelector('text=Back to Members', { timeout: 5000 });
-    const identifiersTab = page.locator('.k-tabstrip-items').getByText('Identifiers').first();
+    const identifiersTab = page.locator('.mantine-Tabs-list').getByText('Identifiers').first();
     const hasTab = await identifiersTab.isVisible({ timeout: 2000 }).catch(() => false);
     if (hasTab) {
       await identifiersTab.click();

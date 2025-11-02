@@ -130,14 +130,14 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
     console.log('✅ Navigated to Member Directory');
 
     // Wait for grid to load
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
     console.log('✅ Member grid loaded');
 
     // Search for the specific entity ID in the grid
     // Since we can't search by entity ID directly, we'll click the first member
     // In a real scenario, you'd need to implement search or pagination
-    const firstRow = memberGrid.locator('.k-grid-content tr').first();
+    const firstRow = memberGrid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(2000);
     console.log('✅ Member details opened');
@@ -181,7 +181,7 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
 
       // Look for success notification
       const successNotification = page.locator(
-        '.k-notification-success, .toast-success, [role="alert"]:has-text("success")'
+        '.mantine-Notification-root-success, .toast-success, [role="alert"]:has-text("success")'
       );
       const hasSuccess = await successNotification.isVisible({ timeout: 5000 }).catch(() => false);
 
@@ -196,7 +196,7 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
       await page.waitForTimeout(2000);
 
       // Verify IdentifiersManager now shows
-      const identifierGrid = page.locator('.k-grid, [role="grid"]').first();
+      const identifierGrid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
       const hasGrid = await identifierGrid.isVisible({ timeout: 5000 }).catch(() => false);
 
       if (hasGrid) {
@@ -213,7 +213,7 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
       console.log('✅ IdentifiersManager already loaded - legal entity exists');
 
       // Verify the grid is present
-      const identifierGrid = page.locator('.k-grid, [role="grid"]').first();
+      const identifierGrid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
       await expect(identifierGrid).toBeVisible({ timeout: 5000 });
       console.log('✅ Identifier grid visible');
     }
@@ -230,10 +230,10 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
 
-    const firstRow = memberGrid.locator('.k-grid-content tr').first();
+    const firstRow = memberGrid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(2000);
 
@@ -313,7 +313,7 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
 
     // Verify success notification
     const successNotification = page.locator(
-      '.k-notification-success, .toast-success, [role="alert"]:has-text("success")'
+      '.mantine-Notification-root-success, .toast-success, [role="alert"]:has-text("success")'
     );
     const hasSuccess = await successNotification.isVisible({ timeout: 5000 }).catch(() => false);
 
@@ -364,10 +364,10 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
 
-    const firstRow = memberGrid.locator('.k-grid-content tr').first();
+    const firstRow = memberGrid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(2000);
 
@@ -461,7 +461,7 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
 
     // Verify success notification
     const successNotification = page.locator(
-      '.k-notification-success, .toast-success, [role="alert"]:has-text("success")'
+      '.mantine-Notification-root-success, .toast-success, [role="alert"]:has-text("success")'
     );
     const hasSuccess = await successNotification.isVisible({ timeout: 5000 }).catch(() => false);
 
@@ -501,10 +501,10 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
 
-    const firstRow = memberGrid.locator('.k-grid-content tr').first();
+    const firstRow = memberGrid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(2000);
 
@@ -567,7 +567,7 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
 
     // Verify success notification
     const successNotification = page.locator(
-      '.k-notification-success, .toast-success, [role="alert"]:has-text("success")'
+      '.mantine-Notification-root-success, .toast-success, [role="alert"]:has-text("success")'
     );
     const hasSuccess = await successNotification.isVisible({ timeout: 5000 }).catch(() => false);
 
@@ -621,11 +621,11 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
     console.log('✅ Member grid loaded');
 
-    const firstRow = memberGrid.locator('.k-grid-content tr').first();
+    const firstRow = memberGrid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(2000);
 
@@ -636,7 +636,7 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
     console.log('✅ Navigated to Identifiers tab');
 
     // Verify identifiers list loads correctly
-    const identifierGrid = page.locator('.k-grid, [role="grid"]').first();
+    const identifierGrid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     const hasGrid = await identifierGrid.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (hasGrid) {
@@ -658,10 +658,10 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const memberGridAfterRefresh = page.locator('.k-grid').first();
+    const memberGridAfterRefresh = page.locator('.mantine-DataTable-root').first();
     await memberGridAfterRefresh.waitFor({ state: 'visible' });
 
-    const firstRowAfterRefresh = memberGridAfterRefresh.locator('.k-grid-content tr').first();
+    const firstRowAfterRefresh = memberGridAfterRefresh.locator('tbody tr').first();
     await firstRowAfterRefresh.click();
     await page.waitForTimeout(2000);
 
@@ -674,7 +674,7 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
     console.log('✅ Navigated to Identifiers tab after refresh');
 
     // Verify identifiers list still loads
-    const identifierGridAfterRefresh = page.locator('.k-grid, [role="grid"]').first();
+    const identifierGridAfterRefresh = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     const hasGridAfterRefresh = await identifierGridAfterRefresh
       .isVisible({ timeout: 5000 })
       .catch(() => false);

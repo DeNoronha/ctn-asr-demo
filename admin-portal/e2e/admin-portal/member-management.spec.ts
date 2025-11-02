@@ -37,11 +37,11 @@ test.describe('Member Management - View Members List', () => {
     });
 
     // Wait for grid to load
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible', timeout: 15000 });
 
     // Verify grid has rows
-    const rows = grid.locator('.k-grid-content tr, [role="row"]');
+    const rows = grid.locator('tbody tr, [role="row"]');
     const rowCount = await rows.count();
 
     expect(rowCount).toBeGreaterThan(0);
@@ -52,7 +52,7 @@ test.describe('Member Management - View Members List', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible();
 
-    const grid = page.locator('.k-grid, [role="grid"]').first();
+    const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible' });
 
     // Check for expected columns
@@ -104,8 +104,8 @@ test.describe('Member Management - View Members List', () => {
     await page.waitForTimeout(2000);
 
     // Look for member count or pagination info
-    const grid = page.locator('.k-grid').first();
-    const pager = grid.locator('.k-pager-info, .k-pager-sizes');
+    const grid = page.locator('.mantine-DataTable-root').first();
+    const pager = grid.locator('.mantine-Pagination-root');
 
     const hasPager = await pager.isVisible({ timeout: 3000 }).catch(() => false);
     if (hasPager) {
@@ -155,11 +155,11 @@ test.describe('Member Management - View Member Details', () => {
   });
 
   test('should open member details on row click', async ({ page }) => {
-    const grid = page.locator('.k-grid').first();
+    const grid = page.locator('.mantine-DataTable-root').first();
     await grid.waitFor({ state: 'visible' });
 
     // Click first row
-    const firstRow = grid.locator('.k-grid-content tr, [role="row"]').first();
+    const firstRow = grid.locator('tbody tr, [role="row"]').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
 
@@ -198,11 +198,11 @@ test.describe('Member Management - View Member Details', () => {
       }
     });
 
-    const grid = page.locator('.k-grid').first();
+    const grid = page.locator('.mantine-DataTable-root').first();
     await grid.waitFor({ state: 'visible' });
 
     // Click first row to trigger GetMember call
-    const firstRow = grid.locator('.k-grid-content tr').first();
+    const firstRow = grid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(2000);
 
@@ -214,11 +214,11 @@ test.describe('Member Management - View Member Details', () => {
   });
 
   test('should display member identifiers in details view', async ({ page }) => {
-    const grid = page.locator('.k-grid').first();
+    const grid = page.locator('.mantine-DataTable-root').first();
     await grid.waitFor({ state: 'visible' });
 
     // Click first row
-    const firstRow = grid.locator('.k-grid-content tr').first();
+    const firstRow = grid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
 
@@ -230,11 +230,11 @@ test.describe('Member Management - View Member Details', () => {
   });
 
   test('should display member contacts in details view', async ({ page }) => {
-    const grid = page.locator('.k-grid').first();
+    const grid = page.locator('.mantine-DataTable-root').first();
     await grid.waitFor({ state: 'visible' });
 
     // Click first row
-    const firstRow = grid.locator('.k-grid-content tr').first();
+    const firstRow = grid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
 
@@ -246,11 +246,11 @@ test.describe('Member Management - View Member Details', () => {
   });
 
   test('should display member endpoints in details view', async ({ page }) => {
-    const grid = page.locator('.k-grid').first();
+    const grid = page.locator('.mantine-DataTable-root').first();
     await grid.waitFor({ state: 'visible' });
 
     // Click first row
-    const firstRow = grid.locator('.k-grid-content tr').first();
+    const firstRow = grid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
 
@@ -328,7 +328,7 @@ test.describe('Member Management - Create Member', () => {
       await page.waitForTimeout(1000);
 
       // Look for validation errors
-      const validationErrors = page.locator('.k-invalid, .error, [role="alert"]');
+      const validationErrors = page.locator('.mantine-Input-error, .error, [role="alert"]');
       const errorCount = await validationErrors.count();
 
       console.log(
@@ -381,11 +381,11 @@ test.describe('Member Management - Edit Member', () => {
   });
 
   test('should open edit form for existing member', async ({ page }) => {
-    const grid = page.locator('.k-grid').first();
+    const grid = page.locator('.mantine-DataTable-root').first();
     await grid.waitFor({ state: 'visible' });
 
     // Click first row to open details
-    const firstRow = grid.locator('.k-grid-content tr').first();
+    const firstRow = grid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
 
@@ -413,11 +413,11 @@ test.describe('Member Management - Edit Member', () => {
   });
 
   test('should pre-populate form with existing member data', async ({ page }) => {
-    const grid = page.locator('.k-grid').first();
+    const grid = page.locator('.mantine-DataTable-root').first();
     await grid.waitFor({ state: 'visible' });
 
     // Get member name from grid
-    const firstRow = grid.locator('.k-grid-content tr').first();
+    const firstRow = grid.locator('tbody tr').first();
     const rowText = await firstRow.textContent();
     console.log(`Selected member row: ${rowText}`);
 
@@ -456,11 +456,11 @@ test.describe('Member Management - Status Management', () => {
   });
 
   test('should display member status badges', async ({ page }) => {
-    const grid = page.locator('.k-grid').first();
+    const grid = page.locator('.mantine-DataTable-root').first();
     await grid.waitFor({ state: 'visible' });
 
     // Look for status badges
-    const statusBadges = grid.locator('.badge, [class*="status"], .k-chip');
+    const statusBadges = grid.locator('.badge, [class*="status"], .mantine-Badge-root');
     const badgeCount = await statusBadges.count();
 
     expect(badgeCount).toBeGreaterThan(0);
@@ -479,7 +479,7 @@ test.describe('Member Management - Status Management', () => {
 
   test('should filter members by status', async ({ page }) => {
     // Look for status filter dropdown
-    const filterDropdown = page.locator('select, .k-dropdown').first();
+    const filterDropdown = page.locator('select, .mantine-Select-root').first();
     const hasFilter = await filterDropdown.isVisible({ timeout: 2000 }).catch(() => false);
 
     if (hasFilter) {
@@ -495,11 +495,11 @@ test.describe('Member Management - Status Management', () => {
   });
 
   test('should allow changing member status', async ({ page }) => {
-    const grid = page.locator('.k-grid').first();
+    const grid = page.locator('.mantine-DataTable-root').first();
     await grid.waitFor({ state: 'visible' });
 
     // Click first row
-    const firstRow = grid.locator('.k-grid-content tr').first();
+    const firstRow = grid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
 
@@ -564,7 +564,7 @@ test.describe('Member Management - Error Handling', () => {
 
   test('should display error toast for failed operations', async ({ page }) => {
     // Monitor for toast notifications
-    const toasts = page.locator('.k-notification, .toast, [role="alert"]');
+    const toasts = page.locator('.mantine-Notification-root, .toast, [role="alert"]');
 
     await page.goto('/');
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();

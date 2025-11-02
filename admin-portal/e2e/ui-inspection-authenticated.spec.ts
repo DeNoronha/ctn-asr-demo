@@ -211,7 +211,7 @@ test.describe('Priority Area Tests - Authenticated', () => {
       'svg[data-testid*="eye"]',
       'button[title*="View"]',
       'button[aria-label*="View"]',
-      'span.k-icon.k-i-eye',
+      'svg[data-icon="eye"]',
       'span:has(svg) >> text=/view/i',
     ];
 
@@ -226,7 +226,7 @@ test.describe('Priority Area Tests - Authenticated', () => {
     }
 
     // Check for any icon buttons in grid
-    const iconButtons = await page.locator('button[data-icon], button > svg, button > .k-icon').count();
+    const iconButtons = await page.locator('button[data-icon], button > svg, button > svg').count();
     console.log(`Total icon buttons in grid: ${iconButtons}`);
 
     // Save findings
@@ -263,7 +263,7 @@ test.describe('Priority Area Tests - Authenticated', () => {
     await page.waitForTimeout(1500);
 
     // Try to find and click a member to open details/contact modal
-    const firstMemberRow = page.locator('tr[role="row"], .k-grid-content tr').nth(1);
+    const firstMemberRow = page.locator('tr[role="row"], tbody tr').nth(1);
 
     if ((await firstMemberRow.count()) > 0) {
       // Try clicking the row or an action button
@@ -410,7 +410,7 @@ test.describe('Priority Area Tests - Authenticated', () => {
     });
 
     // Document current UI state
-    const tabLabels = await page.locator('[role="tab"], .k-tabstrip-item, .tab').allTextContents();
+    const tabLabels = await page.locator('[role="tab"], .mantine-Tabs-tab, .tab').allTextContents();
     console.log('Tab labels:', tabLabels.map((t) => t.trim()).filter(Boolean));
 
     const hasFileUpload = (await page.locator('input[type="file"], [data-testid*="upload"]').count()) > 0;

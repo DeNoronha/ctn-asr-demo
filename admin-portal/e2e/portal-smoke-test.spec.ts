@@ -31,7 +31,7 @@ test.describe('Portal Smoke Tests', () => {
 
     // Check for common UI elements that indicate the app rendered
     // Look for either the login button or the main app container
-    const hasLoginOrApp = await page.locator('button, [role="main"], .k-button').count();
+    const hasLoginOrApp = await page.locator('button, [role="main"], .mantine-Button-root').count();
     expect(hasLoginOrApp).toBeGreaterThan(0);
 
     // Verify no JavaScript errors in console (critical errors)
@@ -68,7 +68,7 @@ test.describe('Portal Smoke Tests', () => {
     expect(bodyText!.length).toBeGreaterThan(100); // Should have substantial content
 
     // Check for common UI elements that indicate the app rendered
-    const hasLoginOrApp = await page.locator('button, [role="main"], .k-button').count();
+    const hasLoginOrApp = await page.locator('button, [role="main"], .mantine-Button-root').count();
     expect(hasLoginOrApp).toBeGreaterThan(0);
 
     // Verify no JavaScript errors in console (critical errors)

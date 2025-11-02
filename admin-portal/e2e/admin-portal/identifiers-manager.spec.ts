@@ -48,11 +48,11 @@ test.describe('Identifiers Manager - View Identifiers', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible();
 
-    const grid = page.locator('.k-grid').first();
+    const grid = page.locator('.mantine-DataTable-root').first();
     await grid.waitFor({ state: 'visible' });
 
     // Click first row to open member details
-    const firstRow = grid.locator('.k-grid-content tr').first();
+    const firstRow = grid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
 
@@ -74,10 +74,10 @@ test.describe('Identifiers Manager - View Identifiers', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
 
-    const firstRow = memberGrid.locator('.k-grid-content tr').first();
+    const firstRow = memberGrid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
 
@@ -94,10 +94,10 @@ test.describe('Identifiers Manager - View Identifiers', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
 
-    const firstRow = memberGrid.locator('.k-grid-content tr').first();
+    const firstRow = memberGrid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
 
@@ -143,10 +143,10 @@ test.describe('Identifiers Manager - Create Identifier', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
 
-    const firstRow = memberGrid.locator('.k-grid-content tr').first();
+    const firstRow = memberGrid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
   });
@@ -165,7 +165,7 @@ test.describe('Identifiers Manager - Create Identifier', () => {
       await page.waitForTimeout(1000);
 
       // Verify dialog opened
-      const dialog = page.locator('[role="dialog"], .k-dialog, .modal').first();
+      const dialog = page.locator('[role="dialog"], .mantine-Modal-root, .modal').first();
       await expect(dialog).toBeVisible({ timeout: 5000 });
 
       console.log('✅ Create identifier dialog opened');
@@ -191,7 +191,7 @@ test.describe('Identifiers Manager - Create Identifier', () => {
 
       // Look for type dropdown
       const typeDropdown = page
-        .locator('select[name*="type"], .k-dropdown:has-text("Type")')
+        .locator('select[name*="type"], .mantine-Select-root:has-text("Type")')
         .first();
       const hasDropdown = await typeDropdown.isVisible({ timeout: 2000 }).catch(() => false);
 
@@ -233,7 +233,7 @@ test.describe('Identifiers Manager - Create Identifier', () => {
 
         // Look for validation error
         const validationError = page
-          .locator('.k-invalid, .error, [role="alert"], text=/required|cannot be empty/i')
+          .locator('.mantine-Input-error, .error, [role="alert"], text=/required|cannot be empty/i')
           .first();
         const hasError = await validationError.isVisible({ timeout: 2000 }).catch(() => false);
 
@@ -286,7 +286,7 @@ test.describe('Identifiers Manager - Create Identifier', () => {
           await page.waitForTimeout(2000);
 
           // Look for success toast
-          const toast = page.locator('.k-notification, .toast, [role="alert"]').first();
+          const toast = page.locator('.mantine-Notification-root, .toast, [role="alert"]').first();
           const hasToast = await toast.isVisible({ timeout: 3000 }).catch(() => false);
 
           console.log(`✅ Create identifier submitted, toast shown: ${hasToast}`);
@@ -315,7 +315,7 @@ test.describe('Identifiers Manager - Create Identifier', () => {
         await page.waitForTimeout(500);
 
         // Look for inline validation
-        const inlineError = page.locator('.k-invalid, .error-message, [role="alert"]').first();
+        const inlineError = page.locator('.mantine-Input-error, .error-message, [role="alert"]').first();
         const hasError = await inlineError.isVisible({ timeout: 1000 }).catch(() => false);
 
         console.log(`Inline validation shown: ${hasError}`);
@@ -336,10 +336,10 @@ test.describe('Identifiers Manager - Edit Identifier', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
 
-    const firstRow = memberGrid.locator('.k-grid-content tr').first();
+    const firstRow = memberGrid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
   });
@@ -356,7 +356,7 @@ test.describe('Identifiers Manager - Edit Identifier', () => {
       await page.waitForTimeout(1000);
 
       // Verify edit dialog opened
-      const dialog = page.locator('[role="dialog"], .k-dialog').first();
+      const dialog = page.locator('[role="dialog"], .mantine-Modal-root').first();
       await expect(dialog).toBeVisible({ timeout: 5000 });
 
       console.log('✅ Edit identifier dialog opened');
@@ -407,7 +407,7 @@ test.describe('Identifiers Manager - Edit Identifier', () => {
       await page.waitForTimeout(2000);
 
       // Look for success toast
-      const toast = page.locator('.k-notification, .toast').first();
+      const toast = page.locator('.mantine-Notification-root, .toast').first();
       const hasToast = await toast.isVisible({ timeout: 3000 }).catch(() => false);
 
       console.log(`Update submitted, toast shown: ${hasToast}`);
@@ -427,10 +427,10 @@ test.describe('Identifiers Manager - Delete Identifier', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
 
-    const firstRow = memberGrid.locator('.k-grid-content tr').first();
+    const firstRow = memberGrid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
   });
@@ -448,7 +448,7 @@ test.describe('Identifiers Manager - Delete Identifier', () => {
 
       // Look for confirmation dialog
       const confirmDialog = page
-        .locator('[role="dialog"], .k-dialog, text=/Are you sure|Confirm/i')
+        .locator('[role="dialog"], .mantine-Modal-root, text=/Are you sure|Confirm/i')
         .first();
       const hasConfirm = await confirmDialog.isVisible({ timeout: 3000 }).catch(() => false);
 
@@ -523,10 +523,10 @@ test.describe('Identifiers Manager - All 12 Identifier Types', () => {
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const memberGrid = page.locator('.k-grid').first();
+    const memberGrid = page.locator('.mantine-DataTable-root').first();
     await memberGrid.waitFor({ state: 'visible' });
 
-    const firstRow = memberGrid.locator('.k-grid-content tr').first();
+    const firstRow = memberGrid.locator('tbody tr').first();
     await firstRow.click();
     await page.waitForTimeout(1500);
 
@@ -622,7 +622,7 @@ test.describe('Identifiers Manager - Error Handling', () => {
 
     // Monitor for error toasts
     const errorToast = page
-      .locator('.k-notification.error, .toast.error, [role="alert"]:has-text("error")')
+      .locator('.mantine-Notification-root.error, .toast.error, [role="alert"]:has-text("error")')
       .first();
 
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();

@@ -138,7 +138,7 @@ test.describe('URGENT: Production Identifier Creation Diagnostic', () => {
 
     // Wait for members grid to load
     console.log('   Waiting for members grid...');
-    await page.waitForSelector('.k-grid', { timeout: 10000 });
+    await page.waitForSelector('.mantine-DataTable-root', { timeout: 10000 });
     console.log('✅ Members grid loaded\n');
 
     // Step 3: Search for Contargo entity
@@ -155,7 +155,7 @@ test.describe('URGENT: Production Identifier Creation Diagnostic', () => {
     // Step 4: Click on Contargo row's View button
     console.log('📍 Step 4: Looking for Contargo row...');
     const contargoRow = page
-      .locator('.k-grid tbody tr')
+      .locator('.mantine-DataTable-root tbody tr')
       .filter({ hasText: /Contargo GmbH/i })
       .first();
     if (await contargoRow.isVisible({ timeout: 5000 })) {
@@ -239,7 +239,7 @@ test.describe('URGENT: Production Identifier Creation Diagnostic', () => {
     // Fill Country Code
     console.log('   Filling Country Code: NL');
     const countryInput = page
-      .locator('input, select, .k-dropdown')
+      .locator('input, select, .mantine-Select-root')
       .filter({ hasText: /country|Country Code/i })
       .first();
     if (await countryInput.isVisible({ timeout: 3000 })) {
@@ -259,7 +259,7 @@ test.describe('URGENT: Production Identifier Creation Diagnostic', () => {
     // Fill Identifier Type
     console.log('   Filling Identifier Type: KVK');
     const typeDropdown = page
-      .locator('select, .k-dropdown')
+      .locator('select, .mantine-Select-root')
       .filter({ hasText: /type|identifier type/i })
       .first();
     if (await typeDropdown.isVisible({ timeout: 3000 })) {
@@ -279,7 +279,7 @@ test.describe('URGENT: Production Identifier Creation Diagnostic', () => {
     // Fill Validation Status (if present)
     console.log('   Setting Validation Status: PENDING');
     const statusDropdown = page
-      .locator('select, .k-dropdown')
+      .locator('select, .mantine-Select-root')
       .filter({ hasText: /status|validation/i })
       .first();
     if (await statusDropdown.isVisible({ timeout: 2000 })) {
@@ -322,7 +322,7 @@ test.describe('URGENT: Production Identifier Creation Diagnostic', () => {
 
     // Step 10: Check for error messages on page
     console.log('\n📍 Step 10: Checking for error messages...');
-    const errorMessage = page.locator('.k-notification-error, .error, [role="alert"]').first();
+    const errorMessage = page.locator('.mantine-Notification-root-error, .error, [role="alert"]').first();
     if (await errorMessage.isVisible({ timeout: 2000 })) {
       const errorText = await errorMessage.textContent();
       console.log('🚨 ERROR MESSAGE ON PAGE:', errorText);
