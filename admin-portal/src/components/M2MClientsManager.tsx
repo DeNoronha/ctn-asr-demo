@@ -328,6 +328,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
 
     // Column Features
     enableColumnResizing: true,
+    columnResizeMode: 'onChange', // Shows resize preview while dragging
     enableColumnOrdering: true,
     enableHiding: true,
     enableColumnFilters: true,

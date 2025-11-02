@@ -259,6 +259,7 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
 
     // Column Features
     enableColumnResizing: true,
+    columnResizeMode: 'onChange', // Shows resize preview while dragging
     enableColumnOrdering: true,
     enableHiding: true,
     enableColumnFilters: true,
