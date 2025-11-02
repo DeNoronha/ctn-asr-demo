@@ -35,7 +35,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   // Use grid state hook for URL-based pagination persistence
   const { page, pageSize, skip, updatePage, updatePageSize } = useGridState('members-grid', {
     defaultPage: 1,
-    defaultPageSize: 20,
+    defaultPageSize: 10, // Match DataTable's first recordsPerPageOptions value
     enableFilterPersistence: true,
     resetPageOnFilterChange: false,
   });
