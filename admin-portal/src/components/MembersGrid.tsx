@@ -291,7 +291,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         ),
         filtering: query !== '',
         render: (member) => (
-          <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(member.legal_name) }} />
+          <div>{sanitizeGridCell(member.legal_name)}</div>
         ),
       },
       {
@@ -364,7 +364,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         sortable: true,
         defaultToggle: false, // Hidden by default
         render: (member) => (
-          <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(member.domain || '') }} />
+          <div>{sanitizeGridCell(member.domain || '')}</div>
         ),
       },
       {
