@@ -17,6 +17,16 @@ export const useAsync = <T = unknown>(options: UseAsyncOptions<T> = {}) => {
   const [data, setData] = useState<T | null>(null);
   const notification = useNotification();
 
+  // Destructure options to avoid object reference issues in dependencies
+  const {
+    showSuccessNotification,
+    showErrorNotification,
+    successMessage,
+    errorMessage,
+    onSuccess,
+    onError,
+  } = options;
+
   const execute = useCallback(
     async (asyncFunction: () => Promise<T>) => {
       setLoading(true);
@@ -26,27 +36,27 @@ export const useAsync = <T = unknown>(options: UseAsyncOptions<T> = {}) => {
         const result = await asyncFunction();
         setData(result);
 
-        if (options.showSuccessNotification && options.successMessage) {
-          notification.showSuccess(options.successMessage);
+        if (showSuccessNotification && successMessage) {
+          notification.showSuccess(successMessage);
         }
 
-        options.onSuccess?.(result);
+        onSuccess?.(result);
         return result;
       } catch (err) {
         const error = err instanceof Error ? err : new Error('An error occurred');
         setError(error);
 
-        if (options.showErrorNotification !== false) {
-          notification.showError(options.errorMessage || error.message || 'Operation failed');
+        if (showErrorNotification !== false) {
+          notification.showError(errorMessage || error.message || 'Operation failed');
         }
 
-        options.onError?.(error);
+        onError?.(error);
         throw error;
       } finally {
         setLoading(false);
       }
     },
-    [notification, options]
+    [notification, showSuccessNotification, showErrorNotification, successMessage, errorMessage, onSuccess, onError]
   );
 
   const reset = useCallback(() => {
