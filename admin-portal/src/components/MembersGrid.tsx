@@ -499,4 +499,4 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   );
 };
 
-export default MembersGrid;
+export default React.memo(MembersGrid);

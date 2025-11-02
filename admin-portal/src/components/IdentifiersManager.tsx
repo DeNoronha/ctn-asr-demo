@@ -11,8 +11,7 @@ import {
   Trash2,
   XCircle,
 } from './icons';
-import type React from 'react';
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
@@ -196,7 +195,7 @@ const REGISTRY_INFO: Record<string, { name: string; url: string }> = {
   },
 };
 
-export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
+const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
   legalEntityId,
   identifiers,
   onIdentifierCreate,
@@ -934,3 +933,5 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     </div>
   );
 };
+
+export const IdentifiersManager = React.memo(IdentifiersManagerComponent);
