@@ -7,8 +7,7 @@ import { logger } from '../../utils/logger';
 import { Button } from '@mantine/core';
 import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import { Edit2, Shield, Trash2, UserPlus } from '../icons';
-import type React from 'react';
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { RoleGuard } from '../../auth/ProtectedRoute';
 import { UserRole } from '../../auth/authConfig';
@@ -353,4 +352,4 @@ const UserManagement: React.FC = () => {
   );
 };
 
-export default UserManagement;
+export default React.memo(UserManagement);

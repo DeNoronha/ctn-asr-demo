@@ -2,8 +2,7 @@ import { Button, Textarea, Loader, Modal, Group } from '@mantine/core';
 import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import axios from 'axios';
 import { AlertCircle, AlertTriangle, CheckCircle, XCircle } from './icons';
-import type React from 'react';
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 
 interface ReviewTask {
@@ -19,7 +18,7 @@ interface ReviewTask {
   document_uploaded_at: string;
 }
 
-export const ReviewTasks: React.FC = () => {
+const ReviewTasksComponent: React.FC = () => {
   const [tasks, setTasks] = useState<ReviewTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [reviewDialog, setReviewDialog] = useState<{
@@ -496,3 +495,5 @@ export const ReviewTasks: React.FC = () => {
     </div>
   );
 };
+
+export const ReviewTasks = React.memo(ReviewTasksComponent);

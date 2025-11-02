@@ -2,8 +2,7 @@ import { Button, TextInput, Textarea, Select, Modal, Group } from '@mantine/core
 import { DataTable, useDataTableColumns } from 'mantine-datatable';
 import { EmptyState } from './EmptyState';
 import { Plus } from './icons';
-import type React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { HelpTooltip } from './help/HelpTooltip';
 import { helpContent } from '../config/helpContent';
@@ -59,7 +58,7 @@ const DATA_CATEGORIES = [
   { value: 'GENERAL', label: 'General' },
 ];
 
-export const EndpointManagement: React.FC<EndpointManagementProps> = ({
+const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
   legalEntityId,
   legalEntityName,
 }) => {
@@ -430,3 +429,5 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
     </div>
   );
 };
+
+export const EndpointManagement = React.memo(EndpointManagementComponent);
