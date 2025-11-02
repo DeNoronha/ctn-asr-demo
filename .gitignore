@@ -90,3 +90,4 @@ debug-summary.txt
 !jest.config.js
 !.eslintrc.js
 *.backup
+docs/MANTINE_LLMS.txt

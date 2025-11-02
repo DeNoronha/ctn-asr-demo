@@ -1,6 +1,6 @@
 # MCP Server Mapping for Agents
 
-**Last Updated:** October 16, 2025
+**Last Updated:** November 2, 2025
 **Global MCP Config:** `/Users/ramondenoronha/.config/claude-code/mcp.json`
 
 This document defines which MCP servers each specialized agent should use. These MCP servers are configured globally and available to all agents across all projects.
@@ -52,6 +52,12 @@ This document defines which MCP servers each specialized agent should use. These
 - Create data flow diagrams
 - Document system architecture
 
+### 5. **Mantine Documentation (Local Files)**
+**Purpose:** Mantine UI component documentation
+**Location:** `docs/MANTINE_LLMS.txt` (79,408 lines from https://mantine.dev/llms.txt)
+**Additional:** `docs/MANTINE_DATATABLE_REFERENCE.md` for mantine-datatable component reference
+**Note:** Previously used `@hakxel/mantine-ui-server` MCP server, but now using local documentation files for faster access and reliability
+
 ---
 
 ## Agent → MCP Server Mapping
@@ -80,12 +86,19 @@ This document defines which MCP servers each specialized agent should use. These
 - ✅ **browser** - For testing responsive design, accessibility, visual consistency
 - ✅ **chrome-devtools** - For inspecting DOM, analyzing CSS, checking accessibility violations
 
+**Local Documentation:**
+- 📄 **docs/MANTINE_LLMS.txt** - Complete Mantine UI component documentation
+- 📄 **docs/MANTINE_DATATABLE_REFERENCE.md** - mantine-datatable reference
+
 **Use Cases:**
 - Test UI responsiveness across different viewport sizes
 - Inspect accessibility attributes (ARIA labels, roles, etc.)
 - Analyze CSS and layout issues
 - Validate color contrast ratios
 - Check keyboard navigation and focus management
+- Verify Mantine components are used according to best practices (reference local docs)
+- Review theme configurations for consistency
+- Validate proper implementation of Mantine design patterns
 
 ---
 
@@ -110,15 +123,37 @@ This document defines which MCP servers each specialized agent should use. These
 
 ---
 
+### Coding Assistant (CA)
+**MCP Servers:** ❌ None required
+
+**Local Documentation:**
+- 📄 **docs/MANTINE_LLMS.txt** - Complete Mantine UI component documentation
+- 📄 **docs/MANTINE_DATATABLE_REFERENCE.md** - mantine-datatable reference
+
+**Use Cases:**
+- Reference Mantine component documentation while coding (use local docs)
+- Implement Mantine components based on requirements
+- Search for appropriate Mantine components for specific use cases (grep local docs)
+- Create theme configurations for consistent UI styling
+- Get implementation examples for Mantine components (from local docs)
+
+---
+
 ### Technical Writer (TW)
 **Primary MCP Servers:**
 - ✅ **icepanel** - For generating architecture diagrams to document system design
+
+**Local Documentation:**
+- 📄 **docs/MANTINE_LLMS.txt** - Complete Mantine UI component documentation
+- 📄 **docs/MANTINE_DATATABLE_REFERENCE.md** - mantine-datatable reference
 
 **Use Cases:**
 - Create architecture diagrams for `docs/architecture/`
 - Visualize data flow between frontend, API, and database
 - Document system components and their relationships
 - Generate ERD diagrams for database schema documentation
+- Document Mantine component patterns and custom implementations (reference local docs)
+- Create UI component documentation with proper Mantine examples
 
 ---
 

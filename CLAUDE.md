@@ -1,6 +1,6 @@
 # CLAUDE.md - CTN Association Register
 
-**Last Updated:** October 26, 2025
+**Last Updated:** November 2, 2025
 
 ---
 
@@ -224,7 +224,8 @@ Build → Deploy → Test (TE agent) → Document (TW agent)
 - `@playwright/mcp` - E2E testing (TE)
 - `chrome-devtools-mcp` - Browser debugging (TE, DA, SA)
 - `@icepanel/mcp-server` - Architecture diagrams (TW, AR)
-- `ctn-mcp-server` - Arc42 documentation search (AR)
+
+**Note:** Mantine UI documentation is available locally in `docs/MANTINE_LLMS.txt` (79,408 lines from https://mantine.dev/llms.txt)
 
 ---
 
@@ -290,7 +291,7 @@ Git/Azure/Multi-repo specialist with strict security and cross-impact validation
 ### Architecture Reviewer (AR)
 `.claude/agents/architecture-reviewer-ar.md` | Blue | Sonnet
 
-Validates alignment between codebase, Azure infrastructure, Arc42 documentation, and IcePanel diagrams. Ensures architectural consistency across the CTN ASR project. Uses @icepanel/mcp-server and ctn-mcp-server for documentation queries.
+Validates alignment between codebase, Azure infrastructure, Arc42 documentation, and IcePanel diagrams. Ensures architectural consistency across the CTN ASR project. Uses @icepanel/mcp-server for documentation queries.
 
 **Auto-invoke when:**
 - New Azure service added to infrastructure/
@@ -497,6 +498,8 @@ Isolation:   NO dependencies on ASR, DocuFlow, or Orchestrator
 **Root:** README.md, CLAUDE.md only
 **Desktop:** ~/Desktop/ROADMAP.md (synced, not in repo)
 **docs/:** All other documentation, completed actions, guides
+**docs/MANTINE_LLMS.txt:** Complete Mantine UI library documentation (79K lines, from mantine.dev/llms.txt)
+**docs/MANTINE_DATATABLE_REFERENCE.md:** mantine-datatable component reference (column toggling, etc.)
 **.claude/agents/:** Agent configuration files
 
 ---
