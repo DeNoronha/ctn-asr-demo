@@ -1,7 +1,5 @@
 import { Button, TextInput, Select } from '@mantine/core';
-
-
-import { Field, Form, FormElement, type FormRenderProps } from '@progress/kendo-react-form';
+import { useForm } from '@mantine/form';
 
 // CompanyForm.tsx - Edit company/legal entity information
 import type React from 'react';
@@ -57,9 +55,32 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
     registry_name: '',
   });
 
-  const handleSubmit = async (dataItem: Record<string, unknown>) => {
+  const form = useForm({
+    initialValues: {
+      primary_legal_name: data.primary_legal_name || '',
+      entity_legal_form: data.entity_legal_form || '',
+      registered_at: data.registered_at || '',
+      address_line1: data.address_line1 || '',
+      address_line2: data.address_line2 || '',
+      postal_code: data.postal_code || '',
+      city: data.city || '',
+      province: data.province || '',
+      country_code: data.country_code || '',
+    },
+    validate: {
+      primary_legal_name: (value) => (value && value.trim().length > 0 ? null : 'This field is required'),
+      country_code: (value) => (!value || /^[A-Za-z]{2}$/.test(value) ? null : 'Enter 2-letter country code'),
+    },
+  });
+
+  const handleSubmit = async (values: typeof form.values) => {
     // SEC-006: Sanitize form data before submission to prevent XSS attacks
-    await onSave(sanitizeFormData(dataItem) as unknown as LegalEntity);
+    const formData = {
+      ...data,
+      ...values,
+      identifiers,
+    };
+    await onSave(sanitizeFormData(formData) as unknown as LegalEntity);
   };
 
   const handleAddIdentifier = async () => {
@@ -102,95 +123,78 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
     }
   };
 
-  // Simple validators (DA-007)
-  const required = (value: string) => (value && value.trim().length > 0 ? '' : 'This field is required');
-  const cc2Validator = (value: string) => (!value || /^[A-Za-z]{2}$/.test(value) ? '' : 'Enter 2-letter country code');
-
   return (
-    <Form
-      initialValues={data}
-      onSubmit={handleSubmit}
-      render={(_formRenderProps: FormRenderProps) => (
-        <FormElement className="company-form">
-          <fieldset className="k-form-fieldset">
-            <legend>Company Information</legend>
+    <form onSubmit={form.onSubmit(handleSubmit)} className="company-form">
+      <fieldset className="k-form-fieldset">
+        <legend>Company Information</legend>
 
-            <Field
-              name="primary_legal_name"
-              label={() => (
-                <FieldLabel text="Legal Name" helpText={helpContent.legalName} required dataTestId="company-legal-name-help" />
-              )}
-              component={Input}
-              validator={required}
-              required
-              aria-required
-            />
+        <TextInput
+          {...form.getInputProps('primary_legal_name')}
+          label={<FieldLabel text="Legal Name" helpText={helpContent.legalName} required dataTestId="company-legal-name-help" />}
+          required
+          mb="md"
+        />
 
-            <Field
-              name="entity_legal_form"
-              label="Legal Form"
-              component={Input}
-              placeholder="e.g., BV, NV, LLC"
-            />
+        <TextInput
+          {...form.getInputProps('entity_legal_form')}
+          label="Legal Form"
+          placeholder="e.g., BV, NV, LLC"
+          mb="md"
+        />
 
-            <Field
-              name="registered_at"
-              label={() => (
-                <FieldLabel text="Registration Number" helpText={helpContent.kvk} dataTestId="company-reg-help" />
-              )}
-              component={Input}
-              placeholder="Chamber of Commerce number"
-            />
-          </fieldset>
+        <TextInput
+          {...form.getInputProps('registered_at')}
+          label={<FieldLabel text="Registration Number" helpText={helpContent.kvk} dataTestId="company-reg-help" />}
+          placeholder="Chamber of Commerce number"
+          mb="md"
+        />
+      </fieldset>
 
-          <fieldset className="k-form-fieldset">
-            <legend>Address</legend>
+      <fieldset className="k-form-fieldset">
+        <legend>Address</legend>
 
-            <Field
-              name="address_line1"
-              label="Street Address"
-              component={Input}
-              placeholder="Street name and number"
-            />
+        <TextInput
+          {...form.getInputProps('address_line1')}
+          label="Street Address"
+          placeholder="Street name and number"
+          mb="md"
+        />
 
-            <Field
-              name="address_line2"
-              label="Address Line 2"
-              component={Input}
-              placeholder="Building, suite, etc. (optional)"
-            />
+        <TextInput
+          {...form.getInputProps('address_line2')}
+          label="Address Line 2"
+          placeholder="Building, suite, etc. (optional)"
+          mb="md"
+        />
 
-            <div className="form-row-group">
-              <Field
-                name="postal_code"
-                label="Postal Code"
-                component={Input}
-                placeholder="1234 AB"
-              />
+        <div className="form-row-group">
+          <TextInput
+            {...form.getInputProps('postal_code')}
+            label="Postal Code"
+            placeholder="1234 AB"
+          />
 
-              <Field name="city" label="City" component={Input} />
-            </div>
+          <TextInput
+            {...form.getInputProps('city')}
+            label="City"
+          />
+        </div>
 
-            <div className="form-row-group">
-              <Field
-                name="province"
-                label="Province/State"
-                component={Input}
-                placeholder="Optional"
-              />
+        <div className="form-row-group">
+          <TextInput
+            {...form.getInputProps('province')}
+            label="Province/State"
+            placeholder="Optional"
+          />
 
-              <Field
-                name="country_code"
-                label={() => (
-                  <FieldLabel text="Country Code" helpText={helpContent.identifierCountry} dataTestId="company-country-help" />
-                )}
-                component={Input}
-                maxLength={2}
-                placeholder="NL"
-                validator={cc2Validator}
-              />
-            </div>
-          </fieldset>
+          <TextInput
+            {...form.getInputProps('country_code')}
+            label={<FieldLabel text="Country Code" helpText={helpContent.identifierCountry} dataTestId="company-country-help" />}
+            maxLength={2}
+            placeholder="NL"
+          />
+        </div>
+      </fieldset>
 
           <fieldset className="k-form-fieldset">
             <legend>Legal Identifiers</legend>
@@ -280,16 +284,14 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
             </div>
           </fieldset>
 
-          <div className="k-form-buttons">
-            <Button type="submit" color="blue">
-              Save Changes
-            </Button>
-            <Button type="button" onClick={onCancel}>
-              Cancel
-            </Button>
-          </div>
-        </FormElement>
-      )}
-    />
+      <div className="k-form-buttons">
+        <Button type="submit" color="blue">
+          Save Changes
+        </Button>
+        <Button type="button" onClick={onCancel} variant="default">
+          Cancel
+        </Button>
+      </div>
+    </form>
   );
 };
