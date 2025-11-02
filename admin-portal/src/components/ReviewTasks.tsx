@@ -4,6 +4,7 @@ import axios from 'axios';
 import { AlertCircle, AlertTriangle, CheckCircle, XCircle } from './icons';
 import React, { useEffect, useState, useMemo } from 'react';
 import { msalInstance } from '../auth/AuthContext';
+import { ErrorBoundary } from './ErrorBoundary';
 
 interface ReviewTask {
   legal_entity_id: string;
@@ -311,15 +312,17 @@ const ReviewTasksComponent: React.FC = () => {
       <h2>Review Tasks</h2>
       <p>Document verification tasks requiring manual review ({tasks.length})</p>
 
-      <DataTable
-        records={tasks}
-        columns={effectiveColumns}
-        storeColumnsKey="review-tasks-grid"
-        withTableBorder
-        withColumnBorders
-        striped
-        highlightOnHover
-      />
+      <ErrorBoundary>
+        <DataTable
+          records={tasks}
+          columns={effectiveColumns}
+          storeColumnsKey="review-tasks-grid"
+          withTableBorder
+          withColumnBorders
+          striped
+          highlightOnHover
+        />
+      </ErrorBoundary>
 
       <Modal
         opened={reviewDialog.visible && !!reviewDialog.task}
