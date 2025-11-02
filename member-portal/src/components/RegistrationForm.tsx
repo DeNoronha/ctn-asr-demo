@@ -4,10 +4,8 @@
  */
 
 import React, { useState } from 'react';
-import { Button } from '@mantine/core';
-
-import { Form, Field, FormElement, FieldWrapper } from '@progress/kendo-react-form';
-
+import { Button, TextInput, Textarea, Select, Checkbox } from '@mantine/core';
+import { useForm } from '@mantine/form';
 
 import { Label, Error, Hint } from '@progress/kendo-react-labels';
 import { KvKDocumentUpload } from './KvKDocumentUpload';
@@ -61,34 +59,34 @@ const countries = [
   'Other',
 ];
 
-// Validators
+// Validators (Mantine format - return null for valid, error message for invalid)
 const requiredValidator = (value: any) =>
-  value ? '' : 'This field is required';
+  value ? null : 'This field is required';
 
 const emailValidator = (value: string) => {
   if (!value) return 'Email is required';
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(value) ? '' : 'Invalid email address';
+  return emailRegex.test(value) ? null : 'Invalid email address';
 };
 
 const kvkValidator = (value: string) => {
   if (!value) return 'KvK number is required';
   // Dutch KvK number is 8 digits
   const kvkRegex = /^\d{8}$/;
-  return kvkRegex.test(value) ? '' : 'KvK number must be 8 digits';
+  return kvkRegex.test(value) ? null : 'KvK number must be 8 digits';
 };
 
 const phoneValidator = (value: string) => {
   if (!value) return 'Phone number is required';
   const phoneRegex = /^[\d\s\+\-\(\)]+$/;
-  return phoneRegex.test(value) ? '' : 'Invalid phone number format';
+  return phoneRegex.test(value) ? null : 'Invalid phone number format';
 };
 
 const leiValidator = (value: string) => {
-  if (!value) return ''; // LEI is optional
+  if (!value) return null; // LEI is optional
   // LEI is 20 characters
   const leiRegex = /^[A-Z0-9]{20}$/;
-  return leiRegex.test(value) ? '' : 'LEI must be 20 alphanumeric characters';
+  return leiRegex.test(value) ? null : 'LEI must be 20 alphanumeric characters';
 };
 
 export const RegistrationForm: React.FC<RegistrationFormProps> = ({
@@ -99,34 +97,88 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [kvkDocument, setKvkDocument] = useState<File | null>(null);
 
-  const handleSubmit = async (dataItem: { [name: string]: any }) => {
+  const form = useForm({
+    initialValues: {
+      legalName: '',
+      kvkNumber: '',
+      lei: '',
+      companyAddress: '',
+      postalCode: '',
+      city: '',
+      country: 'Netherlands',
+      contactName: '',
+      contactEmail: '',
+      contactPhone: '',
+      jobTitle: '',
+      membershipType: 'basic',
+      termsAccepted: false,
+      gdprConsent: false,
+    },
+    validate: {
+      legalName: requiredValidator,
+      kvkNumber: kvkValidator,
+      lei: leiValidator,
+      companyAddress: requiredValidator,
+      postalCode: requiredValidator,
+      city: requiredValidator,
+      country: requiredValidator,
+      contactName: requiredValidator,
+      contactEmail: emailValidator,
+      contactPhone: phoneValidator,
+      jobTitle: requiredValidator,
+      membershipType: requiredValidator,
+      termsAccepted: (value) => (value ? null : 'You must accept the terms'),
+      gdprConsent: (value) => (value ? null : 'GDPR consent is required'),
+    },
+  });
+
+  const handleSubmit = async (values: typeof form.values) => {
     const formData: RegistrationFormData = {
-      legalName: dataItem.legalName,
-      kvkNumber: dataItem.kvkNumber,
-      lei: dataItem.lei,
-      companyAddress: dataItem.companyAddress,
-      postalCode: dataItem.postalCode,
-      city: dataItem.city,
-      country: dataItem.country,
-      contactName: dataItem.contactName,
-      contactEmail: dataItem.contactEmail,
-      contactPhone: dataItem.contactPhone,
-      jobTitle: dataItem.jobTitle,
-      membershipType: dataItem.membershipType,
+      ...values,
       kvkDocument: kvkDocument || undefined,
-      termsAccepted: dataItem.termsAccepted,
-      gdprConsent: dataItem.gdprConsent,
     };
 
     await onSubmit(formData);
   };
 
   const handleNext = () => {
-    setCurrentStep(currentStep + 1);
+    // Validate current step before proceeding
+    const stepValidation = validateCurrentStep();
+    if (stepValidation) {
+      setCurrentStep(currentStep + 1);
+    }
   };
 
   const handlePrevious = () => {
     setCurrentStep(currentStep - 1);
+  };
+
+  const validateCurrentStep = (): boolean => {
+    if (currentStep === 1) {
+      const step1Errors = form.validate();
+      const step1Fields = ['legalName', 'kvkNumber', 'companyAddress', 'postalCode', 'city', 'country', 'membershipType'];
+      return !step1Fields.some(field => step1Errors.errors[field]);
+    } else if (currentStep === 2) {
+      const step2Errors = form.validate();
+      const step2Fields = ['contactName', 'contactEmail', 'contactPhone', 'jobTitle'];
+      return !step2Fields.some(field => step2Errors.errors[field]);
+    }
+    return true;
+  };
+
+  const isStep1Valid = () => {
+    const { legalName, kvkNumber, companyAddress, postalCode, city } = form.values;
+    return legalName && kvkNumber && companyAddress && postalCode && city;
+  };
+
+  const isStep2Valid = () => {
+    const { contactName, contactEmail, contactPhone, jobTitle } = form.values;
+    return contactName && contactEmail && contactPhone && jobTitle;
+  };
+
+  const isStep3Valid = () => {
+    const { termsAccepted, gdprConsent } = form.values;
+    return kvkDocument && termsAccepted && gdprConsent;
   };
 
   return (
@@ -152,242 +204,206 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         </div>
       </div>
 
-      <Form
-        onSubmit={handleSubmit}
-        initialValues={{
-          membershipType: 'basic',
-          country: 'Netherlands',
-          termsAccepted: false,
-          gdprConsent: false,
-        }}
-        render={(formRenderProps) => (
-          <FormElement style={{ width: '100%' }}>
-            {/* Step 1: Company Information */}
-            {currentStep === 1 && (
-              <div className="form-step">
-                <h3>Company Information</h3>
+      <form onSubmit={form.onSubmit(handleSubmit)} style={{ width: '100%' }}>
+        {/* Step 1: Company Information */}
+        {currentStep === 1 && (
+          <div className="form-step">
+            <h3>Company Information</h3>
 
-                <Field
-                  name="legalName"
-                  component={Input}
-                  label="Legal Company Name *"
-                  validator={requiredValidator}
-                />
+            <TextInput
+              {...form.getInputProps('legalName')}
+              label="Legal Company Name *"
+              required
+              mb="md"
+            />
 
-                <Field
-                  name="kvkNumber"
-                  component={Input}
-                  label="KvK Number (Chamber of Commerce) *"
-                  validator={kvkValidator}
-                  hint="8-digit Dutch Chamber of Commerce number"
-                />
+            <TextInput
+              {...form.getInputProps('kvkNumber')}
+              label="KvK Number (Chamber of Commerce) *"
+              description="8-digit Dutch Chamber of Commerce number"
+              required
+              mb="md"
+            />
 
-                <Field
-                  name="lei"
-                  component={Input}
-                  label="LEI (Legal Entity Identifier)"
-                  validator={leiValidator}
-                  hint="Optional - 20 character LEI code"
-                />
+            <TextInput
+              {...form.getInputProps('lei')}
+              label="LEI (Legal Entity Identifier)"
+              description="Optional - 20 character LEI code"
+              mb="md"
+            />
 
-                <Field
-                  name="companyAddress"
-                  component={TextArea}
-                  label="Company Address *"
-                  validator={requiredValidator}
-                  rows={3}
-                />
+            <Textarea
+              {...form.getInputProps('companyAddress')}
+              label="Company Address *"
+              required
+              rows={3}
+              mb="md"
+            />
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <Field
-                    name="postalCode"
-                    component={Input}
-                    label="Postal Code *"
-                    validator={requiredValidator}
-                  />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <TextInput
+                {...form.getInputProps('postalCode')}
+                label="Postal Code *"
+                required
+              />
 
-                  <Field
-                    name="city"
-                    component={Input}
-                    label="City *"
-                    validator={requiredValidator}
-                  />
-                </div>
+              <TextInput
+                {...form.getInputProps('city')}
+                label="City *"
+                required
+              />
+            </div>
 
-                <Field
-                  name="country"
-                  component={DropDownList}
-                  label="Country *"
-                  data={countries}
-                  validator={requiredValidator}
-                />
+            <Select
+              {...form.getInputProps('country')}
+              label="Country *"
+              data={countries}
+              required
+              mb="md"
+            />
 
-                <Field
-                  name="membershipType"
-                  component={DropDownList}
-                  label="Membership Type *"
-                  data={membershipTypes}
-                  textField="label"
-                  dataItemKey="value"
-                  validator={requiredValidator}
-                />
+            <Select
+              {...form.getInputProps('membershipType')}
+              label="Membership Type *"
+              data={membershipTypes}
+              required
+              mb="md"
+            />
 
-                <div className="form-actions">
-                  <Button onClick={onCancel} disabled={loading}>
-                    Cancel
-                  </Button>
-                  <Button
-                    color="blue"
-                    onClick={handleNext}
-                    disabled={
-                      !formRenderProps.valueGetter('legalName') ||
-                      !formRenderProps.valueGetter('kvkNumber') ||
-                      !formRenderProps.valueGetter('companyAddress') ||
-                      !formRenderProps.valueGetter('postalCode') ||
-                      !formRenderProps.valueGetter('city')
-                    }
-                  >
-                    Next: Contact Details
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 2: Contact Information */}
-            {currentStep === 2 && (
-              <div className="form-step">
-                <h3>Contact Information</h3>
-                <p>Primary contact person for your organization</p>
-
-                <Field
-                  name="contactName"
-                  component={Input}
-                  label="Full Name *"
-                  validator={requiredValidator}
-                />
-
-                <Field
-                  name="contactEmail"
-                  component={Input}
-                  label="Email Address *"
-                  validator={emailValidator}
-                  type="email"
-                />
-
-                <Field
-                  name="contactPhone"
-                  component={Input}
-                  label="Phone Number *"
-                  validator={phoneValidator}
-                  hint="Include country code (e.g., +31 20 1234567)"
-                />
-
-                <Field
-                  name="jobTitle"
-                  component={Input}
-                  label="Job Title *"
-                  validator={requiredValidator}
-                />
-
-                <div className="form-actions">
-                  <Button onClick={handlePrevious} disabled={loading}>
-                    Previous
-                  </Button>
-                  <Button
-                    color="blue"
-                    onClick={handleNext}
-                    disabled={
-                      !formRenderProps.valueGetter('contactName') ||
-                      !formRenderProps.valueGetter('contactEmail') ||
-                      !formRenderProps.valueGetter('contactPhone') ||
-                      !formRenderProps.valueGetter('jobTitle')
-                    }
-                  >
-                    Next: Documents
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Documents & Review */}
-            {currentStep === 3 && (
-              <div className="form-step">
-                <h3>Documents & Final Review</h3>
-
-                <div className="document-upload-section">
-                  <Label>KvK Extract (Chamber of Commerce Extract) *</Label>
-                  <Hint>
-                    Upload your official KvK extract. We'll verify your company details automatically.
-                    Accepted formats: PDF, PNG, JPG (max 10MB)
-                  </Hint>
-                  <KvKDocumentUpload
-                    onFileSelect={setKvkDocument}
-                    disabled={loading}
-                  />
-                </div>
-
-                <div className="review-section">
-                  <h4>Review Your Information</h4>
-                  <div className="review-grid">
-                    <div>
-                      <strong>Company:</strong> {formRenderProps.valueGetter('legalName')}
-                    </div>
-                    <div>
-                      <strong>KvK:</strong> {formRenderProps.valueGetter('kvkNumber')}
-                    </div>
-                    <div>
-                      <strong>Contact:</strong> {formRenderProps.valueGetter('contactName')}
-                    </div>
-                    <div>
-                      <strong>Email:</strong> {formRenderProps.valueGetter('contactEmail')}
-                    </div>
-                    <div>
-                      <strong>Membership:</strong>{' '}
-                      {membershipTypes.find(
-                        (m) => m.value === formRenderProps.valueGetter('membershipType')
-                      )?.label}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="legal-section">
-                  <Field
-                    name="termsAccepted"
-                    component={Checkbox}
-                    label="I accept the CTN Terms and Conditions *"
-                    validator={(value) => (value ? '' : 'You must accept the terms')}
-                  />
-
-                  <Field
-                    name="gdprConsent"
-                    component={Checkbox}
-                    label="I consent to the processing of my personal data in accordance with GDPR *"
-                    validator={(value) => (value ? '' : 'GDPR consent is required')}
-                  />
-                </div>
-
-                <div className="form-actions">
-                  <Button onClick={handlePrevious} disabled={loading}>
-                    Previous
-                  </Button>
-                  <Button
-                    color="blue"
-                    type="submit"
-                    disabled={
-                      loading ||
-                      !kvkDocument ||
-                      !formRenderProps.valueGetter('termsAccepted') ||
-                      !formRenderProps.valueGetter('gdprConsent')
-                    }
-                  >
-                    {loading ? 'Submitting...' : 'Submit Application'}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </FormElement>
+            <div className="form-actions">
+              <Button onClick={onCancel} disabled={loading} variant="default">
+                Cancel
+              </Button>
+              <Button
+                color="blue"
+                onClick={handleNext}
+                disabled={!isStep1Valid()}
+              >
+                Next: Contact Details
+              </Button>
+            </div>
+          </div>
         )}
-      />
+
+        {/* Step 2: Contact Information */}
+        {currentStep === 2 && (
+          <div className="form-step">
+            <h3>Contact Information</h3>
+            <p>Primary contact person for your organization</p>
+
+            <TextInput
+              {...form.getInputProps('contactName')}
+              label="Full Name *"
+              required
+              mb="md"
+            />
+
+            <TextInput
+              {...form.getInputProps('contactEmail')}
+              label="Email Address *"
+              type="email"
+              required
+              mb="md"
+            />
+
+            <TextInput
+              {...form.getInputProps('contactPhone')}
+              label="Phone Number *"
+              description="Include country code (e.g., +31 20 1234567)"
+              required
+              mb="md"
+            />
+
+            <TextInput
+              {...form.getInputProps('jobTitle')}
+              label="Job Title *"
+              required
+              mb="md"
+            />
+
+            <div className="form-actions">
+              <Button onClick={handlePrevious} disabled={loading} variant="default">
+                Previous
+              </Button>
+              <Button
+                color="blue"
+                onClick={handleNext}
+                disabled={!isStep2Valid()}
+              >
+                Next: Documents
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Documents & Review */}
+        {currentStep === 3 && (
+          <div className="form-step">
+            <h3>Documents & Final Review</h3>
+
+            <div className="document-upload-section">
+              <Label>KvK Extract (Chamber of Commerce Extract) *</Label>
+              <Hint>
+                Upload your official KvK extract. We'll verify your company details automatically.
+                Accepted formats: PDF, PNG, JPG (max 10MB)
+              </Hint>
+              <KvKDocumentUpload
+                onFileSelect={setKvkDocument}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="review-section">
+              <h4>Review Your Information</h4>
+              <div className="review-grid">
+                <div>
+                  <strong>Company:</strong> {form.values.legalName}
+                </div>
+                <div>
+                  <strong>KvK:</strong> {form.values.kvkNumber}
+                </div>
+                <div>
+                  <strong>Contact:</strong> {form.values.contactName}
+                </div>
+                <div>
+                  <strong>Email:</strong> {form.values.contactEmail}
+                </div>
+                <div>
+                  <strong>Membership:</strong>{' '}
+                  {membershipTypes.find((m) => m.value === form.values.membershipType)?.label}
+                </div>
+              </div>
+            </div>
+
+            <div className="legal-section">
+              <Checkbox
+                {...form.getInputProps('termsAccepted', { type: 'checkbox' })}
+                label="I accept the CTN Terms and Conditions *"
+                mb="md"
+              />
+
+              <Checkbox
+                {...form.getInputProps('gdprConsent', { type: 'checkbox' })}
+                label="I consent to the processing of my personal data in accordance with GDPR *"
+                mb="md"
+              />
+            </div>
+
+            <div className="form-actions">
+              <Button onClick={handlePrevious} disabled={loading} variant="default">
+                Previous
+              </Button>
+              <Button
+                color="blue"
+                type="submit"
+                disabled={loading || !isStep3Valid()}
+              >
+                {loading ? 'Submitting...' : 'Submit Application'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </form>
 
       <style>{`
         .registration-form-container {
