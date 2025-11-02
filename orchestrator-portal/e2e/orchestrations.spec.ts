@@ -10,30 +10,30 @@ test.describe('Orchestrations List Page', () => {
     await expect(page.locator('h1, h2').first()).toContainText(/Orchestrations/i);
 
     // Wait for Kendo Grid to load
-    await page.waitForSelector('.k-grid', { timeout: 10000 });
+    await page.waitForSelector('.mantine-DataTable-root', { timeout: 10000 });
 
     // Verify grid is visible
-    const grid = page.locator('.k-grid').first();
+    const grid = page.locator('.mantine-DataTable-root').first();
     await expect(grid).toBeVisible();
   });
 
   test('should display orchestrations data in grid', async ({ authenticatedPage: page }) => {
     // Wait for grid to load with data
-    await page.waitForSelector('.k-grid-table tbody tr', { timeout: 10000 });
+    await page.waitForSelector('.mantine-DataTable-root-table tbody tr', { timeout: 10000 });
 
     // Verify rows exist
-    const rows = page.locator('.k-grid-table tbody tr');
+    const rows = page.locator('.mantine-DataTable-root-table tbody tr');
     const rowCount = await rows.count();
     expect(rowCount).toBeGreaterThan(0);
 
     // Verify columns are present (ID, Container, BOL, Status, etc.)
-    const headers = page.locator('.k-grid-header th');
+    const headers = page.locator('.mantine-DataTable-root-header th');
     const headerCount = await headers.count();
     expect(headerCount).toBeGreaterThanOrEqual(4);
   });
 
   test('should search by Container ID', async ({ authenticatedPage: page }) => {
-    await page.waitForSelector('.k-grid', { timeout: 10000 });
+    await page.waitForSelector('.mantine-DataTable-root', { timeout: 10000 });
 
     // Find search input
     const searchInput = page.locator('input[placeholder*="Search"], input[type="search"]').first();
@@ -43,7 +43,7 @@ test.describe('Orchestrations List Page', () => {
     await page.waitForTimeout(500);
 
     // Verify filtered results
-    const rows = page.locator('.k-grid-table tbody tr');
+    const rows = page.locator('.mantine-DataTable-root-table tbody tr');
     const rowCount = await rows.count();
 
     // Either results are shown or "no records" message
@@ -52,7 +52,7 @@ test.describe('Orchestrations List Page', () => {
   });
 
   test('should search by BOL number', async ({ authenticatedPage: page }) => {
-    await page.waitForSelector('.k-grid', { timeout: 10000 });
+    await page.waitForSelector('.mantine-DataTable-root', { timeout: 10000 });
 
     // Find search input
     const searchInput = page.locator('input[placeholder*="Search"], input[type="search"]').first();
@@ -62,7 +62,7 @@ test.describe('Orchestrations List Page', () => {
     await page.waitForTimeout(500);
 
     // Verify filtered results
-    const rows = page.locator('.k-grid-table tbody tr');
+    const rows = page.locator('.mantine-DataTable-root-table tbody tr');
     const rowCount = await rows.count();
 
     // Either results are shown or "no records" message
@@ -71,10 +71,10 @@ test.describe('Orchestrations List Page', () => {
   });
 
   test('should filter by status', async ({ authenticatedPage: page }) => {
-    await page.waitForSelector('.k-grid', { timeout: 10000 });
+    await page.waitForSelector('.mantine-DataTable-root', { timeout: 10000 });
 
     // Find status filter dropdown
-    const statusFilter = page.locator('select, .k-dropdown').filter({ hasText: /Status|All/i }).first();
+    const statusFilter = page.locator('select, .mantine-Select-root').filter({ hasText: /Status|All/i }).first();
 
     if (await statusFilter.count() > 0) {
       await statusFilter.click();
@@ -88,7 +88,7 @@ test.describe('Orchestrations List Page', () => {
         await page.waitForTimeout(500);
 
         // Verify grid updated
-        const rows = page.locator('.k-grid-table tbody tr');
+        const rows = page.locator('.mantine-DataTable-root-table tbody tr');
         const rowCount = await rows.count();
 
         // Should show filtered results or no records
@@ -99,17 +99,17 @@ test.describe('Orchestrations List Page', () => {
   });
 
   test('should support pagination', async ({ authenticatedPage: page }) => {
-    await page.waitForSelector('.k-grid', { timeout: 10000 });
+    await page.waitForSelector('.mantine-DataTable-root', { timeout: 10000 });
 
     // Check if pager exists
-    const pager = page.locator('.k-pager');
+    const pager = page.locator('.mantine-Pagination-root');
 
     if (await pager.count() > 0) {
       // Verify pager is visible
       await expect(pager).toBeVisible();
 
       // Check page size selector
-      const pageSizeSelector = pager.locator('select, .k-dropdown');
+      const pageSizeSelector = pager.locator('select, .mantine-Select-root');
       if (await pageSizeSelector.count() > 0) {
         await expect(pageSizeSelector.first()).toBeVisible();
       }
@@ -125,10 +125,10 @@ test.describe('Orchestrations List Page', () => {
   });
 
   test('should navigate to detail page on row click', async ({ authenticatedPage: page }) => {
-    await page.waitForSelector('.k-grid-table tbody tr', { timeout: 10000 });
+    await page.waitForSelector('.mantine-DataTable-root-table tbody tr', { timeout: 10000 });
 
     // Click first row
-    const firstRow = page.locator('.k-grid-table tbody tr').first();
+    const firstRow = page.locator('.mantine-DataTable-root-table tbody tr').first();
     await firstRow.click();
 
     // Should navigate to detail page
@@ -136,10 +136,10 @@ test.describe('Orchestrations List Page', () => {
   });
 
   test('should display correct status badges', async ({ authenticatedPage: page }) => {
-    await page.waitForSelector('.k-grid-table tbody tr', { timeout: 10000 });
+    await page.waitForSelector('.mantine-DataTable-root-table tbody tr', { timeout: 10000 });
 
     // Look for status badges/pills
-    const statusBadges = page.locator('.k-grid-table tbody [class*="badge"], [class*="pill"], [class*="chip"]');
+    const statusBadges = page.locator('.mantine-DataTable-root-table tbody [class*="badge"], [class*="pill"], [class*="chip"]');
 
     if (await statusBadges.count() > 0) {
       // Status badges should be visible
@@ -162,10 +162,10 @@ test.describe('Orchestrations List Page', () => {
   });
 
   test('should sort by columns', async ({ authenticatedPage: page }) => {
-    await page.waitForSelector('.k-grid', { timeout: 10000 });
+    await page.waitForSelector('.mantine-DataTable-root', { timeout: 10000 });
 
     // Click first sortable column header
-    const sortableHeader = page.locator('.k-grid-header th[data-field], .k-grid-header th.k-sortable').first();
+    const sortableHeader = page.locator('.mantine-DataTable-root-header th[data-field], .mantine-DataTable-root-header th.k-sortable').first();
 
     if (await sortableHeader.count() > 0) {
       await sortableHeader.click();
@@ -181,7 +181,7 @@ test.describe('Orchestrations List Page', () => {
   });
 
   test('should handle empty search results', async ({ authenticatedPage: page }) => {
-    await page.waitForSelector('.k-grid', { timeout: 10000 });
+    await page.waitForSelector('.mantine-DataTable-root', { timeout: 10000 });
 
     // Search for non-existent data
     const searchInput = page.locator('input[placeholder*="Search"], input[type="search"]').first();
@@ -200,10 +200,10 @@ test.describe('Orchestration Detail Page', () => {
   test('should load orchestration detail page', async ({ authenticatedPage: page }) => {
     // Navigate to orchestrations list first
     await page.goto('/orchestrations');
-    await page.waitForSelector('.k-grid-table tbody tr', { timeout: 10000 });
+    await page.waitForSelector('.mantine-DataTable-root-table tbody tr', { timeout: 10000 });
 
     // Click first row
-    const firstRow = page.locator('.k-grid-table tbody tr').first();
+    const firstRow = page.locator('.mantine-DataTable-root-table tbody tr').first();
     await firstRow.click();
 
     // Wait for detail page to load
@@ -216,8 +216,8 @@ test.describe('Orchestration Detail Page', () => {
   test('should display orchestration route information', async ({ authenticatedPage: page }) => {
     // Navigate via list
     await page.goto('/orchestrations');
-    await page.waitForSelector('.k-grid-table tbody tr', { timeout: 10000 });
-    await page.locator('.k-grid-table tbody tr').first().click();
+    await page.waitForSelector('.mantine-DataTable-root-table tbody tr', { timeout: 10000 });
+    await page.locator('.mantine-DataTable-root-table tbody tr').first().click();
 
     await page.waitForURL(/\/orchestrations\/[a-zA-Z0-9-]+/);
 
@@ -232,8 +232,8 @@ test.describe('Orchestration Detail Page', () => {
 
   test('should display parties information', async ({ authenticatedPage: page }) => {
     await page.goto('/orchestrations');
-    await page.waitForSelector('.k-grid-table tbody tr', { timeout: 10000 });
-    await page.locator('.k-grid-table tbody tr').first().click();
+    await page.waitForSelector('.mantine-DataTable-root-table tbody tr', { timeout: 10000 });
+    await page.locator('.mantine-DataTable-root-table tbody tr').first().click();
 
     await page.waitForURL(/\/orchestrations\/[a-zA-Z0-9-]+/);
 
@@ -243,8 +243,8 @@ test.describe('Orchestration Detail Page', () => {
 
   test('should display cargo information if present', async ({ authenticatedPage: page }) => {
     await page.goto('/orchestrations');
-    await page.waitForSelector('.k-grid-table tbody tr', { timeout: 10000 });
-    await page.locator('.k-grid-table tbody tr').first().click();
+    await page.waitForSelector('.mantine-DataTable-root-table tbody tr', { timeout: 10000 });
+    await page.locator('.mantine-DataTable-root-table tbody tr').first().click();
 
     await page.waitForURL(/\/orchestrations\/[a-zA-Z0-9-]+/);
 
@@ -258,8 +258,8 @@ test.describe('Orchestration Detail Page', () => {
 
   test('should display recent events', async ({ authenticatedPage: page }) => {
     await page.goto('/orchestrations');
-    await page.waitForSelector('.k-grid-table tbody tr', { timeout: 10000 });
-    await page.locator('.k-grid-table tbody tr').first().click();
+    await page.waitForSelector('.mantine-DataTable-root-table tbody tr', { timeout: 10000 });
+    await page.locator('.mantine-DataTable-root-table tbody tr').first().click();
 
     await page.waitForURL(/\/orchestrations\/[a-zA-Z0-9-]+/);
 
@@ -273,8 +273,8 @@ test.describe('Orchestration Detail Page', () => {
 
   test('should navigate back to orchestrations list', async ({ authenticatedPage: page }) => {
     await page.goto('/orchestrations');
-    await page.waitForSelector('.k-grid-table tbody tr', { timeout: 10000 });
-    await page.locator('.k-grid-table tbody tr').first().click();
+    await page.waitForSelector('.mantine-DataTable-root-table tbody tr', { timeout: 10000 });
+    await page.locator('.mantine-DataTable-root-table tbody tr').first().click();
 
     await page.waitForURL(/\/orchestrations\/[a-zA-Z0-9-]+/);
 

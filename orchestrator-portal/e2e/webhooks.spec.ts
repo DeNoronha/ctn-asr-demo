@@ -17,7 +17,7 @@ test.describe('Webhooks Page', () => {
     await page.waitForTimeout(1000);
 
     // Verify webhooks list exists (could be grid or cards)
-    const webhooksList = page.locator('.k-grid, [class*="webhook"], [class*="card"]');
+    const webhooksList = page.locator('.mantine-DataTable-root, [class*="webhook"], [class*="card"]');
     const listCount = await webhooksList.count();
 
     // Either webhooks are shown or empty state
@@ -30,7 +30,7 @@ test.describe('Webhooks Page', () => {
     await page.waitForTimeout(1000);
 
     // Look for webhook items
-    const webhookItem = page.locator('[class*="webhook"], .k-grid-table tbody tr, [class*="card"]').first();
+    const webhookItem = page.locator('[class*="webhook"], .mantine-DataTable-root-table tbody tr, [class*="card"]').first();
 
     if (await webhookItem.count() > 0) {
       // Should display URL (often truncated with https://)
@@ -44,7 +44,7 @@ test.describe('Webhooks Page', () => {
   test('should display webhook event types', async ({ authenticatedPage: page }) => {
     await page.waitForTimeout(1000);
 
-    const webhookItem = page.locator('[class*="webhook"], .k-grid-table tbody tr, [class*="card"]').first();
+    const webhookItem = page.locator('[class*="webhook"], .mantine-DataTable-root-table tbody tr, [class*="card"]').first();
 
     if (await webhookItem.count() > 0) {
       // Should show event types (badges/chips)
@@ -59,7 +59,7 @@ test.describe('Webhooks Page', () => {
   test('should display webhook active status', async ({ authenticatedPage: page }) => {
     await page.waitForTimeout(1000);
 
-    const webhookItem = page.locator('[class*="webhook"], .k-grid-table tbody tr, [class*="card"]').first();
+    const webhookItem = page.locator('[class*="webhook"], .mantine-DataTable-root-table tbody tr, [class*="card"]').first();
 
     if (await webhookItem.count() > 0) {
       // Should show active/inactive status
@@ -74,7 +74,7 @@ test.describe('Webhooks Page', () => {
   test('should have Test button for each webhook', async ({ authenticatedPage: page }) => {
     await page.waitForTimeout(1000);
 
-    const webhookItem = page.locator('[class*="webhook"], .k-grid-table tbody tr, [class*="card"]').first();
+    const webhookItem = page.locator('[class*="webhook"], .mantine-DataTable-root-table tbody tr, [class*="card"]').first();
 
     if (await webhookItem.count() > 0) {
       // Look for Test button
@@ -90,7 +90,7 @@ test.describe('Webhooks Page', () => {
   test('should have Edit button for each webhook', async ({ authenticatedPage: page }) => {
     await page.waitForTimeout(1000);
 
-    const webhookItem = page.locator('[class*="webhook"], .k-grid-table tbody tr, [class*="card"]').first();
+    const webhookItem = page.locator('[class*="webhook"], .mantine-DataTable-root-table tbody tr, [class*="card"]').first();
 
     if (await webhookItem.count() > 0) {
       // Look for Edit button
@@ -106,7 +106,7 @@ test.describe('Webhooks Page', () => {
   test('should have Delete button for each webhook', async ({ authenticatedPage: page }) => {
     await page.waitForTimeout(1000);
 
-    const webhookItem = page.locator('[class*="webhook"], .k-grid-table tbody tr, [class*="card"]').first();
+    const webhookItem = page.locator('[class*="webhook"], .mantine-DataTable-root-table tbody tr, [class*="card"]').first();
 
     if (await webhookItem.count() > 0) {
       // Look for Delete button
@@ -128,7 +128,7 @@ test.describe('Webhooks Page', () => {
       await createButton.click();
 
       // Dialog should open
-      const dialog = page.locator('.k-dialog, .k-window, [role="dialog"]');
+      const dialog = page.locator('.mantine-Modal-root, .k-window, [role="dialog"]');
 
       if (await dialog.count() > 0) {
         await expect(dialog).toBeVisible();
@@ -145,7 +145,7 @@ test.describe('Webhooks Page', () => {
   test('should test webhook functionality', async ({ authenticatedPage: page }) => {
     await page.waitForTimeout(1000);
 
-    const webhookItem = page.locator('[class*="webhook"], .k-grid-table tbody tr, [class*="card"]').first();
+    const webhookItem = page.locator('[class*="webhook"], .mantine-DataTable-root-table tbody tr, [class*="card"]').first();
 
     if (await webhookItem.count() > 0) {
       const testButton = webhookItem.locator('button:has-text("Test"), a:has-text("Test")').first();
@@ -157,7 +157,7 @@ test.describe('Webhooks Page', () => {
         await page.waitForTimeout(2000);
 
         // Should show success or error message
-        const notification = page.locator('.k-notification, [class*="toast"], [class*="alert"]');
+        const notification = page.locator('.mantine-Notification-root, [class*="toast"], [class*="alert"]');
         const notificationCount = await notification.count();
 
         // Notification may appear
@@ -170,7 +170,7 @@ test.describe('Webhooks Page', () => {
     await page.waitForTimeout(1000);
 
     // Look for status filter
-    const statusFilter = page.locator('select, .k-dropdown').filter({ hasText: /Status|Filter|All/i }).first();
+    const statusFilter = page.locator('select, .mantine-Select-root').filter({ hasText: /Status|Filter|All/i }).first();
 
     if (await statusFilter.count() > 0) {
       await statusFilter.click();
@@ -185,7 +185,7 @@ test.describe('Webhooks Page', () => {
         await page.waitForTimeout(500);
 
         // Webhooks should filter
-        const webhooks = page.locator('[class*="webhook"], .k-grid-table tbody tr');
+        const webhooks = page.locator('[class*="webhook"], .mantine-DataTable-root-table tbody tr');
         const webhookCount = await webhooks.count();
 
         // Either filtered results or empty state
@@ -225,7 +225,7 @@ test.describe('Webhooks Page', () => {
   test('should handle empty webhooks state', async ({ authenticatedPage: page }) => {
     await page.waitForTimeout(1000);
 
-    const webhooks = page.locator('[class*="webhook"], .k-grid-table tbody tr');
+    const webhooks = page.locator('[class*="webhook"], .mantine-DataTable-root-table tbody tr');
     const webhookCount = await webhooks.count();
 
     if (webhookCount === 0) {

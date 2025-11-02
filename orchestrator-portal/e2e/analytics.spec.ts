@@ -118,7 +118,7 @@ test.describe('Analytics Page', () => {
     await page.waitForSelector('div[class*="k-chart"]', { timeout: 10000 });
 
     // Look for filter dropdown
-    const filterDropdown = page.locator('select, .k-dropdown').first();
+    const filterDropdown = page.locator('select, .mantine-Select-root').first();
 
     if (await filterDropdown.count() > 0) {
       // Get initial chart state
@@ -145,7 +145,7 @@ test.describe('Analytics Page', () => {
     await page.waitForSelector('div[class*="k-chart"]', { timeout: 10000 });
 
     // Look for chart legend
-    const legend = page.locator('.k-chart-legend, [class*="legend"]');
+    const legend = page.locator('[role="img"]-legend, [class*="legend"]');
 
     if (await legend.count() > 0) {
       await expect(legend.first()).toBeVisible();

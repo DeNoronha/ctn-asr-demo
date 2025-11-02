@@ -18,7 +18,7 @@ test.describe('Events Page', () => {
     await page.waitForTimeout(1000);
 
     // Verify events list exists
-    const eventsList = page.locator('[class*="event"], [class*="activity"], ul li, .k-grid-table tbody tr');
+    const eventsList = page.locator('[class*="event"], [class*="activity"], ul li, .mantine-DataTable-root-table tbody tr');
     const eventsCount = await eventsList.count();
 
     // Either events are shown or empty state
@@ -64,7 +64,7 @@ test.describe('Events Page', () => {
     await page.waitForTimeout(1000);
 
     // Look for event type filter
-    const filterDropdown = page.locator('select, .k-dropdown').filter({ hasText: /Type|Filter|All Events/i }).first();
+    const filterDropdown = page.locator('select, .mantine-Select-root').filter({ hasText: /Type|Filter|All Events/i }).first();
 
     if (await filterDropdown.count() > 0) {
       await filterDropdown.click();
@@ -122,7 +122,7 @@ test.describe('Events Page', () => {
     await page.waitForTimeout(1000);
 
     // Check if pagination exists
-    const pager = page.locator('.k-pager, [class*="pagination"]');
+    const pager = page.locator('.mantine-Pagination-root, [class*="pagination"]');
 
     if (await pager.count() > 0) {
       await expect(pager).toBeVisible();
