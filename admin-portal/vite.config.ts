@@ -70,8 +70,8 @@ export default defineConfig({
           // Authentication libraries
           'auth': ['@azure/msal-browser', '@azure/msal-react'],
 
-          // i18n libraries
-          'i18n': ['i18next', 'react-i18next', 'i18next-http-backend'],
+          // i18n libraries (embedded translations, no HttpBackend - see CLAUDE.md lesson #11)
+          'i18n': ['i18next', 'react-i18next'],
 
           // Excel/export libraries (large, rarely used)
           'excel-vendor': ['exceljs'],
