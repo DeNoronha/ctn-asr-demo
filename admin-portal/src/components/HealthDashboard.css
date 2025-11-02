@@ -329,17 +329,3 @@
   }
 }
 
-/* Kendo UI Card Overrides */
-.health-dashboard .k-card {
-  border-radius: 8px;
-  background-color: white;
-}
-
-.health-dashboard .k-card-header {
-  padding: 16px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.health-dashboard .k-card-body {
-  padding: 16px;
-}

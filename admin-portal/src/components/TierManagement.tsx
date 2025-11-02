@@ -9,12 +9,12 @@ import React, { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { apiV2 } from '../services/apiV2';
 
-// Simple replacements for Kendo label components
+// Form label components
 const Label: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <label id={id} className="k-label">{children}</label>
+  <label id={id} className="form-label">{children}</label>
 );
 const Hint: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <div id={id} className="k-form-hint" style={{ color: '#656565', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
+  <div id={id} className="form-hint" style={{ color: '#656565', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
 );
 
 interface TierManagementProps {
@@ -126,7 +126,7 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
   if (loading) {
     return (
       <div style={{ padding: '24px', textAlign: 'center' }}>
-        <div className="k-loader k-loader-md" />
+        <div className="loader" />
         <p>Loading tier information...</p>
       </div>
     );

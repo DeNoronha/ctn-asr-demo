@@ -2,21 +2,21 @@
   padding: 20px;
 }
 
-.contact-form .k-form-fieldset {
+.contact-form .form-fieldset {
   margin-bottom: 20px;
   padding: 16px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
 }
 
-.contact-form .k-form-fieldset legend {
+.contact-form .form-fieldset legend {
   font-size: 1rem;
   font-weight: 600;
   color: #374151;
   padding: 0 8px;
 }
 
-.contact-form .k-form-field {
+.contact-form .form-field {
   margin-bottom: 16px;
 }
 
@@ -26,7 +26,7 @@
   gap: 16px;
 }
 
-.k-form-buttons {
+.form-buttons {
   display: flex;
   gap: 12px;
   justify-content: flex-end;

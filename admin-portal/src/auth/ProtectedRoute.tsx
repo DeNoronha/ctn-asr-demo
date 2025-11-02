@@ -28,7 +28,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="k-loading k-loading-lg" />
+          <div className="loading loading-lg" />
           <p className="mt-4">Verifying authentication...</p>
         </div>
       </div>

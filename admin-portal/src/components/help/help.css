@@ -8,13 +8,13 @@
   vertical-align: middle;
 }
 
-.help-icon .k-icon {
+.help-icon .icon {
   color: #0078d4;
   font-size: 16px;
   transition: color 0.2s ease;
 }
 
-.help-icon:hover .k-icon {
+.help-icon:hover .icon {
   color: #005a9e;
 }
 
@@ -83,8 +83,8 @@
   font-size: 14px;
 }
 
-/* Kendo Tooltip Override */
-.k-tooltip {
+/* Tooltip Override */
+.tooltip {
   max-width: 300px;
   padding: 12px;
   background-color: #323130;
@@ -95,28 +95,28 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.k-tooltip .k-callout {
+.tooltip .callout {
   color: #323130;
 }
 
 /* Accessibility - High contrast mode */
 @media (prefers-contrast: high) {
-  .help-icon .k-icon {
+  .help-icon .icon {
     color: #000;
   }
 
-  .help-icon:hover .k-icon {
+  .help-icon:hover .icon {
     color: #0078d4;
   }
 
-  .k-tooltip {
+  .tooltip {
     border: 2px solid white;
   }
 }
 
 /* Accessibility - Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .help-icon .k-icon {
+  .help-icon .icon {
     transition: none;
   }
 }

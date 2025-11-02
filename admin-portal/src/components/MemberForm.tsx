@@ -2,15 +2,15 @@ import { Button, TextInput, Select } from '@mantine/core';
 // MemberForm.tsx - Enhanced form with validation
 import React, { useEffect, useState } from 'react';
 
-// Simple replacements for Kendo label components
+// Form label components
 const Label: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <label id={id} className="k-label">{children}</label>
+  <label id={id} className="form-label">{children}</label>
 );
 const Error: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <div id={id} className="k-form-error" style={{ color: '#f31700', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
+  <div id={id} className="form-error" style={{ color: '#f31700', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
 );
 const Hint: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <div id={id} className="k-form-hint" style={{ color: '#656565', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
+  <div id={id} className="form-hint" style={{ color: '#656565', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
 );
 import { useNotification } from '../contexts/NotificationContext';
 import { logger } from '../utils/logger';
@@ -238,7 +238,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               placeholder="org:company-name"
               required
               error={touched.org_id && errors.org_id}
-              className={touched.org_id && errors.org_id ? 'k-invalid' : ''}
+              className={touched.org_id && errors.org_id ? 'invalid' : ''}
               aria-invalid={touched.org_id && Boolean(errors.org_id)}
               aria-describedby={`org-id-hint${touched.org_id && errors.org_id ? ' org-id-error' : ''}`}
             />
@@ -260,7 +260,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               placeholder="Company Legal Name BV"
               required
               error={touched.legal_name && errors.legal_name}
-              className={touched.legal_name && errors.legal_name ? 'k-invalid' : ''}
+              className={touched.legal_name && errors.legal_name ? 'invalid' : ''}
               aria-invalid={touched.legal_name && Boolean(errors.legal_name)}
               aria-describedby={`legal-name-hint${touched.legal_name && errors.legal_name ? ' legal-name-error' : ''}`}
             />
@@ -282,7 +282,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               placeholder="company.com"
               required
               error={touched.domain && errors.domain}
-              className={touched.domain && errors.domain ? 'k-invalid' : ''}
+              className={touched.domain && errors.domain ? 'invalid' : ''}
               aria-invalid={touched.domain && Boolean(errors.domain)}
               aria-describedby={`domain-hint${touched.domain && errors.domain ? ' domain-error' : ''}`}
             />
@@ -351,7 +351,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               maxLength={20}
               placeholder="20 character LEI code"
               error={touched.lei && errors.lei ? errors.lei : undefined}
-              className={touched.lei && errors.lei ? 'k-invalid' : ''}
+              className={touched.lei && errors.lei ? 'invalid' : ''}
               aria-invalid={touched.lei && Boolean(errors.lei)}
               aria-describedby={`lei-hint${touched.lei && errors.lei ? ' lei-error' : ''}`}
             />
@@ -373,7 +373,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               maxLength={8}
               placeholder="12345678"
               error={touched.kvk && errors.kvk ? errors.kvk : undefined}
-              className={touched.kvk && errors.kvk ? 'k-invalid' : ''}
+              className={touched.kvk && errors.kvk ? 'invalid' : ''}
               aria-invalid={touched.kvk && Boolean(errors.kvk)}
               aria-describedby={`kvk-hint${touched.kvk && errors.kvk ? ' kvk-error' : ''}`}
             />

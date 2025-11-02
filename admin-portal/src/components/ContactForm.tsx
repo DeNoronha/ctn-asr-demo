@@ -124,7 +124,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
 
   return (
     <form onSubmit={form.onSubmit(handleSubmit)} className="contact-form">
-      <fieldset className="k-form-fieldset">
+      <fieldset className="form-fieldset">
         <legend>Contact Type</legend>
 
         <Select
@@ -153,7 +153,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
         />
       </fieldset>
 
-      <fieldset className="k-form-fieldset">
+      <fieldset className="form-fieldset">
         <legend>Personal Information</legend>
 
         <div className="form-row-group">
@@ -250,7 +250,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
         />
       </ProgressiveSection>
 
-      <div className="k-form-buttons">
+      <div className="form-buttons">
         <Button type="submit" color="blue">
           {contact ? 'Update Contact' : 'Add Contact'}
         </Button>

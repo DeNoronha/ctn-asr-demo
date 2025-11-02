@@ -24,7 +24,7 @@
   background: #f0f0f0 !important;
 }
 
-.progressive-toggle .k-icon {
+.progressive-toggle .icon {
   margin-right: 8px;
   transition: transform 0.2s ease;
 }
@@ -84,17 +84,17 @@
   border-top: 1px solid #e1e1e1;
 }
 
-/* Stepper customization to match Kendo UI theme */
-.k-stepper {
+/* Stepper customization */
+.stepper {
   margin-bottom: 24px;
 }
 
-.k-step-current .k-step-indicator {
+.step-current .step-indicator {
   background-color: #ff6358;
   border-color: #ff6358;
 }
 
-.k-step-done .k-step-indicator {
+.step-done .step-indicator {
   background-color: #059669;
   border-color: #059669;
 }

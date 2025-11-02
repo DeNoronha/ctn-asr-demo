@@ -34,20 +34,20 @@
   gap: 6px;
 }
 
-.form-field .k-label {
+.form-field .form-label {
   font-weight: 500;
   color: #424242;
   font-size: 14px;
 }
 
 /* Required field indicator - WCAG AA compliant */
-.form-field .k-label::after {
+.form-field .form-label::after {
   content: '';
 }
 
 /* Style for labels with asterisk (required fields) */
 .form-field label:has-text("*")::after,
-.k-label:contains("*")::after {
+.form-label:contains("*")::after {
   content: ' *';
   color: #dc2626; /* Red color for required indicator */
   font-weight: 700;
@@ -57,7 +57,7 @@
 }
 
 /* Alternative: Add required class to form fields */
-.form-field.required .k-label::after {
+.form-field.required .form-label::after {
   content: ' *';
   color: #dc2626; /* WCAG AA compliant: 5.48:1 contrast on white */
   font-weight: 700;
@@ -72,27 +72,27 @@
 }
 
 /* Highlight required fields when empty and touched */
-.form-field.required input.k-invalid {
+.form-field.required input.invalid {
   border-color: #dc2626;
   border-width: 2px;
   background-color: #fef2f2;
 }
 
-.form-field .k-input {
+.form-field .input {
   width: 100%;
 }
 
-.form-field .k-invalid {
+.form-field .invalid {
   border-color: #f44336;
 }
 
-.form-field .k-hint {
+.form-field .hint {
   color: #757575;
   font-size: 12px;
 }
 
-.form-field .k-form-error,
-.form-field .k-error {
+.form-field .form-error,
+.form-field .error {
   color: #f44336;
   font-size: 12px;
   font-style: normal;
@@ -120,7 +120,7 @@
 }
 
 /* Focus management */
-.form-field .k-input:focus {
+.form-field .input:focus {
   outline: none;
   border-color: #ff6358;
   box-shadow: 0 0 0 2px rgba(255, 99, 88, 0.2);

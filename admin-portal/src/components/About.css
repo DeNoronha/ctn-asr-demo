@@ -35,7 +35,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.version-card .k-card-header {
+.version-card .card-header {
   background: linear-gradient(135deg, #003366 0%, #005a9c 100%);
   color: white;
   padding: 1.25rem;
@@ -43,7 +43,7 @@
   overflow: hidden;
 }
 
-.version-card .k-card-title {
+.version-card .card-title {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -55,7 +55,7 @@
   text-overflow: ellipsis;
 }
 
-.version-card .k-card-body {
+.version-card .card-body {
   padding: 1.5rem;
 }
 
@@ -91,7 +91,7 @@
   font-size: 0.95rem;
 }
 
-.version-item .k-badge {
+.version-item .badge {
   margin-left: 0.5rem;
 }
 

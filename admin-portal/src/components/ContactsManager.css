@@ -37,31 +37,25 @@
   overflow: hidden;
 }
 
-/* Fix row height - ensure consistent compact rows across Kendo Grid versions */
-/* Support both legacy .k-grid-table and new .k-table DOM structures */
-.contacts-grid .k-grid-table,
-.contacts-grid .k-table {
+/* Fix row height - ensure consistent compact rows */
+.contacts-grid table {
   table-layout: fixed !important;
 }
 
 /* Rows */
-.contacts-grid .k-grid-table tr,
-.contacts-grid .k-table-row,
-.contacts-grid .k-master-row {
+.contacts-grid tr {
   height: 36px !important;
   max-height: 36px !important;
 }
 
 /* Body rows */
-.contacts-grid .k-grid-table tbody tr,
-.contacts-grid .k-table-tbody .k-table-row {
+.contacts-grid tbody tr {
   height: 36px !important;
   max-height: 36px !important;
 }
 
 /* Cells */
-.contacts-grid .k-grid-table td,
-.contacts-grid .k-table-td {
+.contacts-grid td {
   padding: 6px 10px !important;
   vertical-align: middle !important;
   line-height: 1.3 !important;
@@ -73,8 +67,7 @@
 }
 
 /* Headers */
-.contacts-grid .k-grid-table th,
-.contacts-grid .k-table-th {
+.contacts-grid th {
   padding: 10px !important;
   vertical-align: middle !important;
   height: 36px !important;
@@ -105,7 +98,6 @@
   white-space: nowrap !important;
 }
 
-.action-buttons .k-button,
 .action-buttons button {
   color: #6b7280 !important;
   transition: color 0.2s !important;

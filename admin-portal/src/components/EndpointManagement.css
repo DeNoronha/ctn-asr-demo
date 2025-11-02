@@ -28,7 +28,7 @@
   font-size: 14px;
 }
 
-.endpoint-management .k-grid {
+.endpoint-management .grid {
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -67,9 +67,9 @@
   color: #333;
 }
 
-.form-field .k-input,
-.form-field .k-textarea,
-.form-field .k-dropdown {
+.form-field .input,
+.form-field .textarea,
+.form-field .dropdown {
   width: 100%;
 }
 

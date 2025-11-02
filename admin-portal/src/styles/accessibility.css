@@ -79,13 +79,13 @@
    ======================== */
 
 /* Secondary button with proper contrast */
-.k-button-secondary-a11y {
+.button-secondary-a11y {
   background-color: var(--color-info-dark);
   border-color: var(--color-info-dark);
   color: white;
 }
 
-.k-button-secondary-a11y:hover {
+.button-secondary-a11y:hover {
   background-color: #1e3a8a;           /* Even darker on hover: 8.33:1 */
   border-color: #1e3a8a;
 }
@@ -167,16 +167,16 @@ a:focus {
 /* This improves usability on touch devices and for users with motor impairments */
 
 /* Grid action buttons - minimum 44px height */
-.k-grid td button,
-.k-grid td .k-button {
+.grid td button,
+.grid td .button {
   min-width: 44px;
   min-height: 44px;
   padding: 12px;
 }
 
 /* Icon-only buttons */
-.k-button.k-button-icon,
-.k-button[fillMode="flat"] {
+.button.button-icon,
+.button[fillMode="flat"] {
   min-width: 44px;
   min-height: 44px;
   display: inline-flex;
@@ -185,8 +185,8 @@ a:focus {
 }
 
 /* Small buttons adjusted for touch */
-.k-button.k-button-sm,
-.k-button-small {
+.button.button-sm,
+.button-small {
   min-width: 44px;
   min-height: 44px;
   padding: 10px 16px;
@@ -211,26 +211,26 @@ input[type="radio"] {
 }
 
 /* Grid column headers (sortable) */
-.k-grid-header th {
+.grid-header th {
   min-height: 44px;
   padding: 12px;
 }
 
 /* Tab strip tabs */
-.k-tabstrip-items .k-item {
+.tabstrip-items .item {
   min-height: 44px;
   padding: 12px 20px;
 }
 
 /* Dropdown triggers */
-.k-dropdown-wrap,
-.k-picker-wrap {
+.dropdown-wrap,
+.picker-wrap {
   min-height: 44px;
 }
 
 /* Menu items */
-.k-menu-item,
-.k-menu-link {
+.menu-item,
+.menu-link {
   min-height: 44px;
   padding: 12px 16px;
 }
@@ -275,7 +275,7 @@ input[type="radio"] {
 }
 
 button:focus-visible,
-.k-button:focus-visible {
+.button:focus-visible {
   outline: 3px solid var(--color-warning-dark);
   outline-offset: 2px;
 }

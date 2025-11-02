@@ -20,7 +20,7 @@
   font-weight: 600;
 }
 
-.identifiers-manager .k-grid {
+.identifiers-manager .grid {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   overflow: hidden;
@@ -112,7 +112,7 @@
 }
 
 .form-field input,
-.form-field .k-dropdown {
+.form-field .dropdown {
   width: 100%;
 }
 
@@ -159,12 +159,12 @@
   gap: 4px;
 }
 
-.input-error .k-input {
+.input-error .input {
   border-color: #ef4444 !important;
   background-color: #fef2f2;
 }
 
-.input-success .k-input {
+.input-success .input {
   border-color: #10b981 !important;
   background-color: #f0fdf4;
 }
@@ -174,7 +174,7 @@
 }
 
 /* Ensure Dialog action buttons are always visible */
-.identifiers-manager .k-dialog-actions {
+.identifiers-manager .dialog-actions {
   display: flex !important;
   justify-content: flex-end;
   gap: 8px;
@@ -183,7 +183,7 @@
   background-color: #f9fafb;
 }
 
-.identifiers-manager .k-dialog-buttongroup {
+.identifiers-manager .dialog-buttongroup {
   display: flex;
   gap: 8px;
 }

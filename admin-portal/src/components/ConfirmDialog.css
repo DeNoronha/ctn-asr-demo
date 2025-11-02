@@ -20,17 +20,17 @@
 }
 
 /* Error theme button styling */
-.k-button-error {
+.button-error {
   background-color: #ef4444;
   border-color: #ef4444;
 }
 
-.k-button-error:hover {
+.button-error:hover {
   background-color: #dc2626;
   border-color: #dc2626;
 }
 
-.k-button-error:active {
+.button-error:active {
   background-color: #b91c1c;
   border-color: #b91c1c;
 }

@@ -317,33 +317,3 @@ body {
   }
 }
 
-/* Kendo UI Overrides - CTN Brand Colors */
-.k-button {
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.k-button-primary {
-  background-color: var(--ctn-orange);
-  border-color: var(--ctn-orange);
-}
-
-.k-button-primary:hover {
-  background-color: #e07b00;
-  border-color: #e07b00;
-}
-
-.k-button-secondary {
-  background-color: var(--ctn-light-blue);
-  border-color: var(--ctn-light-blue);
-}
-
-.k-button-secondary:hover {
-  background-color: #0092ca;
-  border-color: #0092ca;
-}
-
-/* Hide Kendo license banner */
-.k-license-banner {
-  display: none !important;
-}

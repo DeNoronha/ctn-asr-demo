@@ -52,14 +52,14 @@
 }
 
 /* Grid containers with better width management */
-.tab-content .k-grid {
+.tab-content .grid {
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Sticky actions column for better UX */
-.tab-content .k-grid td:last-child,
-.tab-content .k-grid th:last-child {
+.tab-content .grid td:last-child,
+.tab-content .grid th:last-child {
   position: sticky;
   right: 0;
   background-color: white;
@@ -68,7 +68,7 @@
 }
 
 /* Header row styling */
-.tab-content .k-grid th:last-child {
+.tab-content .grid th:last-child {
   background-color: #f8fafc;
 }
 
@@ -82,7 +82,7 @@
 }
 
 /* Better grid scrolling */
-.tab-content .k-grid .k-grid-content {
+.tab-content .grid .grid-content {
   overflow-x: auto;
 }
 
@@ -274,7 +274,7 @@
   }
 
   /* Allow horizontal scroll on smaller screens */
-  .tab-content .k-grid {
+  .tab-content .grid {
     width: 100%;
   }
 }
@@ -304,13 +304,13 @@
   }
 
   /* Adjust grid height for mobile */
-  .tab-content .k-grid {
+  .tab-content .grid {
     font-size: 13px;
   }
 
   /* Remove sticky positioning on mobile for better scroll */
-  .tab-content .k-grid td:last-child,
-  .tab-content .k-grid th:last-child {
+  .tab-content .grid td:last-child,
+  .tab-content .grid th:last-child {
     position: relative;
     box-shadow: none;
   }

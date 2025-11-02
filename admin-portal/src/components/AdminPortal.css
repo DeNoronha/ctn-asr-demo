@@ -220,9 +220,9 @@
   .admin-sidebar,
   .menu-button,
   .header-right,
-  .k-button,
+  .button,
   .actions-cell,
-  .k-grid-toolbar {
+  .grid-toolbar {
     display: none !important;
   }
 
@@ -248,17 +248,17 @@
   }
 
   /* Optimize grids for printing */
-  .k-grid {
+  .grid {
     border: 1px solid #000 !important;
   }
 
-  .k-grid th {
+  .grid th {
     background: #f0f0f0 !important;
     color: #000 !important;
     border: 1px solid #000 !important;
   }
 
-  .k-grid td {
+  .grid td {
     border: 1px solid #000 !important;
     color: #000 !important;
   }
@@ -284,7 +284,7 @@
     page-break-after: avoid;
   }
 
-  .k-grid {
+  .grid {
     page-break-inside: avoid;
   }
 

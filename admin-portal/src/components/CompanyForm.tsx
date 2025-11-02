@@ -125,7 +125,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
 
   return (
     <form onSubmit={form.onSubmit(handleSubmit)} className="company-form">
-      <fieldset className="k-form-fieldset">
+      <fieldset className="form-fieldset">
         <legend>Company Information</legend>
 
         <TextInput
@@ -150,7 +150,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
         />
       </fieldset>
 
-      <fieldset className="k-form-fieldset">
+      <fieldset className="form-fieldset">
         <legend>Address</legend>
 
         <TextInput
@@ -196,7 +196,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
         </div>
       </fieldset>
 
-          <fieldset className="k-form-fieldset">
+          <fieldset className="form-fieldset">
             <legend>Legal Identifiers</legend>
 
             {identifiers.length > 0 && (
@@ -284,7 +284,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
             </div>
           </fieldset>
 
-      <div className="k-form-buttons">
+      <div className="form-buttons">
         <Button type="submit" color="blue">
           Save Changes
         </Button>
