@@ -5,15 +5,7 @@ import { logger } from '../../utils/logger';
  */
 
 import { Button } from '@mantine/core';
-
-import {
-  MantineReactTable,
-  type MRT_ColumnDef,
-  type MRT_PaginationState,
-  type MRT_SortingState,
-  type MRT_ColumnFiltersState,
-  useMantineReactTable,
-} from 'mantine-react-table';
+import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import { Edit2, Shield, Trash2, UserPlus } from '../icons';
 import type React from 'react';
 import { useEffect, useState, useMemo } from 'react';
@@ -168,30 +160,40 @@ const UserManagement: React.FC = () => {
     await loadUsers();
   };
 
-  // Column definitions
-  const columns = useMemo<MRT_ColumnDef<User>[]>(
-    () => [
+  // mantine-datatable column definitions
+  const { effectiveColumns } = useDataTableColumns<User>({
+    key: 'user-management-grid',
+    columns: [
       {
-        accessorKey: 'name',
-        header: 'Name',
-        size: 200,
+        accessor: 'name',
+        title: 'Name',
+        width: 200,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'email',
-        header: 'Email',
-        size: 250,
+        accessor: 'email',
+        title: 'Email',
+        width: 250,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'primaryRole',
-        header: 'Role',
-        size: 180,
-        Cell: ({ row }) => {
+        accessor: 'primaryRole',
+        title: 'Role',
+        width: 180,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => {
           const roleColors: Record<UserRole, string> = {
             [UserRole.SYSTEM_ADMIN]: 'role-system-admin',
             [UserRole.ASSOCIATION_ADMIN]: 'role-association-admin',
             [UserRole.MEMBER]: 'role-member',
           };
-          const role = row.original.primaryRole;
+          const role = record.primaryRole;
           return (
             <div>
               <span className={`role-badge ${roleColors[role]}`}>{role}</span>
@@ -200,11 +202,14 @@ const UserManagement: React.FC = () => {
         },
       },
       {
-        accessorKey: 'enabled',
-        header: 'Status',
-        size: 120,
-        Cell: ({ row }) => {
-          const enabled = row.original.enabled;
+        accessor: 'enabled',
+        title: 'Status',
+        width: 120,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => {
+          const enabled = record.enabled;
           return (
             <div>
               <span className={`status-badge status-${enabled ? 'active' : 'disabled'}`}>
@@ -215,39 +220,39 @@ const UserManagement: React.FC = () => {
         },
       },
       {
-        accessorKey: 'lastLogin',
-        header: 'Last Login',
-        size: 180,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<Date | undefined>();
-          if (!value) return <div>—</div>;
-          return <div>{new Date(value).toLocaleString('en-GB')}</div>;
+        accessor: 'lastLogin',
+        title: 'Last Login',
+        width: 180,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => {
+          if (!record.lastLogin) return <div>—</div>;
+          return <div>{new Date(record.lastLogin).toLocaleString('en-GB')}</div>;
         },
       },
       {
-        accessorKey: 'createdAt',
-        header: 'Created',
-        size: 150,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<Date>();
-          return <div>{new Date(value).toLocaleDateString('en-GB')}</div>;
-        },
+        accessor: 'createdAt',
+        title: 'Created',
+        width: 150,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{new Date(record.createdAt).toLocaleDateString('en-GB')}</div>,
       },
       {
-        id: 'actions',
-        header: 'Actions',
-        size: 120,
-        enableSorting: false,
-        enableColumnFilter: false,
-        Cell: ({ row }) => {
-          const user = row.original;
-          const isCurrentUser = user.id === currentUser?.account.localAccountId;
+        accessor: 'actions' as any,
+        title: 'Actions',
+        width: 120,
+        toggleable: false,
+        render: (record) => {
+          const isCurrentUser = record.id === currentUser?.account.localAccountId;
           return (
             <div className="action-buttons">
               <Button
                 variant="subtle"
                 size="sm"
-                onClick={() => handleEditUser(user)}
+                onClick={() => handleEditUser(record)}
                 title="Edit user"
               >
                 <Edit2 size={16} />
@@ -257,8 +262,8 @@ const UserManagement: React.FC = () => {
                   variant="subtle"
                   size="sm"
                   color="red"
-                  onClick={() => handleToggleUserStatus(user.id, !user.enabled)}
-                  title={user.enabled ? 'Disable user' : 'Enable user'}
+                  onClick={() => handleToggleUserStatus(record.id, !record.enabled)}
+                  title={record.enabled ? 'Disable user' : 'Enable user'}
                 >
                   <Trash2 size={16} />
                 </Button>
@@ -268,49 +273,6 @@ const UserManagement: React.FC = () => {
         },
       },
     ],
-    [currentUser]
-  );
-
-  // Mantine React Table instance with standard features
-  const table = useMantineReactTable({
-    columns,
-    data: users,
-
-    // Row Selection - disabled for user management (actions via buttons)
-    enableRowSelection: false,
-
-    // Column Features
-    enableColumnResizing: true,
-    columnResizeMode: 'onChange', // Shows resize preview while dragging
-    enableColumnOrdering: true,
-    enableHiding: true,
-    enableColumnFilters: true,
-
-    // Sorting & Filtering
-    enableSorting: true,
-    enableGlobalFilter: true,
-    enableFilters: true,
-
-    // Pagination
-    enablePagination: true,
-
-    // Initial state
-    initialState: {
-      sorting: [{ id: 'createdAt', desc: true }],
-      pagination: { pageIndex: 0, pageSize: 20 },
-    },
-
-    // Table styling
-    mantineTableProps: {
-      striped: true,
-      withColumnBorders: true,
-      withTableBorder: true,
-    },
-
-    // Toolbar positioning
-    positionGlobalFilter: 'left',
-    positionToolbarAlertBanner: 'bottom',
-    positionActionsColumn: 'last',
   });
 
   return (
@@ -358,7 +320,15 @@ const UserManagement: React.FC = () => {
         {loading ? (
           <LoadingSpinner size="large" message="Loading users..." />
         ) : (
-          <MantineReactTable table={table} />
+          <DataTable
+            records={users}
+            columns={effectiveColumns}
+            storeColumnsKey="user-management-grid"
+            withTableBorder
+            withColumnBorders
+            striped
+            highlightOnHover
+          />
         )}
 
         {showInviteDialog && (

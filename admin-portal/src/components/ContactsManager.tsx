@@ -1,8 +1,8 @@
 import { Button, Modal } from '@mantine/core';
-import { MantineReactTable, type MRT_ColumnDef, useMantineReactTable } from 'mantine-react-table';
+import { DataTable, useDataTableColumns } from 'mantine-datatable';
 import { AlertTriangle, Pencil, Plus, Trash2, Users } from './icons';
 import type React from 'react';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import type { LegalEntityContact } from '../services/api';
 import { safeArray, safeLength } from '../utils/safeArray';
 import { sanitizeText } from '../utils/sanitize';
@@ -71,23 +71,27 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
     await onContactDelete(contactToDelete.legal_entity_contact_id);
   };
 
-  // Mantine React Table column definitions
-  const columns = useMemo<MRT_ColumnDef<LegalEntityContact>[]>(() => {
-    const contactTypeTooltips: Record<string, string> = {
-      Primary: 'Primary point of contact for this organization',
-      Technical: 'Technical contact for system integration and API issues',
-      Billing: 'Billing and invoicing contact',
-      Support: 'Customer support and service desk contact',
-      General: 'General contact for miscellaneous inquiries'
-    };
+  // mantine-datatable column definitions
+  const contactTypeTooltips: Record<string, string> = {
+    Primary: 'Primary point of contact for this organization',
+    Technical: 'Technical contact for system integration and API issues',
+    Billing: 'Billing and invoicing contact',
+    Support: 'Customer support and service desk contact',
+    General: 'General contact for miscellaneous inquiries'
+  };
 
-    return [
+  const { effectiveColumns } = useDataTableColumns<LegalEntityContact>({
+    key: 'contacts-grid',
+    columns: [
       {
-        accessorKey: 'contact_type',
-        header: 'Type',
-        size: 140,
-        Cell: ({ row }) => {
-          const type = row.original.contact_type || 'General';
+        accessor: 'contact_type',
+        title: 'Type',
+        width: 140,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (contact) => {
+          const type = contact.contact_type || 'General';
           return (
             <div>
               <span
@@ -99,7 +103,7 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
               >
                 {type}
               </span>
-              {row.original.is_primary && (
+              {contact.is_primary && (
                 <span className="primary-indicator" title="Primary Contact" aria-label="Primary contact">
                   ★
                 </span>
@@ -109,57 +113,61 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
         },
       },
       {
-        accessorKey: 'full_name',
-        header: 'Name',
-        size: 180,
-        minSize: 120,
-        // SEC-007: Sanitize user-generated text fields in grid
-        Cell: ({ cell }) => {
-          const raw = cell.getValue<string>();
-          // Strip any line breaks or <br> that could increase row height
-          const singleLine = sanitizeText(raw || '').replace(/\s+/g, ' ').trim();
+        accessor: 'full_name',
+        title: 'Name',
+        width: 180,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (contact) => {
+          const singleLine = sanitizeText(contact.full_name || '').replace(/\s+/g, ' ').trim();
           return <div>{singleLine}</div>;
         },
       },
       {
-        accessorKey: 'email',
-        header: 'Email',
-        size: 260,
-        minSize: 200,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          const singleLine = sanitizeText(String(value || '')).replace(/\s+/g, ' ').trim();
+        accessor: 'email',
+        title: 'Email',
+        width: 260,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (contact) => {
+          const singleLine = sanitizeText(String(contact.email || '')).replace(/\s+/g, ' ').trim();
           return <div>{singleLine}</div>;
         },
       },
       {
-        accessorKey: 'phone',
-        header: 'Phone',
-        size: 140,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          const singleLine = sanitizeText(String(value || '')).replace(/\s+/g, ' ').trim();
+        accessor: 'phone',
+        title: 'Phone',
+        width: 140,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (contact) => {
+          const singleLine = sanitizeText(String(contact.phone || '')).replace(/\s+/g, ' ').trim();
           return <div>{singleLine}</div>;
         },
       },
       {
-        accessorKey: 'job_title',
-        header: 'Job Title',
-        size: 180,
-        minSize: 120,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          const singleLine = sanitizeText(String(value || '')).replace(/\s+/g, ' ').trim();
+        accessor: 'job_title',
+        title: 'Job Title',
+        width: 180,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (contact) => {
+          const singleLine = sanitizeText(String(contact.job_title || '')).replace(/\s+/g, ' ').trim();
           return <div>{singleLine}</div>;
         },
       },
       {
-        id: 'actions',
-        header: 'Actions',
-        size: 120,
-        // CR-002: Add null safety for grid actions
-        Cell: ({ row }) => {
-          const contactName = row.original?.full_name || 'contact';
+        accessor: 'legal_entity_contact_id',
+        title: 'Actions',
+        width: 120,
+        toggleable: false,
+        sortable: false,
+        render: (contact) => {
+          const contactName = contact?.full_name || 'contact';
           return (
             <div className="action-buttons">
               <Button
@@ -167,7 +175,7 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
                 size="sm"
                 title="Edit contact"
                 aria-label={`Edit ${contactName}`}
-                onClick={() => handleEditContact(row.original)}
+                onClick={() => handleEditContact(contact)}
               >
                 <Pencil size={16} />
               </Button>
@@ -176,7 +184,7 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
                 size="sm"
                 title="Delete contact"
                 aria-label={`Delete ${contactName}`}
-                onClick={() => handleDeleteClick(row.original)}
+                onClick={() => handleDeleteClick(contact)}
               >
                 <Trash2 size={16} />
               </Button>
@@ -184,49 +192,12 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
           );
         },
       },
-    ];
-  }, []);
+    ],
+  });
 
   // CR-002: Safe array operations
   const safeContacts = safeArray(contacts);
   const contactCount = safeLength(contacts);
-
-  // Mantine React Table instance with standard features
-  const table = useMantineReactTable({
-    columns,
-    data: safeContacts,
-
-    // Row Selection
-    enableRowSelection: true,
-
-    // Column Features
-    enableColumnResizing: true,
-    columnResizeMode: 'onChange', // Shows resize preview while dragging
-    enableColumnOrdering: true,
-    enableHiding: true,
-    enableColumnFilters: true,
-
-    // Sorting & Filtering
-    enableSorting: true,
-    enableGlobalFilter: true,
-    enableFilters: true,
-
-    // Pagination
-    enablePagination: true,
-
-    // Table styling
-    mantineTableProps: {
-      className: 'contacts-grid',
-      striped: true,
-      withColumnBorders: true,
-      withTableBorder: true,
-    },
-
-    // Toolbar positioning
-    positionGlobalFilter: 'left',
-    positionToolbarAlertBanner: 'bottom',
-    positionActionsColumn: 'last',
-  });
 
   return (
     <div className="contacts-manager">
@@ -239,7 +210,15 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
       </div>
 
       {contactCount > 0 ? (
-        <MantineReactTable table={table} />
+        <DataTable
+          withTableBorder
+          withColumnBorders
+          striped
+          highlightOnHover
+          records={safeContacts}
+          columns={effectiveColumns}
+          storeColumnsKey="contacts-grid"
+        />
       ) : (
         (() => {
           const es = getEmptyState('contact', 'noContacts');

@@ -1,7 +1,7 @@
 import { useMsal } from '@azure/msal-react';
 import { Button, TextInput, Textarea, Select, Modal, Group, Tabs } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
-import { MantineReactTable, type MRT_ColumnDef, useMantineReactTable } from 'mantine-react-table';
+import { DataTable, useDataTableColumns } from 'mantine-datatable';
 import axios from 'axios';
 import type React from 'react';
 import { useEffect, useState, useMemo } from 'react';
@@ -295,75 +295,85 @@ const TasksGrid: React.FC = () => {
     return new Date(task.due_date) < new Date();
   };
 
-  // Column definitions for "My Tasks" grid
-  const tasksColumns = useMemo<MRT_ColumnDef<AdminTask>[]>(
-    () => [
+  // Column definitions for "My Tasks" grid using mantine-datatable
+  const { effectiveColumns: tasksEffectiveColumns } = useDataTableColumns<AdminTask>({
+    key: 'tasks-grid',
+    columns: [
       {
-        accessorKey: 'title',
-        header: 'Title',
-        size: 250,
+        accessor: 'title',
+        title: 'Title',
+        width: 250,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'task_type',
-        header: 'Type',
-        size: 150,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{value.replace('_', ' ')}</div>;
-        },
+        accessor: 'task_type',
+        title: 'Type',
+        width: 150,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (task) => <div>{task.task_type.replace('_', ' ')}</div>,
       },
       {
-        accessorKey: 'priority',
-        header: 'Priority',
-        size: 100,
-        Cell: ({ row }) => {
-          const priority = row.original.priority;
-          const priorityClass = `priority-badge priority-${priority}`;
+        accessor: 'priority',
+        title: 'Priority',
+        width: 100,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (task) => {
+          const priorityClass = `priority-badge priority-${task.priority}`;
           return (
             <div>
-              <span className={priorityClass}>{priority.toUpperCase()}</span>
+              <span className={priorityClass}>{task.priority.toUpperCase()}</span>
             </div>
           );
         },
       },
       {
-        accessorKey: 'status',
-        header: 'Status',
-        size: 120,
-        Cell: ({ row }) => {
-          const status = row.original.status;
-          const statusClass = `status-badge status-${status.replace('_', '-')}`;
+        accessor: 'status',
+        title: 'Status',
+        width: 120,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (task) => {
+          const statusClass = `status-badge status-${task.status.replace('_', '-')}`;
           return (
             <div>
-              <span className={statusClass}>{status.replace('_', ' ').toUpperCase()}</span>
+              <span className={statusClass}>{task.status.replace('_', ' ').toUpperCase()}</span>
             </div>
           );
         },
       },
       {
-        accessorKey: 'assigned_to_email',
-        header: 'Assigned To',
-        size: 200,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{value || 'Unassigned'}</div>;
-        },
+        accessor: 'assigned_to_email',
+        title: 'Assigned To',
+        width: 200,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (task) => <div>{task.assigned_to_email || 'Unassigned'}</div>,
       },
       {
-        accessorKey: 'related_entity_name',
-        header: 'Related Entity',
-        size: 180,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{value || '-'}</div>;
-        },
+        accessor: 'related_entity_name',
+        title: 'Related Entity',
+        width: 180,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (task) => <div>{task.related_entity_name || '-'}</div>,
       },
       {
-        accessorKey: 'due_date',
-        header: 'Due Date',
-        size: 130,
-        Cell: ({ row }) => {
-          const task = row.original;
+        accessor: 'due_date',
+        title: 'Due Date',
+        width: 130,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (task) => {
           const overdue = isOverdue(task);
           return (
             <div className={overdue ? 'overdue-date' : ''}>
@@ -374,78 +384,90 @@ const TasksGrid: React.FC = () => {
         },
       },
       {
-        id: 'actions',
-        header: 'Actions',
-        size: 220,
-        Cell: ({ row }) => {
-          const task = row.original;
-          return (
-            <div>
-              <Button leftSection="edit" variant="subtle" onClick={() => openEditDialog(task)}>
-                Edit
+        accessor: 'task_id',
+        title: 'Actions',
+        width: 220,
+        toggleable: false,
+        sortable: false,
+        render: (task) => (
+          <div>
+            <Button leftSection="edit" variant="subtle" onClick={() => openEditDialog(task)}>
+              Edit
+            </Button>
+            {task.status !== 'completed' && task.status !== 'cancelled' && (
+              <Button leftSection="check" variant="subtle" onClick={() => handleCompleteTask(task.task_id)}>
+                Complete
               </Button>
-              {task.status !== 'completed' && task.status !== 'cancelled' && (
-                <Button leftSection="check" variant="subtle" onClick={() => handleCompleteTask(task.task_id)}>
-                  Complete
-                </Button>
-              )}
-            </div>
-          );
-        },
+            )}
+          </div>
+        ),
       },
     ],
-    []
-  );
+  });
 
-  // Column definitions for "Verify" grid
-  const reviewColumns = useMemo<MRT_ColumnDef<any>[]>(
-    () => [
+  // Column definitions for "Verify" grid using mantine-datatable
+  const { effectiveColumns: reviewEffectiveColumns } = useDataTableColumns<ReviewTask>({
+    key: 'review-tasks-grid',
+    columns: [
       {
-        accessorKey: 'entered_company_name',
-        header: 'Company Name',
-        size: 250,
+        accessor: 'entered_company_name',
+        title: 'Company Name',
+        width: 250,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'entered_legal_id',
-        header: 'Entered ID',
-        size: 120,
+        accessor: 'entered_legal_id',
+        title: 'Entered ID',
+        width: 120,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'extracted_legal_id',
-        header: 'Extracted ID',
-        size: 130,
+        accessor: 'extracted_legal_id',
+        title: 'Extracted ID',
+        width: 130,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'kvk_mismatch_flags',
-        header: 'Mismatches',
-        size: 150,
-        Cell: ({ row }) => (
+        accessor: 'kvk_mismatch_flags',
+        title: 'Mismatches',
+        width: 150,
+        toggleable: true,
+        resizable: true,
+        render: (task) => (
           <div>
             <span className="priority-badge priority-urgent">
-              {row.original.kvk_mismatch_flags.length} Issues
+              {task.kvk_mismatch_flags.length} Issues
             </span>
           </div>
         ),
       },
       {
-        accessorKey: 'document_uploaded_at',
-        header: 'Uploaded',
-        size: 150,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{formatTaskDate(value)}</div>;
-        },
+        accessor: 'document_uploaded_at',
+        title: 'Uploaded',
+        width: 150,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (task) => <div>{formatTaskDate(task.document_uploaded_at)}</div>,
       },
       {
-        id: 'actions',
-        header: 'Actions',
-        size: 180,
-        Cell: ({ row }) => (
+        accessor: 'legal_entity_id',
+        title: 'Actions',
+        width: 180,
+        toggleable: false,
+        sortable: false,
+        render: (task) => (
           <div>
             <Button
               leftSection="preview"
               variant="subtle"
-              onClick={() => openReviewDialog(row.original)}
+              onClick={() => openReviewDialog(task)}
             >
               Review
             </Button>
@@ -453,78 +475,6 @@ const TasksGrid: React.FC = () => {
         ),
       },
     ],
-    []
-  );
-
-  // Table instances with standard features
-  const tasksTable = useMantineReactTable({
-    columns: tasksColumns,
-    data: tasks,
-
-    // Row Selection
-    enableRowSelection: true,
-
-    // Column Features
-    enableColumnResizing: true,
-    columnResizeMode: 'onChange', // Shows resize preview while dragging
-    enableColumnOrdering: true,
-    enableHiding: true,
-    enableColumnFilters: true,
-
-    // Sorting & Filtering
-    enableSorting: true,
-    enableGlobalFilter: true,
-    enableFilters: true,
-
-    // Pagination
-    enablePagination: true,
-
-    // Table styling
-    mantineTableProps: {
-      striped: true,
-      withColumnBorders: true,
-      withTableBorder: true,
-    },
-
-    // Toolbar positioning
-    positionGlobalFilter: 'left',
-    positionToolbarAlertBanner: 'bottom',
-    positionActionsColumn: 'last',
-  });
-
-  const reviewTable = useMantineReactTable({
-    columns: reviewColumns,
-    data: reviewTasks,
-
-    // Row Selection
-    enableRowSelection: true,
-
-    // Column Features
-    enableColumnResizing: true,
-    columnResizeMode: 'onChange', // Shows resize preview while dragging
-    enableColumnOrdering: true,
-    enableHiding: true,
-    enableColumnFilters: true,
-
-    // Sorting & Filtering
-    enableSorting: true,
-    enableGlobalFilter: true,
-    enableFilters: true,
-
-    // Pagination
-    enablePagination: true,
-
-    // Table styling
-    mantineTableProps: {
-      striped: true,
-      withColumnBorders: true,
-      withTableBorder: true,
-    },
-
-    // Toolbar positioning
-    positionGlobalFilter: 'left',
-    positionToolbarAlertBanner: 'bottom',
-    positionActionsColumn: 'last',
   });
 
   // Count tasks by status
@@ -571,14 +521,30 @@ const TasksGrid: React.FC = () => {
           <div className="grid-toolbar-info" style={{ marginBottom: '10px' }}>
             Total Tasks: {tasks.length}
           </div>
-          <MantineReactTable table={tasksTable} />
+          <DataTable
+            withTableBorder
+            withColumnBorders
+            striped
+            highlightOnHover
+            records={tasks}
+            columns={tasksEffectiveColumns}
+            storeColumnsKey="tasks-grid"
+          />
         </Tabs.Panel>
 
         <Tabs.Panel value="verify" pt="md">
           <div className="grid-toolbar-info" style={{ marginBottom: '10px' }}>
             Total Reviews: {reviewTasks.length}
           </div>
-          <MantineReactTable table={reviewTable} />
+          <DataTable
+            withTableBorder
+            withColumnBorders
+            striped
+            highlightOnHover
+            records={reviewTasks}
+            columns={reviewEffectiveColumns}
+            storeColumnsKey="review-tasks-grid"
+          />
         </Tabs.Panel>
       </Tabs>
 

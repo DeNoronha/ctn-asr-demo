@@ -1,5 +1,5 @@
 import { Button, TextInput, Textarea, Checkbox, Modal, Group } from '@mantine/core';
-import { MantineReactTable, type MRT_ColumnDef, useMantineReactTable } from 'mantine-react-table';
+import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import { Key, Plus, Trash2, Copy, AlertTriangle } from './icons';
 import type React from 'react';
 import { useEffect, useState, useMemo } from 'react';
@@ -222,31 +222,37 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
     }));
   };
 
-  // Mantine React Table column definitions
-  const columns = useMemo<MRT_ColumnDef<any>[]>(
-    () => [
+  // mantine-datatable column definitions
+  const { effectiveColumns } = useDataTableColumns<M2MClient>({
+    key: 'm2m-clients-grid',
+    columns: [
       {
-        accessorKey: 'client_name',
-        header: 'Client Name',
-        size: 200,
+        accessor: 'client_name',
+        title: 'Client Name',
+        width: 200,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
         // SEC-007: Sanitize user-generated text fields in grid
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
-        },
+        render: (record) => <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(record.client_name) }} />,
       },
       {
-        accessorKey: 'azure_client_id',
-        header: 'Client ID',
-        size: 280,
+        accessor: 'azure_client_id',
+        title: 'Client ID',
+        width: 280,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'assigned_scopes',
-        header: 'Scopes',
-        size: 300,
-        Cell: ({ row }) => (
+        accessor: 'assigned_scopes',
+        title: 'Scopes',
+        width: 300,
+        toggleable: true,
+        resizable: true,
+        render: (record) => (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-            {row.original.assigned_scopes.map((scope: string) => (
+            {record.assigned_scopes.map((scope: string) => (
               <span
                 key={scope}
                 style={{
@@ -263,38 +269,42 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
         ),
       },
       {
-        accessorKey: 'is_active',
-        header: 'Status',
-        size: 100,
-        Cell: ({ row }) => (
+        accessor: 'is_active',
+        title: 'Status',
+        width: 100,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => (
           <div>
-            <span className={`status-badge ${row.original.is_active ? 'active' : 'inactive'}`}>
-              {row.original.is_active ? '● Active' : '○ Inactive'}
+            <span className={`status-badge ${record.is_active ? 'active' : 'inactive'}`}>
+              {record.is_active ? '● Active' : '○ Inactive'}
             </span>
           </div>
         ),
       },
       {
-        accessorKey: 'dt_created',
-        header: 'Created',
-        size: 150,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{formatDate(value)}</div>;
-        },
+        accessor: 'dt_created',
+        title: 'Created',
+        width: 150,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{formatDate(record.dt_created)}</div>,
       },
       {
-        id: 'actions',
-        header: 'Actions',
-        size: 200,
-        Cell: ({ row }) => (
+        accessor: 'actions' as any,
+        title: 'Actions',
+        width: 200,
+        toggleable: false,
+        render: (record) => (
           <div className="actions-cell">
             <Button
               size="sm"
-              onClick={() => handleGenerateSecret(row.original)}
-              disabled={loading || !row.original.is_active}
+              onClick={() => handleGenerateSecret(record)}
+              disabled={loading || !record.is_active}
               title="Generate new secret"
-              aria-label={`Generate new secret for ${row.original.client_name}`}
+              aria-label={`Generate new secret for ${record.client_name}`}
             >
               <Key size={16} /> New Secret
             </Button>
@@ -302,12 +312,12 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
               size="sm"
               variant="subtle"
               onClick={() => {
-                setSelectedClient(row.original);
+                setSelectedClient(record);
                 setShowDeleteDialog(true);
               }}
               disabled={loading}
               title="Deactivate client"
-              aria-label={`Deactivate client ${row.original.client_name}`}
+              aria-label={`Deactivate client ${record.client_name}`}
             >
               <Trash2 size={16} />
             </Button>
@@ -315,43 +325,6 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
         ),
       },
     ],
-    [loading]
-  );
-
-  // Mantine React Table instance with standard features
-  const table = useMantineReactTable({
-    columns,
-    data: clients,
-
-    // Row Selection
-    enableRowSelection: true,
-
-    // Column Features
-    enableColumnResizing: true,
-    columnResizeMode: 'onChange', // Shows resize preview while dragging
-    enableColumnOrdering: true,
-    enableHiding: true,
-    enableColumnFilters: true,
-
-    // Sorting & Filtering
-    enableSorting: true,
-    enableGlobalFilter: true,
-    enableFilters: true,
-
-    // Pagination
-    enablePagination: true,
-
-    // Table styling
-    mantineTableProps: {
-      striped: true,
-      withColumnBorders: true,
-      withTableBorder: true,
-    },
-
-    // Toolbar positioning
-    positionGlobalFilter: 'left',
-    positionToolbarAlertBanner: 'bottom',
-    positionActionsColumn: 'last',
   });
 
   return (
@@ -376,7 +349,15 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
           );
         })()
       ) : (
-        <MantineReactTable table={table} />
+        <DataTable
+          records={clients}
+          columns={effectiveColumns}
+          storeColumnsKey="m2m-clients-grid"
+          withTableBorder
+          withColumnBorders
+          striped
+          highlightOnHover
+        />
       )}
 
       {/* Add M2M Client Dialog */}

@@ -4,15 +4,7 @@
  */
 
 import { Button, Select } from '@mantine/core';
-
-import {
-  MantineReactTable,
-  type MRT_ColumnDef,
-  type MRT_PaginationState,
-  type MRT_SortingState,
-  type MRT_ColumnFiltersState,
-  useMantineReactTable,
-} from 'mantine-react-table';
+import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import { Download, FileText, RefreshCw } from '../icons';
 import type React from 'react';
 import { useEffect, useState, useMemo } from 'react';
@@ -77,24 +69,28 @@ const AuditLogViewer: React.FC = () => {
     setSelectedTargetType('All');
   };
 
-  // Column definitions
-  const columns = useMemo<MRT_ColumnDef<AuditLog>[]>(
-    () => [
+  // mantine-datatable column definitions
+  const { effectiveColumns } = useDataTableColumns<AuditLog>({
+    key: 'audit-log-grid',
+    columns: [
       {
-        accessorKey: 'timestamp',
-        header: 'Timestamp',
-        size: 180,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<Date>();
-          return <div>{new Date(value).toLocaleString('en-GB')}</div>;
-        },
+        accessor: 'timestamp',
+        title: 'Timestamp',
+        width: 180,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{new Date(record.timestamp).toLocaleString('en-GB')}</div>,
       },
       {
-        accessorKey: 'action',
-        header: 'Action',
-        size: 200,
-        Cell: ({ row }) => {
-          const action = row.original.action;
+        accessor: 'action',
+        title: 'Action',
+        width: 200,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => {
+          const action = record.action;
           const color = getAuditActionColor(action);
           return (
             <div>
@@ -106,21 +102,27 @@ const AuditLogViewer: React.FC = () => {
         },
       },
       {
-        accessorKey: 'userName',
-        header: 'User',
-        size: 180,
+        accessor: 'userName',
+        title: 'User',
+        width: 180,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'userRole',
-        header: 'Role',
-        size: 150,
-        Cell: ({ row }) => {
+        accessor: 'userRole',
+        title: 'Role',
+        width: 150,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => {
           const roleClasses: Record<string, string> = {
             SystemAdmin: 'role-system-admin',
             AssociationAdmin: 'role-association-admin',
             Member: 'role-member',
           };
-          const role = row.original.userRole;
+          const role = record.userRole;
           const roleClass = roleClasses[role] || 'role-member';
           return (
             <div>
@@ -130,69 +132,31 @@ const AuditLogViewer: React.FC = () => {
         },
       },
       {
-        accessorKey: 'details',
-        header: 'Details',
-        size: 300,
-        Cell: ({ row }) => (
+        accessor: 'details',
+        title: 'Details',
+        width: 300,
+        toggleable: true,
+        resizable: true,
+        render: (record) => (
           <div className="details-cell">
-            <div>{row.original.details}</div>
-            {row.original.targetName && (
+            <div>{record.details}</div>
+            {record.targetName && (
               <div className="target-info">
-                Target: <strong>{row.original.targetName}</strong>
+                Target: <strong>{record.targetName}</strong>
               </div>
             )}
           </div>
         ),
       },
       {
-        accessorKey: 'targetType',
-        header: 'Target Type',
-        size: 120,
+        accessor: 'targetType',
+        title: 'Target Type',
+        width: 120,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
     ],
-    []
-  );
-
-  // Mantine React Table instance with standard features
-  const table = useMantineReactTable({
-    columns,
-    data: filteredLogs,
-
-    // Row Selection - disabled for read-only audit logs
-    enableRowSelection: false,
-
-    // Column Features
-    enableColumnResizing: true,
-    columnResizeMode: 'onChange', // Shows resize preview while dragging
-    enableColumnOrdering: true,
-    enableHiding: true,
-    enableColumnFilters: true,
-
-    // Sorting & Filtering
-    enableSorting: true,
-    enableGlobalFilter: true,
-    enableFilters: true,
-
-    // Pagination
-    enablePagination: true,
-
-    // Initial state
-    initialState: {
-      sorting: [{ id: 'timestamp', desc: true }],
-      pagination: { pageIndex: 0, pageSize: 20 },
-    },
-
-    // Table styling
-    mantineTableProps: {
-      striped: true,
-      withColumnBorders: true,
-      withTableBorder: true,
-    },
-
-    // Toolbar positioning
-    positionGlobalFilter: 'left',
-    positionToolbarAlertBanner: 'bottom',
-    positionActionsColumn: 'last',
   });
 
   const actions = ['All', ...Object.values(AuditAction)];
@@ -268,7 +232,15 @@ const AuditLogViewer: React.FC = () => {
           </div>
         </div>
 
-        <MantineReactTable table={table} />
+        <DataTable
+          records={filteredLogs}
+          columns={effectiveColumns}
+          storeColumnsKey="audit-log-grid"
+          withTableBorder
+          withColumnBorders
+          striped
+          highlightOnHover
+        />
       </div>
     </RoleGuard>
   );

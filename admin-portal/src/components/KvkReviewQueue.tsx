@@ -1,5 +1,5 @@
 import { Button, Textarea, Loader, Modal, Group } from '@mantine/core';
-import { MantineReactTable, type MRT_ColumnDef, useMantineReactTable } from 'mantine-react-table';
+import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import axios from 'axios';
 import type React from 'react';
 import { useEffect, useState, useMemo } from 'react';
@@ -135,39 +135,51 @@ export const KvkReviewQueue: React.FC = () => {
     return flag === 'entered_kvk_mismatch' || flag === 'entered_name_mismatch';
   };
 
-  // Mantine React Table column definitions
-  const columns = useMemo<MRT_ColumnDef<FlaggedEntity>[]>(
-    () => [
+  // mantine-datatable column definitions
+  const { effectiveColumns } = useDataTableColumns<FlaggedEntity>({
+    key: 'kvk-review-grid',
+    columns: [
       {
-        accessorKey: 'entered_company_name',
-        header: 'Entered Company',
-        size: 200,
+        accessor: 'entered_company_name',
+        title: 'Entered Company',
+        width: 200,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'entered_kvk_number',
-        header: 'Entered KvK',
-        size: 110,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string | null>();
-          return <div>{value || <span style={{ color: '#999' }}>—</span>}</div>;
-        },
+        accessor: 'entered_kvk_number',
+        title: 'Entered KvK',
+        width: 110,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{record.entered_kvk_number || <span style={{ color: '#999' }}>—</span>}</div>,
       },
       {
-        accessorKey: 'kvk_extracted_company_name',
-        header: 'Extracted Company',
-        size: 200,
+        accessor: 'kvk_extracted_company_name',
+        title: 'Extracted Company',
+        width: 200,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'kvk_extracted_number',
-        header: 'Extracted KvK',
-        size: 110,
+        accessor: 'kvk_extracted_number',
+        title: 'Extracted KvK',
+        width: 110,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'kvk_mismatch_flags',
-        header: 'Issues',
-        size: 280,
-        Cell: ({ row }) => {
-          const flags = row.original.kvk_mismatch_flags || [];
+        accessor: 'kvk_mismatch_flags',
+        title: 'Issues',
+        width: 280,
+        toggleable: true,
+        resizable: true,
+        render: (record) => {
+          const flags = record.kvk_mismatch_flags || [];
           return (
             <div>
               {flags.map((flag: string, idx: number) => (
@@ -187,64 +199,28 @@ export const KvkReviewQueue: React.FC = () => {
         },
       },
       {
-        accessorKey: 'document_uploaded_at',
-        header: 'Upload Date',
-        size: 120,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{new Date(value).toLocaleDateString()}</div>;
-        },
+        accessor: 'document_uploaded_at',
+        title: 'Upload Date',
+        width: 120,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{new Date(record.document_uploaded_at).toLocaleDateString()}</div>,
       },
       {
-        id: 'actions',
-        header: 'Actions',
-        size: 100,
-        Cell: ({ row }) => (
+        accessor: 'actions' as any,
+        title: 'Actions',
+        width: 100,
+        toggleable: false,
+        render: (record) => (
           <div>
-            <Button color="blue" size="sm" onClick={() => handleReview(row.original)}>
+            <Button color="blue" size="sm" onClick={() => handleReview(record)}>
               Review
             </Button>
           </div>
         ),
       },
     ],
-    []
-  );
-
-  // Mantine React Table instance with standard features
-  const table = useMantineReactTable({
-    columns,
-    data: entities,
-
-    // Row Selection
-    enableRowSelection: true,
-
-    // Column Features
-    enableColumnResizing: true,
-    columnResizeMode: 'onChange', // Shows resize preview while dragging
-    enableColumnOrdering: true,
-    enableHiding: true,
-    enableColumnFilters: true,
-
-    // Sorting & Filtering
-    enableSorting: true,
-    enableGlobalFilter: true,
-    enableFilters: true,
-
-    // Pagination
-    enablePagination: true,
-
-    // Table styling
-    mantineTableProps: {
-      striped: true,
-      withColumnBorders: true,
-      withTableBorder: true,
-    },
-
-    // Toolbar positioning
-    positionGlobalFilter: 'left',
-    positionToolbarAlertBanner: 'bottom',
-    positionActionsColumn: 'last',
   });
 
   if (loading) {
@@ -256,7 +232,15 @@ export const KvkReviewQueue: React.FC = () => {
       <h2>KvK Verification Review Queue</h2>
       <p>Entities flagged for manual review ({entities.length})</p>
 
-      <MantineReactTable table={table} />
+      <DataTable
+        records={entities}
+        columns={effectiveColumns}
+        storeColumnsKey="kvk-review-grid"
+        withTableBorder
+        withColumnBorders
+        striped
+        highlightOnHover
+      />
 
       <Modal
         opened={reviewDialog.visible && !!reviewDialog.entity}

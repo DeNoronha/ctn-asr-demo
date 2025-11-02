@@ -1,9 +1,9 @@
 import { Button, TextInput, Textarea, Select, Modal, Group } from '@mantine/core';
-import { MantineReactTable, type MRT_ColumnDef, useMantineReactTable } from 'mantine-react-table';
+import { DataTable, useDataTableColumns } from 'mantine-datatable';
 import { EmptyState } from './EmptyState';
 import { Plus } from './icons';
 import type React from 'react';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { HelpTooltip } from './help/HelpTooltip';
 import { helpContent } from '../config/helpContent';
@@ -182,62 +182,80 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
     try { announceToScreenReader('Token copied to clipboard.'); } catch {}
   };
 
-  // Mantine React Table column definitions
-  const columns = useMemo<MRT_ColumnDef<any>[]>(
-    () => [
+  // mantine-datatable column definitions
+  const { effectiveColumns } = useDataTableColumns<Endpoint>({
+    key: 'endpoints-grid',
+    columns: [
       {
-        accessorKey: 'endpoint_name',
-        header: 'Endpoint Name',
-        size: 250,
+        accessor: 'endpoint_name',
+        title: 'Endpoint Name',
+        width: 250,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'endpoint_url',
-        header: 'URL',
-        size: 300,
+        accessor: 'endpoint_url',
+        title: 'URL',
+        width: 300,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'data_category',
-        header: 'Category',
-        size: 150,
+        accessor: 'data_category',
+        title: 'Category',
+        width: 150,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'endpoint_type',
-        header: 'Type',
-        size: 120,
+        accessor: 'endpoint_type',
+        title: 'Type',
+        width: 120,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'is_active',
-        header: 'Status',
-        size: 120,
-        Cell: ({ row }) => (
+        accessor: 'is_active',
+        title: 'Status',
+        width: 120,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (endpoint) => (
           <div>
-            <span className={`status-badge ${row.original.is_active ? 'active' : 'inactive'}`}>
-              {row.original.is_active ? '● Active' : '○ Inactive'}
+            <span className={`status-badge ${endpoint.is_active ? 'active' : 'inactive'}`}>
+              {endpoint.is_active ? '● Active' : '○ Inactive'}
             </span>
           </div>
         ),
       },
       {
-        accessorKey: 'dt_created',
-        header: 'Created',
-        size: 180,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{new Date(value).toLocaleString()}</div>;
-        },
+        accessor: 'dt_created',
+        title: 'Created',
+        width: 180,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (endpoint) => <div>{new Date(endpoint.dt_created).toLocaleString()}</div>,
       },
       {
-        id: 'actions',
-        header: 'Actions',
-        size: 150,
-        Cell: ({ row }) => (
+        accessor: 'legal_entity_endpoint_id',
+        title: 'Actions',
+        width: 150,
+        toggleable: false,
+        sortable: false,
+        render: (endpoint) => (
           <div>
             <Button
               color="blue"
               size="sm"
               title="Issue token for this endpoint"
-              aria-label={`Issue token for ${row.original.endpoint_name}`}
-              onClick={() => handleIssueToken(row.original)}
+              aria-label={`Issue token for ${endpoint.endpoint_name}`}
+              onClick={() => handleIssueToken(endpoint)}
               disabled={loading}
             >
               Issue Token
@@ -246,43 +264,6 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
         ),
       },
     ],
-    [loading]
-  );
-
-  // Mantine React Table instance with standard features
-  const table = useMantineReactTable({
-    columns,
-    data: endpoints,
-
-    // Row Selection
-    enableRowSelection: true,
-
-    // Column Features
-    enableColumnResizing: true,
-    columnResizeMode: 'onChange', // Shows resize preview while dragging
-    enableColumnOrdering: true,
-    enableHiding: true,
-    enableColumnFilters: true,
-
-    // Sorting & Filtering
-    enableSorting: true,
-    enableGlobalFilter: true,
-    enableFilters: true,
-
-    // Pagination
-    enablePagination: true,
-
-    // Table styling
-    mantineTableProps: {
-      striped: true,
-      withColumnBorders: true,
-      withTableBorder: true,
-    },
-
-    // Toolbar positioning
-    positionGlobalFilter: 'left',
-    positionToolbarAlertBanner: 'bottom',
-    positionActionsColumn: 'last',
   });
 
   return (
@@ -315,7 +296,16 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
           );
         })()
       ) : (
-        <MantineReactTable table={table} />
+        <DataTable
+          withTableBorder
+          withColumnBorders
+          striped
+          highlightOnHover
+          records={endpoints}
+          columns={effectiveColumns}
+          fetching={loading}
+          storeColumnsKey="endpoints-grid"
+        />
       )}
 
       <Modal

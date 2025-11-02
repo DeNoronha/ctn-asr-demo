@@ -1,5 +1,5 @@
 import { Button, Select, Loader, Group, Text } from '@mantine/core';
-import { MantineReactTable, type MRT_ColumnDef, useMantineReactTable } from 'mantine-react-table';
+import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
 import { AlertTriangle, CheckCircle, FileText, FolderOpen, XCircle } from './icons';
 import type React from 'react';
@@ -150,56 +150,70 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
     );
   };
 
-  // Mantine React Table column definitions
-  const columns = useMemo<MRT_ColumnDef<VerificationRecord>[]>(
-    () => [
+  // mantine-datatable column definitions
+  const { effectiveColumns } = useDataTableColumns<VerificationRecord>({
+    key: 'verification-grid',
+    columns: [
       {
-        accessorKey: 'identifier_type',
-        header: 'Identifier Type',
-        size: 120,
+        accessor: 'identifier_type',
+        title: 'Identifier Type',
+        width: 120,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'identifier_value',
-        header: 'Identifier Value',
-        size: 180,
+        accessor: 'identifier_value',
+        title: 'Identifier Value',
+        width: 180,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'verification_status',
-        header: 'Status',
-        size: 140,
-        Cell: ({ row }) => <div>{getStatusBadge(row.original.verification_status)}</div>,
+        accessor: 'verification_status',
+        title: 'Status',
+        width: 140,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{getStatusBadge(record.verification_status)}</div>,
       },
       {
-        accessorKey: 'uploaded_at',
-        header: 'Uploaded',
-        size: 160,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{value ? formatDateTime(value) : '-'}</div>;
-        },
+        accessor: 'uploaded_at',
+        title: 'Uploaded',
+        width: 160,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{record.uploaded_at ? formatDateTime(record.uploaded_at) : '-'}</div>,
       },
       {
-        accessorKey: 'verified_at',
-        header: 'Verified',
-        size: 160,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{value ? formatDateTime(value) : '-'}</div>;
-        },
+        accessor: 'verified_at',
+        title: 'Verified',
+        width: 160,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{record.verified_at ? formatDateTime(record.verified_at) : '-'}</div>,
       },
       {
-        accessorKey: 'verified_by',
-        header: 'Verified By',
-        size: 150,
+        accessor: 'verified_by',
+        title: 'Verified By',
+        width: 150,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        id: 'actions',
-        header: 'Actions',
-        size: 100,
-        Cell: ({ row }) => (
+        accessor: 'actions' as any,
+        title: 'Actions',
+        width: 100,
+        toggleable: false,
+        render: (record) => (
           <div>
-            {row.original.document_url && (
-              <a href={row.original.document_url} target="_blank" rel="noopener noreferrer">
+            {record.document_url && (
+              <a href={record.document_url} target="_blank" rel="noopener noreferrer">
                 <Button variant="subtle" size="sm" title="View document">
                   <FileText size={16} />
                 </Button>
@@ -209,43 +223,6 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
         ),
       },
     ],
-    []
-  );
-
-  // Mantine React Table instance with standard features
-  const table = useMantineReactTable({
-    columns,
-    data: verificationRecords,
-
-    // Row Selection - disabled for read-only verification history
-    enableRowSelection: false,
-
-    // Column Features
-    enableColumnResizing: true,
-    columnResizeMode: 'onChange', // Shows resize preview while dragging
-    enableColumnOrdering: true,
-    enableHiding: true,
-    enableColumnFilters: true,
-
-    // Sorting & Filtering
-    enableSorting: true,
-    enableGlobalFilter: true,
-    enableFilters: true,
-
-    // Pagination
-    enablePagination: true,
-
-    // Table styling
-    mantineTableProps: {
-      striped: true,
-      withColumnBorders: true,
-      withTableBorder: true,
-    },
-
-    // Toolbar positioning
-    positionGlobalFilter: 'left',
-    positionToolbarAlertBanner: 'bottom',
-    positionActionsColumn: 'last',
   });
 
   // Format identifiers for dropdown display
@@ -362,7 +339,15 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
                 <Loader size="md" />
               </div>
             ) : verificationRecords.length > 0 ? (
-              <MantineReactTable table={table} />
+              <DataTable
+                records={verificationRecords}
+                columns={effectiveColumns}
+                storeColumnsKey="verification-grid"
+                withTableBorder
+                withColumnBorders
+                striped
+                highlightOnHover
+              />
             ) : (
               <EmptyState
                 icon={<FolderOpen size={32} />}

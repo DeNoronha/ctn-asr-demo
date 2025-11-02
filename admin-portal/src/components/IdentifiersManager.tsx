@@ -1,5 +1,5 @@
 import { Button, TextInput, Select, Modal, Group } from '@mantine/core';
-import { MantineReactTable, type MRT_ColumnDef, useMantineReactTable } from 'mantine-react-table';
+import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import axios from 'axios';
 import {
   AlertCircle,
@@ -617,83 +617,94 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
     }
   };
 
-  // Mantine React Table column definitions
-  const columns = useMemo<MRT_ColumnDef<LegalEntityIdentifier>[]>(
-    () => [
+  // mantine-datatable column definitions
+  const { effectiveColumns } = useDataTableColumns<LegalEntityIdentifier>({
+    key: 'identifiers-grid',
+    columns: [
       {
-        accessorKey: 'identifier_type',
-        header: 'Type',
-        size: 100,
+        accessor: 'identifier_type',
+        title: 'Type',
+        width: 100,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'identifier_value',
-        header: 'Identifier Value',
-        size: 180,
-        minSize: 120,
+        accessor: 'identifier_value',
+        title: 'Identifier Value',
+        width: 180,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
         // SEC-007: Sanitize user-generated text fields in grid
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
-        },
+        render: (record) => <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(record.identifier_value || '') }} />,
       },
       {
-        accessorKey: 'country_code',
-        header: 'Country',
-        size: 100,
+        accessor: 'country_code',
+        title: 'Country',
+        width: 100,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'registry_name',
-        header: 'Registry',
-        size: 220,
-        minSize: 150,
+        accessor: 'registry_name',
+        title: 'Registry',
+        width: 220,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
         // SEC-007: Sanitize user-generated text fields in grid
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
-        },
+        render: (record) => <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(record.registry_name || '') }} />,
       },
       {
-        accessorKey: 'validation_status',
-        header: 'Status',
-        size: 140,
-        Cell: ({ row }) => <div>{getValidationBadge(row.original.validation_status)}</div>,
+        accessor: 'validation_status',
+        title: 'Status',
+        width: 140,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{getValidationBadge(record.validation_status)}</div>,
       },
       {
-        id: 'document_verification',
-        header: 'Doc Verification',
-        size: 160,
-        Cell: ({ row }) => <div>{getDocumentVerificationBadge(row.original.identifier_type)}</div>,
+        accessor: 'document_verification' as any,
+        title: 'Doc Verification',
+        width: 160,
+        toggleable: true,
+        resizable: true,
+        render: (record) => <div>{getDocumentVerificationBadge(record.identifier_type)}</div>,
       },
       {
-        accessorKey: 'validation_date',
-        header: 'Last Verified',
-        size: 140,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{value ? formatDate(value) : '-'}</div>;
-        },
+        accessor: 'validation_date',
+        title: 'Last Verified',
+        width: 140,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{record.validation_date ? formatDate(record.validation_date) : '-'}</div>,
       },
       {
-        accessorKey: 'dt_modified',
-        header: 'Last Edited',
-        size: 140,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{value ? formatDate(value) : '-'}</div>;
-        },
+        accessor: 'dt_modified',
+        title: 'Last Edited',
+        width: 140,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{record.dt_modified ? formatDate(record.dt_modified) : '-'}</div>,
       },
       {
-        id: 'actions',
-        header: 'Actions',
-        size: 120,
-        Cell: ({ row }) => (
+        accessor: 'actions' as any,
+        title: 'Actions',
+        width: 120,
+        toggleable: false,
+        render: (record) => (
           <div className="actions-cell">
             <Button
               variant="subtle"
               size="sm"
               title="Edit identifier"
-              aria-label={`Edit ${row.original.identifier_type} identifier`}
-              onClick={() => handleEdit(row.original)}
+              aria-label={`Edit ${record.identifier_type} identifier`}
+              onClick={() => handleEdit(record)}
             >
               <Pencil size={16} />
             </Button>
@@ -701,8 +712,8 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
               variant="subtle"
               size="sm"
               title="Delete identifier"
-              aria-label={`Delete ${row.original.identifier_type} identifier`}
-              onClick={() => handleDeleteClick(row.original)}
+              aria-label={`Delete ${record.identifier_type} identifier`}
+              onClick={() => handleDeleteClick(record)}
             >
               <Trash2 size={16} />
             </Button>
@@ -710,43 +721,6 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
         ),
       },
     ],
-    [kvkVerificationFlags, hasKvkDocument]
-  );
-
-  // Mantine React Table instance with standard features
-  const table = useMantineReactTable({
-    columns,
-    data: identifiers,
-
-    // Row Selection
-    enableRowSelection: true,
-
-    // Column Features
-    enableColumnResizing: true,
-    columnResizeMode: 'onChange', // Shows resize preview while dragging
-    enableColumnOrdering: true,
-    enableHiding: true,
-    enableColumnFilters: true,
-
-    // Sorting & Filtering
-    enableSorting: true,
-    enableGlobalFilter: true,
-    enableFilters: true,
-
-    // Pagination
-    enablePagination: true,
-
-    // Table styling
-    mantineTableProps: {
-      striped: true,
-      withColumnBorders: true,
-      withTableBorder: true,
-    },
-
-    // Toolbar positioning
-    positionGlobalFilter: 'left',
-    positionToolbarAlertBanner: 'bottom',
-    positionActionsColumn: 'last',
   });
 
   return (
@@ -775,7 +749,15 @@ export const IdentifiersManager: React.FC<IdentifiersManagerProps> = ({
       </div>
 
       {identifiers.length > 0 ? (
-        <MantineReactTable table={table} />
+        <DataTable
+          records={identifiers}
+          columns={effectiveColumns}
+          storeColumnsKey="identifiers-grid"
+          withTableBorder
+          withColumnBorders
+          striped
+          highlightOnHover
+        />
       ) : (
         (() => {
           const es = getEmptyState('identifier', 'noIdentifiers');

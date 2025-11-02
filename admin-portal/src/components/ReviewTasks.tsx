@@ -1,5 +1,5 @@
 import { Button, Textarea, Loader, Modal, Group } from '@mantine/core';
-import { MantineReactTable, type MRT_ColumnDef, useMantineReactTable } from 'mantine-react-table';
+import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import axios from 'axios';
 import { AlertCircle, AlertTriangle, CheckCircle, XCircle } from './icons';
 import type React from 'react';
@@ -189,57 +189,69 @@ export const ReviewTasks: React.FC = () => {
     );
   };
 
-  // Mantine React Table column definitions
-  const columns = useMemo<MRT_ColumnDef<ReviewTask>[]>(
-    () => [
+  // mantine-datatable column definitions
+  const { effectiveColumns } = useDataTableColumns<ReviewTask>({
+    key: 'review-tasks-grid',
+    columns: [
       {
-        accessorKey: 'entered_company_name',
-        header: 'Entered Name',
-        size: 180,
+        accessor: 'entered_company_name',
+        title: 'Entered Name',
+        width: 180,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'entered_legal_id',
-        header: 'Entered Legal ID',
-        size: 140,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string | null>();
-          return <div>{value || <span style={{ color: '#999' }}>—</span>}</div>;
-        },
+        accessor: 'entered_legal_id',
+        title: 'Entered Legal ID',
+        width: 140,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{record.entered_legal_id || <span style={{ color: '#999' }}>—</span>}</div>,
       },
       {
-        accessorKey: 'extracted_company_name',
-        header: 'Extracted Name',
-        size: 180,
+        accessor: 'extracted_company_name',
+        title: 'Extracted Name',
+        width: 180,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'extracted_legal_id',
-        header: 'Extracted Legal ID',
-        size: 140,
+        accessor: 'extracted_legal_id',
+        title: 'Extracted Legal ID',
+        width: 140,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'registry_type',
-        header: 'Registry',
-        size: 100,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{value || 'KVK'}</div>;
-        },
+        accessor: 'registry_type',
+        title: 'Registry',
+        width: 100,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{record.registry_type || 'KVK'}</div>,
       },
       {
-        accessorKey: 'country_code',
-        header: 'Country',
-        size: 90,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string | null>();
-          return <div>{value || <span style={{ color: '#999' }}>—</span>}</div>;
-        },
+        accessor: 'country_code',
+        title: 'Country',
+        width: 90,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{record.country_code || <span style={{ color: '#999' }}>—</span>}</div>,
       },
       {
-        accessorKey: 'kvk_mismatch_flags',
-        header: 'Issues',
-        size: 280,
-        Cell: ({ row }) => {
-          const flags = row.original.kvk_mismatch_flags || [];
+        accessor: 'kvk_mismatch_flags',
+        title: 'Issues',
+        width: 280,
+        toggleable: true,
+        resizable: true,
+        render: (record) => {
+          const flags = record.kvk_mismatch_flags || [];
           return (
             <div>
               {flags.map((flag: string, idx: number) => (
@@ -259,72 +271,36 @@ export const ReviewTasks: React.FC = () => {
         },
       },
       {
-        id: 'doc_verification',
-        header: 'Doc Verification',
-        size: 160,
-        Cell: ({ row }) => (
-          <div>{getDocumentVerificationBadge(row.original.kvk_mismatch_flags || [])}</div>
-        ),
+        accessor: 'doc_verification' as any,
+        title: 'Doc Verification',
+        width: 160,
+        toggleable: true,
+        resizable: true,
+        render: (record) => <div>{getDocumentVerificationBadge(record.kvk_mismatch_flags || [])}</div>,
       },
       {
-        accessorKey: 'document_uploaded_at',
-        header: 'Upload Date',
-        size: 120,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{new Date(value).toLocaleDateString()}</div>;
-        },
+        accessor: 'document_uploaded_at',
+        title: 'Upload Date',
+        width: 120,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (record) => <div>{new Date(record.document_uploaded_at).toLocaleDateString()}</div>,
       },
       {
-        id: 'actions',
-        header: 'Actions',
-        size: 100,
-        Cell: ({ row }) => (
+        accessor: 'actions' as any,
+        title: 'Actions',
+        width: 100,
+        toggleable: false,
+        render: (record) => (
           <div>
-            <Button color="blue" size="sm" onClick={() => handleReview(row.original)}>
+            <Button color="blue" size="sm" onClick={() => handleReview(record)}>
               Review
             </Button>
           </div>
         ),
       },
     ],
-    []
-  );
-
-  // Mantine React Table instance with standard features
-  const table = useMantineReactTable({
-    columns,
-    data: tasks,
-
-    // Row Selection
-    enableRowSelection: true,
-
-    // Column Features
-    enableColumnResizing: true,
-    columnResizeMode: 'onChange', // Shows resize preview while dragging
-    enableColumnOrdering: true,
-    enableHiding: true,
-    enableColumnFilters: true,
-
-    // Sorting & Filtering
-    enableSorting: true,
-    enableGlobalFilter: true,
-    enableFilters: true,
-
-    // Pagination
-    enablePagination: true,
-
-    // Table styling
-    mantineTableProps: {
-      striped: true,
-      withColumnBorders: true,
-      withTableBorder: true,
-    },
-
-    // Toolbar positioning
-    positionGlobalFilter: 'left',
-    positionToolbarAlertBanner: 'bottom',
-    positionActionsColumn: 'last',
   });
 
   if (loading) {
@@ -336,7 +312,15 @@ export const ReviewTasks: React.FC = () => {
       <h2>Review Tasks</h2>
       <p>Document verification tasks requiring manual review ({tasks.length})</p>
 
-      <MantineReactTable table={table} />
+      <DataTable
+        records={tasks}
+        columns={effectiveColumns}
+        storeColumnsKey="review-tasks-grid"
+        withTableBorder
+        withColumnBorders
+        striped
+        highlightOnHover
+      />
 
       <Modal
         opened={reviewDialog.visible && !!reviewDialog.task}
