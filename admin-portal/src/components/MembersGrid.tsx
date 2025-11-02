@@ -1,13 +1,5 @@
 import { Button, Menu, Modal, Group } from '@mantine/core';
-import {
-  MantineReactTable,
-  type MRT_ColumnDef,
-  type MRT_PaginationState,
-  type MRT_SortingState,
-  type MRT_ColumnFiltersState,
-  type MRT_RowSelectionState,
-  useMantineReactTable,
-} from 'mantine-react-table';
+import { DataTable, useDataTableColumns, type DataTableSortStatus } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as XLSX from 'xlsx';
@@ -53,6 +45,11 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   const [bulkAction, setBulkAction] = useState<string>('');
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const [total, setTotal] = useState(totalMembers || members.length);
+  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<Member>>({
+    columnAccessor: 'legal_name',
+    direction: 'asc',
+  });
+  const [query, setQuery] = useState('');
 
   // Helper function to get translated column title
   const getColumnTitle = (field: string) => {
@@ -95,7 +92,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       updatePage(maxPage);
     }
   }, [total, pageSize, page, onPageChange, updatePage]);
-
 
   const handleBulkAction = (action: string) => {
     if (selectedIds.length === 0) {
@@ -221,264 +217,138 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     notification.showSuccess(`Exported to ${fileName}`);
   };
 
-  // Mantine React Table state
-  const [pagination, setPagination] = useState<MRT_PaginationState>({
-    pageIndex: page - 1,
-    pageSize: pageSize,
-  });
-  const [sorting, setSorting] = useState<MRT_SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>([]);
-  const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
-  const [globalFilter, setGlobalFilter] = useState<string>('');
+  const statusTooltips: Record<string, string> = {
+    ACTIVE: 'Member is active and in good standing',
+    PENDING: 'Membership application pending approval',
+    SUSPENDED: 'Member temporarily suspended - access restricted',
+    TERMINATED: 'Membership terminated - no longer active',
+    FLAGGED: 'Member flagged for review'
+  };
 
-  // Sync pagination with useGridState hook
-  useEffect(() => {
-    setPagination({ pageIndex: page - 1, pageSize });
-  }, [page, pageSize]);
+  const membershipTooltips: Record<string, string> = {
+    PREMIUM: 'Premium membership - full access to all services and priority support',
+    FULL: 'Full membership - access to all standard services',
+    BASIC: 'Basic membership - limited access to essential services'
+  };
 
-  // Sync row selection with selectedIds
-  useEffect(() => {
-    const selection: MRT_RowSelectionState = {};
-    selectedIds.forEach(id => {
-      const index = gridData.findIndex(m => m.org_id === id);
-      if (index >= 0) selection[index] = true;
-    });
-    setRowSelection(selection);
-  }, [selectedIds, gridData]);
-
-  // Mantine React Table column definitions - ALL columns defined, visibility controlled by table
-  const mantineColumns = useMemo<MRT_ColumnDef<Member>[]>(() => {
-    const statusTooltips: Record<string, string> = {
-      ACTIVE: 'Member is active and in good standing',
-      PENDING: 'Membership application pending approval',
-      SUSPENDED: 'Member temporarily suspended - access restricted',
-      TERMINATED: 'Membership terminated - no longer active',
-      FLAGGED: 'Member flagged for review'
-    };
-
-    const membershipTooltips: Record<string, string> = {
-      PREMIUM: 'Premium membership - full access to all services and priority support',
-      FULL: 'Full membership - access to all standard services',
-      BASIC: 'Basic membership - limited access to essential services'
-    };
-
-    return [
+  // Column definitions for mantine-datatable
+  const { effectiveColumns, resetColumnsToggle } = useDataTableColumns<Member>({
+    key: 'members-grid',
+    columns: [
       {
-        accessorKey: 'legal_name',
-        header: getColumnTitle('legal_name'),
-        size: 200,
-        enableHiding: false, // Always visible
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
-        },
+        accessor: 'legal_name',
+        title: getColumnTitle('legal_name'),
+        width: 200,
+        resizable: true,
+        sortable: true,
+        filter: (
+          <input
+            type="text"
+            placeholder="Search legal name..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        ),
+        filtering: query !== '',
+        render: (member) => (
+          <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(member.legal_name) }} />
+        ),
       },
       {
-        accessorKey: 'status',
-        header: getColumnTitle('status'),
-        size: 120,
-        Cell: ({ row }) => (
+        accessor: 'status',
+        title: getColumnTitle('status'),
+        width: 120,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (member) => (
           <span
             className="status-badge"
-            style={{ backgroundColor: getStatusColor(row.original.status) }}
-            title={statusTooltips[row.original.status] || 'Member status'}
+            style={{ backgroundColor: getStatusColor(member.status) }}
+            title={statusTooltips[member.status] || 'Member status'}
             role="status"
-            aria-label={`Status: ${row.original.status}`}
+            aria-label={`Status: ${member.status}`}
           >
-            {row.original.status}
+            {member.status}
           </span>
         ),
       },
       {
-        accessorKey: 'lei',
-        header: 'LEI',
-        size: 150,
+        accessor: 'lei',
+        title: 'LEI',
+        width: 150,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'euid',
-        header: 'EUID',
-        size: 150,
+        accessor: 'euid',
+        title: 'EUID',
+        width: 150,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'kvk',
-        header: 'KVK',
-        size: 120,
+        accessor: 'kvk',
+        title: 'KVK',
+        width: 120,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
       },
       {
-        accessorKey: 'created_at',
-        header: getColumnTitle('created_at'),
-        size: 140,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div>{new Date(value).toLocaleDateString()}</div>;
-        },
+        accessor: 'created_at',
+        title: getColumnTitle('created_at'),
+        width: 140,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (member) => <div>{new Date(member.created_at).toLocaleDateString()}</div>,
       },
       {
-        accessorKey: 'org_id',
-        header: getColumnTitle('org_id'),
-        size: 180,
+        accessor: 'org_id',
+        title: getColumnTitle('org_id'),
+        width: 180,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        defaultToggle: false, // Hidden by default
       },
       {
-        accessorKey: 'domain',
-        header: getColumnTitle('domain'),
-        size: 150,
-        Cell: ({ cell }) => {
-          const value = cell.getValue<string>();
-          return <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
-        },
+        accessor: 'domain',
+        title: getColumnTitle('domain'),
+        width: 150,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        defaultToggle: false, // Hidden by default
+        render: (member) => (
+          <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(member.domain || '') }} />
+        ),
       },
       {
-        accessorKey: 'membership_level',
-        header: getColumnTitle('membership_level'),
-        size: 120,
-        Cell: ({ row }) => (
+        accessor: 'membership_level',
+        title: getColumnTitle('membership_level'),
+        width: 120,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        defaultToggle: false, // Hidden by default
+        render: (member) => (
           <span
             className="membership-badge"
-            style={{ backgroundColor: getMembershipColor(row.original.membership_level) }}
-            title={membershipTooltips[row.original.membership_level] || 'Membership level'}
+            style={{ backgroundColor: getMembershipColor(member.membership_level) }}
+            title={membershipTooltips[member.membership_level] || 'Membership level'}
             role="status"
-            aria-label={`Membership: ${row.original.membership_level}`}
+            aria-label={`Membership: ${member.membership_level}`}
           >
-            {row.original.membership_level}
+            {member.membership_level}
           </span>
         ),
       },
-    ];
-  }, []);
-
-  // Mantine React Table instance with ONLY standard features
-  const table = useMantineReactTable({
-    columns: mantineColumns,
-    data: gridData,
-
-    // Row Selection - Standard feature
-    enableRowSelection: true,
-
-    // Column Features - All standard
-    enableColumnResizing: true,
-    columnResizeMode: 'onChange', // Show resize preview while dragging
-    enableColumnOrdering: true,
-    enableHiding: true, // Enable column show/hide via column menu
-    enableColumnFilters: !onPageChange,
-
-    // Sorting & Filtering - Standard features
-    enableSorting: !onPageChange,
-    enableGlobalFilter: !onPageChange,
-    enableFilters: !onPageChange,
-
-    // Pagination - Standard feature
-    enablePagination: true,
-    manualPagination: !!onPageChange,
-    pageCount: onPageChange ? Math.ceil(total / pageSize) : undefined,
-
-    // Initial state - Set default column visibility
-    initialState: {
-      columnVisibility: {
-        org_id: false, // Hidden by default
-        domain: false, // Hidden by default
-        membership_level: false, // Hidden by default
-      },
-    },
-
-    // State management
-    state: {
-      pagination,
-      sorting,
-      columnFilters,
-      rowSelection,
-      globalFilter,
-    },
-
-    // State change handlers
-    onPaginationChange: setPagination,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: setGlobalFilter,
-
-    // Table styling
-    mantineTableProps: {
-      striped: true,
-      withColumnBorders: true,
-      withTableBorder: true,
-    },
-
-    // Row click handler
-    mantineTableBodyRowProps: ({ row }) => ({
-      onClick: () => onViewDetails(row.original),
-      style: { cursor: 'pointer' },
-    }),
-
-    // Top toolbar - Essential custom actions and export
-    renderTopToolbarCustomActions: () => (
-      <Group gap="sm">
-        {/* Export Menu */}
-        <Menu>
-          <Menu.Target>
-            <Button variant="outline" size="sm">
-              {t('common.export', 'Export')}
-            </Button>
-          </Menu.Target>
-          <Menu.Dropdown>
-            <Menu.Item onClick={handleExcelExport}>
-              Export to Excel (.xlsx)
-            </Menu.Item>
-            <Menu.Item onClick={handleCSVExport}>
-              Export to CSV
-            </Menu.Item>
-            <Menu.Item onClick={handlePDFExport}>
-              Export to PDF
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-
-        {/* Bulk Actions (when rows selected) */}
-        {Object.keys(rowSelection).length > 0 && (
-          <Menu>
-            <Menu.Target>
-              <Button color="cyan" size="sm">
-                {`${t('members.bulkActions')} (${Object.keys(rowSelection).length})`}
-              </Button>
-            </Menu.Target>
-            <Menu.Dropdown>
-              {bulkActions.map((item, index) => (
-                <Menu.Item key={index} onClick={item.click}>
-                  {item.text}
-                </Menu.Item>
-              ))}
-            </Menu.Dropdown>
-          </Menu>
-        )}
-      </Group>
-    ),
-
-    // Position toolbar icons consistently
-    positionToolbarAlertBanner: 'bottom',
-    positionGlobalFilter: 'left', // Search on left
-    positionActionsColumn: 'last',
+    ],
   });
-
-  // Sync row selection changes back to selectedIds
-  useEffect(() => {
-    const selected = Object.keys(rowSelection)
-      .filter(key => rowSelection[key])
-      .map(key => gridData[parseInt(key)]?.org_id)
-      .filter(Boolean);
-    if (JSON.stringify(selected) !== JSON.stringify(selectedIds)) {
-      setSelectedIds(selected);
-    }
-  }, [rowSelection, gridData]);
-
-  // Handle pagination changes
-  useEffect(() => {
-    if (onPageChange && pagination.pageIndex !== page - 1) {
-      updatePage(pagination.pageIndex + 1);
-      onPageChange(pagination.pageIndex + 1, pagination.pageSize);
-    }
-    if (pagination.pageSize !== pageSize) {
-      updatePageSize(pagination.pageSize);
-    }
-  }, [pagination]);
 
   const bulkActions = [
     { text: 'Export to PDF', icon: 'file-pdf', click: () => handleBulkAction('export-pdf') },
@@ -504,6 +374,55 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
   return (
     <div className="members-grid-container">
+      {/* Toolbar with Export and Bulk Actions */}
+      <div className="grid-toolbar">
+        <div className="toolbar-left">
+          {/* Export Menu */}
+          <Menu>
+            <Menu.Target>
+              <Button variant="outline" size="sm">
+                {t('common.export', 'Export')}
+              </Button>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item onClick={handleExcelExport}>
+                Export to Excel (.xlsx)
+              </Menu.Item>
+              <Menu.Item onClick={handleCSVExport}>
+                Export to CSV
+              </Menu.Item>
+              <Menu.Item onClick={handlePDFExport}>
+                Export to PDF
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+
+          {/* Bulk Actions (when rows selected) */}
+          {selectedIds.length > 0 && (
+            <Menu>
+              <Menu.Target>
+                <Button color="cyan" size="sm">
+                  {`${t('members.bulkActions')} (${selectedIds.length})`}
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                {bulkActions.map((item, index) => (
+                  <Menu.Item key={index} onClick={item.click}>
+                    {item.text}
+                  </Menu.Item>
+                ))}
+              </Menu.Dropdown>
+            </Menu>
+          )}
+        </div>
+
+        {/* Toolbar Stats */}
+        <div className="toolbar-stats">
+          <span>Total: {total}</span>
+          <span>Page {page} of {Math.ceil(total / pageSize)}</span>
+        </div>
+      </div>
+
       {/* Bulk Action Confirmation Dialog */}
       <Modal
         opened={showBulkDialog}
@@ -520,7 +439,29 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         </Group>
       </Modal>
 
-      <MantineReactTable table={table} />
+      {/* DataTable from mantine-datatable */}
+      <DataTable
+        withTableBorder
+        withColumnBorders
+        striped
+        highlightOnHover
+        records={gridData}
+        columns={effectiveColumns}
+        fetching={loading}
+        totalRecords={total}
+        recordsPerPage={pageSize}
+        page={page}
+        onPageChange={updatePage}
+        recordsPerPageOptions={[10, 20, 50, 100]}
+        onRecordsPerPageChange={updatePageSize}
+        sortStatus={sortStatus}
+        onSortStatusChange={setSortStatus}
+        selectedRecords={gridData.filter((m) => selectedIds.includes(m.org_id))}
+        onSelectedRecordsChange={(records) => setSelectedIds(records.map((r) => r.org_id))}
+        storeColumnsKey="members-grid"
+        onRowClick={({ record }) => onViewDetails(record)}
+        rowStyle={() => ({ cursor: 'pointer' })}
+      />
     </div>
   );
 };

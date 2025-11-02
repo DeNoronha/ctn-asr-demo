@@ -12,6 +12,7 @@
   width: 100%;
   flex-wrap: wrap;
   gap: 10px;
+  margin-bottom: 16px;
 }
 
 .toolbar-left {
@@ -45,23 +46,6 @@
   display: inline-block;
 }
 
-/* Column visibility menu */
-.k-columnmenu-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Selection styling */
-.k-grid tr.k-selected {
-  background-color: #e3f2fd !important;
-}
-
-/* Resizable columns */
-.k-grid-header .k-grid-column-resizer {
-  cursor: col-resize;
-}
-
 /* Better mobile responsiveness */
 @media (max-width: 768px) {
   .grid-toolbar {
@@ -82,17 +66,4 @@
     justify-content: space-between;
     width: 100%;
   }
-}
-
-/* Grid row hover effect */
-.k-grid tbody tr:hover {
-  background-color: #f8f9fa;
-}
-
-/* Checkbox styling */
-.k-grid td input[type="checkbox"],
-.k-grid th input[type="checkbox"] {
-  cursor: pointer;
-  width: 18px;
-  height: 18px;
 }
