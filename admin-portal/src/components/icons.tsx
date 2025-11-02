@@ -1,6 +1,6 @@
 /**
  * Icon Components - Replacement for lucide-react
- * Using Kendo UI icons and simple HTML/Unicode icons
+ * Using simple HTML/Unicode icons
  */
 
 import React from 'react';

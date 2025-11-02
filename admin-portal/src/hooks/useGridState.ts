@@ -150,7 +150,7 @@ export function useGridState(
     setFilters(defaultFilters);
   }, [defaultPage, defaultPageSize, defaultFilters]);
 
-  // Calculate skip value for Kendo Grid
+  // Calculate skip value for pagination
   const skip = (page - 1) * pageSize;
 
   return {

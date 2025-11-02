@@ -18,7 +18,7 @@ export interface FilterCriteria {
   value: string | Date | null;
 }
 
-// Local type definition to replace Kendo's CompositeFilterDescriptor
+// Composite filter descriptor for advanced filtering
 export interface CompositeFilterDescriptor {
   logic: 'and' | 'or';
   filters: Array<{

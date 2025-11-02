@@ -10,7 +10,7 @@ interface FieldLabelProps {
 }
 
 /**
- * Custom label component for Kendo Form Fields with help tooltip
+ * Custom label component for form fields with help tooltip
  * Use with Field component: <Field name="x" label={(props) => <FieldLabel {...props} helpText="..." />} />
  */
 export const FieldLabel: React.FC<FieldLabelProps> = ({

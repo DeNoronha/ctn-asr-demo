@@ -2,7 +2,7 @@
  * Browser-safe stub for react-dom/server
  *
  * This module provides a browser-compatible implementation of react-dom/server
- * for Kendo React Excel Export which uses renderToStaticMarkup to convert
+ * for Excel export functionality which uses renderToStaticMarkup to convert
  * React elements to strings.
  */
 
