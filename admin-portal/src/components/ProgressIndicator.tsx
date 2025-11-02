@@ -42,8 +42,8 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
     >
       {label && <div className="progress-label" aria-hidden="true">{label}</div>}
       <Progress
-        value={variant === 'determinate' ? value : undefined}
-        animation={variant === 'indeterminate'}
+        value={variant === 'determinate' ? value : 0}
+        animated={variant === 'indeterminate'}
       />
       {showPercentage && variant === 'determinate' && (
         <div className="progress-percentage" aria-hidden="true">{value}%</div>

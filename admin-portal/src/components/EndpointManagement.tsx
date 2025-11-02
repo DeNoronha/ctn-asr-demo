@@ -297,10 +297,8 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
               <label>Data Category *</label>
               <Select
                 data={DATA_CATEGORIES}
-                textField="label"
-                dataItemKey="value"
-                value={DATA_CATEGORIES.find((c) => c.value === formData.data_category)}
-                onChange={(value) => setFormData({ ...formData, data_category: value })}
+                value={formData.data_category}
+                onChange={(value) => setFormData({ ...formData, data_category: value || '' })}
               />
             </div>
           </div>

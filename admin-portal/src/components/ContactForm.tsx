@@ -1,8 +1,5 @@
-import { Button } from '@mantine/core';
-
-
-import { Field, Form, FormElement, type FormRenderProps } from '@progress/kendo-react-form';
-
+import { Button, TextInput, Select, Checkbox } from '@mantine/core';
+import { useForm } from '@mantine/form';
 
 // ContactForm.tsx - Form for creating/editing contacts
 import type React from 'react';
@@ -25,14 +22,12 @@ const contactTypes = ['Primary', 'Technical', 'Billing', 'Support'];
 
 /**
  * Form validation functions with inline feedback (DA-007)
- * - Immediate validation on blur
- * - Clear error messages with ARIA support
- * - Pattern-based validation for structured fields
+ * Mantine format: return null for valid, error message for invalid
  */
 const emailValidator = (value: string) => {
   if (!value) return 'Email is required';
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(value) ? '' : 'Please enter a valid email address (e.g., name@company.com)';
+  return emailRegex.test(value) ? null : 'Please enter a valid email address (e.g., name@company.com)';
 };
 
 const nameValidator = (value: string, fieldName: string) => {
@@ -42,14 +37,13 @@ const nameValidator = (value: string, fieldName: string) => {
   if (value.trim().length < 2) {
     return `${fieldName} must be at least 2 characters`;
   }
-  return '';
+  return null;
 };
 
 const phoneValidator = (value: string) => {
-  if (!value) return ''; // Optional field
-  // International phone format: +XX XX XXX XXXX or similar
+  if (!value) return null; // Optional field
   const phoneRegex = /^\+?[\d\s\-()]{7,20}$/;
-  return phoneRegex.test(value) ? '' : 'Please enter a valid phone number (e.g., +31 20 123 4567)';
+  return phoneRegex.test(value) ? null : 'Please enter a valid phone number (e.g., +31 20 123 4567)';
 };
 
 export const ContactForm: React.FC<ContactFormProps> = ({
@@ -58,16 +52,58 @@ export const ContactForm: React.FC<ContactFormProps> = ({
   onSave,
   onCancel,
 }) => {
-  const handleSubmit = async (dataItem: Record<string, unknown>) => {
-    // SEC-006: Sanitize form data before processing to prevent XSS attacks
-    const sanitizedData = sanitizeFormData(dataItem);
+  const getInitialValues = () => {
+    if (contact) {
+      const [first_name, ...lastNames] = (contact.full_name || '').split(' ');
+      const contactType = contact.contact_type
+        ? contact.contact_type.charAt(0) + contact.contact_type.slice(1).toLowerCase()
+        : 'Primary';
+
+      return {
+        contact_type: contactType,
+        first_name: first_name || '',
+        last_name: lastNames.join(' ') || '',
+        email: contact.email || '',
+        phone: contact.phone || '',
+        mobile: contact.mobile || '',
+        job_title: contact.job_title || '',
+        department: contact.department || '',
+        is_primary: contact.is_primary || false,
+      };
+    }
+    return {
+      contact_type: 'Primary',
+      is_primary: false,
+      first_name: '',
+      last_name: '',
+      email: '',
+      phone: '',
+      mobile: '',
+      job_title: '',
+      department: '',
+    };
+  };
+
+  const form = useForm({
+    initialValues: getInitialValues(),
+    validate: {
+      first_name: (value) => nameValidator(value, 'First name'),
+      last_name: (value) => nameValidator(value, 'Last name'),
+      email: emailValidator,
+      phone: phoneValidator,
+      mobile: phoneValidator,
+    },
+  });
+
+  const handleSubmit = async (values: typeof form.values) => {
+    const sanitizedData = sanitizeFormData(values);
 
     const contactData: LegalEntityContact = {
       legal_entity_contact_id: contact?.legal_entity_contact_id || crypto.randomUUID(),
       legal_entity_id: legalEntityId,
       dt_created: contact?.dt_created || new Date().toISOString(),
       dt_modified: new Date().toISOString(),
-      contact_type: sanitizedData.contact_type as
+      contact_type: (sanitizedData.contact_type as string).toUpperCase() as
         | 'PRIMARY'
         | 'TECHNICAL'
         | 'BILLING'
@@ -86,183 +122,142 @@ export const ContactForm: React.FC<ContactFormProps> = ({
     await onSave(contactData);
   };
 
-  const getInitialValues = () => {
-    if (contact) {
-      const [first_name, ...lastNames] = (contact.full_name || '').split(' ');
-      // Convert backend uppercase contact_type (e.g., 'PRIMARY') to title case (e.g., 'Primary')
-      const contactType = contact.contact_type
-        ? contact.contact_type.charAt(0) + contact.contact_type.slice(1).toLowerCase()
-        : 'Primary';
-
-      return {
-        contact_type: contactType,
-        first_name: first_name || '',
-        last_name: lastNames.join(' ') || '',
-        email: contact.email || '',
-        phone: contact.phone || '',
-        mobile: contact.mobile || '',
-        job_title: contact.job_title || '',
-        department: contact.department || '',
-        is_primary: contact.is_primary || false,
-      };
-    }
-    return { contact_type: 'Primary', is_primary: false, first_name: '', last_name: '' };
-  };
-
   return (
-    <Form
-      initialValues={getInitialValues()}
-      onSubmit={handleSubmit}
-      render={(formRenderProps: FormRenderProps) => (
-        <FormElement className="contact-form">
-          <fieldset className="k-form-fieldset">
-            <legend>Contact Type</legend>
+    <form onSubmit={form.onSubmit(handleSubmit)} className="contact-form">
+      <fieldset className="k-form-fieldset">
+        <legend>Contact Type</legend>
 
-            <Field
-              name="contact_type"
-              label={() => (
-                <FieldLabel
-                  text="Contact Type"
-                  helpText={helpContent.contactType}
-                  dataTestId="contact-type-help"
-                />
-              )}
-              component={DropDownList}
-              data={contactTypes}
+        <Select
+          {...form.getInputProps('contact_type')}
+          label={
+            <FieldLabel
+              text="Contact Type"
+              helpText={helpContent.contactType}
+              dataTestId="contact-type-help"
             />
+          }
+          data={contactTypes}
+          mb="md"
+        />
 
-            <Field
-              name="is_primary"
-              label={() => (
-                <FieldLabel
-                  text="Primary Contact"
-                  helpText={helpContent.isPrimaryContact}
-                  dataTestId="is-primary-help"
-                />
-              )}
-              component={Checkbox}
+        <Checkbox
+          {...form.getInputProps('is_primary', { type: 'checkbox' })}
+          label={
+            <FieldLabel
+              text="Primary Contact"
+              helpText={helpContent.isPrimaryContact}
+              dataTestId="is-primary-help"
             />
-          </fieldset>
+          }
+          mb="md"
+        />
+      </fieldset>
 
-          <fieldset className="k-form-fieldset">
-            <legend>Personal Information</legend>
+      <fieldset className="k-form-fieldset">
+        <legend>Personal Information</legend>
 
-            <div className="form-row-group">
-              <Field
-                name="first_name"
-                label="First Name"
-                component={Input}
-                validator={(value: string) => nameValidator(value, 'First name')}
-                required
-                aria-required
-                placeholder="e.g., Jane"
-                autoComplete="given-name"
-              />
+        <div className="form-row-group">
+          <TextInput
+            {...form.getInputProps('first_name')}
+            label="First Name"
+            required
+            placeholder="e.g., Jane"
+            autoComplete="given-name"
+          />
 
-              <Field
-                name="last_name"
-                label="Last Name"
-                component={Input}
-                validator={(value: string) => nameValidator(value, 'Last name')}
-                required
-                aria-required
-                placeholder="e.g., Doe"
-                autoComplete="family-name"
-              />
-            </div>
+          <TextInput
+            {...form.getInputProps('last_name')}
+            label="Last Name"
+            required
+            placeholder="e.g., Doe"
+            autoComplete="family-name"
+          />
+        </div>
 
-              <Field
-                name="email"
-                label={() => (
-                  <FieldLabel
-                    text="Email"
-                    helpText={helpContent.emailFormat}
-                    required
-                    dataTestId="email-help"
-                  />
-                )}
-                component={Input}
-                type="email"
-                validator={emailValidator}
-                required
-                aria-required
-                placeholder="name@company.com"
-                autoComplete="email"
-              />
-          </fieldset>
-
-          <ProgressiveSection
-            title="Additional Contact Details (Optional)"
-            storageKey="contact-form-details"
-            defaultExpanded={false}
-          >
-            <div className="form-row-group">
-              <Field
-                name="phone"
-                label={() => (
-                  <FieldLabel
-                    text="Phone"
-                    helpText={helpContent.contactPhone}
-                    dataTestId="phone-help"
-                  />
-                )}
-                component={Input}
-                placeholder="+31 20 123 4567"
-                validator={phoneValidator}
-              />
-
-              <Field
-                name="mobile"
-                label={() => (
-                  <FieldLabel
-                    text="Mobile"
-                    helpText={helpContent.contactMobile}
-                    dataTestId="mobile-help"
-                  />
-                )}
-                component={Input}
-                placeholder="+31 6 12 34 56 78"
-                validator={phoneValidator}
-              />
-            </div>
-
-            <Field
-              name="job_title"
-              label={() => (
-                <FieldLabel
-                  text="Job Title"
-                  helpText={helpContent.jobTitle}
-                  dataTestId="job-title-help"
-                />
-              )}
-              component={Input}
-              placeholder="e.g., IT Manager, Operations Director"
+        <TextInput
+          {...form.getInputProps('email')}
+          label={
+            <FieldLabel
+              text="Email"
+              helpText={helpContent.emailFormat}
+              required
+              dataTestId="email-help"
             />
+          }
+          type="email"
+          required
+          placeholder="name@company.com"
+          autoComplete="email"
+          mb="md"
+        />
+      </fieldset>
 
-            <Field
-              name="department"
-              label={() => (
-                <FieldLabel
-                  text="Department"
-                  helpText={helpContent.department}
-                  dataTestId="department-help"
-                />
-              )}
-              component={Input}
-              placeholder="e.g., IT, Operations, Finance"
+      <ProgressiveSection
+        title="Additional Contact Details (Optional)"
+        storageKey="contact-form-details"
+        defaultExpanded={false}
+      >
+        <div className="form-row-group">
+          <TextInput
+            {...form.getInputProps('phone')}
+            label={
+              <FieldLabel
+                text="Phone"
+                helpText={helpContent.contactPhone}
+                dataTestId="phone-help"
+              />
+            }
+            placeholder="+31 20 123 4567"
+          />
+
+          <TextInput
+            {...form.getInputProps('mobile')}
+            label={
+              <FieldLabel
+                text="Mobile"
+                helpText={helpContent.contactMobile}
+                dataTestId="mobile-help"
+              />
+            }
+            placeholder="+31 6 12 34 56 78"
+          />
+        </div>
+
+        <TextInput
+          {...form.getInputProps('job_title')}
+          label={
+            <FieldLabel
+              text="Job Title"
+              helpText={helpContent.jobTitle}
+              dataTestId="job-title-help"
             />
-          </ProgressiveSection>
+          }
+          placeholder="e.g., IT Manager, Operations Director"
+          mb="md"
+        />
 
-          <div className="k-form-buttons">
-            <Button type="submit" color="blue" disabled={!formRenderProps.allowSubmit}>
-              Save Contact
-            </Button>
-            <Button type="button" onClick={onCancel}>
-              Cancel
-            </Button>
-          </div>
-        </FormElement>
-      )}
-    />
+        <TextInput
+          {...form.getInputProps('department')}
+          label={
+            <FieldLabel
+              text="Department"
+              helpText={helpContent.department}
+              dataTestId="department-help"
+            />
+          }
+          placeholder="e.g., IT, Operations, Finance"
+          mb="md"
+        />
+      </ProgressiveSection>
+
+      <div className="k-form-buttons">
+        <Button type="submit" color="blue">
+          {contact ? 'Update Contact' : 'Add Contact'}
+        </Button>
+        <Button type="button" onClick={onCancel} variant="default">
+          Cancel
+        </Button>
+      </div>
+    </form>
   );
 };

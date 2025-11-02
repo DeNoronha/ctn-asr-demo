@@ -219,14 +219,17 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
             <div className="form-field">
               <label>Select Identifier to Verify</label>
               <Select
-                data={identifierOptions}
-                textField="displayText"
-                dataItemKey="legal_entity_reference_id"
-                value={identifierOptions.find(
-                  (opt) =>
-                    opt.legal_entity_reference_id === selectedIdentifier?.legal_entity_reference_id
-                )}
-                onChange={(value) => handleIdentifierChange(value)}
+                data={identifierOptions.map((opt) => ({
+                  value: opt.legal_entity_reference_id || '',
+                  label: opt.displayText,
+                }))}
+                value={selectedIdentifier?.legal_entity_reference_id || null}
+                onChange={(value) => {
+                  const selected = identifierOptions.find(
+                    (opt) => opt.legal_entity_reference_id === value
+                  );
+                  handleIdentifierChange(selected || null);
+                }}
                 style={{ width: '100%' }}
               />
             </div>
@@ -304,7 +307,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
                 icon={<FolderOpen size={32} />}
                 message="No verification records yet"
                 hint="Upload documents to verify identifiers"
-                size="sm"
+                size="small"
               />
             )}
           </div>

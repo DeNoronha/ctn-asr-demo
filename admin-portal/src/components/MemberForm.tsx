@@ -291,29 +291,34 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               <HelpTooltip content={helpContent.authenticationTier} dataTestId="tier-help" />
             </Label>
             <Select
-              data={TIER_OPTIONS}
-              textField="name"
-              dataItemKey="tier"
-              value={TIER_OPTIONS.find(t => t.tier === formData.authentication_tier)}
+              data={TIER_OPTIONS.map((t) => ({
+                value: t.tier.toString(),
+                label: t.name,
+              }))}
+              value={formData.authentication_tier?.toString() || '3'}
               onChange={(value) => {
-                const selectedTier = value as TierOption;
-                setFormData(prev => ({
-                  ...prev,
-                  authentication_tier: selectedTier.tier,
-                  authentication_method: selectedTier.method,
-                }));
-                setIsDirty(true);
+                if (value) {
+                  const selectedTier = TIER_OPTIONS.find((t) => t.tier === Number(value));
+                  if (selectedTier) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      authentication_tier: selectedTier.tier,
+                      authentication_method: selectedTier.method,
+                    }));
+                    setIsDirty(true);
+                  }
+                }
               }}
-              itemRender={(li, itemProps) => {
-                const item = itemProps.dataItem as TierOption;
-                return React.cloneElement(li, li.props, (
+              renderOption={({ option }) => {
+                const tierOption = TIER_OPTIONS.find((t) => t.tier === Number(option.value));
+                return tierOption ? (
                   <div style={{ padding: '0.5rem 0' }}>
-                    <div style={{ fontWeight: 600 }}>{item.name}</div>
+                    <div style={{ fontWeight: 600 }}>{tierOption.name}</div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--ctn-text-light)' }}>
-                      {item.access}
+                      {tierOption.access}
                     </div>
                   </div>
-                ));
+                ) : null;
               }}
             />
             <Hint>
@@ -334,7 +339,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
             </Label>
             <MaskedTextBox
               value={formData.lei}
-              onChange={(value) => handleFieldChange('lei', value || '')}
+              onChange={(e) => handleFieldChange('lei', e.value || '')}
               onBlur={() => handleBlur('lei')}
               mask="AAAAAAAAAAAAAAAAAAAA"
               placeholder="20 character LEI code"
@@ -356,7 +361,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
             </Label>
             <MaskedTextBox
               value={formData.kvk}
-              onChange={(value) => handleFieldChange('kvk', value || '')}
+              onChange={(e) => handleFieldChange('kvk', e.value || '')}
               onBlur={() => handleBlur('kvk')}
               mask="00000000"
               placeholder="12345678"

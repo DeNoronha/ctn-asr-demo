@@ -363,7 +363,7 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
                   <label key={scope.value} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Checkbox
                       checked={formData.scopes.includes(scope.value)}
-                      onChange={() => handleScopeToggle(scope.target.value)}
+                      onChange={() => handleScopeToggle(scope.value)}
                     />
                     <span>{scope.label}</span>
                   </label>
