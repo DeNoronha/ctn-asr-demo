@@ -32,9 +32,9 @@ Runs end-to-end tests using Playwright.
 ## Environment Variables
 
 Required environment variables:
-- `VITE_AAD_CLIENT_ID` - Azure AD Client ID
-- `VITE_AAD_AUTHORITY` - Azure AD Authority URL
-- `VITE_AAD_REDIRECT_URI` - Redirect URI for authentication
+- `VITE_AZURE_CLIENT_ID` - Azure AD Client ID
+- `VITE_AZURE_TENANT_ID` - Azure AD Tenant ID
+- `VITE_REDIRECT_URI` - Redirect URI for authentication
 - `VITE_API_CLIENT_ID` - API Client ID
 - `VITE_API_BASE_URL` - API Base URL
 
