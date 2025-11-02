@@ -10,6 +10,7 @@ import { formatDateTime } from '../utils/dateUtils';
 import { getVerificationColor } from '../utils/colors';
 import { EmptyState } from './EmptyState';
 import './IdentifierVerificationManager.css';
+import { ErrorBoundary } from './ErrorBoundary';
 
 interface VerificationRecord {
   verification_id: string;
@@ -338,15 +339,17 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
                 <Loader size="md" />
               </div>
             ) : verificationRecords.length > 0 ? (
-              <DataTable
-                records={verificationRecords}
-                columns={effectiveColumns}
-                storeColumnsKey="verification-grid"
-                withTableBorder
-                withColumnBorders
-                striped
-                highlightOnHover
-              />
+              <ErrorBoundary>
+                <DataTable
+                  records={verificationRecords}
+                  columns={effectiveColumns}
+                  storeColumnsKey="verification-grid"
+                  withTableBorder
+                  withColumnBorders
+                  striped
+                  highlightOnHover
+                />
+              </ErrorBoundary>
             ) : (
               <EmptyState
                 icon={<FolderOpen size={32} />}
