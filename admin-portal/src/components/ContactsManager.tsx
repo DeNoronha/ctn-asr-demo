@@ -12,6 +12,7 @@ import { EmptyState } from './EmptyState';
 import './ContactsManager.css';
 import { getEmptyState } from '../utils/emptyStates';
 import { contactSuccessMessages } from '../utils/successMessages';
+import { ErrorBoundary } from './ErrorBoundary';
 
 interface ContactsManagerProps {
   legalEntityId: string;
@@ -209,15 +210,17 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
       </div>
 
       {contactCount > 0 ? (
-        <DataTable
-          withTableBorder
-          withColumnBorders
-          striped
-          highlightOnHover
-          records={safeContacts}
-          columns={effectiveColumns}
-          storeColumnsKey="contacts-grid"
-        />
+        <ErrorBoundary>
+          <DataTable
+            withTableBorder
+            withColumnBorders
+            striped
+            highlightOnHover
+            records={safeContacts}
+            columns={effectiveColumns}
+            storeColumnsKey="contacts-grid"
+          />
+        </ErrorBoundary>
       ) : (
         (() => {
           const es = getEmptyState('contact', 'noContacts');
