@@ -96,7 +96,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     }
   }, [total, pageSize, page, onPageChange, updatePage]);
 
-  // Client-side sorting, filtering, and pagination
+  // Client-side sorting and filtering (DataTable handles pagination)
   useEffect(() => {
     let filtered = [...gridData];
 
@@ -134,16 +134,10 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       });
     }
 
-    // Store filtered count before pagination
+    // Store filtered count and let DataTable handle pagination
     setFilteredCount(filtered.length);
-
-    // Apply pagination (slice data for current page)
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const paginated = filtered.slice(startIndex, endIndex);
-
-    setSortedData(paginated);
-  }, [gridData, sortStatus, query, page, pageSize]);
+    setSortedData(filtered); // Pass ALL filtered/sorted data to DataTable
+  }, [gridData, sortStatus, query]);
 
   const handleBulkAction = (action: string) => {
     if (selectedIds.length === 0) {
