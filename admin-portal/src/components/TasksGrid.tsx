@@ -598,7 +598,7 @@ const TasksGrid: React.FC = () => {
             <label>Due Date</label>
             <DatePickerInput
               value={formData.due_date}
-              onChange={(value) => setFormData({ ...formData, due_date: value })}
+              onChange={(value) => setFormData({ ...formData, due_date: value ? new Date(value) : null })}
               valueFormat="DD/MM/YYYY"
             />
           </div>
@@ -661,7 +661,7 @@ const TasksGrid: React.FC = () => {
                 <label>Due Date</label>
                 <DatePickerInput
                   value={formData.due_date}
-                  onChange={(value) => setFormData({ ...formData, due_date: value })}
+                  onChange={(value) => setFormData({ ...formData, due_date: value ? new Date(value) : null })}
                   valueFormat="DD/MM/YYYY"
                 />
               </div>
