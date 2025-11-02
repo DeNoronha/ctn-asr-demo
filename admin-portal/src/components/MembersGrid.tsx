@@ -1,7 +1,7 @@
 import { Button, Menu, Modal, Group, TextInput } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import { DataTable, useDataTableColumns, type DataTableSortStatus } from 'mantine-datatable';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Workbook } from 'exceljs';
 import { useNotification } from '../contexts/NotificationContext';
@@ -128,7 +128,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     return { sortedData, filteredCount };
   }, [gridData, sortStatus, query, page, pageSize]);
 
-  const handleBulkAction = (action: string) => {
+  const handleBulkAction = useCallback((action: string) => {
     if (selectedIds.length === 0) {
       notification.showWarning('Please select members first');
       return;
@@ -136,9 +136,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
     setBulkAction(action);
     setShowBulkDialog(true);
-  };
+  }, [selectedIds.length, notification]);
 
-  const executeBulkAction = async () => {
+  const executeBulkAction = useCallback(async () => {
     setIsBulkProcessing(true);
 
     try {
@@ -180,17 +180,17 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       setIsBulkProcessing(false);
       setShowBulkDialog(false);
     }
-  };
+  }, [gridData, selectedIds, bulkAction, notification, handleError]);
 
-  const handleCSVExport = () => {
+  const handleCSVExport = useCallback(() => {
     const dataToExport =
       selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
 
     exportToCSV(dataToExport);
     notification.showSuccess(`Exported ${dataToExport.length} members to CSV`);
-  };
+  }, [selectedIds, gridData, notification]);
 
-  const handleExcelExport = async () => {
+  const handleExcelExport = useCallback(async () => {
     const dataToExport =
       selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
 
@@ -240,9 +240,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     window.URL.revokeObjectURL(url);
 
     notification.showSuccess(`Exported ${dataToExport.length} members to ${fileName}`);
-  };
+  }, [selectedIds, gridData, notification]);
 
-  const handlePDFExport = () => {
+  const handlePDFExport = useCallback(() => {
     const dataToExport =
       selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
 
@@ -256,7 +256,23 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     });
 
     notification.showSuccess(`Exported to ${fileName}`);
-  };
+  }, [selectedIds, gridData, notification]);
+
+  const handleQueryChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+  }, []);
+
+  const handleRowClick = useCallback(({ record }: { record: Member }) => {
+    onViewDetails(record);
+  }, [onViewDetails]);
+
+  const handleSelectedRecordsChange = useCallback((records: Member[]) => {
+    setSelectedIds(records.map((r) => r.org_id));
+  }, []);
+
+  const handleDialogClose = useCallback(() => {
+    setShowBulkDialog(false);
+  }, []);
 
   const statusTooltips: Record<string, string> = {
     ACTIVE: 'Member is active and in good standing',
@@ -421,7 +437,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             placeholder="Search members..."
             leftSection={<IconSearch size={16} />}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={handleQueryChange}
             style={{ minWidth: '250px' }}
           />
 
@@ -489,9 +505,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           sortStatus={sortStatus}
           onSortStatusChange={setSortStatus}
           selectedRecords={sortedData.filter((m) => selectedIds.includes(m.org_id))}
-          onSelectedRecordsChange={(records) => setSelectedIds(records.map((r) => r.org_id))}
+          onSelectedRecordsChange={handleSelectedRecordsChange}
           storeColumnsKey="members-grid"
-          onRowClick={({ record }) => onViewDetails(record)}
+          onRowClick={handleRowClick}
           rowStyle={() => ({ cursor: 'pointer' })}
         />
       </ErrorBoundary>

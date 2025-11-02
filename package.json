@@ -8,6 +8,7 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@playwright/test": "^1.56.1"
+    "@playwright/test": "^1.56.1",
+    "@rollup/plugin-terser": "^0.4.4"
   }
 }
