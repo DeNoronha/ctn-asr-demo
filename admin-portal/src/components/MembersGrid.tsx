@@ -1,4 +1,5 @@
-import { Button, Menu, Modal, Group } from '@mantine/core';
+import { Button, Menu, Modal, Group, TextInput } from '@mantine/core';
+import { IconSearch } from '@tabler/icons-react';
 import { DataTable, useDataTableColumns, type DataTableSortStatus } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -50,6 +51,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     direction: 'asc',
   });
   const [query, setQuery] = useState('');
+  const [sortedData, setSortedData] = useState<Member[]>(members);
 
   // Helper function to get translated column title
   const getColumnTitle = (field: string) => {
@@ -92,6 +94,47 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       updatePage(maxPage);
     }
   }, [total, pageSize, page, onPageChange, updatePage]);
+
+  // Client-side sorting and filtering
+  useEffect(() => {
+    let filtered = [...gridData];
+
+    // Apply search filter
+    if (query) {
+      filtered = filtered.filter((member) =>
+        member.legal_name?.toLowerCase().includes(query.toLowerCase()) ||
+        member.status?.toLowerCase().includes(query.toLowerCase()) ||
+        member.lei?.toLowerCase().includes(query.toLowerCase()) ||
+        member.euid?.toLowerCase().includes(query.toLowerCase()) ||
+        member.kvk?.toLowerCase().includes(query.toLowerCase()) ||
+        member.org_id?.toLowerCase().includes(query.toLowerCase())
+      );
+    }
+
+    // Apply sorting
+    if (sortStatus.columnAccessor) {
+      const accessor = sortStatus.columnAccessor as keyof Member;
+      filtered.sort((a, b) => {
+        const aVal = a[accessor];
+        const bVal = b[accessor];
+
+        if (aVal === null || aVal === undefined) return 1;
+        if (bVal === null || bVal === undefined) return -1;
+
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+          return sortStatus.direction === 'asc'
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        }
+
+        if (aVal < bVal) return sortStatus.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortStatus.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    setSortedData(filtered);
+  }, [gridData, sortStatus, query]);
 
   const handleBulkAction = (action: string) => {
     if (selectedIds.length === 0) {
@@ -351,8 +394,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   });
 
   const bulkActions = [
-    { text: 'Export to PDF', icon: 'file-pdf', click: () => handleBulkAction('export-pdf') },
-    { text: 'Export to CSV', icon: 'file-txt', click: () => handleBulkAction('export-csv') },
     { text: 'Suspend Selected', icon: 'pause', click: () => handleBulkAction('suspend') },
     { text: 'Delete Selected', icon: 'trash', click: () => handleBulkAction('delete') },
   ];
@@ -374,9 +415,18 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
   return (
     <div className="members-grid-container">
-      {/* Toolbar with Export and Bulk Actions */}
+      {/* Toolbar with Search, Export and Bulk Actions */}
       <div className="grid-toolbar">
         <div className="toolbar-left">
+          {/* Search Input */}
+          <TextInput
+            placeholder="Search members..."
+            leftSection={<IconSearch size={16} />}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            style={{ minWidth: '250px' }}
+          />
+
           {/* Export Menu */}
           <Menu>
             <Menu.Target>
@@ -402,7 +452,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             <Menu>
               <Menu.Target>
                 <Button color="cyan" size="sm">
-                  {`${t('members.bulkActions')} (${selectedIds.length})`}
+                  {`Actions (${selectedIds.length})`}
                 </Button>
               </Menu.Target>
               <Menu.Dropdown>
@@ -419,6 +469,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         {/* Toolbar Stats */}
         <div className="toolbar-stats">
           <span>Total: {total}</span>
+          <span>Showing: {sortedData.length}</span>
           <span>Page {page} of {Math.ceil(total / pageSize)}</span>
         </div>
       </div>
@@ -445,10 +496,10 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         withColumnBorders
         striped
         highlightOnHover
-        records={gridData}
+        records={sortedData}
         columns={effectiveColumns}
         fetching={loading}
-        totalRecords={total}
+        totalRecords={sortedData.length}
         recordsPerPage={pageSize}
         page={page}
         onPageChange={updatePage}
@@ -456,7 +507,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         onRecordsPerPageChange={updatePageSize}
         sortStatus={sortStatus}
         onSortStatusChange={setSortStatus}
-        selectedRecords={gridData.filter((m) => selectedIds.includes(m.org_id))}
+        selectedRecords={sortedData.filter((m) => selectedIds.includes(m.org_id))}
         onSelectedRecordsChange={(records) => setSelectedIds(records.map((r) => r.org_id))}
         storeColumnsKey="members-grid"
         onRowClick={({ record }) => onViewDetails(record)}

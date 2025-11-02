@@ -4,6 +4,24 @@
   height: 100%;
 }
 
+/* Fix checkbox sizes in mantine-datatable */
+.members-grid-container .mantine-Checkbox-root {
+  display: flex;
+  align-items: center;
+}
+
+.members-grid-container .mantine-Checkbox-input {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+}
+
+.members-grid-container .mantine-Checkbox-icon {
+  width: 14px !important;
+  height: 14px !important;
+}
+
 .grid-toolbar {
   display: flex;
   justify-content: space-between;
