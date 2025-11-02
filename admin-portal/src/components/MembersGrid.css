@@ -6,9 +6,10 @@
 
 /* Fix checkbox sizes and centering in mantine-datatable */
 .members-grid-container .mantine-Checkbox-root {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto !important;
 }
 
 .members-grid-container .mantine-Checkbox-input {
@@ -16,7 +17,7 @@
   height: 18px !important;
   min-width: 18px !important;
   min-height: 18px !important;
-  cursor: pointer;
+  cursor: pointer !important;
 }
 
 .members-grid-container .mantine-Checkbox-icon {
@@ -24,25 +25,36 @@
   height: 14px !important;
 }
 
-/* Center checkboxes in table cells */
+/* Center checkboxes in table cells - more aggressive targeting */
 .members-grid-container thead th:first-child,
 .members-grid-container tbody td:first-child {
-  text-align: center;
-  vertical-align: middle;
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding: 0 !important;
 }
 
-.members-grid-container thead th:first-child > div,
-.members-grid-container tbody td:first-child > div {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
+.members-grid-container thead th:first-child > *,
+.members-grid-container tbody td:first-child > * {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+}
+
+/* DataTable-specific checkbox cell targeting */
+.members-grid-container .mantine-datatable-header-cell-sortable:first-child,
+.members-grid-container .mantine-datatable-row-cell:first-child {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
 }
 
 /* Column selector (context menu) improvements */
 .members-grid-container .mantine-Menu-dropdown {
   max-height: 400px;
-  overflow-y: auto;
+  overflow-y: scroll !important; /* Force scrollbar to always show */
 }
 
 .members-grid-container .mantine-Menu-item {
