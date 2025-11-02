@@ -87,13 +87,24 @@ table[class*="mantine-Table"] tbody tr > td:first-child * {
   align-items: center !important;
 }
 
-/* Column selector (context menu) improvements - ultra-specific */
+/* Column selector (Popover dropdown) improvements - CORRECT SELECTOR */
+.members-grid-container .mantine-Popover-dropdown,
+.mantine-Popover-dropdown[role="dialog"],
+div.mantine-Popover-dropdown,
+div[class*="mantine-Popover-dropdown"],
+.members-grid-container .mantine-Stack-root {
+  max-height: 400px !important;
+  overflow-y: scroll !important; /* Force scrollbar to always show */
+  overflow-x: hidden !important;
+}
+
+/* Legacy Menu selectors (if used elsewhere) */
 .members-grid-container .mantine-Menu-dropdown,
 .mantine-Menu-dropdown[data-context-menu="true"],
 div.mantine-Menu-dropdown,
 div[role="menu"].mantine-Menu-dropdown {
   max-height: 400px !important;
-  overflow-y: scroll !important; /* Force scrollbar to always show */
+  overflow-y: scroll !important;
   overflow-x: hidden !important;
 }
 
