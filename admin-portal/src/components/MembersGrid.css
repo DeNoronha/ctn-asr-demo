@@ -4,15 +4,27 @@
   height: 100%;
 }
 
-/* Fix checkbox sizes and centering in mantine-datatable */
-.members-grid-container .mantine-Checkbox-root {
+/* Fix checkbox sizes and centering in mantine-datatable - NUCLEAR APPROACH */
+.members-grid-container .mantine-Checkbox-root,
+.members-grid-container .mantine-Checkbox-body,
+.members-grid-container .mantine-Checkbox-inner,
+.mantine-DataTable .mantine-Checkbox-root,
+.mantine-DataTable .mantine-Checkbox-body,
+.mantine-DataTable .mantine-Checkbox-inner,
+div[class*="mantine-Checkbox-inner"],
+div[class*="mantine-Checkbox-body"],
+div[class*="mantine-Checkbox-root"],
+div[data-label-position="right"],
+div[data-variant="filled"] {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   margin: 0 auto !important;
 }
 
-.members-grid-container .mantine-Checkbox-input {
+.members-grid-container .mantine-Checkbox-input,
+.mantine-DataTable .mantine-Checkbox-input,
+input[class*="mantine-Checkbox-input"] {
   width: 18px !important;
   height: 18px !important;
   min-width: 18px !important;
@@ -20,20 +32,37 @@
   cursor: pointer !important;
 }
 
-.members-grid-container .mantine-Checkbox-icon {
+.members-grid-container .mantine-Checkbox-icon,
+.mantine-DataTable .mantine-Checkbox-icon,
+svg[class*="mantine-Checkbox-icon"] {
   width: 14px !important;
   height: 14px !important;
 }
 
-/* Ultra-specific DataTable checkbox column targeting */
+/* Ultra-specific DataTable checkbox column targeting - NUCLEAR */
 .members-grid-container table.mantine-Table-table thead tr th:first-child,
 .members-grid-container table.mantine-Table-table tbody tr td:first-child,
 .members-grid-container .mantine-Table-table thead tr th:first-child,
-.members-grid-container .mantine-Table-table tbody tr td:first-child {
+.members-grid-container .mantine-Table-table tbody tr td:first-child,
+.members-grid-container table thead tr > th:first-of-type,
+.members-grid-container table tbody tr > td:first-of-type,
+.mantine-DataTable table thead tr > th:first-of-type,
+.mantine-DataTable table tbody tr > td:first-of-type,
+table[class*="mantine-Table"] thead tr > th:first-child,
+table[class*="mantine-Table"] tbody tr > td:first-child {
   text-align: center !important;
   vertical-align: middle !important;
   padding-left: 8px !important;
   padding-right: 8px !important;
+}
+
+/* Force all children of first column to center */
+.members-grid-container table thead tr > th:first-of-type *,
+.members-grid-container table tbody tr > td:first-of-type *,
+table[class*="mantine-Table"] thead tr > th:first-child *,
+table[class*="mantine-Table"] tbody tr > td:first-child * {
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 /* Flex container for checkbox cells */
