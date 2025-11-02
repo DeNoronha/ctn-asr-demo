@@ -222,6 +222,44 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
     }));
   }, []);
 
+  const handleAddDialogOpen = useCallback(() => {
+    setShowAddDialog(true);
+  }, []);
+
+  const handleAddDialogClose = useCallback(() => {
+    setShowAddDialog(false);
+  }, []);
+
+  const handleSecretDialogClose = useCallback(() => {
+    setShowSecretDialog(false);
+    setGeneratedSecret('');
+    setSelectedClient(null);
+  }, []);
+
+  const handleDeleteDialogOpen = useCallback((client: M2MClient) => {
+    setSelectedClient(client);
+    setShowDeleteDialog(true);
+  }, []);
+
+  const handleDeleteDialogClose = useCallback(() => {
+    setShowDeleteDialog(false);
+    setSelectedClient(null);
+  }, []);
+
+  const handleClientNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, client_name: e.target.value }));
+  }, []);
+
+  const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, description: e.target.value }));
+  }, []);
+
+  const handleConfirmSecret = useCallback(() => {
+    setShowSecretDialog(false);
+    setGeneratedSecret('');
+    setSelectedClient(null);
+  }, []);
+
   // mantine-datatable column definitions
   const { effectiveColumns } = useDataTableColumns<M2MClient>({
     key: 'm2m-clients-grid',
@@ -331,7 +369,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
     <div className="identifiers-manager">
       <div className="section-header">
         <h3>API Clients (M2M Authentication)</h3>
-        <Button color="blue" onClick={() => setShowAddDialog(true)} disabled={loading}>
+        <Button color="blue" onClick={handleAddDialogOpen} disabled={loading}>
           <Plus size={16} /> Add M2M Client
         </Button>
       </div>
@@ -344,7 +382,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
               icon={<Key size={48} />}
               message={es.message}
               hint={es.hint}
-              action={es.action ? { label: es.action.label, onClick: () => setShowAddDialog(true) } : undefined}
+              action={es.action ? { label: es.action.label, onClick: handleAddDialogOpen } : undefined}
             />
           );
         })()
@@ -365,7 +403,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
       {/* Add M2M Client Dialog */}
       <Modal
         opened={showAddDialog}
-        onClose={() => setShowAddDialog(false)}
+        onClose={handleAddDialogClose}
         title="Add M2M Client"
         size="lg"
       >
@@ -374,7 +412,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
             <label>Client Name *</label>
             <TextInput
               value={formData.client_name}
-              onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
+              onChange={handleClientNameChange}
               placeholder="e.g., Container Tracking System"
             />
           </div>
@@ -383,7 +421,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
             <label>Description</label>
             <Textarea
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={handleDescriptionChange}
               placeholder="Brief description of this client application"
               rows={3}
             />
@@ -406,7 +444,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
         </div>
 
         <Group mt="xl" justify="flex-end">
-          <Button onClick={() => setShowAddDialog(false)} variant="default">Cancel</Button>
+          <Button onClick={handleAddDialogClose} variant="default">Cancel</Button>
           <Button
             color="blue"
             onClick={handleAddClient}
@@ -420,11 +458,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
       {/* Secret Display Dialog */}
       <Modal
         opened={showSecretDialog && !!selectedClient}
-        onClose={() => {
-          setShowSecretDialog(false);
-          setGeneratedSecret('');
-          setSelectedClient(null);
-        }}
+        onClose={handleSecretDialogClose}
         title="Client Secret Generated"
         size="xl"
       >

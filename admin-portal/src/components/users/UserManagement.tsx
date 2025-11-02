@@ -16,6 +16,7 @@ import LoadingSpinner from '../LoadingSpinner';
 import EditUserDialog from './EditUserDialog';
 import InviteUserDialog from './InviteUserDialog';
 import './UserManagement.css';
+import { ErrorBoundary } from '../ErrorBoundary';
 
 interface User {
   id: string;
@@ -319,15 +320,17 @@ const UserManagement: React.FC = () => {
         {loading ? (
           <LoadingSpinner size="large" message="Loading users..." />
         ) : (
-          <DataTable
-            records={users}
-            columns={effectiveColumns}
-            storeColumnsKey="user-management-grid"
-            withTableBorder
-            withColumnBorders
-            striped
-            highlightOnHover
-          />
+          <ErrorBoundary>
+            <DataTable
+              records={users}
+              columns={effectiveColumns}
+              storeColumnsKey="user-management-grid"
+              withTableBorder
+              withColumnBorders
+              striped
+              highlightOnHover
+            />
+          </ErrorBoundary>
         )}
 
         {showInviteDialog && (
