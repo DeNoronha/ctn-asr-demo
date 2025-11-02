@@ -51,8 +51,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     direction: 'asc',
   });
   const [query, setQuery] = useState('');
-  const [sortedData, setSortedData] = useState<Member[]>(members);
-  const [filteredCount, setFilteredCount] = useState(members.length);
 
   // Helper function to get translated column title
   const getColumnTitle = (field: string) => {
@@ -96,8 +94,8 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     }
   }, [total, pageSize, page, onPageChange, updatePage]);
 
-  // Client-side sorting, filtering, and pagination (controlled mode)
-  useEffect(() => {
+  // Client-side sorting, filtering, and pagination (useMemo for sync calculation)
+  const { sortedData, filteredCount } = useMemo(() => {
     let filtered = [...gridData];
 
     // Apply search filter
@@ -134,25 +132,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       });
     }
 
-    // Store filtered count
-    setFilteredCount(filtered.length);
+    const filteredCount = filtered.length;
 
     // Apply pagination - required when using controlled mode (page prop)
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    const paginated = filtered.slice(startIndex, endIndex);
+    const sortedData = filtered.slice(startIndex, endIndex);
 
-    console.log('MembersGrid Pagination Debug:', {
-      page,
-      pageSize,
-      filteredLength: filtered.length,
-      startIndex,
-      endIndex,
-      paginatedLength: paginated.length,
-      filteredCountState: filteredCount
-    });
-
-    setSortedData(paginated);
+    return { sortedData, filteredCount };
   }, [gridData, sortStatus, query, page, pageSize]);
 
   const handleBulkAction = (action: string) => {
