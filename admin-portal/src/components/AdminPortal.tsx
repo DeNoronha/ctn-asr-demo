@@ -60,9 +60,10 @@ const AdminPortal: React.FC = () => {
   const { loading, execute: loadMembers } = useAsync(asyncOptions);
 
   const loadMembersData = useCallback(
-    async (page = 1, pageSize = 20) => {
+    async () => {
       try {
-        const result = (await loadMembers(() => api.getMembers(page, pageSize))) as {
+        // Load ALL members for client-side pagination (no pagination params)
+        const result = (await loadMembers(() => api.getMembers())) as {
           data: Member[];
           total: number;
         };
@@ -149,7 +150,6 @@ const AdminPortal: React.FC = () => {
                 members={members}
                 totalMembers={totalMembers}
                 onViewDetails={handleViewDetails}
-                onPageChange={loadMembersData}
                 loading={loading}
               />
             )}

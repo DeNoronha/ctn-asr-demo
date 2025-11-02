@@ -78,21 +78,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     setGridData(members);
   }, [members]);
 
-  // Trigger data load when page/pageSize changes
-  useEffect(() => {
-    if (onPageChange) {
-      onPageChange(page, pageSize);
-    }
-  }, [page, pageSize, onPageChange]);
-
-  // Guard: if current page exceeds max pages after data/total change, snap to last page
-  useEffect(() => {
-    if (!onPageChange) return;
-    const maxPage = Math.max(1, Math.ceil(total / pageSize));
-    if (page > maxPage) {
-      updatePage(maxPage);
-    }
-  }, [total, pageSize, page, onPageChange, updatePage]);
 
   // Client-side sorting, filtering, and pagination (useMemo for sync calculation)
   const { sortedData, filteredCount } = useMemo(() => {
