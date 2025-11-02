@@ -142,6 +142,16 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     const endIndex = startIndex + pageSize;
     const paginated = filtered.slice(startIndex, endIndex);
 
+    console.log('MembersGrid Pagination Debug:', {
+      page,
+      pageSize,
+      filteredLength: filtered.length,
+      startIndex,
+      endIndex,
+      paginatedLength: paginated.length,
+      filteredCountState: filteredCount
+    });
+
     setSortedData(paginated);
   }, [gridData, sortStatus, query, page, pageSize]);
 
