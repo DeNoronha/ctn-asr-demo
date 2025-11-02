@@ -5,10 +5,17 @@
 import { Button, Select } from '@mantine/core';
 
 
-import { Label, Hint } from '@progress/kendo-react-labels';
 import React, { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { apiV2 } from '../services/apiV2';
+
+// Simple replacements for Kendo label components
+const Label: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
+  <label id={id} className="k-label">{children}</label>
+);
+const Hint: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
+  <div id={id} className="k-form-hint" style={{ color: '#656565', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
+);
 
 interface TierManagementProps {
   legalEntityId: string;

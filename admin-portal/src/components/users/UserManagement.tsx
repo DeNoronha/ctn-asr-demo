@@ -4,20 +4,19 @@ import { logger } from '../../utils/logger';
  * System Admins can view and manage all users
  */
 
-import { type State, process } from '@progress/kendo-data-query';
 import { Button } from '@mantine/core';
 
 import {
-  Grid,
-  GridColumn,
-  type GridCellProps,
-  type GridFilterChangeEvent,
-  type GridPageChangeEvent,
-  type GridSortChangeEvent,
-} from '@progress/kendo-react-grid';
+  MantineReactTable,
+  type MRT_ColumnDef,
+  type MRT_PaginationState,
+  type MRT_SortingState,
+  type MRT_ColumnFiltersState,
+  useMantineReactTable,
+} from 'mantine-react-table';
 import { Edit2, Shield, Trash2, UserPlus } from '../icons';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { RoleGuard } from '../../auth/ProtectedRoute';
 import { UserRole } from '../../auth/authConfig';
@@ -46,26 +45,9 @@ const UserManagement: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
-  // Grid state
-  const [dataState, setDataState] = useState<State>({
-    skip: 0,
-    take: 20,
-    sort: [{ field: 'createdAt', dir: 'desc' }],
-    filter: undefined,
-  });
-
-  const [processedData, setProcessedData] = useState<any>({ data: [], total: 0 });
-
   useEffect(() => {
     loadUsers();
   }, []);
-
-  useEffect(() => {
-    if (users.length > 0) {
-      const processed = process(users, dataState);
-      setProcessedData(processed);
-    }
-  }, [users, dataState]);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -105,8 +87,6 @@ const UserManagement: React.FC = () => {
         },
       ];
       setUsers(mockUsers);
-      const processed = process(mockUsers, dataState);
-      setProcessedData(processed);
     } catch (error) {
       logger.error('Error loading users:', error);
     } finally {
@@ -134,18 +114,6 @@ const UserManagement: React.FC = () => {
 
     setShowInviteDialog(false);
     await loadUsers();
-  };
-
-  const handleSortChange = (event: GridSortChangeEvent) => {
-    setDataState({ ...dataState, sort: event.sort });
-  };
-
-  const handleFilterChange = (event: GridFilterChangeEvent) => {
-    setDataState({ ...dataState, filter: event.filter });
-  };
-
-  const handlePageChange = (event: GridPageChangeEvent) => {
-    setDataState({ ...dataState, skip: event.page.skip, take: event.page.take });
   };
 
   const handleEditUser = (user: User) => {
@@ -200,64 +168,127 @@ const UserManagement: React.FC = () => {
     await loadUsers();
   };
 
-  const RoleBadgeCell = (props: GridCellProps) => {
-    const roleColors: Record<UserRole, string> = {
-      [UserRole.SYSTEM_ADMIN]: 'role-system-admin',
-      [UserRole.ASSOCIATION_ADMIN]: 'role-association-admin',
-      [UserRole.MEMBER]: 'role-member',
-    };
+  // Column definitions
+  const columns = useMemo<MRT_ColumnDef<User>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        size: 200,
+      },
+      {
+        accessorKey: 'email',
+        header: 'Email',
+        size: 250,
+      },
+      {
+        accessorKey: 'primaryRole',
+        header: 'Role',
+        size: 180,
+        Cell: ({ row }) => {
+          const roleColors: Record<UserRole, string> = {
+            [UserRole.SYSTEM_ADMIN]: 'role-system-admin',
+            [UserRole.ASSOCIATION_ADMIN]: 'role-association-admin',
+            [UserRole.MEMBER]: 'role-member',
+          };
+          const role = row.original.primaryRole;
+          return (
+            <div>
+              <span className={`role-badge ${roleColors[role]}`}>{role}</span>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'enabled',
+        header: 'Status',
+        size: 120,
+        Cell: ({ row }) => {
+          const enabled = row.original.enabled;
+          return (
+            <div>
+              <span className={`status-badge status-${enabled ? 'active' : 'disabled'}`}>
+                {enabled ? 'Active' : 'Disabled'}
+              </span>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'lastLogin',
+        header: 'Last Login',
+        size: 180,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<Date | undefined>();
+          if (!value) return <div>—</div>;
+          return <div>{new Date(value).toLocaleString('en-GB')}</div>;
+        },
+      },
+      {
+        accessorKey: 'createdAt',
+        header: 'Created',
+        size: 150,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<Date>();
+          return <div>{new Date(value).toLocaleDateString('en-GB')}</div>;
+        },
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        size: 120,
+        enableSorting: false,
+        enableColumnFilter: false,
+        Cell: ({ row }) => {
+          const user = row.original;
+          const isCurrentUser = user.id === currentUser?.account.localAccountId;
+          return (
+            <div className="action-buttons">
+              <Button
+                variant="subtle"
+                size="sm"
+                onClick={() => handleEditUser(user)}
+                title="Edit user"
+              >
+                <Edit2 size={16} />
+              </Button>
+              {!isCurrentUser && (
+                <Button
+                  variant="subtle"
+                  size="sm"
+                  color="red"
+                  onClick={() => handleToggleUserStatus(user.id, !user.enabled)}
+                  title={user.enabled ? 'Disable user' : 'Enable user'}
+                >
+                  <Trash2 size={16} />
+                </Button>
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    [currentUser]
+  );
 
-    const role = props.dataItem.primaryRole;
-
-    return (
-      <td>
-        <span className={`role-badge ${roleColors[role as UserRole]}`}>{role}</span>
-      </td>
-    );
-  };
-
-  const StatusCell = (props: GridCellProps) => {
-    const enabled = props.dataItem.enabled;
-
-    return (
-      <td>
-        <span className={`status-badge status-${enabled ? 'active' : 'disabled'}`}>
-          {enabled ? 'Active' : 'Disabled'}
-        </span>
-      </td>
-    );
-  };
-
-  const ActionsCell = (props: GridCellProps) => {
-    const user = props.dataItem;
-    const isCurrentUser = user.id === currentUser?.account.localAccountId;
-
-    return (
-      <td>
-        <div className="action-buttons">
-          <Button
-            variant="subtle"
-            size="sm"
-            onClick={() => handleEditUser(user)}
-            title="Edit user"
-          >
-            <Edit2 size={16} />
-          </Button>
-          {!isCurrentUser && (
-            <Button
-              variant="subtle"
-              size="sm"
-              color="red"
-              onClick={() => handleToggleUserStatus(user.id, !user.enabled)}
-              title={user.enabled ? 'Disable user' : 'Enable user'}
-            >
-              <Trash2 size={16} />
-            </Button>
-          )}
-        </div>
-      </td>
-    );
-  };
+  // Mantine React Table instance
+  const table = useMantineReactTable({
+    columns,
+    data: users,
+    enableRowSelection: false,
+    enableColumnResizing: true,
+    enableSorting: true,
+    enableColumnFilters: true,
+    enablePagination: true,
+    initialState: {
+      sorting: [{ id: 'createdAt', desc: true }],
+      pagination: { pageIndex: 0, pageSize: 20 },
+    },
+    mantineTableProps: {
+      striped: true,
+      style: { height: '600px' },
+    },
+  });
 
   return (
     <RoleGuard allowedRoles={[UserRole.SYSTEM_ADMIN]}>
@@ -304,52 +335,7 @@ const UserManagement: React.FC = () => {
         {loading ? (
           <LoadingSpinner size="large" message="Loading users..." />
         ) : (
-          <Grid
-            data={processedData}
-            sortable={true}
-            filterable={true}
-            resizable={true}
-            pageable={{
-              buttonCount: 5,
-              info: true,
-              pageSizes: [10, 20, 50, 100],
-            }}
-            skip={dataState.skip}
-            take={dataState.take}
-            total={processedData.total}
-            sort={dataState.sort}
-            filter={dataState.filter}
-            onSortChange={handleSortChange}
-            onFilterChange={handleFilterChange}
-            onPageChange={handlePageChange}
-            style={{ height: '600px' }}
-          >
-            <GridColumn field="name" title="Name" width="200px" />
-            <GridColumn field="email" title="Email" width="250px" />
-            <GridColumn field="primaryRole" title="Role" width="180px" cells={{ data: RoleBadgeCell }} />
-            <GridColumn field="enabled" title="Status" width="120px" cells={{ data: StatusCell }} />
-            <GridColumn
-              field="lastLogin"
-              title="Last Login"
-              width="180px"
-              format="{0:dd/MM/yyyy HH:mm}"
-              filter="date"
-            />
-            <GridColumn
-              field="createdAt"
-              title="Created"
-              width="150px"
-              format="{0:dd/MM/yyyy}"
-              filter="date"
-            />
-            <GridColumn
-              title="Actions"
-              width="120px"
-              cells={{ data: ActionsCell }}
-              filterable={false}
-              sortable={false}
-            />
-          </Grid>
+          <MantineReactTable table={table} />
         )}
 
         {showInviteDialog && (

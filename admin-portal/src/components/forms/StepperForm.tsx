@@ -1,6 +1,5 @@
-import { Button } from '@mantine/core';
+import { Button, Stepper } from '@mantine/core';
 
-import { Stepper } from '@progress/kendo-react-layout';
 import type React from 'react';
 import { useState } from 'react';
 
@@ -41,22 +40,22 @@ export const StepperForm = <T = Record<string, unknown>>({
     }
   };
 
-  const handleStepChange = (e: { value: number }) => {
+  const handleStepClick = (stepIndex: number) => {
     // Allow direct navigation if previous steps are valid
-    if (e.value < currentStep) {
-      setCurrentStep(e.value);
-    } else if (e.value === currentStep + 1) {
+    if (stepIndex < currentStep) {
+      setCurrentStep(stepIndex);
+    } else if (stepIndex === currentStep + 1) {
       handleNext();
     }
   };
 
   return (
     <div className="stepper-form">
-      <Stepper
-        value={currentStep}
-        onChange={handleStepChange}
-        items={steps.map((s) => ({ label: s.label }))}
-      />
+      <Stepper active={currentStep} onStepClick={handleStepClick}>
+        {steps.map((step, index) => (
+          <Stepper.Step key={index} label={step.label} />
+        ))}
+      </Stepper>
 
       <div className="step-content">{steps[currentStep].component}</div>
 

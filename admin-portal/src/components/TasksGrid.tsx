@@ -1,15 +1,10 @@
 import { useMsal } from '@azure/msal-react';
-import { Button, TextInput, Textarea, Select } from '@mantine/core';
-
-import { DatePicker } from '@progress/kendo-react-dateinputs';
-import { Dialog } from '@progress/kendo-react-dialogs';
-
-import { Grid, type GridCellProps, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
-
-import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
+import { Button, TextInput, Textarea, Select, Modal, Group, Tabs } from '@mantine/core';
+import { DatePickerInput } from '@mantine/dates';
+import { MantineReactTable, type MRT_ColumnDef, useMantineReactTable } from 'mantine-react-table';
 import axios from 'axios';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { logger } from '../utils/logger';
 import { formatDate } from '../utils/dateUtils';
 import './TasksGrid.css';
@@ -55,7 +50,7 @@ const TasksGrid: React.FC = () => {
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [selectedTask, setSelectedTask] = useState<AdminTask | null>(null);
   const [selectedReviewTask, setSelectedReviewTask] = useState<ReviewTask | null>(null);
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState<string | null>('my-tasks');
 
   const [formData, setFormData] = useState({
     task_type: 'other' as string,
@@ -300,52 +295,195 @@ const TasksGrid: React.FC = () => {
     return new Date(task.due_date) < new Date();
   };
 
-  const PriorityCell = (props: GridCellProps) => {
-    const priority = props.dataItem.priority;
-    const priorityClass = `priority-badge priority-${priority}`;
-    return (
-      <td>
-        <span className={priorityClass}>{priority.toUpperCase()}</span>
-      </td>
-    );
-  };
+  // Column definitions for "My Tasks" grid
+  const tasksColumns = useMemo<MRT_ColumnDef<AdminTask>[]>(
+    () => [
+      {
+        accessorKey: 'title',
+        header: 'Title',
+        size: 250,
+      },
+      {
+        accessorKey: 'task_type',
+        header: 'Type',
+        size: 150,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          return <div>{value.replace('_', ' ')}</div>;
+        },
+      },
+      {
+        accessorKey: 'priority',
+        header: 'Priority',
+        size: 100,
+        Cell: ({ row }) => {
+          const priority = row.original.priority;
+          const priorityClass = `priority-badge priority-${priority}`;
+          return (
+            <div>
+              <span className={priorityClass}>{priority.toUpperCase()}</span>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        size: 120,
+        Cell: ({ row }) => {
+          const status = row.original.status;
+          const statusClass = `status-badge status-${status.replace('_', '-')}`;
+          return (
+            <div>
+              <span className={statusClass}>{status.replace('_', ' ').toUpperCase()}</span>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'assigned_to_email',
+        header: 'Assigned To',
+        size: 200,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          return <div>{value || 'Unassigned'}</div>;
+        },
+      },
+      {
+        accessorKey: 'related_entity_name',
+        header: 'Related Entity',
+        size: 180,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          return <div>{value || '-'}</div>;
+        },
+      },
+      {
+        accessorKey: 'due_date',
+        header: 'Due Date',
+        size: 130,
+        Cell: ({ row }) => {
+          const task = row.original;
+          const overdue = isOverdue(task);
+          return (
+            <div className={overdue ? 'overdue-date' : ''}>
+              {formatTaskDate(task.due_date)}
+              {overdue && <span className="overdue-badge">OVERDUE</span>}
+            </div>
+          );
+        },
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        size: 220,
+        Cell: ({ row }) => {
+          const task = row.original;
+          return (
+            <div>
+              <Button leftSection="edit" variant="subtle" onClick={() => openEditDialog(task)}>
+                Edit
+              </Button>
+              {task.status !== 'completed' && task.status !== 'cancelled' && (
+                <Button leftSection="check" variant="subtle" onClick={() => handleCompleteTask(task.task_id)}>
+                  Complete
+                </Button>
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    []
+  );
 
-  const StatusCell = (props: GridCellProps) => {
-    const status = props.dataItem.status;
-    const statusClass = `status-badge status-${status.replace('_', '-')}`;
-    return (
-      <td>
-        <span className={statusClass}>{status.replace('_', ' ').toUpperCase()}</span>
-      </td>
-    );
-  };
+  // Column definitions for "Verify" grid
+  const reviewColumns = useMemo<MRT_ColumnDef<any>[]>(
+    () => [
+      {
+        accessorKey: 'entered_company_name',
+        header: 'Company Name',
+        size: 250,
+      },
+      {
+        accessorKey: 'entered_legal_id',
+        header: 'Entered ID',
+        size: 120,
+      },
+      {
+        accessorKey: 'extracted_legal_id',
+        header: 'Extracted ID',
+        size: 130,
+      },
+      {
+        accessorKey: 'kvk_mismatch_flags',
+        header: 'Mismatches',
+        size: 150,
+        Cell: ({ row }) => (
+          <div>
+            <span className="priority-badge priority-urgent">
+              {row.original.kvk_mismatch_flags.length} Issues
+            </span>
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'document_uploaded_at',
+        header: 'Uploaded',
+        size: 150,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          return <div>{formatTaskDate(value)}</div>;
+        },
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        size: 180,
+        Cell: ({ row }) => (
+          <div>
+            <Button
+              leftSection="preview"
+              variant="subtle"
+              onClick={() => openReviewDialog(row.original)}
+            >
+              Review
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    []
+  );
 
-  const DueDateCell = (props: GridCellProps) => {
-    const task = props.dataItem;
-    const overdue = isOverdue(task);
-    return (
-      <td className={overdue ? 'overdue-date' : ''}>
-        {formatTaskDate(task.due_date)}
-        {overdue && <span className="overdue-badge">OVERDUE</span>}
-      </td>
-    );
-  };
+  // Table instances
+  const tasksTable = useMantineReactTable({
+    columns: tasksColumns,
+    data: tasks,
+    enableColumnResizing: true,
+    enableSorting: true,
+    enablePagination: false,
+    enableBottomToolbar: false,
+    enableTopToolbar: false,
+    mantineTableProps: {
+      striped: true,
+      style: { height: '550px' },
+    },
+  });
 
-  const ActionsCell = (props: GridCellProps) => {
-    const task = props.dataItem;
-    return (
-      <td>
-        <Button leftSection="edit" variant="subtle" onClick={() => openEditDialog(task)}>
-          Edit
-        </Button>
-        {task.status !== 'completed' && task.status !== 'cancelled' && (
-          <Button leftSection="check" variant="subtle" onClick={() => handleCompleteTask(task.task_id)}>
-            Complete
-          </Button>
-        )}
-      </td>
-    );
-  };
+  const reviewTable = useMantineReactTable({
+    columns: reviewColumns,
+    data: reviewTasks,
+    enableColumnResizing: true,
+    enableSorting: true,
+    enablePagination: false,
+    enableBottomToolbar: false,
+    enableTopToolbar: false,
+    mantineTableProps: {
+      striped: true,
+      style: { height: '550px' },
+    },
+  });
 
   // Count tasks by status
   const pendingCount = tasks.filter((t) => t.status === 'pending').length;
@@ -381,331 +519,286 @@ const TasksGrid: React.FC = () => {
         </div>
       </div>
 
-      <TabStrip selected={activeTab} onSelect={(e) => setActiveTab(e.selected)}>
-        <TabStripTab title="My Tasks">
-          <Grid data={tasks} style={{ height: '550px' }}>
-            <GridToolbar>
-              <span className="grid-toolbar-info">Total Tasks: {tasks.length}</span>
-            </GridToolbar>
+      <Tabs value={activeTab} onChange={setActiveTab}>
+        <Tabs.List>
+          <Tabs.Tab value="my-tasks">My Tasks</Tabs.Tab>
+          <Tabs.Tab value="verify">Verify</Tabs.Tab>
+        </Tabs.List>
 
-            <GridColumn field="title" title="Title" width="250px" />
-            <GridColumn
-              field="task_type"
-              title="Type"
-              width="150px"
-              cells={{ data: (props) => <td>{props.dataItem.task_type.replace('_', ' ')}</td> }}
-            />
-            <GridColumn field="priority" title="Priority" width="100px" cells={{ data: PriorityCell }} />
-            <GridColumn field="status" title="Status" width="120px" cells={{ data: StatusCell }} />
-            <GridColumn
-              field="assigned_to_email"
-              title="Assigned To"
-              width="200px"
-              cells={{ data: (props) => <td>{props.dataItem.assigned_to_email || 'Unassigned'}</td> }}
-            />
-            <GridColumn
-              field="related_entity_name"
-              title="Related Entity"
-              width="180px"
-              cells={{ data: (props) => <td>{props.dataItem.related_entity_name || '-'}</td> }}
-            />
-            <GridColumn field="due_date" title="Due Date" width="130px" cells={{ data: DueDateCell }} />
-            <GridColumn title="Actions" width="220px" cells={{ data: ActionsCell }} />
-          </Grid>
-        </TabStripTab>
+        <Tabs.Panel value="my-tasks" pt="md">
+          <div className="grid-toolbar-info" style={{ marginBottom: '10px' }}>
+            Total Tasks: {tasks.length}
+          </div>
+          <MantineReactTable table={tasksTable} />
+        </Tabs.Panel>
 
-        <TabStripTab title="Verify">
-          <Grid data={reviewTasks} style={{ height: '550px' }}>
-            <GridToolbar>
-              <span className="grid-toolbar-info">Total Reviews: {reviewTasks.length}</span>
-            </GridToolbar>
-
-            <GridColumn field="entered_company_name" title="Company Name" width="250px" />
-            <GridColumn field="entered_legal_id" title="Entered ID" width="120px" />
-            <GridColumn field="extracted_legal_id" title="Extracted ID" width="130px" />
-            <GridColumn
-              field="kvk_mismatch_flags"
-              title="Mismatches"
-              width="150px"
-              cells={{ data: (props) => (
-                <td>
-                  <span className="priority-badge priority-urgent">
-                    {props.dataItem.kvk_mismatch_flags.length} Issues
-                  </span>
-                </td>
-              ) }}
-            />
-            <GridColumn
-              field="document_uploaded_at"
-              title="Uploaded"
-              width="150px"
-              cells={{ data: (props) => <td>{formatTaskDate(props.dataItem.document_uploaded_at)}</td> }}
-            />
-            <GridColumn
-              title="Actions"
-              width="180px"
-              cells={{ data: (props) => (
-                <td>
-                  <Button
-                    leftSection="preview"
-                    variant="subtle"
-                    onClick={() => openReviewDialog(props.dataItem)}
-                  >
-                    Review
-                  </Button>
-                </td>
-              ) }}
-            />
-          </Grid>
-        </TabStripTab>
-      </TabStrip>
+        <Tabs.Panel value="verify" pt="md">
+          <div className="grid-toolbar-info" style={{ marginBottom: '10px' }}>
+            Total Reviews: {reviewTasks.length}
+          </div>
+          <MantineReactTable table={reviewTable} />
+        </Tabs.Panel>
+      </Tabs>
 
       {/* Create Dialog */}
-      {showCreateDialog && (
-        <Dialog title="Create Task" onClose={() => setShowCreateDialog(false)} width={600}>
-          <div className="dialog-content">
-            <div className="form-field">
-              <label>Task Type</label>
-              <Select
-                data={taskTypeOptions}
-                value={formData.task_type}
-                onChange={(value) => setFormData({ ...formData, task_type: value || '' })}
-              />
-            </div>
-
-            <div className="form-field">
-              <label>Title</label>
-              <TextInput
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Task title"
-              />
-            </div>
-
-            <div className="form-field">
-              <label>Description</label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Task description..."
-                rows={4}
-              />
-            </div>
-
-            <div className="form-field">
-              <label>Priority</label>
-              <Select
-                data={priorityOptions}
-                value={formData.priority}
-                onChange={(value) => setFormData({ ...formData, priority: (value as 'low' | 'medium' | 'high' | 'urgent') || 'medium' })}
-              />
-            </div>
-
-            <div className="form-field">
-              <label>Assign To (Email)</label>
-              <TextInput
-                value={formData.assigned_to_email}
-                onChange={(e) => setFormData({ ...formData, assigned_to_email: e.target.value })}
-                placeholder="admin@ctn.nl"
-              />
-            </div>
-
-            <div className="form-field">
-              <label>Due Date</label>
-              <DatePicker
-                value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.value })}
-                format="dd/MM/yyyy"
-              />
-            </div>
+      <Modal
+        opened={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+        title="Create Task"
+        size="lg"
+      >
+        <div className="dialog-content">
+          <div className="form-field">
+            <label>Task Type</label>
+            <Select
+              data={taskTypeOptions}
+              value={formData.task_type}
+              onChange={(value) => setFormData({ ...formData, task_type: value || '' })}
+            />
           </div>
 
-          <div className="dialog-actions">
-            <Button onClick={() => setShowCreateDialog(false)}>Cancel</Button>
-            <Button color="blue" onClick={handleCreate}>
-              Create Task
-            </Button>
+          <div className="form-field">
+            <label>Title</label>
+            <TextInput
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              placeholder="Task title"
+            />
           </div>
-        </Dialog>
-      )}
+
+          <div className="form-field">
+            <label>Description</label>
+            <Textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Task description..."
+              rows={4}
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Priority</label>
+            <Select
+              data={priorityOptions}
+              value={formData.priority}
+              onChange={(value) => setFormData({ ...formData, priority: (value as 'low' | 'medium' | 'high' | 'urgent') || 'medium' })}
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Assign To (Email)</label>
+            <TextInput
+              value={formData.assigned_to_email}
+              onChange={(e) => setFormData({ ...formData, assigned_to_email: e.target.value })}
+              placeholder="admin@ctn.nl"
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Due Date</label>
+            <DatePickerInput
+              value={formData.due_date}
+              onChange={(value) => setFormData({ ...formData, due_date: value })}
+              valueFormat="DD/MM/YYYY"
+            />
+          </div>
+        </div>
+
+        <Group mt="xl" justify="flex-end">
+          <Button onClick={() => setShowCreateDialog(false)} variant="default">Cancel</Button>
+          <Button color="blue" onClick={handleCreate}>
+            Create Task
+          </Button>
+        </Group>
+      </Modal>
 
       {/* Edit Dialog */}
-      {showEditDialog && selectedTask && (
-        <Dialog title="Edit Task" onClose={() => setShowEditDialog(false)} width={600}>
-          <div className="dialog-content">
-            <div className="form-field">
-              <label>Title</label>
-              <TextInput
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              />
+      <Modal
+        opened={showEditDialog && !!selectedTask}
+        onClose={() => setShowEditDialog(false)}
+        title="Edit Task"
+        size="lg"
+      >
+        {selectedTask && (
+          <>
+            <div className="dialog-content">
+              <div className="form-field">
+                <label>Title</label>
+                <TextInput
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                />
+              </div>
+
+              <div className="form-field">
+                <label>Description</label>
+                <Textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={4}
+                />
+              </div>
+
+              <div className="form-field">
+                <label>Priority</label>
+                <Select
+                  data={priorityOptions}
+                  value={formData.priority}
+                  onChange={(value) => setFormData({ ...formData, priority: (value as 'low' | 'medium' | 'high' | 'urgent') || 'medium' })}
+                />
+              </div>
+
+              <div className="form-field">
+                <label>Assign To (Email)</label>
+                <TextInput
+                  value={formData.assigned_to_email}
+                  onChange={(e) => setFormData({ ...formData, assigned_to_email: e.target.value })}
+                  placeholder="admin@ctn.nl"
+                />
+              </div>
+
+              <div className="form-field">
+                <label>Due Date</label>
+                <DatePickerInput
+                  value={formData.due_date}
+                  onChange={(value) => setFormData({ ...formData, due_date: value })}
+                  valueFormat="DD/MM/YYYY"
+                />
+              </div>
             </div>
 
-            <div className="form-field">
-              <label>Description</label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={4}
-              />
-            </div>
-
-            <div className="form-field">
-              <label>Priority</label>
-              <Select
-                data={priorityOptions}
-                value={formData.priority}
-                onChange={(value) => setFormData({ ...formData, priority: (value as 'low' | 'medium' | 'high' | 'urgent') || 'medium' })}
-              />
-            </div>
-
-            <div className="form-field">
-              <label>Assign To (Email)</label>
-              <TextInput
-                value={formData.assigned_to_email}
-                onChange={(e) => setFormData({ ...formData, assigned_to_email: e.target.value })}
-                placeholder="admin@ctn.nl"
-              />
-            </div>
-
-            <div className="form-field">
-              <label>Due Date</label>
-              <DatePicker
-                value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.value })}
-                format="dd/MM/yyyy"
-              />
-            </div>
-          </div>
-
-          <div className="dialog-actions">
-            <Button onClick={() => setShowEditDialog(false)}>Cancel</Button>
-            <Button color="blue" onClick={() => handleUpdate()}>
-              Update Task
-            </Button>
-          </div>
-        </Dialog>
-      )}
+            <Group mt="xl" justify="flex-end">
+              <Button onClick={() => setShowEditDialog(false)} variant="default">Cancel</Button>
+              <Button color="blue" onClick={() => handleUpdate()}>
+                Update Task
+              </Button>
+            </Group>
+          </>
+        )}
+      </Modal>
 
       {/* Review Dialog */}
-      {showReviewDialog && selectedReviewTask && (
-        <Dialog
-          title={`Verify Registration - ${selectedReviewTask.entered_company_name}`}
-          onClose={() => setShowReviewDialog(false)}
-          width={800}
-        >
-          <div className="dialog-content">
-            <div style={{ marginBottom: '20px' }}>
-              <h3 style={{ color: '#003366', marginBottom: '15px' }}>Comparison Details</h3>
+      <Modal
+        opened={showReviewDialog && !!selectedReviewTask}
+        onClose={() => setShowReviewDialog(false)}
+        title={selectedReviewTask ? `Verify Registration - ${selectedReviewTask.entered_company_name}` : 'Verify Registration'}
+        size="xl"
+      >
+        {selectedReviewTask && (
+          <>
+            <div className="dialog-content">
+              <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ color: '#003366', marginBottom: '15px' }}>Comparison Details</h3>
 
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: '#f3f4f6', borderBottom: '2px solid #e5e7eb' }}>
-                    <th style={{ padding: '12px', textAlign: 'left', width: '30%' }}>Field</th>
-                    <th style={{ padding: '12px', textAlign: 'left', width: '35%' }}>
-                      Entered (Database)
-                    </th>
-                    <th style={{ padding: '12px', textAlign: 'left', width: '35%' }}>
-                      Extracted (Document)
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                    <td style={{ padding: '12px', fontWeight: 600 }}>Company Name</td>
-                    <td
-                      style={{
-                        padding: '12px',
-                        background: selectedReviewTask.kvk_mismatch_flags.includes('company_name')
-                          ? '#fee2e2'
-                          : 'transparent',
-                      }}
-                    >
-                      {selectedReviewTask.entered_company_name}
-                    </td>
-                    <td
-                      style={{
-                        padding: '12px',
-                        background: selectedReviewTask.kvk_mismatch_flags.includes('company_name')
-                          ? '#dcfce7'
-                          : 'transparent',
-                      }}
-                    >
-                      {selectedReviewTask.extracted_company_name}
-                    </td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                    <td style={{ padding: '12px', fontWeight: 600 }}>Registry Number</td>
-                    <td
-                      style={{
-                        padding: '12px',
-                        background: selectedReviewTask.kvk_mismatch_flags.includes('legal_id')
-                          ? '#fee2e2'
-                          : 'transparent',
-                      }}
-                    >
-                      {selectedReviewTask.entered_legal_id || 'Not provided'}
-                    </td>
-                    <td
-                      style={{
-                        padding: '12px',
-                        background: selectedReviewTask.kvk_mismatch_flags.includes('legal_id')
-                          ? '#dcfce7'
-                          : 'transparent',
-                      }}
-                    >
-                      {selectedReviewTask.extracted_legal_id}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '12px', fontWeight: 600 }}>Registry Type</td>
-                    <td style={{ padding: '12px' }} colSpan={2}>
-                      {selectedReviewTask.registry_type} ({selectedReviewTask.country_code || 'NL'})
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: '#f3f4f6', borderBottom: '2px solid #e5e7eb' }}>
+                      <th style={{ padding: '12px', textAlign: 'left', width: '30%' }}>Field</th>
+                      <th style={{ padding: '12px', textAlign: 'left', width: '35%' }}>
+                        Entered (Database)
+                      </th>
+                      <th style={{ padding: '12px', textAlign: 'left', width: '35%' }}>
+                        Extracted (Document)
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>Company Name</td>
+                      <td
+                        style={{
+                          padding: '12px',
+                          background: selectedReviewTask.kvk_mismatch_flags.includes('company_name')
+                            ? '#fee2e2'
+                            : 'transparent',
+                        }}
+                      >
+                        {selectedReviewTask.entered_company_name}
+                      </td>
+                      <td
+                        style={{
+                          padding: '12px',
+                          background: selectedReviewTask.kvk_mismatch_flags.includes('company_name')
+                            ? '#dcfce7'
+                            : 'transparent',
+                        }}
+                      >
+                        {selectedReviewTask.extracted_company_name}
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>Registry Number</td>
+                      <td
+                        style={{
+                          padding: '12px',
+                          background: selectedReviewTask.kvk_mismatch_flags.includes('legal_id')
+                            ? '#fee2e2'
+                            : 'transparent',
+                        }}
+                      >
+                        {selectedReviewTask.entered_legal_id || 'Not provided'}
+                      </td>
+                      <td
+                        style={{
+                          padding: '12px',
+                          background: selectedReviewTask.kvk_mismatch_flags.includes('legal_id')
+                            ? '#dcfce7'
+                            : 'transparent',
+                        }}
+                      >
+                        {selectedReviewTask.extracted_legal_id}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>Registry Type</td>
+                      <td style={{ padding: '12px' }} colSpan={2}>
+                        {selectedReviewTask.registry_type} ({selectedReviewTask.country_code || 'NL'})
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
 
-              <div style={{ marginTop: '20px' }}>
-                <p style={{ fontWeight: 600, marginBottom: '8px' }}>Mismatch Flags:</p>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {selectedReviewTask.kvk_mismatch_flags.map((flag) => (
-                    <span
-                      key={flag}
-                      className="priority-badge priority-urgent"
-                      style={{ textTransform: 'capitalize' }}
-                    >
-                      {flag.replace('_', ' ')}
-                    </span>
-                  ))}
+                <div style={{ marginTop: '20px' }}>
+                  <p style={{ fontWeight: 600, marginBottom: '8px' }}>Mismatch Flags:</p>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {selectedReviewTask.kvk_mismatch_flags.map((flag) => (
+                      <span
+                        key={flag}
+                        className="priority-badge priority-urgent"
+                        style={{ textTransform: 'capitalize' }}
+                      >
+                        {flag.replace('_', ' ')}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '20px' }}>
+                  <p style={{ fontWeight: 600, marginBottom: '8px' }}>Document:</p>
+                  <a
+                    href={selectedReviewTask.kvk_document_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#0066b3', textDecoration: 'underline' }}
+                  >
+                    View Uploaded Document
+                  </a>
                 </div>
               </div>
-
-              <div style={{ marginTop: '20px' }}>
-                <p style={{ fontWeight: 600, marginBottom: '8px' }}>Document:</p>
-                <a
-                  href={selectedReviewTask.kvk_document_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: '#0066b3', textDecoration: 'underline' }}
-                >
-                  View Uploaded Document
-                </a>
-              </div>
             </div>
-          </div>
 
-          <div className="dialog-actions">
-            <Button onClick={() => setShowReviewDialog(false)}>Cancel</Button>
-            <Button color="red" onClick={() => handleReviewDecision('reject')}>
-              Reject
-            </Button>
-            <Button color="blue" onClick={() => handleReviewDecision('approve')}>
-              Approve
-            </Button>
-          </div>
-        </Dialog>
-      )}
+            <Group mt="xl" justify="flex-end">
+              <Button onClick={() => setShowReviewDialog(false)} variant="default">Cancel</Button>
+              <Button color="red" onClick={() => handleReviewDecision('reject')}>
+                Reject
+              </Button>
+              <Button color="blue" onClick={() => handleReviewDecision('approve')}>
+                Approve
+              </Button>
+            </Group>
+          </>
+        )}
+      </Modal>
     </div>
   );
 };

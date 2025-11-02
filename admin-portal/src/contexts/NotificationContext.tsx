@@ -1,8 +1,7 @@
-import { Fade } from '@progress/kendo-react-animation';
-import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
 // NotificationContext.tsx - Global notification system
+import { notifications } from '@mantine/notifications';
 import type React from 'react';
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo } from 'react';
 
 export type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
@@ -38,32 +37,17 @@ export const useNotification = () => {
 };
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
-
-  const removeNotification = useCallback((id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  }, []);
-
   const showNotification = useCallback(
     (type: NotificationType, message: string, title?: string, duration = 5000) => {
-      const id = `notification-${Date.now()}-${Math.random()}`;
-      const notification: NotificationMessage = {
-        id,
-        type,
+      notifications.show({
+        title: title || type.charAt(0).toUpperCase() + type.slice(1),
         message,
-        title,
-        duration,
-      };
-
-      setNotifications((prev) => [...prev, notification]);
-
-      if (duration > 0) {
-        setTimeout(() => {
-          removeNotification(id);
-        }, duration);
-      }
+        color: type === 'error' ? 'red' : type === 'warning' ? 'yellow' : type === 'success' ? 'green' : 'blue',
+        autoClose: duration,
+        withCloseButton: true,
+      });
     },
-    [removeNotification]
+    []
   );
 
   const showSuccess = useCallback(
@@ -108,39 +92,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   return (
     <NotificationContext.Provider value={value}>
       {children}
-      <NotificationGroup
-        style={{
-          position: 'fixed',
-          top: '20px',
-          right: '20px',
-          zIndex: 10000,
-          alignItems: 'flex-end',
-        }}
-      >
-        {notifications.map((notification) => (
-          <Fade key={notification.id} enter={true} exit={true}>
-            <Notification
-              type={{ style: notification.type, icon: true }}
-              closable={true}
-              onClose={() => removeNotification(notification.id)}
-              style={{
-                minWidth: '300px',
-                maxWidth: '500px',
-                marginBottom: '10px',
-              }}
-            >
-              <div>
-                {notification.title && (
-                  <strong style={{ display: 'block', marginBottom: '5px' }}>
-                    {notification.title}
-                  </strong>
-                )}
-                <span>{notification.message}</span>
-              </div>
-            </Notification>
-          </Fade>
-        ))}
-      </NotificationGroup>
     </NotificationContext.Provider>
   );
 };

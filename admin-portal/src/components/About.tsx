@@ -3,7 +3,7 @@
  * Displays build information for both admin portal and API
  */
 
-import { Card, CardBody, CardHeader, CardTitle } from '@progress/kendo-react-layout';
+import { Card } from '@mantine/core';
 import { AlertCircle, Calendar, CheckCircle, Clock, GitBranch, Package } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -147,14 +147,14 @@ const About: React.FC = () => {
 
       <div className="about-grid">
         {/* Admin Portal Version Card */}
-        <Card className="version-card">
-          <CardHeader>
-            <CardTitle>
+        <Card className="version-card" withBorder shadow="sm" padding="lg">
+          <div className="card-header">
+            <div className="card-title">
               <Package size={20} />
               Admin Portal
-            </CardTitle>
-          </CardHeader>
-          <CardBody>
+            </div>
+          </div>
+          <div className="card-body">
             {portalVersion && (
               <div className="version-details">
                 {isProductionBuild(portalVersion.buildNumber) && (
@@ -198,18 +198,18 @@ const About: React.FC = () => {
                 </div>
               </div>
             )}
-          </CardBody>
+          </div>
         </Card>
 
         {/* API Version Card */}
-        <Card className="version-card">
-          <CardHeader>
-            <CardTitle>
+        <Card className="version-card" withBorder shadow="sm" padding="lg">
+          <div className="card-header">
+            <div className="card-title">
               <Package size={20} />
               Backend API
-            </CardTitle>
-          </CardHeader>
-          <CardBody>
+            </div>
+          </div>
+          <div className="card-body">
             {apiVersion ? (
               <div className="version-details">
                 <div className="version-item">
@@ -272,7 +272,7 @@ const About: React.FC = () => {
                 <span>API version information unavailable</span>
               </div>
             )}
-          </CardBody>
+          </div>
         </Card>
       </div>
 

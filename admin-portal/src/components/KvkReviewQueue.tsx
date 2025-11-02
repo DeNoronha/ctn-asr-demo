@@ -1,12 +1,8 @@
-import { Button, Textarea, Loader } from '@mantine/core';
-
-import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-
-
+import { Button, Textarea, Loader, Modal, Group } from '@mantine/core';
+import { MantineReactTable, type MRT_ColumnDef, useMantineReactTable } from 'mantine-react-table';
 import axios from 'axios';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 
 interface FlaggedEntity {
@@ -139,35 +135,96 @@ export const KvkReviewQueue: React.FC = () => {
     return flag === 'entered_kvk_mismatch' || flag === 'entered_name_mismatch';
   };
 
-  const FlagsCell = (props: GridCellProps) => {
-    const flags = props.dataItem.kvk_mismatch_flags || [];
-    return (
-      <td>
-        {flags.map((flag: string, idx: number) => (
-          <span
-            key={idx}
-            className={`k-badge k-badge-${isEnteredDataMismatch(flag) ? 'error' : 'warning'}`}
-            style={{
-              marginRight: '5px',
-              fontWeight: isEnteredDataMismatch(flag) ? 'bold' : 'normal',
-            }}
-          >
-            {getFlagDescription(flag)}
-          </span>
-        ))}
-      </td>
-    );
-  };
+  // Mantine React Table column definitions
+  const columns = useMemo<MRT_ColumnDef<FlaggedEntity>[]>(
+    () => [
+      {
+        accessorKey: 'entered_company_name',
+        header: 'Entered Company',
+        size: 200,
+      },
+      {
+        accessorKey: 'entered_kvk_number',
+        header: 'Entered KvK',
+        size: 110,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string | null>();
+          return <div>{value || <span style={{ color: '#999' }}>—</span>}</div>;
+        },
+      },
+      {
+        accessorKey: 'kvk_extracted_company_name',
+        header: 'Extracted Company',
+        size: 200,
+      },
+      {
+        accessorKey: 'kvk_extracted_number',
+        header: 'Extracted KvK',
+        size: 110,
+      },
+      {
+        accessorKey: 'kvk_mismatch_flags',
+        header: 'Issues',
+        size: 280,
+        Cell: ({ row }) => {
+          const flags = row.original.kvk_mismatch_flags || [];
+          return (
+            <div>
+              {flags.map((flag: string, idx: number) => (
+                <span
+                  key={idx}
+                  className={`k-badge k-badge-${isEnteredDataMismatch(flag) ? 'error' : 'warning'}`}
+                  style={{
+                    marginRight: '5px',
+                    fontWeight: isEnteredDataMismatch(flag) ? 'bold' : 'normal',
+                  }}
+                >
+                  {getFlagDescription(flag)}
+                </span>
+              ))}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'document_uploaded_at',
+        header: 'Upload Date',
+        size: 120,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          return <div>{new Date(value).toLocaleDateString()}</div>;
+        },
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        size: 100,
+        Cell: ({ row }) => (
+          <div>
+            <Button color="blue" size="sm" onClick={() => handleReview(row.original)}>
+              Review
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    []
+  );
 
-  const ActionCell = (props: GridCellProps) => {
-    return (
-      <td>
-        <Button color="blue" size="sm" onClick={() => handleReview(props.dataItem)}>
-          Review
-        </Button>
-      </td>
-    );
-  };
+  // Mantine React Table instance
+  const table = useMantineReactTable({
+    columns,
+    data: entities,
+    enableColumnResizing: true,
+    enableSorting: true,
+    enablePagination: false,
+    enableBottomToolbar: false,
+    enableTopToolbar: false,
+    mantineTableProps: {
+      striped: true,
+      style: { marginTop: '20px' },
+    },
+  });
 
   if (loading) {
     return <Loader size="lg" />;
@@ -178,187 +235,169 @@ export const KvkReviewQueue: React.FC = () => {
       <h2>KvK Verification Review Queue</h2>
       <p>Entities flagged for manual review ({entities.length})</p>
 
-      <Grid data={entities} style={{ marginTop: '20px' }}>
-        <GridColumn field="entered_company_name" title="Entered Company" width="200px" />
-        <GridColumn
-          field="entered_kvk_number"
-          title="Entered KvK"
-          width="110px"
-          cells={{ data: (props) => (
-            <td>{props.dataItem.entered_kvk_number || <span style={{ color: '#999' }}>—</span>}</td>
-          ) }}
-        />
-        <GridColumn field="kvk_extracted_company_name" title="Extracted Company" width="200px" />
-        <GridColumn field="kvk_extracted_number" title="Extracted KvK" width="110px" />
-        <GridColumn field="kvk_mismatch_flags" title="Issues" cells={{ data: FlagsCell }} width="280px" />
-        <GridColumn
-          field="document_uploaded_at"
-          title="Upload Date"
-          width="120px"
-          cells={{ data: (props) => (
-            <td>{new Date(props.dataItem.document_uploaded_at).toLocaleDateString()}</td>
-          ) }}
-        />
-        <GridColumn title="Actions" cells={{ data: ActionCell }} width="100px" />
-      </Grid>
+      <MantineReactTable table={table} />
 
-      {reviewDialog.visible && reviewDialog.entity && (
-        <Dialog
-          title="Review KvK Verification"
-          onClose={() => setReviewDialog({ visible: false, entity: null })}
-          width={600}
-        >
-          <div style={{ padding: '20px' }}>
-            {/* Issues section at top for visibility */}
-            {reviewDialog.entity.kvk_mismatch_flags.some(isEnteredDataMismatch) && (
-              <div
-                style={{
-                  marginBottom: '20px',
-                  padding: '12px',
-                  backgroundColor: '#ffe5e5',
-                  border: '2px solid #ff9999',
-                  borderRadius: '4px',
-                }}
-              >
-                <strong style={{ color: '#d32f2f' }}>⚠️ Data Entry Mismatch Detected</strong>
-                <p style={{ margin: '5px 0 0 0', fontSize: '0.9em' }}>
-                  The data entered manually does not match what was extracted from the document.
-                </p>
+      <Modal
+        opened={reviewDialog.visible && !!reviewDialog.entity}
+        onClose={() => setReviewDialog({ visible: false, entity: null })}
+        title="Review KvK Verification"
+        size="lg"
+      >
+        {reviewDialog.entity && (
+          <>
+            <div style={{ padding: '20px' }}>
+              {/* Issues section at top for visibility */}
+              {reviewDialog.entity.kvk_mismatch_flags.some(isEnteredDataMismatch) && (
+                <div
+                  style={{
+                    marginBottom: '20px',
+                    padding: '12px',
+                    backgroundColor: '#ffe5e5',
+                    border: '2px solid #ff9999',
+                    borderRadius: '4px',
+                  }}
+                >
+                  <strong style={{ color: '#d32f2f' }}>⚠️ Data Entry Mismatch Detected</strong>
+                  <p style={{ margin: '5px 0 0 0', fontSize: '0.9em' }}>
+                    The data entered manually does not match what was extracted from the document.
+                  </p>
+                </div>
+              )}
+
+              {/* Comparison Table */}
+              <div style={{ marginBottom: '20px' }}>
+                <strong>Data Comparison:</strong>
+                <table style={{ width: '100%', marginTop: '10px', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#f5f5f5' }}>
+                      <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>
+                        Field
+                      </th>
+                      <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>
+                        Entered Value
+                      </th>
+                      <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>
+                        Extracted from Document
+                      </th>
+                      <th
+                        style={{
+                          padding: '8px',
+                          textAlign: 'center',
+                          border: '1px solid #ddd',
+                          width: '60px',
+                        }}
+                      >
+                        Match
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}>
+                        Company Name
+                      </td>
+                      <td style={{ padding: '8px', border: '1px solid #ddd' }}>
+                        {reviewDialog.entity.entered_company_name}
+                      </td>
+                      <td style={{ padding: '8px', border: '1px solid #ddd' }}>
+                        {reviewDialog.entity.kvk_extracted_company_name}
+                      </td>
+                      <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'center' }}>
+                        {reviewDialog.entity.kvk_mismatch_flags.includes('entered_name_mismatch') ? (
+                          <span style={{ color: '#d32f2f', fontSize: '1.2em' }}>✗</span>
+                        ) : (
+                          <span style={{ color: '#4caf50', fontSize: '1.2em' }}>✓</span>
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}>
+                        KvK Number
+                      </td>
+                      <td style={{ padding: '8px', border: '1px solid #ddd' }}>
+                        {reviewDialog.entity.entered_kvk_number || (
+                          <span style={{ color: '#999' }}>Not entered</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '8px', border: '1px solid #ddd' }}>
+                        {reviewDialog.entity.kvk_extracted_number}
+                      </td>
+                      <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'center' }}>
+                        {reviewDialog.entity.kvk_mismatch_flags.includes('entered_kvk_mismatch') ? (
+                          <span style={{ color: '#d32f2f', fontSize: '1.2em' }}>✗</span>
+                        ) : (
+                          <span style={{ color: '#4caf50', fontSize: '1.2em' }}>✓</span>
+                        )}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-            )}
 
-            {/* Comparison Table */}
-            <div style={{ marginBottom: '20px' }}>
-              <strong>Data Comparison:</strong>
-              <table style={{ width: '100%', marginTop: '10px', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f5f5f5' }}>
-                    <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>
-                      Field
-                    </th>
-                    <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>
-                      Entered Value
-                    </th>
-                    <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>
-                      Extracted from Document
-                    </th>
-                    <th
+              {/* All Issues */}
+              <div style={{ marginBottom: '15px' }}>
+                <strong>All Validation Issues:</strong>
+                <ul style={{ marginTop: '5px' }}>
+                  {reviewDialog.entity.kvk_mismatch_flags.map((flag, idx) => (
+                    <li
+                      key={idx}
                       style={{
-                        padding: '8px',
-                        textAlign: 'center',
-                        border: '1px solid #ddd',
-                        width: '60px',
+                        color: isEnteredDataMismatch(flag) ? '#d32f2f' : 'inherit',
+                        fontWeight: isEnteredDataMismatch(flag) ? 'bold' : 'normal',
                       }}
                     >
-                      Match
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}>
-                      Company Name
-                    </td>
-                    <td style={{ padding: '8px', border: '1px solid #ddd' }}>
-                      {reviewDialog.entity.entered_company_name}
-                    </td>
-                    <td style={{ padding: '8px', border: '1px solid #ddd' }}>
-                      {reviewDialog.entity.kvk_extracted_company_name}
-                    </td>
-                    <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'center' }}>
-                      {reviewDialog.entity.kvk_mismatch_flags.includes('entered_name_mismatch') ? (
-                        <span style={{ color: '#d32f2f', fontSize: '1.2em' }}>✗</span>
-                      ) : (
-                        <span style={{ color: '#4caf50', fontSize: '1.2em' }}>✓</span>
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}>
-                      KvK Number
-                    </td>
-                    <td style={{ padding: '8px', border: '1px solid #ddd' }}>
-                      {reviewDialog.entity.entered_kvk_number || (
-                        <span style={{ color: '#999' }}>Not entered</span>
-                      )}
-                    </td>
-                    <td style={{ padding: '8px', border: '1px solid #ddd' }}>
-                      {reviewDialog.entity.kvk_extracted_number}
-                    </td>
-                    <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'center' }}>
-                      {reviewDialog.entity.kvk_mismatch_flags.includes('entered_kvk_mismatch') ? (
-                        <span style={{ color: '#d32f2f', fontSize: '1.2em' }}>✗</span>
-                      ) : (
-                        <span style={{ color: '#4caf50', fontSize: '1.2em' }}>✓</span>
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                      {getFlagDescription(flag)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Document link */}
+              <div style={{ marginBottom: '15px' }}>
+                <a
+                  href={reviewDialog.entity.kvk_document_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button color="cyan" size="sm">
+                    📄 View Uploaded Document
+                  </Button>
+                </a>
+              </div>
+
+              {/* Review Notes */}
+              <div style={{ marginBottom: '15px' }}>
+                <label>
+                  <strong>Review Notes:</strong>
+                </label>
+                <Textarea
+                  value={reviewNotes}
+                  onChange={(e) => setReviewNotes(e.target.value || '')}
+                  rows={4}
+                  style={{ width: '100%', marginTop: '5px' }}
+                  placeholder="Enter your review notes here (optional)..."
+                />
+              </div>
             </div>
 
-            {/* All Issues */}
-            <div style={{ marginBottom: '15px' }}>
-              <strong>All Validation Issues:</strong>
-              <ul style={{ marginTop: '5px' }}>
-                {reviewDialog.entity.kvk_mismatch_flags.map((flag, idx) => (
-                  <li
-                    key={idx}
-                    style={{
-                      color: isEnteredDataMismatch(flag) ? '#d32f2f' : 'inherit',
-                      fontWeight: isEnteredDataMismatch(flag) ? 'bold' : 'normal',
-                    }}
-                  >
-                    {getFlagDescription(flag)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Document link */}
-            <div style={{ marginBottom: '15px' }}>
-              <a
-                href={reviewDialog.entity.kvk_document_url}
-                target="_blank"
-                rel="noopener noreferrer"
+            <Group mt="xl" justify="flex-end">
+              <Button
+                onClick={() => setReviewDialog({ visible: false, entity: null })}
+                disabled={submitting}
+                variant="default"
               >
-                <Button color="cyan" size="sm">
-                  📄 View Uploaded Document
-                </Button>
-              </a>
-            </div>
-
-            {/* Review Notes */}
-            <div style={{ marginBottom: '15px' }}>
-              <label>
-                <strong>Review Notes:</strong>
-              </label>
-              <Textarea
-                value={reviewNotes}
-                onChange={(e) => setReviewNotes(e.target.value || '')}
-                rows={4}
-                style={{ width: '100%', marginTop: '5px' }}
-                placeholder="Enter your review notes here (optional)..."
-              />
-            </div>
-          </div>
-
-          <DialogActionsBar>
-            <Button onClick={() => submitReview(false)} disabled={submitting} color="red">
-              Reject
-            </Button>
-            <Button onClick={() => submitReview(true)} disabled={submitting} color="green">
-              Approve
-            </Button>
-            <Button
-              onClick={() => setReviewDialog({ visible: false, entity: null })}
-              disabled={submitting}
-            >
-              Cancel
-            </Button>
-          </DialogActionsBar>
-        </Dialog>
-      )}
+                Cancel
+              </Button>
+              <Button onClick={() => submitReview(false)} disabled={submitting} color="red">
+                Reject
+              </Button>
+              <Button onClick={() => submitReview(true)} disabled={submitting} color="green">
+                Approve
+              </Button>
+            </Group>
+          </>
+        )}
+      </Modal>
     </div>
   );
 };

@@ -1,25 +1,15 @@
-import {
-  type CompositeFilterDescriptor,
-  type SortDescriptor,
-  filterBy,
-  orderBy,
-} from '@progress/kendo-data-query';
 import { Button, TextInput, Menu } from '@mantine/core';
-import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-// TEMPORARILY DISABLED: Excel export causes react-dom/server Node.js build issues
-// import { ExcelExport } from '@progress/kendo-react-excel-export';
+import { Modal, Group } from '@mantine/core';
 import {
-  Grid,
-  type GridCellProps,
-  type GridPageChangeEvent,
-  type GridSortChangeEvent,
-  GridColumn,
-  GridColumnMenuCheckboxFilter,
-  GridColumnMenuFilter,
-  GridColumnMenuSort,
-  GridToolbar,
-} from '@progress/kendo-react-grid';
-import React, { useEffect, useRef, useState } from 'react';
+  MantineReactTable,
+  type MRT_ColumnDef,
+  type MRT_PaginationState,
+  type MRT_SortingState,
+  type MRT_ColumnFiltersState,
+  type MRT_RowSelectionState,
+  useMantineReactTable,
+} from 'mantine-react-table';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGridState } from '../hooks/useGridState';
@@ -74,11 +64,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   });
 
   const [gridData, setGridData] = useState<Member[]>(members);
-  const [sort, setSort] = useState<SortDescriptor[]>([]);
-  const [filter, setFilter] = useState<CompositeFilterDescriptor>({
-    logic: 'and',
-    filters: [],
-  });
   const [searchValue, setSearchValue] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
@@ -131,19 +116,11 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       }
     }
 
-    if (savedSort) {
-      try {
-        setSort(JSON.parse(savedSort));
-      } catch (e) {
-        console.error('Failed to load sort settings', e);
-      }
-    }
   }, []);
 
   // Save grid state to localStorage
   const saveGridState = () => {
     localStorage.setItem('gridColumns', JSON.stringify(columns));
-    localStorage.setItem('gridSort', JSON.stringify(sort));
   };
 
   // Update total when totalMembers prop changes
@@ -153,21 +130,8 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
   // Update grid data when members change
   useEffect(() => {
-    let data = [...members];
-
-    // Only apply client-side filtering/sorting if no server-side pagination
-    if (!onPageChange) {
-      if (filter.filters.length > 0) {
-        data = filterBy(data, filter);
-      }
-
-      if (sort.length > 0) {
-        data = orderBy(data, sort);
-      }
-    }
-
-    setGridData(data);
-  }, [members, filter, sort, onPageChange]);
+    setGridData(members);
+  }, [members]);
 
   // Trigger data load when page/pageSize changes
   useEffect(() => {
@@ -185,47 +149,10 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     }
   }, [total, pageSize, page, onPageChange, updatePage]);
 
-  // Page change handler for server-side pagination
-  const handlePageChange = (event: GridPageChangeEvent) => {
-    const newSkip = event.page.skip;
-    const newTake = event.page.take;
-
-    // Calculate new page number (1-based)
-    const newPage = Math.floor(newSkip / newTake) + 1;
-
-    // Update page size if it changed
-    if (newTake !== pageSize) {
-      updatePageSize(newTake);
-    } else if (newPage !== page) {
-      // Only update page if pageSize didn't change (to avoid double API call)
-      updatePage(newPage);
-    }
-  };
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchValue(value);
-
-    if (value) {
-      setFilter({
-        logic: 'or',
-        filters: [
-          { field: 'legal_name', operator: 'contains', value },
-          { field: 'org_id', operator: 'contains', value },
-          { field: 'domain', operator: 'contains', value },
-          { field: 'lei', operator: 'contains', value },
-          { field: 'euid', operator: 'contains', value },
-          { field: 'kvk', operator: 'contains', value },
-        ],
-      });
-    } else {
-      setFilter({ logic: 'and', filters: [] });
-    }
-  };
-
-  const handleSortChange = (e: GridSortChangeEvent) => {
-    setSort(e.sort);
-    saveGridState();
+    setGlobalFilter(value);
   };
 
   // TEMPORARILY DISABLED
@@ -268,9 +195,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       },
     ];
     setColumns(defaultColumns);
-    setSort([]);
     localStorage.removeItem('gridColumns');
-    localStorage.removeItem('gridSort');
     notification.showSuccess('Grid layout reset to defaults');
   };
 
@@ -369,28 +294,46 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     notification.showSuccess(`Exported ${dataToExport.length} members to CSV`);
   };
 
-  const handleAdvancedFilterApply = (advancedFilter: CompositeFilterDescriptor) => {
-    setFilter(advancedFilter);
+  const handleAdvancedFilterApply = (advancedFilter: any) => {
+    // TODO: Implement advanced filter with Mantine column filters
     setSearchValue(''); // Clear simple search when applying advanced filter
     notification.showSuccess('Advanced filters applied');
   };
 
   const handleAdvancedFilterClear = () => {
-    setFilter({ logic: 'and', filters: [] });
+    // TODO: Implement advanced filter clear with Mantine column filters
+    setGlobalFilter('');
+    setColumnFilters([]);
     notification.showInfo('Filters cleared');
   };
 
-  // Column menu
-  const ColumnMenu = (props: any) => {
-    return (
-      <div>
-        <GridColumnMenuSort {...props} />
-        <GridColumnMenuFilter {...props} />
-      </div>
-    );
-  };
+  // Mantine React Table state
+  const [pagination, setPagination] = useState<MRT_PaginationState>({
+    pageIndex: page - 1,
+    pageSize: pageSize,
+  });
+  const [sorting, setSorting] = useState<MRT_SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>([]);
+  const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
+  const [globalFilter, setGlobalFilter] = useState<string>('');
 
-  const StatusCell = (props: GridCellProps) => {
+  // Sync pagination with useGridState hook
+  useEffect(() => {
+    setPagination({ pageIndex: page - 1, pageSize });
+  }, [page, pageSize]);
+
+  // Sync row selection with selectedIds
+  useEffect(() => {
+    const selection: MRT_RowSelectionState = {};
+    selectedIds.forEach(id => {
+      const index = gridData.findIndex(m => m.org_id === id);
+      if (index >= 0) selection[index] = true;
+    });
+    setRowSelection(selection);
+  }, [selectedIds, gridData]);
+
+  // Mantine React Table column definitions
+  const mantineColumns = useMemo<MRT_ColumnDef<Member>[]>(() => {
     const statusTooltips: Record<string, string> = {
       ACTIVE: 'Member is active and in good standing',
       PENDING: 'Membership application pending approval',
@@ -399,91 +342,190 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       FLAGGED: 'Member flagged for review'
     };
 
-    return (
-      <td>
-        <span
-          className="status-badge"
-          style={{ backgroundColor: getStatusColor(props.dataItem.status) }}
-          title={statusTooltips[props.dataItem.status] || 'Member status'}
-          role="status"
-          aria-label={`Status: ${props.dataItem.status}`}
-        >
-          {props.dataItem.status}
-        </span>
-      </td>
-    );
-  };
-
-  const MembershipCell = (props: GridCellProps) => {
     const membershipTooltips: Record<string, string> = {
       PREMIUM: 'Premium membership - full access to all services and priority support',
       FULL: 'Full membership - access to all standard services',
       BASIC: 'Basic membership - limited access to essential services'
     };
 
-    return (
-      <td>
-        <span
-          className="membership-badge"
-          style={{ backgroundColor: getMembershipColor(props.dataItem.membership_level) }}
-          title={membershipTooltips[props.dataItem.membership_level] || 'Membership level'}
-          role="status"
-          aria-label={`Membership: ${props.dataItem.membership_level}`}
-        >
-          {props.dataItem.membership_level}
-        </span>
-      </td>
-    );
-  };
+    const visibleColumns = columns.filter(col => col.show);
 
-  const DateCell = (props: GridCellProps) => {
-    return <td>{new Date(props.dataItem[props.field || '']).toLocaleDateString()}</td>;
-  };
+    return visibleColumns.map(col => {
+      const baseColumn: MRT_ColumnDef<Member> = {
+        accessorKey: col.field as any,
+        header: getColumnTitle(col.field),
+        size: col.width ? parseInt(col.width) : 150,
+      };
 
-  // SEC-007: Sanitize user-generated text fields in grid
-  const TextCell = (props: GridCellProps) => {
-    const value = props.dataItem[props.field || ''];
-    return <td dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
-  };
+      // Add custom cell renderers based on field type
+      if (col.field === 'status') {
+        baseColumn.Cell = ({ row }) => (
+          <div>
+            <span
+              className="status-badge"
+              style={{ backgroundColor: getStatusColor(row.original.status) }}
+              title={statusTooltips[row.original.status] || 'Member status'}
+              role="status"
+              aria-label={`Status: ${row.original.status}`}
+            >
+              {row.original.status}
+            </span>
+          </div>
+        );
+      } else if (col.field === 'membership_level') {
+        baseColumn.Cell = ({ row }) => (
+          <div>
+            <span
+              className="membership-badge"
+              style={{ backgroundColor: getMembershipColor(row.original.membership_level) }}
+              title={membershipTooltips[row.original.membership_level] || 'Membership level'}
+              role="status"
+              aria-label={`Membership: ${row.original.membership_level}`}
+            >
+              {row.original.membership_level}
+            </span>
+          </div>
+        );
+      } else if (col.field === 'created_at') {
+        baseColumn.Cell = ({ cell }) => {
+          const value = cell.getValue<string>();
+          return <div>{new Date(value).toLocaleDateString()}</div>;
+        };
+      } else if (col.field === 'legal_name' || col.field === 'domain') {
+        // SEC-007: Sanitize user-generated text fields
+        baseColumn.Cell = ({ cell }) => {
+          const value = cell.getValue<string>();
+          return <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
+        };
+      }
 
-  const SelectionCell = (props: GridCellProps) => {
-    const isSelected = selectedIds.includes(props.dataItem.org_id);
-    return (
-      <td onClick={(e) => e.stopPropagation()}>
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() => handleSelectRow(props.dataItem.org_id)}
-          onClick={(e) => e.stopPropagation()}
-        />
-      </td>
-    );
-  };
+      return baseColumn;
+    });
+  }, [columns]);
 
-  const SelectionHeaderCell = () => {
-    const allSelected = gridData.length > 0 && selectedIds.length === gridData.length;
-    return (
-      <th onClick={(e) => e.stopPropagation()}>
-        <input
-          type="checkbox"
-          checked={allSelected}
-          onChange={handleSelectAll}
-          onClick={(e) => e.stopPropagation()}
-        />
-      </th>
-    );
-  };
-
-  const ActionCell = (props: GridCellProps) => {
-    return (
-      <td style={{ cursor: 'pointer' }}>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <Eye size={16} />
-          <span style={{ fontSize: '12px' }}>View</span>
+  // Mantine React Table instance
+  const table = useMantineReactTable({
+    columns: mantineColumns,
+    data: gridData,
+    enableRowSelection: true,
+    enableColumnResizing: true,
+    enableSorting: !onPageChange, // Disable client-side sorting if server-side pagination
+    enableColumnFilters: !onPageChange, // Disable client-side filtering if server-side
+    enableGlobalFilter: !onPageChange, // Enable global filter for client-side only
+    enablePagination: true,
+    manualPagination: !!onPageChange, // Use manual pagination if server-side
+    pageCount: onPageChange ? Math.ceil(total / pageSize) : undefined,
+    state: {
+      pagination,
+      sorting,
+      columnFilters,
+      rowSelection,
+      globalFilter,
+    },
+    onPaginationChange: setPagination,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onRowSelectionChange: setRowSelection,
+    onGlobalFilterChange: setGlobalFilter,
+    mantineTableProps: {
+      striped: true,
+      style: { height: '600px' },
+    },
+    mantineTableBodyRowProps: ({ row }) => ({
+      onClick: () => onViewDetails(row.original),
+      style: { cursor: 'pointer' },
+    }),
+    renderTopToolbarCustomActions: () => (
+      <div className="grid-toolbar">
+        <div className="toolbar-left">
+          {!onPageChange && (
+            <>
+              <TextInput
+                value={searchValue}
+                onChange={handleSearchChange}
+                placeholder={t('members.searchMembers')}
+                style={{ width: '300px' }}
+              />
+              <Button
+                color="blue"
+                variant={showAdvancedFilter ? 'filled' : 'outline'}
+                onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
+              >
+                {showAdvancedFilter ? t('common.hide', 'Hide') : t('common.advanced', 'Advanced')}{' '}
+                {t('common.filter')}
+              </Button>
+            </>
+          )}
+          <Menu>
+            <Menu.Target>
+              <Button variant="outline" color="blue">
+                {t('common.export')}
+              </Button>
+            </Menu.Target>
+            <Menu.Dropdown>
+              {exportMenuItems.map((item, index) => (
+                <Menu.Item key={index} onClick={item.click}>
+                  {item.text}
+                </Menu.Item>
+              ))}
+            </Menu.Dropdown>
+          </Menu>
+          {Object.keys(rowSelection).length > 0 && (
+            <Menu>
+              <Menu.Target>
+                <Button color="cyan">
+                  {`${t('members.bulkActions')} (${Object.keys(rowSelection).length})`}
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                {bulkActions.map((item, index) => (
+                  <Menu.Item key={index} onClick={item.click}>
+                    {item.text}
+                  </Menu.Item>
+                ))}
+              </Menu.Dropdown>
+            </Menu>
+          )}
         </div>
-      </td>
-    );
-  };
+        <div className="toolbar-right">
+          <Menu>
+            <Menu.Target>
+              <Button variant="outline">{t('common.columns')}</Button>
+            </Menu.Target>
+            <Menu.Dropdown>
+              {columnMenuItems.map((item, index) => (
+                <Menu.Item key={index} onClick={item.click}>
+                  {item.icon && '✓ '}{item.text}
+                </Menu.Item>
+              ))}
+            </Menu.Dropdown>
+          </Menu>
+        </div>
+      </div>
+    ),
+  });
+
+  // Sync row selection changes back to selectedIds
+  useEffect(() => {
+    const selected = Object.keys(rowSelection)
+      .filter(key => rowSelection[key])
+      .map(key => gridData[parseInt(key)]?.org_id)
+      .filter(Boolean);
+    if (JSON.stringify(selected) !== JSON.stringify(selectedIds)) {
+      setSelectedIds(selected);
+    }
+  }, [rowSelection, gridData]);
+
+  // Handle pagination changes
+  useEffect(() => {
+    if (onPageChange && pagination.pageIndex !== page - 1) {
+      updatePage(pagination.pageIndex + 1);
+      onPageChange(pagination.pageIndex + 1, pagination.pageSize);
+    }
+    if (pagination.pageSize !== pageSize) {
+      updatePageSize(pagination.pageSize);
+    }
+  }, [pagination]);
 
   const columnMenuItems = columns.map((col) => ({
     text: col.title,
@@ -527,188 +569,22 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       )}
 
       {/* Bulk Action Confirmation Dialog */}
-      {showBulkDialog && (
-        <Dialog title="Confirm Bulk Action" onClose={() => setShowBulkDialog(false)} width={500}>
-          <p style={{ margin: '20px', fontSize: '16px' }}>{getBulkActionConfirmation()}</p>
-          <DialogActionsBar>
-            <Button onClick={() => setShowBulkDialog(false)}>Cancel</Button>
-            <Button color="blue" onClick={executeBulkAction} disabled={isBulkProcessing}>
-              {isBulkProcessing ? 'Processing...' : 'Confirm'}
-            </Button>
-          </DialogActionsBar>
-        </Dialog>
-      )}
+      <Modal
+        opened={showBulkDialog}
+        onClose={() => setShowBulkDialog(false)}
+        title="Confirm Bulk Action"
+        size="md"
+      >
+        <p style={{ margin: '20px', fontSize: '16px' }}>{getBulkActionConfirmation()}</p>
+        <Group mt="xl" justify="flex-end">
+          <Button onClick={() => setShowBulkDialog(false)} variant="default">Cancel</Button>
+          <Button color="blue" onClick={executeBulkAction} disabled={isBulkProcessing}>
+            {isBulkProcessing ? 'Processing...' : 'Confirm'}
+          </Button>
+        </Group>
+      </Modal>
 
-      {/* TEMP DISABLED: Excel Export */}
-      {/* <ExcelExport
-        data={
-          selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData
-        }
-        fileName="CTN_Members.xlsx"
-        ref={excelExportRef}
-      > */}
-        <Grid
-          data={gridData}
-          sortable={!onPageChange}
-          sort={sort}
-          onSortChange={handleSortChange}
-          filterable={!onPageChange} // Disable client-side filtering if server-side pagination enabled
-          filter={filter}
-          onFilterChange={(e) => setFilter(e.filter)}
-          pageable={{
-            buttonCount: 5,
-            info: true,
-            type: 'numeric',
-            pageSizes: [10, 20, 50, 100],
-            previousNext: true,
-          }}
-          skip={skip}
-          take={pageSize}
-          total={total}
-          onPageChange={handlePageChange}
-          style={{ height: '600px' }}
-          resizable={true}
-          navigatable={true}
-          onRowClick={(e) => {
-            onViewDetails(e.dataItem);
-          }}
-        >
-          <GridToolbar>
-            <div className="grid-toolbar">
-              <div className="toolbar-left">
-                {!onPageChange && (
-                  <>
-                    <TextInput
-                      value={searchValue}
-                      onChange={handleSearchChange}
-                      placeholder={t('members.searchMembers')}
-                      style={{ width: '300px' }}
-                    />
-                    <Button
-                      color="blue"
-                      variant={showAdvancedFilter ? 'filled' : 'outline'}
-                      onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
-                    >
-                      {showAdvancedFilter ? t('common.hide', 'Hide') : t('common.advanced', 'Advanced')}{' '}
-                      {t('common.filter')}
-                    </Button>
-                  </>
-                )}
-                <Menu>
-                  <Menu.Target>
-                    <Button variant="outline" color="blue">
-                      {t('common.export')}
-                    </Button>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    {exportMenuItems.map((item, index) => (
-                      <Menu.Item key={index} onClick={item.click}>
-                        {item.text}
-                      </Menu.Item>
-                    ))}
-                  </Menu.Dropdown>
-                </Menu>
-                {selectedIds.length > 0 && (
-                  <Menu>
-                    <Menu.Target>
-                      <Button color="cyan">
-                        {`${t('members.bulkActions')} (${selectedIds.length})`}
-                      </Button>
-                    </Menu.Target>
-                    <Menu.Dropdown>
-                      {bulkActions.map((item, index) => (
-                        <Menu.Item key={index} onClick={item.click}>
-                          {item.text}
-                        </Menu.Item>
-                      ))}
-                    </Menu.Dropdown>
-                  </Menu>
-                )}
-                <Menu>
-                  <Menu.Target>
-                    <Button variant="default">
-                      {t('grid.columns', 'Columns')}
-                    </Button>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    {columnMenuItems.map((item, index) => (
-                      <Menu.Item key={index} onClick={item.click}>
-                        {item.text} {item.icon === 'check' ? '✓' : ''}
-                      </Menu.Item>
-                    ))}
-                  </Menu.Dropdown>
-                </Menu>
-                <Button
-                  variant="subtle"
-                  onClick={resetColumns}
-                  title={t('grid.resetLayout', 'Reset layout')}
-                >
-                  {t('grid.resetLayout', 'Reset Layout')}
-                </Button>
-              </div>
-              <div className="toolbar-stats">
-                <span>
-                  {t('grid.total', 'Total')}: {total}
-                </span>
-                <span>
-                  {t('grid.showing', 'Showing')}: {gridData.length}
-                </span>
-                {selectedIds.length > 0 && (
-                  <span>
-                    {t('grid.selected', 'Selected')}: {selectedIds.length}
-                  </span>
-                )}
-                {loading && (
-                  <span className="loading-indicator" role="status" aria-live="polite" aria-label="Loading members data">
-                    ⏳ {t('common.loading')}
-                  </span>
-                )}
-              </div>
-            </div>
-          </GridToolbar>
-
-          <GridColumn
-            field="selected"
-            width="50px"
-            cells={{ data: SelectionCell }}
-            sortable={false}
-            filterable={false}
-          />
-
-          {columns
-            .filter((col) => col.show)
-            .map((col) => {
-              const columnProps: Partial<React.ComponentProps<typeof GridColumn>> = {
-                field: col.field,
-                title: getColumnTitle(col.field),
-                width: col.width,
-                columnMenu: ColumnMenu,
-              };
-
-              if (col.field === 'status') {
-                columnProps.cells = { data: StatusCell };
-              } else if (col.field === 'membership_level') {
-                columnProps.cells = { data: MembershipCell };
-              } else if (col.field === 'created_at') {
-                columnProps.cells = { data: DateCell };
-                columnProps.filter = 'date';
-              } else if (col.field === 'legal_name' || col.field === 'domain') {
-                // SEC-007: Sanitize user-generated text fields
-                columnProps.cells = { data: TextCell };
-              }
-
-              return <GridColumn key={col.field} {...columnProps} />;
-            })}
-
-          <GridColumn
-            title={t('common.actions')}
-            width="180px"
-            cells={{ data: ActionCell }}
-            sortable={false}
-            filterable={false}
-          />
-        </Grid>
-      {/* </ExcelExport> */}
+      <MantineReactTable table={table} />
     </div>
   );
 };

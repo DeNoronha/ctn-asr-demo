@@ -3,8 +3,7 @@
  * Displays complete KvK registry data fetched from the Dutch Chamber of Commerce API
  */
 
-import { Card, CardBody, CardHeader, CardTitle } from '@progress/kendo-react-layout';
-import { Loader } from '@mantine/core';
+import { Card, Loader } from '@mantine/core';
 
 import { Calendar, MapPin, Building2, Users, FileText, ExternalLink, CheckCircle, AlertCircle } from './icons';
 import type React from 'react';
@@ -158,14 +157,14 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
 
       <div className="registry-grid">
         {/* Basic Information Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>
+        <Card withBorder shadow="sm" padding="lg">
+          <div className="card-header">
+            <div className="card-title">
               <Building2 size={20} />
               Basic Information
-            </CardTitle>
-          </CardHeader>
-          <CardBody>
+            </div>
+          </div>
+          <div className="card-body">
             <div className="info-table">
               <div className="info-row">
                 <span className="info-label">KvK Number:</span>
@@ -197,18 +196,18 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
                 </div>
               )}
             </div>
-          </CardBody>
+          </div>
         </Card>
 
         {/* Registration Dates Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>
+        <Card withBorder shadow="sm" padding="lg">
+          <div className="card-header">
+            <div className="card-title">
               <Calendar size={20} />
               Registration
-            </CardTitle>
-          </CardHeader>
-          <CardBody>
+            </div>
+          </div>
+          <div className="card-body">
             <div className="info-table">
               {registryData.formal_registration_date && (
                 <div className="info-row">
@@ -233,20 +232,20 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
                 </div>
               )}
             </div>
-          </CardBody>
+          </div>
         </Card>
       </div>
 
       {/* Addresses Section */}
       {registryData.addresses && registryData.addresses.length > 0 && (
-        <Card className="full-width-card">
-          <CardHeader>
-            <CardTitle>
+        <Card className="full-width-card" withBorder shadow="sm" padding="lg">
+          <div className="card-header">
+            <div className="card-title">
               <MapPin size={20} />
               Addresses
-            </CardTitle>
-          </CardHeader>
-          <CardBody>
+            </div>
+          </div>
+          <div className="card-body">
             <div className="addresses-grid">
               {registryData.addresses.map((address, index) => (
                 <div key={index} className="address-card">
@@ -259,20 +258,20 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
                 </div>
               ))}
             </div>
-          </CardBody>
+          </div>
         </Card>
       )}
 
       {/* Business Activities Section */}
       {registryData.sbi_activities && registryData.sbi_activities.length > 0 && (
-        <Card className="full-width-card">
-          <CardHeader>
-            <CardTitle>
+        <Card className="full-width-card" withBorder shadow="sm" padding="lg">
+          <div className="card-header">
+            <div className="card-title">
               <FileText size={20} />
               Business Activities (SBI Codes)
-            </CardTitle>
-          </CardHeader>
-          <CardBody>
+            </div>
+          </div>
+          <div className="card-body">
             <div className="sbi-activities">
               {registryData.sbi_activities.map((activity, index) => (
                 <div key={index} className="sbi-activity">
@@ -286,7 +285,7 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
                 </div>
               ))}
             </div>
-          </CardBody>
+          </div>
         </Card>
       )}
 

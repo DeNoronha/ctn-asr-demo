@@ -3,9 +3,7 @@
  * Displays comprehensive system health monitoring with real-time status checks
  */
 
-import { Button, Loader } from '@mantine/core';
-
-import { Card, CardBody, CardHeader } from '@progress/kendo-react-layout';
+import { Button, Card, Loader } from '@mantine/core';
 
 import { Activity, AlertTriangle, CheckCircle, RefreshCw, XCircle } from './icons';
 import type React from 'react';
@@ -184,13 +182,13 @@ export const HealthDashboard: React.FC = () => {
 
       {/* Overall Status Card */}
       <Card className={`overall-status status-${getStatusClass(health.status)}`}>
-        <CardHeader>
+        <div className="card-header">
           <div className="overall-status-header">
             {getStatusIcon(health.status)}
             <h2>Overall Status: {health.status.toUpperCase()}</h2>
           </div>
-        </CardHeader>
-        <CardBody>
+        </div>
+        <div className="card-body">
           <div className="status-details">
             <div className="status-detail">
               <span className="detail-label">Environment:</span>
@@ -211,7 +209,7 @@ export const HealthDashboard: React.FC = () => {
               </span>
             </div>
           </div>
-        </CardBody>
+        </div>
       </Card>
 
       {/* Individual Checks Grid */}
@@ -220,13 +218,13 @@ export const HealthDashboard: React.FC = () => {
         {/* Database Check */}
         {health.checks.database && (
         <Card className={`health-check status-${getStatusClass(health.checks.database.status)}`}>
-          <CardHeader>
+          <div className="card-header">
             <div className="check-header">
               {getStatusIcon(health.checks.database.status)}
               <h3>Database</h3>
             </div>
-          </CardHeader>
-          <CardBody>
+          </div>
+          <div className="card-body">
             <div className="check-details">
               <div className="check-detail">
                 <span className="detail-label">Status:</span>
@@ -245,20 +243,20 @@ export const HealthDashboard: React.FC = () => {
                 </div>
               )}
             </div>
-          </CardBody>
+          </div>
         </Card>
         )}
 
         {/* Application Insights Check */}
         {health.checks.applicationInsights && (
         <Card className={`health-check status-${getStatusClass(health.checks.applicationInsights.status)}`}>
-          <CardHeader>
+          <div className="card-header">
             <div className="check-header">
               {getStatusIcon(health.checks.applicationInsights.status)}
               <h3>Application Insights</h3>
             </div>
-          </CardHeader>
-          <CardBody>
+          </div>
+          <div className="card-body">
             <div className="check-details">
               <div className="check-detail">
                 <span className="detail-label">Status:</span>
@@ -277,20 +275,20 @@ export const HealthDashboard: React.FC = () => {
                 </div>
               )}
             </div>
-          </CardBody>
+          </div>
         </Card>
         )}
 
         {/* Azure Key Vault Check */}
         {health.checks.azureKeyVault && (
         <Card className={`health-check status-${getStatusClass(health.checks.azureKeyVault.status)}`}>
-          <CardHeader>
+          <div className="card-header">
             <div className="check-header">
               {getStatusIcon(health.checks.azureKeyVault.status)}
               <h3>Azure Key Vault</h3>
             </div>
-          </CardHeader>
-          <CardBody>
+          </div>
+          <div className="card-body">
             <div className="check-details">
               <div className="check-detail">
                 <span className="detail-label">Status:</span>
@@ -309,20 +307,20 @@ export const HealthDashboard: React.FC = () => {
                 </div>
               )}
             </div>
-          </CardBody>
+          </div>
         </Card>
         )}
 
         {/* Static Web Apps Check */}
         {health.checks.staticWebApps && (
         <Card className={`health-check status-${getStatusClass(health.checks.staticWebApps.status)}`}>
-          <CardHeader>
+          <div className="card-header">
             <div className="check-header">
               {getStatusIcon(health.checks.staticWebApps.status)}
               <h3>Static Web Apps</h3>
             </div>
-          </CardHeader>
-          <CardBody>
+          </div>
+          <div className="card-body">
             <div className="check-details">
               <div className="check-detail">
                 <span className="detail-label">Status:</span>
@@ -353,7 +351,7 @@ export const HealthDashboard: React.FC = () => {
                 </div>
               )}
             </div>
-          </CardBody>
+          </div>
         </Card>
         )}
       </div>

@@ -1,9 +1,18 @@
 import { Button, TextInput } from '@mantine/core';
 
-import { MaskedTextBox } from '@progress/kendo-react-inputs';
-import { Error, Hint, Label } from '@progress/kendo-react-labels';
 import type React from 'react';
 import { useState } from 'react';
+
+// Simple replacements for Kendo label components
+const Label: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
+  <label id={id} className="k-label">{children}</label>
+);
+const Error: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
+  <div id={id} className="k-form-error" style={{ color: '#f31700', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
+);
+const Hint: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
+  <div id={id} className="k-form-hint" style={{ color: '#656565', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
+);
 import { useNavigate } from 'react-router-dom';
 import { StepperForm } from '../components/forms/StepperForm';
 import { HelpTooltip } from '../components/help/HelpTooltip';
@@ -220,13 +229,13 @@ export const MemberRegistrationWizard: React.FC = () => {
               LEI (Legal Entity Identifier)
               <HelpTooltip content={helpContent.lei} dataTestId="lei-help" />
             </Label>
-            <MaskedTextBox
+            <TextInput
               value={formData.lei}
-              onChange={(e) => handleFieldChange('lei', e.target.value || '')}
+              onChange={(e) => handleFieldChange('lei', e.target.value.toUpperCase())}
               onBlur={() => handleBlur('lei')}
-              mask="AAAAAAAAAAAAAAAAAAAA"
+              maxLength={20}
               placeholder="20 character LEI code"
-              valid={!errors.lei}
+              error={touched.lei && errors.lei ? errors.lei : undefined}
               className={touched.lei && errors.lei ? 'k-invalid' : ''}
             />
             {touched.lei && errors.lei && <Error>{errors.lei}</Error>}
@@ -238,13 +247,13 @@ export const MemberRegistrationWizard: React.FC = () => {
               KVK Number (Dutch Chamber of Commerce)
               <HelpTooltip content={helpContent.kvk} dataTestId="kvk-help" />
             </Label>
-            <MaskedTextBox
+            <TextInput
               value={formData.kvk}
-              onChange={(e) => handleFieldChange('kvk', e.target.value || '')}
+              onChange={(e) => handleFieldChange('kvk', e.target.value.replace(/\D/g, ''))}
               onBlur={() => handleBlur('kvk')}
-              mask="00000000"
+              maxLength={8}
               placeholder="12345678"
-              valid={!errors.kvk}
+              error={touched.kvk && errors.kvk ? errors.kvk : undefined}
               className={touched.kvk && errors.kvk ? 'k-invalid' : ''}
             />
             {touched.kvk && errors.kvk && <Error>{errors.kvk}</Error>}

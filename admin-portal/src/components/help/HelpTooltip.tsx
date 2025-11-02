@@ -1,6 +1,5 @@
 import type React from 'react';
-import { Tooltip } from '@progress/kendo-react-tooltip';
-import { Icon } from '@progress/kendo-react-common';
+import { Tooltip } from '@mantine/core';
 import { TEXT_COLORS } from '../../utils/colors';
 
 interface HelpTooltipProps {
@@ -16,22 +15,28 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
   icon = 'info',
   dataTestId,
 }) => {
-  const iconMap = {
-    info: 'info-circle',
-    question: 'question-circle',
-    help: 'help',
+  const iconSymbol = {
+    info: 'ℹ️',
+    question: '❓',
+    help: '❔',
   };
 
   return (
-    <Tooltip anchorElement="target" position={position} openDelay={100}>
+    <Tooltip label={content} position={position} openDelay={100} withArrow>
       <span
         className="help-icon"
         data-testid={dataTestId}
-        title={typeof content === 'string' ? content : undefined}
-        role="tooltip"
+        role="button"
         aria-label="Help information"
+        style={{
+          color: TEXT_COLORS.info,
+          fontSize: '16px',
+          cursor: 'help',
+          display: 'inline-flex',
+          alignItems: 'center',
+        }}
       >
-        <Icon name={iconMap[icon]} style={{ color: TEXT_COLORS.info, fontSize: '16px' }} />
+        {iconSymbol[icon]}
       </span>
     </Tooltip>
   );

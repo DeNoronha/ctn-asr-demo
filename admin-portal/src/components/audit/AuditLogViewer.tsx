@@ -3,21 +3,19 @@
  * View and filter all system activity logs
  */
 
-import { type State, process } from '@progress/kendo-data-query';
 import { Button, Select } from '@mantine/core';
 
-
 import {
-  Grid,
-  GridColumn,
-  type GridCellProps,
-  type GridFilterChangeEvent,
-  type GridPageChangeEvent,
-  type GridSortChangeEvent,
-} from '@progress/kendo-react-grid';
+  MantineReactTable,
+  type MRT_ColumnDef,
+  type MRT_PaginationState,
+  type MRT_SortingState,
+  type MRT_ColumnFiltersState,
+  useMantineReactTable,
+} from 'mantine-react-table';
 import { Download, FileText, RefreshCw } from '../icons';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { RoleGuard } from '../../auth/ProtectedRoute';
 import { UserRole } from '../../auth/authConfig';
@@ -34,23 +32,9 @@ const AuditLogViewer: React.FC = () => {
   const [selectedAction, setSelectedAction] = useState<string>('All');
   const [selectedTargetType, setSelectedTargetType] = useState<string>('All');
 
-  // Grid state
-  const [dataState, setDataState] = useState<State>({
-    skip: 0,
-    take: 20,
-    sort: [{ field: 'timestamp', dir: 'desc' }],
-    filter: undefined,
-  });
-
-  const [processedData, setProcessedData] = useState<any>({ data: [], total: 0 });
-
   useEffect(() => {
     loadLogs();
   }, []);
-
-  useEffect(() => {
-    applyFiltersAndProcess();
-  }, [logs, selectedAction, selectedTargetType, dataState]);
 
   const loadLogs = async () => {
     setLoading(true);
@@ -64,20 +48,12 @@ const AuditLogViewer: React.FC = () => {
     }
   };
 
-  const applyFiltersAndProcess = () => {
-    let filtered = [...logs];
-
-    if (selectedAction !== 'All') {
-      filtered = filtered.filter((log) => log.action === selectedAction);
-    }
-
-    if (selectedTargetType !== 'All') {
-      filtered = filtered.filter((log) => log.targetType === selectedTargetType);
-    }
-
-    const processed = process(filtered, dataState);
-    setProcessedData(processed);
-  };
+  // Apply dropdown filters to logs
+  const filteredLogs = logs.filter((log) => {
+    if (selectedAction !== 'All' && log.action !== selectedAction) return false;
+    if (selectedTargetType !== 'All' && log.targetType !== selectedTargetType) return false;
+    return true;
+  });
 
   const handleExport = async () => {
     try {
@@ -101,62 +77,100 @@ const AuditLogViewer: React.FC = () => {
     setSelectedTargetType('All');
   };
 
-  const handleSortChange = (event: GridSortChangeEvent) => {
-    setDataState({ ...dataState, sort: event.sort });
-  };
-
-  const handleFilterChange = (event: GridFilterChangeEvent) => {
-    setDataState({ ...dataState, filter: event.filter });
-  };
-
-  const handlePageChange = (event: GridPageChangeEvent) => {
-    setDataState({ ...dataState, skip: event.page.skip, take: event.page.take });
-  };
-
-  const RoleCell = (props: GridCellProps) => {
-    const roleClasses: Record<string, string> = {
-      SystemAdmin: 'role-system-admin',
-      AssociationAdmin: 'role-association-admin',
-      Member: 'role-member',
-    };
-
-    const role = props.dataItem.userRole;
-    const roleClass = roleClasses[role] || 'role-member';
-
-    return (
-      <td>
-        <span className={`role-badge ${roleClass}`}>{role}</span>
-      </td>
-    );
-  };
-
-  const ActionCell = (props: GridCellProps) => {
-    const action = props.dataItem.action;
-    const color = getAuditActionColor(action);
-
-    return (
-      <td>
-        <span className="action-badge" style={{ backgroundColor: `${color}20`, color }}>
-          {action.replace(/_/g, ' ')}
-        </span>
-      </td>
-    );
-  };
-
-  const DetailsCell = (props: GridCellProps) => {
-    return (
-      <td>
-        <div className="details-cell">
-          <div>{props.dataItem.details}</div>
-          {props.dataItem.targetName && (
-            <div className="target-info">
-              Target: <strong>{props.dataItem.targetName}</strong>
+  // Column definitions
+  const columns = useMemo<MRT_ColumnDef<AuditLog>[]>(
+    () => [
+      {
+        accessorKey: 'timestamp',
+        header: 'Timestamp',
+        size: 180,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<Date>();
+          return <div>{new Date(value).toLocaleString('en-GB')}</div>;
+        },
+      },
+      {
+        accessorKey: 'action',
+        header: 'Action',
+        size: 200,
+        Cell: ({ row }) => {
+          const action = row.original.action;
+          const color = getAuditActionColor(action);
+          return (
+            <div>
+              <span className="action-badge" style={{ backgroundColor: `${color}20`, color }}>
+                {action.replace(/_/g, ' ')}
+              </span>
             </div>
-          )}
-        </div>
-      </td>
-    );
-  };
+          );
+        },
+      },
+      {
+        accessorKey: 'userName',
+        header: 'User',
+        size: 180,
+      },
+      {
+        accessorKey: 'userRole',
+        header: 'Role',
+        size: 150,
+        Cell: ({ row }) => {
+          const roleClasses: Record<string, string> = {
+            SystemAdmin: 'role-system-admin',
+            AssociationAdmin: 'role-association-admin',
+            Member: 'role-member',
+          };
+          const role = row.original.userRole;
+          const roleClass = roleClasses[role] || 'role-member';
+          return (
+            <div>
+              <span className={`role-badge ${roleClass}`}>{role}</span>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'details',
+        header: 'Details',
+        size: 300,
+        Cell: ({ row }) => (
+          <div className="details-cell">
+            <div>{row.original.details}</div>
+            {row.original.targetName && (
+              <div className="target-info">
+                Target: <strong>{row.original.targetName}</strong>
+              </div>
+            )}
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'targetType',
+        header: 'Target Type',
+        size: 120,
+      },
+    ],
+    []
+  );
+
+  // Mantine React Table instance
+  const table = useMantineReactTable({
+    columns,
+    data: filteredLogs,
+    enableRowSelection: false,
+    enableColumnResizing: true,
+    enableSorting: true,
+    enableColumnFilters: true,
+    enablePagination: true,
+    initialState: {
+      sorting: [{ id: 'timestamp', desc: true }],
+      pagination: { pageIndex: 0, pageSize: 20 },
+    },
+    mantineTableProps: {
+      striped: true,
+      style: { height: '500px' },
+    },
+  });
 
   const actions = ['All', ...Object.values(AuditAction)];
   const targetTypes = ['All', 'user', 'member', 'token', 'system'];
@@ -191,7 +205,7 @@ const AuditLogViewer: React.FC = () => {
           </div>
           <div className="stat-item">
             <span className="stat-label">Filtered</span>
-            <span className="stat-value">{processedData.total}</span>
+            <span className="stat-value">{filteredLogs.length}</span>
           </div>
           <div className="stat-item">
             <span className="stat-label">Today</span>
@@ -231,39 +245,7 @@ const AuditLogViewer: React.FC = () => {
           </div>
         </div>
 
-        <Grid
-          data={processedData}
-          sortable={true}
-          filterable={true}
-          resizable={true}
-          pageable={{
-            buttonCount: 5,
-            info: true,
-            pageSizes: [10, 20, 50, 100],
-          }}
-          skip={dataState.skip}
-          take={dataState.take}
-          total={processedData.total}
-          sort={dataState.sort}
-          filter={dataState.filter}
-          onSortChange={handleSortChange}
-          onFilterChange={handleFilterChange}
-          onPageChange={handlePageChange}
-          style={{ height: '500px' }}
-        >
-          <GridColumn
-            field="timestamp"
-            title="Timestamp"
-            width="180px"
-            format="{0:dd/MM/yyyy HH:mm:ss}"
-            filter="date"
-          />
-          <GridColumn field="action" title="Action" width="200px" cells={{ data: ActionCell }} />
-          <GridColumn field="userName" title="User" width="180px" />
-          <GridColumn field="userRole" title="Role" width="150px" cells={{ data: RoleCell }} />
-          <GridColumn field="details" title="Details" cells={{ data: DetailsCell }} />
-          <GridColumn field="targetType" title="Target Type" width="120px" />
-        </Grid>
+        <MantineReactTable table={table} />
       </div>
     </RoleGuard>
   );

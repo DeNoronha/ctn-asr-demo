@@ -1,13 +1,11 @@
-import { Button } from '@mantine/core';
-
-import { Dialog } from '@progress/kendo-react-dialogs';
-import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
+import { Button, Modal } from '@mantine/core';
+import { MantineReactTable, type MRT_ColumnDef, useMantineReactTable } from 'mantine-react-table';
 import { AlertTriangle, Pencil, Plus, Trash2, Users } from './icons';
 import type React from 'react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { LegalEntityContact } from '../services/api';
 import { safeArray, safeLength } from '../utils/safeArray';
-import { sanitizeGridCell, sanitizeText } from '../utils/sanitize';
+import { sanitizeText } from '../utils/sanitize';
 import { getContactTypeColor } from '../utils/colors';
 import { ConfirmDialog } from './ConfirmDialog';
 import { ContactForm } from './ContactForm';
@@ -73,9 +71,8 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
     await onContactDelete(contactToDelete.legal_entity_contact_id);
   };
 
-  const ContactTypeCell = (props: GridCellProps) => {
-    const type = props.dataItem.contact_type || 'General';
-
+  // Mantine React Table column definitions
+  const columns = useMemo<MRT_ColumnDef<LegalEntityContact>[]>(() => {
     const contactTypeTooltips: Record<string, string> = {
       Primary: 'Primary point of contact for this organization',
       Technical: 'Technical contact for system integration and API issues',
@@ -84,84 +81,130 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
       General: 'General contact for miscellaneous inquiries'
     };
 
-    return (
-      <td>
-        <span
-          className="contact-type-badge"
-          style={{ backgroundColor: getContactTypeColor(type) }}
-          role="status"
-          aria-label={`Contact type: ${type}`}
-          title={contactTypeTooltips[type] || `${type} contact`}
-        >
-          {type}
-        </span>
-        {props.dataItem.is_primary && (
-          <span className="primary-indicator" title="Primary Contact" aria-label="Primary contact">
-            ★
-          </span>
-        )}
-      </td>
-    );
-  };
-
-  // SEC-007: Sanitize user-generated text fields in grid
-  const NameCell = (props: GridCellProps) => {
-    const raw = props.dataItem.full_name as string;
-    // Strip any line breaks or <br> that could increase row height
-    const singleLine = sanitizeText(raw || '').replace(/\s+/g, ' ').trim();
-    return <td>{singleLine}</td>;
-  };
-
-  const TextCell = (props: GridCellProps) => {
-    const value = props.dataItem[props.field || ''];
-    const singleLine = sanitizeText(String(value || '')).replace(/\s+/g, ' ').trim();
-    return <td>{singleLine}</td>;
-  };
-
-  const handleKeyDown = (event: React.KeyboardEvent, action: () => void) => {
-    // Handle Enter and Space keys for keyboard accessibility (WCAG 2.1 Level AA)
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault(); // Prevent page scroll on Space
-      action();
-    }
-  };
-
-  // CR-002: Add null safety for grid actions
-  const ActionsCell = (props: GridCellProps) => {
-    const contactName = props.dataItem?.full_name || 'contact';
-    return (
-      <td>
-        <div className="action-buttons">
-          <Button
-            variant="subtle"
-            size="sm"
-            title="Edit contact"
-            aria-label={`Edit ${contactName}`}
-            onClick={() => handleEditContact(props.dataItem)}
-            onKeyDown={(e) => handleKeyDown(e, () => handleEditContact(props.dataItem))}
-            tabIndex={0}
-          >
-            <Pencil size={16} />
-          </Button>
-          <Button
-            variant="subtle"
-            size="sm"
-            title="Delete contact"
-            aria-label={`Delete ${contactName}`}
-            onClick={() => handleDeleteClick(props.dataItem)}
-            onKeyDown={(e) => handleKeyDown(e, () => handleDeleteClick(props.dataItem))}
-            tabIndex={0}
-          >
-            <Trash2 size={16} />
-          </Button>
-        </div>
-      </td>
-    );
-  };
+    return [
+      {
+        accessorKey: 'contact_type',
+        header: 'Type',
+        size: 140,
+        Cell: ({ row }) => {
+          const type = row.original.contact_type || 'General';
+          return (
+            <div>
+              <span
+                className="contact-type-badge"
+                style={{ backgroundColor: getContactTypeColor(type) }}
+                role="status"
+                aria-label={`Contact type: ${type}`}
+                title={contactTypeTooltips[type] || `${type} contact`}
+              >
+                {type}
+              </span>
+              {row.original.is_primary && (
+                <span className="primary-indicator" title="Primary Contact" aria-label="Primary contact">
+                  ★
+                </span>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'full_name',
+        header: 'Name',
+        size: 180,
+        minSize: 120,
+        // SEC-007: Sanitize user-generated text fields in grid
+        Cell: ({ cell }) => {
+          const raw = cell.getValue<string>();
+          // Strip any line breaks or <br> that could increase row height
+          const singleLine = sanitizeText(raw || '').replace(/\s+/g, ' ').trim();
+          return <div>{singleLine}</div>;
+        },
+      },
+      {
+        accessorKey: 'email',
+        header: 'Email',
+        size: 260,
+        minSize: 200,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          const singleLine = sanitizeText(String(value || '')).replace(/\s+/g, ' ').trim();
+          return <div>{singleLine}</div>;
+        },
+      },
+      {
+        accessorKey: 'phone',
+        header: 'Phone',
+        size: 140,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          const singleLine = sanitizeText(String(value || '')).replace(/\s+/g, ' ').trim();
+          return <div>{singleLine}</div>;
+        },
+      },
+      {
+        accessorKey: 'job_title',
+        header: 'Job Title',
+        size: 180,
+        minSize: 120,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          const singleLine = sanitizeText(String(value || '')).replace(/\s+/g, ' ').trim();
+          return <div>{singleLine}</div>;
+        },
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        size: 120,
+        // CR-002: Add null safety for grid actions
+        Cell: ({ row }) => {
+          const contactName = row.original?.full_name || 'contact';
+          return (
+            <div className="action-buttons">
+              <Button
+                variant="subtle"
+                size="sm"
+                title="Edit contact"
+                aria-label={`Edit ${contactName}`}
+                onClick={() => handleEditContact(row.original)}
+              >
+                <Pencil size={16} />
+              </Button>
+              <Button
+                variant="subtle"
+                size="sm"
+                title="Delete contact"
+                aria-label={`Delete ${contactName}`}
+                onClick={() => handleDeleteClick(row.original)}
+              >
+                <Trash2 size={16} />
+              </Button>
+            </div>
+          );
+        },
+      },
+    ];
+  }, []);
 
   // CR-002: Safe array operations
   const safeContacts = safeArray(contacts);
   const contactCount = safeLength(contacts);
+
+  // Mantine React Table instance
+  const table = useMantineReactTable({
+    columns,
+    data: safeContacts,
+    enableColumnResizing: true,
+    enableSorting: true,
+    enablePagination: false,
+    enableBottomToolbar: false,
+    enableTopToolbar: false,
+    mantineTableProps: {
+      className: 'contacts-grid',
+      striped: true,
+    },
+  });
 
   return (
     <div className="contacts-manager">
@@ -174,25 +217,7 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
       </div>
 
       {contactCount > 0 ? (
-        <Grid
-          data={safeContacts}
-          className="contacts-grid k-grid-sm"
-          scrollable="none"
-          navigatable={true}
-        >
-          <GridColumn field="contact_type" title="Type" width="140px" cells={{ data: ContactTypeCell }} />
-          <GridColumn
-            field="full_name"
-            title="Name"
-            width="180px"
-            cells={{ data: NameCell }}
-            minResizableWidth={120}
-          />
-          <GridColumn field="email" title="Email" width="260px" minResizableWidth={200} cells={{ data: TextCell }} />
-          <GridColumn field="phone" title="Phone" width="140px" cells={{ data: TextCell }} />
-          <GridColumn field="job_title" title="Job Title" width="180px" minResizableWidth={120} cells={{ data: TextCell }} />
-          <GridColumn width="120px" title="Actions" cells={{ data: ActionsCell }} />
-        </Grid>
+        <MantineReactTable table={table} />
       ) : (
         (() => {
           const es = getEmptyState('contact', 'noContacts');
@@ -207,20 +232,19 @@ export const ContactsManager: React.FC<ContactsManagerProps> = ({
         })()
       )}
 
-      {showDialog && (
-        <Dialog
-          title={editingContact ? 'Edit Contact' : 'Add Contact'}
-          onClose={() => setShowDialog(false)}
-          width={600}
-        >
-          <ContactForm
-            contact={editingContact}
-            legalEntityId={legalEntityId}
-            onSave={handleSaveContact}
-            onCancel={() => setShowDialog(false)}
-          />
-        </Dialog>
-      )}
+      <Modal
+        opened={showDialog}
+        onClose={() => setShowDialog(false)}
+        title={editingContact ? 'Edit Contact' : 'Add Contact'}
+        size="lg"
+      >
+        <ContactForm
+          contact={editingContact}
+          legalEntityId={legalEntityId}
+          onSave={handleSaveContact}
+          onCancel={() => setShowDialog(false)}
+        />
+      </Modal>
 
       <ConfirmDialog
         isOpen={deleteConfirmOpen}

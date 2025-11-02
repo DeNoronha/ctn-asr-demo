@@ -3,9 +3,7 @@
  * System Admins can edit user roles and status
  */
 
-import { Button } from '@mantine/core';
-
-import { Dialog } from '@progress/kendo-react-dialogs';
+import { Button, Modal, TextInput, Select, Checkbox, Group, Text } from '@mantine/core';
 import { Save } from '../icons';
 import type React from 'react';
 import { useState } from 'react';
@@ -46,62 +44,56 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ user, onClose, onUpdate
   };
 
   return (
-    <Dialog title={`Edit User: ${user.name}`} onClose={onClose} className="user-dialog">
-      <div className="dialog-content">
-        <div className="form-group">
-          <label>Email</label>
-          <input
-            type="email"
-            value={user.email}
-            disabled
-            style={{ backgroundColor: '#f8fafc', cursor: 'not-allowed' }}
-          />
-          <p className="help-text">Email cannot be changed</p>
-        </div>
+    <Modal opened onClose={onClose} title={`Edit User: ${user.name}`} size="md">
+      <TextInput
+        label="Email"
+        type="email"
+        value={user.email}
+        disabled
+        description="Email cannot be changed"
+        mb="md"
+      />
 
-        <div className="form-group">
-          <label>Name</label>
-          <input
-            type="text"
-            value={user.name}
-            disabled
-            style={{ backgroundColor: '#f8fafc', cursor: 'not-allowed' }}
-          />
-          <p className="help-text">Name is managed in Azure Entra ID</p>
-        </div>
+      <TextInput
+        label="Name"
+        value={user.name}
+        disabled
+        description="Name is managed in Azure Entra ID"
+        mb="md"
+      />
 
-        <div className="form-group">
-          <label>Role</label>
-          <select value={role} onChange={(e) => setRole(e.target.value as UserRole)}>
-            <option value={UserRole.SYSTEM_ADMIN}>System Admin</option>
-            <option value={UserRole.ASSOCIATION_ADMIN}>Association Admin</option>
-            <option value={UserRole.MEMBER}>Member</option>
-          </select>
-          <div className="role-description">{roleDescriptions[role]}</div>
-        </div>
+      <Select
+        label="Role"
+        value={role}
+        onChange={(value) => setRole((value as UserRole) || UserRole.ASSOCIATION_ADMIN)}
+        data={[
+          { value: UserRole.SYSTEM_ADMIN, label: 'System Admin' },
+          { value: UserRole.ASSOCIATION_ADMIN, label: 'Association Admin' },
+          { value: UserRole.MEMBER, label: 'Member' },
+        ]}
+        mb="xs"
+      />
+      <Text size="sm" c="dimmed" mb="md">
+        {roleDescriptions[role]}
+      </Text>
 
-        <div className="form-group">
-          <label>
-            <input
-              type="checkbox"
-              checked={enabled}
-              onChange={(e) => setEnabled(e.target.checked)}
-              style={{ marginRight: '8px', width: 'auto' }}
-            />
-            Account Enabled
-          </label>
-          <p className="help-text">Disabled users cannot log in</p>
-        </div>
+      <Checkbox
+        label="Account Enabled"
+        checked={enabled}
+        onChange={(e) => setEnabled(e.currentTarget.checked)}
+        description="Disabled users cannot log in"
+        mb="xl"
+      />
 
-        <div className="dialog-actions">
-          <Button onClick={onClose}>Cancel</Button>
-          <Button color="blue" onClick={handleSubmit}>
-            <Save size={16} style={{ marginRight: 8 }} />
-            Save Changes
-          </Button>
-        </div>
-      </div>
-    </Dialog>
+      <Group justify="flex-end">
+        <Button onClick={onClose} variant="default">
+          Cancel
+        </Button>
+        <Button color="blue" onClick={handleSubmit} leftSection={<Save size={16} />}>
+          Save Changes
+        </Button>
+      </Group>
+    </Modal>
   );
 };
 

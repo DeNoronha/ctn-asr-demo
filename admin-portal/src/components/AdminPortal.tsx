@@ -5,7 +5,6 @@
 
 import { Button } from '@mantine/core';
 
-import { DrawerContent } from '@progress/kendo-react-layout';
 import { LogOut, User } from './icons';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -278,7 +277,7 @@ const AdminPortal: React.FC = () => {
           onSelect={handleMenuSelect}
           selectedItem={selectedView === 'member-detail' ? 'members' : selectedView}
         />
-        <DrawerContent>
+        <div className="drawer-content">
           <div className="main-content">
             <header className="app-header">
               <div className="header-left">
@@ -319,7 +318,7 @@ const AdminPortal: React.FC = () => {
               {renderContent()}
             </main>
           </div>
-        </DrawerContent>
+        </div>
       </div>
     </>
   );

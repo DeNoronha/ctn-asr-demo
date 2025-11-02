@@ -1,12 +1,11 @@
-import { Button, Loader } from '@mantine/core';
-
-
-import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
-import { Upload, type UploadOnAddEvent } from '@progress/kendo-react-upload';
+import { Button, Loader, Group, Text } from '@mantine/core';
+import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
+import { FileText, CheckCircle, XCircle } from './icons';
 import axios from 'axios';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { msalInstance } from '../auth/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
 import { logger } from '../utils/logger';
 import { TEXT_COLORS } from '../utils/colors';
@@ -47,10 +46,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
   const [uploading, setUploading] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<KvkVerificationStatus | null>(null);
   const [loading, setLoading] = useState(true);
-  const [notification, setNotification] = useState<{
-    type: 'success' | 'error' | 'info';
-    message: string;
-  } | null>(null);
+  const notification = useNotification();
   const { getError } = useApiError();
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
@@ -119,30 +115,13 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
     }
   };
 
-  const handleUpload = async (event: UploadOnAddEvent) => {
-    const files = event.affectedFiles || event.newState || [];
+  const handleUpload = async (files: File[]) => {
     if (!files || files.length === 0) return;
 
-    const fileInfo = files[0];
-    const file = fileInfo.getRawFile ? fileInfo.getRawFile() : (fileInfo as any);
+    const file = files[0];
 
-    // Type guard - ensure we have a File object
-    if (!(file instanceof File)) {
-      setNotification({ type: 'error', message: 'Invalid file' });
-      return;
-    }
-
-    // Validate file type
-    if (file.type !== 'application/pdf') {
-      setNotification({ type: 'error', message: 'Only PDF files are allowed' });
-      return;
-    }
-
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setNotification({ type: 'error', message: 'File size must be less than 10MB' });
-      return;
-    }
+    // File type and size validation is handled by Dropzone props
+    // This is a fallback check
 
     setUploading(true);
 
@@ -162,10 +141,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
       );
 
       logger.log('Upload response:', response.data);
-      setNotification({
-        type: 'success',
-        message: 'Document uploaded successfully. Verification in progress...',
-      });
+      notification.showSuccess('Document uploaded successfully. Verification in progress...');
 
       // Refresh status after a short delay
       setTimeout(() => {
@@ -176,10 +152,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
         onVerificationComplete();
       }
     } catch (error: unknown) {
-      setNotification({
-        type: 'error',
-        message: getError(error, 'uploading document'),
-      });
+      notification.showError(getError(error, 'uploading document'));
     } finally {
       setUploading(false);
     }
@@ -256,20 +229,6 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
   return (
     <div className="kvk-document-upload">
       <h3>KvK Document Verification</h3>
-
-      {notification && (
-        <NotificationGroup
-          style={{ right: 0, top: 0, alignItems: 'flex-end', flexWrap: 'wrap-reverse' }}
-        >
-          <Notification
-            type={{ style: notification.type, icon: true }}
-            closable={true}
-            onClose={() => setNotification(null)}
-          >
-            <span>{notification.message}</span>
-          </Notification>
-        </NotificationGroup>
-      )}
 
       {verificationStatus?.kvk_document_url ? (
         <div className="verification-status" style={{ marginBottom: '20px' }}>
@@ -499,20 +458,41 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
         <div>
           <p>Upload a KvK (Chamber of Commerce) statement to verify company details.</p>
 
-          <Upload
-            batch={false}
-            multiple={false}
-            autoUpload={false}
-            disabled={uploading}
-            restrictions={{
-              allowedExtensions: ['.pdf'],
-              maxFileSize: 10485760, // 10MB
+          <Dropzone
+            onDrop={handleUpload}
+            onReject={(files) => {
+              if (files[0]?.errors[0]?.code === 'file-invalid-type') {
+                notification.showError('Only PDF files are allowed');
+              } else if (files[0]?.errors[0]?.code === 'file-too-large') {
+                notification.showError('File size must be less than 10MB');
+              }
             }}
-            onAdd={handleUpload}
-            withCredentials={false}
-            saveUrl={''}
-            removeUrl={''}
-          />
+            maxSize={10 * 1024 * 1024} // 10MB
+            accept={[MIME_TYPES.pdf]}
+            multiple={false}
+            disabled={uploading}
+          >
+            <Group justify="center" gap="xl" mih={220} style={{ pointerEvents: 'none' }}>
+              <Dropzone.Accept>
+                <CheckCircle size={52} style={{ color: 'var(--mantine-color-blue-6)' }} />
+              </Dropzone.Accept>
+              <Dropzone.Reject>
+                <XCircle size={52} style={{ color: 'var(--mantine-color-red-6)' }} />
+              </Dropzone.Reject>
+              <Dropzone.Idle>
+                <FileText size={52} style={{ color: 'var(--mantine-color-dimmed)' }} />
+              </Dropzone.Idle>
+
+              <div>
+                <Text size="xl" inline>
+                  Drag PDF here or click to select
+                </Text>
+                <Text size="sm" c="dimmed" inline mt={7}>
+                  File should not exceed 10MB
+                </Text>
+              </div>
+            </Group>
+          </Dropzone>
 
           {uploading && (
             <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>

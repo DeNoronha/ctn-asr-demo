@@ -1,6 +1,5 @@
 import type React from 'react';
-import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { Button } from '@mantine/core';
+import { Button, Modal, Group } from '@mantine/core';
 
 
 interface HelpPanelProps {
@@ -11,18 +10,14 @@ interface HelpPanelProps {
 }
 
 export const HelpPanel: React.FC<HelpPanelProps> = ({ title, content, visible, onClose }) => {
-  if (!visible) {
-    return null;
-  }
-
   return (
-    <Dialog title={title} onClose={onClose} width={500}>
+    <Modal opened={visible} onClose={onClose} title={title} size="md">
       <div className="help-panel-content">{content}</div>
-      <DialogActionsBar>
+      <Group mt="xl" justify="flex-end">
         <Button onClick={onClose} color="blue">
           Close
         </Button>
-      </DialogActionsBar>
-    </Dialog>
+      </Group>
+    </Modal>
   );
 };

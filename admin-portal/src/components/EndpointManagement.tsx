@@ -1,13 +1,9 @@
-import { Button, TextInput, Textarea, Select } from '@mantine/core';
-
+import { Button, TextInput, Textarea, Select, Modal, Group } from '@mantine/core';
+import { MantineReactTable, type MRT_ColumnDef, useMantineReactTable } from 'mantine-react-table';
 import { EmptyState } from './EmptyState';
-import { Dialog } from '@progress/kendo-react-dialogs';
-
-import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-
 import { Plus } from './icons';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { HelpTooltip } from './help/HelpTooltip';
 import { helpContent } from '../config/helpContent';
@@ -186,32 +182,87 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
     try { announceToScreenReader('Token copied to clipboard.'); } catch {}
   };
 
-  const StatusCell = (props: GridCellProps) => {
-    return (
-      <td>
-        <span className={`status-badge ${props.dataItem.is_active ? 'active' : 'inactive'}`}>
-          {props.dataItem.is_active ? '● Active' : '○ Inactive'}
-        </span>
-      </td>
-    );
-  };
+  // Mantine React Table column definitions
+  const columns = useMemo<MRT_ColumnDef<any>[]>(
+    () => [
+      {
+        accessorKey: 'endpoint_name',
+        header: 'Endpoint Name',
+        size: 250,
+      },
+      {
+        accessorKey: 'endpoint_url',
+        header: 'URL',
+        size: 300,
+      },
+      {
+        accessorKey: 'data_category',
+        header: 'Category',
+        size: 150,
+      },
+      {
+        accessorKey: 'endpoint_type',
+        header: 'Type',
+        size: 120,
+      },
+      {
+        accessorKey: 'is_active',
+        header: 'Status',
+        size: 120,
+        Cell: ({ row }) => (
+          <div>
+            <span className={`status-badge ${row.original.is_active ? 'active' : 'inactive'}`}>
+              {row.original.is_active ? '● Active' : '○ Inactive'}
+            </span>
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'dt_created',
+        header: 'Created',
+        size: 180,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          return <div>{new Date(value).toLocaleString()}</div>;
+        },
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        size: 150,
+        Cell: ({ row }) => (
+          <div>
+            <Button
+              color="blue"
+              size="sm"
+              title="Issue token for this endpoint"
+              aria-label={`Issue token for ${row.original.endpoint_name}`}
+              onClick={() => handleIssueToken(row.original)}
+              disabled={loading}
+            >
+              Issue Token
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [loading]
+  );
 
-  const ActionsCell = (props: GridCellProps) => {
-    return (
-      <td>
-        <Button
-          color="blue"
-          size="sm"
-          title="Issue token for this endpoint"
-          aria-label={`Issue token for ${props.dataItem.endpoint_name}`}
-          onClick={() => handleIssueToken(props.dataItem)}
-          disabled={loading}
-        >
-          Issue Token
-        </Button>
-      </td>
-    );
-  };
+  // Mantine React Table instance
+  const table = useMantineReactTable({
+    columns,
+    data: endpoints,
+    enableColumnResizing: true,
+    enableSorting: true,
+    enablePagination: false,
+    enableBottomToolbar: false,
+    enableTopToolbar: false,
+    mantineTableProps: {
+      striped: true,
+      style: { height: '500px' },
+    },
+  });
 
   return (
     <div className="endpoint-management">
@@ -243,135 +294,128 @@ export const EndpointManagement: React.FC<EndpointManagementProps> = ({
           );
         })()
       ) : (
-        <Grid data={endpoints} style={{ height: '500px' }} navigatable={true}>
-          <GridColumn field="endpoint_name" title="Endpoint Name" width="250px" />
-          <GridColumn field="endpoint_url" title="URL" width="300px" />
-          <GridColumn field="data_category" title="Category" width="150px" />
-          <GridColumn field="endpoint_type" title="Type" width="120px" />
-          <GridColumn field="is_active" title="Status" width="120px" cells={{ data: StatusCell }} />
-          <GridColumn
-            field="dt_created"
-            title="Created"
-            width="180px"
-            format="{0:yyyy-MM-dd HH:mm}"
-          />
-          <GridColumn title="Actions" width="150px" cells={{ data: ActionsCell }} />
-        </Grid>
+        <MantineReactTable table={table} />
       )}
 
-      {showDialog && (
-        <Dialog title="Register New Endpoint" onClose={() => setShowDialog(false)} width={600}>
-          <div className="endpoint-form">
-            <div className="form-field">
-              <label>Endpoint Name *</label>
-              <TextInput
-                value={formData.endpoint_name}
-                onChange={(e) => setFormData({ ...formData, endpoint_name: e.target.value })}
-                placeholder="e.g., Container Tracking System"
-              />
-            </div>
-
-            <div className="form-field">
-              <label>
-                Endpoint URL *
-                <HelpTooltip content={helpContent.endpointUrl} dataTestId="endpoint-url-help" />
-              </label>
-              <TextInput
-                value={formData.endpoint_url}
-                onChange={(e) => setFormData({ ...formData, endpoint_url: e.target.value })}
-                placeholder="https://your-system.com/api"
-              />
-            </div>
-
-            <div className="form-field">
-              <label>Description</label>
-              <Textarea
-                value={formData.endpoint_description}
-                onChange={(e) => setFormData({ ...formData, endpoint_description: e.target.value })}
-                placeholder="Brief description of this endpoint"
-                rows={3}
-              />
-            </div>
-
-            <div className="form-field">
-              <label>Data Category *</label>
-              <Select
-                data={DATA_CATEGORIES}
-                value={formData.data_category}
-                onChange={(value) => setFormData({ ...formData, data_category: value || '' })}
-              />
-            </div>
+      <Modal
+        opened={showDialog}
+        onClose={() => setShowDialog(false)}
+        title="Register New Endpoint"
+        size="lg"
+      >
+        <div className="endpoint-form">
+          <div className="form-field">
+            <label>Endpoint Name *</label>
+            <TextInput
+              value={formData.endpoint_name}
+              onChange={(e) => setFormData({ ...formData, endpoint_name: e.target.value })}
+              placeholder="e.g., Container Tracking System"
+            />
           </div>
 
-          <div className="dialog-actions">
-            <Button onClick={() => setShowDialog(false)} aria-label="Cancel endpoint registration">
-              Cancel
-            </Button>
-            <Button
-              color="blue"
-              onClick={handleCreateEndpoint}
-              disabled={!formData.endpoint_name || !formData.endpoint_url || loading}
-              aria-label="Save and register endpoint"
-            >
-              Register Endpoint
-            </Button>
+          <div className="form-field">
+            <label>
+              Endpoint URL *
+              <HelpTooltip content={helpContent.endpointUrl} dataTestId="endpoint-url-help" />
+            </label>
+            <TextInput
+              value={formData.endpoint_url}
+              onChange={(e) => setFormData({ ...formData, endpoint_url: e.target.value })}
+              placeholder="https://your-system.com/api"
+            />
           </div>
-        </Dialog>
-      )}
 
-      {showTokenDialog && newToken && selectedEndpoint && (
-        <Dialog
-          title="Token Issued Successfully"
-          onClose={() => setShowTokenDialog(false)}
-          width={700}
-        >
-          <div className="token-display">
-            <p className="success-message">
-              ✅ New token issued for <strong>{selectedEndpoint.endpoint_name}</strong>
-            </p>
+          <div className="form-field">
+            <label>Description</label>
+            <Textarea
+              value={formData.endpoint_description}
+              onChange={(e) => setFormData({ ...formData, endpoint_description: e.target.value })}
+              placeholder="Brief description of this endpoint"
+              rows={3}
+            />
+          </div>
 
-            <div className="token-info">
-              <label>Token Value:</label>
-              <div className="token-value-container">
-                <code className="token-value">{newToken.token_value}</code>
-                <Button
-                  size="sm"
-                  onClick={() => copyToClipboard(newToken.token_value)}
-                  aria-label="Copy token to clipboard"
-                >
-                  Copy
-                </Button>
+          <div className="form-field">
+            <label>Data Category *</label>
+            <Select
+              data={DATA_CATEGORIES}
+              value={formData.data_category}
+              onChange={(value) => setFormData({ ...formData, data_category: value || '' })}
+            />
+          </div>
+        </div>
+
+        <Group mt="xl" justify="flex-end">
+          <Button onClick={() => setShowDialog(false)} variant="default" aria-label="Cancel endpoint registration">
+            Cancel
+          </Button>
+          <Button
+            color="blue"
+            onClick={handleCreateEndpoint}
+            disabled={!formData.endpoint_name || !formData.endpoint_url || loading}
+            aria-label="Save and register endpoint"
+          >
+            Register Endpoint
+          </Button>
+        </Group>
+      </Modal>
+
+      <Modal
+        opened={showTokenDialog && !!newToken && !!selectedEndpoint}
+        onClose={() => setShowTokenDialog(false)}
+        title="Token Issued Successfully"
+        size="xl"
+      >
+        {newToken && selectedEndpoint && (
+          <>
+            <div className="token-display">
+              <p className="success-message">
+                ✅ New token issued for <strong>{selectedEndpoint.endpoint_name}</strong>
+              </p>
+
+              <div className="token-info">
+                <label>Token Value:</label>
+                <div className="token-value-container">
+                  <code className="token-value">{newToken.token_value}</code>
+                  <Button
+                    size="sm"
+                    onClick={() => copyToClipboard(newToken.token_value)}
+                    aria-label="Copy token to clipboard"
+                  >
+                    Copy
+                  </Button>
+                </div>
+              </div>
+
+              <div className="token-details">
+                <div className="token-detail">
+                  <strong>Type:</strong> {newToken.token_type}
+                </div>
+                <div className="token-detail">
+                  <strong>Issued:</strong> {new Date(newToken.issued_at).toLocaleString()}
+                </div>
+                <div className="token-detail">
+                  <strong>Expires:</strong> {new Date(newToken.expires_at).toLocaleString()}
+                </div>
+              </div>
+
+              <div className="token-warning">
+                ⚠️ <strong>Important:</strong> Save this token securely. It won't be displayed again.
               </div>
             </div>
 
-            <div className="token-details">
-              <div className="token-detail">
-                <strong>Type:</strong> {newToken.token_type}
-              </div>
-              <div className="token-detail">
-                <strong>Issued:</strong> {new Date(newToken.issued_at).toLocaleString()}
-              </div>
-              <div className="token-detail">
-                <strong>Expires:</strong> {new Date(newToken.expires_at).toLocaleString()}
-              </div>
-            </div>
-
-            <div className="token-warning">
-              ⚠️ <strong>Important:</strong> Save this token securely. It won't be displayed again.
-            </div>
-          </div>
-
-          <div className="dialog-actions">
-            <Button
-              color="blue"
-              onClick={() => setShowTokenDialog(false)}
-              aria-label="Close token dialog"
-            >
-              Done
-            </Button>
-          </div>
-        </Dialog>
-      )}
+            <Group mt="xl" justify="flex-end">
+              <Button
+                color="blue"
+                onClick={() => setShowTokenDialog(false)}
+                aria-label="Close token dialog"
+              >
+                Done
+              </Button>
+            </Group>
+          </>
+        )}
+      </Modal>
     </div>
   );
 };

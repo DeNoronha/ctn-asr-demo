@@ -1,12 +1,9 @@
-import { Button, Select, Loader } from '@mantine/core';
-
-
-import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-
-import { Upload, type UploadOnAddEvent } from '@progress/kendo-react-upload';
+import { Button, Select, Loader, Group, Text } from '@mantine/core';
+import { MantineReactTable, type MRT_ColumnDef, useMantineReactTable } from 'mantine-react-table';
+import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
 import { AlertTriangle, CheckCircle, FileText, FolderOpen, XCircle } from './icons';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
 import type { LegalEntityIdentifier } from '../services/apiV2';
@@ -81,35 +78,17 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
     setSelectedIdentifier(value);
   };
 
-  const handleUpload = async (event: UploadOnAddEvent) => {
+  const handleUpload = async (files: File[]) => {
     if (!selectedIdentifier) {
       notification.showError('Please select an identifier first');
       return;
     }
 
-    const files = event.affectedFiles || event.newState || [];
     if (!files || files.length === 0) return;
 
-    const fileInfo = files[0];
-    const file = fileInfo.getRawFile ? fileInfo.getRawFile() : (fileInfo as any);
+    const file = files[0];
 
-    // Type guard - ensure we have a File object
-    if (!(file instanceof File)) {
-      notification.showError('Invalid file');
-      return;
-    }
-
-    // Validate file type
-    if (file.type !== 'application/pdf') {
-      notification.showError('Only PDF files are allowed');
-      return;
-    }
-
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      notification.showError('File size must be less than 10MB');
-      return;
-    }
+    // File type and size validation is handled by Dropzone props
 
     setUploading(true);
 
@@ -171,29 +150,82 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
     );
   };
 
-  const StatusCell = (props: GridCellProps) => {
-    return <td>{getStatusBadge(props.dataItem.verification_status)}</td>;
-  };
+  // Mantine React Table column definitions
+  const columns = useMemo<MRT_ColumnDef<VerificationRecord>[]>(
+    () => [
+      {
+        accessorKey: 'identifier_type',
+        header: 'Identifier Type',
+        size: 120,
+      },
+      {
+        accessorKey: 'identifier_value',
+        header: 'Identifier Value',
+        size: 180,
+      },
+      {
+        accessorKey: 'verification_status',
+        header: 'Status',
+        size: 140,
+        Cell: ({ row }) => <div>{getStatusBadge(row.original.verification_status)}</div>,
+      },
+      {
+        accessorKey: 'uploaded_at',
+        header: 'Uploaded',
+        size: 160,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          return <div>{value ? formatDateTime(value) : '-'}</div>;
+        },
+      },
+      {
+        accessorKey: 'verified_at',
+        header: 'Verified',
+        size: 160,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          return <div>{value ? formatDateTime(value) : '-'}</div>;
+        },
+      },
+      {
+        accessorKey: 'verified_by',
+        header: 'Verified By',
+        size: 150,
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        size: 100,
+        Cell: ({ row }) => (
+          <div>
+            {row.original.document_url && (
+              <a href={row.original.document_url} target="_blank" rel="noopener noreferrer">
+                <Button variant="subtle" size="sm" title="View document">
+                  <FileText size={16} />
+                </Button>
+              </a>
+            )}
+          </div>
+        ),
+      },
+    ],
+    []
+  );
 
-  const DateCell = (props: GridCellProps) => {
-    const { field, dataItem } = props;
-    const value = field ? dataItem[field] : '';
-    return <td>{value ? formatDateTime(value) : '-'}</td>;
-  };
-
-  const ActionsCell = (props: GridCellProps) => {
-    return (
-      <td>
-        {props.dataItem.document_url && (
-          <a href={props.dataItem.document_url} target="_blank" rel="noopener noreferrer">
-            <Button variant="subtle" size="sm" title="View document">
-              <FileText size={16} />
-            </Button>
-          </a>
-        )}
-      </td>
-    );
-  };
+  // Mantine React Table instance
+  const table = useMantineReactTable({
+    columns,
+    data: verificationRecords,
+    enableColumnResizing: true,
+    enableSorting: true,
+    enablePagination: false,
+    enableBottomToolbar: false,
+    enableTopToolbar: false,
+    mantineTableProps: {
+      striped: true,
+      style: { height: '400px' },
+    },
+  });
 
   // Format identifiers for dropdown display
   const identifierOptions = identifiers.map((id) => ({
@@ -247,20 +279,41 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
                   </p>
                 </div>
 
-                <Upload
-                  batch={false}
-                  multiple={false}
-                  autoUpload={false}
-                  disabled={uploading}
-                  restrictions={{
-                    allowedExtensions: ['.pdf'],
-                    maxFileSize: 10485760, // 10MB
+                <Dropzone
+                  onDrop={handleUpload}
+                  onReject={(files) => {
+                    if (files[0]?.errors[0]?.code === 'file-invalid-type') {
+                      notification.showError('Only PDF files are allowed');
+                    } else if (files[0]?.errors[0]?.code === 'file-too-large') {
+                      notification.showError('File size must be less than 10MB');
+                    }
                   }}
-                  onAdd={handleUpload}
-                  withCredentials={false}
-                  saveUrl={''}
-                  removeUrl={''}
-                />
+                  maxSize={10 * 1024 * 1024} // 10MB
+                  accept={[MIME_TYPES.pdf]}
+                  multiple={false}
+                  disabled={uploading || !selectedIdentifier}
+                >
+                  <Group justify="center" gap="xl" mih={220} style={{ pointerEvents: 'none' }}>
+                    <Dropzone.Accept>
+                      <CheckCircle size={52} style={{ color: 'var(--mantine-color-blue-6)' }} />
+                    </Dropzone.Accept>
+                    <Dropzone.Reject>
+                      <XCircle size={52} style={{ color: 'var(--mantine-color-red-6)' }} />
+                    </Dropzone.Reject>
+                    <Dropzone.Idle>
+                      <FileText size={52} style={{ color: 'var(--mantine-color-dimmed)' }} />
+                    </Dropzone.Idle>
+
+                    <div>
+                      <Text size="xl" inline>
+                        Drag PDF here or click to select
+                      </Text>
+                      <Text size="sm" c="dimmed" inline mt={7}>
+                        File should not exceed 10MB
+                      </Text>
+                    </div>
+                  </Group>
+                </Dropzone>
 
                 {uploading && (
                   <div className="upload-progress">
@@ -288,20 +341,7 @@ export const IdentifierVerificationManager: React.FC<IdentifierVerificationManag
                 <Loader size="md" />
               </div>
             ) : verificationRecords.length > 0 ? (
-              <Grid data={verificationRecords} style={{ height: '400px' }}>
-                <GridColumn field="identifier_type" title="Identifier Type" width="120px" />
-                <GridColumn field="identifier_value" title="Identifier Value" width="180px" />
-                <GridColumn
-                  field="verification_status"
-                  title="Status"
-                  width="140px"
-                  cells={{ data: StatusCell }}
-                />
-                <GridColumn field="uploaded_at" title="Uploaded" width="160px" cells={{ data: DateCell }} />
-                <GridColumn field="verified_at" title="Verified" width="160px" cells={{ data: DateCell }} />
-                <GridColumn field="verified_by" title="Verified By" width="150px" />
-                <GridColumn title="Actions" width="100px" cells={{ data: ActionsCell }} />
-              </Grid>
+              <MantineReactTable table={table} />
             ) : (
               <EmptyState
                 icon={<FolderOpen size={32} />}

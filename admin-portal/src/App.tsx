@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import './kendoLicense';
 import { AuthProvider } from './auth/AuthContext';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import { UserRole } from './auth/authConfig';
@@ -23,8 +22,6 @@ import { UnauthorizedPage } from './components/auth/Unauthorized';
 import AdminPortal from './components/AdminPortal';
 import NotFound from './components/NotFound';
 
-// Import Kendo UI theme (will be removed after migration)
-import '@progress/kendo-theme-default/dist/all.css';
 import './App.css';
 import './components/help/help.css';
 import './styles/responsive.css';

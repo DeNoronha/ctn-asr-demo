@@ -2,10 +2,7 @@
  * Member Detail View - Full page member details with tabs
  */
 
-import { Button, Loader } from '@mantine/core';
-
-
-import { TabStrip, TabStripTab } from '@progress/kendo-react-layout';
+import { Button, Loader, Tabs } from '@mantine/core';
 import { ArrowLeft, Plus } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -39,7 +36,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
   onBack,
 }) => {
   logger.log('Member with legal_entity_id:', member.legal_entity_id);
-  const [selected, setSelected] = useState(0);
+  const [selected, setSelected] = useState<string | null>('company-details');
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(null);
   const [contacts, setContacts] = useState<LegalEntityContact[]>([]);
@@ -284,12 +281,19 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
         </div>
       </div>
 
-      <TabStrip
-        selected={selected}
-        onSelect={(e) => setSelected(e.selected)}
-        className="detail-tabs"
-      >
-        <TabStripTab title="Company Details">
+      <Tabs value={selected} onChange={setSelected} className="detail-tabs">
+        <Tabs.List>
+          <Tabs.Tab value="company-details">Company Details</Tabs.Tab>
+          <Tabs.Tab value="identifiers">Identifiers</Tabs.Tab>
+          <Tabs.Tab value="system-integrations">System Integrations</Tabs.Tab>
+          <Tabs.Tab value="api-access">API Access</Tabs.Tab>
+          <Tabs.Tab value="contacts">Contacts</Tabs.Tab>
+          <Tabs.Tab value="document-verification">Document Verification</Tabs.Tab>
+          <Tabs.Tab value="authentication-tier">Authentication Tier</Tabs.Tab>
+          {hasKvkRegistryData && <Tabs.Tab value="kvk-registry">KvK Registry</Tabs.Tab>}
+        </Tabs.List>
+
+        <Tabs.Panel value="company-details" pt="md">
           <div className="tab-content">
             {loading ? (
               <div className="loading-state">
@@ -366,9 +370,9 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
               </div>
             )}
           </div>
-        </TabStripTab>
+        </Tabs.Panel>
 
-        <TabStripTab title="Identifiers">
+        <Tabs.Panel value="identifiers" pt="md">
           <div className="tab-content">
             {loading ? (
               <div className="loading-state">
@@ -410,9 +414,9 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
               })()
             )}
           </div>
-        </TabStripTab>
+        </Tabs.Panel>
 
-        <TabStripTab title="System Integrations">
+        <Tabs.Panel value="system-integrations" pt="md">
           <div className="tab-content endpoints-tab">
             <div style={{ marginBottom: '16px' }}>
               <h3>System Integrations</h3>
@@ -423,9 +427,9 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
             </div>
             <EndpointManagement legalEntityId={member.org_id} legalEntityName={member.legal_name} />
           </div>
-        </TabStripTab>
+        </Tabs.Panel>
 
-        <TabStripTab title="API Access">
+        <Tabs.Panel value="api-access" pt="md">
           <div className="tab-content">
             {legalEntity ? (
               <APIAccessManager
@@ -444,9 +448,9 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
               })()
             )}
           </div>
-        </TabStripTab>
+        </Tabs.Panel>
 
-        <TabStripTab title="Contacts">
+        <Tabs.Panel value="contacts" pt="md">
           <div className="tab-content">
             {loading ? (
               <div className="loading-state">
@@ -473,9 +477,9 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
               })()
             )}
           </div>
-        </TabStripTab>
+        </Tabs.Panel>
 
-        <TabStripTab title="Document Verification">
+        <Tabs.Panel value="document-verification" pt="md">
           <div className="tab-content">
             {legalEntity ? (
               <KvkDocumentUpload
@@ -504,9 +508,9 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
               })()
             )}
           </div>
-        </TabStripTab>
+        </Tabs.Panel>
 
-        <TabStripTab title="Authentication Tier">
+        <Tabs.Panel value="authentication-tier" pt="md">
           <div className="tab-content">
             {legalEntity ? (
               <TierManagement legalEntityId={legalEntity.legal_entity_id!} />
@@ -522,10 +526,10 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
               })()
             )}
           </div>
-        </TabStripTab>
+        </Tabs.Panel>
 
         {hasKvkRegistryData && (
-          <TabStripTab title="KvK Registry">
+          <Tabs.Panel value="kvk-registry" pt="md">
             <div className="tab-content">
               {legalEntity ? (
                 <KvkRegistryDetails legalEntityId={legalEntity.legal_entity_id!} />
@@ -541,9 +545,9 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
                 })()
               )}
             </div>
-          </TabStripTab>
+          </Tabs.Panel>
         )}
-      </TabStrip>
+      </Tabs>
     </div>
   );
 };

@@ -3,9 +3,7 @@
  * System Admins can invite new users (Association Admins or Members)
  */
 
-import { Button } from '@mantine/core';
-
-import { Dialog } from '@progress/kendo-react-dialogs';
+import { Button, Modal, TextInput, Select, Group, Text } from '@mantine/core';
 import { UserPlus } from '../icons';
 import type React from 'react';
 import { useState } from 'react';
@@ -53,50 +51,54 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ onClose, onInvite }
   };
 
   return (
-    <Dialog title="Invite New User" onClose={onClose} className="user-dialog">
-      <div className="dialog-content">
-        <div className="form-group">
-          <label>Email Address *</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="user@example.com"
-          />
-          {errors.email && <span className="error-text">{errors.email}</span>}
-          <p className="help-text">User will receive an invitation email</p>
-        </div>
+    <Modal opened onClose={onClose} title="Invite New User" size="md">
+      <TextInput
+        label="Email Address"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="user@example.com"
+        error={errors.email}
+        description="User will receive an invitation email"
+        required
+        mb="md"
+      />
 
-        <div className="form-group">
-          <label>Full Name *</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="John Smith"
-          />
-          {errors.name && <span className="error-text">{errors.name}</span>}
-        </div>
+      <TextInput
+        label="Full Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="John Smith"
+        error={errors.name}
+        required
+        mb="md"
+      />
 
-        <div className="form-group">
-          <label>Role *</label>
-          <select value={role} onChange={(e) => setRole(e.target.value as UserRole)}>
-            <option value={UserRole.ASSOCIATION_ADMIN}>Association Admin</option>
-            <option value={UserRole.MEMBER}>Member</option>
-            <option value={UserRole.SYSTEM_ADMIN}>System Admin</option>
-          </select>
-          <div className="role-description">{roleDescriptions[role]}</div>
-        </div>
+      <Select
+        label="Role"
+        value={role}
+        onChange={(value) => setRole((value as UserRole) || UserRole.ASSOCIATION_ADMIN)}
+        data={[
+          { value: UserRole.ASSOCIATION_ADMIN, label: 'Association Admin' },
+          { value: UserRole.MEMBER, label: 'Member' },
+          { value: UserRole.SYSTEM_ADMIN, label: 'System Admin' },
+        ]}
+        required
+        mb="xs"
+      />
+      <Text size="sm" c="dimmed" mb="xl">
+        {roleDescriptions[role]}
+      </Text>
 
-        <div className="dialog-actions">
-          <Button onClick={onClose}>Cancel</Button>
-          <Button color="blue" onClick={handleSubmit}>
-            <UserPlus size={16} style={{ marginRight: 8 }} />
-            Send Invitation
-          </Button>
-        </div>
-      </div>
-    </Dialog>
+      <Group justify="flex-end">
+        <Button onClick={onClose} variant="default">
+          Cancel
+        </Button>
+        <Button color="blue" onClick={handleSubmit} leftSection={<UserPlus size={16} />}>
+          Send Invitation
+        </Button>
+      </Group>
+    </Modal>
   );
 };
 

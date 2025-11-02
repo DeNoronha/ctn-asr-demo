@@ -3,10 +3,8 @@
  * Provides multi-criteria filtering with AND/OR logic
  */
 
-import type { CompositeFilterDescriptor } from '@progress/kendo-data-query';
 import { Button, TextInput, Select } from '@mantine/core';
-
-import { DatePicker } from '@progress/kendo-react-dateinputs';
+import { DatePickerInput } from '@mantine/dates';
 
 
 import type React from 'react';
@@ -18,6 +16,16 @@ export interface FilterCriteria {
   field: string;
   operator: string;
   value: string | Date | null;
+}
+
+// Local type definition to replace Kendo's CompositeFilterDescriptor
+export interface CompositeFilterDescriptor {
+  logic: 'and' | 'or';
+  filters: Array<{
+    field: string;
+    operator: string;
+    value: string | Date | null;
+  }>;
 }
 
 interface AdvancedFilterProps {
@@ -96,10 +104,10 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
 
     if (fieldType === 'date') {
       return (
-        <DatePicker
+        <DatePickerInput
           value={criterion.value ? new Date(criterion.value) : null}
-          onChange={(e) => updateCriteria(criterion.id, { value: e.value })}
-          format="yyyy-MM-dd"
+          onChange={(value) => updateCriteria(criterion.id, { value })}
+          valueFormat="YYYY-MM-DD"
         />
       );
     }

@@ -1,12 +1,8 @@
-import { Button, TextInput, Textarea, Checkbox } from '@mantine/core';
-
-import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { Grid, type GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-
-
+import { Button, TextInput, Textarea, Checkbox, Modal, Group } from '@mantine/core';
+import { MantineReactTable, type MRT_ColumnDef, useMantineReactTable } from 'mantine-react-table';
 import { Key, Plus, Trash2, Copy, AlertTriangle } from './icons';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { formatDate } from '../utils/dateUtils';
@@ -226,75 +222,116 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
     }));
   };
 
-  // SEC-007: Sanitize user-generated text fields in grid
-  const TextCell = (props: GridCellProps) => {
-    const { field, dataItem } = props;
-    const value = field ? dataItem[field] : '';
-    return <td dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
-  };
-
-  const StatusCell = (props: GridCellProps) => {
-    return (
-      <td>
-        <span className={`status-badge ${props.dataItem.is_active ? 'active' : 'inactive'}`}>
-          {props.dataItem.is_active ? '● Active' : '○ Inactive'}
-        </span>
-      </td>
-    );
-  };
-
-  const ScopesCell = (props: GridCellProps) => {
-    return (
-      <td>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-          {props.dataItem.assigned_scopes.map((scope: string) => (
-            <span
-              key={scope}
-              style={{
-                padding: '2px 8px',
-                background: '#e3f2fd',
-                borderRadius: '4px',
-                fontSize: '0.75rem',
-              }}
-            >
-              {scope}
+  // Mantine React Table column definitions
+  const columns = useMemo<MRT_ColumnDef<any>[]>(
+    () => [
+      {
+        accessorKey: 'client_name',
+        header: 'Client Name',
+        size: 200,
+        // SEC-007: Sanitize user-generated text fields in grid
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          return <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(value) }} />;
+        },
+      },
+      {
+        accessorKey: 'azure_client_id',
+        header: 'Client ID',
+        size: 280,
+      },
+      {
+        accessorKey: 'assigned_scopes',
+        header: 'Scopes',
+        size: 300,
+        Cell: ({ row }) => (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+            {row.original.assigned_scopes.map((scope: string) => (
+              <span
+                key={scope}
+                style={{
+                  padding: '2px 8px',
+                  background: '#e3f2fd',
+                  borderRadius: '4px',
+                  fontSize: '0.75rem',
+                }}
+              >
+                {scope}
+              </span>
+            ))}
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'is_active',
+        header: 'Status',
+        size: 100,
+        Cell: ({ row }) => (
+          <div>
+            <span className={`status-badge ${row.original.is_active ? 'active' : 'inactive'}`}>
+              {row.original.is_active ? '● Active' : '○ Inactive'}
             </span>
-          ))}
-        </div>
-      </td>
-    );
-  };
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'dt_created',
+        header: 'Created',
+        size: 150,
+        Cell: ({ cell }) => {
+          const value = cell.getValue<string>();
+          return <div>{formatDate(value)}</div>;
+        },
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        size: 200,
+        Cell: ({ row }) => (
+          <div className="actions-cell">
+            <Button
+              size="sm"
+              onClick={() => handleGenerateSecret(row.original)}
+              disabled={loading || !row.original.is_active}
+              title="Generate new secret"
+              aria-label={`Generate new secret for ${row.original.client_name}`}
+            >
+              <Key size={16} /> New Secret
+            </Button>
+            <Button
+              size="sm"
+              variant="subtle"
+              onClick={() => {
+                setSelectedClient(row.original);
+                setShowDeleteDialog(true);
+              }}
+              disabled={loading}
+              title="Deactivate client"
+              aria-label={`Deactivate client ${row.original.client_name}`}
+            >
+              <Trash2 size={16} />
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [loading]
+  );
 
-  const ActionsCell = (props: GridCellProps) => {
-    return (
-      <td>
-        <div className="actions-cell">
-          <Button
-            size="sm"
-            onClick={() => handleGenerateSecret(props.dataItem)}
-            disabled={loading || !props.dataItem.is_active}
-            title="Generate new secret"
-            aria-label={`Generate new secret for ${props.dataItem.client_name}`}
-          >
-            <Key size={16} /> New Secret
-          </Button>
-          <Button
-            size="sm"
-            variant="subtle"
-            onClick={() => {
-              setSelectedClient(props.dataItem);
-              setShowDeleteDialog(true);
-            }}
-            disabled={loading}
-            title="Deactivate client"
-            aria-label={`Deactivate client ${props.dataItem.client_name}`}
-          >
-            <Trash2 size={16} />
-          </Button>
-        </div>
-      </td>
-    );
-  };
+  // Mantine React Table instance
+  const table = useMantineReactTable({
+    columns,
+    data: clients,
+    enableColumnResizing: true,
+    enableSorting: true,
+    enablePagination: false,
+    enableBottomToolbar: false,
+    enableTopToolbar: false,
+    mantineTableProps: {
+      striped: true,
+      style: { height: '400px' },
+    },
+  });
 
   return (
     <div className="identifiers-manager">
@@ -318,158 +355,152 @@ export const M2MClientsManager: React.FC<M2MClientsManagerProps> = ({
           );
         })()
       ) : (
-        <Grid data={clients} style={{ height: '400px' }}>
-          <GridColumn field="client_name" title="Client Name" width="200px" cells={{ data: TextCell }} />
-          <GridColumn field="azure_client_id" title="Client ID" width="280px" />
-          <GridColumn field="assigned_scopes" title="Scopes" width="300px" cells={{ data: ScopesCell }} />
-          <GridColumn field="is_active" title="Status" width="100px" cells={{ data: StatusCell }} />
-          <GridColumn
-            field="dt_created"
-            title="Created"
-            width="150px"
-            cells={{ data: (props) => <td>{formatDate(props.dataItem.dt_created)}</td> }}
-          />
-          <GridColumn title="Actions" width="200px" cells={{ data: ActionsCell }} />
-        </Grid>
+        <MantineReactTable table={table} />
       )}
 
       {/* Add M2M Client Dialog */}
-      {showAddDialog && (
-        <Dialog title="Add M2M Client" onClose={() => setShowAddDialog(false)} width={600}>
-          <div className="identifier-form">
-            <div className="form-field">
-              <label>Client Name *</label>
-              <TextInput
-                value={formData.client_name}
-                onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-                placeholder="e.g., Container Tracking System"
-              />
-            </div>
-
-            <div className="form-field">
-              <label>Description</label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Brief description of this client application"
-                rows={3}
-              />
-            </div>
-
-            <div className="form-field">
-              <label>Assigned Scopes *</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
-                {AVAILABLE_SCOPES.map((scope) => (
-                  <label key={scope.value} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Checkbox
-                      checked={formData.scopes.includes(scope.value)}
-                      onChange={() => handleScopeToggle(scope.value)}
-                    />
-                    <span>{scope.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+      <Modal
+        opened={showAddDialog}
+        onClose={() => setShowAddDialog(false)}
+        title="Add M2M Client"
+        size="lg"
+      >
+        <div className="identifier-form">
+          <div className="form-field">
+            <label>Client Name *</label>
+            <TextInput
+              value={formData.client_name}
+              onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
+              placeholder="e.g., Container Tracking System"
+            />
           </div>
 
-          <DialogActionsBar>
-            <Button onClick={() => setShowAddDialog(false)}>Cancel</Button>
-            <Button
-              color="blue"
-              onClick={handleAddClient}
-              disabled={!formData.client_name || formData.scopes.length === 0 || loading}
-            >
-              Create Client
-            </Button>
-          </DialogActionsBar>
-        </Dialog>
-      )}
+          <div className="form-field">
+            <label>Description</label>
+            <Textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Brief description of this client application"
+              rows={3}
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Assigned Scopes *</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+              {AVAILABLE_SCOPES.map((scope) => (
+                <label key={scope.value} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Checkbox
+                    checked={formData.scopes.includes(scope.value)}
+                    onChange={() => handleScopeToggle(scope.value)}
+                  />
+                  <span>{scope.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <Group mt="xl" justify="flex-end">
+          <Button onClick={() => setShowAddDialog(false)} variant="default">Cancel</Button>
+          <Button
+            color="blue"
+            onClick={handleAddClient}
+            disabled={!formData.client_name || formData.scopes.length === 0 || loading}
+          >
+            Create Client
+          </Button>
+        </Group>
+      </Modal>
 
       {/* Secret Display Dialog */}
-      {showSecretDialog && selectedClient && (
-        <Dialog
-          title="Client Secret Generated"
-          onClose={() => {
-            setShowSecretDialog(false);
-            setGeneratedSecret('');
-            setSelectedClient(null);
-          }}
-          width={700}
-        >
-          <div style={{ padding: '20px 0' }}>
-            <div style={{ marginBottom: '20px', padding: '12px', background: '#fff3e0', borderRadius: '4px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                <AlertTriangle size={20} />
-                <div>
-                  <strong>Important: Save this secret now!</strong>
-                  <p style={{ margin: '4px 0 0 0', fontSize: '0.875rem' }}>
-                    This secret will only be shown once. Store it securely - you won't be able to retrieve it again.
-                  </p>
+      <Modal
+        opened={showSecretDialog && !!selectedClient}
+        onClose={() => {
+          setShowSecretDialog(false);
+          setGeneratedSecret('');
+          setSelectedClient(null);
+        }}
+        title="Client Secret Generated"
+        size="xl"
+      >
+        {selectedClient && (
+          <>
+            <div style={{ padding: '20px 0' }}>
+              <div style={{ marginBottom: '20px', padding: '12px', background: '#fff3e0', borderRadius: '4px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <AlertTriangle size={20} />
+                  <div>
+                    <strong>Important: Save this secret now!</strong>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '0.875rem' }}>
+                      This secret will only be shown once. Store it securely - you won't be able to retrieve it again.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <strong>Client Name:</strong> {selectedClient.client_name}
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <strong>Client ID:</strong>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <code
+                    style={{
+                      flex: 1,
+                      padding: '8px',
+                      background: '#f5f5f5',
+                      borderRadius: '4px',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    {selectedClient.azure_client_id}
+                  </code>
+                  <Button size="sm" onClick={() => copyToClipboard(selectedClient.azure_client_id)}>
+                    <Copy size={14} /> Copy
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <strong>Client Secret:</strong>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <code
+                    style={{
+                      flex: 1,
+                      padding: '8px',
+                      background: '#fff3e0',
+                      border: '2px solid #ff9800',
+                      borderRadius: '4px',
+                      fontFamily: 'monospace',
+                      wordBreak: 'break-all',
+                    }}
+                  >
+                    {generatedSecret}
+                  </code>
+                  <Button size="sm" color="blue" onClick={() => copyToClipboard(generatedSecret)}>
+                    <Copy size={14} /> Copy
+                  </Button>
                 </div>
               </div>
             </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <strong>Client Name:</strong> {selectedClient.client_name}
-            </div>
-
-            <div style={{ marginBottom: '16px' }}>
-              <strong>Client ID:</strong>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                <code
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    background: '#f5f5f5',
-                    borderRadius: '4px',
-                    fontFamily: 'monospace',
-                  }}
-                >
-                  {selectedClient.azure_client_id}
-                </code>
-                <Button size="sm" onClick={() => copyToClipboard(selectedClient.azure_client_id)}>
-                  <Copy size={14} /> Copy
-                </Button>
-              </div>
-            </div>
-
-            <div>
-              <strong>Client Secret:</strong>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                <code
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    background: '#fff3e0',
-                    border: '2px solid #ff9800',
-                    borderRadius: '4px',
-                    fontFamily: 'monospace',
-                    wordBreak: 'break-all',
-                  }}
-                >
-                  {generatedSecret}
-                </code>
-                <Button size="sm" color="blue" onClick={() => copyToClipboard(generatedSecret)}>
-                  <Copy size={14} /> Copy
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <DialogActionsBar>
-            <Button
-              color="blue"
-              onClick={() => {
-                setShowSecretDialog(false);
-                setGeneratedSecret('');
-                setSelectedClient(null);
-              }}
-            >
-              I've Saved the Secret
-            </Button>
-          </DialogActionsBar>
-        </Dialog>
-      )}
+            <Group mt="xl" justify="flex-end">
+              <Button
+                color="blue"
+                onClick={() => {
+                  setShowSecretDialog(false);
+                  setGeneratedSecret('');
+                  setSelectedClient(null);
+                }}
+              >
+                I've Saved the Secret
+              </Button>
+            </Group>
+          </>
+        )}
+      </Modal>
 
       {/* Delete Confirmation Dialog */}
       {showDeleteDialog && selectedClient && (

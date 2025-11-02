@@ -1,5 +1,4 @@
 import { Loader } from '@mantine/core';
-import { type LoaderSize } from '@progress/kendo-react-indicators';
 // LoadingSpinner.tsx - Reusable loading component
 import type React from 'react';
 import './LoadingSpinner.css';
@@ -15,7 +14,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   message,
   fullScreen = false,
 }) => {
-  const sizeMap: Record<string, LoaderSize> = {
+  const sizeMap: Record<string, string> = {
     small: 'small',
     medium: 'medium',
     large: 'large',
