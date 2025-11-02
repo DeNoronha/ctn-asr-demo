@@ -11,7 +11,7 @@ import {
   Trash2,
   XCircle,
 } from './icons';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
@@ -307,7 +307,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     return isValid;
   };
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     setEditingIdentifier(null);
     setFormData({
       validation_status: 'PENDING',
@@ -316,9 +316,9 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     setValidationError('');
     setIsValidIdentifier(true);
     setIsDialogOpen(true);
-  };
+  }, []);
 
-  const handleEdit = (identifier: LegalEntityIdentifier) => {
+  const handleEdit = useCallback((identifier: LegalEntityIdentifier) => {
     setEditingIdentifier(identifier);
     setFormData(identifier);
     // Set available identifier types based on country code
@@ -333,10 +333,10 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     // Validate existing identifier
     validateIdentifierValue(identifier.identifier_type, identifier.identifier_value || '');
     setIsDialogOpen(true);
-  };
+  }, []);
 
   // Handle country code change - filter identifier types
-  const handleCountryCodeChange = (countryCode: string) => {
+  const handleCountryCodeChange = useCallback((countryCode: string) => {
     const upperCode = countryCode.toUpperCase();
     const types = COUNTRY_IDENTIFIER_MAP[upperCode] || COUNTRY_IDENTIFIER_MAP.default;
     setAvailableIdentifierTypes(types);
@@ -356,10 +356,10 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         country_code: countryCode,
       });
     }
-  };
+  }, [formData]);
 
   // Handle identifier type change - auto-populate registry info
-  const handleIdentifierTypeChange = (type: string) => {
+  const handleIdentifierTypeChange = useCallback((type: string) => {
     const registryInfo = REGISTRY_INFO[type];
     setFormData({
       ...formData,
@@ -371,10 +371,10 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     if (formData.identifier_value) {
       validateIdentifierValue(type, formData.identifier_value);
     }
-  };
+  }, [formData]);
 
   // Handle identifier value change with validation
-  const handleIdentifierValueChange = (value: string) => {
+  const handleIdentifierValueChange = useCallback((value: string) => {
     setFormData({
       ...formData,
       identifier_value: value,
@@ -383,21 +383,21 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     if (formData.identifier_type) {
       validateIdentifierValue(formData.identifier_type, value);
     }
-  };
+  }, [formData]);
 
-  const handleDeleteClick = (identifier: LegalEntityIdentifier) => {
+  const handleDeleteClick = useCallback((identifier: LegalEntityIdentifier) => {
     setIdentifierToDelete(identifier);
     setDeleteConfirmOpen(true);
-  };
+  }, []);
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = useCallback(async () => {
     if (!identifierToDelete?.legal_entity_reference_id) return;
     await onIdentifierDelete(identifierToDelete.legal_entity_reference_id);
     const msg = identifierSuccessMessages.deleted(String(identifierToDelete.identifier_type));
     notification.showSuccess(msg.title);
-  };
+  }, [identifierToDelete, onIdentifierDelete, notification]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!formData.identifier_type || !formData.identifier_value) {
       notification.showError('Please fill in all required fields');
       return;
@@ -442,9 +442,9 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     } catch (error: unknown) {
       handleError(error, 'saving identifier');
     }
-  };
+  }, [formData, isValidIdentifier, editingIdentifier, legalEntityId, onIdentifierUpdate, onIdentifierCreate, notification, handleError]);
 
-  const handleFetchLei = async () => {
+  const handleFetchLei = useCallback(async () => {
     // Find a suitable identifier to use for LEI lookup (KVK, HRB, etc.)
     const suitableIdentifier = identifiers.find(
       (id) => ['KVK', 'HRB', 'HRA', 'KBO', 'SIREN', 'CRN'].includes(id.identifier_type)
@@ -499,9 +499,9 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     } finally {
       setFetchingLei(false);
     }
-  };
+  }, [identifiers, legalEntityId, notification, onRefresh, handleError]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setIsDialogOpen(false);
     setEditingIdentifier(null);
     setFormData({
@@ -510,7 +510,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     setAvailableIdentifierTypes(COUNTRY_IDENTIFIER_MAP.default);
     setValidationError('');
     setIsValidIdentifier(true);
-  };
+  }, []);
 
   const getValidationBadge = (status?: string) => {
     if (!status) return null;
@@ -609,13 +609,13 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     );
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent, action: () => void) => {
+  const handleKeyDown = useCallback((event: React.KeyboardEvent, action: () => void) => {
     // Handle Enter and Space keys for keyboard accessibility (WCAG 2.1 Level AA)
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault(); // Prevent page scroll on Space
       action();
     }
-  };
+  }, []);
 
   // mantine-datatable column definitions
   const { effectiveColumns } = useDataTableColumns<LegalEntityIdentifier>({
