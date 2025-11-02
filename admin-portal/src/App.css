@@ -24,7 +24,7 @@ body {
 .app-container {
   display: flex;
   height: 100vh;
-  overflow: hidden;
+  /* overflow: hidden removed to allow content-area to scroll vertically */
   position: relative;
 }
 
