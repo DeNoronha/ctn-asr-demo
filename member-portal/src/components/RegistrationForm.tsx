@@ -4,10 +4,9 @@
  */
 
 import React, { useState } from 'react';
-import { Button, TextInput, Textarea, Select, Checkbox } from '@mantine/core';
+import { Button, TextInput, Textarea, Select, Checkbox, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 
-import { Label, Error, Hint } from '@progress/kendo-react-labels';
 import { KvKDocumentUpload } from './KvKDocumentUpload';
 
 interface RegistrationFormData {
@@ -342,11 +341,11 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             <h3>Documents & Final Review</h3>
 
             <div className="document-upload-section">
-              <Label>KvK Extract (Chamber of Commerce Extract) *</Label>
-              <Hint>
+              <Text fw={500} mb="xs">KvK Extract (Chamber of Commerce Extract) *</Text>
+              <Text size="sm" c="dimmed" mb="md">
                 Upload your official KvK extract. We'll verify your company details automatically.
                 Accepted formats: PDF, PNG, JPG (max 10MB)
-              </Hint>
+              </Text>
               <KvKDocumentUpload
                 onFileSelect={setKvkDocument}
                 disabled={loading}

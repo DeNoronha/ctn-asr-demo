@@ -3,11 +3,8 @@
  * Member-scoped M2M client management (members see only their own clients)
  */
 
-import { Button, TextInput, Textarea, Checkbox } from '@mantine/core';
-
-import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { Grid, GridColumn } from '@progress/kendo-react-grid';
-
+import { Button, TextInput, Textarea, Checkbox, Modal, Group } from '@mantine/core';
+import { DataTable } from 'mantine-datatable';
 import { Key, Plus, Trash2, Copy, AlertTriangle } from './icons';
 import React, { useEffect, useState } from 'react';
 
@@ -216,74 +213,6 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
     });
   };
 
-  const StatusCell = (props: any) => {
-    return (
-      <td>
-        <span style={{
-          padding: '4px 12px',
-          borderRadius: '12px',
-          fontSize: '0.875rem',
-          fontWeight: 500,
-          backgroundColor: props.dataItem.is_active ? '#dcfce7' : '#fee2e2',
-          color: props.dataItem.is_active ? '#166534' : '#991b1b',
-        }}>
-          {props.dataItem.is_active ? '● Active' : '○ Inactive'}
-        </span>
-      </td>
-    );
-  };
-
-  const ScopesCell = (props: any) => {
-    return (
-      <td>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-          {props.dataItem.assigned_scopes.map((scope: string) => (
-            <span
-              key={scope}
-              style={{
-                padding: '2px 8px',
-                background: '#e3f2fd',
-                borderRadius: '4px',
-                fontSize: '0.75rem',
-              }}
-            >
-              {scope}
-            </span>
-          ))}
-        </div>
-      </td>
-    );
-  };
-
-  const ActionsCell = (props: any) => {
-    return (
-      <td>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <Button
-            size="sm"
-            onClick={() => handleGenerateSecret(props.dataItem)}
-            disabled={loading || !props.dataItem.is_active}
-            title="Generate new secret"
-          >
-            <Key size={16} /> New Secret
-          </Button>
-          <Button
-            size="sm"
-            variant="subtle"
-            onClick={() => {
-              setSelectedClient(props.dataItem);
-              setShowDeleteDialog(true);
-            }}
-            disabled={loading}
-            title="Deactivate client"
-          >
-            <Trash2 size={16} />
-          </Button>
-        </div>
-      </td>
-    );
-  };
-
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -309,25 +238,107 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
           </p>
         </div>
       ) : (
-        <Grid data={clients} style={{ height: '400px' }}>
-          <GridColumn field="client_name" title="Client Name" width="200px" />
-          <GridColumn field="azure_client_id" title="Client ID" width="280px" />
-          <GridColumn field="assigned_scopes" title="Scopes" width="300px" cells={{ data: ScopesCell }} />
-          <GridColumn field="is_active" title="Status" width="100px" cells={{ data: StatusCell }} />
-          <GridColumn
-            field="dt_created"
-            title="Created"
-            width="150px"
-            cells={{ data: (props) => <td>{formatDate(props.dataItem.dt_created)}</td> }}
-          />
-          <GridColumn title="Actions" width="200px" cells={{ data: ActionsCell }} />
-        </Grid>
+        <DataTable
+          records={clients}
+          columns={[
+            {
+              accessor: 'client_name',
+              title: 'Client Name',
+              width: 200,
+            },
+            {
+              accessor: 'azure_client_id',
+              title: 'Client ID',
+              width: 280,
+            },
+            {
+              accessor: 'assigned_scopes',
+              title: 'Scopes',
+              width: 300,
+              render: (client) => (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                  {client.assigned_scopes.map((scope: string) => (
+                    <span
+                      key={scope}
+                      style={{
+                        padding: '2px 8px',
+                        background: '#e3f2fd',
+                        borderRadius: '4px',
+                        fontSize: '0.75rem',
+                      }}
+                    >
+                      {scope}
+                    </span>
+                  ))}
+                </div>
+              ),
+            },
+            {
+              accessor: 'is_active',
+              title: 'Status',
+              width: 100,
+              render: (client) => (
+                <span style={{
+                  padding: '4px 12px',
+                  borderRadius: '12px',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  backgroundColor: client.is_active ? '#dcfce7' : '#fee2e2',
+                  color: client.is_active ? '#166534' : '#991b1b',
+                }}>
+                  {client.is_active ? '● Active' : '○ Inactive'}
+                </span>
+              ),
+            },
+            {
+              accessor: 'dt_created',
+              title: 'Created',
+              width: 150,
+              render: (client) => formatDate(client.dt_created),
+            },
+            {
+              accessor: 'actions',
+              title: 'Actions',
+              width: 200,
+              render: (client) => (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Button
+                    size="sm"
+                    onClick={() => handleGenerateSecret(client)}
+                    disabled={loading || !client.is_active}
+                    title="Generate new secret"
+                  >
+                    <Key size={16} /> New Secret
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="subtle"
+                    onClick={() => {
+                      setSelectedClient(client);
+                      setShowDeleteDialog(true);
+                    }}
+                    disabled={loading}
+                    title="Deactivate client"
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                </div>
+              ),
+            },
+          ]}
+          minHeight={400}
+          fetching={loading}
+        />
       )}
 
       {/* Add M2M Client Dialog */}
-      {showAddDialog && (
-        <Dialog title="Add M2M Client" onClose={() => setShowAddDialog(false)} width={600}>
-          <div style={{ padding: '20px 0' }}>
+      <Modal
+        opened={showAddDialog}
+        onClose={() => setShowAddDialog(false)}
+        title="Add M2M Client"
+        size="lg"
+      >
+        <div style={{ padding: '20px 0' }}>
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Client Name *</label>
               <TextInput
@@ -365,7 +376,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
             </div>
           </div>
 
-          <DialogActionsBar>
+          <Group justify="flex-end" mt="md">
             <Button onClick={() => setShowAddDialog(false)}>Cancel</Button>
             <Button
               color="blue"
@@ -374,21 +385,21 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
             >
               Create Client
             </Button>
-          </DialogActionsBar>
-        </Dialog>
-      )}
+          </Group>
+      </Modal>
 
       {/* Secret Display Dialog */}
-      {showSecretDialog && selectedClient && (
-        <Dialog
-          title="Client Secret Generated"
-          onClose={() => {
-            setShowSecretDialog(false);
-            setGeneratedSecret('');
-            setSelectedClient(null);
-          }}
-          width={700}
-        >
+      <Modal
+        opened={showSecretDialog && !!selectedClient}
+        onClose={() => {
+          setShowSecretDialog(false);
+          setGeneratedSecret('');
+          setSelectedClient(null);
+        }}
+        title="Client Secret Generated"
+        size="xl"
+      >
+        {selectedClient && (
           <div style={{ padding: '20px 0' }}>
             <div style={{ marginBottom: '20px', padding: '12px', background: '#fff3e0', borderRadius: '4px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
@@ -448,56 +459,59 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
               </div>
             </div>
           </div>
+        )}
 
-          <DialogActionsBar>
-            <Button
-              color="blue"
-              onClick={() => {
-                setShowSecretDialog(false);
-                setGeneratedSecret('');
-                setSelectedClient(null);
-              }}
-            >
-              I've Saved the Secret
-            </Button>
-          </DialogActionsBar>
-        </Dialog>
-      )}
+        <Group justify="flex-end" mt="md">
+          <Button
+            color="blue"
+            onClick={() => {
+              setShowSecretDialog(false);
+              setGeneratedSecret('');
+              setSelectedClient(null);
+            }}
+          >
+            I've Saved the Secret
+          </Button>
+        </Group>
+      </Modal>
 
       {/* Delete Confirmation Dialog */}
-      {showDeleteDialog && selectedClient && (
-        <Dialog
-          title="Deactivate M2M Client"
-          onClose={() => {
-            setShowDeleteDialog(false);
-            setSelectedClient(null);
-          }}
-          width={500}
-        >
-          <div style={{ padding: '20px 0' }}>
-            <p>
-              Are you sure you want to deactivate <strong>"{selectedClient.client_name}"</strong>?
-            </p>
-            <p style={{ color: '#dc2626', margin: '12px 0 0 0' }}>
-              This will immediately revoke API access for this client.
-            </p>
-          </div>
+      <Modal
+        opened={showDeleteDialog && !!selectedClient}
+        onClose={() => {
+          setShowDeleteDialog(false);
+          setSelectedClient(null);
+        }}
+        title="Deactivate M2M Client"
+        size="md"
+      >
+        {selectedClient && (
+          <>
+            <div style={{ padding: '20px 0' }}>
+              <p>
+                Are you sure you want to deactivate <strong>"{selectedClient.client_name}"</strong>?
+              </p>
+              <p style={{ color: '#dc2626', margin: '12px 0 0 0' }}>
+                This will immediately revoke API access for this client.
+              </p>
+            </div>
 
-          <DialogActionsBar>
-            <Button
-              onClick={() => {
-                setShowDeleteDialog(false);
-                setSelectedClient(null);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button color="red" onClick={handleDeleteClient} disabled={loading}>
-              Deactivate
-            </Button>
-          </DialogActionsBar>
-        </Dialog>
-      )}
+            <Group justify="flex-end" mt="md">
+              <Button
+                onClick={() => {
+                  setShowDeleteDialog(false);
+                  setSelectedClient(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button color="red" onClick={handleDeleteClient} disabled={loading}>
+                Deactivate
+              </Button>
+            </Group>
+          </>
+        )}
+      </Modal>
     </div>
   );
 };

@@ -1,6 +1,4 @@
-import { Button } from '@mantine/core';
-
-import { Dialog } from '@progress/kendo-react-dialogs';
+import { Button, Modal } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import type { ComponentProps, Token } from '../types';
@@ -170,15 +168,15 @@ export const TokensView: React.FC<ComponentProps> = ({
         )}
       </div>
 
-      {showTokenDialog && (
-        <Dialog
-          title="Token Generated Successfully"
-          onClose={() => {
-            setShowTokenDialog(false);
-            setNewToken(null);
-          }}
-          width={700}
-        >
+      <Modal
+        opened={showTokenDialog}
+        onClose={() => {
+          setShowTokenDialog(false);
+          setNewToken(null);
+        }}
+        title="Token Generated Successfully"
+        size="xl"
+      >
           <div className="alert alert-warning" style={{ marginBottom: '1rem' }}>
             <strong>⚠️ Copy this token now!</strong>
             <p style={{ margin: '0.5rem 0 0 0' }}>
@@ -235,8 +233,7 @@ export const TokensView: React.FC<ComponentProps> = ({
               Close
             </Button>
           </div>
-        </Dialog>
-      )}
+      </Modal>
     </div>
   );
 };

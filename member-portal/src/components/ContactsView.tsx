@@ -1,6 +1,4 @@
-import { Button } from '@mantine/core';
-
-import { Dialog } from '@progress/kendo-react-dialogs';
+import { Button, Modal } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import type { ComponentProps, Contact } from '../types';
@@ -175,13 +173,13 @@ export const ContactsView: React.FC<ComponentProps> = ({
         )}
       </div>
 
-      {showDialog && (
-        <Dialog
-          title={editingContact ? 'Edit Contact' : 'Add Contact'}
-          onClose={() => setShowDialog(false)}
-          width={600}
-        >
-          <form onSubmit={handleSubmit} className="simple-form">
+      <Modal
+        opened={showDialog}
+        onClose={() => setShowDialog(false)}
+        title={editingContact ? 'Edit Contact' : 'Add Contact'}
+        size="lg"
+      >
+        <form onSubmit={handleSubmit} className="simple-form">
             <div className="form-field">
               <label>Full Name *</label>
               <input
@@ -309,8 +307,7 @@ export const ContactsView: React.FC<ComponentProps> = ({
               </Button>
             </div>
           </form>
-        </Dialog>
-      )}
+      </Modal>
     </div>
   );
 };

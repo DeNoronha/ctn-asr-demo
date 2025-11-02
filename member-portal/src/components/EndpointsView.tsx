@@ -1,6 +1,4 @@
-import { Button } from '@mantine/core';
-
-import { Dialog } from '@progress/kendo-react-dialogs';
+import { Button, Modal } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import type { ComponentProps, Endpoint } from '../types';
@@ -189,9 +187,13 @@ export const EndpointsView: React.FC<ComponentProps> = ({
         )}
       </div>
 
-      {showDialog && (
-        <Dialog title="Add Endpoint" onClose={() => setShowDialog(false)} width={700}>
-          <form onSubmit={handleSubmit} className="simple-form">
+      <Modal
+        opened={showDialog}
+        onClose={() => setShowDialog(false)}
+        title="Add Endpoint"
+        size="xl"
+      >
+        <form onSubmit={handleSubmit} className="simple-form">
             <div className="form-field">
               <label>Endpoint Name *</label>
               <input
@@ -282,8 +284,7 @@ export const EndpointsView: React.FC<ComponentProps> = ({
               </Button>
             </div>
           </form>
-        </Dialog>
-      )}
+      </Modal>
     </div>
   );
 };

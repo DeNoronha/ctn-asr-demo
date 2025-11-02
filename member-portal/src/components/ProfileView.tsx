@@ -1,6 +1,4 @@
-import { Button } from '@mantine/core';
-
-import { Dialog } from '@progress/kendo-react-dialogs';
+import { Button, Modal } from '@mantine/core';
 import type React from 'react';
 import { useState } from 'react';
 import type { ComponentProps } from '../types';
@@ -152,9 +150,15 @@ export const ProfileView: React.FC<ComponentProps> = ({
             </div>
           )}
         </>
-      ) : (
-        <Dialog title="Edit Profile" onClose={() => setEditMode(false)} width={600}>
-          <form onSubmit={handleSubmit} className="simple-form">
+      ) : null}
+
+      <Modal
+        opened={editMode}
+        onClose={() => setEditMode(false)}
+        title="Edit Profile"
+        size="lg"
+      >
+        <form onSubmit={handleSubmit} className="simple-form">
             <div className="form-field">
               <label htmlFor="domain">Domain</label>
               <input
@@ -244,8 +248,7 @@ export const ProfileView: React.FC<ComponentProps> = ({
               </Button>
             </div>
           </form>
-        </Dialog>
-      )}
+      </Modal>
     </div>
   );
 };

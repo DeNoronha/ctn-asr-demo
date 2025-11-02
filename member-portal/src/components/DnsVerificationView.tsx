@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, TextInput } from '@mantine/core';
+import { Button, TextInput, Text } from '@mantine/core';
 
-
-import { Label, Error as ErrorLabel, Hint } from '@progress/kendo-react-labels';
 import type { ComponentProps } from '../types';
 
 interface DnsToken {
@@ -168,7 +166,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
         </div>
 
         <div className="form-field">
-          <Label>Domain Name</Label>
+          <Text fw={500} mb="xs">Domain Name</Text>
           <div style={{ display: 'flex', gap: '12px' }}>
             <TextInput
               value={domain}
@@ -179,6 +177,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
               placeholder="company.com"
               style={{ flex: 1 }}
               disabled={loading}
+              error={error}
             />
             <Button
               onClick={handleGenerateToken}
@@ -188,11 +187,10 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
               {loading ? 'Generating...' : 'Generate Token'}
             </Button>
           </div>
-          {error && <ErrorLabel>{error}</ErrorLabel>}
-          <Hint>
+          <Text size="sm" c="dimmed" mt="xs">
             Enter your organization's domain name (e.g., company.com). You will need to add a TXT
             record to your DNS.
-          </Hint>
+          </Text>
         </div>
       </div>
 
@@ -217,14 +215,14 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
 
                 <div className="dns-record-info">
                   <div className="dns-field">
-                    <Label>Record Type</Label>
+                    <Text fw={500} mb="xs">Record Type</Text>
                     <div className="copy-field">
                       <code>TXT</code>
                     </div>
                   </div>
 
                   <div className="dns-field">
-                    <Label>Record Name</Label>
+                    <Text fw={500} mb="xs">Record Name</Text>
                     <div className="copy-field">
                       <code>{token.recordName}</code>
                       <Button
@@ -237,7 +235,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
                   </div>
 
                   <div className="dns-field">
-                    <Label>Record Value</Label>
+                    <Text fw={500} mb="xs">Record Value</Text>
                     <div className="copy-field">
                       <code>{token.token}</code>
                       <Button
@@ -250,7 +248,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
                   </div>
 
                   <div className="dns-field">
-                    <Label>TTL</Label>
+                    <Text fw={500} mb="xs">TTL</Text>
                     <div className="copy-field">
                       <code>3600</code>
                     </div>

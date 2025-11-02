@@ -6,6 +6,7 @@ import { msalConfig } from './auth/authConfig';
 import './i18n'; // Initialize i18n
 import App from './App';
 import './index.css';
+import 'mantine-datatable/styles.css';
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 

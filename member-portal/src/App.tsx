@@ -5,20 +5,15 @@ import {
   UnauthenticatedTemplate,
   useMsal,
 } from '@azure/msal-react';
-import { Fade } from '@progress/kendo-react-animation';
-
-import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
 import React, { useEffect, useState } from 'react';
 
 // Mantine imports
 import { MantineProvider, createTheme, Button } from '@mantine/core';
-import { Notifications } from '@mantine/notifications';
+import { Notifications, notifications } from '@mantine/notifications';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import '@mantine/dates/styles.css';
 
-import './kendoLicense';
-import '@progress/kendo-theme-default/dist/all.css';
 import './App.css';
 
 // Mantine theme configuration
@@ -60,20 +55,12 @@ interface MemberData {
   jobTitle?: string;
 }
 
-interface NotificationData {
-  id: number;
-  type: 'success' | 'error' | 'warning' | 'info';
-  message: string;
-}
-
 function AppContent({ instance }: AppContentProps) {
   const { instance: msal, accounts } = useMsal();
   const [memberData, setMemberData] = useState<MemberData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
-  const [notifications, setNotifications] = useState<NotificationData[]>([]);
-  const [notificationId, setNotificationId] = useState(1);
   const [showRegistration, setShowRegistration] = useState(false);
   const [registrationLoading, setRegistrationLoading] = useState(false);
 
@@ -87,13 +74,12 @@ function AppContent({ instance }: AppContentProps) {
     message: string,
     type: 'success' | 'error' | 'warning' | 'info' = 'success'
   ) => {
-    const id = notificationId;
-    setNotificationId(id + 1);
-    setNotifications((prev) => [...prev, { id, type, message }]);
-
-    setTimeout(() => {
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-    }, 5000);
+    notifications.show({
+      title: type === 'error' ? 'Error' : type === 'warning' ? 'Warning' : type === 'info' ? 'Info' : 'Success',
+      message,
+      color: type === 'error' ? 'red' : type === 'warning' ? 'yellow' : type === 'info' ? 'blue' : 'green',
+      autoClose: 5000,
+    });
   };
 
   const fetchMemberData = async () => {
@@ -230,22 +216,6 @@ function AppContent({ instance }: AppContentProps) {
 
   return (
     <div className="App">
-      <NotificationGroup style={{ right: 20, top: 80, alignItems: 'flex-end', zIndex: 10000 }}>
-        {notifications.map((notification) => (
-          <Fade key={notification.id} enter exit>
-            <Notification
-              type={{ style: notification.type, icon: true }}
-              closable={true}
-              onClose={() =>
-                setNotifications((prev) => prev.filter((n) => n.id !== notification.id))
-              }
-            >
-              <span>{notification.message}</span>
-            </Notification>
-          </Fade>
-        ))}
-      </NotificationGroup>
-
       <header className="App-header">
         <div className="header-content">
           <div className="header-left">
