@@ -10,6 +10,7 @@ import {
 } from 'mantine-react-table';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import * as XLSX from 'xlsx';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGridState } from '../hooks/useGridState';
 import { useApiError } from '../hooks/useApiError';
@@ -148,6 +149,60 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       setIsBulkProcessing(false);
       setShowBulkDialog(false);
     }
+  };
+
+  const handleCSVExport = () => {
+    const dataToExport =
+      selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
+
+    exportToCSV(dataToExport);
+    notification.showSuccess(`Exported ${dataToExport.length} members to CSV`);
+  };
+
+  const handleExcelExport = () => {
+    const dataToExport =
+      selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
+
+    // Prepare data for Excel
+    const excelData = dataToExport.map((member) => ({
+      'Legal Name': member.legal_name,
+      'Status': member.status,
+      'LEI': member.lei || '',
+      'EUID': member.euid || '',
+      'KVK': member.kvk || '',
+      'Organization ID': member.org_id,
+      'Domain': member.domain || '',
+      'Membership': member.membership_level || '',
+      'Member Since': new Date(member.created_at).toLocaleDateString(),
+    }));
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+    // Set column widths
+    worksheet['!cols'] = [
+      { wch: 30 }, // Legal Name
+      { wch: 12 }, // Status
+      { wch: 20 }, // LEI
+      { wch: 20 }, // EUID
+      { wch: 12 }, // KVK
+      { wch: 25 }, // Organization ID
+      { wch: 20 }, // Domain
+      { wch: 12 }, // Membership
+      { wch: 15 }, // Member Since
+    ];
+
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Members');
+
+    // Generate filename with timestamp
+    const fileName = `CTN_Members_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+    // Write file
+    XLSX.writeFile(workbook, fileName);
+
+    notification.showSuccess(`Exported ${dataToExport.length} members to ${fileName}`);
   };
 
   const handlePDFExport = () => {
@@ -301,6 +356,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
     // Column Features - All standard
     enableColumnResizing: true,
+    columnResizeMode: 'onChange', // Show resize preview while dragging
     enableColumnOrdering: true,
     enableHiding: true, // Enable column show/hide via column menu
     enableColumnFilters: !onPageChange,
@@ -353,9 +409,30 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       style: { cursor: 'pointer' },
     }),
 
-    // Top toolbar - Only essential custom actions, use built-in features for rest
+    // Top toolbar - Essential custom actions and export
     renderTopToolbarCustomActions: () => (
       <Group gap="sm">
+        {/* Export Menu */}
+        <Menu>
+          <Menu.Target>
+            <Button variant="outline" size="sm">
+              {t('common.export', 'Export')}
+            </Button>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Item onClick={handleExcelExport}>
+              Export to Excel (.xlsx)
+            </Menu.Item>
+            <Menu.Item onClick={handleCSVExport}>
+              Export to CSV
+            </Menu.Item>
+            <Menu.Item onClick={handlePDFExport}>
+              Export to PDF
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+
+        {/* Bulk Actions (when rows selected) */}
         {Object.keys(rowSelection).length > 0 && (
           <Menu>
             <Menu.Target>
