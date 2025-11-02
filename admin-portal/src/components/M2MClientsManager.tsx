@@ -349,10 +349,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
             <Button
               size="sm"
               variant="subtle"
-              onClick={() => {
-                setSelectedClient(record);
-                setShowDeleteDialog(true);
-              }}
+              onClick={() => handleDeleteDialogOpen(record)}
               disabled={loading}
               title="Deactivate client"
               aria-label={`Deactivate client ${record.client_name}`}
@@ -527,11 +524,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
             <Group mt="xl" justify="flex-end">
               <Button
                 color="blue"
-                onClick={() => {
-                  setShowSecretDialog(false);
-                  setGeneratedSecret('');
-                  setSelectedClient(null);
-                }}
+                onClick={handleConfirmSecret}
               >
                 I've Saved the Secret
               </Button>
@@ -547,10 +540,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
           title="Deactivate M2M Client"
           message={`Are you sure you want to deactivate "${selectedClient.client_name}"? This will revoke API access for this client.`}
           onConfirm={handleDeleteClient}
-          onCancel={() => {
-            setShowDeleteDialog(false);
-            setSelectedClient(null);
-          }}
+          onCancel={handleDeleteDialogClose}
           confirmLabel="Deactivate"
           cancelLabel="Cancel"
           confirmTheme="error"
