@@ -72,24 +72,39 @@ const TestDataTable: React.FC<{
     ? sortedData.slice((page - 1) * pageSize, page * pageSize)
     : sortedData;
 
+  // Build props object to satisfy TypeScript
+  const dataTableProps: any = {
+    ...defaultDataTableProps,
+    records: paginatedData,
+    columns: defaultColumns,
+    onRowClick: onRowClick ? ({ record }: any) => onRowClick(record) : undefined,
+  };
+
+  if (withPagination) {
+    dataTableProps.totalRecords = sortedData.length;
+    dataTableProps.recordsPerPage = pageSize;
+    dataTableProps.page = page;
+    dataTableProps.onPageChange = setPage;
+    dataTableProps.recordsPerPageOptions = [2, 5, 10];
+  }
+
+  if (withSorting) {
+    dataTableProps.sortStatus = sortStatus;
+    dataTableProps.onSortStatusChange = setSortStatus;
+  }
+
+  if (withSelection) {
+    dataTableProps.selectedRecords = selectedRecords;
+    dataTableProps.onSelectedRecordsChange = setSelectedRecords;
+  }
+
+  if (withColumnToggle) {
+    dataTableProps.storeColumnsKey = 'test-table-columns';
+  }
+
   return (
     <MantineProvider>
-      <DataTable
-        {...defaultDataTableProps}
-        records={paginatedData}
-        columns={defaultColumns}
-        onRowClick={onRowClick ? ({ record }) => onRowClick(record) : undefined}
-        totalRecords={withPagination ? sortedData.length : undefined}
-        recordsPerPage={withPagination ? pageSize : undefined}
-        page={withPagination ? page : undefined}
-        onPageChange={withPagination ? setPage : undefined}
-        recordsPerPageOptions={withPagination ? [2, 5, 10] : undefined}
-        sortStatus={withSorting ? sortStatus : undefined}
-        onSortStatusChange={withSorting ? setSortStatus : undefined}
-        selectedRecords={withSelection ? selectedRecords : undefined}
-        onSelectedRecordsChange={withSelection ? setSelectedRecords : undefined}
-        storeColumnsKey={withColumnToggle ? 'test-table-columns' : undefined}
-      />
+      <DataTable {...dataTableProps} />
     </MantineProvider>
   );
 };
