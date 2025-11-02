@@ -103,6 +103,34 @@
   display: inline-block;
 }
 
+/* Touch Target Sizing - WCAG 2.1 Level AAA (DA-006) */
+/* Ensure DataTable column headers meet 44px minimum touch target */
+.members-grid-container .mantine-Table-table thead tr th {
+  min-height: 44px;
+  height: 44px;
+  padding: 12px 8px;
+  vertical-align: middle;
+}
+
+/* Ensure icon buttons in DataTable meet 44px minimum touch target */
+.members-grid-container .mantine-Table-table button,
+.members-grid-container .mantine-DataTable-root button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensure column toggle icon buttons meet 44px minimum */
+.members-grid-container button[aria-label*="column" i],
+.members-grid-container button[aria-label*="toggle" i] {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px;
+}
+
 /* Better mobile responsiveness */
 @media (max-width: 768px) {
   .grid-toolbar {
