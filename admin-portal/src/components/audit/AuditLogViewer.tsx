@@ -13,6 +13,7 @@ import { UserRole } from '../../auth/authConfig';
 import { AuditAction, type AuditLog, auditLogService } from '../../services/auditLogService';
 import { getAuditActionColor } from '../../utils/colors';
 import './AuditLogViewer.css';
+import { ErrorBoundary } from '../ErrorBoundary';
 
 const AuditLogViewer: React.FC = () => {
   const { user } = useAuth();
@@ -231,15 +232,17 @@ const AuditLogViewer: React.FC = () => {
           </div>
         </div>
 
-        <DataTable
-          records={filteredLogs}
-          columns={effectiveColumns}
-          storeColumnsKey="audit-log-grid"
-          withTableBorder
-          withColumnBorders
-          striped
-          highlightOnHover
-        />
+        <ErrorBoundary>
+          <DataTable
+            records={filteredLogs}
+            columns={effectiveColumns}
+            storeColumnsKey="audit-log-grid"
+            withTableBorder
+            withColumnBorders
+            striped
+            highlightOnHover
+          />
+        </ErrorBoundary>
       </div>
     </RoleGuard>
   );
