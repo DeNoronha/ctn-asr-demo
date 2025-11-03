@@ -15,6 +15,9 @@ import './functions/GetVersion';
 import './functions/bdiJwks';
 import './functions/generateBvad';
 
+// Public endpoints
+import './functions/registerMember';
+
 // Member portal (critical)
 import './functions/GetAuthenticatedMember';
 import './functions/UpdateMemberProfile';
