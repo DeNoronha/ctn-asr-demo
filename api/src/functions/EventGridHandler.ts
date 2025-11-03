@@ -116,15 +116,15 @@ export async function EventGridHandler(
 
           // Prepare template data
           const templateData = {
-            companyName: data.organizationName || data.companyName,
+            companyName: data.legalName || data.organizationName || data.companyName,
             contactName: data.contactName,
             kvkNumber: data.kvkNumber,
-            applicationDate: data.applicationDate || data.createdDate,
+            applicationDate: data.submittedAt || data.applicationDate || data.createdDate,
             activatedDate: data.activatedDate || data.activationDate,
             endpointName: data.endpointName,
             issuedDate: data.issuedDate || data.createdDate,
             expiresDate: data.expiresDate || data.expiryDate,
-            portalUrl: process.env.MEMBER_PORTAL_URL || 'https://calm-pebble-0b2ffb603-12.westeurope.5.azurestaticapps.net',
+            portalUrl: process.env.MEMBER_PORTAL_URL || 'https://calm-pebble-043b2db03.1.azurestaticapps.net',
             subject: templateMapping.subjectKey,
             ...data // Include all original data
           };
@@ -171,19 +171,24 @@ export async function EventGridHandler(
         }
       };
 
-      context.log(`Sending email to: ${recipientEmail}`);
+      context.log(`Sending email to: ${recipientEmail} with subject: ${emailSubject}`);
 
-      // Send email with timeout
-      const result = await withTimeout(
-        (async () => {
-          const poller = await emailClient.beginSend(emailMessage);
-          return await poller.pollUntilDone();
-        })(),
-        TIMEOUT_CONFIG.COMMUNICATION_SERVICES_MS,
-        `Email sending timeout exceeded (${TIMEOUT_CONFIG.COMMUNICATION_SERVICES_MS / 1000} seconds)`
-      );
+      try {
+        // Send email with timeout
+        const result = await withTimeout(
+          (async () => {
+            const poller = await emailClient.beginSend(emailMessage);
+            return await poller.pollUntilDone();
+          })(),
+          TIMEOUT_CONFIG.COMMUNICATION_SERVICES_MS,
+          `Email sending timeout exceeded (${TIMEOUT_CONFIG.COMMUNICATION_SERVICES_MS / 1000} seconds)`
+        );
 
-      context.log(`Email sent successfully. Message ID: ${result.id}`);
+        context.log(`Email sent successfully. Message ID: ${result.id}, Status: ${result.status}`);
+      } catch (emailError: any) {
+        context.error(`Failed to send email to ${recipientEmail}:`, emailError);
+        // Continue processing other events even if one email fails
+      }
     }
 
     return {
