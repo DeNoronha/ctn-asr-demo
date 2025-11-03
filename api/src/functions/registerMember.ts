@@ -320,10 +320,19 @@ async function handler(
     });
 
     // Publish event asynchronously - don't block response on email sending
-    publishEvent(applicationCreatedEvent, context).catch(error => {
-      context.error('Failed to publish application created event:', error);
-      // Don't fail the request if event publishing fails - email is non-critical
-    });
+    context.log('Publishing Event Grid event for application:', result.application_id);
+    publishEvent(applicationCreatedEvent, context)
+      .then(success => {
+        if (success) {
+          context.log('✓ Event Grid event published successfully for application:', result.application_id);
+        } else {
+          context.warn('⚠ Event Grid not configured - email notification skipped');
+        }
+      })
+      .catch(error => {
+        context.error('✗ Failed to publish application created event:', error);
+        // Don't fail the request if event publishing fails - email is non-critical
+      });
 
     return {
       status: 201,
