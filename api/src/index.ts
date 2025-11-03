@@ -18,6 +18,11 @@ import './functions/generateBvad';
 // Public endpoints
 import './functions/registerMember';
 
+// Application management (admin)
+import './functions/GetApplications';
+import './functions/ApproveApplication';
+import './functions/RejectApplication';
+
 // Member portal (critical)
 import './functions/GetAuthenticatedMember';
 import './functions/UpdateMemberProfile';

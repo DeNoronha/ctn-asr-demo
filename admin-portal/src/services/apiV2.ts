@@ -254,6 +254,26 @@ export interface Member {
   legal_entity?: LegalEntity;
 }
 
+export interface Application {
+  application_id: string;
+  legal_name: string;
+  kvk_number?: string;
+  company_address: string;
+  postal_code: string;
+  city: string;
+  country: string;
+  applicant_name: string;
+  applicant_email: string;
+  applicant_phone?: string;
+  job_title?: string;
+  membership_type: string;
+  status: 'pending' | 'approved' | 'rejected';
+  submitted_at: string;
+  reviewed_at?: string;
+  reviewed_by?: string;
+  review_notes?: string;
+}
+
 interface MembersResponse {
   data: Member[];
   count: number;
@@ -547,6 +567,51 @@ export const apiV2 = {
   ): Promise<void> {
     const axiosInstance = await getAuthenticatedAxios();
     await axiosInstance.put(`/entities/${legalEntityId}/tier`, data);
+  },
+
+  // ========================================================================
+  // APPLICATION MANAGEMENT
+  // ========================================================================
+
+  async getApplications(
+    status?: 'pending' | 'approved' | 'rejected' | 'all',
+    limit?: number,
+    offset?: number
+  ): Promise<{ data: Application[]; total: number; limit: number; offset: number }> {
+    const axiosInstance = await getAuthenticatedAxios();
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    if (limit) params.append('limit', limit.toString());
+    if (offset) params.append('offset', offset.toString());
+
+    const response = await axiosInstance.get<{ data: Application[]; total: number; limit: number; offset: number }>(
+      `/applications?${params.toString()}`
+    );
+    return response.data;
+  },
+
+  async approveApplication(
+    applicationId: string,
+    reviewNotes?: string
+  ): Promise<{ message: string; legalEntityId: string; applicationId: string }> {
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.post<{ message: string; legalEntityId: string; applicationId: string }>(
+      `/applications/${applicationId}/approve`,
+      { reviewNotes: reviewNotes || '' }
+    );
+    return response.data;
+  },
+
+  async rejectApplication(
+    applicationId: string,
+    reviewNotes: string
+  ): Promise<{ message: string; applicationId: string }> {
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.post<{ message: string; applicationId: string }>(
+      `/applications/${applicationId}/reject`,
+      { reviewNotes }
+    );
+    return response.data;
   },
 };
 

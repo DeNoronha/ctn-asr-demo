@@ -9,6 +9,7 @@ import { formatDate } from '../utils/dateUtils';
 import { defaultDataTableProps } from './shared/DataTableConfig';
 import './TasksGrid.css';
 import { ErrorBoundary } from './ErrorBoundary';
+import { apiV2, Application } from '../services/apiV2';
 
 interface AdminTask {
   task_id: string;
@@ -45,12 +46,16 @@ const TasksGrid: React.FC = () => {
   const { instance, accounts } = useMsal();
   const [tasks, setTasks] = useState<AdminTask[]>([]);
   const [reviewTasks, setReviewTasks] = useState<ReviewTask[]>([]);
+  const [applications, setApplications] = useState<Application[]>([]);
   const [_loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [showApplicationDialog, setShowApplicationDialog] = useState(false);
   const [selectedTask, setSelectedTask] = useState<AdminTask | null>(null);
   const [selectedReviewTask, setSelectedReviewTask] = useState<ReviewTask | null>(null);
+  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [applicationReviewNotes, setApplicationReviewNotes] = useState('');
   const [activeTab, setActiveTab] = useState<string | null>('my-tasks');
 
   const [formData, setFormData] = useState({
@@ -92,6 +97,7 @@ const TasksGrid: React.FC = () => {
   useEffect(() => {
     loadTasks();
     loadReviewTasks();
+    loadApplications();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -151,6 +157,17 @@ const TasksGrid: React.FC = () => {
       }
     }
   }, [accounts, instance]);
+
+  const loadApplications = useCallback(async () => {
+    try {
+      logger.log('TasksGrid: Fetching applications...');
+      const response = await apiV2.getApplications('pending');
+      logger.log(`TasksGrid: Loaded ${response.data.length} applications`, response.data);
+      setApplications(response.data);
+    } catch (error: unknown) {
+      logger.error('TasksGrid: Error loading applications:', error);
+    }
+  }, []);
 
   const resetForm = useCallback(() => {
     setFormData({
@@ -283,6 +300,51 @@ const TasksGrid: React.FC = () => {
     });
     setShowEditDialog(true);
   }, []);
+
+  const openApplicationDialog = useCallback((application: Application) => {
+    setSelectedApplication(application);
+    setApplicationReviewNotes('');
+    setShowApplicationDialog(true);
+  }, []);
+
+  const handleApproveApplication = useCallback(async () => {
+    if (!selectedApplication) return;
+
+    try {
+      logger.log('TasksGrid: Approving application:', selectedApplication.application_id);
+      await apiV2.approveApplication(selectedApplication.application_id, applicationReviewNotes);
+      logger.log('TasksGrid: Application approved successfully');
+      setShowApplicationDialog(false);
+      setSelectedApplication(null);
+      setApplicationReviewNotes('');
+      loadApplications();
+    } catch (error) {
+      logger.error('TasksGrid: Error approving application:', error);
+      alert('Failed to approve application. Please try again.');
+    }
+  }, [selectedApplication, applicationReviewNotes, loadApplications]);
+
+  const handleRejectApplication = useCallback(async () => {
+    if (!selectedApplication) return;
+
+    if (!applicationReviewNotes.trim()) {
+      alert('Please provide review notes for rejection.');
+      return;
+    }
+
+    try {
+      logger.log('TasksGrid: Rejecting application:', selectedApplication.application_id);
+      await apiV2.rejectApplication(selectedApplication.application_id, applicationReviewNotes);
+      logger.log('TasksGrid: Application rejected successfully');
+      setShowApplicationDialog(false);
+      setSelectedApplication(null);
+      setApplicationReviewNotes('');
+      loadApplications();
+    } catch (error) {
+      logger.error('TasksGrid: Error rejecting application:', error);
+      alert('Failed to reject application. Please try again.');
+    }
+  }, [selectedApplication, applicationReviewNotes, loadApplications]);
 
   const formatTaskDate = useCallback((dateString?: string) => {
     if (!dateString) return 'N/A';
@@ -478,11 +540,88 @@ const TasksGrid: React.FC = () => {
     ],
   });
 
+  // Column definitions for "Applications" grid using mantine-datatable
+  const { effectiveColumns: applicationsEffectiveColumns } = useDataTableColumns<Application>({
+    key: 'applications-grid',
+    columns: [
+      {
+        accessor: 'legal_name',
+        title: 'Company Name',
+        width: 250,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+      },
+      {
+        accessor: 'applicant_name',
+        title: 'Contact',
+        width: 180,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+      },
+      {
+        accessor: 'applicant_email',
+        title: 'Email',
+        width: 200,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+      },
+      {
+        accessor: 'kvk_number',
+        title: 'KvK',
+        width: 120,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (app) => <div>{app.kvk_number || '-'}</div>,
+      },
+      {
+        accessor: 'membership_type',
+        title: 'Type',
+        width: 120,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (app) => <div>{app.membership_type.toUpperCase()}</div>,
+      },
+      {
+        accessor: 'submitted_at',
+        title: 'Submitted',
+        width: 150,
+        toggleable: true,
+        resizable: true,
+        sortable: true,
+        render: (app) => <div>{formatTaskDate(app.submitted_at)}</div>,
+      },
+      {
+        accessor: 'application_id',
+        title: 'Actions',
+        width: 180,
+        toggleable: false,
+        sortable: false,
+        render: (app) => (
+          <div>
+            <Button
+              leftSection="preview"
+              variant="subtle"
+              onClick={() => openApplicationDialog(app)}
+            >
+              Review
+            </Button>
+          </div>
+        ),
+      },
+    ],
+  });
+
   // Count tasks by status
   const pendingCount = tasks.filter((t) => t.status === 'pending').length;
   const inProgressCount = tasks.filter((t) => t.status === 'in_progress').length;
   const overdueCount = tasks.filter((t) => isOverdue(t)).length;
   const reviewCount = reviewTasks.length;
+  const applicationsCount = applications.length;
 
   return (
     <div className="tasks-grid">
@@ -510,12 +649,17 @@ const TasksGrid: React.FC = () => {
           <div className="summary-value">{reviewCount}</div>
           <div className="summary-label">Verify</div>
         </div>
+        <div className="summary-card card-pending">
+          <div className="summary-value">{applicationsCount}</div>
+          <div className="summary-label">Applications</div>
+        </div>
       </div>
 
       <Tabs value={activeTab} onChange={setActiveTab}>
         <Tabs.List>
           <Tabs.Tab value="my-tasks">My Tasks</Tabs.Tab>
           <Tabs.Tab value="verify">Verify</Tabs.Tab>
+          <Tabs.Tab value="applications">Applications</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="my-tasks" pt="md">
@@ -561,6 +705,30 @@ const TasksGrid: React.FC = () => {
             records={reviewTasks}
                 columns={reviewEffectiveColumns}
                 storeColumnsKey="review-tasks-grid"
+              />
+            )}
+          </ErrorBoundary>
+        </Tabs.Panel>
+
+        <Tabs.Panel value="applications" pt="md">
+          <div className="grid-toolbar-info" style={{ marginBottom: '10px' }}>
+            Total Applications: {applications.length}
+          </div>
+          <ErrorBoundary>
+            {_loading && applications.length === 0 ? (
+              <Stack gap="xs">
+                <Skeleton height={50} radius="md" />
+                <Skeleton height={50} radius="md" />
+                <Skeleton height={50} radius="md" />
+                <Skeleton height={50} radius="md" />
+                <Skeleton height={50} radius="md" />
+              </Stack>
+            ) : (
+              <DataTable
+            {...defaultDataTableProps}
+            records={applications}
+                columns={applicationsEffectiveColumns}
+                storeColumnsKey="applications-grid"
               />
             )}
           </ErrorBoundary>
@@ -820,6 +988,96 @@ const TasksGrid: React.FC = () => {
                 Reject
               </Button>
               <Button color="blue" onClick={() => handleReviewDecision('approve')}>
+                Approve
+              </Button>
+            </Group>
+          </>
+        )}
+      </Modal>
+
+      {/* Application Review Dialog */}
+      <Modal
+        opened={showApplicationDialog && !!selectedApplication}
+        onClose={() => setShowApplicationDialog(false)}
+        title={selectedApplication ? `Review Application - ${selectedApplication.legal_name}` : 'Review Application'}
+        size="lg"
+      >
+        {selectedApplication && (
+          <>
+            <div className="dialog-content">
+              <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ color: '#003366', marginBottom: '15px' }}>Application Details</h3>
+
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <tbody>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '12px', fontWeight: 600, width: '30%' }}>Company Name</td>
+                      <td style={{ padding: '12px' }}>{selectedApplication.legal_name}</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>KvK Number</td>
+                      <td style={{ padding: '12px' }}>{selectedApplication.kvk_number || 'Not provided'}</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>Address</td>
+                      <td style={{ padding: '12px' }}>
+                        {selectedApplication.company_address}<br />
+                        {selectedApplication.postal_code} {selectedApplication.city}<br />
+                        {selectedApplication.country}
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>Contact Name</td>
+                      <td style={{ padding: '12px' }}>{selectedApplication.applicant_name}</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>Contact Email</td>
+                      <td style={{ padding: '12px' }}>{selectedApplication.applicant_email}</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>Contact Phone</td>
+                      <td style={{ padding: '12px' }}>{selectedApplication.applicant_phone || 'Not provided'}</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>Job Title</td>
+                      <td style={{ padding: '12px' }}>{selectedApplication.job_title || 'Not provided'}</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>Membership Type</td>
+                      <td style={{ padding: '12px' }}>
+                        <span className="priority-badge priority-medium">
+                          {selectedApplication.membership_type.toUpperCase()}
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>Submitted</td>
+                      <td style={{ padding: '12px' }}>{formatTaskDate(selectedApplication.submitted_at)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div style={{ marginTop: '20px' }}>
+                  <label style={{ fontWeight: 600, marginBottom: '8px', display: 'block' }}>
+                    Review Notes {' '}
+                    <span style={{ color: '#999', fontWeight: 400 }}>(optional for approval, required for rejection)</span>
+                  </label>
+                  <Textarea
+                    value={applicationReviewNotes}
+                    onChange={(e) => setApplicationReviewNotes(e.target.value)}
+                    placeholder="Add notes about your decision..."
+                    rows={4}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <Group mt="xl" justify="flex-end">
+              <Button onClick={() => setShowApplicationDialog(false)} variant="default">Cancel</Button>
+              <Button color="red" onClick={handleRejectApplication}>
+                Reject
+              </Button>
+              <Button color="blue" onClick={handleApproveApplication}>
                 Approve
               </Button>
             </Group>

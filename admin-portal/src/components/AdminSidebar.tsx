@@ -33,11 +33,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
     { text: 'Dashboard', iconComponent: LayoutDashboard, route: 'dashboard' },
     { text: 'Members', iconComponent: Users, route: 'members' },
     { text: 'Endpoints', iconComponent: Plug, route: 'endpoints' },
-    // Hidden until developed: Subscriptions, Newsletters, Tasks
+    { text: 'Tasks', iconComponent: CheckSquare, route: 'tasks' },
+    // Hidden until developed: Subscriptions, Newsletters
     // { text: 'Subscriptions', iconComponent: CreditCard, route: 'subscriptions' },
     // { text: 'Newsletters', iconComponent: Mail, route: 'newsletters' },
-    // { text: 'Tasks', iconComponent: CheckSquare, route: 'tasks' },
-    // { separator: true, text: '' },
+    { separator: true, text: '' },
     { text: 'User Management', iconComponent: Shield, route: 'settings' },
     { text: 'Audit Logs', iconComponent: FileText, route: 'audit' },
     { text: 'Health Monitor', iconComponent: Activity, route: 'health' },
