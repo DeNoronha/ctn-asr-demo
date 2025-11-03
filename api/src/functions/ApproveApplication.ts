@@ -48,79 +48,108 @@ async function handler(
 
       const application = appResult.rows[0];
 
-      // Create legal entity
+      // 1. Create party_reference first
+      const partyResult = await client.query(
+        `INSERT INTO party_reference (
+          party_class,
+          party_type
+        ) VALUES ($1, $2)
+        RETURNING party_id`,
+        ['LEGAL_ENTITY', 'ORGANIZATION']
+      );
+
+      const partyId = partyResult.rows[0].party_id;
+
+      // 2. Create legal entity
       const legalEntityResult = await client.query(
         `INSERT INTO legal_entity (
+          party_id,
           primary_legal_name,
           status,
           country_code,
-          created_at,
-          updated_at
-        ) VALUES ($1, $2, $3, NOW(), NOW())
+          city,
+          postal_code,
+          address_line1
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING legal_entity_id`,
-        [application.legal_name, 'active', application.country || 'NL']
+        [
+          partyId,
+          application.legal_name,
+          'ACTIVE',
+          application.country || 'NL',
+          application.city,
+          application.postal_code,
+          application.company_address
+        ]
       );
 
       const legalEntityId = legalEntityResult.rows[0].legal_entity_id;
 
-      // Add KvK number as identifier
+      // 3. Add KvK number as identifier
       if (application.kvk_number) {
         await client.query(
           `INSERT INTO legal_entity_number (
             legal_entity_id,
             identifier_type,
             identifier_value,
-            is_primary,
-            created_at
-          ) VALUES ($1, $2, $3, $4, NOW())`,
+            is_primary
+          ) VALUES ($1, $2, $3, $4)`,
           [legalEntityId, 'KVK', application.kvk_number, true]
         );
       }
 
-      // Create member record
+      // 4. Create member record (using legal_entity_id as org_id and extracting domain from email)
+      const domain = application.applicant_email.split('@')[1] || 'unknown.com';
       await client.query(
         `INSERT INTO members (
           org_id,
+          legal_entity_id,
           legal_name,
           status,
-          membership_tier,
-          created_at,
-          updated_at
-        ) VALUES ($1, $2, $3, $4, NOW(), NOW())`,
+          membership_level,
+          domain,
+          kvk,
+          email
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
         [
+          legalEntityId.toString(),
           legalEntityId,
           application.legal_name,
-          'active',
-          application.membership_type || 'standard'
+          'ACTIVE',
+          application.membership_type || 'BASIC',
+          domain,
+          application.kvk_number || null,
+          application.applicant_email
         ]
       );
 
-      // Create contact
+      // 5. Create contact
       await client.query(
-        `INSERT INTO contacts (
+        `INSERT INTO legal_entity_contact (
           legal_entity_id,
-          name,
+          contact_type,
+          full_name,
           email,
           phone,
           job_title,
-          is_primary,
-          created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+          is_primary
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [
           legalEntityId,
+          'PRIMARY',
           application.applicant_name,
           application.applicant_email,
-          application.applicant_phone,
-          application.applicant_job_title,
+          application.applicant_phone || null,
+          application.applicant_job_title || null,
           true
         ]
       );
 
-      // Update application status
+      // 6. Update application status
       await client.query(
-        `UPDATE applications 
-         SET status = $1, 
-             reviewed_at = NOW(), 
+        `UPDATE applications
+         SET status = $1,
+             reviewed_at = NOW(),
              reviewed_by = $2,
              review_notes = $3
          WHERE application_id = $4`,
