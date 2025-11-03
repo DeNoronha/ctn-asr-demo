@@ -11,7 +11,14 @@ export async function diagnosticCheck(request: HttpRequest, context: InvocationC
       database_connection: 'unknown',
       legal_entities: [],
       identifiers: [],
-      test_entity: null
+      test_entity: null,
+      email_config: {
+        email_sender_address: process.env.EMAIL_SENDER_ADDRESS || '(not set)',
+        email_sender_address_length: (process.env.EMAIL_SENDER_ADDRESS || '').length,
+        communication_services_configured: !!process.env.COMMUNICATION_SERVICES_CONNECTION_STRING,
+        event_grid_endpoint: process.env.EVENT_GRID_ENDPOINT || '(not set)',
+        event_grid_configured: !!process.env.EVENT_GRID_ACCESS_KEY
+      }
     };
 
     // Test database connection
