@@ -104,10 +104,10 @@ const TasksGrid: React.FC = () => {
   const loadTasks = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/v1/admin/tasks?limit=100`);
-      if (!response.ok) throw new Error('Failed to load tasks');
-      const data = await response.json();
-      setTasks(data);
+      // TODO: Implement /api/v1/admin/tasks endpoint
+      // For now, tasks tab will be empty
+      logger.log('TasksGrid: Tasks endpoint not yet implemented');
+      setTasks([]);
     } catch (error) {
       logger.error('Error loading tasks:', error);
     } finally {
