@@ -54,11 +54,15 @@ export async function EventGridHandler(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
+  context.log('========================================');
   context.log('Event Grid Handler triggered');
+  context.log('========================================');
 
   try {
     const body = await request.text();
+    context.log('Request body received, length:', body.length);
     const events = JSON.parse(body);
+    context.log('Parsed events count:', events.length);
 
     // Handle validation handshake
     if (events[0]?.eventType === 'Microsoft.EventGrid.SubscriptionValidationEvent') {
@@ -75,14 +79,18 @@ export async function EventGridHandler(
     // Initialize Email Client
     const connectionString = process.env.COMMUNICATION_SERVICES_CONNECTION_STRING;
     if (!connectionString) {
+      context.error('COMMUNICATION_SERVICES_CONNECTION_STRING not configured!');
       throw new Error('COMMUNICATION_SERVICES_CONNECTION_STRING not configured');
     }
+    context.log('✓ Communication Services connection string found');
 
     const emailClient = new EmailClient(connectionString);
     const senderAddress = process.env.EMAIL_SENDER_ADDRESS || 'DoNotReply@azurecomm.net';
+    context.log('✓ EmailClient initialized, sender:', senderAddress);
 
     // Process each event
     for (const event of events) {
+      context.log('----------------------------------------');
       context.log(`Processing event: ${event.eventType}`);
 
       // Validate event schema
@@ -171,22 +179,32 @@ export async function EventGridHandler(
         }
       };
 
-      context.log(`Sending email to: ${recipientEmail} with subject: ${emailSubject}`);
+      context.log(`📧 Preparing to send email:`);
+      context.log(`   To: ${recipientEmail}`);
+      context.log(`   Subject: ${emailSubject}`);
+      context.log(`   From: ${senderAddress}`);
 
       try {
+        context.log('   Calling emailClient.beginSend...');
         // Send email with timeout
         const result = await withTimeout(
           (async () => {
             const poller = await emailClient.beginSend(emailMessage);
+            context.log('   Poller created, waiting for completion...');
             return await poller.pollUntilDone();
           })(),
           TIMEOUT_CONFIG.COMMUNICATION_SERVICES_MS,
           `Email sending timeout exceeded (${TIMEOUT_CONFIG.COMMUNICATION_SERVICES_MS / 1000} seconds)`
         );
 
-        context.log(`Email sent successfully. Message ID: ${result.id}, Status: ${result.status}`);
+        context.log(`✓ Email sent successfully!`);
+        context.log(`   Message ID: ${result.id}`);
+        context.log(`   Status: ${result.status}`);
       } catch (emailError: any) {
-        context.error(`Failed to send email to ${recipientEmail}:`, emailError);
+        context.error(`✗ Failed to send email to ${recipientEmail}`);
+        context.error(`   Error message: ${emailError.message}`);
+        context.error(`   Error code: ${emailError.code || 'N/A'}`);
+        context.error(`   Full error:`, emailError);
         // Continue processing other events even if one email fails
       }
     }
