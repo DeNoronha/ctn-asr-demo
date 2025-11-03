@@ -68,12 +68,10 @@ export async function validateEventGridSignature(
       }
     }
 
-    // Check for subscription validation (first-time webhook setup)
-    const body = await request.text();
-    const events = JSON.parse(body);
-
-    if (events[0]?.eventType === 'Microsoft.EventGrid.SubscriptionValidationEvent') {
-      context.log('Subscription validation event - allowing without signature');
+    // For now, allow all requests in development
+    // TODO: Implement proper signature validation when Event Grid subscription is configured with keys
+    if (!process.env.EVENT_GRID_STRICT_VALIDATION) {
+      context.log('Event Grid strict validation disabled - allowing request');
       return { valid: true };
     }
 

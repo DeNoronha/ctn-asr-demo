@@ -5,6 +5,7 @@ import { getPool } from '../utils/database';
 import { withTransaction } from '../utils/transaction';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { trackEvent, trackMetric, trackException } from '../utils/telemetry';
+import { createApplicationCreatedEvent, publishEvent } from '../utils/eventGrid';
 
 /**
  * Member Registration Endpoint
@@ -304,6 +305,25 @@ async function handler(
     // }, undefined, context);
 
     // trackMetric('registration_duration', Date.now() - startTime, 'ms', {}, context);
+
+    // ========================================================================
+    // PUBLISH EVENT GRID EVENT FOR EMAIL NOTIFICATION
+    // ========================================================================
+
+    const applicationCreatedEvent = createApplicationCreatedEvent({
+      applicationId: result.application_id,
+      applicantEmail: body.contactEmail,
+      applicantName: body.contactName,
+      legalName: body.legalName,
+      kvkNumber: body.kvkNumber,
+      membershipType: body.membershipType
+    });
+
+    // Publish event asynchronously - don't block response on email sending
+    publishEvent(applicationCreatedEvent, context).catch(error => {
+      context.error('Failed to publish application created event:', error);
+      // Don't fail the request if event publishing fails - email is non-critical
+    });
 
     return {
       status: 201,

@@ -88,4 +88,7 @@ import './functions/ManageBookings';
 // Three-Tier Authentication System
 import './functions/TierManagement';
 
+// Event Grid Handler for email notifications
+import './functions/EventGridHandler';
+
 console.log('✓ Essential functions loaded');

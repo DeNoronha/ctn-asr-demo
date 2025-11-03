@@ -203,5 +203,6 @@ export async function EventGridHandler(
 app.http('EventGridHandler', {
   methods: ['POST'],
   authLevel: 'anonymous',
+  route: 'eventgrid/webhook',
   handler: withEventGridValidation(EventGridHandler)
 });
