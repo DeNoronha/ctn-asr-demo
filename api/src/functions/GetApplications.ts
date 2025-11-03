@@ -23,7 +23,7 @@ async function handler(
 
     // Build query based on status filter
     let query = `
-      SELECT 
+      SELECT
         application_id,
         legal_name,
         kvk_number,
@@ -34,7 +34,7 @@ async function handler(
         applicant_name,
         applicant_email,
         applicant_phone,
-        job_title,
+        applicant_job_title as job_title,
         membership_type,
         status,
         submitted_at,

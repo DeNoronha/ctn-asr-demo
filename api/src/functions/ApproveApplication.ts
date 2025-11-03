@@ -111,7 +111,7 @@ async function handler(
           application.applicant_name,
           application.applicant_email,
           application.applicant_phone,
-          application.job_title,
+          application.applicant_job_title,
           true
         ]
       );

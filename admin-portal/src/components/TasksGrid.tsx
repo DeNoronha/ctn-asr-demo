@@ -575,7 +575,7 @@ const TasksGrid: React.FC = () => {
         toggleable: true,
         resizable: true,
         sortable: true,
-        render: (app) => <div>{app.kvk_number || '-'}</div>,
+        render: (app) => app.kvk_number || '-',
       },
       {
         accessor: 'membership_type',
@@ -584,7 +584,7 @@ const TasksGrid: React.FC = () => {
         toggleable: true,
         resizable: true,
         sortable: true,
-        render: (app) => <div>{app.membership_type.toUpperCase()}</div>,
+        render: (app) => app.membership_type.toUpperCase(),
       },
       {
         accessor: 'submitted_at',
@@ -593,7 +593,7 @@ const TasksGrid: React.FC = () => {
         toggleable: true,
         resizable: true,
         sortable: true,
-        render: (app) => <div>{formatTaskDate(app.submitted_at)}</div>,
+        render: (app) => formatTaskDate(app.submitted_at),
       },
       {
         accessor: 'application_id',

@@ -9,3 +9,22 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
+
+/* DataTable global styles - prevent text overflow */
+.mantine-datatable-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mantine-datatable-table th {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ensure table uses fixed layout for consistent column widths */
+.mantine-datatable-table {
+  table-layout: fixed;
+  width: 100%;
+}
