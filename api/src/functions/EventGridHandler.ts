@@ -183,6 +183,7 @@ export async function EventGridHandler(
       context.log(`   To: ${recipientEmail}`);
       context.log(`   Subject: ${emailSubject}`);
       context.log(`   From: ${senderAddress}`);
+      context.log(`   Full email message:`, JSON.stringify(emailMessage, null, 2));
 
       try {
         context.log('   Calling emailClient.beginSend...');
