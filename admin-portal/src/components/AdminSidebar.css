@@ -76,6 +76,12 @@
   width: 100%;
 }
 
+.drawer-item:focus-visible {
+  outline: 3px solid #ff8c00;
+  outline-offset: -3px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
 .drawer-item.selected {
   background: rgba(0, 163, 224, 0.15);
   color: white;
