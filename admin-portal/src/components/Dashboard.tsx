@@ -188,8 +188,9 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
         {/* Status Distribution - Pie Chart */}
         <div className="chart-card">
           <h3>{t('dashboard.statusDistribution', 'Member Status Distribution')}</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
+          <div role="img" aria-label={`Pie chart showing member status distribution: ${statusData.map(d => `${d.name} ${d.value}`).join(', ')}`}>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
               <Pie
                 data={statusData}
                 cx="50%"
@@ -212,13 +213,15 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
               <Legend />
             </PieChart>
           </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Membership Levels - Bar Chart */}
         <div className="chart-card">
           <h3>{t('dashboard.membershipLevels', 'Membership Levels')}</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={membershipData}>
+          <div role="img" aria-label={`Bar chart showing membership levels: ${membershipData.map(d => `${d.name} ${d.members} members`).join(', ')}`}>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={membershipData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
@@ -231,13 +234,15 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Member Growth - Line Chart */}
         <div className="chart-card full-width">
           <h3>{t('dashboard.memberGrowth', 'Member Growth (Last 12 Months)')}</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={growthData}>
+          <div role="img" aria-label="Line chart showing member growth over the last 12 months with total members and new member trends">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={growthData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
@@ -260,6 +265,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
               />
             </LineChart>
           </ResponsiveContainer>
+          </div>
         </div>
       </div>
 

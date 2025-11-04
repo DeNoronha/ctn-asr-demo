@@ -1,4 +1,4 @@
-import { Button, Menu, Modal, Group, TextInput, Stack, Skeleton } from '@mantine/core';
+import { Button, Menu, Modal, Group, TextInput, Stack, Skeleton, CloseButton } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import { DataTable, useDataTableColumns, type DataTableSortStatus } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
@@ -437,6 +437,15 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           <TextInput
             placeholder="Search members..."
             leftSection={<IconSearch size={16} />}
+            rightSection={
+              query ? (
+                <CloseButton
+                  aria-label="Clear search"
+                  onClick={() => setQuery('')}
+                  size="sm"
+                />
+              ) : null
+            }
             value={query}
             onChange={handleQueryChange}
             style={{ minWidth: '250px' }}

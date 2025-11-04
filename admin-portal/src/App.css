@@ -319,5 +319,59 @@ body {
     align-items: flex-start;
     gap: 12px;
   }
+
+  .footer-logos {
+    gap: 1.5rem;
+  }
+
+  .partner-logo-img {
+    height: 30px;
+  }
+}
+
+/* Footer */
+.app-footer {
+  background-color: var(--ctn-dark-blue);
+  color: white;
+  padding: 2.5rem 2rem;
+  margin-top: auto;
+}
+
+.footer-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.footer-logos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.partner-logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.partner-logo-img:hover {
+  opacity: 1;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 1.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
 }
 

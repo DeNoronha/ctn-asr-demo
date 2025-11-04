@@ -317,6 +317,23 @@ const AdminPortal: React.FC = () => {
             <main id="main-content" className="content-area" tabIndex={-1}>
               {renderContent()}
             </main>
+            <footer className="app-footer">
+              <div className="footer-content">
+                <div className="footer-logos">
+                  <img src="/assets/logos/DIL.png" alt="Data in Logistics" className="partner-logo-img" />
+                  <img src="/assets/logos/contargo.png" alt="Contargo" className="partner-logo-img" />
+                  <img
+                    src="/assets/logos/Inland Terminals Group.png"
+                    alt="Inland Terminals Group"
+                    className="partner-logo-img"
+                  />
+                  <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" className="partner-logo-img" />
+                </div>
+                <div className="footer-bottom">
+                  <p>&copy; 2025 CTN Network. All rights reserved.</p>
+                </div>
+              </div>
+            </footer>
           </div>
         </div>
       </div>
