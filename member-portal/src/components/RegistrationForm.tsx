@@ -234,6 +234,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             <Textarea
               {...form.getInputProps('companyAddress')}
               label="Company Address *"
+              description="Full registered business address (required for verification)"
+              placeholder="Street name and number"
               required
               rows={3}
               mb="md"
@@ -243,12 +245,14 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               <TextInput
                 {...form.getInputProps('postalCode')}
                 label="Postal Code *"
+                placeholder="e.g., 1234 AB"
                 required
               />
 
               <TextInput
                 {...form.getInputProps('city')}
                 label="City *"
+                placeholder="e.g., Amsterdam"
                 required
               />
             </div>

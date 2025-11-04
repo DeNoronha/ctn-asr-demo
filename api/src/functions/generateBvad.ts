@@ -218,7 +218,7 @@ async function handler(
       complianceLastChecked,
       ownerChecked,
       ownerLastChecked,
-      termsVersion: 'v3.2.0', // TODO: Get from member metadata
+      termsVersion: member.metadata?.termsVersion || 'v3.2.0', // Dynamic version from metadata
       termsAcceptedAt: member.created_at ? new Date(member.created_at) : undefined,
       adminContact,
       bdiConnectorUri: member.bdi_connector_uri,
