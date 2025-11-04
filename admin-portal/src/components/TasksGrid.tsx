@@ -741,6 +741,7 @@ const TasksGrid: React.FC = () => {
         onClose={() => setShowCreateDialog(false)}
         title="Create Task"
         size="lg"
+        trapFocus
       >
         <div className="dialog-content">
           <div className="form-field">
@@ -813,6 +814,7 @@ const TasksGrid: React.FC = () => {
         onClose={() => setShowEditDialog(false)}
         title="Edit Task"
         size="lg"
+        trapFocus
       >
         {selectedTask && (
           <>
@@ -878,6 +880,7 @@ const TasksGrid: React.FC = () => {
         onClose={() => setShowReviewDialog(false)}
         title={selectedReviewTask ? `Verify Registration - ${selectedReviewTask.entered_company_name}` : 'Verify Registration'}
         size="xl"
+        trapFocus
       >
         {selectedReviewTask && (
           <>
@@ -1001,6 +1004,7 @@ const TasksGrid: React.FC = () => {
         onClose={() => setShowApplicationDialog(false)}
         title={selectedApplication ? `Review Application - ${selectedApplication.legal_name}` : 'Review Application'}
         size="lg"
+        trapFocus
       >
         {selectedApplication && (
           <>

@@ -3,7 +3,7 @@
  * Main container for authenticated admin interface
  */
 
-import { Button } from '@mantine/core';
+import { Button, Tooltip } from '@mantine/core';
 
 import { LogOut, User } from './icons';
 import type React from 'react';
@@ -281,15 +281,17 @@ const AdminPortal: React.FC = () => {
           <div className="main-content">
             <header className="app-header">
               <div className="header-left">
-                <Button
-                  leftSection="menu"
-                  variant="subtle"
-                  onClick={() => setDrawerExpanded(!drawerExpanded)}
-                  className="menu-button"
-                  aria-label={drawerExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-                >
-                  {drawerExpanded ? '◀' : '▶'}
-                </Button>
+                <Tooltip label={drawerExpanded ? 'Collapse sidebar' : 'Expand sidebar'} position="bottom">
+                  <Button
+                    leftSection="menu"
+                    variant="subtle"
+                    onClick={() => setDrawerExpanded(!drawerExpanded)}
+                    className="menu-button"
+                    aria-label={drawerExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+                  >
+                    {drawerExpanded ? '◀' : '▶'}
+                  </Button>
+                </Tooltip>
                 <img src="/assets/logos/ctn.png" alt="CTN Logo" className="header-logo" />
                 <h1>{t('common.appNameShort')}</h1>
               </div>
@@ -302,14 +304,16 @@ const AdminPortal: React.FC = () => {
                       <span className="user-name">{user.account.name}</span>
                       <span className="user-role">{user.primaryRole}</span>
                     </div>
-                    <Button
-                      variant="subtle"
-                      onClick={handleLogout}
-                      title="Sign out"
-                      aria-label="Sign out"
-                    >
-                      <LogOut size={16} />
-                    </Button>
+                    <Tooltip label="Sign out" position="bottom">
+                      <Button
+                        variant="subtle"
+                        onClick={handleLogout}
+                        title="Sign out"
+                        aria-label="Sign out"
+                      >
+                        <LogOut size={16} />
+                      </Button>
+                    </Tooltip>
                   </div>
                 )}
               </div>
