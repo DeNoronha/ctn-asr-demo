@@ -33,6 +33,12 @@ export const defaultDataTableProps = {
 
   /** Highlight row on hover */
   highlightOnHover: true,
+
+  /** Empty state message */
+  noRecordsText: 'No records found',
+
+  /** Minimum table height (prevents layout shift when empty) */
+  minHeight: 200,
 } as const;
 
 /**
