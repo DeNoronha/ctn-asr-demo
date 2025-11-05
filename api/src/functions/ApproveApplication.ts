@@ -116,10 +116,9 @@ async function handler(
           `INSERT INTO legal_entity_number (
             legal_entity_id,
             identifier_type,
-            identifier_value,
-            is_primary
-          ) VALUES ($1, $2, $3, $4)`,
-          [legalEntityId, 'KVK', application.kvk_number, true]
+            identifier_value
+          ) VALUES ($1, $2, $3)`,
+          [legalEntityId, 'KVK', application.kvk_number]
         );
       }
 
