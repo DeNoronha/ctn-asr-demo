@@ -313,6 +313,7 @@ export function wrapEndpoint(
           params: request.params,
           text: request.text.bind(request),
           json: request.json.bind(request),
+          arrayBuffer: request.arrayBuffer.bind(request),
         };
       }
 

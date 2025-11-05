@@ -80,17 +80,26 @@ async function handler(
   request: AuthenticatedRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
+  const requestId = randomUUID();
   const startTime = Date.now();
   const pool = getPool();
 
   try {
+    context.log(`[${requestId}] ========== NEW REGISTRATION REQUEST ==========`);
+    context.log(`[${requestId}] Request method:`, request.method);
+    context.log(`[${requestId}] Request URL:`, request.url);
+
     // ========================================================================
     // PARSE MULTIPART/FORM-DATA
     // ========================================================================
 
+    context.log(`[${requestId}] STEP 1: Parsing multipart form data`);
+
     let contentType = request.headers.get('content-type') ||
                       request.headers.get('Content-Type') ||
                       request.headers.get('CONTENT-TYPE');
+
+    context.log(`[${requestId}] Content-Type:`, contentType);
 
     if (!contentType || !contentType.includes('multipart/form-data')) {
       return {
@@ -103,19 +112,26 @@ async function handler(
     }
 
     const bodyBuffer = await request.arrayBuffer();
+    context.log(`[${requestId}] Received body buffer of size:`, bodyBuffer.byteLength, 'bytes');
+
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
     if (bodyBuffer.byteLength > MAX_FILE_SIZE) {
+      context.log(`[${requestId}] ERROR: File too large`);
+
       return {
         status: 413,
         body: JSON.stringify({ error: 'Request size exceeds maximum allowed size of 10MB' })
       };
     }
 
+    context.log(`[${requestId}] STEP 2: Extracting boundary from Content-Type`);
     let boundary: string;
     try {
       boundary = multipart.getBoundary(contentType);
+      context.log(`[${requestId}] Boundary extracted:`, boundary);
     } catch (error: any) {
+      context.log(`[${requestId}] ERROR: Failed to extract boundary -`, error.message);
       return {
         status: 400,
         body: JSON.stringify({
@@ -125,7 +141,9 @@ async function handler(
       };
     }
 
+    context.log(`[${requestId}] STEP 3: Parsing multipart parts`);
     const parts = multipart.parse(Buffer.from(bodyBuffer), boundary);
+    context.log(`[${requestId}] Parsed ${parts.length} parts from body`);
 
     // Extract form fields
     const getField = (name: string): string | undefined => {
@@ -320,21 +338,31 @@ async function handler(
     // UPLOAD DOCUMENT & EXTRACT DATA
     // ========================================================================
 
-    context.log('Uploading KvK document to blob storage...');
+    context.log(`[${requestId}] STEP 6: Uploading KvK document to blob storage`);
 
     // Generate temporary application ID for blob path
     const tempApplicationId = randomUUID();
+    context.log(`[${requestId}] Generated temp application ID:`, tempApplicationId);
 
     // Upload to blob storage with applications prefix
+    context.log(`[${requestId}] Initializing BlobStorageService`);
     const blobService = new BlobStorageService();
-    const blobUrl = await blobService.uploadDocument(
-      `applications/${tempApplicationId}`,
-      filePart.filename || 'kvk-document.pdf',
-      filePart.data,
-      filePart.type
-    );
 
-    context.log('Document uploaded:', blobUrl);
+    let blobUrl: string;
+    try {
+      context.log(`[${requestId}] Uploading file:`, filePart.filename || 'kvk-document.pdf', 'Size:', filePart.data.length, 'bytes');
+      blobUrl = await blobService.uploadDocument(
+        `applications/${tempApplicationId}`,
+        filePart.filename || 'kvk-document.pdf',
+        filePart.data,
+        filePart.type
+      );
+
+      context.log(`[${requestId}] SUCCESS: Document uploaded to:`, blobUrl);
+    } catch (uploadError: any) {
+      context.error(`[${requestId}] BLOB UPLOAD FAILED:`, uploadError);
+      throw new Error(`Blob upload failed: ${uploadError.message}`);
+    }
 
     // Initialize verification data
     let extractedData: any = { companyName: null, kvkNumber: null };
@@ -344,13 +372,19 @@ async function handler(
 
     // Extract data using Document Intelligence (same as admin portal)
     try {
-      context.log('Starting document verification with Document Intelligence...');
+      context.log(`[${requestId}] STEP 7: Starting Document Intelligence extraction`);
 
+      context.log(`[${requestId}] Generating SAS URL for blob`);
       const sasUrl = await blobService.getDocumentSasUrl(blobUrl, 60);
+      context.log(`[${requestId}] SAS URL generated (length: ${sasUrl.length})`);
+
+      context.log(`[${requestId}] Initializing DocumentIntelligenceService`);
       const docIntelService = new DocumentIntelligenceService();
+
+      context.log(`[${requestId}] Calling extractKvKData...`);
       extractedData = await docIntelService.extractKvKData(sasUrl);
 
-      context.log('Extracted data:', extractedData);
+      context.log(`[${requestId}] SUCCESS: Extracted data:`, JSON.stringify(extractedData));
 
       // Compare extracted data with entered data
       if (body.kvkNumber && extractedData.kvkNumber) {
@@ -381,14 +415,20 @@ async function handler(
 
       // Validate against KvK API (same as admin portal)
       if (extractedData.kvkNumber) {
-        context.log('Validating with KvK API...');
+        context.log(`[${requestId}] STEP 8: Validating with KvK API`);
+        context.log(`[${requestId}] KvK Number:`, extractedData.kvkNumber);
+        context.log(`[${requestId}] Company Name:`, extractedData.companyName || '(none)');
+
+        context.log(`[${requestId}] Initializing KvKService`);
         const kvkService = new KvKService();
+
+        context.log(`[${requestId}] Calling validateCompany...`);
         kvkValidation = await kvkService.validateCompany(
           extractedData.kvkNumber,
           extractedData.companyName || ''
         );
 
-        context.log('KvK validation result:', kvkValidation);
+        context.log(`[${requestId}] SUCCESS: KvK validation result:`, JSON.stringify(kvkValidation));
 
         // Combine all flags
         verificationFlags = [...verificationFlags, ...kvkValidation.flags];
@@ -432,7 +472,15 @@ async function handler(
     // CREATE APPLICATION RECORD WITH VERIFICATION DATA
     // ========================================================================
 
+    context.log(`[${requestId}] STEP 9: Creating application record in database`);
+    context.log(`[${requestId}] Application ID:`, tempApplicationId);
+    context.log(`[${requestId}] Verification status:`, verificationStatus);
+    context.log(`[${requestId}] Verification flags:`, verificationFlags.join(', ') || '(none)');
+
     const result = await withTransaction(pool, context, async (tx) => {
+      context.log(`[${requestId}] Starting database transaction`);
+
+      context.log(`[${requestId}] Executing INSERT INTO applications`);
       const { rows: applicationRows } = await tx.query(
         `INSERT INTO applications (
            application_id,
@@ -589,7 +637,17 @@ async function handler(
     };
 
   } catch (error: unknown) {
-    context.error('Registration error:', error);
+    context.error(`[${requestId}] ========== REGISTRATION FAILED ==========`);
+    context.error(`[${requestId}] Error type:`, error instanceof Error ? error.constructor.name : typeof error);
+
+    if (error instanceof Error) {
+      context.error(`[${requestId}] Error message:`, error.message);
+      context.error(`[${requestId}] Error stack:`, error.stack);
+    } else {
+      context.error(`[${requestId}] Error details:`, JSON.stringify(error));
+    }
+
+    context.error(`[${requestId}] Invocation ID:`, context.invocationId);
 
     // TODO: Fix trackException call signature after security update
     // trackException(error instanceof Error ? error : new Error(String(error)), {
