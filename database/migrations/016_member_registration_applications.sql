@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS applications (
     rejection_reason TEXT,
 
     -- Created Member Reference (after approval)
-    created_member_id UUID REFERENCES legal_entities(legal_entity_id),
+    created_member_id UUID REFERENCES legal_entity(legal_entity_id),
     created_azure_ad_invitation_id VARCHAR(255),  -- B2B Invitation ID
 
     -- Audit Fields
