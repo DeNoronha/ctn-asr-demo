@@ -1,4 +1,5 @@
 import { app, HttpResponseInit, HttpRequest, InvocationContext } from "@azure/functions";
+import * as multipart from 'parse-multipart-data';
 import { publicEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { addVersionHeaders, logApiRequest } from '../middleware/versioning';
 import { getPool } from '../utils/database';
@@ -6,6 +7,9 @@ import { withTransaction } from '../utils/transaction';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { trackEvent, trackMetric, trackException } from '../utils/telemetry';
 import { createApplicationCreatedEvent, publishEvent } from '../utils/eventGrid';
+import { BlobStorageService } from '../services/blobStorageService';
+import { DocumentIntelligenceService } from '../services/documentIntelligenceService';
+import { KvKService } from '../services/kvkService';
 
 /**
  * Member Registration Endpoint
@@ -79,13 +83,81 @@ async function handler(
   const pool = getPool();
 
   try {
-    const body = await request.json() as RegistrationData;
+    // ========================================================================
+    // PARSE MULTIPART/FORM-DATA
+    // ========================================================================
+
+    let contentType = request.headers.get('content-type') ||
+                      request.headers.get('Content-Type') ||
+                      request.headers.get('CONTENT-TYPE');
+
+    if (!contentType || !contentType.includes('multipart/form-data')) {
+      return {
+        status: 400,
+        body: JSON.stringify({
+          error: 'Content-Type must be multipart/form-data',
+          received: contentType || 'none'
+        })
+      };
+    }
+
+    const bodyBuffer = await request.arrayBuffer();
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+    if (bodyBuffer.byteLength > MAX_FILE_SIZE) {
+      return {
+        status: 413,
+        body: JSON.stringify({ error: 'Request size exceeds maximum allowed size of 10MB' })
+      };
+    }
+
+    let boundary: string;
+    try {
+      boundary = multipart.getBoundary(contentType);
+    } catch (error: any) {
+      return {
+        status: 400,
+        body: JSON.stringify({
+          error: 'Failed to parse multipart boundary',
+          details: error.message
+        })
+      };
+    }
+
+    const parts = multipart.parse(Buffer.from(bodyBuffer), boundary);
+
+    // Extract form fields
+    const getField = (name: string): string | undefined => {
+      const part = parts.find(p => p.name === name);
+      return part ? part.data.toString('utf8') : undefined;
+    };
+
+    const body = {
+      legalName: getField('legalName'),
+      kvkNumber: getField('kvkNumber'),
+      lei: getField('lei'),
+      companyAddress: getField('companyAddress'),
+      postalCode: getField('postalCode'),
+      city: getField('city'),
+      country: getField('country'),
+      contactName: getField('contactName'),
+      contactEmail: getField('contactEmail'),
+      contactPhone: getField('contactPhone'),
+      jobTitle: getField('jobTitle'),
+      membershipType: getField('membershipType'),
+      termsAccepted: getField('termsAccepted') === 'true',
+      gdprConsent: getField('gdprConsent') === 'true'
+    };
+
+    // Extract file
+    const filePart = parts.find(part => part.name === 'kvkDocument');
 
     // Track request
     trackEvent('member_registration_request', {
       email: body.contactEmail,
       kvk: body.kvkNumber,
-      membership_type: body.membershipType
+      membership_type: body.membershipType,
+      has_document: String(!!filePart)
     }, undefined, context);
 
     // ========================================================================
@@ -99,7 +171,7 @@ async function handler(
       'membershipType', 'termsAccepted', 'gdprConsent'
     ];
 
-    const missingFields = requiredFields.filter(field => !body[field as keyof RegistrationData]);
+    const missingFields = requiredFields.filter(field => !body[field as keyof typeof body]);
 
     if (missingFields.length > 0) {
       return {
@@ -112,7 +184,7 @@ async function handler(
     }
 
     // Validate email format
-    if (!validateEmail(body.contactEmail)) {
+    if (!validateEmail(body.contactEmail!)) {
       return {
         status: 400,
         body: JSON.stringify({ error: 'Invalid email address format' })
@@ -120,7 +192,7 @@ async function handler(
     }
 
     // Validate KvK number format
-    if (!validateKvK(body.kvkNumber)) {
+    if (!validateKvK(body.kvkNumber!)) {
       return {
         status: 400,
         body: JSON.stringify({ error: 'KvK number must be 8 digits' })
@@ -136,7 +208,7 @@ async function handler(
     }
 
     // Validate phone format
-    if (!validatePhone(body.contactPhone)) {
+    if (!validatePhone(body.contactPhone!)) {
       return {
         status: 400,
         body: JSON.stringify({ error: 'Invalid phone number format' })
@@ -153,13 +225,41 @@ async function handler(
 
     // Validate membership type
     const validMembershipTypes = ['basic', 'standard', 'premium', 'enterprise'];
-    if (!validMembershipTypes.includes(body.membershipType.toLowerCase())) {
+    if (!validMembershipTypes.includes(body.membershipType!.toLowerCase())) {
       return {
         status: 400,
         body: JSON.stringify({
           error: 'Invalid membership type',
           validTypes: validMembershipTypes
         })
+      };
+    }
+
+    // Validate KvK document (required)
+    if (!filePart || !filePart.data) {
+      return {
+        status: 400,
+        body: JSON.stringify({ error: 'KvK document is required' })
+      };
+    }
+
+    if (filePart.data.length > MAX_FILE_SIZE) {
+      return {
+        status: 413,
+        body: JSON.stringify({ error: 'File size exceeds maximum allowed size of 10MB' })
+      };
+    }
+
+    // Validate file type (PDF only) with magic number check
+    const isPdf = filePart.data[0] === 0x25 && // %
+                  filePart.data[1] === 0x50 && // P
+                  filePart.data[2] === 0x44 && // D
+                  filePart.data[3] === 0x46;   // F
+
+    if (!isPdf || filePart.type !== 'application/pdf') {
+      return {
+        status: 400,
+        body: JSON.stringify({ error: 'KvK document must be a PDF file' })
       };
     }
 
@@ -216,12 +316,125 @@ async function handler(
     }
 
     // ========================================================================
-    // CREATE APPLICATION RECORD
+    // UPLOAD DOCUMENT & EXTRACT DATA
+    // ========================================================================
+
+    context.log('Uploading KvK document to blob storage...');
+
+    // Generate temporary application ID for blob path
+    const tempApplicationId = crypto.randomUUID();
+
+    // Upload to blob storage with applications prefix
+    const blobService = new BlobStorageService();
+    const blobUrl = await blobService.uploadDocument(
+      `applications/${tempApplicationId}`,
+      filePart.filename || 'kvk-document.pdf',
+      filePart.data,
+      filePart.type
+    );
+
+    context.log('Document uploaded:', blobUrl);
+
+    // Initialize verification data
+    let extractedData: any = { companyName: null, kvkNumber: null };
+    let kvkValidation: any = { isValid: false, flags: [], companyData: null, message: 'Not validated' };
+    let verificationStatus = 'pending';
+    let verificationFlags: string[] = [];
+
+    // Extract data using Document Intelligence (same as admin portal)
+    try {
+      context.log('Starting document verification with Document Intelligence...');
+
+      const sasUrl = await blobService.getDocumentSasUrl(blobUrl, 60);
+      const docIntelService = new DocumentIntelligenceService();
+      extractedData = await docIntelService.extractKvKData(sasUrl);
+
+      context.log('Extracted data:', extractedData);
+
+      // Compare extracted data with entered data
+      if (body.kvkNumber && extractedData.kvkNumber) {
+        const normalizedEntered = body.kvkNumber.replace(/[\s-]/g, '');
+        const normalizedExtracted = extractedData.kvkNumber.replace(/[\s-]/g, '');
+
+        if (normalizedEntered !== normalizedExtracted) {
+          verificationFlags.push('entered_kvk_mismatch');
+          context.warn(`KvK mismatch: entered=${body.kvkNumber}, extracted=${extractedData.kvkNumber}`);
+        }
+      }
+
+      // Compare company names (fuzzy match)
+      if (body.legalName && extractedData.companyName) {
+        const normalize = (name: string) => name.toLowerCase().trim().replace(/\s+/g, ' ').replace(/[.,\-]/g, '');
+        const normalizedEntered = normalize(body.legalName);
+        const normalizedExtracted = normalize(extractedData.companyName);
+
+        const namesMatch = normalizedEntered === normalizedExtracted ||
+                          normalizedEntered.includes(normalizedExtracted) ||
+                          normalizedExtracted.includes(normalizedEntered);
+
+        if (!namesMatch) {
+          verificationFlags.push('entered_name_mismatch');
+          context.warn(`Name mismatch: entered="${body.legalName}", extracted="${extractedData.companyName}"`);
+        }
+      }
+
+      // Validate against KvK API (same as admin portal)
+      if (extractedData.kvkNumber) {
+        context.log('Validating with KvK API...');
+        const kvkService = new KvKService();
+        kvkValidation = await kvkService.validateCompany(
+          extractedData.kvkNumber,
+          extractedData.companyName || ''
+        );
+
+        context.log('KvK validation result:', kvkValidation);
+
+        // Combine all flags
+        verificationFlags = [...verificationFlags, ...kvkValidation.flags];
+
+        // Determine verification status
+        if (verificationFlags.filter(f => f.includes('entered_')).length > 0) {
+          verificationStatus = 'flagged';
+        } else if (kvkValidation.isValid) {
+          verificationStatus = 'verified';
+        } else if (kvkValidation.flags.length > 0) {
+          verificationStatus = 'flagged';
+        } else {
+          verificationStatus = 'failed';
+        }
+
+        context.log('Verification status:', verificationStatus, 'flags:', verificationFlags);
+      } else {
+        verificationFlags.push('extraction_failed');
+        verificationStatus = 'failed';
+      }
+
+    } catch (verificationError: any) {
+      context.error('Verification error:', verificationError);
+
+      // Determine error type
+      if (verificationError.message?.includes('KvK') ||
+          verificationError.message?.includes('API') ||
+          verificationError.code === 'ENOTFOUND') {
+        verificationFlags.push('api_error');
+      } else if (verificationError.message?.includes('extract') ||
+                 verificationError.message?.includes('Document Intelligence')) {
+        verificationFlags.push('extraction_failed');
+      } else {
+        verificationFlags.push('processing_error');
+      }
+
+      verificationStatus = 'failed';
+    }
+
+    // ========================================================================
+    // CREATE APPLICATION RECORD WITH VERIFICATION DATA
     // ========================================================================
 
     const result = await withTransaction(pool, context, async (tx) => {
       const { rows: applicationRows } = await tx.query(
         `INSERT INTO applications (
+           application_id,
            applicant_email,
            applicant_name,
            applicant_job_title,
@@ -237,9 +450,13 @@ async function handler(
            terms_accepted,
            gdpr_consent,
            status,
-           submitted_at
+           submitted_at,
+           kvk_document_url,
+           kvk_verification_status,
+           kvk_verification_notes,
+           kvk_extracted_data
          )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW())
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW(), $17, $18, $19, $20)
          RETURNING
            application_id,
            applicant_email,
@@ -247,8 +464,10 @@ async function handler(
            kvk_number,
            membership_type,
            status,
-           submitted_at`,
+           submitted_at,
+           kvk_verification_status`,
         [
+          tempApplicationId,
           body.contactEmail,
           body.contactName,
           body.jobTitle,
@@ -260,10 +479,14 @@ async function handler(
           body.postalCode,
           body.city,
           body.country,
-          body.membershipType.toLowerCase(),
+          body.membershipType!.toLowerCase(),
           body.termsAccepted,
           body.gdprConsent,
-          'pending'
+          'pending',
+          blobUrl,
+          verificationStatus,
+          JSON.stringify({ flags: verificationFlags, extractedData, kvkValidation: kvkValidation.message }),
+          JSON.stringify(kvkValidation.companyData)
         ]
       );
 
@@ -301,7 +524,8 @@ async function handler(
     // TODO: Fix telemetry call signatures after security update
     // trackEvent('member_registration_success', {
     //   application_id: result.application_id,
-    //   membership_type: body.membershipType
+    //   membership_type: body.membershipType,
+    //   verification_status: result.kvk_verification_status
     // }, undefined, context);
 
     // trackMetric('registration_duration', Date.now() - startTime, 'ms', {}, context);
@@ -312,11 +536,11 @@ async function handler(
 
     const applicationCreatedEvent = createApplicationCreatedEvent({
       applicationId: result.application_id,
-      applicantEmail: body.contactEmail,
-      applicantName: body.contactName,
-      legalName: body.legalName,
-      kvkNumber: body.kvkNumber,
-      membershipType: body.membershipType
+      applicantEmail: body.contactEmail!,
+      applicantName: body.contactName!,
+      legalName: body.legalName!,
+      kvkNumber: body.kvkNumber!,
+      membershipType: body.membershipType!
     });
 
     // Publish event asynchronously - don't block response on email sending
@@ -334,6 +558,16 @@ async function handler(
         // Don't fail the request if event publishing fails - email is non-critical
       });
 
+    // Prepare user-friendly message based on verification status
+    let verificationMessage = '';
+    if (verificationStatus === 'verified') {
+      verificationMessage = 'Your KvK document has been verified successfully.';
+    } else if (verificationStatus === 'flagged') {
+      verificationMessage = 'Your KvK document has been uploaded. Our team will review it for verification.';
+    } else {
+      verificationMessage = 'Your KvK document has been uploaded. Our team will review it manually.';
+    }
+
     return {
       status: 201,
       body: JSON.stringify({
@@ -341,7 +575,10 @@ async function handler(
         applicationId: result.application_id,
         status: result.status,
         submittedAt: result.submitted_at,
+        verificationStatus: result.kvk_verification_status,
+        verificationMessage,
         nextSteps: [
+          verificationMessage,
           'You will receive a confirmation email shortly',
           'Our admin team will review your application within 2-3 business days',
           'You will be notified by email once your application is approved',

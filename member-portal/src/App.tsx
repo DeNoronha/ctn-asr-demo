@@ -150,10 +150,36 @@ function AppContent({ instance }: AppContentProps) {
     setRegistrationLoading(true);
 
     try {
+      // Create FormData for multipart/form-data submission
+      const formDataToSend = new FormData();
+
+      // Append all form fields
+      formDataToSend.append('legalName', formData.legalName || '');
+      formDataToSend.append('kvkNumber', formData.kvkNumber || '');
+      formDataToSend.append('lei', formData.lei || '');
+      formDataToSend.append('companyAddress', formData.companyAddress || '');
+      formDataToSend.append('postalCode', formData.postalCode || '');
+      formDataToSend.append('city', formData.city || '');
+      formDataToSend.append('country', formData.country || '');
+      formDataToSend.append('contactName', formData.contactName || '');
+      formDataToSend.append('contactEmail', formData.contactEmail || '');
+      formDataToSend.append('contactPhone', formData.contactPhone || '');
+      formDataToSend.append('jobTitle', formData.jobTitle || '');
+      formDataToSend.append('membershipType', formData.membershipType || '');
+      formDataToSend.append('termsAccepted', formData.termsAccepted ? 'true' : 'false');
+      formDataToSend.append('gdprConsent', formData.gdprConsent ? 'true' : 'false');
+
+      // Append KvK document file
+      if (formData.kvkDocument && formData.kvkDocument instanceof File) {
+        formDataToSend.append('kvkDocument', formData.kvkDocument);
+      } else {
+        throw new Error('KvK document is required');
+      }
+
       const response = await fetch(`${process.env.VITE_API_BASE_URL}/register-member`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        // Don't set Content-Type header - browser will set it with boundary for multipart/form-data
+        body: formDataToSend,
       });
 
       const result = await response.json();
@@ -162,11 +188,12 @@ function AppContent({ instance }: AppContentProps) {
         throw new Error(result.error || 'Registration failed');
       }
 
-      // Show success message with application ID
-      showNotification(
-        `Registration submitted successfully! Application ID: ${result.applicationId}. You will receive a confirmation email shortly.`,
-        'success'
-      );
+      // Show success message with verification status
+      const successMessage = result.verificationMessage
+        ? `${result.verificationMessage}\n\nApplication ID: ${result.applicationId}\n\nYou will receive a confirmation email shortly.`
+        : `Registration submitted successfully! Application ID: ${result.applicationId}. You will receive a confirmation email shortly.`;
+
+      showNotification(successMessage, 'success');
 
       // Close registration modal
       setShowRegistration(false);
