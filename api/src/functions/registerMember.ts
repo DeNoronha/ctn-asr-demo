@@ -1,6 +1,6 @@
 import { app, HttpResponseInit, HttpRequest, InvocationContext } from "@azure/functions";
 import * as multipart from 'parse-multipart-data';
-import { publicEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
+import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { addVersionHeaders, logApiRequest } from '../middleware/versioning';
 import { getPool } from '../utils/database';
 import { withTransaction } from '../utils/transaction';
@@ -607,10 +607,14 @@ async function handler(
 }
 
 // Register the function with public endpoint wrapper
-// TODO: Re-add CORS and rate limiting after security update
+// NOTE: Content-Type validation is disabled because this endpoint accepts multipart/form-data
+// The handler performs its own Content-Type validation at line 90-102
 app.http('registerMember', {
   methods: ['POST'],
   route: 'v1/register-member',
   authLevel: 'anonymous',
-  handler: publicEndpoint(handler)
+  handler: wrapEndpoint(handler, {
+    requireAuth: false,
+    enableContentTypeValidation: false // Multipart/form-data endpoint
+  })
 });
