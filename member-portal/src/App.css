@@ -167,11 +167,17 @@ body {
 /* Login Page Styles - Match Admin Portal */
 .login-container {
   min-height: 100vh;
+  min-width: 100vw;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #1a4d6d 0%, #00a3e0 100%);
   padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .login-card {
@@ -224,13 +230,15 @@ body {
   height: 48px;
   font-size: 16px;
   font-weight: 600;
-  background-color: #ff8c00;
-  border-color: #ff8c00;
+  background-color: #ff8c00 !important;
+  border-color: #ff8c00 !important;
+  color: white !important;
 }
 
 .login-button:hover {
-  background-color: #e07b00;
-  border-color: #e07b00;
+  background-color: #e07b00 !important;
+  border-color: #e07b00 !important;
+  color: white !important;
 }
 
 .register-button {
