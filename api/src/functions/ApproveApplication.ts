@@ -85,7 +85,7 @@ async function handler(
 
       const partyId = partyResult.rows[0].party_id;
 
-      // 2. Create legal entity
+      // 2. Create legal entity with KvK verification data
       const legalEntityResult = await client.query(
         `INSERT INTO legal_entity (
           party_id,
@@ -94,8 +94,13 @@ async function handler(
           country_code,
           city,
           postal_code,
-          address_line1
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+          address_line1,
+          kvk_document_url,
+          kvk_verification_status,
+          kvk_verification_notes,
+          kvk_api_response,
+          document_uploaded_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         RETURNING legal_entity_id`,
         [
           partyId,
@@ -104,7 +109,12 @@ async function handler(
           countryCode,
           application.city,
           application.postal_code,
-          application.company_address
+          application.company_address,
+          application.kvk_document_url,
+          application.kvk_verification_status || 'pending',
+          application.kvk_verification_notes,
+          application.kvk_extracted_data, // JSONB - store as kvk_api_response
+          application.dt_created // Use application creation time as document upload time
         ]
       );
 
