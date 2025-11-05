@@ -34,7 +34,10 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
         `SELECT legal_entity_id, party_id, dt_created, dt_modified, created_by, modified_by,
                 is_deleted, primary_legal_name, address_line1, address_line2, postal_code,
                 city, province, country_code, entity_legal_form, registered_at,
-                direct_parent_legal_entity_id, ultimate_parent_legal_entity_id
+                direct_parent_legal_entity_id, ultimate_parent_legal_entity_id,
+                kvk_document_url, kvk_verification_status, kvk_verified_at, kvk_verified_by,
+                kvk_verification_notes, kvk_extracted_company_name, kvk_extracted_number,
+                kvk_api_response, kvk_mismatch_flags, document_uploaded_at
          FROM legal_entity
          WHERE legal_entity_id = $1 AND (is_deleted IS NULL OR is_deleted = FALSE)`,
         [legalEntityId]
@@ -90,7 +93,10 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
       `SELECT le.legal_entity_id, le.party_id, le.dt_created, le.dt_modified, le.created_by, le.modified_by,
               le.is_deleted, le.primary_legal_name, le.address_line1, le.address_line2, le.postal_code,
               le.city, le.province, le.country_code, le.entity_legal_form, le.registered_at,
-              le.direct_parent_legal_entity_id, le.ultimate_parent_legal_entity_id
+              le.direct_parent_legal_entity_id, le.ultimate_parent_legal_entity_id,
+              le.kvk_document_url, le.kvk_verification_status, le.kvk_verified_at, le.kvk_verified_by,
+              le.kvk_verification_notes, le.kvk_extracted_company_name, le.kvk_extracted_number,
+              le.kvk_api_response, le.kvk_mismatch_flags, le.document_uploaded_at
        FROM legal_entity le
        JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
        WHERE le.legal_entity_id = $1
