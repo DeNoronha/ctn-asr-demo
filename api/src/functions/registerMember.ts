@@ -542,42 +542,9 @@ async function handler(
       return applicationRows[0];
     });
 
-    const duration = Date.now() - dbStart;
-    // TODO: Fix telemetry call signature after security update
-    // trackMetric('database_query_duration', duration, 'ms', { operation: 'create_application' }, context);
-
-    // ========================================================================
-    // AUDIT LOG
-    // ========================================================================
-
-    // TODO: Fix audit log call signature after security update
-    // await logAuditEvent(
-    //   context,
-    //   AuditEventType.APPLICATION_SUBMITTED,
-    //   AuditSeverity.INFO,
-    //   'system',
-    //   `New member application submitted: ${body.legalName} (${body.kvkNumber})`,
-    //   {
-    //     application_id: result.application_id,
-    //     legal_name: body.legalName,
-    //     kvk_number: body.kvkNumber,
-    //     applicant_email: body.contactEmail,
-    //     membership_type: body.membershipType
-    //   }
-    // );
-
     // ========================================================================
     // RETURN SUCCESS RESPONSE
     // ========================================================================
-
-    // TODO: Fix telemetry call signatures after security update
-    // trackEvent('member_registration_success', {
-    //   application_id: result.application_id,
-    //   membership_type: body.membershipType,
-    //   verification_status: result.kvk_verification_status
-    // }, undefined, context);
-
-    // trackMetric('registration_duration', Date.now() - startTime, 'ms', {}, context);
 
     // ========================================================================
     // PUBLISH EVENT GRID EVENT FOR EMAIL NOTIFICATION
@@ -648,11 +615,6 @@ async function handler(
     }
 
     context.error(`[${requestId}] Invocation ID:`, context.invocationId);
-
-    // TODO: Fix trackException call signature after security update
-    // trackException(error instanceof Error ? error : new Error(String(error)), {
-    //   operation: 'member_registration'
-    // }, context);
 
     return {
       status: 500,
