@@ -216,16 +216,16 @@ function AppContent({ instance }: AppContentProps) {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <div className="header-content">
-          <div className="header-left">
-            <img src="/assets/logos/ctn small.png" alt="CTN" className="header-ctn-logo" />
-            <h1>Member Portal</h1>
-          </div>
+      <AuthenticatedTemplate>
+        <header className="App-header">
+          <div className="header-content">
+            <div className="header-left">
+              <img src="/assets/logos/ctn small.png" alt="CTN" className="header-ctn-logo" />
+              <h1>Member Portal</h1>
+            </div>
 
-          <div className="header-right">
-            <LanguageSwitcher />
-            <AuthenticatedTemplate>
+            <div className="header-right">
+              <LanguageSwitcher />
               <div className="user-info">
                 <span className="user-name">{accounts[0]?.name || accounts[0]?.username}</span>
                 <Button
@@ -237,11 +237,9 @@ function AppContent({ instance }: AppContentProps) {
                   🚪 Sign Out
                 </Button>
               </div>
-            </AuthenticatedTemplate>
+            </div>
           </div>
-        </div>
 
-        <AuthenticatedTemplate>
           {memberData && (
             <nav className="tab-navigation">
               <button
@@ -295,8 +293,8 @@ function AppContent({ instance }: AppContentProps) {
               </button>
             </nav>
           )}
-        </AuthenticatedTemplate>
-      </header>
+        </header>
+      </AuthenticatedTemplate>
 
       <main className="App-main">
         <UnauthenticatedTemplate>
@@ -413,24 +411,26 @@ function AppContent({ instance }: AppContentProps) {
         )}
       </main>
 
-      <footer className="App-footer">
-        <div className="footer-content">
-          <div className="footer-logos">
-            <img src="/assets/logos/DIL.png" alt="Data in Logistics" className="partner-logo-img" />
-            <img src="/assets/logos/contargo.png" alt="Contargo" className="partner-logo-img" />
-            <img
-              src="/assets/logos/Inland Terminals Group.png"
-              alt="Inland Terminals Group"
-              className="partner-logo-img"
-            />
-            <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" className="partner-logo-img" />
-          </div>
+      <AuthenticatedTemplate>
+        <footer className="App-footer">
+          <div className="footer-content">
+            <div className="footer-logos">
+              <img src="/assets/logos/DIL.png" alt="Data in Logistics" className="partner-logo-img" />
+              <img src="/assets/logos/contargo.png" alt="Contargo" className="partner-logo-img" />
+              <img
+                src="/assets/logos/Inland Terminals Group.png"
+                alt="Inland Terminals Group"
+                className="partner-logo-img"
+              />
+              <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" className="partner-logo-img" />
+            </div>
 
-          <div className="footer-bottom">
-            <p>&copy; 2025 CTN Network. All rights reserved.</p>
+            <div className="footer-bottom">
+              <p>&copy; 2025 CTN Network. All rights reserved.</p>
+            </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      </AuthenticatedTemplate>
     </div>
   );
 }
