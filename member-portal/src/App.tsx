@@ -300,36 +300,58 @@ function AppContent({ instance }: AppContentProps) {
 
       <main className="App-main">
         <UnauthenticatedTemplate>
-          <div className="welcome-container">
-            <div className="welcome-card">
-              <h2>Welcome to CTN Member Portal</h2>
-              <p>
-                Access your organization's CTN network dashboard, manage contacts, configure system
-                integrations, and manage API access for secure data exchange.
-              </p>
-              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '24px' }}>
-                <Button
-                  onClick={handleLogin}
-                  color="blue"
-                  size="lg"
-                  className="login-button"
-                >
-                  Sign In with Azure AD
-                </Button>
-                <Button
-                  onClick={() => setShowRegistration(true)}
-                  size="lg"
-                  variant="outline"
-                  color="blue"
-                  className="register-button"
-                >
-                  Register as Member
-                </Button>
+          <div className="login-container">
+            <div className="login-card">
+              <div className="login-header">
+                <img src="/assets/logos/ctn.png" alt="CTN" className="login-logo" />
+                <h1>CTN Member Portal</h1>
+                <p className="login-subtitle">Secure Member Access Portal</p>
               </div>
-              <p style={{ marginTop: '24px', fontSize: '0.9em', color: '#666' }}>
-                New to CTN? Click "Register as Member" to start the registration process.
-                Already registered? Use "Sign In" to access your portal.
-              </p>
+
+              <div className="login-info-box">
+                <div>
+                  <h3>Member Portal Access</h3>
+                  <p style={{ fontSize: '14px', color: '#475569', lineHeight: '1.6' }}>
+                    Access your organization's CTN network dashboard, manage contacts, configure system
+                    integrations, and manage API access for secure data exchange.
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                className="login-button"
+                color="blue"
+                size="lg"
+                onClick={handleLogin}
+                fullWidth
+                style={{ marginBottom: '16px' }}
+              >
+                Sign In with Azure AD
+              </Button>
+
+              <Button
+                onClick={() => setShowRegistration(true)}
+                size="lg"
+                variant="outline"
+                color="blue"
+                className="register-button"
+                fullWidth
+              >
+                Register as Member
+              </Button>
+
+              <div className="login-footer">
+                <p>New to CTN? Click "Register as Member" to start the registration process. Already registered? Use "Sign In" to access your portal.</p>
+              </div>
+
+              <div className="login-partners">
+                <p>In Partnership With</p>
+                <div className="partner-logos-login">
+                  <img src="/assets/logos/contargo.png" alt="Contargo" />
+                  <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" />
+                  <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" />
+                </div>
+              </div>
             </div>
           </div>
         </UnauthenticatedTemplate>

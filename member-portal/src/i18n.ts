@@ -58,8 +58,9 @@ i18n
 
     // React-specific options
     react: {
-      // Wait for translations to load before rendering
-      useSuspense: true,
+      // Don't wait for translations to load before rendering
+      // This prevents white screen issues when language changes
+      useSuspense: false,
     },
   });
 
