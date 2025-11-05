@@ -1,5 +1,6 @@
 import { app, HttpResponseInit, HttpRequest, InvocationContext } from "@azure/functions";
 import * as multipart from 'parse-multipart-data';
+import { randomUUID } from 'crypto';
 import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { addVersionHeaders, logApiRequest } from '../middleware/versioning';
 import { getPool } from '../utils/database';
@@ -322,7 +323,7 @@ async function handler(
     context.log('Uploading KvK document to blob storage...');
 
     // Generate temporary application ID for blob path
-    const tempApplicationId = crypto.randomUUID();
+    const tempApplicationId = randomUUID();
 
     // Upload to blob storage with applications prefix
     const blobService = new BlobStorageService();
