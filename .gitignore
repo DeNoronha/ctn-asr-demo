@@ -91,3 +91,6 @@ debug-summary.txt
 !.eslintrc.js
 *.backup
 docs/MANTINE_LLMS.txt
+# BDI RSA keys
+api/keys/
+api/scripts/keys/

@@ -87,13 +87,19 @@ const KvkReviewQueueComponent: React.FC = () => {
     setSubmitting(true);
 
     try {
+      // Get current user from auth context
+      const accounts = msalInstance.getAllAccounts();
+      const reviewerName = accounts.length > 0
+        ? (accounts[0].name || accounts[0].username)
+        : 'Unknown Admin';
+
       const axiosInstance = await getAuthenticatedAxios();
       await axiosInstance.put(
         `/legal-entities/${reviewDialog.entity.legal_entity_id}/kvk-verification/review`,
         {
           status: approved ? 'verified' : 'failed',
           notes: reviewNotes,
-          reviewedBy: 'ADMIN', // TODO: Get from auth context
+          reviewedBy: reviewerName,
         }
       );
 

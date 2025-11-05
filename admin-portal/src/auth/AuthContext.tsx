@@ -166,9 +166,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       logger.log('Extracted roles:', roles);
 
       // Check MFA status from claims
-      // TODO: Re-enable strict MFA checking once Conditional Access policy is fully enforced
-      const mfaEnabled = true; // Temporarily bypassed - idTokenClaims?.amr?.includes('mfa') || false;
-      logger.log('MFA enabled:', mfaEnabled, '(bypassed until CA policy active)');
+      // Can be disabled via VITE_REQUIRE_MFA=false for development/testing
+      const requireMFA = import.meta.env.VITE_REQUIRE_MFA !== 'false';
+      const mfaClaim = idTokenClaims?.amr?.includes('mfa') || false;
+      const mfaEnabled = requireMFA ? mfaClaim : true;
+
+      logger.log('MFA enforcement:', requireMFA ? 'ENABLED' : 'DISABLED (dev mode)');
+      logger.log('MFA claim present:', mfaClaim);
+      logger.log('MFA check result:', mfaEnabled);
 
       // Get association ID from custom claim
       const associationId = idTokenClaims?.extension_AssociationId;
