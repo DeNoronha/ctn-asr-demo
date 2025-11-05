@@ -28,6 +28,7 @@ import './functions/GetAuthenticatedMember';
 import './functions/UpdateMemberProfile';
 import './functions/GetMemberContacts';
 import './functions/GetMemberEndpoints';
+import './functions/GetMemberTokens';
 
 // Admin portal (critical)
 import './functions/GetMembers';
