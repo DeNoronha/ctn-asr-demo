@@ -104,16 +104,38 @@ const TasksGrid: React.FC = () => {
   const loadTasks = useCallback(async () => {
     setLoading(true);
     try {
-      // TODO: Implement /api/v1/admin/tasks endpoint
-      // For now, tasks tab will be empty
-      logger.log('TasksGrid: Tasks endpoint not yet implemented');
-      setTasks([]);
+      const account = accounts[0];
+      if (!account) {
+        logger.log('TasksGrid: No MSAL account available for tasks');
+        setTasks([]);
+        return;
+      }
+
+      logger.log('TasksGrid: Acquiring token for tasks...');
+      const tokenResponse = await instance.acquireTokenSilent({
+        scopes: ['api://5c0c3b9e-0e4b-47b8-8e4f-9b0e6c0c3b9e/.default'],
+        account: account,
+      });
+
+      const axiosInstance = axios.create({
+        baseURL: API_BASE_URL,
+        headers: {
+          Authorization: `Bearer ${tokenResponse.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      logger.log('TasksGrid: Fetching tasks from API...');
+      const response = await axiosInstance.get<{ tasks: Task[] }>('/v1/admin/tasks');
+      logger.log(`TasksGrid: Loaded ${response.data.tasks.length} tasks`);
+      setTasks(response.data.tasks);
     } catch (error) {
       logger.error('Error loading tasks:', error);
+      setTasks([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [accounts, instance]);
 
   const loadReviewTasks = useCallback(async () => {
     try {

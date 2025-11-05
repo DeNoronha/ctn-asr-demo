@@ -54,6 +54,11 @@ import './functions/ResolveParty';
 // Audit Logs
 import './functions/GetAuditLogs';
 
+// Task Management
+import './functions/getTasks';
+import './functions/createTask';
+import './functions/updateTask';
+
 // Orchestration (graph database - Cosmos DB Gremlin API)
 import './functions/GetOrchestrations';
 import './functions/GetOrchestrationDetails';

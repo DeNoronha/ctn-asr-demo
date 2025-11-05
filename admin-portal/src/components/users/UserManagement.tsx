@@ -1,4 +1,5 @@
 import { logger } from '../../utils/logger';
+import * as graphService from '../../services/graphService';
 /**
  * User Management Page
  * System Admins can view and manage all users
@@ -46,68 +47,56 @@ const UserManagement: React.FC = () => {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      // TODO: Replace with actual API call to fetch users from Azure Entra ID
-      // For now, show mock data including current user
-      const mockUsers: User[] = [
-        {
-          id: currentUser?.account.localAccountId || '1',
-          email: currentUser?.account.username || '',
-          name: currentUser?.account.name || '',
-          roles: currentUser?.roles || [UserRole.SYSTEM_ADMIN],
-          primaryRole: currentUser?.primaryRole || UserRole.SYSTEM_ADMIN,
-          enabled: true,
-          createdAt: new Date('2024-01-15'),
-          lastLogin: new Date(),
-        },
-        {
-          id: '2',
-          email: 'admin@association.com',
-          name: 'John Smith',
-          roles: [UserRole.ASSOCIATION_ADMIN],
-          primaryRole: UserRole.ASSOCIATION_ADMIN,
-          enabled: true,
-          createdAt: new Date('2024-02-01'),
-          lastLogin: new Date('2024-10-08'),
-        },
-        {
-          id: '3',
-          email: 'member@example.com',
-          name: 'Jane Doe',
-          roles: [UserRole.MEMBER],
-          primaryRole: UserRole.MEMBER,
-          enabled: true,
-          createdAt: new Date('2024-03-10'),
-          lastLogin: new Date('2024-10-09'),
-        },
-      ];
-      setUsers(mockUsers);
+      const graphUsers = await graphService.listUsers();
+
+      // Map graphService.User to local User interface
+      const mappedUsers: User[] = graphUsers.map(gu => ({
+        id: gu.id,
+        email: gu.email,
+        name: gu.displayName,
+        roles: gu.roles,
+        primaryRole: gu.roles[0] || UserRole.MEMBER,
+        enabled: gu.enabled,
+        createdAt: new Date(gu.createdDateTime),
+        lastLogin: gu.lastSignInDateTime ? new Date(gu.lastSignInDateTime) : undefined,
+      }));
+
+      setUsers(mappedUsers);
+      logger.log(`Loaded ${mappedUsers.length} users from Microsoft Graph`);
     } catch (error) {
       logger.error('Error loading users:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
   const handleInviteUser = async (userData: { email: string; name: string; role: UserRole }) => {
-    // TODO: Implement actual user invitation via Microsoft Graph API
-    logger.log('Inviting user:', userData);
+    try {
+      logger.log('Inviting user:', userData);
 
-    // Log the action
-    if (currentUser) {
-      auditLogService.log({
-        action: AuditAction.USER_INVITED,
-        userId: currentUser.account.localAccountId,
-        userName: currentUser.account.name || '',
-        userRole: currentUser.primaryRole,
-        targetType: 'user',
-        targetName: userData.email,
-        details: `Invited ${userData.name} (${userData.email}) with role ${userData.role}`,
-        metadata: { role: userData.role },
-      });
+      await graphService.inviteUser(userData.email, userData.name, [userData.role]);
+
+      // Log the action
+      if (currentUser) {
+        auditLogService.log({
+          action: AuditAction.USER_INVITED,
+          userId: currentUser.account.localAccountId,
+          userName: currentUser.account.name || '',
+          userRole: currentUser.primaryRole,
+          targetType: 'user',
+          targetName: userData.email,
+          details: `Invited ${userData.name} (${userData.email}) with role ${userData.role}`,
+          metadata: { role: userData.role },
+        });
+      }
+
+      setShowInviteDialog(false);
+      await loadUsers();
+    } catch (error) {
+      logger.error('Failed to invite user:', error);
+      throw error;
     }
-
-    setShowInviteDialog(false);
-    await loadUsers();
   };
 
   const handleEditUser = (user: User) => {
@@ -116,50 +105,67 @@ const UserManagement: React.FC = () => {
   };
 
   const handleUpdateUser = async (userId: string, updates: Partial<User>) => {
-    // TODO: Implement user update via Microsoft Graph API
-    logger.log('Updating user:', userId, updates);
+    try {
+      logger.log('Updating user:', userId, updates);
 
-    // Log the action
-    if (currentUser) {
-      const user = users.find((u) => u.id === userId);
-      auditLogService.log({
-        action: AuditAction.USER_UPDATED,
-        userId: currentUser.account.localAccountId,
-        userName: currentUser.account.name || '',
-        userRole: currentUser.primaryRole,
-        targetType: 'user',
-        targetId: userId,
-        targetName: user?.email,
-        details: `Updated user ${user?.name}`,
-        metadata: updates,
-      });
+      // Map our User updates to Graph API format
+      const graphUpdates: { displayName?: string; accountEnabled?: boolean } = {};
+      if (updates.name) graphUpdates.displayName = updates.name;
+      if (updates.enabled !== undefined) graphUpdates.accountEnabled = updates.enabled;
+
+      await graphService.updateUser(userId, graphUpdates);
+
+      // Log the action
+      if (currentUser) {
+        const user = users.find((u) => u.id === userId);
+        auditLogService.log({
+          action: AuditAction.USER_UPDATED,
+          userId: currentUser.account.localAccountId,
+          userName: currentUser.account.name || '',
+          userRole: currentUser.primaryRole,
+          targetType: 'user',
+          targetId: userId,
+          targetName: user?.email,
+          details: `Updated user ${user?.name}`,
+          metadata: updates,
+        });
+      }
+
+      setShowEditDialog(false);
+      setSelectedUser(null);
+      await loadUsers();
+    } catch (error) {
+      logger.error('Failed to update user:', error);
+      throw error;
     }
-
-    setShowEditDialog(false);
-    setSelectedUser(null);
-    await loadUsers();
   };
 
   const handleToggleUserStatus = async (userId: string, enabled: boolean) => {
-    // TODO: Implement enable/disable user via Microsoft Graph API
-    logger.log('Toggle user status:', userId, enabled);
+    try {
+      logger.log('Toggle user status:', userId, enabled);
 
-    // Log the action
-    if (currentUser) {
-      const user = users.find((u) => u.id === userId);
-      auditLogService.log({
-        action: enabled ? AuditAction.USER_ENABLED : AuditAction.USER_DISABLED,
-        userId: currentUser.account.localAccountId,
-        userName: currentUser.account.name || '',
-        userRole: currentUser.primaryRole,
-        targetType: 'user',
-        targetId: userId,
-        targetName: user?.email,
-        details: `${enabled ? 'Enabled' : 'Disabled'} user ${user?.name}`,
-      });
+      await graphService.toggleUserStatus(userId, enabled);
+
+      // Log the action
+      if (currentUser) {
+        const user = users.find((u) => u.id === userId);
+        auditLogService.log({
+          action: enabled ? AuditAction.USER_ENABLED : AuditAction.USER_DISABLED,
+          userId: currentUser.account.localAccountId,
+          userName: currentUser.account.name || '',
+          userRole: currentUser.primaryRole,
+          targetType: 'user',
+          targetId: userId,
+          targetName: user?.email,
+          details: `${enabled ? 'Enabled' : 'Disabled'} user ${user?.name}`,
+        });
+      }
+
+      await loadUsers();
+    } catch (error) {
+      logger.error('Failed to toggle user status:', error);
+      throw error;
     }
-
-    await loadUsers();
   };
 
   // mantine-datatable column definitions
