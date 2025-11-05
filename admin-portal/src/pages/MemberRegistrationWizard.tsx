@@ -14,6 +14,7 @@ const Hint: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, 
   <div id={id} className="form-hint" style={{ color: '#656565', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
 );
 import { useNavigate } from 'react-router-dom';
+import { msalInstance } from '../auth/AuthContext';
 import { StepperForm } from '../components/forms/StepperForm';
 import { HelpTooltip } from '../components/help/HelpTooltip';
 import { helpContent } from '../config/helpContent';
@@ -33,6 +34,26 @@ import './MemberRegistrationWizard.css';
 export const MemberRegistrationWizard: React.FC = () => {
   const navigate = useNavigate();
   const notification = useNotification();
+
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
+
+  async function getAccessToken(): Promise<string | null> {
+    try {
+      const accounts = msalInstance.getAllAccounts();
+      if (accounts.length > 0) {
+        const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
+        const response = await msalInstance.acquireTokenSilent({
+          scopes: [`api://${clientId}/access_as_user`],
+          account: accounts[0],
+        });
+        return response.accessToken;
+      }
+      return null;
+    } catch (error) {
+      logger.error('Failed to get access token:', error);
+      return null;
+    }
+  }
 
   const [formData, setFormData] = useState<MemberFormData>({
     org_id: 'org:',
@@ -137,13 +158,45 @@ export const MemberRegistrationWizard: React.FC = () => {
 
   const handleComplete = async (data: MemberFormData) => {
     try {
-      // TODO: Replace with actual API call
       logger.log('Submitting member registration:', data);
-      notification.showSuccess('Member registered successfully!');
+
+      const token = await getAccessToken();
+      if (!token) {
+        throw new globalThis.Error('Failed to get access token. Please log in again.');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/members`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          org_id: data.org_id,
+          legal_name: data.legal_name,
+          domain: data.domain,
+          lei: data.lei || undefined,
+          kvk: data.kvk || undefined,
+          membership_level: 'basic',
+          status: 'active',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new globalThis.Error((errorData as any).error || `Failed to create member (HTTP ${response.status})`);
+      }
+
+      const result = await response.json();
+      logger.log('Member created successfully:', result);
+
+      notification.showSuccess(`Member ${result.org_id} created successfully!`);
       navigate('/members');
-    } catch (error) {
-      logger.error('Failed to register member:', error);
-      notification.showError('Failed to register member');
+
+    } catch (err: unknown) {
+      logger.error('Failed to register member:', err);
+      const errorMessage = err instanceof globalThis.Error ? err.message : 'Failed to register member';
+      notification.showError(errorMessage);
     }
   };
 
