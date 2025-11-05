@@ -48,6 +48,31 @@ async function handler(
 
       const application = appResult.rows[0];
 
+      // Convert country name to ISO 2-letter code
+      const countryCodeMap: Record<string, string> = {
+        'Netherlands': 'NL',
+        'Belgium': 'BE',
+        'Germany': 'DE',
+        'France': 'FR',
+        'United Kingdom': 'GB',
+        'Luxembourg': 'LU',
+        'Austria': 'AT',
+        'Switzerland': 'CH',
+        'Italy': 'IT',
+        'Spain': 'ES',
+        'Portugal': 'PT',
+        'Poland': 'PL',
+        'Czech Republic': 'CZ',
+        'Denmark': 'DK',
+        'Sweden': 'SE',
+        'Norway': 'NO',
+        'Finland': 'FI'
+      };
+
+      const countryCode = application.country && application.country.length === 2
+        ? application.country // Already an ISO code
+        : countryCodeMap[application.country] || 'NL'; // Convert from name or default to NL
+
       // 1. Create party_reference first
       const partyResult = await client.query(
         `INSERT INTO party_reference (
@@ -76,7 +101,7 @@ async function handler(
           partyId,
           application.legal_name,
           'ACTIVE',
-          application.country || 'NL',
+          countryCode,
           application.city,
           application.postal_code,
           application.company_address
