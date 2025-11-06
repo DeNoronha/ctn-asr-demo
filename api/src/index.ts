@@ -66,6 +66,11 @@ import './functions/ResolveParty';
 // Audit Logs
 import './functions/GetAuditLogs';
 
+// Task Management
+import './functions/getTasks';
+import './functions/createTask';
+import './functions/updateTask';
+
 // Orchestration (graph database - Cosmos DB Gremlin API)
 import './functions/GetOrchestrations';
 import './functions/GetOrchestrationDetails';
@@ -78,6 +83,10 @@ import './functions/uploadKvkDocument';
 import './functions/getKvkVerificationStatus';
 import './functions/reviewKvkVerification';
 import './functions/getKvkRegistryData';
+
+// Generic Identifier Verification (LEI, EORI, DUNS, etc.)
+import './functions/GetIdentifierVerifications';
+import './functions/UploadIdentifierVerification';
 
 // Diagnostics
 import './functions/DiagnosticCheck';

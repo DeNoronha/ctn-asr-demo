@@ -2,12 +2,17 @@
 
 Comprehensive curl-based test scripts for testing API CRUD operations.
 
+**Last Updated:** November 6, 2025 - Added token acquisition and deployment verification tests
+
 ## Overview
 
 These test scripts validate the core API functionality by testing:
+- **Authentication** - Azure AD token acquisition (ROPC flow)
+- **Deployment Verification** - Check currently deployed endpoints
 - **Identifier Management** - Create, read, update, delete identifiers
 - **Contact Management** - Full CRUD operations for contacts
 - **Address Updates** - Legal entity address modification and persistence
+- **New Features** - Verification endpoints, Task Management, User Management (after deployment)
 
 All scripts are designed to:
 - ✅ Create test data
@@ -42,30 +47,50 @@ jq --version
 
 ### 2. Get Azure AD Authentication Token
 
-You need a valid Azure AD bearer token to run these tests.
+**RECOMMENDED: Use get-token.sh Script (ROPC Flow)**
+```bash
+./get-token.sh
+```
 
-**Option A: Use Azure CLI**
+This automatically acquires a token using the E2E test user (test-e2@denoronha.consulting) with MFA excluded. Token is saved to `/tmp/asr-api-token.txt` and expires after ~1 hour.
+
+**Alternative Option A: Use Azure CLI**
 ```bash
 az login
-TOKEN=$(az account get-access-token --resource api://your-api-client-id --query accessToken -o tsv)
+TOKEN=$(az account get-access-token --resource d3037c11-a541-4f21-8862-8079137a0cde --query accessToken -o tsv)
 export AUTH_TOKEN="$TOKEN"
 ```
 
-**Option B: Get from Browser (Admin Portal)**
+**Alternative Option B: Get from Browser (Admin Portal)**
 1. Open browser developer tools (F12)
 2. Login to Admin Portal: https://calm-tree-03352ba03.1.azurestaticapps.net
 3. Go to Network tab
 4. Make any API request
 5. Copy the Authorization header value (without "Bearer ")
-6. Export: `export AUTH_TOKEN="your-token-here"`
+6. Export: `export AUTH_TOKEN=<paste-token-here>`
 
-**Token expires after 1 hour** - you'll need to refresh it.
+**Token expires after 1 hour** - re-run `get-token.sh` to refresh.
 
 ## Usage
 
-### Quick Start - Run All Tests (Recommended)
+### Quick Start - Deployment Verification (RECOMMENDED FIRST)
 
-Use the test runner to execute all tests in sequence:
+**After every API deployment, run these tests FIRST:**
+
+```bash
+# 1. Acquire authentication token
+./get-token.sh
+
+# 2. Test currently deployed endpoints
+./test-existing-endpoints.sh
+
+# 3. Test new feature endpoints (after deployment)
+./test-identifier-verifications.sh
+```
+
+### Alternative - Run All CRUD Tests
+
+Use the test runner to execute all CRUD tests in sequence:
 
 ```bash
 # Set your auth token
@@ -452,6 +477,97 @@ If any test fails:
 - **API Logs:** `func azure functionapp logstream func-ctn-demo-asr-dev`
 - **Azure Portal:** https://portal.azure.com
 - **Issue Tracking:** Azure DevOps work items
+
+---
+
+## New Test Scripts (November 6, 2025)
+
+### get-token.sh - Azure AD Token Acquisition
+
+**Purpose:** Automatically acquire Azure AD Bearer token using ROPC flow (Resource Owner Password Credentials) for E2E test user.
+
+**Usage:**
+```bash
+./get-token.sh
+```
+
+**Output:**
+- Token saved to `/tmp/asr-api-token.txt`
+- Displays first 50 characters of token for verification
+- Automatically used by other test scripts
+
+**Authentication Details:**
+- User: test-e2@denoronha.consulting
+- Role: SystemAdmin
+- MFA: Excluded (for automated testing)
+- Flow: ROPC (password grant)
+- Scope: `d3037c11-a541-4f21-8862-8079137a0cde/.default`
+- Expiry: ~1 hour
+
+### test-existing-endpoints.sh - Deployment Verification
+
+**Purpose:** Verify currently deployed endpoints are working correctly.
+
+**Usage:**
+```bash
+./get-token.sh  # Acquire token first
+./test-existing-endpoints.sh
+```
+
+**Tests:**
+1. ✓ Health check (`/api/health`)
+2. ✓ Version (`/api/v1/version`)
+3. ✓ Authenticated member (`/api/v1/member`)
+4. ✓ All members (`/api/v1/all-members`)
+5. ✓ Legal entity (`/api/v1/legal-entities/{id}`)
+6. ✓ Identifiers (`/api/v1/entities/{id}/identifiers`)
+7. ✓ Audit logs (`/api/v1/audit-logs`)
+8. Party resolution (`/api/v1/auth/resolve-party`) - Currently returns 404
+
+**Exit Codes:**
+- 0: All tests passed
+- Non-zero: At least one test failed
+
+### test-identifier-verifications.sh - Task 5 Verification
+
+**Purpose:** Test Generic Identifier Verification endpoints (Task 5).
+
+**Usage:**
+```bash
+./get-token.sh  # Acquire token first
+./test-identifier-verifications.sh
+```
+
+**Tests:**
+1. Get legal entities
+2. Get identifiers for entity
+3. GET `/api/v1/legal-entities/{id}/verifications` - Get verification history
+4. POST `/api/v1/legal-entities/{id}/verifications` - Upload verification document
+5. Verify upload was successful
+
+**NOTE:** These endpoints require API deployment. Currently return 404 (not deployed).
+
+**Cleanup:** Creates test verification document - manual cleanup may be required.
+
+---
+
+## Test Reports
+
+Comprehensive test reports are generated in `api/tests/`:
+
+| Report | Date | Summary |
+|--------|------|---------|
+| `API_TEST_REPORT_2025-11-06.md` | Nov 6, 2025 | Deployment sync issue - new endpoints not deployed |
+
+**Report Contents:**
+- Executive summary
+- Deployment status
+- Test results (existing + new endpoints)
+- Authentication testing
+- Database connectivity
+- Performance metrics
+- Identified issues with severity
+- Recommendations and next steps
 
 ---
 
