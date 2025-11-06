@@ -492,10 +492,20 @@ Isolation:   NO dependencies on ASR, DocuFlow, or Orchestrator
 **Tech Stack:** React 18 + TypeScript + Mantine v8 | Azure Functions (Node.js 20) | PostgreSQL | Azure AD | Playwright
 
 **Azure Resources:**
+
+**Front Door URLs (with WAF):**
+- Admin: https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net
+- Member: https://portal-ctn-dev-fdb5cpeagdendtck.z02.azurefd.net
+
+**Direct URLs (Static Web Apps):**
 - Admin: https://calm-tree-03352ba03.1.azurestaticapps.net
 - Member: https://calm-pebble-043b2db03.1.azurestaticapps.net
+
+**Backend:**
 - API: https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
 - DB: psql-ctn-demo-asr-dev.postgres.database.azure.com
+
+**Note:** Front Door URLs are configured but may show DeploymentStatus: NotStarted. Use Direct URLs if Front Door returns 404.
 
 ---
 

@@ -28,14 +28,23 @@ mv .env.local.backup .env.local
 
 ## Azure Resources
 
+### Front Door URLs (with WAF Protection)
+- **Admin Portal:** https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net
+- **Member Portal:** https://portal-ctn-dev-fdb5cpeagdendtck.z02.azurefd.net
+
+### Direct URLs (Static Web Apps)
 - **Admin Portal:** https://calm-tree-03352ba03.1.azurestaticapps.net
 - **Member Portal:** https://calm-pebble-043b2db03.1.azurestaticapps.net
 - **Documentation Portal:** https://ambitious-sky-098ea8e03.2.azurestaticapps.net
 - **Orchestrator Portal:** https://blue-dune-0353f1303.1.azurestaticapps.net (October 2025 - Production)
+
+### Backend & Infrastructure
 - **API:** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
 - **Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
 - **Resource Group:** rg-ctn-demo-asr-dev
 - **Database:** psql-ctn-demo-asr-dev.postgres.database.azure.com
+
+**Note:** Front Door endpoints may show `DeploymentStatus: NotStarted`. Use Direct URLs if Front Door returns 404.
 
 ## Essential Documentation
 
