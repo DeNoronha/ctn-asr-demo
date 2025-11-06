@@ -223,7 +223,7 @@ export interface LegalEntity {
   ultimate_parent_legal_entity_id?: string;
   domain?: string;
   status?: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'TERMINATED';
-  membership_level?: 'BASIC' | 'PREMIUM' | 'ENTERPRISE';
+  membership_level?: 'BASIC' | 'FULL' | 'PREMIUM';
   metadata?: Metadata;
   dt_created?: string;
   dt_modified?: string;

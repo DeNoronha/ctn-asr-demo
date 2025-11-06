@@ -18,7 +18,7 @@ interface ContactFormProps {
   onCancel: () => void;
 }
 
-const contactTypes = ['Primary', 'Technical', 'Billing', 'Support'];
+const contactTypes = ['PRIMARY', 'TECHNICAL', 'BILLING', 'SUPPORT', 'LEGAL', 'OTHER'];
 
 /**
  * Form validation functions with inline feedback (DA-007)
