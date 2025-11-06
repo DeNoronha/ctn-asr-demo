@@ -8,6 +8,8 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
+import { RoleGuard } from '../auth/ProtectedRoute';
+import { UserRole } from '../auth/authConfig';
 import { type LegalEntity, type LegalEntityContact, type Member, api } from '../services/api';
 import { type LegalEntityEndpoint, type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { formatDate } from '../utils/dateUtils';
@@ -291,7 +293,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           <div className="header-badges">
             {getStatusBadge(member.status)}
             {getMembershipBadge(member.membership_level)}
-            {member.status === 'PENDING' && (
+            {member.status?.toUpperCase() === 'PENDING' && (
               <RoleGuard allowedRoles={[UserRole.ASSOCIATION_ADMIN, UserRole.SYSTEM_ADMIN]}>
                 <Button
                   color="green"
