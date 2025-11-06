@@ -43,7 +43,7 @@ export const createLegalEntitySchema = z.object({
   lei: leiSchema.optional(),
   kvk: kvkNumberSchema.optional(),
   domain: z.string().min(3, 'Domain is required').max(255),
-  membership_level: z.enum(['BASIC', 'PREMIUM', 'ENTERPRISE']).optional(),
+  membership_level: z.enum(['BASIC', 'FULL', 'PREMIUM']).optional(),
   primary_legal_name: z.string().optional(),
   entity_legal_form: z.string().optional(),
 });

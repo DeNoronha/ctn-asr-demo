@@ -3,7 +3,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import type { ComponentProps, Contact } from '../types';
 
-const contactTypes = ['PRIMARY', 'TECHNICAL', 'BILLING', 'LEGAL', 'OTHER'];
+const contactTypes = ['PRIMARY', 'TECHNICAL', 'BILLING', 'SUPPORT', 'LEGAL', 'OTHER'];
 const contactMethods = ['EMAIL', 'PHONE', 'MOBILE'];
 
 export const ContactsView: React.FC<ComponentProps> = ({
