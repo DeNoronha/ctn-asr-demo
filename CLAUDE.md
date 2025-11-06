@@ -1,6 +1,6 @@
 # CLAUDE.md - CTN Association Register
 
-**Last Updated:** November 2, 2025
+**Last Updated:** November 6, 2025
 
 ---
 
@@ -391,6 +391,9 @@ Validates alignment between codebase, Azure infrastructure, Arc42 documentation,
 
 ### Kendo UI to Mantine v8 Migration (November 2, 2025)
 37. **Plan massive UI migrations portal-by-portal with proven patterns** - Successfully migrated all 4 CTN portals (admin, member, orchestrator, booking) from Kendo UI to Mantine v8 in a single coordinated effort, eliminating ~100 Kendo packages and all licensing costs. **Pattern**: (1) Migrate first portal completely, document all issues/solutions (CSS specificity, pagination patterns, column management), (2) Copy exact patterns to remaining portals, (3) Use specialized agents (CA) for autonomous migration execution. **Key insight**: After solving CSS specificity battles (.mantine-Popover-dropdown vs .mantine-Menu-dropdown) and pagination issues (manual data slicing with `records={data.slice(from, to)}`) in admin portal, remaining migrations were straightforward ("walk in the park"). **Technical details**: mantine-datatable 8.2.0 requires useDataTableColumns hook for column toggle/resize/persistence, controlled pagination needs manual slicing (calculate `from = (page - 1) * pageSize`), storeColumnsKey enables localStorage persistence. **Results**: Total ~100 Kendo packages removed, 15+ grids migrated to mantine-datatable, all portals now on stable Mantine v8.3.6, 0 TypeScript errors across all builds. **Critical**: Document solutions as you go - each portal took ~1-2 hours after first portal pioneered solutions. **Benefits**: Eliminated licensing fees (~$1000+/year), bundle size reduction, single UI library for maintainability, modern TypeScript support. **Commits**: 16b4008, e8dc337, 85c4ae1, 75c7de1 (admin), 6d85289 (member), 9b9ac2e (orchestrator), bbfe687 (booking). **Effort**: 6 hours total (all 4 portals). **Documentation**: Updated docs/GRID_STANDARDIZATION_TODO.md with complete 4-portal summary and migration lessons.
+
+### Azure Infrastructure & Bicep (November 6, 2025)
+38. **WAF Policy Naming in Bicep - No Hyphens Allowed** - WAF policy resource names in Bicep cannot contain hyphens. Use alphanumeric naming format (e.g., `wafctndev` instead of `waf-ctn-dev`). **Root cause**: Bicep's policy name validation rejects hyphens in the resource name field. **Error message**: "Policy ArmResourceId has incorrect formatting" is misleading - it's not the reference that's wrong, it's the policy name itself. **Symptom**: Bicep deployment fails with cryptic error message about "incorrect formatting" when the waf-policy resource name contains hyphens. **Workaround**: (1) Use alphanumeric names only for WAF resources, (2) If managed rules required, deploy basic policy first via Bicep, then add managed rules via Azure Portal/CLI post-deployment (Bicep compatibility issues with managed rule sets). **Pattern**: Azure Bicep naming restrictions are underdocumented - when you get "formatting" errors on resource names, the issue is usually the name format itself, not the property values. Test resource names with alphanumeric-only format first. **Discovery date**: November 6, 2025 during Azure Front Door + WAF deployment. **Files affected**: infrastructure/bicep/modules/waf-policy.bicep, infrastructure/bicep/modules/waf-policy-basic.bicep.
 
 ---
 
