@@ -68,6 +68,36 @@ module staticWebApps './modules/static-web-apps.bicep' = {
   }
 }
 
+// Deploy WAF Policy for Front Door
+module wafPolicy './modules/waf-policy.bicep' = {
+  name: 'waf-policy-deployment'
+  scope: resourceGroup
+  params: {
+    environment: environment
+    location: location
+    resourcePrefix: resourcePrefix
+    tags: tags
+  }
+}
+
+// Deploy Front Door with WAF protection
+module frontDoor './modules/front-door.bicep' = {
+  name: 'front-door-deployment'
+  scope: resourceGroup
+  params: {
+    environment: environment
+    resourcePrefix: resourcePrefix
+    tags: tags
+    wafPolicyId: wafPolicy.outputs.wafPolicyId
+    adminPortalHostname: staticWebApps.outputs.adminPortalUrl
+    memberPortalHostname: staticWebApps.outputs.memberPortalUrl
+  }
+  dependsOn: [
+    wafPolicy
+    staticWebApps
+  ]
+}
+
 // Deploy Cosmos DB for Orchestrator Portal
 module cosmosDb './modules/cosmos-db.bicep' = {
   name: 'cosmos-db-deployment'
@@ -193,3 +223,8 @@ output cosmosAccountName string = cosmosDb.outputs.cosmosAccountName
 output cosmosEndpoint string = cosmosDb.outputs.cosmosEndpoint
 output apimGatewayUrl string = apiManagement.outputs.apimGatewayUrl
 output apimName string = apiManagement.outputs.apimName
+output frontDoorId string = frontDoor.outputs.frontDoorId
+output frontDoorName string = frontDoor.outputs.frontDoorName
+output adminFrontDoorUrl string = frontDoor.outputs.adminEndpointUrl
+output memberFrontDoorUrl string = frontDoor.outputs.memberEndpointUrl
+output wafPolicyName string = wafPolicy.outputs.wafPolicyName
