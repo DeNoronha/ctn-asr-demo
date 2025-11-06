@@ -11,6 +11,7 @@ import { getVerificationColor } from '../utils/colors';
 import { EmptyState } from './EmptyState';
 import './IdentifierVerificationManager.css';
 import { ErrorBoundary } from './ErrorBoundary';
+import { msalInstance } from '../auth/AuthContext';
 
 interface VerificationRecord {
   verification_id: string;
@@ -44,8 +45,24 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
   const notification = useNotification();
   const { handleError } = useApiError();
 
-  const _API_BASE =
+  const API_BASE =
     import.meta.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
+
+  // Helper to get access token
+  const getAccessToken = async (): Promise<string> => {
+    const accounts = msalInstance.getAllAccounts();
+    if (accounts.length === 0) {
+      throw new Error('No authenticated accounts found');
+    }
+
+    const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
+    const response = await msalInstance.acquireTokenSilent({
+      scopes: [`api://${clientId}/.default`],
+      account: accounts[0],
+    });
+
+    return response.accessToken;
+  };
 
   // Load verification records
   useEffect(() => {
@@ -55,20 +72,23 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
   const loadVerificationRecords = async () => {
     setLoading(true);
     try {
-      // TODO: Backend API needed - Generic identifier verification history
-      // Required endpoint: GET /v1/legal-entities/{legalEntityId}/verifications
-      // Current backend only supports KvK-specific verification (legal_entity table columns)
-      //
-      // To implement:
-      // 1. Create new table: identifier_verification_history
-      // 2. Create GET endpoint to retrieve all verification records
-      // 3. Update this call to: const response = await fetch(`${API_BASE}/v1/legal-entities/${legalEntityId}/verifications`);
-      //
-      // Placeholder: Empty array until backend is ready
-      setVerificationRecords([]);
+      const response = await fetch(`${API_BASE}/v1/legal-entities/${legalEntityId}/verifications`, {
+        headers: {
+          'Authorization': `Bearer ${await getAccessToken()}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load verifications: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setVerificationRecords(data.verifications || []);
     } catch (error) {
       console.error('Failed to load verification records:', error);
       notification.showError('Failed to load verification history');
+      setVerificationRecords([]);
     } finally {
       setLoading(false);
     }
@@ -88,8 +108,6 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
 
     const file = files[0];
 
-    // File type and size validation is handled by Dropzone props
-
     setUploading(true);
 
     try {
@@ -97,35 +115,27 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
       formData.append('file', file, file.name);
       formData.append('identifier_type', selectedIdentifier.identifier_type);
       formData.append('identifier_value', selectedIdentifier.identifier_value || '');
+      formData.append('identifier_id', selectedIdentifier.identifier_id);
 
-      // TODO: Backend API needed - Generic identifier document upload & verification
-      // Required endpoint: POST /v1/legal-entities/{legalEntityId}/verifications
-      // Current backend only supports KvK verification via legal_entity table columns
-      //
-      // To implement:
-      // 1. Create Azure Blob Storage upload endpoint for verification documents
-      // 2. Create POST endpoint: /v1/legal-entities/{legalEntityId}/verifications
-      // 3. Integrate with Azure Document Intelligence for PDF data extraction
-      // 4. Store verification records in identifier_verification_history table
-      // 5. Update this call to:
-      //    const response = await fetch(`${API_BASE}/v1/legal-entities/${legalEntityId}/verifications`, {
-      //      method: 'POST',
-      //      body: formData,
-      //    });
-      //
-      // Note: For KvK identifiers only, you can use the existing KvK verification endpoint:
-      // POST /v1/legal-entities/{legalEntityId}/kvk-verification
-      //
-      // Placeholder notification until backend is ready
-      notification.showWarning(
-        'Document upload feature requires backend API implementation. See code comments for details.'
-      );
+      const response = await fetch(`${API_BASE}/v1/legal-entities/${legalEntityId}/verifications`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${await getAccessToken()}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Upload failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      notification.showSuccess(`${selectedIdentifier.identifier_type} document uploaded successfully`);
 
       // Reload verification records
-      setTimeout(() => {
-        loadVerificationRecords();
-        onUpdate?.();
-      }, 2000);
+      await loadVerificationRecords();
+      onUpdate?.();
     } catch (error: unknown) {
       handleError(error, 'uploading verification document');
     } finally {

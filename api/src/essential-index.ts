@@ -72,6 +72,10 @@ import './functions/getKvkVerificationStatus';
 import './functions/reviewKvkVerification';
 import './functions/getKvkRegistryData';
 
+// Generic Identifier Verification (LEI, EORI, DUNS, etc.)
+import './functions/GetIdentifierVerifications';
+import './functions/UploadIdentifierVerification';
+
 // Diagnostics
 import './functions/DiagnosticCheck';
 import './functions/CreateIdentifierSimple';
