@@ -1,6 +1,6 @@
 # CLAUDE.md - CTN Association Register
 
-**Last Updated:** November 6, 2025
+**Last Updated:** November 6, 2025 (Arc42 references added)
 
 ---
 
@@ -123,7 +123,7 @@ git push origin main
 # Wait ~2min, verify deployment: https://dev.azure.com/ctn-demo/ASR/_build
 ```
 
-**Code Standards:** TypeScript, React, ESLint, Prettier, Aikido. See `docs/CODING_STANDARDS.md`.
+**Code Standards:** TypeScript, React, ESLint, Prettier, Aikido. See [Arc42 Coding Standards](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/08-crosscutting/ctn-coding-standards.md).
 
 **Testing:**
 1. **API tests FIRST (curl)** - Catch 404/500 before UI testing
@@ -534,10 +534,16 @@ Isolation:   NO dependencies on ASR, DocuFlow, or Orchestrator
 
 **Root:** README.md, CLAUDE.md only
 **Desktop:** ~/Desktop/ROADMAP.md (synced, not in repo)
-**docs/:** All other documentation, completed actions, guides
+**docs/:** Project-specific documentation (COMPLETED_ACTIONS.md, LESSONS_LEARNED.md, test reports, etc.)
 **docs/MANTINE_LLMS.txt:** Complete Mantine UI library documentation (79K lines, from mantine.dev/llms.txt)
 **docs/MANTINE_DATATABLE_REFERENCE.md:** mantine-datatable component reference (column toggling, etc.)
 **.claude/agents/:** Agent configuration files
+
+**Arc42 Documentation (Separate Repository: DEV-CTN-Documentation):**
+- **Building Blocks:** [Three-Tier Authentication](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/05-building-blocks/ctn-three-tier-authentication.md)
+- **Deployment:** [Deployment Procedures](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/07-deployment/ctn-asr-deployment-procedures.md), [Front Door + WAF](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/07-deployment/ctn-front-door-waf-infrastructure.md)
+- **Cross-cutting:** [Coding Standards](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/08-crosscutting/ctn-coding-standards.md), [Security Hardening](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/08-crosscutting/ctn-security-hardening.md)
+- **Quality:** [Accessibility (WCAG)](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/10-quality/ctn-accessibility-wcag-compliance.md), [Security Audit](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/10-quality/ctn-security-audit-report.md), [UI/UX Audit](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/10-quality/ctn-ui-ux-audit-report.md)
 
 ---
 
@@ -555,5 +561,6 @@ Isolation:   NO dependencies on ASR, DocuFlow, or Orchestrator
 
 **Resources:**
 - Azure DevOps: https://dev.azure.com/ctn-demo/ASR
-- Documentation: docs/ folder
+- Documentation (Project): docs/ folder (COMPLETED_ACTIONS.md, LESSONS_LEARNED.md, test reports)
+- Documentation (Architecture): [Arc42 in DEV-CTN-Documentation repository](https://github.com/ramondenoronha/DEV-CTN-Documentation/tree/main/docs/arc42)
 - Credentials: .credentials file (gitignored)
