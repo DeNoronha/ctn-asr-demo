@@ -97,10 +97,39 @@ body {
   background-color: var(--ctn-bg);
 }
 
-/* Consistent view container - all views use full width */
-.view-container {
+/* Consistent view container - all views use same max width */
+.view-container,
+.dashboard-view,
+.members-view,
+.tokens-view,
+.settings-view,
+.docs-view,
+.endpoints-view,
+.audit-view,
+.health-view,
+.review-tasks-view,
+.tasks-view {
   width: 100%;
-  max-width: none;
+  max-width: 1600px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Responsive width adjustments */
+@media (max-width: 1680px) {
+  .view-container,
+  .dashboard-view,
+  .members-view,
+  .tokens-view,
+  .settings-view,
+  .docs-view,
+  .endpoints-view,
+  .audit-view,
+  .health-view,
+  .review-tasks-view,
+  .tasks-view {
+    max-width: 95%;
+  }
 }
 
 /* View Styles */
@@ -367,7 +396,7 @@ body {
 }
 
 .footer-content {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -387,14 +416,17 @@ body {
 .partner-logo-img {
   height: 40px;
   width: auto;
+  max-width: 150px;
   object-fit: contain;
-  filter: brightness(0) invert(1);
-  opacity: 0.8;
-  transition: opacity 0.2s;
+  filter: brightness(0) invert(1) grayscale(0);
+  opacity: 0.9;
+  transition: all 0.3s ease;
+  background: transparent;
 }
 
 .partner-logo-img:hover {
   opacity: 1;
+  transform: scale(1.05);
 }
 
 .footer-bottom {

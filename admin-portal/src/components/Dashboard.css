@@ -3,7 +3,7 @@
 .dashboard-view {
   padding: 0;
   /* Padding removed - .content-area already has padding: 24px */
-  margin: 0 auto;
+  /* Width and margin handled by App.css for consistency */
 }
 
 .dashboard-header {
