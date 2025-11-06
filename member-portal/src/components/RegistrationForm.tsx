@@ -43,10 +43,10 @@ interface RegistrationFormProps {
 }
 
 const membershipTypes = [
-  { label: 'Basic - Free tier (Read-only API access)', value: 'basic' },
-  { label: 'Standard - €500/month (Full API access)', value: 'standard' },
-  { label: 'Premium - €1000/month (Full API + Priority support)', value: 'premium' },
-  { label: 'Enterprise - Custom pricing (Dedicated resources)', value: 'enterprise' },
+  { label: 'Basic - Free tier (Read-only API access)', value: 'BASIC' },
+  { label: 'Standard - €500/month (Full API access)', value: 'STANDARD' },
+  { label: 'Premium - €1000/month (Full API + Priority support)', value: 'PREMIUM' },
+  { label: 'Enterprise - Custom pricing (Dedicated resources)', value: 'ENTERPRISE' },
 ];
 
 const countries = [
@@ -109,7 +109,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
       contactEmail: '',
       contactPhone: '',
       jobTitle: '',
-      membershipType: 'basic',
+      membershipType: 'BASIC',
       termsAccepted: false,
       gdprConsent: false,
     },

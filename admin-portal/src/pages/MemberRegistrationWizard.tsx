@@ -177,7 +177,7 @@ export const MemberRegistrationWizard: React.FC = () => {
           domain: data.domain,
           lei: data.lei || undefined,
           kvk: data.kvk || undefined,
-          membership_level: 'basic',
+          membership_level: 'BASIC',
           status: 'active',
         }),
       });
