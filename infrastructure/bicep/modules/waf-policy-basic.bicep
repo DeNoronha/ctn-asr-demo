@@ -1,14 +1,11 @@
 // ========================================
-// Web Application Firewall (WAF) Policy Module
+// Basic Web Application Firewall (WAF) Policy Module
 // ========================================
-// WAF policy for Azure Front Door
-// Provides protection against OWASP Top 10 threats, bot attacks, and DDoS
+// WAF policy for Azure Front Door - WITHOUT managed rules for initial deployment
+// Managed rules can be added later via Azure Portal or CLI
 
 @description('Environment name')
 param environment string
-
-@description('Azure region')
-param location string
 
 @description('Resource prefix')
 param resourcePrefix string
@@ -20,13 +17,13 @@ param tags object
 var wafPolicyName = 'waf${resourcePrefix}${environment}' // No hyphens - ARM resource ID validation requirement
 var isProd = environment == 'prod'
 
-// WAF Policy for Front Door
+// WAF Policy for Front Door - Basic configuration
 resource wafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2022-05-01' = {
   name: wafPolicyName
   location: 'Global' // Front Door WAF policies are global resources
   tags: tags
   sku: {
-    name: 'Premium_AzureFrontDoor' // Premium required for Managed Rules (OWASP, Bot Manager)
+    name: 'Premium_AzureFrontDoor' // Premium required for managed rules (can be added later)
   }
   properties: {
     policySettings: {
@@ -77,48 +74,10 @@ resource wafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@20
           action: 'Block'
           enabledState: 'Enabled'
         }
-        // Geo-restriction (optional - allow only EU and NL)
-        {
-          name: 'GeoRestriction'
-          priority: 3
-          ruleType: 'MatchRule'
-          matchConditions: [
-            {
-              matchVariable: 'RemoteAddr'
-              operator: 'GeoMatch'
-              negateCondition: true
-              matchValue: [
-                'NL' // Netherlands
-                'BE' // Belgium
-                'DE' // Germany
-                'FR' // France
-                'GB' // United Kingdom
-                'US' // United States (for Azure AD authentication)
-              ]
-            }
-          ]
-          action: 'Block' // Valid actions: Allow, Block, Redirect (not Log)
-          enabledState: isProd ? 'Enabled' : 'Disabled' // Disabled in dev, enabled in prod
-        }
       ]
     }
-    managedRules: {
-      managedRuleSets: [
-        // Microsoft Default Rule Set (Core Rule Set based on OWASP)
-        {
-          ruleSetType: 'Microsoft_DefaultRuleSet'
-          ruleSetVersion: '2.1'
-          ruleGroupOverrides: []
-          exclusions: []
-        }
-        // Microsoft Bot Manager Rule Set
-        {
-          ruleSetType: 'Microsoft_BotManagerRuleSet'
-          ruleSetVersion: '1.0'
-          ruleGroupOverrides: []
-        }
-      ]
-    }
+    // Note: Managed rules removed for initial deployment due to Bicep compatibility issues
+    // Add Microsoft_DefaultRuleSet and Microsoft_BotManagerRuleSet via Azure Portal after deployment
   }
 }
 

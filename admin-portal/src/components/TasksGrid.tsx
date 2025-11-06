@@ -126,7 +126,7 @@ const TasksGrid: React.FC = () => {
       });
 
       logger.log('TasksGrid: Fetching tasks from API...');
-      const response = await axiosInstance.get<{ tasks: Task[] }>('/v1/admin/tasks');
+      const response = await axiosInstance.get<{ tasks: AdminTask[] }>('/v1/admin/tasks');
       logger.log(`TasksGrid: Loaded ${response.data.tasks.length} tasks`);
       setTasks(response.data.tasks);
     } catch (error) {

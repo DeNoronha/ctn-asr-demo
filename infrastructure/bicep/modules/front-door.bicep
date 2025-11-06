@@ -32,7 +32,7 @@ resource frontDoorProfile 'Microsoft.Cdn/profiles@2023-05-01' = {
   location: 'Global'
   tags: tags
   sku: {
-    name: isProd ? 'Premium_AzureFrontDoor' : 'Standard_AzureFrontDoor'
+    name: 'Premium_AzureFrontDoor' // Premium required for WAF with Managed Rules
   }
   properties: {
     originResponseTimeoutSeconds: 60
@@ -187,6 +187,9 @@ resource memberRoute 'Microsoft.Cdn/profiles/afdEndpoints/routes@2023-05-01' = {
 resource adminSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2023-05-01' = {
   parent: frontDoorProfile
   name: 'admin-security-policy'
+  dependsOn: [
+    adminRoute
+  ]
   properties: {
     parameters: {
       type: 'WebApplicationFirewall'
@@ -213,6 +216,9 @@ resource adminSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2023-05-01
 resource memberSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2023-05-01' = {
   parent: frontDoorProfile
   name: 'member-security-policy'
+  dependsOn: [
+    memberRoute
+  ]
   properties: {
     parameters: {
       type: 'WebApplicationFirewall'

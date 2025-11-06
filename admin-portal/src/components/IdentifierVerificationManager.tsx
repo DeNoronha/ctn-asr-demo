@@ -115,7 +115,7 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
       formData.append('file', file, file.name);
       formData.append('identifier_type', selectedIdentifier.identifier_type);
       formData.append('identifier_value', selectedIdentifier.identifier_value || '');
-      formData.append('identifier_id', selectedIdentifier.identifier_id);
+      formData.append('identifier_id', selectedIdentifier.legal_entity_reference_id || '');
 
       const response = await fetch(`${API_BASE}/v1/legal-entities/${legalEntityId}/verifications`, {
         method: 'POST',
