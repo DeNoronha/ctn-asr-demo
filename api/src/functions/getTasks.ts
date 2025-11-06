@@ -47,6 +47,6 @@ async function handler(
 app.http('getTasks', {
   methods: ['GET', 'OPTIONS'],
   authLevel: 'anonymous',
-  route: 'v1/admin/tasks',
+  route: 'v1/admin/tasks/list',
   handler: adminEndpoint(handler),
 });
