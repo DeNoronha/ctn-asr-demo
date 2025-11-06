@@ -25,9 +25,6 @@ interface RegistrationFormData {
   contactPhone: string;
   jobTitle: string;
 
-  // Membership
-  membershipType: string;
-
   // Documents
   kvkDocument?: File;
 
@@ -41,13 +38,6 @@ interface RegistrationFormProps {
   onCancel: () => void;
   loading?: boolean;
 }
-
-const membershipTypes = [
-  { label: 'Basic - Free tier (Read-only API access)', value: 'BASIC' },
-  { label: 'Standard - €500/month (Full API access)', value: 'STANDARD' },
-  { label: 'Premium - €1000/month (Full API + Priority support)', value: 'PREMIUM' },
-  { label: 'Enterprise - Custom pricing (Dedicated resources)', value: 'ENTERPRISE' },
-];
 
 const countries = [
   'Netherlands',
@@ -109,7 +99,6 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
       contactEmail: '',
       contactPhone: '',
       jobTitle: '',
-      membershipType: 'BASIC',
       termsAccepted: false,
       gdprConsent: false,
     },
@@ -125,7 +114,6 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
       contactEmail: emailValidator,
       contactPhone: phoneValidator,
       jobTitle: requiredValidator,
-      membershipType: requiredValidator,
       termsAccepted: (value) => (value ? null : 'You must accept the terms'),
       gdprConsent: (value) => (value ? null : 'GDPR consent is required'),
     },
@@ -155,7 +143,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const validateCurrentStep = (): boolean => {
     if (currentStep === 1) {
       const step1Errors = form.validate();
-      const step1Fields = ['legalName', 'kvkNumber', 'companyAddress', 'postalCode', 'city', 'country', 'membershipType'];
+      const step1Fields = ['legalName', 'kvkNumber', 'companyAddress', 'postalCode', 'city', 'country'];
       return !step1Fields.some(field => step1Errors.errors[field]);
     } else if (currentStep === 2) {
       const step2Errors = form.validate();
@@ -265,14 +253,6 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               mb="md"
             />
 
-            <Select
-              {...form.getInputProps('membershipType')}
-              label="Membership Type *"
-              data={membershipTypes}
-              required
-              mb="md"
-            />
-
             <div className="form-actions">
               <Button onClick={onCancel} disabled={loading} variant="default">
                 Cancel
@@ -370,10 +350,6 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 </div>
                 <div>
                   <strong>Email:</strong> {form.values.contactEmail}
-                </div>
-                <div>
-                  <strong>Membership:</strong>{' '}
-                  {membershipTypes.find((m) => m.value === form.values.membershipType)?.label}
                 </div>
               </div>
             </div>
