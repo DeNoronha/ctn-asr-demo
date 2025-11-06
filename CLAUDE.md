@@ -84,15 +84,36 @@ git log -1 --format="%ar - %s"
 
 **🚨 MANDATORY WORKFLOW:**
 
+**Rule 0: Verify Before Working** - Run `./scripts/quick-check.sh` BEFORE starting ANY debugging/feature work to ensure sync
+
 **Rule 1: Work Directly on Main** - Commit frequently, push regularly. No feature branches. No exceptions.
 
-**Rule 2: Verify Deployment** - After push, wait 3-5min and verify build time = commit time at https://dev.azure.com/ctn-demo/ASR/_build
+**Rule 2: Verify Deployment** - After push, run `./scripts/verify-deployment-sync.sh` to ensure commit is deployed
 
 **Rule 3: Test APIs with TE Agent** - After EVERY API deployment, invoke TE agent for curl tests. User tests frontend.
 
 **Rule 4: Document Everything** - Update docs/COMPLETED_ACTIONS.md (TW agent does this)
 
 **Rule 5: Recovery** - If fixes missing: `./scripts/find-missing-commits.sh 7`
+
+**🔒 SAFETY NET SCRIPTS:**
+```bash
+# Quick status check (run before debugging)
+./scripts/quick-check.sh
+
+# Full deployment verification (run after commits)
+./scripts/verify-deployment-sync.sh
+
+# Skip build check if Azure CLI unavailable
+./scripts/verify-deployment-sync.sh --skip-build-check
+```
+
+**What they check:**
+- ✅ On main branch
+- ✅ No uncommitted changes
+- ✅ Latest commit pushed to origin/main
+- ✅ Azure DevOps pipeline completed successfully
+- ✅ Build time matches commit time (deployment sync)
 
 **CRITICAL: Commit Frequently**
 ```bash
