@@ -8,7 +8,8 @@ import * as multipart from 'parse-multipart-data';
 import { BlobStorageService } from '../services/blobStorageService';
 import { DocumentIntelligenceService } from '../services/documentIntelligenceService';
 import { getPool } from '../utils/database';
-import { adminEndpoint, type AuthenticatedRequest } from '../middleware/endpointWrapper';
+import { wrapEndpoint, type AuthenticatedRequest } from '../middleware/endpointWrapper';
+import { UserRole } from '../middleware/rbac';
 import { randomUUID } from 'crypto';
 
 const pool = getPool();
@@ -205,5 +206,9 @@ async function handler(
 app.http('uploadIdentifierVerification', {
   methods: ['POST'],
   route: 'v1/legal-entities/{legalEntityId}/verifications',
-  handler: adminEndpoint(handler, { enableContentTypeValidation: false }),
+  handler: wrapEndpoint(handler, {
+    requireAuth: true,
+    requiredRoles: [UserRole.SYSTEM_ADMIN, UserRole.ASSOCIATION_ADMIN],
+    enableContentTypeValidation: false,
+  }),
 });
