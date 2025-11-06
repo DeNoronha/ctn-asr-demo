@@ -333,7 +333,7 @@ const AdminPortal: React.FC = () => {
                   <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" className="partner-logo-img" />
                 </div>
                 <div className="footer-bottom">
-                  <p>&copy; 2025 CTN Network. All rights reserved.</p>
+                  <p>&copy; 2025 Connected Trade Network. All rights reserved.</p>
                 </div>
               </div>
             </footer>
