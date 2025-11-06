@@ -1,5 +1,6 @@
 .tasks-grid {
-  padding: 20px;
+  padding: 0;
+  /* Padding removed - .content-area already has padding: 24px */
 }
 
 .grid-header {

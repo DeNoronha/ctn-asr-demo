@@ -1,8 +1,8 @@
 /* Settings Component Styles */
 
 .settings-container {
-  padding: 24px;
-  /* max-width removed for consistent full-width layout */
+  padding: 0;
+  /* Padding removed - .content-area already has padding: 24px */
   margin: 0 auto;
 }
 
@@ -197,7 +197,8 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .settings-container {
-    padding: 16px;
+    padding: 0;
+    /* Padding removed - .content-area handles responsive padding */
   }
 
   .resources-grid {
