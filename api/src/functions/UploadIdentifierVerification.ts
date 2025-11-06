@@ -205,5 +205,5 @@ async function handler(
 app.http('uploadIdentifierVerification', {
   methods: ['POST'],
   route: 'v1/legal-entities/{legalEntityId}/verifications',
-  handler: adminEndpoint(handler),
+  handler: adminEndpoint(handler, { enableContentTypeValidation: false }),
 });
