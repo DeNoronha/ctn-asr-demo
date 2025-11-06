@@ -15,7 +15,7 @@ async function handler(
   context: InvocationContext
 ): Promise<HttpResponseInit> {
   const pool = getPool();
-  const orgId = request.params.orgId;
+  const orgId = request.params.orgid;
 
   try {
     // Get request body
@@ -148,7 +148,7 @@ async function handler(
 
 app.http('UpdateMemberStatus', {
   methods: ['PATCH', 'OPTIONS'],
-  route: 'v1/members/{orgId}/status',
+  route: 'v1/members/{orgid}/status',
   authLevel: 'anonymous',
   handler: adminEndpoint(handler)
 });
