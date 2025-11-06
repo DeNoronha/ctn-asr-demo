@@ -151,6 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loadUserRoles = async (account: AccountInfo) => {
     try {
+      console.log('🔍 AUTH DEBUG: Loading user roles for account:', account);
       logger.log('Loading user roles for account:', account);
 
       // Extract roles from ID token claims
@@ -160,9 +161,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         extension_AssociationId?: string;
       }
       const idTokenClaims = (account.idTokenClaims || {}) as IdTokenClaims;
+      console.log('🔍 AUTH DEBUG: ID Token Claims:', JSON.stringify(idTokenClaims, null, 2));
       logger.log('ID Token Claims:', idTokenClaims);
 
       const roles = (idTokenClaims?.roles || []) as UserRole[];
+      console.log('🔍 AUTH DEBUG: Extracted roles:', roles);
       logger.log('Extracted roles:', roles);
 
       // Check MFA status from claims
@@ -171,6 +174,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const mfaClaim = idTokenClaims?.amr?.includes('mfa') || false;
       const mfaEnabled = requireMFA ? mfaClaim : true;
 
+      console.log('🔍 AUTH DEBUG: MFA enforcement:', requireMFA ? 'ENABLED' : 'DISABLED (dev mode)');
+      console.log('🔍 AUTH DEBUG: MFA claim present:', mfaClaim);
+      console.log('🔍 AUTH DEBUG: MFA check result:', mfaEnabled);
       logger.log('MFA enforcement:', requireMFA ? 'ENABLED' : 'DISABLED (dev mode)');
       logger.log('MFA claim present:', mfaClaim);
       logger.log('MFA check result:', mfaEnabled);
@@ -180,10 +186,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // If no roles, user cannot proceed
       if (roles.length === 0) {
+        console.error('❌ AUTH DEBUG: No roles found for user - will redirect to login');
         logger.error('No roles found for user');
         setUser(null);
         return;
       }
+      console.log('✅ AUTH DEBUG: Roles found, proceeding with authentication');
 
       // Determine primary role (highest in hierarchy)
       const primaryRole = roles.reduce((highest, role) => {
