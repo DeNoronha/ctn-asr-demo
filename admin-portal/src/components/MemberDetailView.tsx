@@ -249,6 +249,20 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
     }
   };
 
+  const handleApproveMember = async () => {
+    setLoading(true);
+    try {
+      await apiV2.updateMemberStatus(member.org_id, 'ACTIVE', 'Approved by admin');
+      notification.showSuccess('Member activated successfully');
+      // Reload page to show updated status
+      window.location.reload();
+    } catch (error: unknown) {
+      handleError(error, 'activating member');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     return (
       <span className="status-badge" style={{ backgroundColor: getStatusColor(status) }}>
@@ -277,6 +291,19 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
           <div className="header-badges">
             {getStatusBadge(member.status)}
             {getMembershipBadge(member.membership_level)}
+            {member.status === 'PENDING' && (
+              <RoleGuard allowedRoles={[UserRole.ASSOCIATION_ADMIN, UserRole.SYSTEM_ADMIN]}>
+                <Button
+                  color="green"
+                  onClick={handleApproveMember}
+                  disabled={loading}
+                  style={{ marginLeft: '12px' }}
+                  aria-label="Activate member"
+                >
+                  Activate Member
+                </Button>
+              </RoleGuard>
+            )}
           </div>
         </div>
       </div>

@@ -314,6 +314,15 @@ export const apiV2 = {
     return response.data;
   },
 
+  async updateMemberStatus(orgId: string, status: string, notes?: string): Promise<{ message: string; oldStatus: string; newStatus: string }> {
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.patch<{ message: string; oldStatus: string; newStatus: string }>(
+      `/members/${orgId}/status`,
+      { status, notes }
+    );
+    return response.data;
+  },
+
   // =====================================================
   // LEGAL ENTITY ENDPOINTS (Core Entity Management)
   // =====================================================

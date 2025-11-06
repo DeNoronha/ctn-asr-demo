@@ -28,6 +28,7 @@ import './functions/CreateContact';
 import './functions/UpdateContact';
 import './functions/DeleteContact';
 import './functions/CreateMember';
+import './functions/UpdateMemberStatus';
 import './functions/IssueToken';
 
 // Legal Entity Identifiers (KvK, LEI, EORI, etc.) - CRITICAL for admin portal
