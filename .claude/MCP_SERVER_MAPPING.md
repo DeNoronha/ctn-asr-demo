@@ -165,6 +165,38 @@ This document defines which MCP servers each specialized agent should use. These
 
 ---
 
+### Architecture Reviewer (AR)
+**Primary MCP Servers:**
+- ✅ **icepanel** - For querying architecture diagrams and system landscape
+
+**Primary Tools:**
+- 📁 **Glob/Grep** - For searching Arc42 documentation in docs/ and ctn-docs-portal/
+- 📄 **Read** - For reviewing infrastructure Bicep templates and configuration files
+
+**Use Cases:**
+- Query IcePanel for documented system architecture and components
+- Search Arc42 documentation for architectural decisions and patterns
+- Compare documented architecture vs actual implementation
+- Validate Azure services are documented, declared, and actually used
+- Check authentication patterns match Arc42 security concepts
+- Verify multi-tenant data isolation implementation
+- Create architecture discrepancy reports
+
+**When NOT to use MCP servers:**
+- Arc42 documentation search (use Glob/Grep instead)
+- Reading Bicep templates (use Read tool)
+- Checking .credentials file (use Read tool)
+
+---
+
+### DevOps Guardian (DG)
+**MCP Servers:** ❌ None required
+- DG focuses on Git operations, Azure DevOps pipelines, and monorepo management
+- Uses Bash for Git commands and Azure CLI operations
+- No browser or automation tools needed
+
+---
+
 ## How Agents Should Use MCP Servers
 
 ### Persistent Knowledge Rule

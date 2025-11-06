@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  zitadel-db:
+    image: postgres:16-alpine
+    container_name: ctn-zitadel-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${ZITADEL_DB_PASSWORD:-zitadel_local_dev}
+      POSTGRES_DB: zitadel
+    volumes:
+      - zitadel-db-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # Use 5433 to avoid conflict with ASR PostgreSQL
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d zitadel"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zitadel-network
+
+  zitadel:
+    image: ghcr.io/zitadel/zitadel:latest
+    container_name: ctn-zitadel
+    restart: unless-stopped
+    command: 'start-from-init --masterkeyFromEnv --tlsMode disabled'
+    depends_on:
+      zitadel-db:
+        condition: service_healthy
+    environment:
+      # External access configuration
+      ZITADEL_EXTERNALDOMAIN: ${ZITADEL_DOMAIN:-localhost}
+      ZITADEL_EXTERNALPORT: ${ZITADEL_PORT:-8080}
+      ZITADEL_EXTERNALSECURE: ${ZITADEL_SECURE:-false}
+      ZITADEL_TLS_ENABLED: ${ZITADEL_TLS:-false}
+
+      # Master key for encryption (CHANGE IN PRODUCTION)
+      ZITADEL_MASTERKEY: ${ZITADEL_MASTERKEY:-MustBeAtLeast32CharactersLong123456}
+
+      # Database connection
+      ZITADEL_DATABASE_POSTGRES_HOST: zitadel-db
+      ZITADEL_DATABASE_POSTGRES_PORT: 5432
+      ZITADEL_DATABASE_POSTGRES_DATABASE: zitadel
+      ZITADEL_DATABASE_POSTGRES_USER_USERNAME: postgres
+      ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: ${ZITADEL_DB_PASSWORD:-zitadel_local_dev}
+      ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable
+      ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: postgres
+      ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: ${ZITADEL_DB_PASSWORD:-zitadel_local_dev}
+      ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
+
+      # First instance configuration
+      ZITADEL_FIRSTINSTANCE_ORG_NAME: ${ZITADEL_ORG_NAME:-CTN Association Register}
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: ${ZITADEL_ADMIN_USERNAME:-admin}
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: ${ZITADEL_ADMIN_PASSWORD:-Admin123!}
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_FIRSTNAME: CTN
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_LASTNAME: Administrator
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_EMAIL: ${ZITADEL_ADMIN_EMAIL:-admin@ctn-asr.local}
+
+      # Default settings
+      ZITADEL_DEFAULTINSTANCE_SMTPCONFIGURATION_FROM: ${SMTP_FROM:-noreply@ctn-asr.local}
+      ZITADEL_DEFAULTINSTANCE_SMTPCONFIGURATION_FROMNAME: ${SMTP_FROM_NAME:-CTN ASR}
+    ports:
+      - "${ZITADEL_PORT:-8080}:8080"
+    networks:
+      - zitadel-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/debug/healthz"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  zitadel-db-data:
+    name: ctn-zitadel-db-data
+
+networks:
+  zitadel-network:
+    name: ctn-zitadel-network
+    driver: bridge

@@ -18,14 +18,15 @@ Validate that the ACTUAL implementation (code + Azure resources) matches the DOC
 📚 DOCUMENTATION SOURCES TO ANALYZE:
 
 1. **IcePanel Architecture Diagrams**
-   - Access via @icepanel/mcp-server (MCP tool)
+   - Access via @icepanel/mcp-server (MCP tool configured in ~/.config/claude-code/mcp.json)
    - Shows intended system landscape, components, and data flows
    - Visual source of truth for service topology
 
 2. **Arc42 Documentation**
-   - Located in: ctn-docs-portal/ and docs/
-   - Search CTN MCP Server for Arc42 content
+   - Located in: ctn-docs-portal/ (separate repository) and docs/ (this repo)
+   - Search using Glob and Grep tools (no MCP server needed)
    - Contains architectural decisions, context, building blocks, deployment views
+   - Search patterns: `*.arc42.md`, `architecture/*.md`
 
 3. **Actual Implementation**
    - Code: api/, admin-portal/, member-portal/, booking-portal/, orchestrator-portal/
@@ -104,7 +105,7 @@ Format:
 
 **Query IcePanel:**
 ```
-Use @icepanel/mcp tools to:
+Use @icepanel/mcp-server tools to:
 - Get landscape overview
 - List model objects (systems, apps, stores)
 - Get relationships between components
@@ -113,10 +114,11 @@ Use @icepanel/mcp tools to:
 
 **Search Arc42:**
 ```
-Use CTN MCP Server to search:
-- Project: ctn-docs-portal or processed
-- Query: "deployment view", "building blocks", "cross-cutting concepts"
-- File type: arc42, markdown
+Use Glob and Grep tools to search Arc42 documentation:
+- Glob pattern: docs/**/*.arc42.md, docs/architecture/**/*.md
+- Grep queries: "deployment view", "building blocks", "cross-cutting concepts"
+- Check ctn-docs-portal/ if present (separate repository)
+- Use Read tool to review found documents
 ```
 
 **Check Azure Resources:**
@@ -259,10 +261,10 @@ Your goal: Maintain architectural integrity by ensuring documentation and implem
 ## Tools Available
 
 - Read, Write, Edit (file operations)
-- Glob, Grep (code search)
+- Glob, Grep (code search - use for Arc42 documentation)
 - Bash (command execution)
-- @icepanel/mcp-server (IcePanel diagram access)
-- ctn-mcp-server (Arc42 documentation search)
+- @icepanel/mcp-server (IcePanel diagram access via MCP)
+- WebFetch (if Arc42 docs are online)
 
 ## Key Files to Review
 

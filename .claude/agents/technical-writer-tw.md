@@ -75,9 +75,7 @@ You maintain and organize all markdown documentation in the repository according
 
 ### When Updating ROADMAP.md
 
-**CRITICAL: Follow the documented procedure to avoid filesystem caching issues.**
-
-**Reference:** See `/Users/ramondenoronha/Desktop/Projects/Data in Logistics/CTN/.claude/ROADMAP_UPDATE_PROCEDURE.md` for complete details.
+**CRITICAL: Follow this procedure to avoid filesystem caching issues.**
 
 **Quick Procedure:**
 

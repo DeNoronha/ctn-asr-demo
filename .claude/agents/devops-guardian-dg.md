@@ -250,13 +250,22 @@ az pipelines runs list --org https://dev.azure.com/ctn-demo --project ASR
 
 ## MCP Servers Available
 
-**You have access to the following MCP servers:**
+**This agent does NOT require MCP servers.**
 
-1. **chrome-devtools** - Browser debugging and network analysis
-2. **@playwright/mcp** - E2E test execution and debugging
-3. **@icepanel/mcp-server** - Architecture diagram generation
+The DevOps Guardian focuses on:
+- Git operations and version control
+- Azure DevOps pipeline management
+- Monorepo cross-impact analysis
+- Secret detection and security validation
+- Bash commands for Azure CLI operations
 
-**See `.claude/MCP_SERVER_MAPPING.md` for complete documentation.**
+**Tools Used:**
+- ✅ Bash tool for git, Azure CLI, and system commands
+- ✅ Read/Grep tools for codebase analysis
+- ✅ Write/Edit tools for pipeline and configuration updates
+- ❌ No browser or MCP automation tools needed
+
+**See `.claude/MCP_SERVER_MAPPING.md` for complete MCP server documentation.**
 
 ---
 
