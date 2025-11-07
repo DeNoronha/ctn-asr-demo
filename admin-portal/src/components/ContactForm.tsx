@@ -55,9 +55,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
   const getInitialValues = () => {
     if (contact) {
       const [first_name, ...lastNames] = (contact.full_name || '').split(' ');
-      const contactType = contact.contact_type
-        ? contact.contact_type.charAt(0) + contact.contact_type.slice(1).toLowerCase()
-        : 'Primary';
+      const contactType = contact.contact_type || 'PRIMARY';
 
       return {
         contact_type: contactType,
@@ -72,7 +70,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
       };
     }
     return {
-      contact_type: 'Primary',
+      contact_type: 'PRIMARY',
       is_primary: false,
       first_name: '',
       last_name: '',
@@ -108,8 +106,8 @@ export const ContactForm: React.FC<ContactFormProps> = ({
         | 'TECHNICAL'
         | 'BILLING'
         | 'SUPPORT'
-        | 'COMPLIANCE'
-        | 'ADMIN',
+        | 'LEGAL'
+        | 'OTHER',
       full_name: `${sanitizedData.first_name} ${sanitizedData.last_name}`,
       email: sanitizedData.email as string,
       phone: sanitizedData.phone as string,

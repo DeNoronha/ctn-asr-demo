@@ -22,8 +22,8 @@ export interface Member {
   lei?: string;
   kvk?: string;
   domain: string;
-  status: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
-  membership_level?: 'BASIC' | 'PREMIUM' | 'ENTERPRISE';
+  status: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'TERMINATED';
+  membership_level?: 'BASIC' | 'FULL' | 'PREMIUM';
   created_at: string;
   updated_at: string;
   legal_entity_id?: string;
@@ -44,8 +44,8 @@ export interface UpdateMemberRequest {
   domain?: string;
   lei?: string;
   kvk?: string;
-  status?: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
-  membership_level?: 'BASIC' | 'PREMIUM' | 'ENTERPRISE';
+  status?: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'TERMINATED';
+  membership_level?: 'BASIC' | 'FULL' | 'PREMIUM';
 }
 
 // Legal Entity types
@@ -77,7 +77,7 @@ export interface Contact {
   id: string;
   email: string;
   full_name: string;
-  contact_type: 'PRIMARY' | 'TECHNICAL' | 'BILLING';
+  contact_type: 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
   is_primary: boolean;
   phone?: string;
   mobile?: string;
@@ -90,7 +90,7 @@ export interface Contact {
 export interface ContactRequest {
   email: string;
   name: string;
-  type: 'PRIMARY' | 'TECHNICAL' | 'BILLING';
+  type: 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
   phone?: string;
   mobile?: string;
   job_title?: string;
@@ -100,7 +100,7 @@ export interface ContactRequest {
 export interface UpdateContactRequest {
   email?: string;
   full_name?: string;
-  contact_type?: 'PRIMARY' | 'TECHNICAL' | 'BILLING';
+  contact_type?: 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
   phone?: string;
   mobile?: string;
   job_title?: string;

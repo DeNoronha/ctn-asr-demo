@@ -1,6 +1,6 @@
 # Lessons Learned - Detailed Examples
 
-**Last Updated:** October 17, 2025
+**Last Updated:** November 6, 2025
 
 This file contains detailed explanations and code examples for lessons learned during ASR development. For quick reference, see CLAUDE.md.
 
@@ -721,6 +721,150 @@ test-results/
 - Test migrations in dev environment first
 - Coordinate with API deployments
 - Invoke DE (Database Expert) agent before applying
+
+---
+
+### 39. Database CHECK Constraints Prevent Data Corruption from API Bypasses (November 6, 2025)
+
+**What Happened:** DevOps Guardian agent identified critical type mismatches where API validation allowed values (ENTERPRISE membership, COMPLIANCE/ADMIN contact types) that would cause 500 errors at runtime because database had no such records. Investigation revealed enumerated fields (membership_level, contact_type, status) had ONLY frontend validation - no database-level enforcement. Direct API calls, buggy code, or SQL queries could insert invalid data.
+
+**Why It Matters:**
+- Data corruption from bypassed validation
+- 500 errors when API accepts values database rejects
+- Inconsistent data quality breaks reporting/analytics
+- Type mismatches across portals cause runtime errors
+- No self-documenting schema (unclear what values are valid)
+
+**Root Cause:**
+```typescript
+// BEFORE: Only frontend validation
+// api/src/validation/schemas.ts
+membershipLevel: z.enum(['BASIC', 'PREMIUM', 'ENTERPRISE'])
+// ❌ Database had NO ENTERPRISE records - guaranteed 500 error
+
+// admin-portal/src/services/apiV2.ts
+type ContactType = 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'COMPLIANCE' | 'ADMIN'
+// ❌ Database constraint only accepts LEGAL, OTHER (not COMPLIANCE, ADMIN)
+
+// Database schema: NO CHECK CONSTRAINTS
+// ❌ Any value can be inserted via direct SQL or API bugs
+```
+
+**The Problem Pattern:**
+
+1. **Frontend defines valid values** (TypeScript enums)
+2. **Backend validates** (Zod schemas)
+3. **Database has NO constraints** (accepts anything)
+4. **Result:** Frontend/backend can get out of sync with reality
+
+**What We Did:**
+
+```sql
+-- Migration 024: Add CHECK constraints for all enumerated fields
+
+-- 1. Members status (4 valid values)
+ALTER TABLE members
+ADD CONSTRAINT chk_members_status
+CHECK (status IN ('ACTIVE', 'PENDING', 'SUSPENDED', 'TERMINATED'));
+
+-- 2. Membership level (3 valid values)
+ALTER TABLE members
+ADD CONSTRAINT chk_members_membership_level
+CHECK (membership_level IN ('BASIC', 'FULL', 'PREMIUM'));
+-- Note: ENTERPRISE eliminated, changed to FULL
+
+-- 3. Contact type (6 valid values)
+ALTER TABLE legal_entity_contact
+ADD CONSTRAINT chk_contact_type
+CHECK (contact_type IN ('PRIMARY', 'TECHNICAL', 'BILLING', 'SUPPORT', 'LEGAL', 'OTHER'));
+-- Note: COMPLIANCE → LEGAL, ADMIN → OTHER
+```
+
+**Type Safety Fixes:**
+
+```typescript
+// AFTER: TypeScript aligned with database constraints
+
+// api/src/validation/schemas.ts
+membershipLevel: z.enum(['BASIC', 'FULL', 'PREMIUM'])
+// ✅ Matches database constraint exactly
+
+// admin-portal/src/services/apiV2.ts
+type ContactType = 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER'
+// ✅ Matches database constraint exactly
+
+// member-portal/src/components/ContactsView.tsx
+const contactTypes = ['PRIMARY', 'TECHNICAL', 'BILLING', 'SUPPORT', 'LEGAL', 'OTHER'];
+// ✅ All 6 types now available in UI
+```
+
+**Data Cleanup:**
+
+```sql
+-- Updated 10 records to match constraints
+UPDATE members SET membership_level = 'FULL' WHERE membership_level = 'ENTERPRISE';  -- 1 record
+UPDATE legal_entity_contact SET contact_type = UPPER(contact_type);  -- 9 records (Primary → PRIMARY)
+```
+
+**How to Avoid:**
+
+```bash
+# Pattern: ALWAYS add CHECK constraints for enumerated fields
+
+# 1. Database First - Add constraint
+ALTER TABLE table_name
+ADD CONSTRAINT chk_field_name
+CHECK (field_name IN ('VALUE1', 'VALUE2', 'VALUE3'));
+
+# 2. API Second - Update Zod schema
+fieldName: z.enum(['VALUE1', 'VALUE2', 'VALUE3'])
+
+# 3. Frontend Last - Update TypeScript types
+type FieldType = 'VALUE1' | 'VALUE2' | 'VALUE3';
+
+# 4. Verify alignment - DevOps Guardian
+# Invoke DG agent to check for type mismatches across API + portals
+```
+
+**Benefits of CHECK Constraints:**
+
+1. **Self-documenting** - Schema shows valid values clearly
+2. **Fail fast** - Invalid data rejected at database level with clear error
+3. **Cross-language** - Works for ANY client (Node, Python, direct SQL)
+4. **Audit trail** - Constraint violations logged automatically
+5. **Type safety** - Forces TypeScript types to match reality
+
+**Prevention Checklist:**
+
+- [ ] All status/type/level fields have CHECK constraints
+- [ ] TypeScript types match database constraints exactly
+- [ ] API Zod schemas match database constraints
+- [ ] Frontend dropdowns show only valid values
+- [ ] Migration file documents valid values in comments
+- [ ] DevOps Guardian validates type alignment after changes
+
+**Files Affected:**
+- `database/migrations/024_add_check_constraints.sql` (constraints + verification)
+- `api/src/validation/schemas.ts` (ENTERPRISE → FULL)
+- `admin-portal/src/services/apiV2.ts` (COMPLIANCE/ADMIN → LEGAL/OTHER)
+- `member-portal/src/components/ContactsView.tsx` (added SUPPORT)
+- `admin-portal/src/components/ContactForm.tsx` (updated dropdown options)
+
+**Reference:**
+- DevOps Guardian analysis (November 6, 2025)
+- `docs/DATA_STANDARDIZATION.md` - Complete implementation report
+- Commits: e07eeed (constraints + data), cb01122 (type fixes)
+
+**Impact:**
+- Zero tolerance for invalid data
+- API errors caught at build time (TypeScript) instead of runtime (500 errors)
+- Single source of truth: database constraints
+- Foundation for data quality and reporting accuracy
+
+**Cost Saved:**
+- 2+ hours debugging 500 errors from ENTERPRISE type mismatch
+- Prevented data corruption from bypassed validation
+- Eliminated future type safety issues in 3 portals
 
 ---
 
