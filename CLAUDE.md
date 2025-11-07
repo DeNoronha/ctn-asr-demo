@@ -1,67 +1,331 @@
-# CLAUDE.md - CTN Association Register
+# CLAUDE.md
 
-**Last Updated:** November 6, 2025 (Arc42 references added)
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
----
-
-## 🚨 CRITICAL - READ THIS ENTIRE FILE FIRST 🚨
-
-**Claude Code: You MUST read this entire CLAUDE.md file before starting ANY work.**
-
-If you're reading this, stop and read the entire file NOW. Do not proceed with any task until you've read all sections below.
+**Last Updated:** November 7, 2025
 
 ---
 
-## MANDATORY PRE-WORK CHECKLIST
+## 🚨 CRITICAL - READ FIRST 🚨
 
 **EVERY session, EVERY task - complete this checklist FIRST:**
 
 ```bash
-# 1. READ CLAUDE.MD
-cat CLAUDE.md  # Read the entire file
-
-# 2. CHECK CURRENT BRANCH
+# 1. CHECK CURRENT BRANCH
 git branch --show-current  # MUST be on 'main' - NO feature branches allowed
 
-# 3. CHECK LATEST BUILD STATUS
+# 2. CHECK DEPLOYMENT STATUS
 git log -1 --format="%ar - %s"
 # Compare to: https://dev.azure.com/ctn-demo/ASR/_build
 
-# 4. VERIFY CLEAN STATUS
-git status  # Check for uncommitted changes
+# 3. VERIFY CLEAN STATUS
+git status
+
+# 4. RUN VERIFICATION SCRIPT (optional)
+./scripts/quick-check.sh  # Automated checks
 ```
 
-**If you skip this checklist, you WILL make mistakes that waste hours.**
+**Why this matters:** 90% of "bugs" are actually deployment sync issues. Checking deployment status BEFORE debugging saves hours.
+
+---
+
+## Architecture Overview
+
+### Monorepo Structure
+
+```
+ctn-asr-monorepo/
+├── api/                    # Azure Functions backend (Node.js 20)
+├── admin-portal/           # Admin UI (React 18 + Mantine v8)
+├── member-portal/          # Member UI (React 18 + Mantine v8)
+├── booking-portal/         # DocuFlow (separate service)
+├── orchestrator-portal/    # Orchestration UI (React + Tailwind)
+├── database/               # PostgreSQL schema & migrations
+├── packages/
+│   └── api-client/         # Shared TypeScript API client
+├── shared/
+│   └── vite-config-base/   # Shared Vite config
+├── infrastructure/         # Azure Bicep IaC
+└── .azure-pipelines/       # CI/CD pipelines
+```
+
+**Workspaces:** Root `package.json` defines workspaces: `["admin-portal", "member-portal", "api", "packages/*"]`
+
+**Isolation:** ASR (api/admin/member) tightly coupled. DocuFlow, Orchestrator, Docs are COMPLETELY independent.
+
+### Pipeline Architecture
+
+```
+┌──────────────────────────────────────┐
+│  1. ASR API Pipeline (Central)       │
+│  .azure-pipelines/asr-api.yml        │
+└─────────┬────────────────────────────┘
+          │ Triggers on: api/* changes
+          │ Deploys to: func-ctn-demo-asr-dev
+          │
+  ┌───────┴────────┐
+  ↓                ↓
+┌──────────────┐ ┌──────────────┐
+│2. Admin      │ │3. Member     │
+│   Portal     │ │   Portal     │
+│   Pipeline   │ │   Pipeline   │
+└──────────────┘ └──────────────┘
+  admin-portal.yml  member-portal.yml
+  (triggered by API OR admin-portal/* changes)
+
+Independent Pipelines (NOT triggered by API):
+┌──────────────┐ ┌──────────────┐
+│4. Booking    │ │5. Orchestrator│
+│   Portal     │ │   Portal      │
+└──────────────┘ └──────────────┘
+```
+
+**Path Filters:**
+- Changes to `api/*` → Triggers ASR API + Admin + Member pipelines
+- Changes to `admin-portal/*` → ONLY Admin portal pipeline
+- Changes to `booking-portal/*` → ONLY Booking pipeline (independent)
+
+### API Architecture (Azure Functions)
+
+**Entry Points:** API has multiple entry files controlling which functions are deployed:
+- `index.ts` - Full production set (~70 functions)
+- `essential-index.ts` - Minimal set for core portals (demo mode)
+- `test-index.ts` - Test environment
+- `minimal-index.ts` - Minimal HTTP triggers only
+
+**Functions must be explicitly imported** in the entry file to register with Azure Functions runtime.
+
+**Middleware Chain:**
+```
+Request → HTTPS Enforcement → JWT Auth (JWKS) → RBAC Check →
+Rate Limit → Content-Type Validation → Business Logic →
+Audit Log → Response
+```
+
+**RBAC Model (5 roles):**
+1. `SystemAdmin` - All permissions
+2. `AssociationAdmin` - Manage all entities
+3. `MemberAdmin` - Manage own entity
+4. `MemberUser` - Self-service access
+5. `MemberReadOnly` - Read-only access
+
+**Key Files:**
+- `api/src/index.ts` - Function registration
+- `api/src/middleware/endpointWrapper.ts` - Unified middleware decorator
+- `api/src/middleware/auth.ts` - JWT validation (Azure AD JWKS)
+- `api/src/middleware/rbac.ts` - Permission enforcement
+- `api/src/utils/database.ts` - PostgreSQL pool (5-20 connections, SSL required)
+
+### Database Schema
+
+**Core Tables:**
+- `party_reference` - Root entity (UUID primary key)
+- `legal_entity` - Organizations/companies (FK to party_reference)
+- `legal_entity_contact` - Contact persons (PRIMARY, BILLING, TECHNICAL, ADMIN)
+- `legal_entity_number` - Identifiers (KvK, LEI, EURI, DUNS)
+- `legal_entity_endpoint` - M2M communication endpoints
+
+**Conventions:**
+- All tables have `dt_created`, `dt_modified` timestamps
+- **Soft deletes:** `is_deleted = false` in WHERE clauses (preserves audit trail)
+- UUIDs for all primary keys
+- CHECK constraints for enums (e.g., `status IN ('PENDING', 'ACTIVE', 'SUSPENDED')`)
+
+**Migrations:** Located in `database/migrations/XXX_description.sql` (sequential numbering)
+
+### Frontend Architecture
+
+**Admin Portal & Member Portal:**
+- React 18.3.1 + TypeScript 5.9.3
+- Mantine v8.3.6 (complete UI library)
+- Vite 7.1.10 (build tool)
+- Azure MSAL for authentication (@azure/msal-browser, @azure/msal-react)
+- i18next for internationalization
+- Playwright for E2E testing
+- Shared `@ctn/api-client` package for API calls
+
+**Build Optimization:** Vite manual chunk splitting:
+- `react-vendor`, `mantine-core`, `mantine-datatable`, `mantine-forms`, `auth`, `i18n`, `icons`
+- Minification: Terser
+- Target: ES2020
+
+**Authentication Flow:**
+```
+User → Azure AD Login → MSAL Token → API Client Interceptor →
+Inject Bearer Token → API Validates JWT → RBAC Check → Response
+```
+
+**Orchestrator Portal (Different Stack):**
+- Zustand for state management (no MSAL, internal system)
+- TanStack Query (v5) for server state
+- Tailwind CSS (not Mantine)
+- Mock API server (json-server) for offline development
+
+### Shared Code
+
+**API Client Package (`packages/api-client/`):**
+
+```typescript
+// Exported client with type-safe endpoints
+export class AsrApiClient {
+  public members: MembersEndpoint
+  public legalEntities: LegalEntitiesEndpoint
+  public contacts: ContactsEndpoint
+  public identifiers: IdentifiersEndpoint
+  public endpoints: EndpointsEndpoint
+  public auditLogs: AuditLogsEndpoint
+  public orchestrations: OrchestrationsEndpoint
+}
+
+// Usage in portals
+const client = new AsrApiClient({
+  baseURL: 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1',
+  getAccessToken: async () => { /* MSAL token */ },
+  retryAttempts: 3
+});
+```
+
+**Benefits:** Type safety, centralized retry logic, automatic token injection, prevents API drift.
+
+---
+
+## Development Commands
+
+### API
+
+```bash
+cd api
+
+# Build (compiles TypeScript + copies templates/openapi.json)
+npm run build
+
+# Local development (Azure Functions Core Tools)
+npm start  # Runs on http://localhost:7071
+
+# Watch mode
+npm run watch
+
+# Deploy to Azure
+func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote
+
+# View logs (20-second timeout)
+func azure functionapp logstream func-ctn-demo-asr-dev --timeout 20
+```
+
+### Admin Portal / Member Portal
+
+```bash
+cd admin-portal  # or member-portal
+
+# Local development
+npm start  # Runs on http://localhost:3000
+
+# Build for production
+npm run build  # Output: dist/
+
+# Type check (no emit)
+npm run typecheck
+
+# Linting & formatting (Biome)
+npm run lint
+npm run lint:fix
+npm run format
+
+# E2E tests (Playwright)
+npm run test:e2e          # Headless
+npm run test:e2e:headed   # With browser UI
+npm run test:e2e:debug    # Debug mode
+npm run test:e2e:ui       # Playwright UI mode
+npm run test:e2e:report   # View HTML report
+
+# Unit tests (admin-portal only, Vitest)
+npm run test              # Watch mode
+npm run test:ui           # Vitest UI
+npm run test:coverage     # Coverage report
+
+# Security
+npm run security:audit
+npm run security:aikido:scan  # Requires env vars
+```
+
+### Database
+
+```bash
+# Connect to PostgreSQL
+psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com \
+      port=5432 dbname=asr_dev user=asradmin sslmode=require"
+
+# Apply migration
+psql "host=... sslmode=require" -f database/migrations/025_new_migration.sql
+
+# Common queries
+SELECT org_id, legal_name, status FROM members ORDER BY legal_name;
+SELECT legal_entity_id, identifier_type, identifier_value
+FROM legal_entity_number WHERE is_deleted = false;
+```
+
+### Testing Strategy
+
+**API Testing (Test Engineer Pattern):**
+1. **Test API FIRST with curl** - Catch 404/500 before UI testing
+2. **E2E tests (Playwright)** - Only after API tests pass
+
+**Test User (MFA Excluded):**
+```
+Email: test-e2@denoronha.consulting
+Password: Madu5952
+Object ID: 7e093589-f654-4e53-9522-898995d1201b
+Role: SystemAdmin
+```
+
+**Playwright Setup:**
+- Auth state stored in `playwright/.auth/user.json`
+- Serial execution (no parallelization) to avoid auth conflicts
+- Screenshots/videos on failure
+- 60-second timeout per test
 
 ---
 
 ## Way of Working
 
-### Pre-Debugging Checklist - MANDATORY
+### Workflow (NO Feature Branches)
 
-**BEFORE debugging, check deployment status:**
+**ALL work happens on main branch** (October 26, 2025 decision after monorepo branch disasters)
+
+**Standard Flow:**
 ```bash
-git log -1 --format="%ar - %s"
-# Compare to Azure DevOps last build: https://dev.azure.com/ctn-demo/ASR/_build
+# 1. Ensure clean state
+git status
+
+# 2. Make changes, commit frequently
+git add -A
+git commit -m "feat: descriptive message"
+
+# 3. Push to trigger pipeline
+git push origin main
+
+# 4. Wait ~2-3 minutes, verify deployment
+# Check: https://dev.azure.com/ctn-demo/ASR/_build
+
+# 5. Test deployed changes (TE agent pattern: API curl first, then UI)
 ```
 
-**RED FLAGS (Fix deployment first):**
-- Last successful build >1 hour old
-- Git commit time ≠ Azure build time
-- Pipeline failed/red status
-- Code changes not reflected after deployment
+**Verification Scripts:**
+```bash
+# Quick check before debugging (verify you're on main, clean state, latest pushed)
+./scripts/quick-check.sh
 
----
+# Full deployment verification after push
+./scripts/verify-deployment-sync.sh
+```
 
 ### Autonomous Operation
 
-**Work autonomously. Execute workflows end-to-end without asking for confirmation on obvious next steps.**
-
-**Auto-approve:**
+**Auto-approve (no asking):**
 - Next logical steps in workflows
 - Bug fixes, tests, deployments
 - Standard build/deploy procedures
-- Agent invocations (TE, TW, CR, SA, DE, DA)
+- Agent invocations (TE, TW, CR, SA, DE, DA, AR, DG)
 
 **Ask only for:**
 - Destructive operations (delete prod data, force-push main)
@@ -70,500 +334,136 @@ git log -1 --format="%ar - %s"
 - Security-sensitive operations
 - Unclear requirements
 
-**Default:** One-person operation. Work as autonomous partner, not step-by-step assistant.
+### Agent Registry (Auto-Invoke)
+
+**When to invoke:**
+
+| Agent | When | Purpose |
+|-------|------|---------|
+| **TE** (Test Engineer) | Bugs encountered, after deployment | API curl tests → Playwright E2E |
+| **TW** (Technical Writer) | After ROADMAP.md tasks, before commits | Update docs/COMPLETED_ACTIONS.md |
+| **CR** (Code Reviewer) | Significant code changes | SOLID, security, quality |
+| **SA** (Security Analyst) | Security-sensitive code | Secrets, IDOR, injections |
+| **DE** (Database Expert) | Before migrations, schema changes | DDL review, query optimization |
+| **DA** (Design Analyst) | UI/UX changes | WCAG 2.1 AA, responsive |
+| **AR** (Architecture Reviewer) | New Azure services, auth changes | Arc42/IcePanel alignment |
+| **DG** (DevOps Guardian) | Commits, shared code changes, pipeline mods | Secret scan, cross-impact |
+
+**Files:** `.claude/agents/*.md`
 
 ---
 
-### Development Workflow
-
-**🚨 NO FEATURE BRANCHES - ALL WORK ON MAIN (October 26, 2025)**
-
-**Branch:** `main` ONLY - No feature branches allowed
-
-**Rationale:** After multiple Git disasters from branch management in monorepo, all development now happens directly on main. CTN-documentation is a separate repository.
-
-**🚨 MANDATORY WORKFLOW:**
-
-**Rule 0: Verify Before Working** - Run `./scripts/quick-check.sh` BEFORE starting ANY debugging/feature work to ensure sync
-
-**Rule 1: Work Directly on Main** - Commit frequently, push regularly. No feature branches. No exceptions.
-
-**Rule 2: Verify Deployment** - After push, run `./scripts/verify-deployment-sync.sh` to ensure commit is deployed
-
-**Rule 3: Test APIs with TE Agent** - After EVERY API deployment, invoke TE agent for curl tests. User tests frontend.
-
-**Rule 4: Document Everything** - Update docs/COMPLETED_ACTIONS.md (TW agent does this)
-
-**Rule 5: Recovery** - If fixes missing: `./scripts/find-missing-commits.sh 7`
-
-**🔒 SAFETY NET SCRIPTS:**
-```bash
-# Quick status check (run before debugging)
-./scripts/quick-check.sh
-
-# Full deployment verification (run after commits)
-./scripts/verify-deployment-sync.sh
-
-# Skip build check if Azure CLI unavailable
-./scripts/verify-deployment-sync.sh --skip-build-check
-```
-
-**What they check:**
-- ✅ On main branch
-- ✅ No uncommitted changes
-- ✅ Latest commit pushed to origin/main
-- ✅ Azure DevOps pipeline completed successfully
-- ✅ Build time matches commit time (deployment sync)
-
-**CRITICAL: Commit Frequently**
-```bash
-git add -A
-git commit -m "descriptive message"
-git push origin main
-# Wait ~2min, verify deployment: https://dev.azure.com/ctn-demo/ASR/_build
-```
-
-**Code Standards:** TypeScript, React, ESLint, Prettier, Aikido. See [Arc42 Coding Standards](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/08-crosscutting/ctn-coding-standards.md).
-
-**Testing:**
-1. **API tests FIRST (curl)** - Catch 404/500 before UI testing
-2. **E2E tests (Playwright)** - Only after API tests pass
-3. Test pattern: Create → Verify → Clean up
-
-**E2E Test User (MFA Excluded):**
-- Email: `test-e2@denoronha.consulting`
-- Password: `Madu5952`
-- Object ID: `7e093589-f654-4e53-9522-898995d1201b`
-- Role: SystemAdmin
-- Purpose: Automated Playwright tests without MFA interruption
-
-**E2E Test User (MFA Excluded):**
-- Email: `test-e2@denoronha.consulting`
-- Password: `Madu5952`
-- Object ID: `7e093589-f654-4e53-9522-898995d1201b`
-- Role: SystemAdmin
-- Purpose: Automated Playwright tests without MFA interruption
-
-**🚨 PIPELINE ARCHITECTURE (October 26, 2025) - 1 API + 4 Portals**
-
-**CTN-documentation is a SEPARATE repository** - Not in ASR monorepo.
-
-**ASR Monorepo Contains:**
-
-```
-┌──────────────────────────────────────────┐
-│      1. ASR API Pipeline (Central)       │
-│   Single source of truth for shared API  │
-└─────────────────┬────────────────────────┘
-                  │ Triggers on: api/* changes
-                  │ Deploys to: func-ctn-demo-asr-dev
-                  │
-    ┌─────────────┴──────────────┐
-    │   Triggers These Pipelines │
-    ↓                            ↓
-┌─────────────┐          ┌──────────────┐
-│2. Admin     │          │3. Member     │
-│   Portal    │          │   Portal     │
-└─────────────┘          └──────────────┘
-
-Independent Portal Pipelines (NOT triggered by API):
-┌─────────────┐          ┌──────────────┐
-│4. Booking   │          │5. Orchestrator│
-│   Portal    │          │   Portal      │
-│  (DocuFlow) │          │               │
-└─────────────┘          └──────────────┘
-```
-
-**Pipeline Trigger Rules:**
-
-1. **ASR API Pipeline** → Deploys API → Triggers Admin + Member portal pipelines
-2. **Admin Portal Pipeline** → Triggered by API changes OR `admin-portal/*` changes
-3. **Member Portal Pipeline** → Triggered by API changes OR `member-portal/*` changes
-4. **Booking Portal Pipeline** → Independent, only `booking-portal/*` changes
-5. **Orchestrator Portal Pipeline** → Independent, only `orchestrator-portal/*` changes
-
-**Deployment Workflow:**
-
-1. **API Changes** → Push to `api/*` → ASR API pipeline runs → Deploys API → Auto-triggers Admin + Member portal pipelines
-2. **Admin Portal Changes** → Push to `admin-portal/*` → Admin portal pipeline runs independently
-3. **Member Portal Changes** → Push to `member-portal/*` → Member portal pipeline runs independently
-4. **Booking Portal Changes** → Push to `booking-portal/*` → Booking portal pipeline runs independently
-5. **Orchestrator Changes** → Push to `orchestrator-portal/*` → Orchestrator pipeline runs independently
-
-**Manual Deployment (if needed):**
-- **API:** `cd api && func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote`
-- **Database:** `psql "host=..." -f database/migrations/XXX.sql`
-
-**Post-Deployment Workflow (MANDATORY):**
-```
-Build → Deploy → Test (TE agent) → Document (TW agent)
-```
-
-**Critical**: DocuFlow, Orchestrator, and Documentation portals are INDEPENDENT with own pipelines.
-
----
-
-### Security & Git Practices
-
-**Secrets:** Azure Key Vault only, never commit to Git
-**Auth:** Azure AD, RBAC, JWT (RS256 for BDI)
-**Code:** Aikido scanning, input validation, parameterized queries
-**Commits:** Descriptive messages, reference work items, atomic changes
-**Credentials:** Check `.credentials` file first before searching Azure Portal
-
----
-
-### Agent Invocation
-
-**Auto-invoke agents:**
-- **TE (Test Engineer)**: Bugs encountered, after deployment, before releases
-- **TW (Technical Writer)**: After completing ROADMAP.md tasks, before commits
-- **CR (Code Reviewer)**: Significant code changes, before PRs
-- **SA (Security Analyst)**: Security-sensitive code, before merges
-- **DE (Database Expert)**: Before migrations, DB schema changes, performance issues
-- **DA (Design Analyst)**: UI/UX changes, accessibility checks
-- **AR (Architecture Reviewer)**: New Azure services, auth changes, Arc42/IcePanel updates, before major releases
-
-**Checklist:**
-- Bugs → TE (autonomous investigation)
-- Before DB migrations → DE (schema review)
-- After features → TE, CR, TW, DE (if DB changes)
-- Before PRs → CR, SA
-- After ROADMAP.md completion → TW (MANDATORY)
-- Infrastructure changes → AR (architecture alignment)
-- Auth/authz modifications → AR, SA (security + architecture)
-- Major releases → AR, TE, CR, SA (full validation)
-
----
-
-## MCP Server Integration
-
-**Config:** `/Users/ramondenoronha/.config/claude-code/mcp.json`
-**Documentation:** `.claude/MCP_SERVER_MAPPING.md`
-
-**Active Servers:**
-- `@playwright/mcp` - E2E testing (TE)
-- `chrome-devtools-mcp` - Browser debugging (TE, DA, SA)
-- `@icepanel/mcp-server` - Architecture diagrams (TW, AR)
-
-**Note:** Mantine UI documentation is available locally in `docs/MANTINE_LLMS.txt` (79,408 lines from https://mantine.dev/llms.txt)
-
----
-
-## Agent Registry
-
-### Code Reviewer (CR)
-`.claude/agents/code-reviewer-cr.md` | Yellow | Sonnet
-
-Reviews code quality, SOLID principles, security. Provides structured feedback (Critical/Important/Suggestions).
-
-### Coding Assistant (CA)
-`.claude/agents/coding-assistant-ca.md` | Blue | Sonnet
-
-Feature development with IMPLEMENTATION_PLAN.md, TDD, incremental commits. 3-attempt rule, follows project conventions.
-
-### Security Analyst (SA)
-`.claude/agents/security-analyst-sa.md` | Red | Sonnet
-
-Security validation: secrets, auth/authz, injections, dependencies. Merge gate recommendations.
-
-### Design Analyst (DA)
-`.claude/agents/design-analyst-da.md` | Green | Sonnet
-
-UI/UX quality, WCAG 2.1 AA accessibility, responsive design, Mantine v8 validation.
-
-### Test Engineer (TE)
-`.claude/agents/test-engineer-te.md` | Purple | Sonnet
-
-**API tests (curl) FIRST**, then UI tests (Playwright). Autonomous bug investigation. Builds test battery in `api/tests/` and `web/e2e/`.
-
-**Bug workflow:** Test API → Fix if needed → Reproduce in Playwright → Capture errors → Create failing test → Propose fix → Verify.
-
-### Technical Writer (TW)
-`.claude/agents/technical-writer-tw.md` | Cyan | Sonnet
-
-**ROADMAP:** `~/Desktop/ROADMAP.md` (synced across devices)
-
-**Auto-invoke:** After completing ROADMAP.md tasks, before commits
-
-**Responsibilities:**
-1. Move completed tasks to `docs/COMPLETED_ACTIONS.md`
-2. Re-evaluate ROADMAP.md priorities
-3. Enforce root structure (only README.md, CLAUDE.md)
-4. Update documentation cross-references
-
-### Database Expert (DE)
-`.claude/agents/database-expert-de.md` | Blue | Sonnet
-
-Schema review, query optimization, DDL management. Maintains `database/schema/current_schema.sql`. Review before migrations.
-
-### DevOps Guardian (DG)
-`.claude/agents/devops-guardian-dg.md` | Orange | Sonnet
-
-Git/Azure/Multi-repo specialist with strict security and cross-impact validation. Auto-invoke before: commits (secret scan), shared code changes (/shared, /packages), pipeline modifications, breaking changes affecting 3+ portals.
-
-**Responsibilities:**
-1. Cross-portal impact analysis (admin/member/booking/orchestrator)
-2. Secret detection and .gitignore validation
-3. Azure Pipeline and Bicep template validation
-4. Git workflow enforcement (conventional commits, feature branches)
-5. Monorepo dependency management
-
-### Architecture Reviewer (AR)
-`.claude/agents/architecture-reviewer-ar.md` | Blue | Sonnet
-
-Validates alignment between codebase, Azure infrastructure, Arc42 documentation, and IcePanel diagrams. Ensures architectural consistency across the CTN ASR project. Uses @icepanel/mcp-server for documentation queries.
-
-**Auto-invoke when:**
-- New Azure service added to infrastructure/
-- Authentication/authorization code modified
-- New external integration added
-- Arc42 or IcePanel updated
-- Before major releases
-
-**Responsibilities:**
-1. Map documented architecture (Arc42 + IcePanel) vs actual implementation
-2. Validate Azure services: documented → declared → actually used
-3. Check authentication patterns match Arc42 security concepts
-4. Verify multi-tenant data isolation implementation
-5. Create docs/ARCHITECTURE_DISCREPANCIES.md with remediation plan
-
----
-
-## Critical Lessons Learned
-
-**For complete lessons with examples, see `docs/LESSONS_LEARNED.md`**
-
-### Deployment & Pipeline
-1. **Check deployment status BEFORE debugging** (saves hours) - When user reports "old version" or "missing features", this is a deployment sync issue, NOT a code issue. Run pre-work checklist step 3: compare `git log -1` to Azure DevOps last build. **NEW WORKFLOW (October 26, 2025): All work on main. If deployment out of sync, push latest commits to trigger pipeline.**
-2. **Package.json "main" field** determines entry point (essential-index.ts vs index.ts)
-3. **API functions must import in entry file** to register
-4. **Pipeline quality checks** use continueOnError: true (inform, don't block)
-5. **Version.json** generate during build with Azure DevOps variables
+## Critical Patterns & Gotchas
 
 ### Azure Functions
-6. **Route params lowercased** in Azure Functions v4 (use `{legalentityid}`)
-7. **Method binding required** for request.json(), request.text() in middleware
-8. **Essential imports** required for remote build (api/src/functions/essential-index.ts)
+
+1. **Route params are lowercased** in Azure Functions v4 → Use `{legalentityid}` not `{legalEntityId}`
+2. **Functions must be imported** in `index.ts` or `essential-index.ts` to register
+3. **Remote build required** for production → `--build remote` flag (excludes node_modules from package)
+4. **Entry point determined by package.json `main` field** → Points to `dist/index.js` or `dist/essential-index.ts`
+
+### Database
+
+5. **CHECK constraints prevent data corruption** → Enums (status, type) MUST have DB constraints, not just TypeScript
+6. **Soft delete pattern** → Always filter `WHERE is_deleted = false` in queries
+7. **Foreign key constraints** → Prevent orphaned references (add in migrations)
 
 ### Frontend
-9. **Paginated API responses** - Extract data array: `response.data.data`
-10. **Vite environment variables** - Use process.env directly, not loadEnv() for CI/CD
-11. **Vite define config** - Define individual vars, don't replace process.env object
-12. **i18n HttpBackend + useSuspense = white page** - Don't use HttpBackend when translations are embedded in bundle. Set useSuspense: false to prevent React blocking.
 
-### Testing & Data
-13. **Test API FIRST with curl**, then UI with Playwright (isolates issues)
-14. **Data integrity** - Add FK constraints to prevent orphaned references
-15. **Input validation critical** at all API endpoints
+8. **Paginated API responses** → Extract data: `response.data.data` (double `.data`)
+9. **Vite environment variables** → Use `process.env` directly, DON'T use `loadEnv()` for CI/CD
+10. **Mantine DataTable v8 pagination** → Manual slicing: `records={data.slice((page - 1) * pageSize, page * pageSize)}`
+11. **i18n HttpBackend + useSuspense = white page** → Set `useSuspense: false` when translations embedded in bundle
 
-### Code Quality
-16. **TypeScript 'any' hides bugs** - Use proper types or unknown with guards
-17. **Test artifacts** - Don't commit (add to .gitignore)
+### Testing
 
-### Security (October 19, 2025)
-18. **IDOR vulnerabilities in multi-tenant systems** - Authentication ≠ Authorization. Always verify party involvement before returning data. Return 404 (not 403) to prevent information disclosure. Log IDOR attempts with security_issue flag.
-19. **Gremlin/NoSQL injection prevention** - Never concatenate user input into queries. Use parameterized queries with Gremlin traversal API. Deprecate unsafe functions like executeQuery().
-20. **Environment variable validation at startup** - Validate all required credentials at module initialization. Fail fast with clear error messages. Check presence, format, and protocol (HTTPS).
+12. **Test API FIRST with curl, THEN UI** → Isolates backend vs frontend issues
+13. **E2E auth state** → Stored in `playwright/.auth/user.json`, reused across tests
+14. **Serial execution only** → No parallelization to avoid auth conflicts
 
-### Pipeline & Deployment (October 20, 2025)
-21. **~~Never test pipeline changes on main~~ DEPRECATED (October 26, 2025)** - Feature branches are NO LONGER USED. All work happens directly on main. Test pipeline changes carefully in small commits and monitor build results immediately.
-22. **Azure Static Web Apps ≠ Integrated Functions** - TypeScript Azure Functions must be deployed separately to Function App. Don't add `api_location` to Static Web App deployment.
-23. **Service connection scope must match resources** - Query Azure DevOps for actual service connection names and verify scope (resource group vs subscription-wide). Don't guess names.
-24. **Never include node_modules in deployment packages** - Remove node_modules before packaging, enable remote build (`SCM_DO_BUILD_DURING_DEPLOYMENT=true`). Package size: 560MB → 5MB.
-25. **Query Azure resources, don't guess** - Use `az devops service-endpoint list`, `az functionapp list`, etc. to find actual names instead of guessing.
+### Security
 
-### Monorepo & Concurrent Development (October 22, 2025)
-26. **NEVER run multiple Claude Code sessions in same monorepo** - Running two sessions concurrently causes commits to mix changes from different projects, triggering all pipelines on every push. **NEW WORKFLOW (October 26, 2025): ALL work on main branch. Work sequentially - one task at a time.**
-27. **Mixed commits break pipeline path filters** - When Session A (admin portal) and Session B (booking portal) both push to main, ALL commits trigger ALL pipelines regardless of path filters, causing unnecessary deployments and potential conflicts.
-28. **Evidence of concurrent session contamination:** Commit `5524301` (booking-portal pdf-parse fix) inadvertently included `web/src/react-dom-server-stub.js` and `web/vite.config.ts` from parallel session. **NEW WORKFLOW (October 26, 2025): NO concurrent sessions allowed. Work sequentially on main branch only.**
-29. **Folder renames break pipeline builds (October 25, 2025)** - When renaming workspace folders (web/ → admin-portal/), pipelines fail with "module not found" because:
-    - Root `npm ci` installs dependencies to root node_modules/
-    - Workspaces use symlinks from root node_modules/
-    - Pipeline must verify symlinks after `npm ci` before building
-    - Always test pipeline changes on feature branch first (lesson #21)
-    - After folder rename: Update pipeline yml, root package.json workspaces, test on feature branch
+15. **IDOR prevention in multi-tenant** → Always verify party involvement before returning data, return 404 (not 403)
+16. **Gremlin injection** → Use parameterized queries, NEVER concatenate user input
+17. **Environment variable validation** → Validate at startup, fail fast with clear errors
 
-**See:** `docs/PIPELINE_PREVENTION_CHECKLIST.md` (comprehensive checklist), `docs/DEPLOYMENT_ARCHITECTURE_BOOKING_PORTAL.md` (architecture guide), `docs/BOOKING_PORTAL_PIPELINE_FIXES_2025-10-20.md` (detailed fixes)
+### Deployment
 
-### Deployment Troubleshooting (October 25, 2025)
-29. **"Old version" in production = deployment sync issue, NOT code issue** - When user reports seeing old version or missing recent features (EUID, LEI, UI improvements), STOP debugging code. Run MANDATORY PRE-WORK CHECKLIST first. Check: (1) What branch are you on? (2) What's the last commit on main? (3) When was the last Azure pipeline run? (4) Are recent feature branches merged to main? Solution: `git checkout main` → `git merge feature/branch` → `git push origin main` → wait 2-3 minutes for pipeline. Wasted 60+ minutes debugging "404 errors" and trying manual deployments when the actual fix was a 3-command git workflow.
+18. **"Old version" in production = deployment sync issue** → Run PRE-WORK CHECKLIST, compare git log to Azure build time
+19. **API 404s after portal deployment success** → API deployment may silently fail even if pipeline shows green
+20. **Package.json workspace renames** → MUST regenerate `package-lock.json` after updating root workspaces array
+21. **Mixed commits break path filters** → Running multiple Claude sessions concurrently triggers ALL pipelines
 
-### Monorepo Workspace Management (October 25, 2025)
-30. **ALWAYS regenerate package-lock.json after workspace changes** - When renaming folders referenced in root package.json workspaces (e.g., web/ → admin-portal/), you MUST regenerate package-lock.json or npm ci will fail in CI/CD pipelines. After updating package.json workspaces, run: `rm -f package-lock.json && npm install` to regenerate lockfile with correct workspace references. Symptom: "npm error code ENOENT" in Azure DevOps pipeline, "no such file or directory, open '/home/vsts/work/1/s/web/package.json'" even though workspace was updated to admin-portal/. Root cause: package-lock.json contains cached file paths that don't automatically update when package.json changes. Impact: Critical for monorepo builds - stale lockfile breaks CI/CD completely. Discovered during admin portal refactoring (October 25, 2025).
+### Cascading Failures
 
-### Deployment Verification (October 25, 2025)
-31. **"Members not showing" = Check API deployment FIRST** - When user reports dashboard shows 0 members or data not appearing, this is a DEPLOYMENT issue 99% of the time, NOT a code issue. STOP debugging code immediately. **MANDATORY CHECK**: Test API endpoint health BEFORE debugging frontend. Run: `curl https://func-ctn-demo-asr-dev.azurewebsites.net/api/health` - If 404/empty response = API not deployed. **Pattern**: Frontend pipeline can succeed while API deployment silently fails, even when both are in same pipeline yml file (admin-portal.yml lines 197-220). **Root cause**: Pipeline shows green ✅ but AzureFunctionApp@2 task failed without blocking deployment. **Solution**: Manually deploy API with `func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote`. **Occurred**: 3rd time this pattern happened (Oct 25, 2025). Each time wasted 30-60 minutes debugging Dashboard.tsx, MembersGrid.tsx, api.ts when actual problem was backend not deployed. **Prevention**: Add API health check as pipeline verification step after deployment. **Test sequence**: (1) Check /api/health endpoint, (2) If healthy, test data endpoint with auth, (3) ONLY THEN debug frontend code if issue persists.
-
-### Pipeline Architecture & Isolation (October 26, 2025)
-32. **Separate API pipeline from portal pipelines** - Running two pipelines (admin/member) that both tried to deploy the same API caused conflicts and silent failures (Lesson #31 root cause). **Solution**: Create dedicated `asr-api.yml` pipeline as single source of truth for ASR API deployment. Portal pipelines (admin/member) now ONLY deploy frontend, and verify API health before building. **Benefits**: (1) Eliminates API deployment conflicts, (2) Clear separation of concerns, (3) API changes trigger cascading portal builds, (4) Portal changes don't unnecessarily redeploy API. **Architecture**: ASR API pipeline → triggers → Admin + Member portal pipelines. **Isolation**: Use path exclusions to prevent cross-contamination between ASR (admin/member/api), DocuFlow (booking-portal), Orchestrator (orchestrator-portal), and Documentation (ctn-docs-portal). **Critical**: Multi-tenant applications (DocuFlow, Orchestrator) are completely independent with own pipelines and backends. They consume ASR API as external service only if needed.
-
-### Branch Management in Monorepos (October 26, 2025)
-33. **NEVER delete branches without verifying ALL project folders** - **CRITICAL DISASTER**: Deleted 6 feature branches assuming they were project-specific based on names (e.g., `feature/booking-portal-xyz` assumed to only contain booking-portal/ changes). In reality, monorepo branches can contain changes to MULTIPLE projects (admin-portal/, member-portal/, booking-portal/, api/). Lost 74 files (12,920 insertions) including multi-leg journey visualization, async document processing, Week 3 & 4 UX improvements, security fixes, and comprehensive test coverage. **Recovery took 3 hours.** **NEW WORKFLOW (October 26, 2025)**: This disaster led to eliminating feature branches entirely. **ALL work now happens on main branch. NO feature branches allowed.** CTN-documentation is a separate repository. The **docs/BRANCH_PROTECTION_PROTOCOL.md** remains as reference for emergency recovery only (if old branches are discovered). Main branch is protected - never use `git reset --hard` or force push. Work sequentially, commit frequently, push regularly.
-
-### Error Handling & Cascading Failures (October 26, 2025)
-34. **Cascading try-catch failures hide critical functionality** - **NIGHTMARE SCENARIO (3 hours debugging)**: KvK Registry tab with 6 database records wouldn't appear. **Root cause**: THREE separate issues cascading together: (1) Backend `is_deleted` filter preventing data retrieval, (2) Backend fix deployed but NOT restarted (still running old code), (3) Frontend `getEndpoints()` throwing unhandled 404 that prevented KvK check from ever running. **The killer**: Line 61 `getEndpoints()` not wrapped in try-catch → throws error → jumps to outer catch block → logs "Failed to load legal entity data" → **KvK registry check (lines 71-79) never executes**. User sees generic error, no indication endpoints failed, tab stays hidden despite data existing. **CRITICAL PATTERN**: When loading multiple independent resources in useEffect, **ALWAYS wrap each API call in its own try-catch**. One failing resource should NOT block other resources from loading. Use graceful degradation (empty arrays, null states) instead of cascading failures. **Prevention checklist**: (1) Each API call = separate try-catch block, (2) Set fallback state on error ([], null), (3) Log specific error, don't hide details, (4) Continue loading other data. **Commit**: ac8c14d. **Impact**: Wasted 3 hours because single unhandled 404 silently prevented entire feature from appearing. This is a **code smell** - lack of defensive programming and proper error boundaries.
-
-### Accessibility Testing & Implementation (November 1, 2025)
-35. **Test-driven accessibility fixes deliver measurable results** - Implemented comprehensive WCAG 2.1 AA accessibility improvements achieving 100% test pass rate (24/24 tests passing, up from 10/36 tests, 28%). **Pattern**: Started with failing Playwright tests (accessibility.spec.ts) identifying specific gaps: keyboard navigation missing on AdminSidebar, no screen reader support in LoadingSpinner, form validation not announced. Fixed each component methodically: (1) AdminSidebar - added Enter/Space key handlers, tabIndex=0, role="button", aria-label, aria-pressed, (2) LoadingSpinner - added role="status", aria-live="polite", aria-label, (3) MembersGrid - enhanced loading state with ARIA, (4) MemberForm - implemented aria-invalid, aria-describedby, role="alert", aria-live="assertive" for validation. **Key insight**: Test-first approach ensures fixes actually work for assistive technology users, not just pass visual inspection. **Common mistake**: Adding ARIA attributes without testing - many developers add aria-label but forget aria-describedby linking error messages to inputs, or add role="status" but omit aria-live causing screen readers to miss announcements. **Verification**: Re-ran test suite after each fix, confirmed 100% pass rate, manually tested with screen reader (VoiceOver/NVDA). **Documentation**: Created docs/ACCESSIBILITY.md (comprehensive guide), updated docs/COMPLETED_ACTIONS.md, updated ROADMAP.md with completed/remaining items. **Impact**: Admin Portal now usable by keyboard-only users and screen reader users for core workflows (navigation, data loading, form submission). Accessibility is not a checkbox - it's a continuous testing requirement like security or performance. **Effort**: 4 hours implementation + testing. **Files**: AdminSidebar.tsx, LoadingSpinner.tsx, MembersGrid.tsx, MemberForm.tsx, accessibility.spec.ts.
-
-### Content Security Policy (CSP) Hardening (November 1, 2025)
-36. **Modern frameworks eliminate need for unsafe CSP directives** - Removed 'unsafe-inline' from script-src in both admin and member portals, and removed 'unsafe-eval' from member portal, achieving strict CSP (script-src 'self') without breaking functionality. **Key insight**: Modern MSAL v3/v4 doesn't require 'unsafe-eval', Vite-built apps don't need 'unsafe-inline' for scripts. **Common misconception**: Developers assume UI libraries like Kendo UI require unsafe CSP directives - NOT TRUE for React components. Kendo UI React works perfectly with strict CSP; only style-src needs 'unsafe-inline' for component styling (acceptable trade-off). **Testing approach**: (1) Remove directive, (2) Test all functionality, (3) Check browser console for CSP violations, (4) Run full E2E test suite. **Result**: Zero CSP violations, all 24 accessibility tests passing, all Kendo UI components functional. **Security impact**: Eliminates script injection attack vectors (unsafe-inline prevents inline `<script>` tags, unsafe-eval prevents `eval()` and `new Function()`). **Bonus**: Also secured .gitignore by excluding E2E test reports (admin-portal/e2e-results/, playwright-report/, test-results/) containing credentials and authentication tokens. **Pattern**: CSP hardening should be gradual - remove one directive at a time, test thoroughly, measure impact. Don't assume libraries need unsafe directives without testing. **Documentation**: Updated staticwebapp.config.json in both portals. **Commit**: 05b0007. **Effort**: 2 hours (Kendo UI compatibility testing + CSP validation). **Files**: admin-portal/public/staticwebapp.config.json, member-portal/public/staticwebapp.config.json, .gitignore.
-
-### Kendo UI to Mantine v8 Migration (November 2, 2025)
-37. **Plan massive UI migrations portal-by-portal with proven patterns** - Successfully migrated all 4 CTN portals (admin, member, orchestrator, booking) from Kendo UI to Mantine v8 in a single coordinated effort, eliminating ~100 Kendo packages and all licensing costs. **Pattern**: (1) Migrate first portal completely, document all issues/solutions (CSS specificity, pagination patterns, column management), (2) Copy exact patterns to remaining portals, (3) Use specialized agents (CA) for autonomous migration execution. **Key insight**: After solving CSS specificity battles (.mantine-Popover-dropdown vs .mantine-Menu-dropdown) and pagination issues (manual data slicing with `records={data.slice(from, to)}`) in admin portal, remaining migrations were straightforward ("walk in the park"). **Technical details**: mantine-datatable 8.2.0 requires useDataTableColumns hook for column toggle/resize/persistence, controlled pagination needs manual slicing (calculate `from = (page - 1) * pageSize`), storeColumnsKey enables localStorage persistence. **Results**: Total ~100 Kendo packages removed, 15+ grids migrated to mantine-datatable, all portals now on stable Mantine v8.3.6, 0 TypeScript errors across all builds. **Critical**: Document solutions as you go - each portal took ~1-2 hours after first portal pioneered solutions. **Benefits**: Eliminated licensing fees (~$1000+/year), bundle size reduction, single UI library for maintainability, modern TypeScript support. **Commits**: 16b4008, e8dc337, 85c4ae1, 75c7de1 (admin), 6d85289 (member), 9b9ac2e (orchestrator), bbfe687 (booking). **Effort**: 6 hours total (all 4 portals). **Documentation**: Updated docs/GRID_STANDARDIZATION_TODO.md with complete 4-portal summary and migration lessons.
-
-### Azure Infrastructure & Bicep (November 6, 2025)
-38. **WAF Policy Naming in Bicep - No Hyphens Allowed** - WAF policy resource names in Bicep cannot contain hyphens. Use alphanumeric naming format (e.g., `wafctndev` instead of `waf-ctn-dev`). **Root cause**: Bicep's policy name validation rejects hyphens in the resource name field. **Error message**: "Policy ArmResourceId has incorrect formatting" is misleading - it's not the reference that's wrong, it's the policy name itself. **Symptom**: Bicep deployment fails with cryptic error message about "incorrect formatting" when the waf-policy resource name contains hyphens. **Workaround**: (1) Use alphanumeric names only for WAF resources, (2) If managed rules required, deploy basic policy first via Bicep, then add managed rules via Azure Portal/CLI post-deployment (Bicep compatibility issues with managed rule sets). **Pattern**: Azure Bicep naming restrictions are underdocumented - when you get "formatting" errors on resource names, the issue is usually the name format itself, not the property values. Test resource names with alphanumeric-only format first. **Discovery date**: November 6, 2025 during Azure Front Door + WAF deployment. **Files affected**: infrastructure/bicep/modules/waf-policy.bicep, infrastructure/bicep/modules/waf-policy-basic.bicep.
-
-### Database & Data Integrity (November 6, 2025)
-39. **Database CHECK Constraints Prevent Data Corruption** - Enumerated fields (status, type, level) MUST have database CHECK constraints, not just frontend validation. **Pattern**: Frontend validation can be bypassed by direct API calls, buggy code, or SQL queries. **Example**: API accepted ENTERPRISE membership level (TypeScript enum) but database had no such records → guaranteed 500 errors. Contact types COMPLIANCE/ADMIN defined in admin portal but database constraint only accepted LEGAL/OTHER → runtime type errors. **Solution**: (1) Add CHECK constraint to database first, (2) Update API Zod schema second, (3) Update TypeScript types last. Migration 024 added constraints for members.status (4 values), members.membership_level (3 values), legal_entity_contact.contact_type (6 values). Updated 10 records to UPPERCASE for consistency. Fixed 3 type mismatches across API and portals. **Impact**: Zero tolerance for invalid data. Database is source of truth. Self-documenting schema. API errors caught at build time (TypeScript) instead of runtime (500 errors). **DevOps Guardian role**: DG agent identified critical type mismatches preventing 500 errors and constraint violations. **Files**: database/migrations/024_add_check_constraints.sql, api/src/validation/schemas.ts, admin-portal/src/services/apiV2.ts, member-portal/src/components/ContactsView.tsx. **See**: docs/DATA_STANDARDIZATION.md, docs/LESSONS_LEARNED.md (Lesson #39).
-
----
-
-## Pipeline & Portal Isolation Reference
-
-### Application Boundaries (CRITICAL - DO NOT MIX)
-
-**1. ASR (Association Register) - Single-Tenant**
-```
-Folders:     api/, admin-portal/, member-portal/
-Pipelines:   .azure-pipelines/asr-api.yml
-             .azure-pipelines/admin-portal.yml
-             .azure-pipelines/member-portal.yml
-Backend:     Shared - func-ctn-demo-asr-dev (Azure Functions)
-Database:    Shared - psql-ctn-demo-asr-dev (PostgreSQL)
-Isolation:   Tightly coupled (API + 2 portals work together)
-```
-
-**2. DocuFlow - Multi-Tenant (COMPLETELY SEPARATE)**
-```
-Folders:     booking-portal/
-Pipelines:   TBD (own pipeline, not in .azure-pipelines/)
-Backend:     Own backend (booking-portal/api/)
-Database:    Own database or schema
-Isolation:   May consume ASR API as external HTTP service
-             NO code sharing with ASR
-```
-
-**3. Orchestrator - Multi-Tenant (COMPLETELY SEPARATE)**
-```
-Folders:     orchestrator-portal/
-Pipelines:   TBD (own pipeline)
-Backend:     Own backend
-Database:    Own database or schema
-Isolation:   May consume ASR API as external HTTP service
-             NO code sharing with ASR
-```
-
-**4. Documentation - Decoupled (COMPLETELY SEPARATE)**
-```
-Folders:     ctn-docs-portal/
-Pipelines:   TBD (own pipeline)
-Backend:     Static site or own backend
-Isolation:   NO dependencies on ASR, DocuFlow, or Orchestrator
-```
-
-### Pipeline Trigger Rules
-
-**ASR API Pipeline** (`.azure-pipelines/asr-api.yml`):
-- Triggers on: `api/*` changes
-- Excludes: `booking-portal/**`, `orchestrator-portal/**`, `ctn-docs-portal/**`
-- Deploys: Azure Function App (func-ctn-demo-asr-dev)
-- Then triggers: Admin + Member portal pipelines
-
-**Admin Portal Pipeline** (`.azure-pipelines/admin-portal.yml`):
-- Triggers on: `admin-portal/*` changes OR triggered by ASR API pipeline
-- Excludes: `api/**`, `member-portal/**`, `booking-portal/**`, `orchestrator-portal/**`, `ctn-docs-portal/**`
-- Verifies: ASR API health (dependency check)
-- Deploys: Azure Static Web App (admin portal only)
-
-**Member Portal Pipeline** (`.azure-pipelines/member-portal.yml`):
-- Triggers on: `member-portal/*` changes OR triggered by ASR API pipeline
-- Excludes: `api/**`, `admin-portal/**`, `booking-portal/**`, `orchestrator-portal/**`, `ctn-docs-portal/**`
-- Verifies: ASR API health (dependency check)
-- Deploys: Azure Static Web App (member portal only)
-
-**DocuFlow/Orchestrator/Docs Pipelines:**
-- Completely independent
-- Own trigger paths
-- Own deployment targets
-- NO automatic triggers from ASR changes
-
-### Path Filter Examples
-
-**Will NOT trigger ASR pipelines:**
-- Changes to `booking-portal/` (DocuFlow)
-- Changes to `orchestrator-portal/` (Orchestrator)
-- Changes to `ctn-docs-portal/` (Documentation)
-- Changes to `docs/` (documentation only)
-
-**Will trigger ASR API + both portal pipelines:**
-- Changes to `api/`
-
-**Will trigger ONLY admin portal pipeline:**
-- Changes to `admin-portal/`
-
-**Will trigger ONLY member portal pipeline:**
-- Changes to `member-portal/`
-
----
-
-## Project Context
-
-**CTN ASR** - Member management system for container transport ecosystem
-
-**Tech Stack:** React 18 + TypeScript + Mantine v8 | Azure Functions (Node.js 20) | PostgreSQL | Azure AD | Playwright
-
-**Azure Resources:**
-
-**Front Door URLs (with WAF):**
-- Admin: https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net
-- Member: https://portal-ctn-dev-fdb5cpeagdendtck.z02.azurefd.net
-
-**Direct URLs (Static Web Apps):**
-- Admin: https://calm-tree-03352ba03.1.azurestaticapps.net
-- Member: https://calm-pebble-043b2db03.1.azurestaticapps.net
-
-**Backend:**
-- API: https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
-- DB: psql-ctn-demo-asr-dev.postgres.database.azure.com
-
-**Note:** Front Door URLs are configured but may show DeploymentStatus: NotStarted. Use Direct URLs if Front Door returns 404.
+22. **Wrap each API call in separate try-catch** → One failing resource shouldn't block others (defensive programming)
+23. **Graceful degradation** → Set fallback states ([], null) on error instead of cascading failures
 
 ---
 
 ## Documentation Structure
 
 **Root:** README.md, CLAUDE.md only
-**Desktop:** ~/Desktop/ROADMAP.md (synced, not in repo)
-**docs/:** Project-specific documentation (COMPLETED_ACTIONS.md, LESSONS_LEARNED.md, test reports, etc.)
-**docs/MANTINE_LLMS.txt:** Complete Mantine UI library documentation (79K lines, from mantine.dev/llms.txt)
-**docs/MANTINE_DATATABLE_REFERENCE.md:** mantine-datatable component reference (column toggling, etc.)
+**Desktop:** `~/Desktop/ROADMAP.md` (synced, not in repo)
+**docs/:** Project documentation (`COMPLETED_ACTIONS.md`, `LESSONS_LEARNED.md`, test reports)
+**docs/MANTINE_LLMS.txt:** Complete Mantine UI library reference (79K lines)
+**docs/MANTINE_DATATABLE_REFERENCE.md:** mantine-datatable component patterns
 **.claude/agents/:** Agent configuration files
 
 **Arc42 Documentation (Separate Repository: DEV-CTN-Documentation):**
-- **Building Blocks:** [Three-Tier Authentication](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/05-building-blocks/ctn-three-tier-authentication.md)
-- **Deployment:** [Deployment Procedures](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/07-deployment/ctn-asr-deployment-procedures.md), [Front Door + WAF](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/07-deployment/ctn-front-door-waf-infrastructure.md)
-- **Cross-cutting:** [Coding Standards](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/08-crosscutting/ctn-coding-standards.md), [Security Hardening](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/08-crosscutting/ctn-security-hardening.md)
-- **Quality:** [Accessibility (WCAG)](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/10-quality/ctn-accessibility-wcag-compliance.md), [Security Audit](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/10-quality/ctn-security-audit-report.md), [UI/UX Audit](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/10-quality/ctn-ui-ux-audit-report.md)
+- [Three-Tier Authentication](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/05-building-blocks/ctn-three-tier-authentication.md)
+- [Deployment Procedures](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/07-deployment/ctn-asr-deployment-procedures.md)
+- [Coding Standards](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/08-crosscutting/ctn-coding-standards.md)
+- [Security Hardening](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/08-crosscutting/ctn-security-hardening.md)
+- [Accessibility (WCAG)](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/10-quality/ctn-accessibility-wcag-compliance.md)
 
 ---
 
-## Quick Reference
+## Azure Resources
 
-**View Logs:** `func azure functionapp logstream func-ctn-demo-asr-dev`
-**Run Tests:** `cd web && npm run test:e2e`
-**Build:** `cd api && npm run build` | `cd web && npm run build`
+### Front Door URLs (with WAF)
+- **Admin:** https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net
+- **Member:** https://portal-ctn-dev-fdb5cpeagdendtck.z02.azurefd.net
 
-**Troubleshooting:**
-- API 404 → Check essential-index.ts imports
-- Auth errors → Verify scope: `api://{client-id}/.default`
-- DB connection → Check .credentials file first
-- E2E tests → Use test-e2@denoronha.consulting (MFA excluded)
+### Direct URLs (Static Web Apps)
+- **Admin:** https://calm-tree-03352ba03.1.azurestaticapps.net
+- **Member:** https://calm-pebble-043b2db03.1.azurestaticapps.net
+- **Orchestrator:** https://blue-dune-0353f1303.1.azurestaticapps.net
 
-**Resources:**
-- Azure DevOps: https://dev.azure.com/ctn-demo/ASR
-- Documentation (Project): docs/ folder (COMPLETED_ACTIONS.md, LESSONS_LEARNED.md, test reports)
-- Documentation (Architecture): [Arc42 in DEV-CTN-Documentation repository](https://github.com/ramondenoronha/DEV-CTN-Documentation/tree/main/docs/arc42)
-- Credentials: .credentials file (gitignored)
+### Backend
+- **API:** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
+- **Database:** psql-ctn-demo-asr-dev.postgres.database.azure.com
+- **Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
+
+**Note:** Front Door may show DeploymentStatus: NotStarted. Use Direct URLs if Front Door returns 404.
+
+---
+
+## Troubleshooting Quick Reference
+
+| Issue | Check |
+|-------|-------|
+| API 404 | Verify function imported in `index.ts` or `essential-index.ts` |
+| Auth errors | Scope must be `api://{client-id}/.default` |
+| DB connection | Check `.credentials` file first |
+| "Old version" | Run `git log -1`, compare to Azure DevOps build time |
+| Members not showing | Test API health: `curl https://func-ctn-demo-asr-dev.azurewebsites.net/api/health` |
+| E2E tests failing | Verify auth state in `playwright/.auth/user.json` |
+| Pipeline path filters not working | Ensure no mixed commits from concurrent sessions |
+
+**Credentials:** Check `.credentials` file (gitignored) before searching Azure Portal.
+
+**For complete lessons with examples, see `docs/LESSONS_LEARNED.md`**
+
+---
+
+## Technology Stack
+
+- **Frontend:** React 18 + TypeScript 5.9 + Mantine v8 + Vite 7
+- **Backend:** Azure Functions v4 (Node.js 20 + TypeScript)
+- **Database:** PostgreSQL 14 (Azure Flexible Server)
+- **Auth:** Azure AD (MSAL), RBAC with JWT (RS256)
+- **Testing:** Playwright (E2E), Vitest (unit tests)
+- **CI/CD:** Azure DevOps Pipelines
+- **Security:** Aikido scanning, Content Security Policy, rate limiting
+- **Monitoring:** Application Insights

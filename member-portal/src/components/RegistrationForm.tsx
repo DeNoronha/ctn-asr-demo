@@ -199,47 +199,47 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
             <TextInput
               {...form.getInputProps('legalName')}
-              label="Legal Company Name *"
+              label="Legal Company Name"
               required
-              mb="md"
+              mb="sm"
             />
 
             <TextInput
               {...form.getInputProps('kvkNumber')}
-              label="KvK Number (Chamber of Commerce) *"
+              label="KvK Number (Chamber of Commerce)"
               description="8-digit Dutch Chamber of Commerce number"
               required
-              mb="md"
+              mb="sm"
             />
 
             <TextInput
               {...form.getInputProps('lei')}
               label="LEI (Legal Entity Identifier)"
               description="Optional - 20 character LEI code"
-              mb="md"
+              mb="sm"
             />
 
             <Textarea
               {...form.getInputProps('companyAddress')}
-              label="Company Address *"
+              label="Company Address"
               description="Full registered business address (required for verification)"
               placeholder="Street name and number"
               required
-              rows={3}
-              mb="md"
+              rows={2}
+              mb="sm"
             />
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
               <TextInput
                 {...form.getInputProps('postalCode')}
-                label="Postal Code *"
+                label="Postal Code"
                 placeholder="e.g., 1234 AB"
                 required
               />
 
               <TextInput
                 {...form.getInputProps('city')}
-                label="City *"
+                label="City"
                 placeholder="e.g., Amsterdam"
                 required
               />
@@ -247,10 +247,9 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
             <Select
               {...form.getInputProps('country')}
-              label="Country *"
+              label="Country"
               data={countries}
               required
-              mb="md"
             />
 
             <div className="form-actions">
@@ -276,32 +275,31 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
             <TextInput
               {...form.getInputProps('contactName')}
-              label="Full Name *"
+              label="Full Name"
               required
-              mb="md"
+              mb="sm"
             />
 
             <TextInput
               {...form.getInputProps('contactEmail')}
-              label="Email Address *"
+              label="Email Address"
               type="email"
               required
-              mb="md"
+              mb="sm"
             />
 
             <TextInput
               {...form.getInputProps('contactPhone')}
-              label="Phone Number *"
+              label="Phone Number"
               description="Include country code (e.g., +31 20 1234567)"
               required
-              mb="md"
+              mb="sm"
             />
 
             <TextInput
               {...form.getInputProps('jobTitle')}
-              label="Job Title *"
+              label="Job Title"
               required
-              mb="md"
             />
 
             <div className="form-actions">
@@ -325,7 +323,10 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             <h3>Documents & Final Review</h3>
 
             <div className="document-upload-section">
-              <Text fw={500} mb="xs">KvK Extract (Chamber of Commerce Extract) *</Text>
+              <Text fw={500} mb="xs">
+                KvK Extract (Chamber of Commerce Extract){' '}
+                <span style={{ color: 'var(--mantine-color-red-6)' }}>*</span>
+              </Text>
               <Text size="sm" c="dimmed" mb="md">
                 Upload your official KvK extract. We'll verify your company details automatically.
                 Accepted formats: PDF, PNG, JPG (max 10MB)
@@ -357,14 +358,15 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             <div className="legal-section">
               <Checkbox
                 {...form.getInputProps('termsAccepted', { type: 'checkbox' })}
-                label="I accept the CTN Terms and Conditions *"
-                mb="md"
+                label="I accept the CTN Terms and Conditions"
+                required
+                mb="sm"
               />
 
               <Checkbox
                 {...form.getInputProps('gdprConsent', { type: 'checkbox' })}
-                label="I consent to the processing of my personal data in accordance with GDPR *"
-                mb="md"
+                label="I consent to the processing of my personal data in accordance with GDPR"
+                required
               />
             </div>
 
@@ -388,36 +390,38 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         .registration-form-container {
           max-width: 800px;
           margin: 0 auto;
-          padding: 32px;
+          padding: 20px;
         }
 
         .registration-header {
           text-align: center;
-          margin-bottom: 32px;
+          margin-bottom: 20px;
         }
 
         .registration-header h2 {
-          margin: 0 0 8px 0;
+          margin: 0 0 4px 0;
           color: #333;
+          font-size: 24px;
         }
 
         .registration-header p {
           color: #666;
-          margin: 0 0 24px 0;
+          margin: 0 0 16px 0;
+          font-size: 14px;
         }
 
         .registration-steps {
           display: flex;
           justify-content: center;
-          gap: 48px;
-          margin-top: 24px;
+          gap: 32px;
+          margin-top: 16px;
         }
 
         .step {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
           opacity: 0.4;
         }
 
@@ -426,15 +430,15 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         }
 
         .step-number {
-          width: 40px;
-          height: 40px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
           background: #e0e0e0;
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: 600;
-          font-size: 18px;
+          font-size: 16px;
         }
 
         .step.active .step-number {
@@ -443,25 +447,27 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         }
 
         .step-label {
-          font-size: 12px;
+          font-size: 11px;
           color: #666;
         }
 
         .form-step {
           background: white;
-          padding: 32px;
+          padding: 20px;
           border-radius: 8px;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .form-step h3 {
-          margin: 0 0 8px 0;
+          margin: 0 0 4px 0;
           color: #333;
+          font-size: 18px;
         }
 
         .form-step > p {
-          margin: 0 0 24px 0;
+          margin: 0 0 16px 0;
           color: #666;
+          font-size: 14px;
         }
 
         .k-form-field {
@@ -469,47 +475,48 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         }
 
         .document-upload-section {
-          margin: 24px 0;
-          padding: 20px;
+          margin: 16px 0;
+          padding: 16px;
           background: #f9fafb;
           border-radius: 8px;
         }
 
         .review-section {
-          margin: 24px 0;
-          padding: 20px;
+          margin: 16px 0;
+          padding: 16px;
           background: #f0f4ff;
           border-radius: 8px;
         }
 
         .review-section h4 {
-          margin: 0 0 16px 0;
+          margin: 0 0 12px 0;
           color: #333;
+          font-size: 16px;
         }
 
         .review-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 12px;
-          font-size: 14px;
+          gap: 10px;
+          font-size: 13px;
         }
 
         .legal-section {
-          margin: 24px 0;
-          padding: 20px;
+          margin: 16px 0;
+          padding: 16px;
           background: #fff3cd;
           border-radius: 8px;
         }
 
         .legal-section .k-form-field {
-          margin-bottom: 12px;
+          margin-bottom: 8px;
         }
 
         .form-actions {
           display: flex;
           justify-content: space-between;
-          margin-top: 32px;
-          padding-top: 20px;
+          margin-top: 20px;
+          padding-top: 16px;
           border-top: 1px solid #e0e0e0;
         }
 
