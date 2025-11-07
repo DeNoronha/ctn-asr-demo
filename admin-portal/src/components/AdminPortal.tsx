@@ -280,42 +280,44 @@ const AdminPortal: React.FC = () => {
         <div className="drawer-content">
           <div className="main-content">
             <header className="app-header">
-              <div className="header-left">
-                <Tooltip label={drawerExpanded ? 'Collapse sidebar' : 'Expand sidebar'} position="bottom">
-                  <Button
-                    leftSection="menu"
-                    variant="subtle"
-                    onClick={() => setDrawerExpanded(!drawerExpanded)}
-                    className="menu-button"
-                    aria-label={drawerExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-                  >
-                    {drawerExpanded ? '◀' : '▶'}
-                  </Button>
-                </Tooltip>
-                <img src="/assets/logos/ctn.png" alt="CTN Logo" className="header-logo" />
-                <h1>{t('common.appNameShort')}</h1>
-              </div>
-              <div className="header-right">
-                <LanguageSwitcher />
-                {user && (
-                  <div className="user-info">
-                    <User size={18} />
-                    <div className="user-details">
-                      <span className="user-name">{user.account.name}</span>
-                      <span className="user-role">{user.primaryRole}</span>
+              <div>
+                <div className="header-left">
+                  <Tooltip label={drawerExpanded ? 'Collapse sidebar' : 'Expand sidebar'} position="bottom">
+                    <Button
+                      leftSection="menu"
+                      variant="subtle"
+                      onClick={() => setDrawerExpanded(!drawerExpanded)}
+                      className="menu-button"
+                      aria-label={drawerExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+                    >
+                      {drawerExpanded ? '◀' : '▶'}
+                    </Button>
+                  </Tooltip>
+                  <img src="/assets/logos/ctn.png" alt="CTN Logo" className="header-logo" />
+                  <h1>{t('common.appNameShort')}</h1>
+                </div>
+                <div className="header-right">
+                  <LanguageSwitcher />
+                  {user && (
+                    <div className="user-info">
+                      <User size={18} />
+                      <div className="user-details">
+                        <span className="user-name">{user.account.name}</span>
+                        <span className="user-role">{user.primaryRole}</span>
+                      </div>
+                      <Tooltip label="Sign out" position="bottom">
+                        <Button
+                          variant="subtle"
+                          onClick={handleLogout}
+                          title="Sign out"
+                          aria-label="Sign out"
+                        >
+                          <LogOut size={16} />
+                        </Button>
+                      </Tooltip>
                     </div>
-                    <Tooltip label="Sign out" position="bottom">
-                      <Button
-                        variant="subtle"
-                        onClick={handleLogout}
-                        title="Sign out"
-                        aria-label="Sign out"
-                      >
-                        <LogOut size={16} />
-                      </Button>
-                    </Tooltip>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </header>
             <main id="main-content" className="content-area" tabIndex={-1}>

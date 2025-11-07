@@ -44,12 +44,18 @@ body {
   background: var(--ctn-dark-blue);
   border-bottom: 3px solid var(--ctn-orange);
   padding: 16px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 100;
+}
+
+.app-header > div {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 .header-left {
@@ -145,7 +151,9 @@ body {
   .kvk-review-queue,
   .tasks-view,
   .tasks-grid,
-  .user-management {
+  .user-management,
+  .app-header > div,
+  .footer-content {
     max-width: 95%;
   }
 }
@@ -436,7 +444,6 @@ body {
   width: auto;
   max-width: 150px;
   object-fit: contain;
-  filter: brightness(0) invert(1) grayscale(0);
   opacity: 0.9;
   transition: all 0.3s ease;
   background: transparent;
