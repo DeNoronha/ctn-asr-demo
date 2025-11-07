@@ -113,7 +113,7 @@ const TasksGrid: React.FC = () => {
 
       logger.log('TasksGrid: Acquiring token for tasks...');
       const tokenResponse = await instance.acquireTokenSilent({
-        scopes: ['api://5c0c3b9e-0e4b-47b8-8e4f-9b0e6c0c3b9e/.default'],
+        scopes: ['api://d3037c11-a541-4f21-8862-8079137a0cde/access_as_user'],
         account: account,
       });
 
@@ -147,7 +147,7 @@ const TasksGrid: React.FC = () => {
 
       logger.log('TasksGrid: Acquiring token for review tasks...');
       const tokenResponse = await instance.acquireTokenSilent({
-        scopes: ['api://5c0c3b9e-0e4b-47b8-8e4f-9b0e6c0c3b9e/.default'],
+        scopes: ['api://d3037c11-a541-4f21-8862-8079137a0cde/access_as_user'],
         account: account,
       });
 
@@ -278,7 +278,7 @@ const TasksGrid: React.FC = () => {
       if (!account) return;
 
       const tokenResponse = await instance.acquireTokenSilent({
-        scopes: ['api://5c0c3b9e-0e4b-47b8-8e4f-9b0e6c0c3b9e/.default'],
+        scopes: ['api://d3037c11-a541-4f21-8862-8079137a0cde/access_as_user'],
         account: account,
       });
 

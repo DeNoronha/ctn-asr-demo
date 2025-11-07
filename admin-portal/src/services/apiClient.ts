@@ -13,7 +13,7 @@ async function getAccessToken(): Promise<string> {
   try {
     const response = await msalInstance.acquireTokenSilent({
       account: accounts[0],
-      scopes: ['api://bcc3ddce-6891-42aa-91f6-99d85b02bb7d/.default']
+      scopes: ['api://d3037c11-a541-4f21-8862-8079137a0cde/access_as_user']
     });
 
     return response.accessToken;

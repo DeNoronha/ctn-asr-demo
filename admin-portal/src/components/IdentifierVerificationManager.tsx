@@ -57,7 +57,7 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
 
     const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
     const response = await msalInstance.acquireTokenSilent({
-      scopes: [`api://${clientId}/.default`],
+      scopes: [`api://${clientId}/access_as_user`],
       account: accounts[0],
     });
 

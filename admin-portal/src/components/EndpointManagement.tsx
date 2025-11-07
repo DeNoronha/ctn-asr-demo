@@ -22,7 +22,7 @@ const getAccessToken = async (): Promise<string> => {
     throw new Error('No authenticated user');
   }
   const request = {
-    scopes: ['api://d3037c11-a541-4f21-8862-8079137a0cde/.default'],
+    scopes: ['api://d3037c11-a541-4f21-8862-8079137a0cde/access_as_user'],
     account: accounts[0],
   };
   const response = await (window as any).msalInstance.acquireTokenSilent(request);
