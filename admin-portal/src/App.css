@@ -101,14 +101,23 @@ body {
 .view-container,
 .dashboard-view,
 .members-view,
+.members-grid-container,
 .tokens-view,
 .settings-view,
+.settings-container,
 .docs-view,
 .endpoints-view,
+.endpoint-management,
 .audit-view,
+.audit-log-viewer,
 .health-view,
+.health-dashboard,
 .review-tasks-view,
-.tasks-view {
+.review-tasks,
+.kvk-review-queue,
+.tasks-view,
+.tasks-grid,
+.user-management {
   width: 100%;
   max-width: 1600px;
   margin: 0 auto;
@@ -120,14 +129,23 @@ body {
   .view-container,
   .dashboard-view,
   .members-view,
+  .members-grid-container,
   .tokens-view,
   .settings-view,
+  .settings-container,
   .docs-view,
   .endpoints-view,
+  .endpoint-management,
   .audit-view,
+  .audit-log-viewer,
   .health-view,
+  .health-dashboard,
   .review-tasks-view,
-  .tasks-view {
+  .review-tasks,
+  .kvk-review-queue,
+  .tasks-view,
+  .tasks-grid,
+  .user-management {
     max-width: 95%;
   }
 }
