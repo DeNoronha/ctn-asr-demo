@@ -6,7 +6,7 @@
   padding: 24px;
   /* max-width removed for consistent full-width layout */
   margin: 0 auto;
-  background-color: #f5f5f5;
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
   min-height: 100vh;
 }
 
@@ -30,7 +30,7 @@
   margin: 0;
   font-size: 28px;
   font-weight: 600;
-  color: #333;
+  color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-gray-0));
 }
 
 .health-actions {
@@ -61,7 +61,7 @@
 
 .last-refresh {
   font-size: 12px;
-  color: #666;
+  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-2));
 }
 
 /* Overall Status Card */
@@ -109,14 +109,14 @@
 
 .detail-label {
   font-size: 12px;
-  color: #666;
+  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-2));
   font-weight: 500;
   text-transform: uppercase;
 }
 
 .detail-value {
   font-size: 16px;
-  color: #333;
+  color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-gray-0));
   font-weight: 600;
 }
 
@@ -174,7 +174,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px;
-  background-color: #f9fafb;
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
   border-radius: 4px;
 }
 
@@ -208,9 +208,9 @@
   font-weight: 600;
   font-size: 14px;
   padding: 8px;
-  background-color: #fef2f2;
+  background-color: light-dark(#fef2f2, #3a1616);
   border-radius: 4px;
-  border: 1px solid #fecaca;
+  border: 1px solid light-dark(#fecaca, #7a2e2e);
 }
 
 /* Quick Links */
@@ -234,11 +234,11 @@
 .quick-link {
   display: block;
   padding: 12px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   border-radius: 6px;
   text-decoration: none;
-  color: #0066b3;
+  color: light-dark(#0066b3, #40c8f4);
   font-weight: 500;
   text-align: center;
   transition: all 0.2s;
@@ -264,7 +264,7 @@
 
 .health-dashboard-loading p {
   font-size: 16px;
-  color: #666;
+  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-2));
 }
 
 /* Error State */
@@ -287,13 +287,13 @@
   margin: 0;
   font-size: 24px;
   font-weight: 600;
-  color: #333;
+  color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-gray-0));
 }
 
 .health-dashboard-error p {
   margin: 0;
   font-size: 16px;
-  color: #666;
+  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-2));
   max-width: 600px;
 }
 

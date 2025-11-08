@@ -18,7 +18,7 @@
 }
 
 .filters-panel {
-  background: white;
+  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 24px;
@@ -39,7 +39,7 @@
   display: block;
   font-size: 13px;
   font-weight: 500;
-  color: #1a4d6d;
+  color: light-dark(#1a4d6d, #40c8f4);
   margin-bottom: 8px;
 }
 
@@ -90,12 +90,12 @@
 
 .target-info {
   font-size: 12px;
-  color: #64748b;
+  color: light-dark(#64748b, var(--mantine-color-dark-2));
   margin-top: 4px;
 }
 
 .target-info strong {
-  color: #1a4d6d;
+  color: light-dark(#1a4d6d, #40c8f4);
 }
 
 /* Responsive */
