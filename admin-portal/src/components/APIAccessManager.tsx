@@ -17,7 +17,7 @@ export const APIAccessManager: React.FC<APIAccessManagerProps> = ({
   legalEntityName,
 }) => {
   return (
-    <div className="identifiers-manager" style={{ maxWidth: '1400px', margin: '0 auto' }}>
+    <div className="identifiers-manager">
       <div className="section-header" style={{ marginBottom: '16px' }}>
         <div>
           <h3>M2M API Clients</h3>
