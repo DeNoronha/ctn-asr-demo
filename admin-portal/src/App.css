@@ -103,6 +103,14 @@ body {
 	background-color: var(--ctn-bg);
 }
 
+/* Professional Fix: Constrain all content to match header width */
+.content-area > * {
+	max-width: 1600px;
+	margin-left: auto;
+	margin-right: auto;
+	width: 100%;
+}
+
 /* Consistent view container - all views use full width with padding */
 .view-container,
 .dashboard-view,
