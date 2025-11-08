@@ -87,14 +87,16 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
         </Stack>
       </div>
 
-      <Stack justify="center" align="center" gap={0}>
-        {bottomLinkElements}
-        <NavbarLink
-          icon={IconLogout}
-          label="Sign out"
-          onClick={onLogout}
-        />
-      </Stack>
+      <div className={classes.navbarBottom}>
+        <Stack justify="center" align="center" gap={0}>
+          {bottomLinkElements}
+          <NavbarLink
+            icon={IconLogout}
+            label="Sign out"
+            onClick={onLogout}
+          />
+        </Stack>
+      </div>
     </nav>
   );
 };
