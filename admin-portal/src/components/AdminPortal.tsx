@@ -278,9 +278,9 @@ const AdminPortal: React.FC = () => {
       <AppShell
         header={{ height: 60 }}
         navbar={{
-          width: 240,
+          width: 80,
           breakpoint: 'sm',
-          collapsed: { desktop: !navbarOpened },
+          collapsed: { mobile: !navbarOpened },
         }}
         padding="md"
       >
