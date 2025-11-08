@@ -3,10 +3,8 @@
  * Main container for authenticated admin interface
  */
 
-import { AppShell, Burger, Button, Container, Group, Tooltip, ActionIcon, useMantineColorScheme, useComputedColorScheme, Paper, Text } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-
-import { LogOut, User, Sun, Moon } from './icons';
+import { AppShell, Button, Container, Group, Tooltip, ActionIcon, useMantineColorScheme, useComputedColorScheme, Paper, Text } from '@mantine/core';
+import { IconSun, IconMoon } from '@tabler/icons-react';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -47,7 +45,6 @@ const AdminPortal: React.FC = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [totalMembers, setTotalMembers] = useState<number>(0);
   const [showForm, setShowForm] = useState(false);
-  const [navbarOpened, { toggle: toggleNavbar }] = useDisclosure(true);
   const [selectedView, setSelectedView] = useState<string>('dashboard');
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
@@ -280,7 +277,6 @@ const AdminPortal: React.FC = () => {
         navbar={{
           width: 80,
           breakpoint: 'sm',
-          collapsed: { mobile: !navbarOpened },
         }}
         padding="md"
       >
@@ -288,12 +284,6 @@ const AdminPortal: React.FC = () => {
           <Container size="xl" h="100%">
             <Group h="100%" px="md" justify="space-between">
               <Group>
-                <Burger
-                  opened={navbarOpened}
-                  onClick={toggleNavbar}
-                  size="sm"
-                  aria-label={navbarOpened ? 'Collapse sidebar' : 'Expand sidebar'}
-                />
                 <img src="/assets/logos/ctn.png" alt="CTN Logo" style={{ height: 40 }} />
                 <h1 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>{t('common.appNameShort')}</h1>
               </Group>
@@ -305,28 +295,10 @@ const AdminPortal: React.FC = () => {
                     size="lg"
                     aria-label="Toggle color scheme"
                   >
-                    {computedColorScheme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                    {computedColorScheme === 'light' ? <IconMoon size={18} /> : <IconSun size={18} />}
                   </ActionIcon>
                 </Tooltip>
                 <LanguageSwitcher />
-                {user && (
-                  <Group gap="xs">
-                    <User size={18} />
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 500 }}>{user.account.name}</div>
-                      <div style={{ fontSize: 12, color: '#868e96' }}>{user.primaryRole}</div>
-                    </div>
-                    <Tooltip label="Sign out" position="bottom">
-                      <Button
-                        variant="subtle"
-                        onClick={handleLogout}
-                        aria-label="Sign out"
-                      >
-                        <LogOut size={16} />
-                      </Button>
-                    </Tooltip>
-                  </Group>
-                )}
               </Group>
             </Group>
           </Container>
@@ -334,9 +306,10 @@ const AdminPortal: React.FC = () => {
 
         <AppShell.Navbar p="md">
           <AdminSidebar
-            expanded={navbarOpened}
+            expanded={true}
             onSelect={handleMenuSelect}
             selectedItem={selectedView === 'member-detail' ? 'members' : selectedView}
+            onLogout={handleLogout}
           />
         </AppShell.Navbar>
 

@@ -1,26 +1,28 @@
-import { Center, Stack, Tooltip, UnstyledButton } from '@mantine/core';
+import { Stack, Tooltip, UnstyledButton } from '@mantine/core';
 import {
-  Activity,
-  CheckSquare,
-  FileText,
-  Info,
-  LayoutDashboard,
-  Plug,
-  Settings,
-  Shield,
-  Users,
-} from './icons';
+  IconLayoutDashboard,
+  IconUsers,
+  IconPlug,
+  IconChecklist,
+  IconShield,
+  IconFileText,
+  IconActivity,
+  IconSettings,
+  IconInfoCircle,
+  IconLogout,
+} from '@tabler/icons-react';
 import type React from 'react';
 import classes from './AdminSidebar.module.css';
 
 export interface MenuItem {
   text: string;
-  iconComponent?: React.ComponentType<{ size?: number; className?: string }>;
+  iconComponent?: React.ComponentType<{ size?: number; className?: string; stroke?: number }>;
   route?: string;
+  action?: () => void;
 }
 
 interface NavbarLinkProps {
-  icon: React.ComponentType<{ size?: number }>;
+  icon: React.ComponentType<{ size?: number; stroke?: number }>;
   label: string;
   active?: boolean;
   onClick?: () => void;
@@ -30,7 +32,7 @@ function NavbarLink({ icon: Icon, label, active, onClick }: NavbarLinkProps) {
   return (
     <Tooltip label={label} position="right" transitionProps={{ duration: 0 }}>
       <UnstyledButton onClick={onClick} className={classes.link} data-active={active || undefined}>
-        <Icon size={20} />
+        <Icon size={20} stroke={1.5} />
       </UnstyledButton>
     </Tooltip>
   );
@@ -40,22 +42,23 @@ interface AdminSidebarProps {
   expanded: boolean;
   onSelect: (item: MenuItem) => void;
   selectedItem: string;
+  onLogout: () => void;
 }
 
-const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selectedItem }) => {
+const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selectedItem, onLogout }) => {
   const mainLinks = [
-    { icon: LayoutDashboard, label: 'Dashboard', route: 'dashboard' },
-    { icon: Users, label: 'Members', route: 'members' },
-    { icon: Plug, label: 'Endpoints', route: 'endpoints' },
-    { icon: CheckSquare, label: 'Tasks', route: 'tasks' },
+    { icon: IconLayoutDashboard, label: 'Dashboard', route: 'dashboard' },
+    { icon: IconUsers, label: 'Members', route: 'members' },
+    { icon: IconPlug, label: 'Endpoints', route: 'endpoints' },
+    { icon: IconChecklist, label: 'Tasks', route: 'tasks' },
   ];
 
   const bottomLinks = [
-    { icon: Shield, label: 'User Management', route: 'settings' },
-    { icon: FileText, label: 'Audit Logs', route: 'audit' },
-    { icon: Activity, label: 'Health Monitor', route: 'health' },
-    { icon: Settings, label: 'Settings', route: 'docs' },
-    { icon: Info, label: 'About', route: 'about' },
+    { icon: IconShield, label: 'User Management', route: 'settings' },
+    { icon: IconFileText, label: 'Audit Logs', route: 'audit' },
+    { icon: IconActivity, label: 'Health Monitor', route: 'health' },
+    { icon: IconSettings, label: 'Settings', route: 'docs' },
+    { icon: IconInfoCircle, label: 'About', route: 'about' },
   ];
 
   const links = mainLinks.map((link) => (
@@ -78,10 +81,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
 
   return (
     <nav className={classes.navbar}>
-      <Center>
-        <img src="/assets/logos/ctn.png" alt="CTN" style={{ width: 40, height: 40 }} />
-      </Center>
-
       <div className={classes.navbarMain}>
         <Stack justify="center" gap={0}>
           {links}
@@ -90,6 +89,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
 
       <Stack justify="center" gap={0}>
         {bottomLinkElements}
+        <NavbarLink
+          icon={IconLogout}
+          label="Sign out"
+          onClick={onLogout}
+        />
       </Stack>
     </nav>
   );
