@@ -395,6 +395,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         accessor: 'legal_name',
         title: getColumnTitle('legal_name'),
         width: 200,
+        toggleable: false, // Cannot be hidden - always visible
         resizable: true,
         sortable: true,
         filter: (
