@@ -1,14 +1,25 @@
 /**
- * Settings Component
+ * Settings Component - Mantine Refactored
  * Application settings with external documentation links and translation management
  */
 
-import { Button } from '@mantine/core';
-
+import {
+  Button,
+  Paper,
+  Title,
+  Text,
+  Stack,
+  Group,
+  SimpleGrid,
+  ThemeIcon,
+  Anchor,
+  List,
+  Card,
+  Box,
+} from '@mantine/core';
 import { BookOpen, ExternalLink, FileText, Globe, HelpCircle } from './icons';
 import type React from 'react';
 import { useTranslation } from 'react-i18next';
-import './Settings.css';
 
 const Settings: React.FC = () => {
   const { t } = useTranslation();
@@ -60,111 +71,194 @@ const Settings: React.FC = () => {
   ];
 
   return (
-    <div className="settings-container">
-      <div className="view-header">
-        <h2>{t('settings.title', 'Settings')}</h2>
-      </div>
+    <Stack gap="xl">
+      <Title order={2}>{t('settings.title', 'Settings')}</Title>
 
-      <div className="settings-content">
-        {/* External Resources Section */}
-        <section className="settings-section">
-          <h3 className="section-title">
-            <ExternalLink size={20} />
-            {t('settings.externalResources', 'External Resources')}
-          </h3>
-          <p className="section-description">
+      {/* External Resources Section */}
+      <Paper shadow="sm" p="xl" radius="md" withBorder>
+        <Stack gap="md">
+          <Group gap="xs">
+            <ThemeIcon size="lg" variant="light" color="blue">
+              <ExternalLink size={20} />
+            </ThemeIcon>
+            <Title order={3}>{t('settings.externalResources', 'External Resources')}</Title>
+          </Group>
+
+          <Text size="sm" c="dimmed">
             {t(
               'settings.externalResourcesDesc',
               'Access documentation, guides, and API references'
             )}
-          </p>
+          </Text>
 
-          <div className="resources-grid">
+          <SimpleGrid cols={{ base: 1, sm: 1, md: 3 }} spacing="md">
             {externalLinks.map((link, index) => {
               const IconComponent = link.icon;
               return (
-                <a
+                <Anchor
                   key={index}
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="resource-card"
-                  style={{ '--card-color': link.color } as React.CSSProperties}
+                  underline="never"
+                  style={{ height: '100%' }}
                 >
-                  <div className="resource-icon">
-                    <IconComponent size={24} />
-                  </div>
-                  <div className="resource-content">
-                    <h4 className="resource-title">{link.title}</h4>
-                    <p className="resource-description">{link.description}</p>
-                  </div>
-                  <div className="resource-arrow">
-                    <ExternalLink size={16} />
-                  </div>
-                </a>
+                  <Card
+                    shadow="sm"
+                    padding="lg"
+                    radius="md"
+                    withBorder
+                    style={{
+                      height: '100%',
+                      transition: 'all 0.2s ease',
+                      cursor: 'pointer',
+                    }}
+                    styles={{
+                      root: {
+                        '&:hover': {
+                          borderColor: link.color,
+                          transform: 'translateY(-4px)',
+                          boxShadow: `0 4px 12px ${link.color}40`,
+                        },
+                      },
+                    }}
+                  >
+                    <Group gap="md" align="flex-start" wrap="nowrap">
+                      <ThemeIcon
+                        size="xl"
+                        radius="md"
+                        variant="light"
+                        color={link.color}
+                        style={{ borderColor: link.color, borderWidth: 2, borderStyle: 'solid' }}
+                      >
+                        <IconComponent size={24} />
+                      </ThemeIcon>
+
+                      <Stack gap="xs" style={{ flex: 1 }}>
+                        <Group justify="space-between" wrap="nowrap">
+                          <Text fw={600} size="sm">
+                            {link.title}
+                          </Text>
+                          <ExternalLink size={16} style={{ opacity: 0.5, flexShrink: 0 }} />
+                        </Group>
+                        <Text size="xs" c="dimmed" lineClamp={2}>
+                          {link.description}
+                        </Text>
+                      </Stack>
+                    </Group>
+                  </Card>
+                </Anchor>
               );
             })}
-          </div>
-        </section>
+          </SimpleGrid>
+        </Stack>
+      </Paper>
 
-        {/* Translation Management Section */}
-        <section className="settings-section">
-          <h3 className="section-title">
-            <Globe size={20} />
-            {t('settings.translationManagement', 'Translation Management')}
-          </h3>
-          <p className="section-description">
+      {/* Translation Management Section */}
+      <Paper shadow="sm" p="xl" radius="md" withBorder>
+        <Stack gap="md">
+          <Group gap="xs">
+            <ThemeIcon size="lg" variant="light" color="blue">
+              <Globe size={20} />
+            </ThemeIcon>
+            <Title order={3}>{t('settings.translationManagement', 'Translation Management')}</Title>
+          </Group>
+
+          <Text size="sm" c="dimmed">
             {t(
               'settings.translationDesc',
               'Manage application translations and localization using Lokalise'
             )}
-          </p>
+          </Text>
 
-          <div className="translation-card">
-            <div className="translation-info">
-              <h4>{t('settings.lokalise', 'Lokalise Platform')}</h4>
-              <p>
-                {t(
-                  'settings.lokaliseInfo',
-                  'Edit translations for Dutch (NL), English (EN), and German (DE). Changes sync automatically to the application.'
-                )}
-              </p>
-              <ul className="translation-features">
-                <li>✓ {t('settings.feature1', 'Real-time translation updates')}</li>
-                <li>✓ {t('settings.feature2', 'Multi-language support (NL, EN, DE)')}</li>
-                <li>✓ {t('settings.feature3', 'Context-aware translation editor')}</li>
-                <li>✓ {t('settings.feature4', 'Translation quality checks')}</li>
-              </ul>
-            </div>
-            <div className="translation-action">
-              <Button color="blue" size="lg" onClick={handleLokaliseClick} leftSection="globe">
-                <Globe size={18} style={{ marginRight: '8px' }} />
-                {t('settings.openLokalise', 'Open Lokalise')}
-              </Button>
-            </div>
-          </div>
-        </section>
+          <Card
+            shadow="sm"
+            padding="xl"
+            radius="md"
+            withBorder
+            style={{
+              background: 'linear-gradient(135deg, var(--mantine-color-blue-0) 0%, var(--mantine-color-cyan-0) 100%)',
+            }}
+          >
+            <Group align="flex-start" gap="xl" wrap="nowrap">
+              <Stack gap="md" style={{ flex: 1 }}>
+                <Title order={4} c="blue.9">
+                  {t('settings.lokalise', 'Lokalise Platform')}
+                </Title>
+                <Text size="sm" c="blue.7">
+                  {t(
+                    'settings.lokaliseInfo',
+                    'Edit translations for Dutch (NL), English (EN), and German (DE). Changes sync automatically to the application.'
+                  )}
+                </Text>
 
-        {/* Application Information */}
-        <section className="settings-section">
-          <h3 className="section-title">{t('settings.appInfo', 'Application Information')}</h3>
-          <div className="app-info-grid">
-            <div className="info-item">
-              <span className="info-label">{t('settings.environment', 'Environment')}:</span>
-              <span className="info-value">{environmentLabel}</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">{t('settings.apiUrl', 'API URL')}:</span>
-              <span className="info-value">{apiHost}</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">{t('settings.region', 'Region')}:</span>
-              <span className="info-value">West Europe</span>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
+                  <List size="sm" spacing="xs" c="blue.7" icon={<Text fw={700}>✓</Text>}>
+                    <List.Item>{t('settings.feature1', 'Real-time translation updates')}</List.Item>
+                    <List.Item>{t('settings.feature2', 'Multi-language support (NL, EN, DE)')}</List.Item>
+                    <List.Item>{t('settings.feature3', 'Context-aware translation editor')}</List.Item>
+                    <List.Item>{t('settings.feature4', 'Translation quality checks')}</List.Item>
+                  </List>
+                </SimpleGrid>
+              </Stack>
+
+              <Box style={{ flexShrink: 0 }}>
+                <Button
+                  color="blue"
+                  size="lg"
+                  onClick={handleLokaliseClick}
+                  leftSection={<Globe size={18} />}
+                >
+                  {t('settings.openLokalise', 'Open Lokalise')}
+                </Button>
+              </Box>
+            </Group>
+          </Card>
+        </Stack>
+      </Paper>
+
+      {/* Application Information */}
+      <Paper shadow="sm" p="xl" radius="md" withBorder>
+        <Stack gap="md">
+          <Title order={3}>{t('settings.appInfo', 'Application Information')}</Title>
+
+          <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
+            <Paper shadow="xs" p="md" radius="md" withBorder>
+              <Stack gap="xs">
+                <Text size="xs" tt="uppercase" fw={600} c="dimmed">
+                  {t('settings.environment', 'Environment')}
+                </Text>
+                <Text size="sm" fw={500} ff="monospace">
+                  {environmentLabel}
+                </Text>
+              </Stack>
+            </Paper>
+
+            <Paper shadow="xs" p="md" radius="md" withBorder>
+              <Stack gap="xs">
+                <Text size="xs" tt="uppercase" fw={600} c="dimmed">
+                  {t('settings.apiUrl', 'API URL')}
+                </Text>
+                <Text size="sm" fw={500} ff="monospace">
+                  {apiHost}
+                </Text>
+              </Stack>
+            </Paper>
+
+            <Paper shadow="xs" p="md" radius="md" withBorder>
+              <Stack gap="xs">
+                <Text size="xs" tt="uppercase" fw={600} c="dimmed">
+                  {t('settings.region', 'Region')}
+                </Text>
+                <Text size="sm" fw={500} ff="monospace">
+                  West Europe
+                </Text>
+              </Stack>
+            </Paper>
+          </SimpleGrid>
+        </Stack>
+      </Paper>
+    </Stack>
   );
 };
 
