@@ -151,6 +151,7 @@ const AdminPortal: React.FC = () => {
                 totalMembers={totalMembers}
                 onViewDetails={handleViewDetails}
                 loading={loading}
+                onRefresh={loadMembersData}
               />
             )}
           </div>

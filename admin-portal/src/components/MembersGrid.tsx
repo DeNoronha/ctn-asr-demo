@@ -8,6 +8,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useGridState } from '../hooks/useGridState';
 import { useApiError } from '../hooks/useApiError';
 import type { Member } from '../services/api';
+import { apiV2 } from '../services/apiV2';
 import { exportToCSV, exportToPDF } from '../utils/exportUtils';
 import { sanitizeGridCell } from '../utils/sanitize';
 import { getStatusColor, getMembershipColor } from '../utils/colors';
@@ -21,6 +22,7 @@ interface MembersGridProps {
   onViewDetails: (member: Member) => void;
   onPageChange?: (page: number, pageSize: number) => void;
   loading?: boolean;
+  onRefresh?: () => Promise<void>;
 }
 
 const MembersGrid: React.FC<MembersGridProps> = ({
@@ -29,6 +31,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   onViewDetails,
   onPageChange,
   loading = false,
+  onRefresh,
 }) => {
   const { t } = useTranslation();
   const notification = useNotification();
@@ -212,25 +215,53 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           break;
         }
 
-        case 'approve':
-          // TODO: Implement API call for bulk approval
+        case 'approve': {
+          // Bulk approve: Update status from PENDING to ACTIVE
+          const approvePromises = selectedIds.map(orgId =>
+            apiV2.updateMemberStatus(orgId, 'ACTIVE', 'Bulk approved via admin portal')
+          );
+          await Promise.all(approvePromises);
           notification.showSuccess(
-            `Approved ${selectedIds.length} member${selectedIds.length > 1 ? 's' : ''} (API implementation pending)`
+            `Approved ${selectedIds.length} member${selectedIds.length > 1 ? 's' : ''}`
           );
+          // Refresh the grid to show updated statuses
+          if (onRefresh) {
+            await onRefresh();
+          }
           break;
+        }
 
-        case 'suspend':
-          notification.showInfo(
-            `Suspend action for ${selectedIds.length} members (requires API implementation)`
+        case 'suspend': {
+          // Bulk suspend: Update status to SUSPENDED
+          const suspendPromises = selectedIds.map(orgId =>
+            apiV2.updateMemberStatus(orgId, 'SUSPENDED', 'Bulk suspended via admin portal')
           );
+          await Promise.all(suspendPromises);
+          notification.showSuccess(
+            `Suspended ${selectedIds.length} member${selectedIds.length > 1 ? 's' : ''}`
+          );
+          // Refresh the grid to show updated statuses
+          if (onRefresh) {
+            await onRefresh();
+          }
           break;
+        }
 
-        case 'delete':
-          // TODO: Implement API call for bulk deletion
-          notification.showWarning(
-            `Delete action for ${selectedIds.length} members (API implementation required)`
+        case 'delete': {
+          // Bulk delete: Soft delete by updating status to TERMINATED
+          const deletePromises = selectedIds.map(orgId =>
+            apiV2.updateMemberStatus(orgId, 'TERMINATED', 'Bulk deleted via admin portal')
           );
+          await Promise.all(deletePromises);
+          notification.showSuccess(
+            `Deleted ${selectedIds.length} member${selectedIds.length > 1 ? 's' : ''}`
+          );
+          // Refresh the grid to remove deleted members
+          if (onRefresh) {
+            await onRefresh();
+          }
           break;
+        }
       }
 
       setSelectedIds([]);
@@ -240,7 +271,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       setIsBulkProcessing(false);
       setShowBulkDialog(false);
     }
-  }, [gridData, selectedIds, bulkAction, notification, handleError]);
+  }, [gridData, selectedIds, bulkAction, notification, handleError, onRefresh]);
 
   const handleCSVExport = useCallback(() => {
     const dataToExport =
