@@ -111,7 +111,8 @@ body {
 	width: 100%;
 }
 
-/* Consistent view container - all views use full width with padding */
+/* Consistent view container - all views use full width with NO extra padding */
+/* .content-area already provides 24px padding - views should not add more */
 .view-container,
 .dashboard-view,
 .members-view,
@@ -131,9 +132,14 @@ body {
 .kvk-review-queue,
 .tasks-view,
 .tasks-grid,
-.user-management {
+.user-management,
+.about-view,
+.member-detail-view,
+.not-found-view {
 	width: 100%;
 	box-sizing: border-box;
+	padding: 0 !important; /* Override any view-specific padding */
+	margin: 0; /* Let parent handle centering */
 }
 /* View Styles */
 .view-header {
