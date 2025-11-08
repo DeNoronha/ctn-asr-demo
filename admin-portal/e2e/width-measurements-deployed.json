@@ -1,0 +1,106 @@
+{
+  "measurements": [
+    {
+      "screen": "Dashboard",
+      "url": "https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net/",
+      "headerWidth": 0,
+      "contentWidth": 0,
+      "widthDiff": 0,
+      "isConsistent": true,
+      "fullMeasurement": {
+        "header": null,
+        "contentArea": null,
+        "dataTable": null,
+        "gridContainer": null
+      }
+    },
+    {
+      "screen": "Members",
+      "url": "https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net/members",
+      "headerWidth": 0,
+      "contentWidth": 0,
+      "widthDiff": 0,
+      "isConsistent": true,
+      "fullMeasurement": {
+        "header": null,
+        "contentArea": null,
+        "dataTable": null,
+        "gridContainer": null
+      }
+    },
+    {
+      "screen": "User Management",
+      "url": "https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net/user-management",
+      "headerWidth": 0,
+      "contentWidth": 0,
+      "widthDiff": 0,
+      "isConsistent": true,
+      "fullMeasurement": {
+        "header": null,
+        "contentArea": null,
+        "dataTable": null,
+        "gridContainer": null
+      }
+    },
+    {
+      "screen": "Audit Logs",
+      "url": "https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net/audit",
+      "headerWidth": 0,
+      "contentWidth": 0,
+      "widthDiff": 0,
+      "isConsistent": true,
+      "fullMeasurement": {
+        "header": null,
+        "contentArea": null,
+        "dataTable": null,
+        "gridContainer": null
+      }
+    },
+    {
+      "screen": "Health Status",
+      "url": "https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net/health",
+      "headerWidth": 0,
+      "contentWidth": 0,
+      "widthDiff": 0,
+      "isConsistent": true,
+      "fullMeasurement": {
+        "header": null,
+        "contentArea": null,
+        "dataTable": null,
+        "gridContainer": null
+      }
+    },
+    {
+      "screen": "Tasks",
+      "url": "https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net/tasks",
+      "headerWidth": 0,
+      "contentWidth": 0,
+      "widthDiff": 0,
+      "isConsistent": true,
+      "fullMeasurement": {
+        "header": null,
+        "contentArea": null,
+        "dataTable": null,
+        "gridContainer": null
+      }
+    },
+    {
+      "screen": "About",
+      "url": "https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net/about",
+      "headerWidth": 0,
+      "contentWidth": 0,
+      "widthDiff": 0,
+      "isConsistent": true,
+      "fullMeasurement": {
+        "header": null,
+        "contentArea": null,
+        "dataTable": null,
+        "gridContainer": null
+      }
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "inconsistent": 0
+  }
+}

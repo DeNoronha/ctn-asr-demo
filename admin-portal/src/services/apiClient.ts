@@ -1,5 +1,6 @@
 import { AsrApiClient } from '@ctn/api-client';
 import { msalInstance } from '../auth/AuthContext';
+import { logger } from '../utils/logger';
 
 /**
  * Get access token for API requests
@@ -18,7 +19,11 @@ async function getAccessToken(): Promise<string> {
 
     return response.accessToken;
   } catch (error) {
-    console.error('Failed to acquire token:', error);
+    // SEC-009: Sanitize error to prevent token leakage in logs
+    logger.error('Failed to acquire token', {
+      errorType: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Token acquisition failed',
+    });
     throw error;
   }
 }
@@ -27,10 +32,11 @@ async function getAccessToken(): Promise<string> {
  * Global error handler for API client
  */
 function handleApiError(error: Error): void {
-  console.error('API Client Error:', {
+  // SEC-009: Sanitize error output - never log full stack traces or error objects in production
+  logger.error('API Client Error', {
     message: error.message,
     name: error.name,
-    stack: error.stack
+    // Stack traces only in development via logger utility
   });
 
   // You can add additional error handling here:

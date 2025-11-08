@@ -1,6 +1,7 @@
 import { Select } from '@mantine/core';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { logger } from '../utils/logger';
 import './LanguageSwitcher.css';
 
 interface Language {
@@ -37,7 +38,7 @@ const LanguageSwitcher: React.FC = () => {
     try {
       localStorage.setItem('ctn-language', code);
     } catch (error) {
-      console.warn('Failed to save language preference:', error);
+      logger.warn('Failed to save language preference (localStorage quota exceeded):', error);
     }
 
     // Change language without reloading the page

@@ -2,6 +2,8 @@
  * Date formatting utilities with automatic locale detection and timezone awareness
  */
 
+import { logger } from './logger';
+
 /**
  * Get the user's preferred locale from browser settings
  * Falls back to 'en-GB' for European context
@@ -28,7 +30,7 @@ export const formatDate = (date: string | Date, options?: Intl.DateTimeFormatOpt
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(dateObj.getTime())) {
-    console.error('Invalid date:', date);
+    logger.error('Invalid date in formatDate', { input: typeof date === 'string' ? date : 'Date object' });
     return 'Invalid Date';
   }
 
@@ -55,7 +57,7 @@ export const formatDateTime = (date: string | Date): string => {
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(dateObj.getTime())) {
-    console.error('Invalid date:', date);
+    logger.error('Invalid date in formatDate', { input: typeof date === 'string' ? date : 'Date object' });
     return 'Invalid Date';
   }
 
@@ -82,7 +84,7 @@ export const formatTime = (date: string | Date): string => {
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(dateObj.getTime())) {
-    console.error('Invalid date:', date);
+    logger.error('Invalid date in formatTime', { input: typeof date === 'string' ? date : 'Date object' });
     return 'Invalid Time';
   }
 
@@ -106,7 +108,7 @@ export const getRelativeTime = (date: string | Date): string => {
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(dateObj.getTime())) {
-    console.error('Invalid date:', date);
+    logger.error('Invalid date in getRelativeTime', { input: typeof date === 'string' ? date : 'Date object' });
     return 'Invalid Date';
   }
 
