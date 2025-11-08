@@ -1,5 +1,5 @@
-import { Button, Menu, Modal, Group, TextInput, Stack, Skeleton, CloseButton, Tooltip } from '@mantine/core';
-import { IconSearch } from '@tabler/icons-react';
+import { Button, Menu, Modal, Group, TextInput, Stack, Skeleton, CloseButton, Tooltip, ActionIcon } from '@mantine/core';
+import { IconSearch, IconEye, IconEdit, IconTrash } from '@tabler/icons-react';
 import { DataTable, useDataTableColumns, type DataTableSortStatus } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -405,6 +405,55 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           </span>
         ),
       },
+      {
+        accessor: 'actions',
+        title: 'Actions',
+        width: '0%', // Fit content width
+        toggleable: false,
+        sortable: false,
+        render: (member) => (
+          <Group gap={4} wrap="nowrap">
+            <Tooltip label="View details">
+              <ActionIcon
+                variant="subtle"
+                color="blue"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  onViewDetails(member);
+                }}
+              >
+                <IconEye size={16} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label="Edit member">
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  // TODO: Implement edit functionality
+                  notification.showInfo('Edit functionality coming soon');
+                }}
+              >
+                <IconEdit size={16} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label="Delete member">
+              <ActionIcon
+                variant="subtle"
+                color="red"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  // TODO: Implement delete functionality
+                  notification.showWarning('Delete functionality requires confirmation');
+                }}
+              >
+                <IconTrash size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        ),
+      },
     ],
   });
 
@@ -530,6 +579,11 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             storeColumnsKey="members-grid"
             onRowClick={handleRowClick}
             rowStyle={() => ({ cursor: 'pointer' })}
+            rowBackgroundColor={(member) =>
+              selectedIds.includes(member.org_id)
+                ? { light: '#e7f5ff', dark: '#1c2a35' }
+                : undefined
+            }
           />
         )}
       </ErrorBoundary>

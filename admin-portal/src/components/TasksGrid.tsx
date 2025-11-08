@@ -1,5 +1,6 @@
 import { useMsal } from '@azure/msal-react';
-import { Button, TextInput, Textarea, Select, Modal, Group, Tabs, Stack, Skeleton } from '@mantine/core';
+import { Button, TextInput, Textarea, Select, Modal, Group, Tabs, Stack, Skeleton, ActionIcon, Tooltip } from '@mantine/core';
+import { IconEdit, IconCheck, IconEye } from '@tabler/icons-react';
 import { DatePickerInput } from '@mantine/dates';
 import { DataTable, useDataTableColumns } from 'mantine-datatable';
 import axios from 'axios';
@@ -471,20 +472,38 @@ const TasksGrid: React.FC = () => {
       {
         accessor: 'task_id',
         title: 'Actions',
-        width: 220,
+        width: '0%',
         toggleable: false,
         sortable: false,
         render: (task) => (
-          <div>
-            <Button leftSection="edit" variant="subtle" onClick={() => openEditDialog(task)}>
-              Edit
-            </Button>
+          <Group gap={4} wrap="nowrap">
+            <Tooltip label="Edit task">
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  openEditDialog(task);
+                }}
+              >
+                <IconEdit size={16} />
+              </ActionIcon>
+            </Tooltip>
             {task.status !== 'completed' && task.status !== 'cancelled' && (
-              <Button leftSection="check" variant="subtle" onClick={() => handleCompleteTask(task.task_id)}>
-                Complete
-              </Button>
+              <Tooltip label="Complete task">
+                <ActionIcon
+                  variant="subtle"
+                  color="green"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    handleCompleteTask(task.task_id);
+                  }}
+                >
+                  <IconCheck size={16} />
+                </ActionIcon>
+              </Tooltip>
             )}
-          </div>
+          </Group>
         ),
       },
     ],
@@ -544,19 +563,24 @@ const TasksGrid: React.FC = () => {
       {
         accessor: 'legal_entity_id',
         title: 'Actions',
-        width: 180,
+        width: '0%',
         toggleable: false,
         sortable: false,
         render: (task) => (
-          <div>
-            <Button
-              leftSection="preview"
-              variant="subtle"
-              onClick={() => openReviewDialog(task)}
-            >
-              Review
-            </Button>
-          </div>
+          <Group gap={4} wrap="nowrap">
+            <Tooltip label="Review verification">
+              <ActionIcon
+                variant="subtle"
+                color="blue"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  openReviewDialog(task);
+                }}
+              >
+                <IconEye size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
         ),
       },
     ],
@@ -620,19 +644,24 @@ const TasksGrid: React.FC = () => {
       {
         accessor: 'application_id',
         title: 'Actions',
-        width: 180,
+        width: '0%',
         toggleable: false,
         sortable: false,
         render: (app) => (
-          <div>
-            <Button
-              leftSection="preview"
-              variant="subtle"
-              onClick={() => openApplicationDialog(app)}
-            >
-              Review
-            </Button>
-          </div>
+          <Group gap={4} wrap="nowrap">
+            <Tooltip label="Review application">
+              <ActionIcon
+                variant="subtle"
+                color="blue"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  openApplicationDialog(app);
+                }}
+              >
+                <IconEye size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
         ),
       },
     ],
