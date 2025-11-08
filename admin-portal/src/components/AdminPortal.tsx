@@ -3,7 +3,8 @@
  * Main container for authenticated admin interface
  */
 
-import { Button, Tooltip } from '@mantine/core';
+import { AppShell, Burger, Button, Container, Group, Tooltip } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 
 import { LogOut, User } from './icons';
 import type React from 'react';
@@ -44,7 +45,7 @@ const AdminPortal: React.FC = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [totalMembers, setTotalMembers] = useState<number>(0);
   const [showForm, setShowForm] = useState(false);
-  const [drawerExpanded, setDrawerExpanded] = useState(true);
+  const [navbarOpened, { toggle: toggleNavbar }] = useDisclosure(true);
   const [selectedView, setSelectedView] = useState<string>('dashboard');
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
@@ -272,77 +273,80 @@ const AdminPortal: React.FC = () => {
   return (
     <>
       <SkipToContent />
-      <div className="app-container">
-        <AdminSidebar
-          expanded={drawerExpanded}
-          onSelect={handleMenuSelect}
-          selectedItem={selectedView === 'member-detail' ? 'members' : selectedView}
-        />
-        <div className="drawer-content">
-          <div className="main-content">
-            <header className="app-header">
-              <div>
-                <div className="header-left">
-                  <Tooltip label={drawerExpanded ? 'Collapse sidebar' : 'Expand sidebar'} position="bottom">
-                    <Button
-                      leftSection="menu"
-                      variant="subtle"
-                      onClick={() => setDrawerExpanded(!drawerExpanded)}
-                      className="menu-button"
-                      aria-label={drawerExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-                    >
-                      {drawerExpanded ? '◀' : '▶'}
-                    </Button>
-                  </Tooltip>
-                  <img src="/assets/logos/ctn.png" alt="CTN Logo" className="header-logo" />
-                  <h1>{t('common.appNameShort')}</h1>
-                </div>
-                <div className="header-right">
-                  <LanguageSwitcher />
-                  {user && (
-                    <div className="user-info">
-                      <User size={18} />
-                      <div className="user-details">
-                        <span className="user-name">{user.account.name}</span>
-                        <span className="user-role">{user.primaryRole}</span>
-                      </div>
-                      <Tooltip label="Sign out" position="bottom">
-                        <Button
-                          variant="subtle"
-                          onClick={handleLogout}
-                          title="Sign out"
-                          aria-label="Sign out"
-                        >
-                          <LogOut size={16} />
-                        </Button>
-                      </Tooltip>
+      <AppShell
+        header={{ height: 60 }}
+        navbar={{
+          width: 240,
+          breakpoint: 'sm',
+          collapsed: { desktop: !navbarOpened },
+        }}
+        padding="md"
+      >
+        <AppShell.Header>
+          <Container size="xl" h="100%">
+            <Group h="100%" px="md" justify="space-between">
+              <Group>
+                <Burger
+                  opened={navbarOpened}
+                  onClick={toggleNavbar}
+                  size="sm"
+                  aria-label={navbarOpened ? 'Collapse sidebar' : 'Expand sidebar'}
+                />
+                <img src="/assets/logos/ctn.png" alt="CTN Logo" style={{ height: 40 }} />
+                <h1 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>{t('common.appNameShort')}</h1>
+              </Group>
+              <Group>
+                <LanguageSwitcher />
+                {user && (
+                  <Group gap="xs">
+                    <User size={18} />
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 500 }}>{user.account.name}</div>
+                      <div style={{ fontSize: 12, color: '#868e96' }}>{user.primaryRole}</div>
                     </div>
-                  )}
-                </div>
+                    <Tooltip label="Sign out" position="bottom">
+                      <Button
+                        variant="subtle"
+                        onClick={handleLogout}
+                        aria-label="Sign out"
+                      >
+                        <LogOut size={16} />
+                      </Button>
+                    </Tooltip>
+                  </Group>
+                )}
+              </Group>
+            </Group>
+          </Container>
+        </AppShell.Header>
+
+        <AppShell.Navbar p="md">
+          <AdminSidebar
+            expanded={navbarOpened}
+            onSelect={handleMenuSelect}
+            selectedItem={selectedView === 'member-detail' ? 'members' : selectedView}
+          />
+        </AppShell.Navbar>
+
+        <AppShell.Main>
+          <Container size="xl">
+            {renderContent()}
+          </Container>
+
+          <footer className="app-footer" style={{ marginTop: 'auto' }}>
+            <Container size="xl">
+              <Group justify="center" gap="xl" py="lg" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                <img src="/assets/logos/contargo.png" alt="Contargo" style={{ height: 40, opacity: 0.9 }} />
+                <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" style={{ height: 40, opacity: 0.9 }} />
+                <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" style={{ height: 40, opacity: 0.9 }} />
+              </Group>
+              <div style={{ textAlign: 'center', paddingTop: '1rem', paddingBottom: '1rem', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
+                <p>&copy; 2025 Connected Trade Network. All rights reserved.</p>
               </div>
-            </header>
-            <main id="main-content" className="content-area" tabIndex={-1}>
-              {renderContent()}
-            </main>
-            <footer className="app-footer">
-              <div className="footer-content">
-                <div className="footer-logos">
-                  <img src="/assets/logos/contargo.png" alt="Contargo" className="partner-logo-img" />
-                  <img
-                    src="/assets/logos/Inland Terminals Group.png"
-                    alt="Inland Terminals Group"
-                    className="partner-logo-img"
-                  />
-                  <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" className="partner-logo-img" />
-                </div>
-                <div className="footer-bottom">
-                  <p>&copy; 2025 Connected Trade Network. All rights reserved.</p>
-                </div>
-              </div>
-            </footer>
-          </div>
-        </div>
-      </div>
+            </Container>
+          </footer>
+        </AppShell.Main>
+      </AppShell>
     </>
   );
 };
