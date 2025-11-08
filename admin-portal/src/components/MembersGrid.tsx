@@ -380,7 +380,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   };
 
   // Column definitions for mantine-datatable
-  const { effectiveColumns, resetColumnsToggle } = useDataTableColumns<Member>({
+  const { effectiveColumns, resetColumnsToggle, resetColumnsOrder } = useDataTableColumns<Member>({
     key: 'members-grid',
     columns: [
       {
@@ -388,6 +388,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         title: getColumnTitle('org_id'),
         width: 180,
         toggleable: false, // Cannot be hidden - always visible
+        draggable: true,
         resizable: true,
         sortable: true,
       },
@@ -396,6 +397,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         title: getColumnTitle('legal_name'),
         width: 200,
         toggleable: false, // Cannot be hidden - always visible
+        draggable: true,
         resizable: true,
         sortable: true,
         filter: (
@@ -416,6 +418,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         title: getColumnTitle('status'),
         width: 120,
         toggleable: true,
+        draggable: true,
         resizable: true,
         sortable: true,
         render: (member) => (
@@ -433,32 +436,36 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'lei',
         title: 'LEI',
-        width: 150,
+        width: 120,
         toggleable: true,
+        draggable: true,
         resizable: true,
         sortable: true,
       },
       {
         accessor: 'euid',
         title: 'EUID',
-        width: 150,
+        width: 120,
         toggleable: true,
+        draggable: true,
         resizable: true,
         sortable: true,
       },
       {
         accessor: 'kvk',
         title: 'KVK',
-        width: 120,
+        width: 100,
         toggleable: true,
+        draggable: true,
         resizable: true,
         sortable: true,
       },
       {
         accessor: 'created_at',
         title: getColumnTitle('created_at'),
-        width: 140,
+        width: 110,
         toggleable: true,
+        draggable: true,
         resizable: true,
         sortable: true,
         render: (member) => <div>{new Date(member.created_at).toLocaleDateString()}</div>,
@@ -468,6 +475,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         title: getColumnTitle('domain'),
         width: 150,
         toggleable: true,
+        draggable: true,
         resizable: true,
         sortable: true,
         defaultToggle: false, // Hidden by default
@@ -480,6 +488,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         title: getColumnTitle('membership_level'),
         width: 120,
         toggleable: true,
+        draggable: true,
         resizable: true,
         sortable: true,
         defaultToggle: false, // Hidden by default
@@ -500,6 +509,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         title: 'Actions',
         width: '0%', // Fit content width
         toggleable: false,
+        draggable: false, // Pinned - cannot be dragged
         sortable: false,
         render: (member) => (
           <Group gap={4} wrap="nowrap">
