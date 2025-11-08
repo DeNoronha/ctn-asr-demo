@@ -4,15 +4,33 @@
   height: 100%;
 }
 
-/* Checkbox Column Styling - Properly centered using DataTable classes */
-/* DataTable automatically renders checkboxes in a special column */
+/* Checkbox Column Styling - Equal padding and perfect centering */
+
+/* Target the checkbox column cells for equal padding */
+.members-grid-container th:has(.mantine-Checkbox-root),
+.members-grid-container td:has(.mantine-Checkbox-root) {
+  padding: 12px !important; /* Equal padding on all sides */
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Center checkbox wrapper div */
+.members-grid-container th:has(.mantine-Checkbox-root) > div,
+.members-grid-container td:has(.mantine-Checkbox-root) > div {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+}
 
 /* Center checkbox root elements */
 .members-grid-container .mantine-Checkbox-root {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* Checkbox input sizing */
@@ -22,29 +40,13 @@
   min-width: 18px !important;
   min-height: 18px !important;
   cursor: pointer !important;
+  margin: 0 !important;
 }
 
 /* Checkbox icon sizing */
 .members-grid-container .mantine-Checkbox-icon {
   width: 14px !important;
   height: 14px !important;
-}
-
-/* Center the entire checkbox cell column (first column) */
-.members-grid-container th:has(.mantine-Checkbox-root),
-.members-grid-container td:has(.mantine-Checkbox-root) {
-  text-align: center !important;
-  vertical-align: middle !important;
-  padding: 8px !important;
-}
-
-/* Ensure checkbox wrapper div is centered */
-.members-grid-container th:has(.mantine-Checkbox-root) > div,
-.members-grid-container td:has(.mantine-Checkbox-root) > div {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 100% !important;
 }
 
 /* Stage 3 Refactor: Popover/Menu dropdown styles - Simplified selectors */

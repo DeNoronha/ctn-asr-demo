@@ -599,48 +599,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             style={{ minWidth: '250px' }}
           />
 
-          {/* Export Menu */}
-          <Menu>
-            <Menu.Target>
-              <Button variant="outline" size="sm">
-                {t('common.export', 'Export')}
-              </Button>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Item
-                leftSection={<IconFileSpreadsheet size={16} />}
-                onClick={handleExcelExport}
-              >
-                Export to Excel (.xlsx)
-                {selectedIds.length > 0 && (
-                  <Badge size="sm" ml="xs" color="blue">
-                    {selectedIds.length} selected
-                  </Badge>
-                )}
-              </Menu.Item>
-              <Menu.Item
-                leftSection={<IconFileTypeCsv size={16} />}
-                onClick={handleCSVExport}
-              >
-                Export to CSV
-                {selectedIds.length > 0 && (
-                  <Badge size="sm" ml="xs" color="blue">
-                    {selectedIds.length} selected
-                  </Badge>
-                )}
-              </Menu.Item>
-              <Menu.Item onClick={handlePDFExport}>
-                Export to PDF
-                {selectedIds.length > 0 && (
-                  <Badge size="sm" ml="xs" color="blue">
-                    {selectedIds.length} selected
-                  </Badge>
-                )}
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
-
-          {/* Bulk Actions Menu - Only visible when rows are selected */}
+          {/* Bulk Actions Menu */}
           {selectedIds.length > 0 && (
             <Menu>
               <Menu.Target>
