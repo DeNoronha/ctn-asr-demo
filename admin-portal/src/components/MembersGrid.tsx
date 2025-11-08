@@ -521,8 +521,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                 color="gray"
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
-                  // TODO: Implement edit functionality
-                  notification.showInfo('Edit functionality coming soon');
+                  onViewDetails(member);
                 }}
               >
                 <IconEdit size={16} />
