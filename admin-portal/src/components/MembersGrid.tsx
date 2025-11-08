@@ -384,6 +384,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     key: 'members-grid',
     columns: [
       {
+        accessor: 'org_id',
+        title: getColumnTitle('org_id'),
+        width: 180,
+        toggleable: false, // Cannot be hidden - always visible
+        resizable: true,
+        sortable: true,
+      },
+      {
         accessor: 'legal_name',
         title: getColumnTitle('legal_name'),
         width: 200,
@@ -453,15 +461,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         resizable: true,
         sortable: true,
         render: (member) => <div>{new Date(member.created_at).toLocaleDateString()}</div>,
-      },
-      {
-        accessor: 'org_id',
-        title: getColumnTitle('org_id'),
-        width: 180,
-        toggleable: true,
-        resizable: true,
-        sortable: true,
-        defaultToggle: false, // Hidden by default
       },
       {
         accessor: 'domain',
