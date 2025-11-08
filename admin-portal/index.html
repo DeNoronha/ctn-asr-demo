@@ -12,6 +12,14 @@
     <link rel="apple-touch-icon" href="/logo192.png" />
     <link rel="manifest" href="/manifest.json" />
     <title>CTN Admin Portal</title>
+
+    <!-- Mantine ColorSchemeScript - prevents flash of wrong theme -->
+    <script>
+      try {
+        var colorScheme = window.localStorage.getItem('mantine-color-scheme-value') || 'light';
+        document.documentElement.setAttribute('data-mantine-color-scheme', colorScheme);
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

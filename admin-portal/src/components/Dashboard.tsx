@@ -312,16 +312,6 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
           </div>
         </Paper>
 
-      {/* Partner Logos */}
-      <Paper withBorder p="md" radius="md">
-        <Title order={3} size="h4" mb="md">{t('dashboard.partnersWith', 'In Partnership With')}</Title>
-        <Group justify="center" gap="xl">
-          <img src="/assets/logos/DIL.png" alt="Data in Logistics" style={{ height: 50 }} />
-          <img src="/assets/logos/contargo.png" alt="Contargo" style={{ height: 50 }} />
-          <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" style={{ height: 50 }} />
-          <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" style={{ height: 50 }} />
-        </Group>
-      </Paper>
     </Stack>
   );
 };

@@ -3,7 +3,7 @@
  * Main container for authenticated admin interface
  */
 
-import { AppShell, Burger, Button, Container, Group, Tooltip, ActionIcon, useMantineColorScheme, useComputedColorScheme } from '@mantine/core';
+import { AppShell, Burger, Button, Container, Group, Tooltip, ActionIcon, useMantineColorScheme, useComputedColorScheme, Paper, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 
 import { LogOut, User, Sun, Moon } from './icons';
@@ -345,18 +345,23 @@ const AdminPortal: React.FC = () => {
             {renderContent()}
           </Container>
 
-          <footer className="app-footer" style={{ marginTop: 'auto' }}>
-            <Container size="xl">
-              <Group justify="center" gap="xl" py="lg" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                <img src="/assets/logos/contargo.png" alt="Contargo" style={{ height: 40, opacity: 0.9 }} />
-                <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" style={{ height: 40, opacity: 0.9 }} />
-                <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" style={{ height: 40, opacity: 0.9 }} />
+          <Container size="xl" mt="xl">
+            <Paper withBorder p="md" radius="md" mt="xl">
+              <Group justify="space-between" wrap="wrap">
+                <Group>
+                  <img src="/assets/logos/ctn.png" alt="CTN" style={{ height: 30 }} />
+                  <Text size="sm" c="dimmed">
+                    © 2025 Connected Trade Network. All rights reserved.
+                  </Text>
+                </Group>
+                <Group gap="xl">
+                  <img src="/assets/logos/contargo.png" alt="Contargo" style={{ height: 30, opacity: 0.7 }} />
+                  <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" style={{ height: 30, opacity: 0.7 }} />
+                  <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" style={{ height: 30, opacity: 0.7 }} />
+                </Group>
               </Group>
-              <div style={{ textAlign: 'center', paddingTop: '1rem', paddingBottom: '1rem', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
-                <p>&copy; 2025 Connected Trade Network. All rights reserved.</p>
-              </div>
-            </Container>
-          </footer>
+            </Paper>
+          </Container>
         </AppShell.Main>
       </AppShell>
     </>

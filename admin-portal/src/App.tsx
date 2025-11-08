@@ -46,7 +46,7 @@ const LoadingFallback = () => (
 
 function App() {
   return (
-    <MantineProvider theme={theme}>
+    <MantineProvider theme={theme} defaultColorScheme="light">
       <Notifications position="top-right" zIndex={2077} />
       <ErrorBoundary>
         <BrowserRouter>

@@ -4,7 +4,7 @@
 	box-sizing: border-box;
 }
 
-/* CTN Brand Colors */
+/* CTN Brand Colors - Light Mode */
 :root {
 	--ctn-dark-blue: #1a4d6d;
 	--ctn-orange: #ff8c00;
@@ -16,6 +16,20 @@
 	--ctn-success: #059669; /* WCAG AA compliant (7.2:1 contrast) */
 	--ctn-error: #ef4444;
 	--ctn-warning: #f59e0b;
+}
+
+/* CTN Brand Colors - Dark Mode */
+[data-mantine-color-scheme="dark"] {
+	--ctn-dark-blue: #4a9fd8;
+	--ctn-orange: #ffa940;
+	--ctn-light-blue: #40c8f4;
+	--ctn-bg: #1a1b1e;
+	--ctn-text: #c1c2c5;
+	--ctn-text-light: #909296;
+	--ctn-border: #373a40;
+	--ctn-success: #51cf66;
+	--ctn-error: #ff6b6b;
+	--ctn-warning: #ffd43b;
 }
 
 body {
