@@ -1,4 +1,4 @@
-import { Button, Modal, Stack, Skeleton } from '@mantine/core';
+import { Button, Modal, Stack, Skeleton, ActionIcon, Tooltip, Group } from '@mantine/core';
 import { DataTable, useDataTableColumns } from 'mantine-datatable';
 import { AlertTriangle, Pencil, Plus, Trash2, Users } from './icons';
 import React, { useState, useCallback } from 'react';
@@ -176,32 +176,40 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
       {
         accessor: 'legal_entity_contact_id',
         title: 'Actions',
-        width: 120,
+        width: '0%',
         toggleable: false,
         sortable: false,
         render: (contact) => {
           const contactName = contact?.full_name || 'contact';
           return (
-            <div className="action-buttons">
-              <Button
-                variant="subtle"
-                size="sm"
-                title="Edit contact"
-                aria-label={`Edit ${contactName}`}
-                onClick={() => handleEditContact(contact)}
-              >
-                <Pencil size={16} />
-              </Button>
-              <Button
-                variant="subtle"
-                size="sm"
-                title="Delete contact"
-                aria-label={`Delete ${contactName}`}
-                onClick={() => handleDeleteClick(contact)}
-              >
-                <Trash2 size={16} />
-              </Button>
-            </div>
+            <Group gap={4} wrap="nowrap">
+              <Tooltip label={`Edit ${contactName}`}>
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    handleEditContact(contact);
+                  }}
+                  aria-label={`Edit ${contactName}`}
+                >
+                  <Pencil size={16} />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label={`Delete ${contactName}`}>
+                <ActionIcon
+                  variant="subtle"
+                  color="red"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    handleDeleteClick(contact);
+                  }}
+                  aria-label={`Delete ${contactName}`}
+                >
+                  <Trash2 size={16} />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
           );
         },
       },

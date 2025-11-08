@@ -1,4 +1,4 @@
-import { Button, TextInput, Select, Modal, Group, Stack, Skeleton } from '@mantine/core';
+import { Button, TextInput, Select, Modal, Group, Stack, Skeleton, ActionIcon, Tooltip } from '@mantine/core';
 import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import axios from 'axios';
 import {
@@ -696,29 +696,37 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
       {
         accessor: 'actions' as any,
         title: 'Actions',
-        width: 120,
+        width: '0%',
         toggleable: false,
         render: (record) => (
-          <div className="actions-cell">
-            <Button
-              variant="subtle"
-              size="sm"
-              title="Edit identifier"
-              aria-label={`Edit ${record.identifier_type} identifier`}
-              onClick={() => handleEdit(record)}
-            >
-              <Pencil size={16} />
-            </Button>
-            <Button
-              variant="subtle"
-              size="sm"
-              title="Delete identifier"
-              aria-label={`Delete ${record.identifier_type} identifier`}
-              onClick={() => handleDeleteClick(record)}
-            >
-              <Trash2 size={16} />
-            </Button>
-          </div>
+          <Group gap={4} wrap="nowrap">
+            <Tooltip label={`Edit ${record.identifier_type} identifier`}>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  handleEdit(record);
+                }}
+                aria-label={`Edit ${record.identifier_type} identifier`}
+              >
+                <Pencil size={16} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label={`Delete ${record.identifier_type} identifier`}>
+              <ActionIcon
+                variant="subtle"
+                color="red"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  handleDeleteClick(record);
+                }}
+                aria-label={`Delete ${record.identifier_type} identifier`}
+              >
+                <Trash2 size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
         ),
       },
     ],

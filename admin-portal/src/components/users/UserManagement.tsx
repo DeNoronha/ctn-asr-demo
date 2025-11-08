@@ -5,7 +5,7 @@ import * as graphService from '../../services/graphService';
  * System Admins can view and manage all users
  */
 
-import { Button } from '@mantine/core';
+import { Button, ActionIcon, Tooltip, Group } from '@mantine/core';
 import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
 import { Edit2, Shield, Trash2, UserPlus } from '../icons';
 import React, { useEffect, useState, useMemo } from 'react';
@@ -251,32 +251,41 @@ const UserManagement: React.FC = () => {
       {
         accessor: 'actions' as any,
         title: 'Actions',
-        width: 120,
+        width: '0%',
         toggleable: false,
         render: (record) => {
           const isCurrentUser = record.id === currentUser?.account.localAccountId;
           return (
-            <div className="action-buttons">
-              <Button
-                variant="subtle"
-                size="sm"
-                onClick={() => handleEditUser(record)}
-                title="Edit user"
-              >
-                <Edit2 size={16} />
-              </Button>
-              {!isCurrentUser && (
-                <Button
+            <Group gap={4} wrap="nowrap">
+              <Tooltip label="Edit user">
+                <ActionIcon
                   variant="subtle"
-                  size="sm"
-                  color="red"
-                  onClick={() => handleToggleUserStatus(record.id, !record.enabled)}
-                  title={record.enabled ? 'Disable user' : 'Enable user'}
+                  color="gray"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    handleEditUser(record);
+                  }}
+                  aria-label={`Edit ${record.name}`}
                 >
-                  <Trash2 size={16} />
-                </Button>
+                  <Edit2 size={16} />
+                </ActionIcon>
+              </Tooltip>
+              {!isCurrentUser && (
+                <Tooltip label={record.enabled ? 'Disable user' : 'Enable user'}>
+                  <ActionIcon
+                    variant="subtle"
+                    color="red"
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      handleToggleUserStatus(record.id, !record.enabled);
+                    }}
+                    aria-label={record.enabled ? `Disable ${record.name}` : `Enable ${record.name}`}
+                  >
+                    <Trash2 size={16} />
+                  </ActionIcon>
+                </Tooltip>
               )}
-            </div>
+            </Group>
           );
         },
       },

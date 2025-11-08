@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Group, Modal, Select, Textarea, TextInput } from '@mantine/core';
+import { Button, Group, Modal, Select, Textarea, TextInput, ActionIcon, Tooltip } from '@mantine/core';
 import { DataTable, useDataTableColumns } from 'mantine-datatable';
+import { IconKey } from '@tabler/icons-react';
 
 import { EmptyState } from './EmptyState';
 import { ErrorBoundary } from './ErrorBoundary';
@@ -248,22 +249,26 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
       {
         accessor: 'legal_entity_endpoint_id',
         title: 'Actions',
-        width: 150,
+        width: '0%',
         toggleable: false,
         sortable: false,
         render: (endpoint) => (
-          <div>
-            <Button
-              color="blue"
-              size="sm"
-              title="Issue token for this endpoint"
-              aria-label={`Issue token for ${endpoint.endpoint_name}`}
-              onClick={() => handleIssueToken(endpoint)}
-              disabled={loading}
-            >
-              Issue Token
-            </Button>
-          </div>
+          <Group gap={4} wrap="nowrap">
+            <Tooltip label={`Issue token for ${endpoint.endpoint_name}`}>
+              <ActionIcon
+                variant="subtle"
+                color="blue"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  handleIssueToken(endpoint);
+                }}
+                disabled={loading}
+                aria-label={`Issue token for ${endpoint.endpoint_name}`}
+              >
+                <IconKey size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
         ),
       },
     ],
