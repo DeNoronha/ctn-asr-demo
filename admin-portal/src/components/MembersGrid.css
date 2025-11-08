@@ -25,6 +25,31 @@
   height: 14px;
 }
 
+/* Fix: Hide checkmark icon when checkbox is not checked to prevent "V" showing behind blue dots */
+/* Mantine Checkbox structure: .mantine-Checkbox-root > .mantine-Checkbox-input + .mantine-Checkbox-icon */
+.members-grid-container .mantine-Checkbox-root:has(.mantine-Checkbox-input:not(:checked)) .mantine-Checkbox-icon,
+.members-grid-container .mantine-Checkbox-root:has(.mantine-Checkbox-input:not([data-checked="true"])) .mantine-Checkbox-icon {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* Alternative: Hide icon when input is not checked (for browsers that don't support :has) */
+.members-grid-container .mantine-Checkbox-input:not(:checked) ~ .mantine-Checkbox-icon,
+.members-grid-container .mantine-Checkbox-input:not([data-checked="true"]) ~ .mantine-Checkbox-icon {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* Ensure checkmark only shows when checkbox is actually checked */
+.members-grid-container .mantine-Checkbox-input[data-checked="true"] ~ .mantine-Checkbox-icon,
+.members-grid-container .mantine-Checkbox-input:checked ~ .mantine-Checkbox-icon {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
 /* Stage 2 Refactor: First column (checkbox) centering - Simplified selectors */
 /* Center checkbox column header and cells */
 .members-grid-container .mantine-Table-table thead tr th:first-child,
