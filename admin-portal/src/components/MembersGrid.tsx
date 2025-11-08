@@ -1,5 +1,5 @@
-import { Button, Menu, Modal, Group, TextInput, Stack, Skeleton, CloseButton, Tooltip, ActionIcon } from '@mantine/core';
-import { IconSearch, IconEye, IconEdit, IconTrash } from '@tabler/icons-react';
+import { Button, Menu, Modal, Group, TextInput, Stack, Skeleton, CloseButton, Tooltip, ActionIcon, Badge } from '@mantine/core';
+import { IconSearch, IconEye, IconEdit, IconTrash, IconCheck, IconFileSpreadsheet, IconFileTypeCsv, IconBolt } from '@tabler/icons-react';
 import { DataTable, useDataTableColumns, type DataTableSortStatus } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -156,9 +156,67 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           break;
         }
 
-        case 'export-csv':
+        case 'export-csv': {
           exportToCSV(selectedMembers, `CTN_Members_${new Date().toISOString().split('T')[0]}.csv`);
           notification.showSuccess(`Exported ${selectedIds.length} members to CSV`);
+          break;
+        }
+
+        case 'export-excel': {
+          // Create workbook and worksheet
+          const workbook = new Workbook();
+          const worksheet = workbook.addWorksheet('Members');
+
+          // Define columns with headers and widths
+          worksheet.columns = [
+            { header: 'Legal Name', key: 'legalName', width: 30 },
+            { header: 'Status', key: 'status', width: 12 },
+            { header: 'LEI', key: 'lei', width: 20 },
+            { header: 'EUID', key: 'euid', width: 20 },
+            { header: 'KVK', key: 'kvk', width: 12 },
+            { header: 'Organization ID', key: 'orgId', width: 25 },
+            { header: 'Domain', key: 'domain', width: 20 },
+            { header: 'Membership', key: 'membership', width: 12 },
+            { header: 'Member Since', key: 'memberSince', width: 15 },
+          ];
+
+          // Add data rows
+          selectedMembers.forEach((member) => {
+            worksheet.addRow({
+              legalName: member.legal_name,
+              status: member.status,
+              lei: member.lei || '',
+              euid: member.euid || '',
+              kvk: member.kvk || '',
+              orgId: member.org_id,
+              domain: member.domain || '',
+              membership: member.membership_level || '',
+              memberSince: new Date(member.created_at).toLocaleDateString(),
+            });
+          });
+
+          // Generate filename with timestamp
+          const fileName = `CTN_Members_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+          // Write to buffer and download
+          const buffer = await workbook.xlsx.writeBuffer();
+          const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          link.click();
+          window.URL.revokeObjectURL(url);
+
+          notification.showSuccess(`Exported ${selectedMembers.length} members to ${fileName}`);
+          break;
+        }
+
+        case 'approve':
+          // TODO: Implement API call for bulk approval
+          notification.showSuccess(
+            `Approved ${selectedIds.length} member${selectedIds.length > 1 ? 's' : ''} (API implementation pending)`
+          );
           break;
 
         case 'suspend':
@@ -168,8 +226,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           break;
 
         case 'delete':
+          // TODO: Implement API call for bulk deletion
           notification.showWarning(
-            `Delete action for ${selectedIds.length} members (requires API implementation)`
+            `Delete action for ${selectedIds.length} members (API implementation required)`
           );
           break;
       }
@@ -463,17 +522,24 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   ];
 
   const getBulkActionConfirmation = () => {
+    const count = selectedIds.length;
+    const plural = count > 1 ? 's' : '';
+
     switch (bulkAction) {
       case 'export-pdf':
-        return `Export ${selectedIds.length} members to PDF?`;
+        return `Export ${count} member${plural} to PDF?`;
       case 'export-csv':
-        return `Export ${selectedIds.length} members to CSV?`;
+        return `Export ${count} member${plural} to CSV?`;
+      case 'export-excel':
+        return `Export ${count} member${plural} to Excel?`;
+      case 'approve':
+        return `Approve ${count} member${plural}? They will gain full access to CTN services.`;
       case 'suspend':
-        return `Suspend ${selectedIds.length} members? They will lose access to CTN services.`;
+        return `Suspend ${count} member${plural}? They will lose access to CTN services.`;
       case 'delete':
-        return `Delete ${selectedIds.length} members? This action cannot be undone!`;
+        return `Delete ${count} member${plural}? This action cannot be undone!`;
       default:
-        return `Perform action on ${selectedIds.length} members?`;
+        return `Perform action on ${count} member${plural}?`;
     }
   };
 
@@ -510,17 +576,84 @@ const MembersGrid: React.FC<MembersGridProps> = ({
               </Button>
             </Menu.Target>
             <Menu.Dropdown>
-              <Menu.Item onClick={handleExcelExport}>
+              <Menu.Item
+                leftSection={<IconFileSpreadsheet size={16} />}
+                onClick={handleExcelExport}
+              >
                 Export to Excel (.xlsx)
+                {selectedIds.length > 0 && (
+                  <Badge size="sm" ml="xs" color="blue">
+                    {selectedIds.length} selected
+                  </Badge>
+                )}
               </Menu.Item>
-              <Menu.Item onClick={handleCSVExport}>
+              <Menu.Item
+                leftSection={<IconFileTypeCsv size={16} />}
+                onClick={handleCSVExport}
+              >
                 Export to CSV
+                {selectedIds.length > 0 && (
+                  <Badge size="sm" ml="xs" color="blue">
+                    {selectedIds.length} selected
+                  </Badge>
+                )}
               </Menu.Item>
               <Menu.Item onClick={handlePDFExport}>
                 Export to PDF
+                {selectedIds.length > 0 && (
+                  <Badge size="sm" ml="xs" color="blue">
+                    {selectedIds.length} selected
+                  </Badge>
+                )}
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
+
+          {/* Bulk Actions Menu - Only visible when rows are selected */}
+          {selectedIds.length > 0 && (
+            <Menu>
+              <Menu.Target>
+                <Button
+                  variant="filled"
+                  color="blue"
+                  size="sm"
+                  leftSection={<IconBolt size={16} />}
+                >
+                  Bulk Actions ({selectedIds.length})
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Label>Actions for {selectedIds.length} selected member{selectedIds.length > 1 ? 's' : ''}</Menu.Label>
+                <Menu.Item
+                  leftSection={<IconCheck size={16} />}
+                  color="green"
+                  onClick={() => handleBulkAction('approve')}
+                >
+                  Approve Selected
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconFileSpreadsheet size={16} />}
+                  onClick={() => handleBulkAction('export-excel')}
+                >
+                  Export to Excel
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconFileTypeCsv size={16} />}
+                  onClick={() => handleBulkAction('export-csv')}
+                >
+                  Export to CSV
+                </Menu.Item>
+                <Menu.Divider />
+                <Menu.Item
+                  leftSection={<IconTrash size={16} />}
+                  color="red"
+                  onClick={() => handleBulkAction('delete')}
+                >
+                  Delete Selected
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          )}
         </div>
 
         {/* Toolbar Stats */}
@@ -576,6 +709,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             onSortStatusChange={setSortStatus}
             selectedRecords={sortedData.filter((m) => selectedIds.includes(m.org_id))}
             onSelectedRecordsChange={handleSelectedRecordsChange}
+            idAccessor="org_id"
             storeColumnsKey="members-grid"
             onRowClick={handleRowClick}
             rowStyle={() => ({ cursor: 'pointer' })}
@@ -584,6 +718,10 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                 ? { light: '#e7f5ff', dark: '#1c2a35' }
                 : undefined
             }
+            allRecordsSelectionCheckboxProps={{ 'aria-label': 'Select all members on this page' }}
+            getRecordSelectionCheckboxProps={(member) => ({
+              'aria-label': `Select ${member.legal_name}`,
+            })}
           />
         )}
       </ErrorBoundary>
