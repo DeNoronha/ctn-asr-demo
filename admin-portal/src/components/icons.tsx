@@ -78,4 +78,6 @@ export const Info: React.FC<IconProps> = (props) => <Icon {...props} icon="ℹ�
 export const Mail: React.FC<IconProps> = (props) => <Icon {...props} icon="✉️" label="Mail" />;
 export const Plug: React.FC<IconProps> = (props) => <Icon {...props} icon="🔌" label="Plug" />;
 export const Eye: React.FC<IconProps> = (props) => <Icon {...props} icon="👁️" label="View" />;
+export const Sun: React.FC<IconProps> = (props) => <Icon {...props} icon="☀️" label="Light mode" />;
+export const Moon: React.FC<IconProps> = (props) => <Icon {...props} icon="🌙" label="Dark mode" />;
 export const MapPin: React.FC<IconProps> = (props) => <Icon {...props} icon="📍" label="Location" />;

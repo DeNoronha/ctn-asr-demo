@@ -3,10 +3,10 @@
  * Main container for authenticated admin interface
  */
 
-import { AppShell, Burger, Button, Container, Group, Tooltip } from '@mantine/core';
+import { AppShell, Burger, Button, Container, Group, Tooltip, ActionIcon, useMantineColorScheme, useComputedColorScheme } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 
-import { LogOut, User } from './icons';
+import { LogOut, User, Sun, Moon } from './icons';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -41,6 +41,8 @@ const AdminPortal: React.FC = () => {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
   const notification = useNotification();
+  const { setColorScheme } = useMantineColorScheme();
+  const computedColorScheme = useComputedColorScheme('light', { getInitialValueInEffect: true });
 
   const [members, setMembers] = useState<Member[]>([]);
   const [totalMembers, setTotalMembers] = useState<number>(0);
@@ -296,6 +298,16 @@ const AdminPortal: React.FC = () => {
                 <h1 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>{t('common.appNameShort')}</h1>
               </Group>
               <Group>
+                <Tooltip label={computedColorScheme === 'light' ? 'Dark mode' : 'Light mode'} position="bottom">
+                  <ActionIcon
+                    onClick={() => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')}
+                    variant="default"
+                    size="lg"
+                    aria-label="Toggle color scheme"
+                  >
+                    {computedColorScheme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                  </ActionIcon>
+                </Tooltip>
                 <LanguageSwitcher />
                 {user && (
                   <Group gap="xs">

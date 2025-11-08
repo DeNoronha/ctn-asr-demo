@@ -1,19 +1,16 @@
+import { NavLink, Stack, Divider } from '@mantine/core';
 import {
   Activity,
   CheckSquare,
-  CreditCard,
   FileText,
   Info,
-  Key,
   LayoutDashboard,
-  Mail,
   Plug,
   Settings,
   Shield,
   Users,
 } from './icons';
 import type React from 'react';
-import './AdminSidebar.css';
 
 export interface MenuItem {
   text: string;
@@ -34,9 +31,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
     { text: 'Members', iconComponent: Users, route: 'members' },
     { text: 'Endpoints', iconComponent: Plug, route: 'endpoints' },
     { text: 'Tasks', iconComponent: CheckSquare, route: 'tasks' },
-    // Hidden until developed: Subscriptions, Newsletters
-    // { text: 'Subscriptions', iconComponent: CreditCard, route: 'subscriptions' },
-    // { text: 'Newsletters', iconComponent: Mail, route: 'newsletters' },
     { separator: true, text: '' },
     { text: 'User Management', iconComponent: Shield, route: 'settings' },
     { text: 'Audit Logs', iconComponent: FileText, route: 'audit' },
@@ -51,46 +45,29 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
     }
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent, item: MenuItem) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      handleItemClick(item);
-    }
-  };
-
   return (
-    <nav className={`admin-sidebar ${expanded ? '' : 'collapsed'}`} aria-label="Main navigation">
-      <div className="sidebar-nav">
-        {items.map((item, index) => {
-          if (item.separator) {
-            return <div key={index} className="drawer-item separator" />;
-          }
+    <Stack gap="xs">
+      {items.map((item, index) => {
+        if (item.separator) {
+          return <Divider key={index} my="sm" />;
+        }
 
-          const IconComponent = item.iconComponent;
-          const isSelected = item.route === selectedItem;
+        const IconComponent = item.iconComponent;
+        const isActive = item.route === selectedItem;
 
-          return (
-            <div
-              key={index}
-              className={`drawer-item ${isSelected ? 'selected' : ''}`}
-              onClick={() => handleItemClick(item)}
-              onKeyDown={(e) => handleKeyDown(e, item)}
-              role="button"
-              tabIndex={0}
-              aria-label={item.text}
-              aria-pressed={isSelected}
-            >
-              {IconComponent && (
-                <span className="item-icon">
-                  <IconComponent size={20} />
-                </span>
-              )}
-              <span className="item-text">{item.text}</span>
-            </div>
-          );
-        })}
-      </div>
-    </nav>
+        return (
+          <NavLink
+            key={index}
+            label={item.text}
+            leftSection={IconComponent && <IconComponent size={20} />}
+            active={isActive}
+            onClick={() => handleItemClick(item)}
+            variant="filled"
+            style={{ borderRadius: 8 }}
+          />
+        );
+      })}
+    </Stack>
   );
 };
 

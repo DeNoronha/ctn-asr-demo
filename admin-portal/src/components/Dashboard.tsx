@@ -3,6 +3,7 @@
  * Displays member statistics and visualizations using Recharts
  */
 
+import { Paper, SimpleGrid, Text, Title, Stack, Group, ThemeIcon } from '@mantine/core';
 import type React from 'react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -140,54 +141,96 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
   }, [members, stats.total]);
 
   return (
-    <div className="dashboard-view">
-      <div className="dashboard-header">
-        <h2>{t('dashboard.title')}</h2>
-        <p className="dashboard-subtitle">{t('dashboard.overview')}</p>
+    <Stack gap="lg">
+      <div>
+        <Title order={2}>{t('dashboard.title')}</Title>
+        <Text c="dimmed" size="sm">{t('dashboard.overview')}</Text>
       </div>
 
       {/* Key Metrics Cards */}
-      <div className="stats-grid">
-        <div className="stat-card primary">
-          <div className="stat-icon">📊</div>
-          <h3>{t('dashboard.totalMembers')}</h3>
-          <div className="stat-value">{stats.total}</div>
-          <div className="stat-label">
+      <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
+        <Paper withBorder p="md" radius="md">
+          <Group justify="space-between">
+            <div>
+              <Text c="dimmed" tt="uppercase" fw={700} size="xs">
+                {t('dashboard.totalMembers')}
+              </Text>
+              <Text fw={700} size="xl">
+                {stats.total}
+              </Text>
+            </div>
+            <ThemeIcon color="blue" variant="light" size={38} radius="md">
+              <Text size="xl">📊</Text>
+            </ThemeIcon>
+          </Group>
+          <Text c="dimmed" size="xs" mt="md">
             {t('dashboard.registeredOrgs', 'Registered organizations')}
-          </div>
-        </div>
+          </Text>
+        </Paper>
 
-        <div className="stat-card success">
-          <div className="stat-icon">✅</div>
-          <h3>{t('dashboard.activeMembers')}</h3>
-          <div className="stat-value">{stats.active}</div>
-          <div className="stat-label">
+        <Paper withBorder p="md" radius="md">
+          <Group justify="space-between">
+            <div>
+              <Text c="dimmed" tt="uppercase" fw={700} size="xs">
+                {t('dashboard.activeMembers')}
+              </Text>
+              <Text fw={700} size="xl">
+                {stats.active}
+              </Text>
+            </div>
+            <ThemeIcon color="green" variant="light" size={38} radius="md">
+              <Text size="xl">✅</Text>
+            </ThemeIcon>
+          </Group>
+          <Text c="dimmed" size="xs" mt="md">
             {stats.activeRate}% {t('dashboard.ofTotal', 'of total')}
-          </div>
-        </div>
+          </Text>
+        </Paper>
 
-        <div className="stat-card warning">
-          <div className="stat-icon">⏳</div>
-          <h3>{t('dashboard.pendingApplications')}</h3>
-          <div className="stat-value">{stats.pending}</div>
-          <div className="stat-label">{t('dashboard.awaitingApproval', 'Awaiting approval')}</div>
-        </div>
+        <Paper withBorder p="md" radius="md">
+          <Group justify="space-between">
+            <div>
+              <Text c="dimmed" tt="uppercase" fw={700} size="xs">
+                {t('dashboard.pendingApplications')}
+              </Text>
+              <Text fw={700} size="xl">
+                {stats.pending}
+              </Text>
+            </div>
+            <ThemeIcon color="yellow" variant="light" size={38} radius="md">
+              <Text size="xl">⏳</Text>
+            </ThemeIcon>
+          </Group>
+          <Text c="dimmed" size="xs" mt="md">
+            {t('dashboard.awaitingApproval', 'Awaiting approval')}
+          </Text>
+        </Paper>
 
-        <div className="stat-card accent">
-          <div className="stat-icon">⭐</div>
-          <h3>{t('dashboard.premiumMembers', 'Premium Members')}</h3>
-          <div className="stat-value">{stats.premium}</div>
-          <div className="stat-label">
+        <Paper withBorder p="md" radius="md">
+          <Group justify="space-between">
+            <div>
+              <Text c="dimmed" tt="uppercase" fw={700} size="xs">
+                {t('dashboard.premiumMembers', 'Premium Members')}
+              </Text>
+              <Text fw={700} size="xl">
+                {stats.premium}
+              </Text>
+            </div>
+            <ThemeIcon color="orange" variant="light" size={38} radius="md">
+              <Text size="xl">⭐</Text>
+            </ThemeIcon>
+          </Group>
+          <Text c="dimmed" size="xs" mt="md">
             {stats.premiumRate}% {t('dashboard.ofTotal', 'of total')}
-          </div>
-        </div>
-      </div>
+          </Text>
+        </Paper>
+      </SimpleGrid>
 
       {/* Charts Section */}
-      <div className="charts-grid">
+      <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="lg">
         {/* Status Distribution - Pie Chart */}
-        <div className="chart-card">
-          <h3>{t('dashboard.statusDistribution', 'Member Status Distribution')}</h3>
+        <Paper withBorder p="md" radius="md">
+          <Title order={3} size="h4" mb="md">{t('dashboard.statusDistribution', 'Member Status Distribution')}</Title>
           <div role="img" aria-label={`Pie chart showing member status distribution: ${statusData.map(d => `${d.name} ${d.value}`).join(', ')}`}>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -214,11 +257,11 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
             </PieChart>
           </ResponsiveContainer>
           </div>
-        </div>
+        </Paper>
 
         {/* Membership Levels - Bar Chart */}
-        <div className="chart-card">
-          <h3>{t('dashboard.membershipLevels', 'Membership Levels')}</h3>
+        <Paper withBorder p="md" radius="md">
+          <Title order={3} size="h4" mb="md">{t('dashboard.membershipLevels', 'Membership Levels')}</Title>
           <div role="img" aria-label={`Bar chart showing membership levels: ${membershipData.map(d => `${d.name} ${d.members} members`).join(', ')}`}>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={membershipData}>
@@ -235,11 +278,12 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
             </BarChart>
           </ResponsiveContainer>
           </div>
-        </div>
+        </Paper>
+      </SimpleGrid>
 
-        {/* Member Growth - Line Chart */}
-        <div className="chart-card full-width">
-          <h3>{t('dashboard.memberGrowth', 'Member Growth (Last 12 Months)')}</h3>
+      {/* Member Growth - Line Chart */}
+      <Paper withBorder p="md" radius="md">
+        <Title order={3} size="h4" mb="md">{t('dashboard.memberGrowth', 'Member Growth (Last 12 Months)')}</Title>
           <div role="img" aria-label="Line chart showing member growth over the last 12 months with total members and new member trends">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={growthData}>
@@ -266,28 +310,19 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
             </LineChart>
           </ResponsiveContainer>
           </div>
-        </div>
-      </div>
+        </Paper>
 
       {/* Partner Logos */}
-      <div className="partner-logos">
-        <h3>{t('dashboard.partnersWith', 'In Partnership With')}</h3>
-        <div className="logos-grid">
-          <div className="logo-container">
-            <img src="/assets/logos/DIL.png" alt="Data in Logistics" />
-          </div>
-          <div className="logo-container">
-            <img src="/assets/logos/contargo.png" alt="Contargo" />
-          </div>
-          <div className="logo-container">
-            <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" />
-          </div>
-          <div className="logo-container">
-            <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" />
-          </div>
-        </div>
-      </div>
-    </div>
+      <Paper withBorder p="md" radius="md">
+        <Title order={3} size="h4" mb="md">{t('dashboard.partnersWith', 'In Partnership With')}</Title>
+        <Group justify="center" gap="xl">
+          <img src="/assets/logos/DIL.png" alt="Data in Logistics" style={{ height: 50 }} />
+          <img src="/assets/logos/contargo.png" alt="Contargo" style={{ height: 50 }} />
+          <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" style={{ height: 50 }} />
+          <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" style={{ height: 50 }} />
+        </Group>
+      </Paper>
+    </Stack>
   );
 };
 
