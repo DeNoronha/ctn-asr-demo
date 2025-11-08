@@ -10,6 +10,9 @@
 .navbarMain {
   flex: 1;
   margin-top: var(--mantine-spacing-xl);
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .link {
