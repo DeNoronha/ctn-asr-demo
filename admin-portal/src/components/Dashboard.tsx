@@ -144,7 +144,6 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
     <Stack gap="lg">
       <div>
         <Title order={2}>{t('dashboard.title')}</Title>
-        <Text c="dimmed" size="sm">{t('dashboard.overview')}</Text>
       </div>
 
       {/* Key Metrics Cards */}

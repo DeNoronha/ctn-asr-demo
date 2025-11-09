@@ -72,8 +72,8 @@
     "sessionExpired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an."
   },
   "dashboard": {
-    "title": "Dashboard",
-    "overview": "Übersicht",
+    "title": "CTN Verband Dashboard",
+    "overview": "",
     "totalMembers": "Gesamtmitglieder",
     "activeMembers": "Aktive Mitglieder",
     "pendingApplications": "Ausstehende Anträge",
@@ -82,7 +82,7 @@
     "quickActions": "Schnellaktionen"
   },
   "members": {
-    "title": "Mitglieder",
+    "title": "CTN Verband Mitglieder",
     "allMembers": "Alle Mitglieder",
     "addMember": "Mitglied Hinzufügen",
     "viewMember": "Mitglied Anzeigen",
@@ -116,7 +116,7 @@
     "memberDeletedSuccess": "Mitglied erfolgreich gelöscht"
   },
   "applications": {
-    "title": "Anträge",
+    "title": "CTN Verband Anträge",
     "newApplication": "Neuer Antrag",
     "pendingReview": "Ausstehende Prüfung",
     "reviewApplication": "Antrag Prüfen",
@@ -137,7 +137,7 @@
     "applicationRejected": "Antrag erfolgreich abgelehnt"
   },
   "endpoints": {
-    "title": "Endpunkte",
+    "title": "CTN Verband Endpunkte",
     "myEndpoints": "Meine Endpunkte",
     "addEndpoint": "Endpunkt Hinzufügen",
     "editEndpoint": "Endpunkt Bearbeiten",
@@ -160,7 +160,7 @@
     "endpointDeletedSuccess": "Endpunkt erfolgreich gelöscht"
   },
   "tokens": {
-    "title": "Tokens",
+    "title": "CTN Verband Tokens",
     "myTokens": "Meine Tokens",
     "issueToken": "Neues Token Ausstellen",
     "revokeToken": "Token Widerrufen",
@@ -204,7 +204,7 @@
     "rejectVerification": "Verifizierung Ablehnen"
   },
   "reports": {
-    "title": "Berichte",
+    "title": "CTN Verband Berichte",
     "generateReport": "Bericht Erstellen",
     "reportType": "Berichtstyp",
     "dateRange": "Datumsbereich",
@@ -218,7 +218,7 @@
     "reportGenerated": "Bericht erfolgreich erstellt"
   },
   "settings": {
-    "title": "Einstellungen",
+    "title": "CTN Verband Einstellungen",
     "generalSettings": "Allgemeine Einstellungen",
     "accountSettings": "Kontoeinstellungen",
     "notificationSettings": "Benachrichtigungseinstellungen",
@@ -241,7 +241,7 @@
     "settingsSaved": "Einstellungen erfolgreich gespeichert"
   },
   "profile": {
-    "title": "Profil",
+    "title": "CTN Verband Profil",
     "myProfile": "Mein Profil",
     "editProfile": "Profil Bearbeiten",
     "personalInformation": "Persönliche Informationen",

@@ -72,8 +72,8 @@
     "sessionExpired": "Your session has expired. Please log in again."
   },
   "dashboard": {
-    "title": "Dashboard",
-    "overview": "Overview",
+    "title": "CTN Association Dashboard",
+    "overview": "",
     "totalMembers": "Total Members",
     "activeMembers": "Active Members",
     "pendingApplications": "Pending Applications",
@@ -82,7 +82,7 @@
     "quickActions": "Quick Actions"
   },
   "members": {
-    "title": "Members",
+    "title": "CTN Association Members",
     "allMembers": "All Members",
     "addMember": "Add Member",
     "viewMember": "View Member",
@@ -116,7 +116,7 @@
     "memberDeletedSuccess": "Member deleted successfully"
   },
   "applications": {
-    "title": "Applications",
+    "title": "CTN Association Applications",
     "newApplication": "New Application",
     "pendingReview": "Pending Review",
     "reviewApplication": "Review Application",
@@ -137,7 +137,7 @@
     "applicationRejected": "Application rejected successfully"
   },
   "endpoints": {
-    "title": "Endpoints",
+    "title": "CTN Association Endpoints",
     "myEndpoints": "My Endpoints",
     "addEndpoint": "Add Endpoint",
     "editEndpoint": "Edit Endpoint",
@@ -160,7 +160,7 @@
     "endpointDeletedSuccess": "Endpoint deleted successfully"
   },
   "tokens": {
-    "title": "Tokens",
+    "title": "CTN Association Tokens",
     "myTokens": "My Tokens",
     "issueToken": "Issue New Token",
     "revokeToken": "Revoke Token",
@@ -204,7 +204,7 @@
     "rejectVerification": "Reject Verification"
   },
   "reports": {
-    "title": "Reports",
+    "title": "CTN Association Reports",
     "generateReport": "Generate Report",
     "reportType": "Report Type",
     "dateRange": "Date Range",
@@ -218,7 +218,7 @@
     "reportGenerated": "Report generated successfully"
   },
   "settings": {
-    "title": "Settings",
+    "title": "CTN Association Settings",
     "generalSettings": "General Settings",
     "accountSettings": "Account Settings",
     "notificationSettings": "Notification Settings",
@@ -241,7 +241,7 @@
     "settingsSaved": "Settings saved successfully"
   },
   "profile": {
-    "title": "Profile",
+    "title": "CTN Association Profile",
     "myProfile": "My Profile",
     "editProfile": "Edit Profile",
     "personalInformation": "Personal Information",

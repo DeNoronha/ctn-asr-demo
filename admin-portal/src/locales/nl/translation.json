@@ -72,8 +72,8 @@
     "sessionExpired": "Uw sessie is verlopen. Log opnieuw in."
   },
   "dashboard": {
-    "title": "Dashboard",
-    "overview": "Overzicht",
+    "title": "CTN Associatie Dashboard",
+    "overview": "",
     "totalMembers": "Totaal Leden",
     "activeMembers": "Actieve Leden",
     "pendingApplications": "Aanvragen in Behandeling",
@@ -82,7 +82,7 @@
     "quickActions": "Snelle Acties"
   },
   "members": {
-    "title": "Leden",
+    "title": "CTN Associatie Leden",
     "allMembers": "Alle Leden",
     "addMember": "Lid Toevoegen",
     "viewMember": "Lid Bekijken",
@@ -116,7 +116,7 @@
     "memberDeletedSuccess": "Lid succesvol verwijderd"
   },
   "applications": {
-    "title": "Aanvragen",
+    "title": "CTN Associatie Aanvragen",
     "newApplication": "Nieuwe Aanvraag",
     "pendingReview": "In Behandeling",
     "reviewApplication": "Aanvraag Beoordelen",
@@ -137,7 +137,7 @@
     "applicationRejected": "Aanvraag succesvol afgewezen"
   },
   "endpoints": {
-    "title": "Eindpunten",
+    "title": "CTN Associatie Eindpunten",
     "myEndpoints": "Mijn Eindpunten",
     "addEndpoint": "Eindpunt Toevoegen",
     "editEndpoint": "Eindpunt Bewerken",
@@ -160,7 +160,7 @@
     "endpointDeletedSuccess": "Eindpunt succesvol verwijderd"
   },
   "tokens": {
-    "title": "Tokens",
+    "title": "CTN Associatie Tokens",
     "myTokens": "Mijn Tokens",
     "issueToken": "Nieuw Token Uitgeven",
     "revokeToken": "Token Intrekken",
@@ -204,7 +204,7 @@
     "rejectVerification": "Verificatie Afwijzen"
   },
   "reports": {
-    "title": "Rapporten",
+    "title": "CTN Associatie Rapporten",
     "generateReport": "Rapport Genereren",
     "reportType": "Rapporttype",
     "dateRange": "Datumbereik",
@@ -218,7 +218,7 @@
     "reportGenerated": "Rapport succesvol gegenereerd"
   },
   "settings": {
-    "title": "Instellingen",
+    "title": "CTN Associatie Instellingen",
     "generalSettings": "Algemene Instellingen",
     "accountSettings": "Accountinstellingen",
     "notificationSettings": "Meldingsinstellingen",
@@ -241,7 +241,7 @@
     "settingsSaved": "Instellingen succesvol opgeslagen"
   },
   "profile": {
-    "title": "Profiel",
+    "title": "CTN Associatie Profiel",
     "myProfile": "Mijn Profiel",
     "editProfile": "Profiel Bewerken",
     "personalInformation": "Persoonlijke Informatie",
