@@ -2,6 +2,31 @@
 .members-grid-container {
   width: 100%;
   height: 100%;
+  overflow-x: hidden; /* Prevent horizontal scrollbar */
+}
+
+/* DataTable wrapper - prevent horizontal scroll */
+.members-grid-container .mantine-DataTable-root {
+  overflow-x: hidden;
+}
+
+/* Table scroll container - only allow vertical scroll */
+.members-grid-container .mantine-ScrollArea-viewport {
+  overflow-x: hidden !important;
+  overflow-y: auto;
+}
+
+/* Ensure pinned column shadows are visible */
+.members-grid-container .mantine-DataTable-pinnedColumn {
+  position: sticky;
+  background-color: inherit;
+  z-index: 1;
+}
+
+/* Right pinned column */
+.members-grid-container .mantine-DataTable-pinnedColumn--right {
+  right: 0;
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Checkbox Column Styling - Equal padding and perfect centering */

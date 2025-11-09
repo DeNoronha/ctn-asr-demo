@@ -68,7 +68,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       org_id: t('members.orgId', 'Org ID'),
       domain: t('members.domain', 'Domain'),
       membership_level: t('members.membership', 'Membership'),
-      created_at: t('members.memberSince', 'Member Since'),
     };
     return titleMap[field] || field;
   };
@@ -180,7 +179,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             { header: 'Organization ID', key: 'orgId', width: 25 },
             { header: 'Domain', key: 'domain', width: 20 },
             { header: 'Membership', key: 'membership', width: 12 },
-            { header: 'Member Since', key: 'memberSince', width: 15 },
           ];
 
           // Add data rows
@@ -194,7 +192,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
               orgId: member.org_id,
               domain: member.domain || '',
               membership: member.membership_level || '',
-              memberSince: new Date(member.created_at).toLocaleDateString(),
             });
           });
 
@@ -299,7 +296,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       { header: 'Organization ID', key: 'orgId', width: 25 },
       { header: 'Domain', key: 'domain', width: 20 },
       { header: 'Membership', key: 'membership', width: 12 },
-      { header: 'Member Since', key: 'memberSince', width: 15 },
     ];
 
     // Add data rows
@@ -313,7 +309,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         orgId: member.org_id,
         domain: member.domain || '',
         membership: member.membership_level || '',
-        memberSince: new Date(member.created_at).toLocaleDateString(),
       });
     });
 
@@ -386,7 +381,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'org_id',
         title: getColumnTitle('org_id'),
-        width: 150,
+        width: 120,
         toggleable: false, // Cannot be hidden - always visible
         draggable: false, // Fixed as first column
         resizable: true,
@@ -395,7 +390,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'legal_name',
         title: getColumnTitle('legal_name'),
-        width: 220,
+        width: 200,
         toggleable: false, // Cannot be hidden - always visible
         draggable: true,
         resizable: true,
@@ -407,7 +402,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'status',
         title: getColumnTitle('status'),
-        width: 90,
+        width: 100,
         toggleable: true,
         draggable: true,
         resizable: true,
@@ -427,7 +422,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'lei',
         title: 'LEI',
-        width: 120,
+        width: 130,
         toggleable: true,
         draggable: true,
         resizable: true,
@@ -436,7 +431,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'euid',
         title: 'EUID',
-        width: 120,
+        width: 130,
         toggleable: true,
         draggable: true,
         resizable: true,
@@ -445,21 +440,11 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'kvk',
         title: 'KVK',
-        width: 80,
+        width: 90,
         toggleable: true,
         draggable: true,
         resizable: true,
         sortable: true,
-      },
-      {
-        accessor: 'created_at',
-        title: getColumnTitle('created_at'),
-        width: 100,
-        toggleable: true,
-        draggable: true,
-        resizable: true,
-        sortable: true,
-        render: (member) => <div>{new Date(member.created_at).toLocaleDateString()}</div>,
       },
       {
         accessor: 'domain',
@@ -498,11 +483,11 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'actions',
         title: 'Actions',
-        width: 110,
+        width: 150,
         toggleable: false,
         draggable: false,
         sortable: false,
-        pinned: 'right', // Pin to right side - always visible
+        resizable: false,
         render: (member) => (
           <Group gap={4} wrap="nowrap">
             <Tooltip label="View details">
@@ -713,6 +698,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             getRecordSelectionCheckboxProps={(member) => ({
               'aria-label': `Select ${member.legal_name}`,
             })}
+            pinLastColumn
           />
         )}
       </ErrorBoundary>
