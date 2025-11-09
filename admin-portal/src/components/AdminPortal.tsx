@@ -284,8 +284,19 @@ const AdminPortal: React.FC = () => {
           <Container size="xl" h="100%">
             <Group h="100%" px="md" justify="space-between">
               <Group>
-                <img src="/assets/logos/ctn.png" alt="CTN Logo" style={{ height: 40 }} />
-                <h1 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>{t('common.appNameShort')}</h1>
+                <img
+                  src="/assets/logos/ctn.png"
+                  alt="CTN Logo"
+                  style={{ height: 40, cursor: 'pointer' }}
+                  onClick={() => setSelectedView('dashboard')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      setSelectedView('dashboard');
+                    }
+                  }}
+                />
               </Group>
               <Group>
                 <Tooltip label={computedColorScheme === 'light' ? 'Dark mode' : 'Light mode'} position="bottom">
