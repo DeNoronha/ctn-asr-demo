@@ -386,29 +386,20 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'org_id',
         title: getColumnTitle('org_id'),
-        width: 180,
+        width: 150,
         toggleable: false, // Cannot be hidden - always visible
-        draggable: true,
+        draggable: false, // Fixed as first column
         resizable: true,
         sortable: true,
       },
       {
         accessor: 'legal_name',
         title: getColumnTitle('legal_name'),
-        width: 200,
+        width: 220,
         toggleable: false, // Cannot be hidden - always visible
         draggable: true,
         resizable: true,
         sortable: true,
-        filter: (
-          <TextInput
-            placeholder="Search legal name..."
-            value={query}
-            onChange={(e) => setQuery(e.currentTarget.value)}
-            size="xs"
-          />
-        ),
-        filtering: query !== '',
         render: (member) => (
           <div>{sanitizeGridCell(member.legal_name)}</div>
         ),
@@ -416,7 +407,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'status',
         title: getColumnTitle('status'),
-        width: 120,
+        width: 90,
         toggleable: true,
         draggable: true,
         resizable: true,
@@ -454,7 +445,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'kvk',
         title: 'KVK',
-        width: 100,
+        width: 80,
         toggleable: true,
         draggable: true,
         resizable: true,
@@ -463,7 +454,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'created_at',
         title: getColumnTitle('created_at'),
-        width: 110,
+        width: 100,
         toggleable: true,
         draggable: true,
         resizable: true,
@@ -507,10 +498,11 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'actions',
         title: 'Actions',
-        width: '0%', // Fit content width
+        width: 110,
         toggleable: false,
-        draggable: false, // Pinned - cannot be dragged
+        draggable: false,
         sortable: false,
+        pinned: 'right', // Pin to right side - always visible
         render: (member) => (
           <Group gap={4} wrap="nowrap">
             <Tooltip label="View details">
