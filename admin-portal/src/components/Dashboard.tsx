@@ -24,6 +24,7 @@ import {
 } from 'recharts';
 import type { Member } from '../services/api';
 import { safeArray, safeFilter, safeLength } from '../utils/safeArray';
+import { PageHeader } from './shared/PageHeader';
 import './Dashboard.css';
 
 interface DashboardProps {
@@ -142,9 +143,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
 
   return (
     <Stack gap="lg">
-      <div>
-        <Title order={2}>{t('dashboard.title')}</Title>
-      </div>
+      <PageHeader titleKey="dashboard" />
 
       {/* Key Metrics Cards */}
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">

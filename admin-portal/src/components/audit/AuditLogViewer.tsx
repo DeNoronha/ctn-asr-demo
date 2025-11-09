@@ -12,6 +12,7 @@ import { RoleGuard } from '../../auth/ProtectedRoute';
 import { UserRole } from '../../auth/authConfig';
 import { AuditAction, type AuditLog, auditLogService } from '../../services/auditLogService';
 import { getAuditActionColor } from '../../utils/colors';
+import { PageHeader } from '../shared/PageHeader';
 import './AuditLogViewer.css';
 import { formatDateTimeGB } from '../../utils/dateFormat';
 import { ErrorBoundary } from '../ErrorBoundary';
@@ -168,13 +169,7 @@ const AuditLogViewer: React.FC = () => {
     <RoleGuard allowedRoles={[UserRole.SYSTEM_ADMIN]}>
       <div className="audit-log-viewer">
         <div className="view-header">
-          <div className="header-content">
-            <FileText size={32} className="header-icon" />
-            <div>
-              <h2>Audit Logs</h2>
-              <p className="header-description">System activity and security logs</p>
-            </div>
-          </div>
+          <PageHeader titleKey="auditLogs" />
           <div className="header-actions">
             <Button onClick={loadLogs} variant="outline">
               <RefreshCw size={18} style={{ marginRight: 8 }} />

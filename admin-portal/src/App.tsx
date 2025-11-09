@@ -31,6 +31,19 @@ const theme = createTheme({
   primaryColor: 'blue',
   defaultRadius: 'md',
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  headings: {
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    fontWeight: '600',
+    textWrap: 'wrap',
+    sizes: {
+      h1: { fontSize: '32px', lineHeight: '1.3' },
+      h2: { fontSize: '24px', lineHeight: '1.35' },
+      h3: { fontSize: '20px', lineHeight: '1.4' },
+      h4: { fontSize: '18px', lineHeight: '1.45' },
+      h5: { fontSize: '16px', lineHeight: '1.5' },
+      h6: { fontSize: '14px', lineHeight: '1.5' },
+    },
+  },
 });
 
 // Loading fallback component for lazy-loaded routes

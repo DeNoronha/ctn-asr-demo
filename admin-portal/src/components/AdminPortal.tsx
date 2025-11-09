@@ -32,6 +32,7 @@ import { SkipToContent } from './SkipToContent';
 import TasksGrid from './TasksGrid';
 import AuditLogViewer from './audit/AuditLogViewer';
 import UserManagement from './users/UserManagement';
+import { PageHeader } from './shared/PageHeader';
 import './AdminPortal.css';
 import { TEXT_COLORS } from '../utils/colors';
 
@@ -129,7 +130,7 @@ const AdminPortal: React.FC = () => {
         return (
           <div className="members-view">
             <div className="view-header">
-              <h2>{t('members.title')}</h2>
+              <PageHeader titleKey="members" />
               <RoleGuard allowedRoles={[UserRole.ASSOCIATION_ADMIN, UserRole.SYSTEM_ADMIN]}>
                 <Button
                   color="blue"

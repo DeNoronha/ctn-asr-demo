@@ -71,6 +71,17 @@
     "loginError": "Ongeldige gebruikersnaam of wachtwoord",
     "sessionExpired": "Uw sessie is verlopen. Log opnieuw in."
   },
+  "pageHeaders": {
+    "dashboard": "CTN Associatie Dashboard",
+    "members": "CTN Associatie Leden",
+    "endpoints": "CTN Associatie Endpoints",
+    "tasks": "CTN Associatie Taken",
+    "userManagement": "CTN Associatie Gebruikersbeheer",
+    "auditLogs": "CTN Associatie Auditlogs",
+    "healthMonitor": "CTN Associatie Health Monitor",
+    "settings": "CTN Associatie Instellingen",
+    "about": "CTN Associatie Over"
+  },
   "dashboard": {
     "title": "CTN Associatie Dashboard",
     "overview": "",

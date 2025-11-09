@@ -20,6 +20,7 @@ import {
 import { BookOpen, ExternalLink, FileText, Globe, HelpCircle } from './icons';
 import type React from 'react';
 import { useTranslation } from 'react-i18next';
+import { PageHeader } from './shared/PageHeader';
 
 const Settings: React.FC = () => {
   const { t } = useTranslation();
@@ -72,7 +73,7 @@ const Settings: React.FC = () => {
 
   return (
     <Stack gap="xl">
-      <Title order={2}>{t('settings.title', 'Settings')}</Title>
+      <PageHeader titleKey="settings" />
 
       {/* External Resources Section */}
       <Paper shadow="sm" p="xl" radius="md" withBorder>

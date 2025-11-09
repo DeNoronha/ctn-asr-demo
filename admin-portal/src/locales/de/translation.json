@@ -71,6 +71,17 @@
     "loginError": "Ungültiger Benutzername oder Passwort",
     "sessionExpired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an."
   },
+  "pageHeaders": {
+    "dashboard": "CTN Verband Dashboard",
+    "members": "CTN Verband Mitglieder",
+    "endpoints": "CTN Verband Endpoints",
+    "tasks": "CTN Verband Aufgaben",
+    "userManagement": "CTN Verband Benutzerverwaltung",
+    "auditLogs": "CTN Verband Auditprotokolle",
+    "healthMonitor": "CTN Verband Health Monitor",
+    "settings": "CTN Verband Einstellungen",
+    "about": "CTN Verband Über"
+  },
   "dashboard": {
     "title": "CTN Verband Dashboard",
     "overview": "",

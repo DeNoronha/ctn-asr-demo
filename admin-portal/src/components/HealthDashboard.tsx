@@ -9,6 +9,7 @@ import { Button, Card, Checkbox, Loader } from '@mantine/core';
 
 import { Activity, AlertTriangle, CheckCircle, RefreshCw, XCircle } from './icons';
 import { formatDateTime } from '../utils/dateFormat';
+import { PageHeader } from './shared/PageHeader';
 import './HealthDashboard.css';
 
 interface HealthCheck {
@@ -154,10 +155,7 @@ export const HealthDashboard: React.FC = () => {
   return (
     <div className="health-dashboard">
       <div className="health-header">
-        <div className="health-title">
-          <Activity size={32} />
-          <h1>System Health</h1>
-        </div>
+        <PageHeader titleKey="healthMonitor" />
         <div className="health-actions">
           <div className="auto-refresh-toggle">
             <Checkbox

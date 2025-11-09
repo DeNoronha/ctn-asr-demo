@@ -71,6 +71,17 @@
     "loginError": "Invalid username or password",
     "sessionExpired": "Your session has expired. Please log in again."
   },
+  "pageHeaders": {
+    "dashboard": "CTN Association Dashboard",
+    "members": "CTN Association Members",
+    "endpoints": "CTN Association Endpoints",
+    "tasks": "CTN Association Tasks",
+    "userManagement": "CTN Association User Management",
+    "auditLogs": "CTN Association Audit Logs",
+    "healthMonitor": "CTN Association Health Monitor",
+    "settings": "CTN Association Settings",
+    "about": "CTN Association About"
+  },
   "dashboard": {
     "title": "CTN Association Dashboard",
     "overview": "",

@@ -8,6 +8,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import { formatDate } from '../utils/dateUtils';
 import { defaultDataTableProps } from './shared/DataTableConfig';
+import { PageHeader } from './shared/PageHeader';
 import './TasksGrid.css';
 import { ErrorBoundary } from './ErrorBoundary';
 import { apiV2, Application } from '../services/apiV2';
@@ -677,7 +678,7 @@ const TasksGrid: React.FC = () => {
   return (
     <div className="tasks-grid">
       <div className="grid-header">
-        <h2>Admin Tasks & Reviews</h2>
+        <PageHeader titleKey="tasks" />
         <Button leftSection="plus" color="blue" onClick={() => setShowCreateDialog(true)}>
           New Task
         </Button>

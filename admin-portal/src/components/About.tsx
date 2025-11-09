@@ -8,6 +8,7 @@ import { AlertCircle, Calendar, CheckCircle, Clock, GitBranch, Package } from '.
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import LoadingSpinner from './LoadingSpinner';
+import { PageHeader } from './shared/PageHeader';
 import './About.css';
 
 interface VersionInfo {
@@ -143,7 +144,7 @@ const About: React.FC = () => {
 
   return (
     <div className="about-view">
-      <h2>About CTN Association Register</h2>
+      <PageHeader titleKey="about" />
 
       <div className="about-grid">
         {/* Admin Portal Version Card */}

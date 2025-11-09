@@ -16,6 +16,7 @@ import { AuditAction, auditLogService } from '../../services/auditLogService';
 import LoadingSpinner from '../LoadingSpinner';
 import EditUserDialog from './EditUserDialog';
 import InviteUserDialog from './InviteUserDialog';
+import { PageHeader } from '../shared/PageHeader';
 import './UserManagement.css';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { defaultDataTableProps, defaultPaginationOptions } from '../shared/DataTableConfig';
@@ -296,13 +297,7 @@ const UserManagement: React.FC = () => {
     <RoleGuard allowedRoles={[UserRole.SYSTEM_ADMIN]}>
       <div className="user-management">
         <div className="view-header">
-          <div className="header-content">
-            <Shield size={32} className="header-icon" />
-            <div>
-              <h2>User Management</h2>
-              <p className="header-description">Manage user access and roles</p>
-            </div>
-          </div>
+          <PageHeader titleKey="userManagement" />
           <Button color="blue" onClick={() => setShowInviteDialog(true)}>
             <UserPlus size={18} style={{ marginRight: 8 }} />
             Invite User
