@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.AsrApiError = void 0;
-class AsrApiError extends Error {
+export class AsrApiError extends Error {
     constructor(message, status, code, details) {
         super(message);
         this.name = 'AsrApiError';
@@ -53,4 +50,3 @@ class AsrApiError extends Error {
         return this.status >= 500;
     }
 }
-exports.AsrApiError = AsrApiError;

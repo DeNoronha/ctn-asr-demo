@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.OrchestrationsEndpoint = void 0;
-class OrchestrationsEndpoint {
+export class OrchestrationsEndpoint {
     constructor(axios) {
         this.axios = axios;
     }
@@ -39,4 +36,3 @@ class OrchestrationsEndpoint {
         return data;
     }
 }
-exports.OrchestrationsEndpoint = OrchestrationsEndpoint;

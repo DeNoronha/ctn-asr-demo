@@ -1,17 +1,11 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.configureRetry = configureRetry;
-const axios_retry_1 = __importDefault(require("axios-retry"));
-function configureRetry(instance, retryAttempts = 3) {
-    (0, axios_retry_1.default)(instance, {
+import axiosRetry from 'axios-retry';
+export function configureRetry(instance, retryAttempts = 3) {
+    axiosRetry(instance, {
         retries: retryAttempts,
-        retryDelay: axios_retry_1.default.exponentialDelay,
+        retryDelay: axiosRetry.exponentialDelay,
         retryCondition: (error) => {
             // Retry on network errors and 5xx errors
-            return axios_retry_1.default.isNetworkOrIdempotentRequestError(error) ||
+            return axiosRetry.isNetworkOrIdempotentRequestError(error) ||
                 (error.response?.status ?? 0) >= 500;
         },
         onRetry: (retryCount, error) => {

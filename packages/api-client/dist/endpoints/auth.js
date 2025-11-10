@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.AuthEndpoint = void 0;
-class AuthEndpoint {
+export class AuthEndpoint {
     constructor(axios) {
         this.axios = axios;
     }
@@ -25,4 +22,3 @@ class AuthEndpoint {
         }
     }
 }
-exports.AuthEndpoint = AuthEndpoint;

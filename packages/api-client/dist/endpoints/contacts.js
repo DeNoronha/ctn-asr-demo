@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ContactsEndpoint = void 0;
-class ContactsEndpoint {
+export class ContactsEndpoint {
     constructor(axios) {
         this.axios = axios;
     }
@@ -40,4 +37,3 @@ class ContactsEndpoint {
         await this.axios.delete(`/legal-entities/${legalEntityId}/contacts/${contactId}`);
     }
 }
-exports.ContactsEndpoint = ContactsEndpoint;

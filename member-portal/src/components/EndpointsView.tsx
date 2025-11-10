@@ -132,11 +132,13 @@ export const EndpointsView: React.FC<ComponentProps> = ({
       >
         <EndpointRegistrationWizard
           legalEntityId={memberData.organizationId}
+          apiBaseUrl={apiBaseUrl}
+          getAccessToken={getAccessToken}
           onComplete={() => {
             setShowDialog(false);
             loadEndpoints();
             onDataChange();
-            onNotification('Endpoint registered and activated successfully!', 'success');
+            onNotification('Endpoint registered successfully!', 'success');
           }}
           onCancel={() => setShowDialog(false)}
         />
