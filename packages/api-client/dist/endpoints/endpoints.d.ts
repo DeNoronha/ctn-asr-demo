@@ -1,5 +1,5 @@
 import { AxiosInstance } from 'axios';
-import { Endpoint, CreateEndpointRequest, UpdateEndpointRequest } from '../types';
+import { Endpoint, CreateEndpointRequest, UpdateEndpointRequest, InitiateEndpointRegistrationRequest, VerifyTokenRequest, EndpointTestResult } from '../types';
 export declare class EndpointsEndpoint {
     private axios;
     constructor(axios: AxiosInstance);
@@ -29,6 +29,42 @@ export declare class EndpointsEndpoint {
     test(legalEntityId: string, endpointId: string): Promise<{
         success: boolean;
         message: string;
+    }>;
+    /**
+     * Step 1: Initiate endpoint registration with verification token
+     */
+    initiateRegistration(legalEntityId: string, request: InitiateEndpointRegistrationRequest): Promise<Endpoint>;
+    /**
+     * Step 2: Send verification email (mock in development)
+     */
+    sendVerificationEmail(endpointId: string): Promise<{
+        message: string;
+        mock: boolean;
+        token?: string;
+        expires_at?: string;
+    }>;
+    /**
+     * Step 3: Verify the token provided by user
+     */
+    verifyToken(endpointId: string, request: VerifyTokenRequest): Promise<{
+        message: string;
+        endpoint: Endpoint;
+    }>;
+    /**
+     * Step 4: Test endpoint with mock API call
+     */
+    testEndpoint(endpointId: string): Promise<{
+        message: string;
+        mock: boolean;
+        test_data: EndpointTestResult;
+        endpoint: Endpoint;
+    }>;
+    /**
+     * Step 5: Activate endpoint (final step)
+     */
+    activateEndpoint(endpointId: string): Promise<{
+        message: string;
+        endpoint: Endpoint;
     }>;
 }
 //# sourceMappingURL=endpoints.d.ts.map

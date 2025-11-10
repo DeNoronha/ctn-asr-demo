@@ -1,5 +1,12 @@
 import { AxiosInstance } from 'axios';
-import { Endpoint, CreateEndpointRequest, UpdateEndpointRequest } from '../types';
+import {
+  Endpoint,
+  CreateEndpointRequest,
+  UpdateEndpointRequest,
+  InitiateEndpointRegistrationRequest,
+  VerifyTokenRequest,
+  EndpointTestResult
+} from '../types';
 
 export class EndpointsEndpoint {
   constructor(private axios: AxiosInstance) {}
@@ -48,6 +55,46 @@ export class EndpointsEndpoint {
    */
   async test(legalEntityId: string, endpointId: string): Promise<{ success: boolean; message: string }> {
     const { data } = await this.axios.post(`/legal-entities/${legalEntityId}/endpoints/${endpointId}/test`);
+    return data;
+  }
+
+  /**
+   * Step 1: Initiate endpoint registration with verification token
+   */
+  async initiateRegistration(legalEntityId: string, request: InitiateEndpointRegistrationRequest): Promise<Endpoint> {
+    const { data } = await this.axios.post(`/entities/${legalEntityId}/endpoints/register`, request);
+    return data;
+  }
+
+  /**
+   * Step 2: Send verification email (mock in development)
+   */
+  async sendVerificationEmail(endpointId: string): Promise<{ message: string; mock: boolean; token?: string; expires_at?: string }> {
+    const { data } = await this.axios.post(`/endpoints/${endpointId}/send-verification`);
+    return data;
+  }
+
+  /**
+   * Step 3: Verify the token provided by user
+   */
+  async verifyToken(endpointId: string, request: VerifyTokenRequest): Promise<{ message: string; endpoint: Endpoint }> {
+    const { data } = await this.axios.post(`/endpoints/${endpointId}/verify-token`, request);
+    return data;
+  }
+
+  /**
+   * Step 4: Test endpoint with mock API call
+   */
+  async testEndpoint(endpointId: string): Promise<{ message: string; mock: boolean; test_data: EndpointTestResult; endpoint: Endpoint }> {
+    const { data } = await this.axios.post(`/endpoints/${endpointId}/test`);
+    return data;
+  }
+
+  /**
+   * Step 5: Activate endpoint (final step)
+   */
+  async activateEndpoint(endpointId: string): Promise<{ message: string; endpoint: Endpoint }> {
+    const { data } = await this.axios.post(`/endpoints/${endpointId}/activate`);
     return data;
   }
 }

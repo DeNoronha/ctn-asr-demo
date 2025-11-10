@@ -139,6 +139,11 @@ export interface Endpoint {
   auth_type?: string;
   created_at: string;
   updated_at?: string;
+  verification_token?: string;
+  verification_status?: 'PENDING' | 'SENT' | 'VERIFIED' | 'FAILED' | 'EXPIRED';
+  verification_sent_at?: string;
+  verification_expires_at?: string;
+  test_result_data?: Record<string, unknown>;
 }
 
 export interface CreateEndpointRequest {
@@ -152,6 +157,28 @@ export interface UpdateEndpointRequest {
   endpoint_type?: 'WEBHOOK' | 'API' | 'CALLBACK';
   is_active?: boolean;
   auth_token?: string;
+}
+
+export interface InitiateEndpointRegistrationRequest {
+  endpoint_name: string;
+  endpoint_url: string;
+  endpoint_description?: string;
+  data_category?: string;
+  endpoint_type?: string;
+}
+
+export interface VerifyTokenRequest {
+  token: string;
+}
+
+export interface EndpointTestResult {
+  success: boolean;
+  tested_at: string;
+  endpoint_url: string;
+  response_time_ms?: number;
+  status_code?: number;
+  mock_response?: Record<string, unknown>;
+  error?: string;
 }
 
 // Audit Log types

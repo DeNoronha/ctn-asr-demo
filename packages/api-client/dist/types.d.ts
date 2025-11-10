@@ -18,8 +18,8 @@ export interface Member {
     lei?: string;
     kvk?: string;
     domain: string;
-    status: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
-    membership_level?: 'BASIC' | 'PREMIUM' | 'ENTERPRISE';
+    status: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'TERMINATED';
+    membership_level?: 'BASIC' | 'FULL' | 'PREMIUM';
     created_at: string;
     updated_at: string;
     legal_entity_id?: string;
@@ -38,8 +38,8 @@ export interface UpdateMemberRequest {
     domain?: string;
     lei?: string;
     kvk?: string;
-    status?: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
-    membership_level?: 'BASIC' | 'PREMIUM' | 'ENTERPRISE';
+    status?: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'TERMINATED';
+    membership_level?: 'BASIC' | 'FULL' | 'PREMIUM';
 }
 export interface LegalEntity {
     legal_entity_id: string;
@@ -66,7 +66,7 @@ export interface Contact {
     id: string;
     email: string;
     full_name: string;
-    contact_type: 'PRIMARY' | 'TECHNICAL' | 'BILLING';
+    contact_type: 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
     is_primary: boolean;
     phone?: string;
     mobile?: string;
@@ -78,7 +78,7 @@ export interface Contact {
 export interface ContactRequest {
     email: string;
     name: string;
-    type: 'PRIMARY' | 'TECHNICAL' | 'BILLING';
+    type: 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
     phone?: string;
     mobile?: string;
     job_title?: string;
@@ -87,7 +87,7 @@ export interface ContactRequest {
 export interface UpdateContactRequest {
     email?: string;
     full_name?: string;
-    contact_type?: 'PRIMARY' | 'TECHNICAL' | 'BILLING';
+    contact_type?: 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
     phone?: string;
     mobile?: string;
     job_title?: string;
@@ -120,6 +120,11 @@ export interface Endpoint {
     auth_type?: string;
     created_at: string;
     updated_at?: string;
+    verification_token?: string;
+    verification_status?: 'PENDING' | 'SENT' | 'VERIFIED' | 'FAILED' | 'EXPIRED';
+    verification_sent_at?: string;
+    verification_expires_at?: string;
+    test_result_data?: Record<string, unknown>;
 }
 export interface CreateEndpointRequest {
     endpoint_url: string;
@@ -131,6 +136,25 @@ export interface UpdateEndpointRequest {
     endpoint_type?: 'WEBHOOK' | 'API' | 'CALLBACK';
     is_active?: boolean;
     auth_token?: string;
+}
+export interface InitiateEndpointRegistrationRequest {
+    endpoint_name: string;
+    endpoint_url: string;
+    endpoint_description?: string;
+    data_category?: string;
+    endpoint_type?: string;
+}
+export interface VerifyTokenRequest {
+    token: string;
+}
+export interface EndpointTestResult {
+    success: boolean;
+    tested_at: string;
+    endpoint_url: string;
+    response_time_ms?: number;
+    status_code?: number;
+    mock_response?: Record<string, unknown>;
+    error?: string;
 }
 export interface AuditLog {
     id: number;

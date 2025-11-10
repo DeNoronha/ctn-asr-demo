@@ -2,29 +2,18 @@ import { Button, Modal } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import type { ComponentProps, Endpoint } from '../types';
-
-const endpointTypes = ['REST_API', 'SOAP', 'SFTP', 'FTP', 'OTHER'];
-const dataCategories = ['SHIPMENT', 'TRACKING', 'INVOICE', 'ORDER', 'OTHER'];
-const authMethods = ['BEARER_TOKEN', 'BASIC_AUTH', 'API_KEY', 'OAUTH2', 'NONE'];
+import { EndpointRegistrationWizard } from './EndpointRegistrationWizard';
 
 export const EndpointsView: React.FC<ComponentProps> = ({
   apiBaseUrl,
   getAccessToken,
+  memberData,
   onNotification,
   onDataChange,
 }) => {
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
-  const [formData, setFormData] = useState({
-    endpoint_name: '',
-    endpoint_url: '',
-    endpoint_description: '',
-    endpoint_type: 'REST_API',
-    data_category: 'SHIPMENT',
-    authentication_method: 'BEARER_TOKEN',
-    is_active: true,
-  });
 
   useEffect(() => {
     loadEndpoints();
@@ -63,59 +52,7 @@ export const EndpointsView: React.FC<ComponentProps> = ({
   };
 
   const handleAdd = () => {
-    setFormData({
-      endpoint_name: '',
-      endpoint_url: '',
-      endpoint_description: '',
-      endpoint_type: 'REST_API',
-      data_category: 'SHIPMENT',
-      authentication_method: 'BEARER_TOKEN',
-      is_active: true,
-    });
     setShowDialog(true);
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const token = await getAccessToken();
-
-      console.log('Creating endpoint:', formData);
-
-      const response = await fetch(`${apiBaseUrl}/member/endpoints`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      console.log('Response status:', response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Error response:', errorData);
-        throw new Error(errorData.error || `Failed to create endpoint: ${response.status}`);
-      }
-
-      const responseData = await response.json();
-      console.log('Endpoint created:', responseData);
-
-      onNotification('Endpoint created successfully', 'success');
-      setShowDialog(false);
-      await loadEndpoints();
-      onDataChange();
-    } catch (error) {
-      console.error('Error creating endpoint:', error);
-      onNotification(error instanceof Error ? error.message : 'Failed to create endpoint', 'error');
-    }
   };
 
   return (
@@ -190,100 +127,19 @@ export const EndpointsView: React.FC<ComponentProps> = ({
       <Modal
         opened={showDialog}
         onClose={() => setShowDialog(false)}
-        title="Add Endpoint"
+        title="Register New Endpoint"
         size="xl"
       >
-        <form onSubmit={handleSubmit} className="simple-form">
-            <div className="form-field">
-              <label>Endpoint Name *</label>
-              <input
-                type="text"
-                name="endpoint_name"
-                value={formData.endpoint_name}
-                onChange={handleChange}
-                required
-                className="form-input"
-              />
-            </div>
-            <div className="form-field">
-              <label>Endpoint URL *</label>
-              <input
-                type="url"
-                name="endpoint_url"
-                value={formData.endpoint_url}
-                onChange={handleChange}
-                placeholder="https://api.example.com/data"
-                required
-                className="form-input"
-              />
-            </div>
-            <div className="form-field">
-              <label>Description</label>
-              <textarea
-                name="endpoint_description"
-                value={formData.endpoint_description}
-                onChange={handleChange}
-                rows={3}
-                className="form-input"
-              />
-            </div>
-            <div className="form-row">
-              <div className="form-field">
-                <label>Endpoint Type *</label>
-                <select
-                  name="endpoint_type"
-                  value={formData.endpoint_type}
-                  onChange={handleChange}
-                  required
-                  className="form-input"
-                >
-                  {endpointTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-field">
-                <label>Data Category</label>
-                <select
-                  name="data_category"
-                  value={formData.data_category}
-                  onChange={handleChange}
-                  className="form-input"
-                >
-                  {dataCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="form-field">
-              <label>Authentication Method</label>
-              <select
-                name="authentication_method"
-                value={formData.authentication_method}
-                onChange={handleChange}
-                className="form-input"
-              >
-                {authMethods.map((method) => (
-                  <option key={method} value={method}>
-                    {method}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="form-actions">
-              <Button type="button" onClick={() => setShowDialog(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" color="blue">
-                Create Endpoint
-              </Button>
-            </div>
-          </form>
+        <EndpointRegistrationWizard
+          legalEntityId={memberData.organizationId}
+          onComplete={() => {
+            setShowDialog(false);
+            loadEndpoints();
+            onDataChange();
+            onNotification('Endpoint registered and activated successfully!', 'success');
+          }}
+          onCancel={() => setShowDialog(false)}
+        />
       </Modal>
     </div>
   );

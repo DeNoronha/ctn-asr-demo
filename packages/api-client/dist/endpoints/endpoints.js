@@ -46,5 +46,40 @@ class EndpointsEndpoint {
         const { data } = await this.axios.post(`/legal-entities/${legalEntityId}/endpoints/${endpointId}/test`);
         return data;
     }
+    /**
+     * Step 1: Initiate endpoint registration with verification token
+     */
+    async initiateRegistration(legalEntityId, request) {
+        const { data } = await this.axios.post(`/entities/${legalEntityId}/endpoints/register`, request);
+        return data;
+    }
+    /**
+     * Step 2: Send verification email (mock in development)
+     */
+    async sendVerificationEmail(endpointId) {
+        const { data } = await this.axios.post(`/endpoints/${endpointId}/send-verification`);
+        return data;
+    }
+    /**
+     * Step 3: Verify the token provided by user
+     */
+    async verifyToken(endpointId, request) {
+        const { data } = await this.axios.post(`/endpoints/${endpointId}/verify-token`, request);
+        return data;
+    }
+    /**
+     * Step 4: Test endpoint with mock API call
+     */
+    async testEndpoint(endpointId) {
+        const { data } = await this.axios.post(`/endpoints/${endpointId}/test`);
+        return data;
+    }
+    /**
+     * Step 5: Activate endpoint (final step)
+     */
+    async activateEndpoint(endpointId) {
+        const { data } = await this.axios.post(`/endpoints/${endpointId}/activate`);
+        return data;
+    }
 }
 exports.EndpointsEndpoint = EndpointsEndpoint;
