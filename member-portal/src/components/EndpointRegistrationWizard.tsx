@@ -286,7 +286,8 @@ export function EndpointRegistrationWizard({
         icon: <IconRocket size={16} />,
       });
 
-      onComplete();
+      // Move to completion screen instead of closing immediately
+      setActive(4);
     } catch (error) {
       console.error('Error activating endpoint:', error);
       notifications.show({
@@ -304,7 +305,7 @@ export function EndpointRegistrationWizard({
     <Paper p="md">
       <Stepper active={active} onStepClick={setActive}>
         <Stepper.Step
-          label="Endpoint Details"
+          label="1. Endpoint Details"
           description="Enter endpoint information"
           icon={<IconRocket size={18} />}
         >
@@ -371,7 +372,7 @@ export function EndpointRegistrationWizard({
         </Stepper.Step>
 
         <Stepper.Step
-          label="Email Verification"
+          label="2. Email Verification"
           description="Enter verification token"
           icon={<IconMail size={18} />}
         >
@@ -416,7 +417,7 @@ export function EndpointRegistrationWizard({
         </Stepper.Step>
 
         <Stepper.Step
-          label="Test Connection"
+          label="3. Test Connection"
           description="Verify endpoint works"
           icon={<IconKey size={18} />}
         >
@@ -469,7 +470,7 @@ export function EndpointRegistrationWizard({
         </Stepper.Step>
 
         <Stepper.Step
-          label="Activate"
+          label="4. Activate"
           description="Complete registration"
           icon={<IconRocket size={18} />}
         >
@@ -517,6 +518,9 @@ export function EndpointRegistrationWizard({
             <Text size="sm" c="dimmed" ta="center">
               Your endpoint is now active and available for data exchange.
             </Text>
+            <Button onClick={onComplete} mt="md">
+              Close
+            </Button>
           </Stack>
         </Stepper.Completed>
       </Stepper>
