@@ -60,6 +60,19 @@ async function initiateRegistrationHandler(
       };
     }
 
+    // Verify legal entity exists (for all users)
+    const entityCheck = await pool.query(
+      `SELECT legal_entity_id FROM legal_entity WHERE legal_entity_id = $1 AND is_deleted = false`,
+      [legal_entity_id]
+    );
+
+    if (entityCheck.rows.length === 0) {
+      return {
+        status: 404,
+        jsonBody: { error: 'Legal entity not found' }
+      };
+    }
+
     // Regular user: verify ownership (admins bypass ownership check)
     if (!hasAnyRole(request, [UserRole.SYSTEM_ADMIN, UserRole.ASSOCIATION_ADMIN])) {
       const ownershipCheck = await pool.query(
@@ -94,8 +107,8 @@ async function initiateRegistrationHandler(
         context.warn(`IDOR attempt: User ${userEmail} tried to create endpoint for entity ${legal_entity_id}`);
 
         return {
-          status: 403,
-          jsonBody: { error: 'You do not have permission to create endpoints for this entity' }
+          status: 404,
+          jsonBody: { error: 'Legal entity not found' }
         };
       }
     }
