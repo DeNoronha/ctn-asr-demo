@@ -246,8 +246,8 @@ export function EndpointRegistrationWizard({
     <Paper p="md">
       <Stepper active={active} onStepClick={setActive}>
         <Stepper.Step
-          label="1. Endpoint Details"
-          description="Enter endpoint information"
+          label="1. Details"
+          description="Endpoint information"
           icon={<IconRocket size={18} />}
         >
           <Stack gap="md" mt="md">
@@ -313,8 +313,8 @@ export function EndpointRegistrationWizard({
         </Stepper.Step>
 
         <Stepper.Step
-          label="2. Email Verification"
-          description="Enter verification token"
+          label="2. Verify"
+          description="Email verification"
           icon={<IconMail size={18} />}
         >
           <Stack gap="md" mt="md">
@@ -358,8 +358,8 @@ export function EndpointRegistrationWizard({
         </Stepper.Step>
 
         <Stepper.Step
-          label="3. Test Connection"
-          description="Verify endpoint works"
+          label="3. Test"
+          description="Connection test"
           icon={<IconKey size={18} />}
         >
           <Stack gap="md" mt="md">
@@ -412,7 +412,7 @@ export function EndpointRegistrationWizard({
 
         <Stepper.Step
           label="4. Activate"
-          description="Complete registration"
+          description="Final step"
           icon={<IconRocket size={18} />}
         >
           <Stack gap="md" mt="md">

@@ -18,7 +18,7 @@ export class AsrApiError extends Error implements ApiError {
     }
   }
 
-  static fromAxiosError(error: any): AsrApiError {
+  static fromAxiosError(error: { response?: { status: number; data?: { error?: string; code?: string; details?: unknown } }; request?: unknown; message: string }): AsrApiError {
     if (error.response) {
       // Server responded with error status
       const responseData = error.response.data as { error?: string; code?: string; details?: unknown };

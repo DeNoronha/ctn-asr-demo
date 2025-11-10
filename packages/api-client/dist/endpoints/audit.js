@@ -26,7 +26,7 @@ export class AuditLogsEndpoint {
                 resource_id: resourceId
             }
         });
-        return (data.data || data);
+        return Array.isArray(data) ? data : data.data;
     }
     /**
      * Get audit logs for a specific user

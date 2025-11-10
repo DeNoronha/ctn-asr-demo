@@ -1,7 +1,8 @@
-import { Identifier, CreateIdentifierRequest, UpdateIdentifierRequest } from '../types';
+import axiosLib from 'axios';
+import type { Identifier, CreateIdentifierRequest, UpdateIdentifierRequest } from '../types';
 export declare class IdentifiersEndpoint {
     private axios;
-    constructor(axios: any);
+    constructor(axios: ReturnType<typeof axiosLib.create>);
     /**
      * Get identifiers for a legal entity
      */

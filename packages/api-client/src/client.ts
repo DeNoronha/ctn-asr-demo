@@ -1,4 +1,3 @@
-// @ts-nocheck
 import axios from 'axios';
 import { ApiClientConfig } from './types';
 import { configureRetry } from './utils/retry';
@@ -40,7 +39,7 @@ import { AuthEndpoint } from './endpoints/auth';
  * ```
  */
 export class AsrApiClient {
-  private axiosInstance: any;
+  private axiosInstance: ReturnType<typeof axios.create>;
 
   // Endpoints
   public members: MembersEndpoint;
@@ -102,7 +101,7 @@ export class AsrApiClient {
    * const response = await client.axios.get('/custom-endpoint');
    * ```
    */
-  public get axios(): any {
+  public get axios(): ReturnType<typeof axios.create> {
     return this.axiosInstance;
   }
 }

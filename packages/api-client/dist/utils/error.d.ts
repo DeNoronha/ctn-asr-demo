@@ -4,7 +4,18 @@ export declare class AsrApiError extends Error implements ApiError {
     code?: string;
     details?: unknown;
     constructor(message: string, status: number, code?: string, details?: unknown);
-    static fromAxiosError(error: any): AsrApiError;
+    static fromAxiosError(error: {
+        response?: {
+            status: number;
+            data?: {
+                error?: string;
+                code?: string;
+                details?: unknown;
+            };
+        };
+        request?: unknown;
+        message: string;
+    }): AsrApiError;
     /**
      * Check if error is an authentication error
      */

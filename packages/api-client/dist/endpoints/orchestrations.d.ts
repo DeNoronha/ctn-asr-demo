@@ -1,7 +1,8 @@
-import { Orchestration, CreateOrchestrationRequest, PaginatedResponse, PaginationParams } from '../types';
+import axiosLib from 'axios';
+import type { Orchestration, CreateOrchestrationRequest, PaginatedResponse, PaginationParams } from '../types';
 export declare class OrchestrationsEndpoint {
     private axios;
-    constructor(axios: any);
+    constructor(axios: ReturnType<typeof axiosLib.create>);
     /**
      * Get all orchestrations
      */

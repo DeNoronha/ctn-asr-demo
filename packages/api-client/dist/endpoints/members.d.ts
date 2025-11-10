@@ -1,7 +1,8 @@
-import { Member, CreateMemberRequest, UpdateMemberRequest, PaginatedResponse, PaginationParams } from '../types';
+import axiosLib from 'axios';
+import type { Member, CreateMemberRequest, UpdateMemberRequest, PaginatedResponse, PaginationParams } from '../types';
 export declare class MembersEndpoint {
     private axios;
-    constructor(axios: any);
+    constructor(axios: ReturnType<typeof axiosLib.create>);
     /**
      * Get all members (admin only)
      */

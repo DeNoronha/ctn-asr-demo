@@ -1,7 +1,8 @@
-import { Endpoint, CreateEndpointRequest, UpdateEndpointRequest, InitiateEndpointRegistrationRequest, VerifyTokenRequest, EndpointTestResult } from '../types';
+import axiosLib from 'axios';
+import type { Endpoint, CreateEndpointRequest, UpdateEndpointRequest, InitiateEndpointRegistrationRequest, VerifyTokenRequest, EndpointTestResult } from '../types';
 export declare class EndpointsEndpoint {
     private axios;
-    constructor(axios: any);
+    constructor(axios: ReturnType<typeof axiosLib.create>);
     /**
      * Get endpoints for a legal entity
      */

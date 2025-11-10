@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { ApiClientConfig } from './types';
 import { MembersEndpoint } from './endpoints/members';
 import { LegalEntitiesEndpoint } from './endpoints/legalEntities';
@@ -56,6 +57,6 @@ export declare class AsrApiClient {
      * const response = await client.axios.get('/custom-endpoint');
      * ```
      */
-    get axios(): any;
+    get axios(): ReturnType<typeof axios.create>;
 }
 //# sourceMappingURL=client.d.ts.map

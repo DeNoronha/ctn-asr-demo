@@ -1,7 +1,8 @@
-import { PartyInfo } from '../types';
+import axiosLib from 'axios';
+import type { PartyInfo } from '../types';
 export declare class AuthEndpoint {
     private axios;
-    constructor(axios: any);
+    constructor(axios: ReturnType<typeof axiosLib.create>);
     /**
      * Get current user's party information
      */

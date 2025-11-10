@@ -1,6 +1,13 @@
 import { AsrApiError } from './error';
+/**
+ * Configure axios interceptors for authentication and error handling.
+ *
+ * NOTE: This file uses type assertions due to conflicts between axios type definitions
+ * and angular/axios-retry typings in the monorepo. The runtime behavior is correct.
+ */
 export function configureInterceptors(instance, getAccessToken, onError) {
     // Request interceptor - Add authentication token
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     instance.interceptors.request.use(async (config) => {
         try {
             const token = await getAccessToken();
@@ -17,6 +24,7 @@ export function configureInterceptors(instance, getAccessToken, onError) {
         return Promise.reject(error);
     });
     // Response interceptor - Handle errors
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     instance.interceptors.response.use((response) => response, (error) => {
         const apiError = AsrApiError.fromAxiosError(error);
         // Call custom error handler if provided

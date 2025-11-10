@@ -1,14 +1,14 @@
-// @ts-nocheck
-import { Orchestration, CreateOrchestrationRequest, PaginatedResponse, PaginationParams } from '../types';
+import axiosLib from 'axios';
+import type { Orchestration, CreateOrchestrationRequest, PaginatedResponse, PaginationParams } from '../types';
 
 export class OrchestrationsEndpoint {
-  constructor(private axios: any) {}
+  constructor(private axios: ReturnType<typeof axiosLib.create>) {}
 
   /**
    * Get all orchestrations
    */
   async getAll(params?: PaginationParams): Promise<PaginatedResponse<Orchestration>> {
-    const { data } = await this.axios.get('/orchestrations', { params }) as any;
+    const { data } = await this.axios.get<PaginatedResponse<Orchestration>>('/orchestrations', { params });
     return data;
   }
 
@@ -16,7 +16,7 @@ export class OrchestrationsEndpoint {
    * Get orchestration by ID
    */
   async getById(id: string): Promise<Orchestration> {
-    const { data } = await this.axios.get(`/orchestrations/${id}`) as any;
+    const { data } = await this.axios.get<Orchestration>(`/orchestrations/${id}`);
     return data;
   }
 
@@ -24,7 +24,7 @@ export class OrchestrationsEndpoint {
    * Create new orchestration
    */
   async create(orchestration: CreateOrchestrationRequest): Promise<Orchestration> {
-    const { data } = await this.axios.post('/orchestrations', orchestration) as any;
+    const { data } = await this.axios.post<Orchestration>('/orchestrations', orchestration);
     return data;
   }
 
@@ -32,12 +32,12 @@ export class OrchestrationsEndpoint {
    * Get orchestrations by party
    */
   async getByParty(partyId: string, params?: PaginationParams): Promise<PaginatedResponse<Orchestration>> {
-    const { data } = await this.axios.get('/orchestrations', {
+    const { data } = await this.axios.get<PaginatedResponse<Orchestration>>('/orchestrations', {
       params: {
         ...params,
         party_id: partyId
       }
-    }) as any;
+    });
     return data;
   }
 }
