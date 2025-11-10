@@ -8,7 +8,10 @@
 import { HttpRequest, InvocationContext, HttpResponseInit } from '@azure/functions';
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
+import { v4 as uuidv4 } from 'uuid';
 import {
+  createLogger,
+  getOrCreateCorrelationId,
   logAuthEvent,
   logSecurityEvent,
 } from '../utils/logger';
@@ -39,11 +42,12 @@ const zitadelJwksClient = jwksClient({
 /**
  * Zitadel JWT payload interface
  * Extends base JwtPayload with Zitadel-specific claims
+ * Omits 'aud' to redefine it with Zitadel's more flexible type
  */
-export interface ZitadelJwtPayload extends JwtPayload {
+export interface ZitadelJwtPayload extends Omit<JwtPayload, 'aud'> {
   sub: string; // Subject (service account ID)
   iss: string; // Issuer (Zitadel instance URL)
-  aud: string | string[]; // Audience (project ID or client ID)
+  aud: string | string[]; // Audience (project ID or client ID) - can be array in Zitadel
   exp: number; // Expiration time
   iat: number; // Issued at
   azp?: string; // Authorized party (client ID)
@@ -87,6 +91,9 @@ export async function validateZitadelToken(
   token: string,
   context: InvocationContext
 ): Promise<ZitadelJwtPayload> {
+  const logger = createLogger(context);
+  const correlationId = uuidv4();
+
   return new Promise((resolve, reject) => {
     // Verify token with Zitadel public key
     jwt.verify(
@@ -101,8 +108,7 @@ export async function validateZitadelToken(
       (err, decoded) => {
         if (err) {
           context.error('Zitadel JWT verification failed:', err.message);
-          logSecurityEvent(context, {
-            event: 'zitadel_token_validation_failed',
+          logSecurityEvent(logger, 'zitadel_token_validation_failed', correlationId, {
             error: err.message,
             token_prefix: token.substring(0, 20) + '...',
           });
@@ -136,10 +142,9 @@ export async function validateZitadelToken(
           context.error(
             `Zitadel audience validation failed. Expected one of: ${validAudiences.join(', ')}, got: ${JSON.stringify(payload.aud)}`
           );
-          logSecurityEvent(context, {
-            event: 'zitadel_invalid_audience',
-            expected_audiences: validAudiences,
-            received_audience: payload.aud,
+          logSecurityEvent(logger, 'zitadel_invalid_audience', correlationId, {
+            expected_audiences: validAudiences.join(', '),
+            received_audience: JSON.stringify(payload.aud),
             issuer: payload.iss,
             subject: payload.sub,
           });
@@ -157,7 +162,7 @@ export async function validateZitadelToken(
         const clientId = payload.azp || payload.client_id || payload.sub;
         context.log('Zitadel token validated successfully for client:', clientId);
 
-        logAuthEvent(context, {
+        logAuthEvent(logger, true, correlationId, {
           event: 'zitadel_token_validated',
           client_id: clientId,
           subject: payload.sub,
@@ -226,12 +231,14 @@ export async function authenticateZitadel(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<{ request: AuthenticatedRequest } | HttpResponseInit> {
+  const logger = createLogger(context);
+  const correlationId = getOrCreateCorrelationId(request);
+
   try {
     // Extract token from Authorization header
     const authHeader = request.headers.get('authorization');
     if (!authHeader) {
-      logSecurityEvent(context, {
-        event: 'zitadel_missing_auth_header',
+      logSecurityEvent(logger, 'zitadel_missing_auth_header', correlationId, {
         url: request.url,
         method: request.method,
       });
@@ -247,8 +254,7 @@ export async function authenticateZitadel(
     // Validate Bearer token format
     const parts = authHeader.split(' ');
     if (parts.length !== 2 || parts[0] !== 'Bearer') {
-      logSecurityEvent(context, {
-        event: 'zitadel_invalid_auth_format',
+      logSecurityEvent(logger, 'zitadel_invalid_auth_format', correlationId, {
         auth_header_prefix: authHeader.substring(0, 20),
       });
       return {
@@ -291,11 +297,11 @@ export async function authenticateZitadel(
       partyId: partyId || undefined,
     };
 
-    logAuthEvent(context, {
+    logAuthEvent(logger, true, correlationId, {
       event: 'zitadel_authentication_success',
       client_id: clientId,
       party_id: partyId,
-      roles: authenticatedRequest.userRoles,
+      roles: (authenticatedRequest.userRoles || []).join(', '),
       organization: payload['urn:zitadel:iam:org:domain'],
     });
 
@@ -303,8 +309,7 @@ export async function authenticateZitadel(
   } catch (error: any) {
     context.error('Zitadel authentication failed:', error);
 
-    logSecurityEvent(context, {
-      event: 'zitadel_authentication_failed',
+    logSecurityEvent(logger, 'zitadel_authentication_failed', correlationId, {
       error: error.message,
       url: request.url,
       method: request.method,
@@ -383,12 +388,14 @@ export function requireZitadelRole(
   context: InvocationContext,
   requiredRole: string
 ): { request: AuthenticatedRequest } | HttpResponseInit {
+  const logger = createLogger(context);
+  const correlationId = uuidv4();
+
   if (!hasZitadelRole(request, requiredRole)) {
-    logSecurityEvent(context, {
-      event: 'zitadel_insufficient_permissions',
+    logSecurityEvent(logger, 'zitadel_insufficient_permissions', correlationId, {
       client_id: request.clientId,
       required_role: requiredRole,
-      user_roles: request.userRoles,
+      user_roles: (request.userRoles || []).join(', '),
     });
 
     return {
@@ -466,7 +473,18 @@ export async function authenticateDual(
       context.log('Detected Azure AD token, using Azure AD authentication');
       // Import Azure AD auth dynamically to avoid circular dependencies
       const { authenticate } = await import('./auth');
-      return authenticate(request, context);
+      const result = await authenticate(request, context);
+      // Transform AuthenticationResult to match expected return type
+      if ('success' in result && result.success === true) {
+        return { request: result.request };
+      } else if ('success' in result && result.success === false) {
+        return result.response;
+      }
+      // Fallback (should never reach here)
+      return {
+        status: 500,
+        jsonBody: { error: 'Authentication failed with unexpected result' }
+      };
     } else {
       context.error('Unknown token issuer:', payload.iss);
       return {
