@@ -57,7 +57,7 @@ export const Dashboard: React.FC<ComponentProps> = ({
       }
 
       // Load tier information
-      const tierRes = await fetch(`${apiBaseUrl}/entities/${memberData.organizationId}/tier`, { headers });
+      const tierRes = await fetch(`${apiBaseUrl}/entities/${memberData.legalEntityId}/tier`, { headers });
       if (tierRes.ok) {
         const tierData = await tierRes.json();
         setTierInfo(tierData);

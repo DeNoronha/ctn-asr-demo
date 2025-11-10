@@ -131,7 +131,7 @@ export const EndpointsView: React.FC<ComponentProps> = ({
         size="xl"
       >
         <EndpointRegistrationWizard
-          legalEntityId={memberData.organizationId}
+          legalEntityId={memberData.legalEntityId!}
           apiBaseUrl={apiBaseUrl}
           getAccessToken={getAccessToken}
           onComplete={() => {

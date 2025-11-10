@@ -9,6 +9,7 @@ export interface RegistryIdentifier {
 
 export interface MemberData {
   organizationId: string;
+  legalEntityId?: string;
   legalName: string;
   lei?: string;
   kvk?: string;

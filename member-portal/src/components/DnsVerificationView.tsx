@@ -42,7 +42,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
     try {
       const token = await getAccessToken();
       const response = await fetch(
-        `${apiBaseUrl}/entities/${memberData.organizationId}/dns/tokens`,
+        `${apiBaseUrl}/entities/${memberData.legalEntityId}/dns/tokens`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -79,7 +79,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
     try {
       const token = await getAccessToken();
       const response = await fetch(
-        `${apiBaseUrl}/entities/${memberData.organizationId}/dns/token`,
+        `${apiBaseUrl}/entities/${memberData.legalEntityId}/dns/token`,
         {
           method: 'POST',
           headers: {

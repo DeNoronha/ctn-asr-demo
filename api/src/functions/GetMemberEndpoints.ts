@@ -53,6 +53,7 @@ async function handler(
         dt_modified
       FROM legal_entity_endpoint
       WHERE legal_entity_id = $1
+        AND is_deleted = false
       ORDER BY dt_created DESC
     `, [legal_entity_id]);
 
