@@ -1,7 +1,7 @@
 import { Endpoint, CreateEndpointRequest, UpdateEndpointRequest, InitiateEndpointRegistrationRequest, VerifyTokenRequest, EndpointTestResult } from '../types';
 export declare class EndpointsEndpoint {
     private axios;
-    constructor(axios: Axios.AxiosInstance);
+    constructor(axios: any);
     /**
      * Get endpoints for a legal entity
      */

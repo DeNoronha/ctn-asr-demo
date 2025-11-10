@@ -1,15 +1,14 @@
 // @ts-nocheck
-import * as Axios from 'axios';
 import { Contact, ContactRequest, UpdateContactRequest } from '../types';
 
 export class ContactsEndpoint {
-  constructor(private axios: Axios.AxiosInstance) {}
+  constructor(private axios: any) {}
 
   /**
    * Get contacts for a legal entity
    */
   async getByLegalEntity(legalEntityId: string): Promise<Contact[]> {
-    const { data } = await this.axios.get(`/legal-entities/${legalEntityId}/contacts`)) as any;
+    const { data } = await this.axios.get(`/legal-entities/${legalEntityId}/contacts`) as any;
     return data as any;
   }
 
@@ -17,7 +16,7 @@ export class ContactsEndpoint {
    * Get contact by ID
    */
   async getById(legalEntityId: string, contactId: string): Promise<Contact> {
-    const { data } = await this.axios.get(`/legal-entities/${legalEntityId}/contacts/${contactId}`)) as any;
+    const { data } = await this.axios.get(`/legal-entities/${legalEntityId}/contacts/${contactId}`) as any;
     return data as any;
   }
 
@@ -25,7 +24,7 @@ export class ContactsEndpoint {
    * Create contact for legal entity
    */
   async create(legalEntityId: string, contact: ContactRequest): Promise<Contact> {
-    const { data } = await this.axios.post(`/legal-entities/${legalEntityId}/contacts`, contact)) as any;
+    const { data } = await this.axios.post(`/legal-entities/${legalEntityId}/contacts`, contact) as any;
     return data as any;
   }
 
@@ -33,7 +32,7 @@ export class ContactsEndpoint {
    * Update contact
    */
   async update(legalEntityId: string, contactId: string, updates: UpdateContactRequest): Promise<Contact> {
-    const { data } = await this.axios.put(`/legal-entities/${legalEntityId}/contacts/${contactId}`, updates)) as any;
+    const { data } = await this.axios.put(`/legal-entities/${legalEntityId}/contacts/${contactId}`, updates) as any;
     return data as any;
   }
 

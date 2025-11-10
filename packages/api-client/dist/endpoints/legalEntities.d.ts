@@ -1,7 +1,7 @@
 import { LegalEntity, UpdateLegalEntityRequest, PaginatedResponse } from '../types';
 export declare class LegalEntitiesEndpoint {
     private axios;
-    constructor(axios: Axios.AxiosInstance);
+    constructor(axios: any);
     /**
      * Get all legal entities
      */

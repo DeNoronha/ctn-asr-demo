@@ -136,8 +136,11 @@ export const EndpointsView: React.FC<ComponentProps> = ({
           getAccessToken={getAccessToken}
           onComplete={() => {
             setShowDialog(false);
-            loadEndpoints();
-            onDataChange();
+            // Small delay to ensure API has finished processing
+            setTimeout(() => {
+              loadEndpoints();
+              onDataChange();
+            }, 500);
             onNotification('Endpoint registered successfully!', 'success');
           }}
           onCancel={() => setShowDialog(false)}

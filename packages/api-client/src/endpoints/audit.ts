@@ -1,9 +1,8 @@
 // @ts-nocheck
-import * as Axios from 'axios';
 import { AuditLog, AuditLogFilters, PaginatedResponse } from '../types';
 
 export class AuditLogsEndpoint {
-  constructor(private axios: Axios.AxiosInstance) {}
+  constructor(private axios: any) {}
 
   /**
    * Get audit logs with optional filters

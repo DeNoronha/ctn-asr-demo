@@ -56,6 +56,6 @@ export declare class AsrApiClient {
      * const response = await client.axios.get('/custom-endpoint');
      * ```
      */
-    get axios(): Axios.AxiosInstance;
+    get axios(): any;
 }
 //# sourceMappingURL=client.d.ts.map

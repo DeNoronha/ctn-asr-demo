@@ -1,7 +1,7 @@
 import { Contact, ContactRequest, UpdateContactRequest } from '../types';
 export declare class ContactsEndpoint {
     private axios;
-    constructor(axios: Axios.AxiosInstance);
+    constructor(axios: any);
     /**
      * Get contacts for a legal entity
      */

@@ -1,9 +1,8 @@
 // @ts-nocheck
-import * as Axios from 'axios';
 import { Orchestration, CreateOrchestrationRequest, PaginatedResponse, PaginationParams } from '../types';
 
 export class OrchestrationsEndpoint {
-  constructor(private axios: Axios.AxiosInstance) {}
+  constructor(private axios: any) {}
 
   /**
    * Get all orchestrations

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Stepper,
   Button,
@@ -26,6 +26,7 @@ import {
   IconAlertCircle,
   IconClock,
 } from '@tabler/icons-react';
+import { AsrApiClient } from '@ctn/api-client';
 
 interface EndpointRegistrationWizardProps {
   legalEntityId: string;
@@ -67,6 +68,17 @@ export function EndpointRegistrationWizard({
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<any>(null);
 
+  // Initialize API client with retry logic and token management
+  const apiClient = useMemo(
+    () =>
+      new AsrApiClient({
+        baseURL: apiBaseUrl,
+        getAccessToken,
+        retryAttempts: 3,
+      }),
+    [apiBaseUrl, getAccessToken]
+  );
+
   const form = useForm<EndpointData>({
     initialValues: {
       endpoint_name: '',
@@ -99,45 +111,14 @@ export function EndpointRegistrationWizard({
     if (!form.validate().hasErrors) {
       setLoading(true);
       try {
-        const token = await getAccessToken();
-
-        // Create endpoint
-        const response = await fetch(`${apiBaseUrl}/entities/${legalEntityId}/endpoints/register`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': 'portal-request',
-          },
-          body: JSON.stringify(form.values),
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to create endpoint');
-        }
-
-        const endpoint: EndpointResponse = await response.json();
+        // Create endpoint using api-client with automatic retry and token management
+        const endpoint = await apiClient.endpoints.initiateRegistration(legalEntityId, form.values) as any;
         setEndpointId(endpoint.legal_entity_endpoint_id);
 
         // Automatically send verification email
-        const emailResponse = await fetch(
-          `${apiBaseUrl}/endpoints/${endpoint.legal_entity_endpoint_id}/send-verification`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-              'X-CSRF-Token': 'portal-request',
-            },
-          }
+        const emailResult = await apiClient.endpoints.sendVerificationEmail(
+          endpoint.legal_entity_endpoint_id
         );
-
-        if (!emailResponse.ok) {
-          throw new Error('Failed to send verification email');
-        }
-
-        const emailResult = await emailResponse.json();
 
         // In mock mode, the token is returned
         if (emailResult.mock && emailResult.token) {
@@ -172,22 +153,10 @@ export function EndpointRegistrationWizard({
     if (!tokenForm.validate().hasErrors && endpointId) {
       setLoading(true);
       try {
-        const token = await getAccessToken();
-
-        const response = await fetch(`${apiBaseUrl}/endpoints/${endpointId}/verify-token`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': 'portal-request',
-          },
-          body: JSON.stringify({ token: tokenForm.values.token }),
+        // Verify token using api-client
+        await apiClient.endpoints.verifyToken(endpointId, {
+          token: tokenForm.values.token,
         });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Invalid verification token');
-        }
 
         notifications.show({
           title: 'Email Verified',
@@ -217,24 +186,9 @@ export function EndpointRegistrationWizard({
 
     setLoading(true);
     try {
-      const token = await getAccessToken();
-
-      const response = await fetch(`${apiBaseUrl}/endpoints/${endpointId}/test`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': 'portal-request',
-        },
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Test failed');
-      }
-
-      const result = await response.json();
-      setTestResults(result);
+      // Test endpoint using api-client
+      const result = await apiClient.endpoints.testEndpoint(endpointId);
+      setTestResults(result.test_data);
 
       notifications.show({
         title: 'Test Successful',
@@ -263,21 +217,8 @@ export function EndpointRegistrationWizard({
 
     setLoading(true);
     try {
-      const token = await getAccessToken();
-
-      const response = await fetch(`${apiBaseUrl}/endpoints/${endpointId}/activate`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': 'portal-request',
-        },
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Activation failed');
-      }
+      // Activate endpoint using api-client
+      await apiClient.endpoints.activateEndpoint(endpointId);
 
       notifications.show({
         title: 'Endpoint Activated',
