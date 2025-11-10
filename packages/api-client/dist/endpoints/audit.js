@@ -1,4 +1,7 @@
-export class AuditLogsEndpoint {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuditLogsEndpoint = void 0;
+class AuditLogsEndpoint {
     constructor(axios) {
         this.axios = axios;
     }
@@ -26,7 +29,7 @@ export class AuditLogsEndpoint {
                 resource_id: resourceId
             }
         });
-        return data.data || data;
+        return (data.data || data);
     }
     /**
      * Get audit logs for a specific user
@@ -41,3 +44,4 @@ export class AuditLogsEndpoint {
         return data;
     }
 }
+exports.AuditLogsEndpoint = AuditLogsEndpoint;

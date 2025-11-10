@@ -1,8 +1,7 @@
-import { AxiosInstance } from 'axios';
 import { Member, CreateMemberRequest, UpdateMemberRequest, PaginatedResponse, PaginationParams } from '../types';
 export declare class MembersEndpoint {
     private axios;
-    constructor(axios: AxiosInstance);
+    constructor(axios: Axios.AxiosInstance);
     /**
      * Get all members (admin only)
      */

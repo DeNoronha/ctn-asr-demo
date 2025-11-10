@@ -1,11 +1,10 @@
 import { ApiError } from '../types';
-import { AxiosError } from 'axios';
 export declare class AsrApiError extends Error implements ApiError {
     status: number;
     code?: string;
     details?: unknown;
     constructor(message: string, status: number, code?: string, details?: unknown);
-    static fromAxiosError(error: AxiosError): AsrApiError;
+    static fromAxiosError(error: any): AsrApiError;
     /**
      * Check if error is an authentication error
      */

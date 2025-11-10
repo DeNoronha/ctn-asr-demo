@@ -1,8 +1,7 @@
-import { AxiosInstance } from 'axios';
 import { Identifier, CreateIdentifierRequest, UpdateIdentifierRequest } from '../types';
 export declare class IdentifiersEndpoint {
     private axios;
-    constructor(axios: AxiosInstance);
+    constructor(axios: Axios.AxiosInstance);
     /**
      * Get identifiers for a legal entity
      */

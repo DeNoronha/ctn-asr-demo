@@ -1,4 +1,7 @@
-export class MembersEndpoint {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MembersEndpoint = void 0;
+class MembersEndpoint {
     constructor(axios) {
         this.axios = axios;
     }
@@ -37,3 +40,4 @@ export class MembersEndpoint {
         await this.axios.delete(`/members/${id}`);
     }
 }
+exports.MembersEndpoint = MembersEndpoint;

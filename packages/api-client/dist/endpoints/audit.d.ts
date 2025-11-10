@@ -1,8 +1,7 @@
-import { AxiosInstance } from 'axios';
 import { AuditLog, AuditLogFilters, PaginatedResponse } from '../types';
 export declare class AuditLogsEndpoint {
     private axios;
-    constructor(axios: AxiosInstance);
+    constructor(axios: Axios.AxiosInstance);
     /**
      * Get audit logs with optional filters
      */

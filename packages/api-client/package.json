@@ -18,7 +18,7 @@
   "author": "CTN Development Team",
   "license": "UNLICENSED",
   "dependencies": {
-    "axios": "1.6.8",
+    "axios": "^1.13.2",
     "axios-retry": "^3.8.0"
   },
   "devDependencies": {

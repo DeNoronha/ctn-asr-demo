@@ -1,8 +1,7 @@
-import { AxiosInstance } from 'axios';
 import { PartyInfo } from '../types';
 export declare class AuthEndpoint {
     private axios;
-    constructor(axios: AxiosInstance);
+    constructor(axios: Axios.AxiosInstance);
     /**
      * Get current user's party information
      */

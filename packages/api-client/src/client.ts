@@ -1,4 +1,5 @@
-import axios, { AxiosInstance } from 'axios';
+import * as Axios from 'axios';
+const axios = Axios.default;
 import { ApiClientConfig } from './types';
 import { configureRetry } from './utils/retry';
 import { configureInterceptors } from './utils/interceptors';
@@ -39,7 +40,7 @@ import { AuthEndpoint } from './endpoints/auth';
  * ```
  */
 export class AsrApiClient {
-  private axiosInstance: AxiosInstance;
+  private axiosInstance: Axios.AxiosInstance;
 
   // Endpoints
   public members: MembersEndpoint;
@@ -101,7 +102,7 @@ export class AsrApiClient {
    * const response = await client.axios.get('/custom-endpoint');
    * ```
    */
-  public get axios(): AxiosInstance {
+  public get axios(): Axios.AxiosInstance {
     return this.axiosInstance;
   }
 }

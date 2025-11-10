@@ -1,8 +1,7 @@
-import { AxiosInstance } from 'axios';
 import { Orchestration, CreateOrchestrationRequest, PaginatedResponse, PaginationParams } from '../types';
 export declare class OrchestrationsEndpoint {
     private axios;
-    constructor(axios: AxiosInstance);
+    constructor(axios: Axios.AxiosInstance);
     /**
      * Get all orchestrations
      */

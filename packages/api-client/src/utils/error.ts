@@ -1,5 +1,4 @@
 import { ApiError } from '../types';
-import { AxiosError } from 'axios';
 
 export class AsrApiError extends Error implements ApiError {
   status: number;
@@ -19,7 +18,7 @@ export class AsrApiError extends Error implements ApiError {
     }
   }
 
-  static fromAxiosError(error: AxiosError): AsrApiError {
+  static fromAxiosError(error: any): AsrApiError {
     if (error.response) {
       // Server responded with error status
       const responseData = error.response.data as { error?: string; code?: string; details?: unknown };

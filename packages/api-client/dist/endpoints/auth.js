@@ -1,4 +1,7 @@
-export class AuthEndpoint {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuthEndpoint = void 0;
+class AuthEndpoint {
     constructor(axios) {
         this.axios = axios;
     }
@@ -6,7 +9,7 @@ export class AuthEndpoint {
      * Get current user's party information
      */
     async getPartyInfo() {
-        const { data } = await this.axios.get('/me/party-info');
+        const { data } = await this.axios.get('/me/party-info'), as, any;
         return data;
     }
     /**
@@ -14,7 +17,7 @@ export class AuthEndpoint {
      */
     async validateToken() {
         try {
-            const { data } = await this.axios.get('/me/validate');
+            const { data } = await this.axios.get('/me/validate'), as, any;
             return { valid: true, expires_at: data.expires_at };
         }
         catch (error) {
@@ -22,3 +25,4 @@ export class AuthEndpoint {
         }
     }
 }
+exports.AuthEndpoint = AuthEndpoint;

@@ -1,14 +1,14 @@
-import { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import * as Axios from 'axios';
 import { AsrApiError } from './error';
 
 export function configureInterceptors(
-  instance: AxiosInstance,
+  instance: Axios.AxiosInstance,
   getAccessToken: () => Promise<string> | string,
   onError?: (error: Error) => void
 ): void {
   // Request interceptor - Add authentication token
   instance.interceptors.request.use(
-    async (config: InternalAxiosRequestConfig) => {
+    async (config: any) => {
       try {
         const token = await getAccessToken();
         if (token) {
@@ -27,8 +27,8 @@ export function configureInterceptors(
 
   // Response interceptor - Handle errors
   instance.interceptors.response.use(
-    (response: AxiosResponse) => response,
-    (error: AxiosError) => {
+    (response: any) => response,
+    (error: any) => {
       const apiError = AsrApiError.fromAxiosError(error);
 
       // Call custom error handler if provided

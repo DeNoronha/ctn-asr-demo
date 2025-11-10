@@ -1,7 +1,7 @@
-import { AxiosInstance } from 'axios';
+import * as Axios from 'axios';
 import axiosRetry from 'axios-retry';
 
-export function configureRetry(instance: AxiosInstance, retryAttempts: number = 3): void {
+export function configureRetry(instance: Axios.AxiosInstance, retryAttempts: number = 3): void {
   axiosRetry(instance, {
     retries: retryAttempts,
     retryDelay: axiosRetry.exponentialDelay,
