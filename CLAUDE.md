@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Last Updated:** November 7, 2025
+**Last Updated:** November 11, 2025
 
 ---
 
@@ -31,15 +31,15 @@ git status
 
 ## Architecture Overview
 
-### Monorepo Structure
+### Repository Structure
+
+**As of November 11, 2025:** This repository contains ONLY the Association Register (ASR) system.
 
 ```
 ctn-asr-monorepo/
 ├── api/                    # Azure Functions backend (Node.js 20)
 ├── admin-portal/           # Admin UI (React 18 + Mantine v8)
 ├── member-portal/          # Member UI (React 18 + Mantine v8)
-├── booking-portal/         # DocuFlow (separate service)
-├── orchestrator-portal/    # Orchestration UI (React + Tailwind)
 ├── database/               # PostgreSQL schema & migrations
 ├── packages/
 │   └── api-client/         # Shared TypeScript API client
@@ -51,7 +51,9 @@ ctn-asr-monorepo/
 
 **Workspaces:** Root `package.json` defines workspaces: `["admin-portal", "member-portal", "api", "packages/*"]`
 
-**Isolation:** ASR (api/admin/member) tightly coupled. DocuFlow, Orchestrator, Docs are COMPLETELY independent.
+**Related Systems (Separate Repositories):**
+- **[DocuFlow](https://dev.azure.com/ctn-demo/DocuFlow/_git/DocuFlow)** - Document submission and approval workflows (extracted Nov 11, 2025)
+- **[Orchestration Register](https://dev.azure.com/ctn-demo/Orchestrator%20Portal/_git/Orchestrator%20Portal)** - Cross-system workflow orchestration (extracted Nov 11, 2025)
 
 ### Pipeline Architecture
 
@@ -72,18 +74,12 @@ ctn-asr-monorepo/
 └──────────────┘ └──────────────┘
   admin-portal.yml  member-portal.yml
   (triggered by API OR admin-portal/* changes)
-
-Independent Pipelines (NOT triggered by API):
-┌──────────────┐ ┌──────────────┐
-│4. Booking    │ │5. Orchestrator│
-│   Portal     │ │   Portal      │
-└──────────────┘ └──────────────┘
 ```
 
 **Path Filters:**
 - Changes to `api/*` → Triggers ASR API + Admin + Member pipelines
 - Changes to `admin-portal/*` → ONLY Admin portal pipeline
-- Changes to `booking-portal/*` → ONLY Booking pipeline (independent)
+- Changes to `member-portal/*` → ONLY Member portal pipeline
 
 ### API Architecture (Azure Functions)
 

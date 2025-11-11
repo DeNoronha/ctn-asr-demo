@@ -35,8 +35,6 @@ mv .env.local.backup .env.local
 ### Direct URLs (Static Web Apps)
 - **Admin Portal:** https://calm-tree-03352ba03.1.azurestaticapps.net
 - **Member Portal:** https://calm-pebble-043b2db03.1.azurestaticapps.net
-- **Documentation Portal:** https://ambitious-sky-098ea8e03.2.azurestaticapps.net
-- **Orchestrator Portal:** https://blue-dune-0353f1303.1.azurestaticapps.net (October 2025 - Production)
 
 ### Backend & Infrastructure
 - **API:** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
@@ -74,27 +72,33 @@ cd api && npm run build
 
 ## Project Structure
 
-This repository contains four portals and supporting infrastructure:
+This repository contains the **Association Register (ASR)** portals and supporting infrastructure:
 
-- **`web/`** - Admin Portal (React 18 + TypeScript + Kendo React)
-- **`portal/`** - Member Portal (React 18 + TypeScript + Kendo React)
-- **`ctn-docs-portal/`** - Documentation Portal (Static site with markdown conversion)
-- **`orchestrator-portal/`** - Orchestrator Portal (React 18 + TypeScript + Vite + Kendo React + TanStack Query)
+- **`admin-portal/`** - Admin Portal (React 18 + TypeScript + Mantine v8)
+- **`member-portal/`** - Member Portal (React 18 + TypeScript + Mantine v8)
 - **`api/`** - Azure Functions API (Node.js 20 + TypeScript)
 - **`database/`** - PostgreSQL schema and migrations
-- **`infrastructure/`** - Azure infrastructure as code
+- **`packages/`** - Shared packages (api-client, vite-config-base)
+- **`infrastructure/`** - Azure infrastructure as code (Bicep)
+
+### Related Repositories
+
+These systems have been extracted into separate repositories:
+
+- **[DocuFlow (Booking System)](https://dev.azure.com/ctn-demo/DocuFlow/_git/DocuFlow)** - Document submission and approval workflows with Cosmos DB backend
+- **[Orchestration Register](https://dev.azure.com/ctn-demo/Orchestrator%20Portal/_git/Orchestrator%20Portal)** - Cross-system workflow orchestration and monitoring
 
 ## Technology Stack
 
-- **Frontend:** React 18 + TypeScript + Kendo React UI
-- **Build Tools:** Vite 7.1.10 (admin/member/orchestrator), Static HTML (documentation)
-- **State Management:** TanStack Query + Zustand (orchestrator), React Context (admin/member)
+- **Frontend:** React 18.3.1 + TypeScript 5.9.3 + Mantine v8.3.6
+- **Build Tools:** Vite 7.1.10
+- **Authentication:** Azure AD (MSAL) with RBAC
+- **API Client:** Shared TypeScript client package with retry logic
 - **Backend:** Azure Functions v4 (Node.js 20 + TypeScript)
 - **Database:** PostgreSQL 14 (Azure Flexible Server)
-- **Storage:** Azure Blob Storage
-- **AI:** Azure Document Intelligence
-- **Testing:** Playwright (E2E), Jest (unit)
+- **Testing:** Playwright (E2E), Vitest (unit tests)
 - **CI/CD:** Azure DevOps Pipelines
+- **Security:** Aikido scanning, Content Security Policy, rate limiting
 
 ## Support
 

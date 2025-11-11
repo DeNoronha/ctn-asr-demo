@@ -1,6 +1,0 @@
-# Compiled TypeScript output
-*.js
-*.js.map
-
-# Keep configuration files
-!*.config.js
