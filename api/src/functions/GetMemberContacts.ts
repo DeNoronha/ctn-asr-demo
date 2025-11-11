@@ -10,24 +10,37 @@ async function handler(
 
   try {
     const pool = getPool();
-    const { partyId } = request;
+    const userEmail = request.userEmail;
 
-    // SECURITY: Require partyId from JWT token (prevent IDOR)
-    if (!partyId) {
-      context.warn('GetMemberContacts: Missing partyId in JWT token', { userEmail: request.userEmail });
-      return { status: 403, body: JSON.stringify({ error: 'Forbidden: Missing party association' }) };
+    if (!userEmail) {
+      context.warn('GetMemberContacts: Missing userEmail in request');
+      return { status: 401, body: JSON.stringify({ error: 'Unauthorized' }) };
     }
 
-    // Get member's legal_entity_id using partyId (NOT email)
-    const memberResult = await pool.query(`
-      SELECT le.legal_entity_id
+    // Get member's legal_entity_id using email (same pattern as GetAuthenticatedMember)
+    // First try to find via contact email
+    let memberResult = await pool.query(`
+      SELECT DISTINCT le.legal_entity_id
       FROM legal_entity le
-      WHERE le.party_id = $1
+      INNER JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
+      WHERE c.email = $1 AND c.is_active = true
       LIMIT 1
-    `, [partyId]);
+    `, [userEmail]);
+
+    // If not found, try by domain
+    if (memberResult.rows.length === 0) {
+      const emailDomain = userEmail.split('@')[1];
+      memberResult = await pool.query(`
+        SELECT le.legal_entity_id
+        FROM members m
+        INNER JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
+        WHERE m.domain = $1
+        LIMIT 1
+      `, [emailDomain]);
+    }
 
     if (memberResult.rows.length === 0) {
-      context.warn('GetMemberContacts: Legal entity not found for partyId', { partyId });
+      context.warn('GetMemberContacts: Legal entity not found for user', { userEmail });
       return { status: 404, body: JSON.stringify({ error: 'Member not found' }) };
     }
 
