@@ -26,13 +26,11 @@ npm install
 # Start development servers
 cd admin-portal && npm start           # Admin Portal (Vite dev server)
 cd member-portal && npm start          # Member Portal (Vite dev server)
-cd orchestrator-portal && npm run dev  # Orchestrator Portal (Vite dev server)
 cd api && npm start                    # API (Azure Functions Core Tools)
 
 # Build for production
 cd admin-portal && npm run build       # TypeScript check + Vite build
 cd member-portal && npm run build      # TypeScript check + Vite build
-cd orchestrator-portal && npm run build # TypeScript check + Vite build
 cd api && npm run build                # TypeScript compile + copy templates/openapi.json
 ```
 
@@ -42,7 +40,6 @@ cd api && npm run build                # TypeScript compile + copy templates/ope
 # Type checking
 cd admin-portal && npm run typecheck
 cd member-portal && npm run typecheck
-cd orchestrator-portal && npm run typecheck
 
 # Linting (Biome)
 cd admin-portal && npm run lint
@@ -132,48 +129,39 @@ DEV-CTN-ASR/
 ├── api/                    # Central ASR API (Azure Functions, shared by Admin + Member)
 ├── admin-portal/           # Admin Portal (React + Mantine + MSAL)
 ├── member-portal/          # Member Portal (React + Mantine + MSAL)
-├── orchestrator-portal/    # Independent multi-tenant app (React + TanStack Query + Zustand)
-├── booking-portal/         # Independent multi-tenant DocuFlow app (React + own backend)
 ├── packages/
 │   └── api-client/        # Shared API client package
+│   └── vite-config-base/  # Shared Vite configuration
+├── shared/                # Shared utilities
 ├── database/              # PostgreSQL schema + migrations
 ├── infrastructure/        # Azure Bicep templates
 ├── tests/                 # Shared Playwright auth setup
 ├── scripts/               # Deployment verification scripts
 └── .azure-pipelines/      # CI/CD pipeline definitions
+
+Note: DocuFlow (booking-portal) and Orchestration Register (orchestrator-portal)
+extracted to separate repositories on November 11, 2025.
 ```
 
-### Application Boundaries (CRITICAL - DO NOT MIX)
+### Application Architecture
 
-**1. ASR (Association Register) - Single-Tenant**
-- **Folders:** `api/`, `admin-portal/`, `member-portal/`
-- **Backend:** Shared Azure Functions API (`func-ctn-demo-asr-dev`)
-- **Database:** Shared PostgreSQL (`psql-ctn-demo-asr-dev`)
+**ASR (Association Register)**
+- **Folders:** `api/`, `admin-portal/`, `member-portal/`, `packages/`, `shared/`
+- **Backend:** Azure Functions API (`func-ctn-demo-asr-dev`)
+- **Database:** PostgreSQL (`psql-ctn-demo-asr-dev`)
 - **Pipelines:** `asr-api.yml`, `admin-portal.yml`, `member-portal.yml`
 - **Coupling:** Tightly integrated (API changes trigger portal rebuilds)
-
-**2. Orchestrator Portal - Multi-Tenant (INDEPENDENT)**
-- **Folders:** `orchestrator-portal/`
-- **Backend:** Own backend
-- **State:** TanStack Query + Zustand
-- **Isolation:** May consume ASR API as external HTTP service
-
-**3. Booking Portal (DocuFlow) - Multi-Tenant (INDEPENDENT)**
-- **Folders:** `booking-portal/`
-- **Backend:** Own backend (`booking-portal/api/`)
-- **Isolation:** Completely separate, no code sharing with ASR
+- **Shared Code:** `packages/api-client/` used by both portals
 
 ### Technology Stack
 
 **Frontend:**
-- React 18 + TypeScript
-- UI Library: Mantine v8.3.6 (admin, member, orchestrator, booking)
+- React 18.3.1 + TypeScript 5.9.3
+- UI Library: Mantine v8.3.6 (admin, member portals)
 - Build Tool: Vite 7.1.10
-- State Management:
-  - Admin/Member: React Context
-  - Orchestrator: TanStack Query + Zustand
+- State Management: React Context + hooks
 - Data Tables: mantine-datatable 8.2.0
-- Authentication: 
+- Authentication: Azure AD (MSAL)
   - Admin: @azure/msal-browser 4.x + @azure/msal-react 3.x
   - Member: @azure/msal-browser 3.x + @azure/msal-react 2.x
 
@@ -214,10 +202,10 @@ DEV-CTN-ASR/
 - Verifies: ASR API health before build
 - Deploys: Azure Static Web App (member only)
 
-**Other Pipelines:**
-- Booking/Orchestrator portals have independent pipelines
-- Changes to one portal do NOT trigger other pipelines
-- Path filters prevent cross-contamination
+**Pipeline Isolation:**
+- Admin and Member portals have independent pipelines
+- Changes to one portal do NOT trigger the other
+- Path filters ensure correct pipeline triggering
 
 ### Git Workflow
 

@@ -1,12 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Shared Playwright Configuration for All CTN Portals
+ * Shared Playwright Configuration for CTN ASR Portals
  *
  * This configuration provides unified E2E testing across:
  * - Admin Portal (ASR) - Single-tenant association register
  * - Member Portal (ASR) - Member-facing portal
- * - Booking Portal (DocuFlow) - Multi-tenant document workflow
+ *
+ * Note: DocuFlow and Orchestration Register extracted to separate repos (Nov 11, 2025)
  *
  * Architecture:
  * - Setup project runs once to authenticate with Azure Entra ID
@@ -27,7 +28,6 @@ import { defineConfig, devices } from '@playwright/test';
  *   # Run specific portal
  *   npx playwright test --project=admin-portal
  *   npx playwright test --project=member-portal
- *   npx playwright test --project=booking-portal
  *
  *   # Run setup only (re-authenticate)
  *   npx playwright test --project=setup
@@ -143,20 +143,6 @@ export default defineConfig({
       use: {
         ...devices['Desktop Firefox'],
         baseURL: 'https://calm-pebble-043b2db03.1.azurestaticapps.net',
-        storageState: 'playwright/.auth/user.json',
-      },
-      dependencies: ['setup'],
-    },
-
-    // ================================
-    // BOOKING PORTAL (DocuFlow)
-    // ================================
-    {
-      name: 'booking-portal',
-      testDir: './booking-portal/e2e',
-      use: {
-        ...devices['Desktop Chrome'],
-        baseURL: 'https://calm-mud-024a8ce03.1.azurestaticapps.net',
         storageState: 'playwright/.auth/user.json',
       },
       dependencies: ['setup'],

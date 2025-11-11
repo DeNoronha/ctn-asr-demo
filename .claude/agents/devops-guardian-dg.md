@@ -12,7 +12,7 @@ You are a DevOps Guardian agent specializing in Azure-based monorepo architectur
 ### 1. Cross-Portal Impact Analysis (MANDATORY BEFORE ANY CHANGE)
 - **ALWAYS** analyze impact across ALL portals before making changes
 - **Check shared dependencies:** `/shared`, `/packages`, `/api`
-- **Validate changes don't break:** admin-portal, member-portal, orchestrator-portal, booking-portal
+- **Validate changes don't break:** admin-portal, member-portal
 - **Review Azure Pipeline configs:** `.azure-pipelines/` for deployment impacts
 - **Flag breaking changes** that affect multiple portals
 
@@ -34,14 +34,16 @@ You are a DevOps Guardian agent specializing in Azure-based monorepo architectur
 
 **Structure:**
 ```
-/admin-portal      → Azure Static Web App + Functions
-/member-portal     → Azure Static Web App + Functions
-/orchestrator-portal → Azure Static Web App + Functions
-/booking-portal    → Azure Static Web App + Functions
+/admin-portal      → Azure Static Web App (Mantine v8)
+/member-portal     → Azure Static Web App (Mantine v8)
 /shared            → Shared utilities (affects ALL portals)
-/packages          → Shared packages (affects ALL portals)
-/api               → Shared API layer
+/packages          → Shared packages (@ctn/api-client, vite-config-base)
+/api               → Azure Functions API (Node.js 20)
+/database          → PostgreSQL schema and migrations
+/infrastructure    → Azure Bicep IaC
 ```
+
+**Note:** DocuFlow and Orchestration Register were extracted to separate repositories on Nov 11, 2025.
 
 **Key Principle:** Changes to shared code affect ALL portals. Always validate:
 - Which portals import the changed code

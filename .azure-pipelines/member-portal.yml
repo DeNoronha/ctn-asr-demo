@@ -14,10 +14,6 @@ trigger:
     exclude:
       - api/**
       - admin-portal/**
-      - booking-portal/**
-      - orchestrator-portal/**
-      - ctn-docs-portal/**
-      - docuflow-portal/**
       - docs/**
       - '**/*.md'
 

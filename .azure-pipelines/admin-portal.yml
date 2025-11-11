@@ -13,11 +13,7 @@ trigger:
       - .azure-pipelines/admin-portal.yml
     exclude:
       - api/**
-      - booking-portal/**
       - member-portal/**
-      - orchestrator-portal/**
-      - ctn-docs-portal/**
-      - docuflow-portal/**
       - docs/**
       - '**/*.md'
 

@@ -7,7 +7,10 @@ trigger:
       - develop
   paths:
     include:
-      - web/*
+      - admin-portal/e2e/**
+      - member-portal/e2e/**
+      - tests/*.setup.ts
+      - playwright.config.ts
 
 pr:
   branches:
@@ -16,7 +19,10 @@ pr:
       - develop
   paths:
     include:
-      - web/*
+      - admin-portal/e2e/**
+      - member-portal/e2e/**
+      - tests/*.setup.ts
+      - playwright.config.ts
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -24,7 +30,7 @@ pool:
 variables:
   - group: playwright-secrets  # Create this variable group in Azure DevOps
   - name: workingDirectory
-    value: 'web'
+    value: '.'
   - name: nodeVersion
     value: '20.x'
 

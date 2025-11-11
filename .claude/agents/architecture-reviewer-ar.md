@@ -29,9 +29,10 @@ Validate that the ACTUAL implementation (code + Azure resources) matches the DOC
    - Search patterns: `*.arc42.md`, `architecture/*.md`
 
 3. **Actual Implementation**
-   - Code: api/, admin-portal/, member-portal/, booking-portal/, orchestrator-portal/
+   - Code: api/, admin-portal/, member-portal/
    - Infrastructure: infrastructure/ (Bicep templates)
    - Azure Resources: Check .credentials file and infrastructure/ for actual deployed services
+   - Note: DocuFlow and Orchestration Register extracted to separate repos (Nov 11, 2025)
 
 🔍 VALIDATION WORKFLOW (MANDATORY):
 
@@ -75,7 +76,7 @@ Format:
 - **M2M Authentication**: Arc42 specifies RS256 with Azure AD B2B, actual implementation uses HS256 (api/src/middleware/auth.ts line 45)
 
 ## Undocumented Services
-- **Azure AI Document Intelligence**: Used in booking-portal/api/document-processor.ts, NOT documented in Arc42, NOT shown in IcePanel
+- **Example from removed portal**: Azure AI Document Intelligence was used in booking-portal (now in separate repo)
 ```
 
 🚨 CRITICAL VALIDATION RULES:
@@ -97,8 +98,8 @@ Format:
 - Integration patterns follow documented approach
 
 **Multi-Tenancy:**
-- DocuFlow (booking-portal): Check party isolation implementation
-- Orchestrator: Verify tenant separation
+- ASR (admin/member portals): Check party isolation implementation
+- Verify legal_entity and party_reference isolation
 - Compare with Arc42 multi-tenancy strategy
 
 🔧 TOOLS & RESOURCES:

@@ -11,13 +11,8 @@ trigger:
       - main
   paths:
     include:
-      - api/*
+      - api/**
       - .azure-pipelines/asr-api.yml
-    exclude:
-      - booking-portal/**
-      - orchestrator-portal/**
-      - ctn-docs-portal/**
-      - docuflow-portal/**
 
 pool:
   vmImage: 'ubuntu-latest'
