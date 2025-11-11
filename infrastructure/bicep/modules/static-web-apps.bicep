@@ -19,7 +19,6 @@ param tags object
 // NOTE: These names match the actual Azure resources for infrastructure-as-code alignment
 var adminPortalName = 'stapp-ctn-demo-asr-dev'
 var memberPortalName = 'ctn-member-portal'
-var orchestratorPortalName = 'ctn-orchestrator-portal'
 
 // Admin Portal Static Web App
 resource adminPortal 'Microsoft.Web/staticSites@2023-01-01' = {
@@ -83,37 +82,6 @@ resource memberPortalCustomDomain 'Microsoft.Web/staticSites/customDomains@2023-
   properties: {}
 }
 
-// Orchestrator Portal Static Web App
-resource orchestratorPortal 'Microsoft.Web/staticSites@2023-01-01' = {
-  name: orchestratorPortalName
-  location: location
-  tags: union(tags, {
-    Portal: 'Orchestrator'
-  })
-  sku: {
-    name: 'Free'
-    tier: 'Free'
-  }
-  properties: {
-    buildProperties: {
-      appLocation: '/orchestrator-portal'
-      apiLocation: ''
-      outputLocation: 'build'
-    }
-    stagingEnvironmentPolicy: 'Enabled'
-    allowConfigFileUpdates: true
-    provider: 'None'
-    enterpriseGradeCdnStatus: 'Disabled'
-  }
-}
-
-// Orchestrator Portal Custom Domain (if in prod)
-resource orchestratorPortalCustomDomain 'Microsoft.Web/staticSites/customDomains@2023-01-01' = if (environment == 'prod') {
-  parent: orchestratorPortal
-  name: 'orchestrator.ctn.nl'
-  properties: {}
-}
-
 // Outputs
 output adminPortalName string = adminPortal.name
 output adminPortalId string = adminPortal.id
@@ -124,8 +92,3 @@ output memberPortalName string = memberPortal.name
 output memberPortalId string = memberPortal.id
 output memberPortalUrl string = memberPortal.properties.defaultHostname
 output memberPortalDeploymentToken string = memberPortal.listSecrets().properties.apiKey
-
-output orchestratorPortalName string = orchestratorPortal.name
-output orchestratorPortalId string = orchestratorPortal.id
-output orchestratorPortalUrl string = orchestratorPortal.properties.defaultHostname
-output orchestratorPortalDeploymentToken string = orchestratorPortal.listSecrets().properties.apiKey

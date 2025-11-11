@@ -18,10 +18,6 @@ param adminPortalDeployToken string
 @secure()
 param memberPortalDeployToken string
 
-@description('Azure Static Web Apps API Token for Orchestrator Portal')
-@secure()
-param orchestratorPortalDeployToken string = ''
-
 @description('Database administrator password')
 @secure()
 param databaseAdminPassword string
@@ -91,19 +87,6 @@ resource databasePasswordSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' =
   name: 'DATABASE-ADMIN-PASSWORD'
   properties: {
     value: databaseAdminPassword
-    contentType: 'text/plain'
-    attributes: {
-      enabled: true
-    }
-  }
-}
-
-// Orchestrator Portal Deploy Token
-resource orchestratorPortalTokenSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (enableSecretCreation && orchestratorPortalDeployToken != '') {
-  parent: keyVault
-  name: 'AZURE-STATIC-WEB-APPS-API-TOKEN-ORCHESTRATOR'
-  properties: {
-    value: orchestratorPortalDeployToken
     contentType: 'text/plain'
     attributes: {
       enabled: true

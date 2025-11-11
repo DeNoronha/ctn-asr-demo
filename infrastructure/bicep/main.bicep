@@ -98,18 +98,6 @@ module frontDoor './modules/front-door.bicep' = {
   ]
 }
 
-// Deploy Cosmos DB for Orchestrator Portal
-module cosmosDb './modules/cosmos-db.bicep' = {
-  name: 'cosmos-db-deployment'
-  scope: resourceGroup
-  params: {
-    environment: environment
-    location: location
-    resourcePrefix: resourcePrefix
-    tags: tags
-  }
-}
-
 // Deploy database
 @description('Database administrator password')
 @secure()
@@ -216,11 +204,8 @@ output functionAppName string = functionApp.outputs.functionAppName
 output functionAppUrl string = 'https://${functionApp.outputs.functionAppHostName}'
 output staticWebAppName string = staticWebApps.outputs.adminPortalName
 output memberPortalName string = staticWebApps.outputs.memberPortalName
-output orchestratorPortalName string = staticWebApps.outputs.orchestratorPortalName
 output databaseServerName string = database.outputs.serverName
 output keyVaultName string = coreInfrastructure.outputs.keyVaultName
-output cosmosAccountName string = cosmosDb.outputs.cosmosAccountName
-output cosmosEndpoint string = cosmosDb.outputs.cosmosEndpoint
 output apimGatewayUrl string = apiManagement.outputs.apimGatewayUrl
 output apimName string = apiManagement.outputs.apimName
 output frontDoorId string = frontDoor.outputs.frontDoorId

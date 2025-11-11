@@ -1,7 +1,16 @@
 // ========================================
 // Cosmos DB Module
 // ========================================
-// Cosmos DB account for Orchestrator Portal
+//
+// ⚠️ NOTE: This module is NOT currently deployed by main.bicep
+//
+// This module was originally used for the Orchestrator Portal, which was
+// extracted to a separate repository on November 11, 2025. The module is
+// preserved for historical reference and potential future use if ASR requires
+// Cosmos DB for other purposes.
+//
+// To use this module, uncomment the deployment in main.bicep and add the
+// required outputs.
 
 @description('Environment name')
 param environment string
