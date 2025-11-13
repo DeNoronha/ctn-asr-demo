@@ -5,6 +5,7 @@ import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/audi
 import { getPool } from '../utils/database';
 import { getPaginationParams, executePaginatedQuery } from '../utils/pagination';
 import { isValidUUID } from '../utils/validators';
+import { handleError } from '../utils/errors';
 
 async function handler(request: AuthenticatedRequest, context: InvocationContext): Promise<HttpResponseInit> {
   const pool = getPool();

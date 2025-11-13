@@ -5,6 +5,7 @@ import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/audi
 import { getPool } from '../utils/database';
 import { isValidUUID } from '../utils/validators';
 import * as crypto from 'crypto';
+import { handleError } from '../utils/errors';
 
 /**
  * Step 1: Initiate Endpoint Registration

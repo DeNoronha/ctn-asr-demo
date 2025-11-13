@@ -3,6 +3,7 @@ import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrappe
 import { Permission } from '../middleware/rbac';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { getOrchestrationDetails, isPartyInvolvedInOrchestration } from '../utils/gremlinClient';
+import { handleError } from '../utils/errors';
 
 /**
  * Get Orchestration Details

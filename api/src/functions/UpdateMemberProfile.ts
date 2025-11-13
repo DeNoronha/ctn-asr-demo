@@ -4,6 +4,7 @@ import { Permission } from '../middleware/rbac';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { getPool } from '../utils/database';
 import { withTransaction } from '../utils/transaction';
+import { handleError } from '../utils/errors';
 
 async function handler(request: AuthenticatedRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log('UpdateMemberProfile function triggered');

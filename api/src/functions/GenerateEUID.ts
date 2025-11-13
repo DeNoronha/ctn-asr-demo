@@ -3,6 +3,7 @@ import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrappe
 import { Permission } from '../middleware/rbac';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { syncEuidForEntity, supportsEuidGeneration } from '../services/euidService';
+import { handleError } from '../utils/errors';
 
 /**
  * Safely get header value to avoid "Cannot read private member" error

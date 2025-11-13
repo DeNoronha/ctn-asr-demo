@@ -5,6 +5,7 @@ import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/audi
 import { getPool } from '../utils/database';
 import { isValidUUID } from '../utils/validators';
 import * as crypto from 'crypto';
+import { handleError } from '../utils/errors';
 
 // List endpoints for entity
 async function listEndpointsHandler(request: AuthenticatedRequest, context: InvocationContext): Promise<HttpResponseInit> {

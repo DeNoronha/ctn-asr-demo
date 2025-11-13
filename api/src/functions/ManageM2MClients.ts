@@ -5,6 +5,7 @@ import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/audi
 import { getPool } from '../utils/database';
 import { getPaginationParams, executePaginatedQuery } from '../utils/pagination';
 import * as crypto from 'crypto';
+import { handleError } from '../utils/errors';
 
 /**
  * Safely get header value to avoid "Cannot read private member" error

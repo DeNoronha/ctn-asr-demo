@@ -9,6 +9,7 @@ import { getPool } from '../utils/database';
 import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { addVersionHeaders } from '../middleware/versioning';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
+import { handleError } from '../utils/errors';
 
 async function handler(
   request: AuthenticatedRequest,
