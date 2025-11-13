@@ -31,9 +31,8 @@ async function handler(
     if (memberResult.rows.length === 0) {
       const emailDomain = userEmail.split('@')[1];
       memberResult = await pool.query(`
-        SELECT le.legal_entity_id
-        FROM members m
-        INNER JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
+        SELECT m.legal_entity_id
+        FROM v_members_full m
         WHERE m.domain = $1
         LIMIT 1
       `, [emailDomain]);

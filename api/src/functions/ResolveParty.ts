@@ -74,12 +74,12 @@ async function handler(
         m.legal_name,
         m.email,
         m.azure_ad_object_id,
-        le.legal_entity_id,
+        m.legal_entity_id,
         le.primary_legal_name,
         pr.party_id,
         pr.party_type,
         pr.party_class
-      FROM members m
+      FROM v_members_full m
       INNER JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
       INNER JOIN party_reference pr ON le.party_id = pr.party_id
       WHERE m.azure_ad_object_id = $1

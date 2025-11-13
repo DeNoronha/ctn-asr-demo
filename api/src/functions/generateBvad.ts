@@ -54,7 +54,7 @@ async function handler(
         m.status,
         m.membership_level,
         m.created_at,
-        le.legal_entity_id,
+        m.legal_entity_id,
         le.kvk_verification_status,
         le.kvk_verified_at,
         le.metadata,
@@ -66,7 +66,7 @@ async function handler(
             'phone', c.phone
           ))
           FROM legal_entity_contact c
-          WHERE c.legal_entity_id = le.legal_entity_id
+          WHERE c.legal_entity_id = m.legal_entity_id
             AND c.is_primary = true
             AND c.is_active = true
             AND (c.is_deleted IS NULL OR c.is_deleted = false)
@@ -75,15 +75,15 @@ async function handler(
         (
           SELECT endpoint_url
           FROM legal_entity_endpoint
-          WHERE legal_entity_id = le.legal_entity_id
+          WHERE legal_entity_id = m.legal_entity_id
             AND endpoint_type = 'BDI_CONNECTOR'
             AND is_active = true
             AND (is_deleted IS NULL OR is_deleted = false)
           LIMIT 1
         ) as bdi_connector_uri
-      FROM members m
+      FROM v_members_full m
       LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
-      WHERE (m.is_deleted IS NULL OR m.is_deleted = false)
+      WHERE 1=1
     `;
 
     const queryParams: any[] = [];

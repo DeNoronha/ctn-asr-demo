@@ -30,11 +30,11 @@ async function handler(
         m.created_at as "createdAt",
         le.primary_legal_name as "entityName",
         le.entity_legal_form as "entityType",
-        le.legal_entity_id as "legalEntityId",
+        m.legal_entity_id as "legalEntityId",
         c.full_name as "contactName",
         c.email,
         c.job_title as "jobTitle"
-      FROM members m
+      FROM v_members_full m
       LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
       LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
       WHERE c.email = $1 AND c.is_active = true
@@ -59,8 +59,8 @@ async function handler(
           m.created_at as "createdAt",
           le.primary_legal_name as "entityName",
           le.entity_legal_form as "entityType",
-          le.legal_entity_id as "legalEntityId"
-        FROM members m
+          m.legal_entity_id as "legalEntityId"
+        FROM v_members_full m
         LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
         WHERE m.domain = $1
         LIMIT 1

@@ -27,19 +27,15 @@ async function handler(
       SELECT
         m.org_id,
         m.legal_name,
-        MAX(CASE WHEN len.identifier_type = 'LEI' THEN len.identifier_value END) as lei,
-        MAX(CASE WHEN len.identifier_type = 'KVK' THEN len.identifier_value END) as kvk,
-        MAX(CASE WHEN len.identifier_type = 'EUID' THEN len.identifier_value END) as euid,
+        m.lei,
+        m.kvk,
+        m.euri as euid,
         m.domain,
         m.status,
         m.membership_level,
         m.created_at,
         m.legal_entity_id
-      FROM members m
-      LEFT JOIN legal_entity_number len ON m.legal_entity_id = len.legal_entity_id
-        AND len.is_deleted = false
-        AND len.identifier_type IN ('LEI', 'KVK', 'EUID')
-      GROUP BY m.org_id, m.legal_name, m.domain, m.status, m.membership_level, m.created_at, m.legal_entity_id
+      FROM v_members_full m
       ORDER BY m.created_at DESC
     `;
 
