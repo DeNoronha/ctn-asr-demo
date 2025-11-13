@@ -7,7 +7,11 @@
     "build": "tsc && cp src/openapi.json dist/openapi.json && cp -r src/templates dist/templates",
     "watch": "tsc --watch",
     "prestart": "npm run build",
-    "start": "func start"
+    "start": "func start",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:verbose": "jest --verbose"
   },
   "dependencies": {
     "@azure/ai-form-recognizer": "^5.1.0",
@@ -29,14 +33,18 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@jest/globals": "^30.2.0",
     "@types/busboy": "^1.5.4",
     "@types/handlebars": "^4.0.40",
+    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.19.19",
     "@types/pg": "^8.10.9",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/uuid": "^9.0.7",
     "@types/winston": "^2.4.4",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
     "typescript": "^5.9.3"
   }
 }
