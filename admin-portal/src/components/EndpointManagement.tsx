@@ -14,27 +14,8 @@ import { getEmptyState } from '../utils/emptyStates';
 import { endpointSuccessMessages, tokenSuccessMessages } from '../utils/successMessages';
 import { helpContent } from '../config/helpContent';
 import { useNotification } from '../contexts/NotificationContext';
-import { apiV2 } from '../services/apiV2';
+import { apiV2, LegalEntityEndpoint, EndpointAuthorization } from '../services/apiV2';
 import './EndpointManagement.css';
-
-interface Endpoint {
-  legal_entity_endpoint_id: string;
-  endpoint_name: string;
-  endpoint_url: string;
-  data_category: string;
-  endpoint_type: string;
-  is_active: boolean;
-  dt_created: string;
-}
-
-interface Token {
-  endpoint_authorization_id: string;
-  token_value: string;
-  token_type: string;
-  issued_at: string;
-  expires_at: string;
-  is_active: boolean;
-}
 
 interface EndpointManagementProps {
   legalEntityId: string;
@@ -54,12 +35,12 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
   legalEntityId,
   legalEntityName,
 }) => {
-  const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
+  const [endpoints, setEndpoints] = useState<LegalEntityEndpoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [showTokenDialog, setShowTokenDialog] = useState(false);
-  const [selectedEndpoint, setSelectedEndpoint] = useState<Endpoint | null>(null);
-  const [newToken, setNewToken] = useState<Token | null>(null);
+  const [selectedEndpoint, setSelectedEndpoint] = useState<LegalEntityEndpoint | null>(null);
+  const [newToken, setNewToken] = useState<EndpointAuthorization | null>(null);
   const notification = useNotification();
 
   const [formData, setFormData] = useState({
@@ -94,8 +75,8 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
         endpoint_name: formData.endpoint_name,
         endpoint_url: formData.endpoint_url,
         endpoint_description: formData.endpoint_description,
-        data_category: formData.data_category,
-        endpoint_type: formData.endpoint_type,
+        data_category: formData.data_category as any,
+        endpoint_type: formData.endpoint_type as any,
         is_active: true,
       });
 
@@ -118,7 +99,11 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
     }
   };
 
-  const handleIssueToken = async (endpoint: Endpoint) => {
+  const handleIssueToken = async (endpoint: LegalEntityEndpoint) => {
+    if (!endpoint.legal_entity_endpoint_id) {
+      notification.showError('Invalid endpoint - missing ID');
+      return;
+    }
     setLoading(true);
     try {
       const token = await apiV2.issueEndpointToken(endpoint.legal_entity_endpoint_id);
@@ -144,7 +129,7 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
   };
 
   // mantine-datatable column definitions
-  const { effectiveColumns } = useDataTableColumns<Endpoint>({
+  const { effectiveColumns } = useDataTableColumns<LegalEntityEndpoint>({
     key: 'endpoints-grid',
     columns: [
       {

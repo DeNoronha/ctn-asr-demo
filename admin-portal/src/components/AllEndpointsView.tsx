@@ -34,7 +34,7 @@ export const AllEndpointsView: React.FC = () => {
   const [endpoints, setEndpoints] = useState<EndpointWithMember[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [page, setPage] = useState(PAGINATION.DEFAULT_PAGE);
+  const [page, setPage] = useState<number>(PAGINATION.DEFAULT_PAGE);
   const pageSize = PAGINATION.DEFAULT_PAGE_SIZE;
   const notification = useNotification();
   const { handleError } = useApiError();

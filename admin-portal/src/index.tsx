@@ -15,7 +15,7 @@ if (
   process.env.NODE_ENV === 'development' ||
   window.location.hostname.includes('azurestaticapps.net')
 ) {
-  (window as any).msalInstance = msalInstance;
+  window.msalInstance = msalInstance;
   logger.log('🔧 Debug mode: msalInstance exposed on window object');
 }
 
