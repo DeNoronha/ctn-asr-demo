@@ -9,6 +9,7 @@ import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrappe
 import { Permission } from '../middleware/rbac';
 import { getPool } from '../utils/database';
 import { validateBvodToken, extractOrchestrationDetails } from '../services/bdiJwtService';
+import { handleError } from '../utils/errors';
 
 interface ValidateBvodRequest {
   bvod_token: string;

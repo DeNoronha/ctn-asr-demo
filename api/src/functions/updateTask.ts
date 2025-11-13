@@ -2,6 +2,7 @@ import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { TaskService, UpdateTaskInput } from '../services/taskService';
 import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { getPool } from '../utils/database';
+import { handleError } from '../utils/errors';
 
 async function handler(
   request: AuthenticatedRequest,

@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as crypto from 'crypto';
 import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { getPool } from '../utils/database';
+import { handleError } from '../utils/errors';
 
 async function handler(
   request: AuthenticatedRequest,

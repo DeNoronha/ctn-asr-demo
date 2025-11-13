@@ -8,6 +8,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { requireScopes, AuthenticatedRequest } from '../middleware/auth';
 import { authenticateDual } from '../middleware/keycloak-auth';
+import { handleError } from '../utils/errors';
 
 /**
  * Get booking information

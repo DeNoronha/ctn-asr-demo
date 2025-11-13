@@ -1,5 +1,6 @@
 import { app, InvocationContext, Timer } from '@azure/functions';
 import { dnsVerificationService } from '../services/dnsVerificationService';
+import { handleError } from '../utils/errors';
 
 /**
  * Scheduled job to re-verify DNS records for Tier 2 members

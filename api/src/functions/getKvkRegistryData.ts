@@ -2,6 +2,7 @@ import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { Permission } from '../middleware/rbac';
 import { getPool } from '../utils/database';
+import { handleError } from '../utils/errors';
 
 const pool = getPool();
 
