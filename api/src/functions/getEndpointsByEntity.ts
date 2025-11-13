@@ -8,11 +8,19 @@ async function handler(
   context: InvocationContext
 ): Promise<HttpResponseInit> {
 
+  context.log('🔵 getEndpointsByEntity handler called');
+  context.log('🔵 Method:', request.method);
+  context.log('🔵 URL:', request.url);
+  context.log('🔵 Params:', JSON.stringify(request.params));
+
   try {
     const pool = getPool();
     const legalEntityId = request.params.legalentityid;
 
+    context.log('🔵 Extracted legalEntityId:', legalEntityId);
+
     if (!legalEntityId) {
+      context.warn('❌ Legal entity ID is missing from request params');
       return {
         status: 400,
         jsonBody: { error: 'Legal entity ID is required' },
@@ -44,13 +52,15 @@ async function handler(
       [legalEntityId]
     );
 
+    context.log('✅ Found', result.rows.length, 'endpoints for legal_entity_id:', legalEntityId);
+
     return {
       status: 200,
       jsonBody: result.rows,
     };
 
   } catch (error: any) {
-    context.error('Error fetching endpoints:', error);
+    context.error('❌ Error fetching endpoints:', error);
     return {
       status: 500,
       jsonBody: { error: 'Failed to fetch endpoints' },

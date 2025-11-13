@@ -40,8 +40,8 @@ import './functions/GenerateEUID';
 import './functions/FetchLEI';
 
 // Endpoint management
-import './functions/getEndpointsByEntity';
 import './functions/createEndpoint';
+import './functions/getEndpointsByEntity';
 import './functions/updateEndpoint';
 import './functions/issueEndpointToken';
 import './functions/getEndpointTokens';
