@@ -198,16 +198,16 @@ DO $$ BEGIN RAISE NOTICE 'UNIQUE constraint on legal_entity_id added ✓'; END $
 
 DO $$ BEGIN RAISE NOTICE 'Step 7: Adding CHECK constraints for data integrity...'; END $$;
 
--- Ensure org_id follows pattern (org:lowercase-alphanumeric)
+-- Ensure org_id is not empty
 ALTER TABLE members
   DROP CONSTRAINT IF EXISTS chk_members_org_id_format;
 
 ALTER TABLE members
   ADD CONSTRAINT chk_members_org_id_format
-    CHECK (org_id ~* '^org:[a-z0-9-]+$');
+    CHECK (org_id IS NOT NULL AND LENGTH(TRIM(org_id)) > 0);
 
 COMMENT ON CONSTRAINT chk_members_org_id_format ON members IS
-  'Ensures org_id follows format: org:lowercase-alphanumeric (e.g., org:dhl, org:maersk)';
+  'Ensures org_id is not null or empty. Accepts multiple formats: org:name, UUIDs, or alphanumeric codes';
 
 -- Ensure email format is valid (if provided)
 ALTER TABLE members
