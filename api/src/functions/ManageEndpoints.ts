@@ -2,6 +2,7 @@ import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { wrapEndpoint, memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { Permission } from '../middleware/rbac';
 import { getPool } from '../utils/database';
+import { handleError } from '../utils/errors';
 
 // =====================================================
 // Handler: Get Endpoints by Legal Entity
@@ -53,11 +54,7 @@ async function getEndpointsByEntityHandler(
     };
 
   } catch (error: any) {
-    context.error('Error fetching endpoints:', error);
-    return {
-      status: 500,
-      jsonBody: { error: 'Failed to fetch endpoints' },
-    };
+    return handleError(error, context);
   }
 }
 
@@ -152,11 +149,7 @@ async function createEndpointHandler(
     };
 
   } catch (error: any) {
-    context.error('Error creating endpoint:', error);
-    return {
-      status: 500,
-      jsonBody: { error: 'Failed to create endpoint', details: error.message },
-    };
+    return handleError(error, context);
   }
 }
 

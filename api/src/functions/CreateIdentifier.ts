@@ -5,6 +5,7 @@ import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/audi
 import { getPool } from '../utils/database';
 import { syncEuidForEntity, supportsEuidGeneration } from '../services/euidService';
 import { isValidUUID } from '../utils/validators';
+import { handleError } from '../utils/errors';
 
 /**
  * Safely get header value to avoid "Cannot read private member" error
@@ -250,14 +251,7 @@ async function handler(
       }
     }, context);
 
-    return {
-      status: 500,
-      jsonBody: {
-        error: 'Failed to create identifier',
-        details: error instanceof Error ? error.message : 'Unknown error',
-        error_code: error.code
-      }
-    };
+    return handleError(error, context);
   }
 }
 
