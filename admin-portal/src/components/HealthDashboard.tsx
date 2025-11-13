@@ -3,12 +3,12 @@
  * Displays comprehensive system health monitoring with real-time status checks
  */
 
+import { Button, Card, Checkbox, Loader } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { Button, Card, Checkbox, Loader } from '@mantine/core';
 
-import { Activity, AlertTriangle, CheckCircle, RefreshCw, XCircle } from './icons';
 import { formatDateTime } from '../utils/dateFormat';
+import { Activity, AlertTriangle, CheckCircle, RefreshCw, XCircle } from './icons';
 import { PageHeader } from './shared/PageHeader';
 import './HealthDashboard.css';
 
@@ -40,9 +40,12 @@ export const HealthDashboard: React.FC = () => {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  const API_URL = import.meta.env.VITE_API_URL?.replace('/v1', '') ||
-                  'https://func-ctn-demo-asr-dev.azurewebsites.net/api';
-  const environmentName = (import.meta.env as any).VITE_ENVIRONMENT_NAME || (import.meta.env.MODE === 'production' ? 'Production' : 'Development');
+  const API_URL =
+    import.meta.env.VITE_API_URL?.replace('/v1', '') ||
+    'https://func-ctn-demo-asr-dev.azurewebsites.net/api';
+  const environmentName =
+    (import.meta.env as any).VITE_ENVIRONMENT_NAME ||
+    (import.meta.env.MODE === 'production' ? 'Production' : 'Development');
 
   const fetchHealth = async () => {
     try {
@@ -50,7 +53,7 @@ export const HealthDashboard: React.FC = () => {
       const response = await fetch(`${API_URL}/health`, {
         method: 'GET',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
       });
 
@@ -165,12 +168,7 @@ export const HealthDashboard: React.FC = () => {
             />
             <span className="last-refresh">Last: {formatTimeSince(lastRefresh)}</span>
           </div>
-          <Button
-            onClick={fetchHealth}
-            disabled={loading}
-            color="blue"
-            leftSection="refresh"
-          >
+          <Button onClick={fetchHealth} disabled={loading} color="blue" leftSection="refresh">
             {loading ? 'Refreshing...' : 'Refresh Now'}
           </Button>
         </div>
@@ -200,9 +198,7 @@ export const HealthDashboard: React.FC = () => {
             </div>
             <div className="status-detail">
               <span className="detail-label">Last Updated:</span>
-              <span className="detail-value">
-                {formatDateTime(health.timestamp)}
-              </span>
+              <span className="detail-value">{formatDateTime(health.timestamp)}</span>
             </div>
           </div>
         </div>
@@ -210,147 +206,163 @@ export const HealthDashboard: React.FC = () => {
 
       {/* Individual Checks Grid */}
       {health.checks && (
-      <div className="health-checks-grid">
-        {/* Database Check */}
-        {health.checks.database && (
-        <Card className={`health-check status-${getStatusClass(health.checks.database.status)}`}>
-          <div className="card-header">
-            <div className="check-header">
-              {getStatusIcon(health.checks.database.status)}
-              <h3>Database</h3>
-            </div>
-          </div>
-          <div className="card-body">
-            <div className="check-details">
-              <div className="check-detail">
-                <span className="detail-label">Status:</span>
-                <span className="detail-value">{health.checks.database.status}</span>
+        <div className="health-checks-grid">
+          {/* Database Check */}
+          {health.checks.database && (
+            <Card
+              className={`health-check status-${getStatusClass(health.checks.database.status)}`}
+            >
+              <div className="card-header">
+                <div className="check-header">
+                  {getStatusIcon(health.checks.database.status)}
+                  <h3>Database</h3>
+                </div>
               </div>
-              {health.checks.database.responseTime !== undefined && (
-                <div className="check-detail">
-                  <span className="detail-label">Response Time:</span>
-                  <span className="detail-value">{health.checks.database.responseTime}ms</span>
-                </div>
-              )}
-              {health.checks.database.error && (
-                <div className="error-message">
-                  <AlertTriangle size={16} />
-                  {health.checks.database.error}
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-        )}
-
-        {/* Application Insights Check */}
-        {health.checks.applicationInsights && (
-        <Card className={`health-check status-${getStatusClass(health.checks.applicationInsights.status)}`}>
-          <div className="card-header">
-            <div className="check-header">
-              {getStatusIcon(health.checks.applicationInsights.status)}
-              <h3>Application Insights</h3>
-            </div>
-          </div>
-          <div className="card-body">
-            <div className="check-details">
-              <div className="check-detail">
-                <span className="detail-label">Status:</span>
-                <span className="detail-value">{health.checks.applicationInsights.status}</span>
-              </div>
-              {health.checks.applicationInsights.details?.configured && (
-                <div className="check-detail">
-                  <span className="detail-label">Configured:</span>
-                  <span className="detail-value">Yes</span>
-                </div>
-              )}
-              {health.checks.applicationInsights.error && (
-                <div className="error-message">
-                  <AlertTriangle size={16} />
-                  {health.checks.applicationInsights.error}
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-        )}
-
-        {/* Azure Key Vault Check */}
-        {health.checks.azureKeyVault && (
-        <Card className={`health-check status-${getStatusClass(health.checks.azureKeyVault.status)}`}>
-          <div className="card-header">
-            <div className="check-header">
-              {getStatusIcon(health.checks.azureKeyVault.status)}
-              <h3>Azure Key Vault</h3>
-            </div>
-          </div>
-          <div className="card-body">
-            <div className="check-details">
-              <div className="check-detail">
-                <span className="detail-label">Status:</span>
-                <span className="detail-value">{health.checks.azureKeyVault.status}</span>
-              </div>
-              {health.checks.azureKeyVault.responseTime !== undefined && (
-                <div className="check-detail">
-                  <span className="detail-label">Response Time:</span>
-                  <span className="detail-value">{health.checks.azureKeyVault.responseTime}ms</span>
-                </div>
-              )}
-              {health.checks.azureKeyVault.error && (
-                <div className="error-message">
-                  <AlertTriangle size={16} />
-                  {health.checks.azureKeyVault.error}
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-        )}
-
-        {/* Static Web Apps Check */}
-        {health.checks.staticWebApps && (
-        <Card className={`health-check status-${getStatusClass(health.checks.staticWebApps.status)}`}>
-          <div className="card-header">
-            <div className="check-header">
-              {getStatusIcon(health.checks.staticWebApps.status)}
-              <h3>Static Web Apps</h3>
-            </div>
-          </div>
-          <div className="card-body">
-            <div className="check-details">
-              <div className="check-detail">
-                <span className="detail-label">Status:</span>
-                <span className="detail-value">{health.checks.staticWebApps.status}</span>
-              </div>
-              {health.checks.staticWebApps.responseTime !== undefined && (
-                <div className="check-detail">
-                  <span className="detail-label">Response Time:</span>
-                  <span className="detail-value">{health.checks.staticWebApps.responseTime}ms</span>
-                </div>
-              )}
-              {health.checks.staticWebApps.details && (
-                <>
+              <div className="card-body">
+                <div className="check-details">
                   <div className="check-detail">
-                    <span className="detail-label">Admin Portal:</span>
-                    <span className="detail-value">{health.checks.staticWebApps.details.adminPortal}</span>
+                    <span className="detail-label">Status:</span>
+                    <span className="detail-value">{health.checks.database.status}</span>
                   </div>
-                  <div className="check-detail">
-                    <span className="detail-label">Member Portal:</span>
-                    <span className="detail-value">{health.checks.staticWebApps.details.memberPortal}</span>
-                  </div>
-                </>
-              )}
-              {health.checks.staticWebApps.error && (
-                <div className="error-message">
-                  <AlertTriangle size={16} />
-                  {health.checks.staticWebApps.error}
+                  {health.checks.database.responseTime !== undefined && (
+                    <div className="check-detail">
+                      <span className="detail-label">Response Time:</span>
+                      <span className="detail-value">{health.checks.database.responseTime}ms</span>
+                    </div>
+                  )}
+                  {health.checks.database.error && (
+                    <div className="error-message">
+                      <AlertTriangle size={16} />
+                      {health.checks.database.error}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-        </Card>
-        )}
-      </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Application Insights Check */}
+          {health.checks.applicationInsights && (
+            <Card
+              className={`health-check status-${getStatusClass(health.checks.applicationInsights.status)}`}
+            >
+              <div className="card-header">
+                <div className="check-header">
+                  {getStatusIcon(health.checks.applicationInsights.status)}
+                  <h3>Application Insights</h3>
+                </div>
+              </div>
+              <div className="card-body">
+                <div className="check-details">
+                  <div className="check-detail">
+                    <span className="detail-label">Status:</span>
+                    <span className="detail-value">{health.checks.applicationInsights.status}</span>
+                  </div>
+                  {health.checks.applicationInsights.details?.configured && (
+                    <div className="check-detail">
+                      <span className="detail-label">Configured:</span>
+                      <span className="detail-value">Yes</span>
+                    </div>
+                  )}
+                  {health.checks.applicationInsights.error && (
+                    <div className="error-message">
+                      <AlertTriangle size={16} />
+                      {health.checks.applicationInsights.error}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Azure Key Vault Check */}
+          {health.checks.azureKeyVault && (
+            <Card
+              className={`health-check status-${getStatusClass(health.checks.azureKeyVault.status)}`}
+            >
+              <div className="card-header">
+                <div className="check-header">
+                  {getStatusIcon(health.checks.azureKeyVault.status)}
+                  <h3>Azure Key Vault</h3>
+                </div>
+              </div>
+              <div className="card-body">
+                <div className="check-details">
+                  <div className="check-detail">
+                    <span className="detail-label">Status:</span>
+                    <span className="detail-value">{health.checks.azureKeyVault.status}</span>
+                  </div>
+                  {health.checks.azureKeyVault.responseTime !== undefined && (
+                    <div className="check-detail">
+                      <span className="detail-label">Response Time:</span>
+                      <span className="detail-value">
+                        {health.checks.azureKeyVault.responseTime}ms
+                      </span>
+                    </div>
+                  )}
+                  {health.checks.azureKeyVault.error && (
+                    <div className="error-message">
+                      <AlertTriangle size={16} />
+                      {health.checks.azureKeyVault.error}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Static Web Apps Check */}
+          {health.checks.staticWebApps && (
+            <Card
+              className={`health-check status-${getStatusClass(health.checks.staticWebApps.status)}`}
+            >
+              <div className="card-header">
+                <div className="check-header">
+                  {getStatusIcon(health.checks.staticWebApps.status)}
+                  <h3>Static Web Apps</h3>
+                </div>
+              </div>
+              <div className="card-body">
+                <div className="check-details">
+                  <div className="check-detail">
+                    <span className="detail-label">Status:</span>
+                    <span className="detail-value">{health.checks.staticWebApps.status}</span>
+                  </div>
+                  {health.checks.staticWebApps.responseTime !== undefined && (
+                    <div className="check-detail">
+                      <span className="detail-label">Response Time:</span>
+                      <span className="detail-value">
+                        {health.checks.staticWebApps.responseTime}ms
+                      </span>
+                    </div>
+                  )}
+                  {health.checks.staticWebApps.details && (
+                    <>
+                      <div className="check-detail">
+                        <span className="detail-label">Admin Portal:</span>
+                        <span className="detail-value">
+                          {health.checks.staticWebApps.details.adminPortal}
+                        </span>
+                      </div>
+                      <div className="check-detail">
+                        <span className="detail-label">Member Portal:</span>
+                        <span className="detail-value">
+                          {health.checks.staticWebApps.details.memberPortal}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                  {health.checks.staticWebApps.error && (
+                    <div className="error-message">
+                      <AlertTriangle size={16} />
+                      {health.checks.staticWebApps.error}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+          )}
+        </div>
       )}
     </div>
   );

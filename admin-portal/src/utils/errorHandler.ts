@@ -92,7 +92,10 @@ export function handleApiError(error: unknown, operation: string): never {
  * @param fallbackMessage - Default message if error parsing fails
  * @returns User-friendly error message
  */
-export function getErrorMessage(error: unknown, fallbackMessage = 'An unexpected error occurred'): string {
+export function getErrorMessage(
+  error: unknown,
+  fallbackMessage = 'An unexpected error occurred'
+): string {
   const apiError = error as ApiError;
 
   // Log full error for debugging

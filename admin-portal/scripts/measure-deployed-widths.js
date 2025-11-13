@@ -38,27 +38,35 @@ async function measureDeployedWidths() {
       const gridContainer = document.querySelector('.members-grid-container');
 
       return {
-        header: header ? {
-          offsetWidth: header.offsetWidth,
-          maxWidth: window.getComputedStyle(header).maxWidth,
-          margin: window.getComputedStyle(header).margin,
-        } : null,
-        contentArea: contentFirst ? {
-          offsetWidth: contentFirst.offsetWidth,
-          maxWidth: window.getComputedStyle(contentFirst).maxWidth,
-          width: window.getComputedStyle(contentFirst).width,
-          padding: window.getComputedStyle(contentFirst).padding,
-          className: contentFirst.className,
-        } : null,
-        dataTable: dataTable ? {
-          offsetWidth: dataTable.offsetWidth,
-          maxWidth: window.getComputedStyle(dataTable).maxWidth,
-        } : null,
-        gridContainer: gridContainer ? {
-          offsetWidth: gridContainer.offsetWidth,
-          maxWidth: window.getComputedStyle(gridContainer).maxWidth,
-          width: window.getComputedStyle(gridContainer).width,
-        } : null,
+        header: header
+          ? {
+              offsetWidth: header.offsetWidth,
+              maxWidth: window.getComputedStyle(header).maxWidth,
+              margin: window.getComputedStyle(header).margin,
+            }
+          : null,
+        contentArea: contentFirst
+          ? {
+              offsetWidth: contentFirst.offsetWidth,
+              maxWidth: window.getComputedStyle(contentFirst).maxWidth,
+              width: window.getComputedStyle(contentFirst).width,
+              padding: window.getComputedStyle(contentFirst).padding,
+              className: contentFirst.className,
+            }
+          : null,
+        dataTable: dataTable
+          ? {
+              offsetWidth: dataTable.offsetWidth,
+              maxWidth: window.getComputedStyle(dataTable).maxWidth,
+            }
+          : null,
+        gridContainer: gridContainer
+          ? {
+              offsetWidth: gridContainer.offsetWidth,
+              maxWidth: window.getComputedStyle(gridContainer).maxWidth,
+              width: window.getComputedStyle(gridContainer).width,
+            }
+          : null,
       };
     });
 
@@ -80,8 +88,12 @@ async function measureDeployedWidths() {
 
     measurements.push(result);
 
-    console.log(`   Header Width: ${headerWidth}px (max-width: ${measurement.header?.maxWidth || 'N/A'})`);
-    console.log(`   Content Width: ${contentWidth}px (max-width: ${measurement.contentArea?.maxWidth || 'N/A'})`);
+    console.log(
+      `   Header Width: ${headerWidth}px (max-width: ${measurement.header?.maxWidth || 'N/A'})`
+    );
+    console.log(
+      `   Content Width: ${contentWidth}px (max-width: ${measurement.contentArea?.maxWidth || 'N/A'})`
+    );
     console.log(`   Difference: ${widthDiff}px`);
     console.log(`   Consistent: ${isConsistent ? '✅ YES' : '❌ NO'}`);
 
@@ -93,7 +105,13 @@ async function measureDeployedWidths() {
     }
 
     // Take screenshot
-    const screenshotPath = path.join(__dirname, '..', 'e2e', 'screenshots', `deployed-${screenName.toLowerCase().replace(/\s+/g, '-')}.png`);
+    const screenshotPath = path.join(
+      __dirname,
+      '..',
+      'e2e',
+      'screenshots',
+      `deployed-${screenName.toLowerCase().replace(/\s+/g, '-')}.png`
+    );
     await page.screenshot({ path: screenshotPath, fullPage: true });
     console.log(`   📸 Screenshot: ${screenshotPath}`);
 
@@ -116,7 +134,7 @@ async function measureDeployedWidths() {
   console.log('              WIDTH CONSISTENCY INVESTIGATION REPORT');
   console.log('═══════════════════════════════════════════════════════════════\n');
 
-  const inconsistentScreens = measurements.filter(m => !m.isConsistent);
+  const inconsistentScreens = measurements.filter((m) => !m.isConsistent);
   console.log(`📊 Summary:`);
   console.log(`   Total screens: ${measurements.length}`);
   console.log(`   Consistent: ${measurements.length - inconsistentScreens.length}`);
@@ -124,7 +142,7 @@ async function measureDeployedWidths() {
 
   if (inconsistentScreens.length > 0) {
     console.log(`❌ INCONSISTENT SCREENS (difference > 10px):\n`);
-    inconsistentScreens.forEach(m => {
+    inconsistentScreens.forEach((m) => {
       console.log(`   ${m.screen}:`);
       console.log(`      Header: ${m.headerWidth}px`);
       console.log(`      Content: ${m.contentWidth}px`);
@@ -138,7 +156,17 @@ async function measureDeployedWidths() {
 
   // Save full report
   const reportPath = path.join(__dirname, '..', 'e2e', 'width-measurements-deployed.json');
-  fs.writeFileSync(reportPath, JSON.stringify({ measurements, summary: { total: measurements.length, inconsistent: inconsistentScreens.length } }, null, 2));
+  fs.writeFileSync(
+    reportPath,
+    JSON.stringify(
+      {
+        measurements,
+        summary: { total: measurements.length, inconsistent: inconsistentScreens.length },
+      },
+      null,
+      2
+    )
+  );
   console.log(`\n💾 Full report saved: ${reportPath}`);
 
   console.log('\n═══════════════════════════════════════════════════════════════\n');

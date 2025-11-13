@@ -1,17 +1,17 @@
-import { Button, Select, Loader, Group, Text } from '@mantine/core';
-import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
+import { Button, Group, Loader, Select, Text } from '@mantine/core';
 import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
-import { AlertTriangle, CheckCircle, FileText, FolderOpen, XCircle } from './icons';
+import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
 import type { LegalEntityIdentifier } from '../services/apiV2';
-import { formatDateTime } from '../utils/dateUtils';
 import { getVerificationColor } from '../utils/colors';
+import { formatDateTime } from '../utils/dateUtils';
 import { EmptyState } from './EmptyState';
+import { AlertTriangle, CheckCircle, FileText, FolderOpen, XCircle } from './icons';
 import './IdentifierVerificationManager.css';
-import { ErrorBoundary } from './ErrorBoundary';
 import { msalInstance } from '../auth/AuthContext';
+import { ErrorBoundary } from './ErrorBoundary';
 
 interface VerificationRecord {
   verification_id: string;
@@ -74,7 +74,7 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
     try {
       const response = await fetch(`${API_BASE}/v1/legal-entities/${legalEntityId}/verifications`, {
         headers: {
-          'Authorization': `Bearer ${await getAccessToken()}`,
+          Authorization: `Bearer ${await getAccessToken()}`,
           'Content-Type': 'application/json',
         },
       });
@@ -120,7 +120,7 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
       const response = await fetch(`${API_BASE}/v1/legal-entities/${legalEntityId}/verifications`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${await getAccessToken()}`,
+          Authorization: `Bearer ${await getAccessToken()}`,
         },
         body: formData,
       });
@@ -131,7 +131,9 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
       }
 
       const result = await response.json();
-      notification.showSuccess(`${selectedIdentifier.identifier_type} document uploaded successfully`);
+      notification.showSuccess(
+        `${selectedIdentifier.identifier_type} document uploaded successfully`
+      );
 
       // Reload verification records
       await loadVerificationRecords();
@@ -153,7 +155,10 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
 
     const { icon, text } = config[status] || { icon: null, text: status };
     return (
-      <span className="verification-status-badge" style={{ backgroundColor: getVerificationColor(status) }}>
+      <span
+        className="verification-status-badge"
+        style={{ backgroundColor: getVerificationColor(status) }}
+      >
         {icon}
         {text}
       </span>
@@ -196,7 +201,9 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
         toggleable: true,
         resizable: true,
         sortable: true,
-        render: (record) => <div>{record.uploaded_at ? formatDateTime(record.uploaded_at) : '-'}</div>,
+        render: (record) => (
+          <div>{record.uploaded_at ? formatDateTime(record.uploaded_at) : '-'}</div>
+        ),
       },
       {
         accessor: 'verified_at',
@@ -205,7 +212,9 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
         toggleable: true,
         resizable: true,
         sortable: true,
-        render: (record) => <div>{record.verified_at ? formatDateTime(record.verified_at) : '-'}</div>,
+        render: (record) => (
+          <div>{record.verified_at ? formatDateTime(record.verified_at) : '-'}</div>
+        ),
       },
       {
         accessor: 'verified_by',

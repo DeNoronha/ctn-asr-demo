@@ -10,7 +10,7 @@
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/
  */
 
-import { useEffect, useCallback, type RefObject } from 'react';
+import { type RefObject, useCallback, useEffect } from 'react';
 
 /**
  * Focus trap for modal dialogs
@@ -164,10 +164,7 @@ export const useArrowKeyNav = (
  *   'escape': handleClose
  * }, isModalOpen);
  */
-export const useKeyboardShortcuts = (
-  shortcuts: Record<string, () => void>,
-  enabled: boolean = true
-) => {
+export const useKeyboardShortcuts = (shortcuts: Record<string, () => void>, enabled = true) => {
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (!enabled) return;

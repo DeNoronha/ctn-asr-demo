@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Width Consistency Investigation Test
@@ -25,12 +25,16 @@ interface WidthMeasurement {
 test.describe('Admin Portal Width Consistency Investigation', () => {
   test.use({ storageState: 'playwright/.auth/user.json' });
 
-  let measurements: WidthMeasurement[] = [];
+  const measurements: WidthMeasurement[] = [];
 
   /**
    * Helper function to measure widths on any screen
    */
-  async function measureScreenWidths(page: any, screenName: string, waitForSelector?: string): Promise<WidthMeasurement> {
+  async function measureScreenWidths(
+    page: any,
+    screenName: string,
+    waitForSelector?: string
+  ): Promise<WidthMeasurement> {
     // Wait for page to stabilize
     if (waitForSelector) {
       await page.waitForSelector(waitForSelector, { timeout: 15000 }).catch(() => {
@@ -40,46 +44,61 @@ test.describe('Admin Portal Width Consistency Investigation', () => {
     await page.waitForTimeout(2000); // Allow CSS to settle and data to load
 
     // Measure header width (direct child div of .app-header)
-    const headerExists = await page.locator('.app-header > div').count() > 0;
+    const headerExists = (await page.locator('.app-header > div').count()) > 0;
     const headerWidth = headerExists
-      ? await page.locator('.app-header > div').first().evaluate((el: HTMLElement) => el.offsetWidth)
+      ? await page
+          .locator('.app-header > div')
+          .first()
+          .evaluate((el: HTMLElement) => el.offsetWidth)
       : 0;
     const headerComputedMaxWidth = headerExists
-      ? await page.locator('.app-header > div').first().evaluate((el: HTMLElement) =>
-        window.getComputedStyle(el).maxWidth
-      )
+      ? await page
+          .locator('.app-header > div')
+          .first()
+          .evaluate((el: HTMLElement) => window.getComputedStyle(el).maxWidth)
       : 'none';
 
     // Measure main content area width (first child of content-area)
-    const contentExists = await page.locator('.content-area > *').count() > 0;
+    const contentExists = (await page.locator('.content-area > *').count()) > 0;
     const contentWidth = contentExists
-      ? await page.locator('.content-area > *').first().evaluate((el: HTMLElement) => el.offsetWidth)
+      ? await page
+          .locator('.content-area > *')
+          .first()
+          .evaluate((el: HTMLElement) => el.offsetWidth)
       : 0;
     const computedMaxWidth = contentExists
-      ? await page.locator('.content-area > *').first().evaluate((el: HTMLElement) =>
-        window.getComputedStyle(el).maxWidth
-      )
+      ? await page
+          .locator('.content-area > *')
+          .first()
+          .evaluate((el: HTMLElement) => window.getComputedStyle(el).maxWidth)
       : 'none';
 
     // Check for DataTable
     let tableWidth: number | null = null;
-    const tableExists = await page.locator('.mantine-DataTable-root').count() > 0;
+    const tableExists = (await page.locator('.mantine-DataTable-root').count()) > 0;
     if (tableExists) {
-      tableWidth = await page.locator('.mantine-DataTable-root').first().evaluate((el: HTMLElement) => el.offsetWidth);
+      tableWidth = await page
+        .locator('.mantine-DataTable-root')
+        .first()
+        .evaluate((el: HTMLElement) => el.offsetWidth);
     }
 
     // Check for MembersGrid container
     let gridWidth: number | null = null;
-    const gridExists = await page.locator('.members-grid-container').count() > 0;
+    const gridExists = (await page.locator('.members-grid-container').count()) > 0;
     if (gridExists) {
-      gridWidth = await page.locator('.members-grid-container').first().evaluate((el: HTMLElement) => el.offsetWidth);
+      gridWidth = await page
+        .locator('.members-grid-container')
+        .first()
+        .evaluate((el: HTMLElement) => el.offsetWidth);
     }
 
     // Determine problematic element
     let problematicElement: string | null = null;
     const widthDifference = Math.abs(headerWidth - contentWidth);
 
-    if (widthDifference > 10) { // Allow 10px tolerance
+    if (widthDifference > 10) {
+      // Allow 10px tolerance
       if (tableWidth && tableWidth > 1610) {
         problematicElement = '.mantine-DataTable-root';
       } else if (gridWidth && gridWidth > 1610) {
@@ -115,25 +134,42 @@ test.describe('Admin Portal Width Consistency Investigation', () => {
     console.log('\n=== Measuring Dashboard ===');
     await page.goto('https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net/');
     const dashboardMeasurement = await measureScreenWidths(page, 'Dashboard', '.content-area');
-    await page.screenshot({ path: 'admin-portal/e2e/screenshots/width-dashboard.png', fullPage: true });
+    await page.screenshot({
+      path: 'admin-portal/e2e/screenshots/width-dashboard.png',
+      fullPage: true,
+    });
     console.log('Dashboard:', JSON.stringify(dashboardMeasurement, null, 2));
 
     // 2. Members (Grid view)
     console.log('\n=== Measuring Members (Grid) ===');
     await page.goto('https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net/members');
     await page.waitForTimeout(2000); // Wait for data load
-    const membersGridMeasurement = await measureScreenWidths(page, 'Members (Grid)', '.members-grid');
-    await page.screenshot({ path: 'admin-portal/e2e/screenshots/width-members-grid.png', fullPage: true });
+    const membersGridMeasurement = await measureScreenWidths(
+      page,
+      'Members (Grid)',
+      '.members-grid'
+    );
+    await page.screenshot({
+      path: 'admin-portal/e2e/screenshots/width-members-grid.png',
+      fullPage: true,
+    });
     console.log('Members (Grid):', JSON.stringify(membersGridMeasurement, null, 2));
 
     // 3. Members (Table view) - switch to table view
     console.log('\n=== Measuring Members (Table) ===');
     const tableViewButton = page.getByRole('button', { name: /table view/i });
-    if (await tableViewButton.count() > 0) {
+    if ((await tableViewButton.count()) > 0) {
       await tableViewButton.click();
       await page.waitForTimeout(1000);
-      const membersTableMeasurement = await measureScreenWidths(page, 'Members (Table)', '.mantine-DataTable-root');
-      await page.screenshot({ path: 'admin-portal/e2e/screenshots/width-members-table.png', fullPage: true });
+      const membersTableMeasurement = await measureScreenWidths(
+        page,
+        'Members (Table)',
+        '.mantine-DataTable-root'
+      );
+      await page.screenshot({
+        path: 'admin-portal/e2e/screenshots/width-members-table.png',
+        fullPage: true,
+      });
       console.log('Members (Table):', JSON.stringify(membersTableMeasurement, null, 2));
     }
 
@@ -141,15 +177,26 @@ test.describe('Admin Portal Width Consistency Investigation', () => {
     console.log('\n=== Measuring User Management ===');
     await page.goto('https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net/user-management');
     await page.waitForTimeout(2000);
-    const userMgmtMeasurement = await measureScreenWidths(page, 'User Management', '.mantine-DataTable-root');
-    await page.screenshot({ path: 'admin-portal/e2e/screenshots/width-user-management.png', fullPage: true });
+    const userMgmtMeasurement = await measureScreenWidths(
+      page,
+      'User Management',
+      '.mantine-DataTable-root'
+    );
+    await page.screenshot({
+      path: 'admin-portal/e2e/screenshots/width-user-management.png',
+      fullPage: true,
+    });
     console.log('User Management:', JSON.stringify(userMgmtMeasurement, null, 2));
 
     // 5. Audit Logs
     console.log('\n=== Measuring Audit Logs ===');
     await page.goto('https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net/audit');
     await page.waitForTimeout(2000);
-    const auditMeasurement = await measureScreenWidths(page, 'Audit Logs', '.mantine-DataTable-root');
+    const auditMeasurement = await measureScreenWidths(
+      page,
+      'Audit Logs',
+      '.mantine-DataTable-root'
+    );
     await page.screenshot({ path: 'admin-portal/e2e/screenshots/width-audit.png', fullPage: true });
     console.log('Audit Logs:', JSON.stringify(auditMeasurement, null, 2));
 
@@ -158,7 +205,10 @@ test.describe('Admin Portal Width Consistency Investigation', () => {
     await page.goto('https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net/health');
     await page.waitForTimeout(1000);
     const healthMeasurement = await measureScreenWidths(page, 'Health Status', '.content-area');
-    await page.screenshot({ path: 'admin-portal/e2e/screenshots/width-health.png', fullPage: true });
+    await page.screenshot({
+      path: 'admin-portal/e2e/screenshots/width-health.png',
+      fullPage: true,
+    });
     console.log('Health Status:', JSON.stringify(healthMeasurement, null, 2));
 
     // 7. Tasks
@@ -184,12 +234,12 @@ test.describe('Admin Portal Width Consistency Investigation', () => {
 
     console.log('SUMMARY:');
     console.log(`Total screens tested: ${measurements.length}`);
-    const inconsistentScreens = measurements.filter(m => !m.isConsistent);
+    const inconsistentScreens = measurements.filter((m) => !m.isConsistent);
     console.log(`Inconsistent screens: ${inconsistentScreens.length}`);
     console.log(`Consistent screens: ${measurements.length - inconsistentScreens.length}\n`);
 
     console.log('DETAILED MEASUREMENTS:\n');
-    measurements.forEach(m => {
+    measurements.forEach((m) => {
       console.log(`${m.screen}:`);
       console.log(`  Header Width: ${m.headerWidth}px (max-width: ${m.headerComputedMaxWidth})`);
       console.log(`  Content Width: ${m.contentWidth}px (max-width: ${m.computedMaxWidth})`);
@@ -209,7 +259,7 @@ test.describe('Admin Portal Width Consistency Investigation', () => {
 
     if (inconsistentScreens.length > 0) {
       console.log('\nINCONSISTENT SCREENS (width difference > 10px):');
-      inconsistentScreens.forEach(m => {
+      inconsistentScreens.forEach((m) => {
         console.log(`  - ${m.screen}: ${m.widthDifference}px difference`);
         if (m.problematicElement) {
           console.log(`    Problematic: ${m.problematicElement}`);
@@ -223,7 +273,14 @@ test.describe('Admin Portal Width Consistency Investigation', () => {
     const fs = require('fs');
     fs.writeFileSync(
       'admin-portal/e2e/width-measurements.json',
-      JSON.stringify({ measurements, summary: { total: measurements.length, inconsistent: inconsistentScreens.length } }, null, 2)
+      JSON.stringify(
+        {
+          measurements,
+          summary: { total: measurements.length, inconsistent: inconsistentScreens.length },
+        },
+        null,
+        2
+      )
     );
 
     // Expect all screens to be consistent (this will fail if issues found)
@@ -258,32 +315,39 @@ test.describe('Admin Portal Width Consistency Investigation', () => {
           clientWidth: grid.clientWidth,
           className: grid.className,
         },
-        parent: parentComputedStyle ? {
-          maxWidth: parentComputedStyle.maxWidth,
-          width: parentComputedStyle.width,
-          margin: parentComputedStyle.margin,
-          padding: parentComputedStyle.padding,
-          className: parent?.className,
-        } : null,
+        parent: parentComputedStyle
+          ? {
+              maxWidth: parentComputedStyle.maxWidth,
+              width: parentComputedStyle.width,
+              margin: parentComputedStyle.margin,
+              padding: parentComputedStyle.padding,
+              className: parent?.className,
+            }
+          : null,
       };
     });
 
     console.log('Members Grid CSS Details:', JSON.stringify(cssDetails, null, 2));
 
     // Check for inline styles
-    const gridExists = await page.locator('.members-grid-container').count() > 0;
+    const gridExists = (await page.locator('.members-grid-container').count()) > 0;
     if (gridExists) {
-      const inlineStyles = await page.locator('.members-grid-container').evaluate((el: HTMLElement) => el.style.cssText);
+      const inlineStyles = await page
+        .locator('.members-grid-container')
+        .evaluate((el: HTMLElement) => el.style.cssText);
       console.log('Inline styles on .members-grid-container:', inlineStyles || 'none');
     }
 
     // Check parent container (.members-view)
-    const parentInfo = await page.locator('.content-area > *').first().evaluate((el: HTMLElement) => ({
-      className: el.className,
-      maxWidth: window.getComputedStyle(el).maxWidth,
-      width: window.getComputedStyle(el).width,
-      offsetWidth: el.offsetWidth,
-    }));
+    const parentInfo = await page
+      .locator('.content-area > *')
+      .first()
+      .evaluate((el: HTMLElement) => ({
+        className: el.className,
+        maxWidth: window.getComputedStyle(el).maxWidth,
+        width: window.getComputedStyle(el).width,
+        offsetWidth: el.offsetWidth,
+      }));
     console.log('Parent container (.members-view) info:', JSON.stringify(parentInfo, null, 2));
   });
 
@@ -309,11 +373,13 @@ test.describe('Admin Portal Width Consistency Investigation', () => {
           offsetWidth: table.offsetWidth,
           scrollWidth: table.scrollWidth,
         },
-        wrapper: wrapperStyle ? {
-          maxWidth: wrapperStyle.maxWidth,
-          width: wrapperStyle.width,
-          overflowX: wrapperStyle.overflowX,
-        } : null,
+        wrapper: wrapperStyle
+          ? {
+              maxWidth: wrapperStyle.maxWidth,
+              width: wrapperStyle.width,
+              overflowX: wrapperStyle.overflowX,
+            }
+          : null,
       };
     });
 

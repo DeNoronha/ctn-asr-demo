@@ -1,8 +1,8 @@
 import { Button } from '@mantine/core';
 
-import { Home, Search } from './icons';
 import type React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Home, Search } from './icons';
 import './NotFound.css';
 
 const NotFound: React.FC = () => {
@@ -18,19 +18,11 @@ const NotFound: React.FC = () => {
         </p>
 
         <div className="action-buttons">
-          <Button
-            color="blue"
-            size="lg"
-            onClick={() => navigate('/')}
-          >
+          <Button color="blue" size="lg" onClick={() => navigate('/')}>
             <Home size={18} style={{ marginRight: '0.5rem' }} />
             Go to Dashboard
           </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={() => navigate(-1)}
-          >
+          <Button variant="outline" size="lg" onClick={() => navigate(-1)}>
             <Search size={18} style={{ marginRight: '0.5rem' }} />
             Go Back
           </Button>
@@ -39,9 +31,21 @@ const NotFound: React.FC = () => {
         <div className="help-text">
           <p>Need help? Check these common pages:</p>
           <ul>
-            <li><button type="button" onClick={() => navigate('/dashboard')}>Dashboard</button></li>
-            <li><button type="button" onClick={() => navigate('/members')}>Members</button></li>
-            <li><button type="button" onClick={() => navigate('/about')}>About</button></li>
+            <li>
+              <button type="button" onClick={() => navigate('/dashboard')}>
+                Dashboard
+              </button>
+            </li>
+            <li>
+              <button type="button" onClick={() => navigate('/members')}>
+                Members
+              </button>
+            </li>
+            <li>
+              <button type="button" onClick={() => navigate('/about')}>
+                About
+              </button>
+            </li>
           </ul>
         </div>
       </div>

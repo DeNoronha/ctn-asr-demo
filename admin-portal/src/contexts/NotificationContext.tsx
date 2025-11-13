@@ -42,7 +42,14 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       notifications.show({
         title: title || type.charAt(0).toUpperCase() + type.slice(1),
         message,
-        color: type === 'error' ? 'red' : type === 'warning' ? 'yellow' : type === 'success' ? 'green' : 'blue',
+        color:
+          type === 'error'
+            ? 'red'
+            : type === 'warning'
+              ? 'yellow'
+              : type === 'success'
+                ? 'green'
+                : 'blue',
         autoClose: duration,
         withCloseButton: true,
       });
@@ -89,9 +96,5 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     [showNotification, showSuccess, showError, showWarning, showInfo]
   );
 
-  return (
-    <NotificationContext.Provider value={value}>
-      {children}
-    </NotificationContext.Provider>
-  );
+  return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;
 };

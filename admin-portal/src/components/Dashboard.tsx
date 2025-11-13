@@ -3,7 +3,7 @@
  * Displays member statistics and visualizations using Recharts
  */
 
-import { Paper, SimpleGrid, Text, Title, Stack, Group, ThemeIcon } from '@mantine/core';
+import { Group, Paper, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import type React from 'react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -228,63 +228,78 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
       <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="lg">
         {/* Status Distribution - Pie Chart */}
         <Paper withBorder p="md" radius="md">
-          <Title order={3} size="h4" mb="md">{t('dashboard.statusDistribution', 'Member Status Distribution')}</Title>
-          <div role="img" aria-label={`Pie chart showing member status distribution: ${statusData.map(d => `${d.name} ${d.value}`).join(', ')}`}>
+          <Title order={3} size="h4" mb="md">
+            {t('dashboard.statusDistribution', 'Member Status Distribution')}
+          </Title>
+          <div
+            role="img"
+            aria-label={`Pie chart showing member status distribution: ${statusData.map((d) => `${d.name} ${d.value}`).join(', ')}`}
+          >
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-              <Pie
-                data={statusData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={(entry: { name?: string; percent?: number }) => {
-                  const name = entry.name || '';
-                  const percent = entry.percent || 0;
-                  return `${name} ${(percent * 100).toFixed(0)}%`;
-                }}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {statusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+                <Pie
+                  data={statusData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={(entry: { name?: string; percent?: number }) => {
+                    const name = entry.name || '';
+                    const percent = entry.percent || 0;
+                    return `${name} ${(percent * 100).toFixed(0)}%`;
+                  }}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {statusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </Paper>
 
         {/* Membership Levels - Bar Chart */}
         <Paper withBorder p="md" radius="md">
-          <Title order={3} size="h4" mb="md">{t('dashboard.membershipLevels', 'Membership Levels')}</Title>
-          <div role="img" aria-label={`Bar chart showing membership levels: ${membershipData.map(d => `${d.name} ${d.members} members`).join(', ')}`}>
+          <Title order={3} size="h4" mb="md">
+            {t('dashboard.membershipLevels', 'Membership Levels')}
+          </Title>
+          <div
+            role="img"
+            aria-label={`Bar chart showing membership levels: ${membershipData.map((d) => `${d.name} ${d.members} members`).join(', ')}`}
+          >
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={membershipData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="members" fill={COLORS.primary}>
-                {membershipData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="members" fill={COLORS.primary}>
+                  {membershipData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </Paper>
       </SimpleGrid>
 
       {/* Member Growth - Line Chart */}
       <Paper withBorder p="md" radius="md">
-        <Title order={3} size="h4" mb="md">{t('dashboard.memberGrowth', 'Member Growth (Last 12 Months)')}</Title>
-          <div role="img" aria-label="Line chart showing member growth over the last 12 months with total members and new member trends">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={growthData}>
+        <Title order={3} size="h4" mb="md">
+          {t('dashboard.memberGrowth', 'Member Growth (Last 12 Months)')}
+        </Title>
+        <div
+          role="img"
+          aria-label="Line chart showing member growth over the last 12 months with total members and new member trends"
+        >
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={growthData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
@@ -307,9 +322,8 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = 
               />
             </LineChart>
           </ResponsiveContainer>
-          </div>
-        </Paper>
-
+        </div>
+      </Paper>
     </Stack>
   );
 };

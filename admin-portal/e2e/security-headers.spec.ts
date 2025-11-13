@@ -7,7 +7,7 @@
  * Created: October 18, 2025
  */
 
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 const ADMIN_PORTAL_URL = 'https://calm-tree-03352ba03.1.azurestaticapps.net';
 
@@ -40,12 +40,7 @@ test.describe('Admin Portal - Security Headers', () => {
 
   test('should have security headers on all routes', async ({ page }) => {
     // Test a few different routes to ensure headers are consistent
-    const routes = [
-      '/',
-      '/members',
-      '/legal-entities',
-      '/settings'
-    ];
+    const routes = ['/', '/members', '/legal-entities', '/settings'];
 
     for (const route of routes) {
       const response = await page.goto(`${ADMIN_PORTAL_URL}${route}`);
@@ -64,7 +59,7 @@ test.describe('Admin Portal - Security Headers', () => {
   test('CSP should not block legitimate resources', async ({ page }) => {
     // Listen for CSP violations
     const cspViolations: any[] = [];
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       if (msg.type() === 'error' && msg.text().includes('Content Security Policy')) {
         cspViolations.push(msg.text());
       }
@@ -95,15 +90,14 @@ test.describe('Admin Portal - Security Headers', () => {
 
     // Page should load without CSP errors
     const pageErrors: string[] = [];
-    page.on('pageerror', error => {
+    page.on('pageerror', (error) => {
       pageErrors.push(error.message);
     });
 
     await page.waitForTimeout(2000);
 
-    const cspErrors = pageErrors.filter(err =>
-      err.includes('Content Security Policy') ||
-      err.includes('CSP')
+    const cspErrors = pageErrors.filter(
+      (err) => err.includes('Content Security Policy') || err.includes('CSP')
     );
 
     expect(cspErrors.length).toBe(0);
@@ -138,7 +132,7 @@ test.describe('Admin Portal - Security Headers', () => {
     // Extract max-age value
     const maxAgeMatch = hsts?.match(/max-age=(\d+)/);
     if (maxAgeMatch) {
-      const maxAge = parseInt(maxAgeMatch[1]);
+      const maxAge = Number.parseInt(maxAgeMatch[1]);
 
       // Should be at least 1 year (31536000 seconds)
       expect(maxAge).toBeGreaterThanOrEqual(31536000);
@@ -162,21 +156,25 @@ test.describe('Admin Portal - Security Headers', () => {
     expect(csp).toBeTruthy();
 
     // Parse CSP directives
-    const directives = csp?.split(';').map(d => d.trim()) || [];
+    const directives = csp?.split(';').map((d) => d.trim()) || [];
 
     // Find script-src directive
-    const scriptSrcDirective = directives.find(d => d.startsWith('script-src'));
+    const scriptSrcDirective = directives.find((d) => d.startsWith('script-src'));
 
     expect(scriptSrcDirective).toBeTruthy();
 
     // Script-src should NOT contain unsafe-inline
     if (scriptSrcDirective?.includes("'unsafe-inline'")) {
-      throw new Error('❌ SECURITY VIOLATION: CSP script-src contains unsafe-inline (enables XSS attacks)');
+      throw new Error(
+        '❌ SECURITY VIOLATION: CSP script-src contains unsafe-inline (enables XSS attacks)'
+      );
     }
 
     // Script-src should NOT contain unsafe-eval
     if (scriptSrcDirective?.includes("'unsafe-eval'")) {
-      throw new Error('❌ SECURITY VIOLATION: CSP script-src contains unsafe-eval (enables code injection)');
+      throw new Error(
+        '❌ SECURITY VIOLATION: CSP script-src contains unsafe-eval (enables code injection)'
+      );
     }
 
     // Verify script-src is restrictive (contains 'self' or specific sources)
@@ -185,7 +183,9 @@ test.describe('Admin Portal - Security Headers', () => {
     console.log('✅ CSP script-src is secure:', scriptSrcDirective);
   });
 
-  test('CSP style-src can contain unsafe-inline (acceptable for React components)', async ({ page }) => {
+  test('CSP style-src can contain unsafe-inline (acceptable for React components)', async ({
+    page,
+  }) => {
     const response = await page.goto(ADMIN_PORTAL_URL);
 
     const csp = response?.headers()['content-security-policy'];
@@ -193,10 +193,10 @@ test.describe('Admin Portal - Security Headers', () => {
     expect(csp).toBeTruthy();
 
     // Parse CSP directives
-    const directives = csp?.split(';').map(d => d.trim()) || [];
+    const directives = csp?.split(';').map((d) => d.trim()) || [];
 
     // Find style-src directive
-    const styleSrcDirective = directives.find(d => d.startsWith('style-src'));
+    const styleSrcDirective = directives.find((d) => d.startsWith('style-src'));
 
     // Style-src is allowed to have unsafe-inline for React components and Kendo UI
     // This is acceptable trade-off for UI libraries that inject styles

@@ -5,10 +5,10 @@
 
 import { Button } from '@mantine/core';
 
-import { Home, LogOut, ShieldX } from '../icons';
 import type React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
+import { Home, LogOut, ShieldX } from '../icons';
 import './Unauthorized.css';
 
 export const UnauthorizedPage: React.FC = () => {

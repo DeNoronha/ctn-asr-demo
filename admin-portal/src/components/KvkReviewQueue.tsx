@@ -1,10 +1,10 @@
-import { Button, Textarea, Loader, Modal, Group } from '@mantine/core';
-import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
+import { Button, Group, Loader, Modal, Textarea } from '@mantine/core';
 import axios from 'axios';
+import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo } from 'react';
 import { msalInstance } from '../auth/AuthContext';
-import { ErrorBoundary } from './ErrorBoundary';
 import { formatDate } from '../utils/dateFormat';
+import { ErrorBoundary } from './ErrorBoundary';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
 
 interface FlaggedEntity {
@@ -89,9 +89,8 @@ const KvkReviewQueueComponent: React.FC = () => {
     try {
       // Get current user from auth context
       const accounts = msalInstance.getAllAccounts();
-      const reviewerName = accounts.length > 0
-        ? (accounts[0].name || accounts[0].username)
-        : 'Unknown Admin';
+      const reviewerName =
+        accounts.length > 0 ? accounts[0].name || accounts[0].username : 'Unknown Admin';
 
       const axiosInstance = await getAuthenticatedAxios();
       await axiosInstance.put(
@@ -162,7 +161,9 @@ const KvkReviewQueueComponent: React.FC = () => {
         toggleable: true,
         resizable: true,
         sortable: true,
-        render: (record) => <div>{record.entered_kvk_number || <span style={{ color: '#999' }}>—</span>}</div>,
+        render: (record) => (
+          <div>{record.entered_kvk_number || <span style={{ color: '#999' }}>—</span>}</div>
+        ),
       },
       {
         accessor: 'kvk_extracted_company_name',
@@ -318,7 +319,9 @@ const KvkReviewQueueComponent: React.FC = () => {
                         {reviewDialog.entity.kvk_extracted_company_name}
                       </td>
                       <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'center' }}>
-                        {reviewDialog.entity.kvk_mismatch_flags.includes('entered_name_mismatch') ? (
+                        {reviewDialog.entity.kvk_mismatch_flags.includes(
+                          'entered_name_mismatch'
+                        ) ? (
                           <span style={{ color: '#d32f2f', fontSize: '1.2em' }}>✗</span>
                         ) : (
                           <span style={{ color: '#4caf50', fontSize: '1.2em' }}>✓</span>

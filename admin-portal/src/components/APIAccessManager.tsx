@@ -21,17 +21,22 @@ export const APIAccessManager: React.FC<APIAccessManagerProps> = ({
       <div className="section-header" style={{ marginBottom: '16px' }}>
         <div>
           <h3>M2M API Clients</h3>
-          <p style={{ color: '#6b7280', fontSize: '0.875rem', margin: '8px 0 0 0', maxWidth: '800px' }}>
-            Create API clients for external systems to securely access CTN data using OAuth 2.0 Client Credentials flow.
-            Each client receives a unique Client ID and Secret with granular scope-based permissions.
+          <p
+            style={{
+              color: '#6b7280',
+              fontSize: '0.875rem',
+              margin: '8px 0 0 0',
+              maxWidth: '800px',
+            }}
+          >
+            Create API clients for external systems to securely access CTN data using OAuth 2.0
+            Client Credentials flow. Each client receives a unique Client ID and Secret with
+            granular scope-based permissions.
           </p>
         </div>
       </div>
 
-      <M2MClientsManager
-        legalEntityId={legalEntityId}
-        legalEntityName={legalEntityName}
-      />
+      <M2MClientsManager legalEntityId={legalEntityId} legalEntityName={legalEntityName} />
     </div>
   );
 };

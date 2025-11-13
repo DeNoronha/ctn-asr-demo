@@ -84,8 +84,13 @@ test.describe('Quick Smoke Test', () => {
     if (apiCalls.length === 0) {
       await page.evaluate(async () => {
         try {
-          const base = (window as any).ENV_API_BASE || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
-          await fetch(`${base}/health`, { method: 'GET', headers: { 'Cache-Control': 'no-cache' } });
+          const base =
+            (window as any).ENV_API_BASE ||
+            'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
+          await fetch(`${base}/health`, {
+            method: 'GET',
+            headers: { 'Cache-Control': 'no-cache' },
+          });
         } catch (_) {
           // ignore
         }

@@ -1,11 +1,11 @@
-import { Button, Textarea, Loader, Modal, Group } from '@mantine/core';
-import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
+import { Button, Group, Loader, Modal, Textarea } from '@mantine/core';
 import axios from 'axios';
-import { AlertCircle, AlertTriangle, CheckCircle, XCircle } from './icons';
+import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo } from 'react';
 import { msalInstance } from '../auth/AuthContext';
-import { ErrorBoundary } from './ErrorBoundary';
 import { formatDate } from '../utils/dateFormat';
+import { ErrorBoundary } from './ErrorBoundary';
+import { AlertCircle, AlertTriangle, CheckCircle, XCircle } from './icons';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
 
 interface ReviewTask {
@@ -210,7 +210,9 @@ const ReviewTasksComponent: React.FC = () => {
         toggleable: true,
         resizable: true,
         sortable: true,
-        render: (record) => <div>{record.entered_legal_id || <span style={{ color: '#999' }}>—</span>}</div>,
+        render: (record) => (
+          <div>{record.entered_legal_id || <span style={{ color: '#999' }}>—</span>}</div>
+        ),
       },
       {
         accessor: 'extracted_company_name',
@@ -244,7 +246,9 @@ const ReviewTasksComponent: React.FC = () => {
         toggleable: true,
         resizable: true,
         sortable: true,
-        render: (record) => <div>{record.country_code || <span style={{ color: '#999' }}>—</span>}</div>,
+        render: (record) => (
+          <div>{record.country_code || <span style={{ color: '#999' }}>—</span>}</div>
+        ),
       },
       {
         accessor: 'kvk_mismatch_flags',
@@ -278,7 +282,9 @@ const ReviewTasksComponent: React.FC = () => {
         width: 160,
         toggleable: true,
         resizable: true,
-        render: (record) => <div>{getDocumentVerificationBadge(record.kvk_mismatch_flags || [])}</div>,
+        render: (record) => (
+          <div>{getDocumentVerificationBadge(record.kvk_mismatch_flags || [])}</div>
+        ),
       },
       {
         accessor: 'document_uploaded_at',

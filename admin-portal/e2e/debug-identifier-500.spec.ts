@@ -131,7 +131,9 @@ test.describe('Debug Identifier 500 Error', () => {
       await page.waitForTimeout(3000);
 
       // Check for error messages
-      const errorMessage = page.locator('.mantine-Notification-root-error, .error, [role="alert"]').first();
+      const errorMessage = page
+        .locator('.mantine-Notification-root-error, .error, [role="alert"]')
+        .first();
       if (await errorMessage.isVisible({ timeout: 2000 })) {
         const errorText = await errorMessage.textContent();
         console.log('ERROR MESSAGE ON PAGE:', errorText);

@@ -1,8 +1,8 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MantineProvider } from '@mantine/core';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { DataTable, type DataTableColumn } from 'mantine-datatable';
-import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
+import { describe, expect, it, vi } from 'vitest';
 import { defaultDataTableProps } from '../shared/DataTableConfig';
 
 // Test data
@@ -17,7 +17,13 @@ interface TestRecord {
 const testData: TestRecord[] = [
   { id: '1', name: 'Alice Johnson', email: 'alice@example.com', role: 'Admin', status: 'Active' },
   { id: '2', name: 'Bob Smith', email: 'bob@example.com', role: 'User', status: 'Active' },
-  { id: '3', name: 'Charlie Brown', email: 'charlie@example.com', role: 'User', status: 'Inactive' },
+  {
+    id: '3',
+    name: 'Charlie Brown',
+    email: 'charlie@example.com',
+    role: 'User',
+    status: 'Inactive',
+  },
   { id: '4', name: 'Diana Prince', email: 'diana@example.com', role: 'Manager', status: 'Active' },
   { id: '5', name: 'Eve Wilson', email: 'eve@example.com', role: 'User', status: 'Active' },
 ];
@@ -41,7 +47,10 @@ const TestDataTable: React.FC<{
   withSelection = false,
 }) => {
   const [selectedRecords, setSelectedRecords] = React.useState<TestRecord[]>([]);
-  const [sortStatus, setSortStatus] = React.useState<{ columnAccessor: string; direction: 'asc' | 'desc' }>({
+  const [sortStatus, setSortStatus] = React.useState<{
+    columnAccessor: string;
+    direction: 'asc' | 'desc';
+  }>({
     columnAccessor: 'name',
     direction: 'asc',
   });
@@ -61,7 +70,9 @@ const TestDataTable: React.FC<{
         const aVal = a[sortStatus.columnAccessor as keyof TestRecord];
         const bVal = b[sortStatus.columnAccessor as keyof TestRecord];
         if (typeof aVal === 'string' && typeof bVal === 'string') {
-          return sortStatus.direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+          return sortStatus.direction === 'asc'
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
         }
         return 0;
       })
@@ -345,9 +356,7 @@ describe('DataTable - Empty State', () => {
   });
 
   it('should display custom empty message', () => {
-    const customColumns: DataTableColumn<TestRecord>[] = [
-      { accessor: 'name', title: 'Name' },
-    ];
+    const customColumns: DataTableColumn<TestRecord>[] = [{ accessor: 'name', title: 'Name' }];
 
     const { container } = render(
       <MantineProvider>

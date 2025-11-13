@@ -3,11 +3,11 @@
  * System Admins can edit user roles and status
  */
 
-import { Button, Modal, TextInput, Select, Checkbox, Group, Text } from '@mantine/core';
-import { Save } from '../icons';
+import { Button, Checkbox, Group, Modal, Select, Text, TextInput } from '@mantine/core';
 import type React from 'react';
 import { useState } from 'react';
 import { UserRole } from '../../auth/authConfig';
+import { Save } from '../icons';
 import './UserManagement.css';
 
 interface User {

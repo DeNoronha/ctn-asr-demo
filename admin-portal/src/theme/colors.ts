@@ -15,50 +15,50 @@
 export const CTN_COLORS = {
   // Primary brand colors
   primary: {
-    blue: '#0066b3',      // CTN primary blue
+    blue: '#0066b3', // CTN primary blue
     blueLight: '#00a3e0', // CTN light blue
-    blueDark: '#1a4d6d',  // CTN dark blue
+    blueDark: '#1a4d6d', // CTN dark blue
   },
 
   // Accent colors
   accent: {
-    orange: '#ff8c00',    // CTN accent orange
-    green: '#85ea2d',     // Success/Swagger green
+    orange: '#ff8c00', // CTN accent orange
+    green: '#85ea2d', // Success/Swagger green
   },
 
   // Semantic colors (aligned with Mantine theme)
   semantic: {
-    success: '#10b981',   // Green for success states
-    warning: '#f59e0b',   // Orange/yellow for warnings
-    error: '#ef4444',     // Red for errors
-    info: '#06b6d4',      // Cyan for info
+    success: '#10b981', // Green for success states
+    warning: '#f59e0b', // Orange/yellow for warnings
+    error: '#ef4444', // Red for errors
+    info: '#06b6d4', // Cyan for info
   },
 
   // Text colors (use Mantine tokens in light-dark() instead)
   text: {
-    primary: '#1e293b',   // Dark gray for primary text
+    primary: '#1e293b', // Dark gray for primary text
     secondary: '#64748b', // Medium gray for secondary text
-    tertiary: '#94a3b8',  // Light gray for tertiary text
-    disabled: '#cbd5e1',  // Disabled text
+    tertiary: '#94a3b8', // Light gray for tertiary text
+    disabled: '#cbd5e1', // Disabled text
   },
 
   // Background colors (use Mantine tokens in light-dark() instead)
   background: {
-    gray: '#f9fafb',      // Light gray background
-    grayDark: '#f3f4f6',  // Slightly darker gray
-    white: '#ffffff',     // White background
+    gray: '#f9fafb', // Light gray background
+    grayDark: '#f3f4f6', // Slightly darker gray
+    white: '#ffffff', // White background
   },
 
   // Border colors
   border: {
-    light: '#e5e7eb',     // Light border
-    medium: '#d1d5db',    // Medium border
-    dark: '#9ca3af',      // Dark border
+    light: '#e5e7eb', // Light border
+    medium: '#d1d5db', // Medium border
+    dark: '#9ca3af', // Dark border
   },
 
   // Partner/external colors
   external: {
-    contargo: '#005eb8',  // Contargo blue
+    contargo: '#005eb8', // Contargo blue
     inlandTerminal: '#004d40', // Inland Terminal green
     vanBerkel: '#d32f2f', // Van Berkel red
   },

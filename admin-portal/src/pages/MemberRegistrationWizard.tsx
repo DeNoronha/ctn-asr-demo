@@ -5,13 +5,27 @@ import { useState } from 'react';
 
 // Form label components
 const Label: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <label id={id} className="form-label">{children}</label>
+  <label id={id} className="form-label">
+    {children}
+  </label>
 );
 const Error: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <div id={id} className="form-error" style={{ color: '#f31700', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
+  <div
+    id={id}
+    className="form-error"
+    style={{ color: '#f31700', fontSize: '0.875rem', marginTop: '0.25rem' }}
+  >
+    {children}
+  </div>
 );
 const Hint: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <div id={id} className="form-hint" style={{ color: '#656565', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
+  <div
+    id={id}
+    className="form-hint"
+    style={{ color: '#656565', fontSize: '0.875rem', marginTop: '0.25rem' }}
+  >
+    {children}
+  </div>
 );
 import { useNavigate } from 'react-router-dom';
 import { msalInstance } from '../auth/AuthContext';
@@ -168,7 +182,7 @@ export const MemberRegistrationWizard: React.FC = () => {
       const response = await fetch(`${API_BASE_URL}/members`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -184,7 +198,9 @@ export const MemberRegistrationWizard: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new globalThis.Error((errorData as any).error || `Failed to create member (HTTP ${response.status})`);
+        throw new globalThis.Error(
+          (errorData as any).error || `Failed to create member (HTTP ${response.status})`
+        );
       }
 
       const result = await response.json();
@@ -192,10 +208,10 @@ export const MemberRegistrationWizard: React.FC = () => {
 
       notification.showSuccess(`Member ${result.org_id} created successfully!`);
       navigate('/members');
-
     } catch (err: unknown) {
       logger.error('Failed to register member:', err);
-      const errorMessage = err instanceof globalThis.Error ? err.message : 'Failed to register member';
+      const errorMessage =
+        err instanceof globalThis.Error ? err.message : 'Failed to register member';
       notification.showError(errorMessage);
     }
   };

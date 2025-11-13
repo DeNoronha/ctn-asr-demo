@@ -30,7 +30,9 @@ export const formatDate = (date: string | Date, options?: Intl.DateTimeFormatOpt
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(dateObj.getTime())) {
-    logger.error('Invalid date in formatDate', { input: typeof date === 'string' ? date : 'Date object' });
+    logger.error('Invalid date in formatDate', {
+      input: typeof date === 'string' ? date : 'Date object',
+    });
     return 'Invalid Date';
   }
 
@@ -57,7 +59,9 @@ export const formatDateTime = (date: string | Date): string => {
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(dateObj.getTime())) {
-    logger.error('Invalid date in formatDate', { input: typeof date === 'string' ? date : 'Date object' });
+    logger.error('Invalid date in formatDate', {
+      input: typeof date === 'string' ? date : 'Date object',
+    });
     return 'Invalid Date';
   }
 
@@ -84,7 +88,9 @@ export const formatTime = (date: string | Date): string => {
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(dateObj.getTime())) {
-    logger.error('Invalid date in formatTime', { input: typeof date === 'string' ? date : 'Date object' });
+    logger.error('Invalid date in formatTime', {
+      input: typeof date === 'string' ? date : 'Date object',
+    });
     return 'Invalid Time';
   }
 
@@ -108,7 +114,9 @@ export const getRelativeTime = (date: string | Date): string => {
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(dateObj.getTime())) {
-    logger.error('Invalid date in getRelativeTime', { input: typeof date === 'string' ? date : 'Date object' });
+    logger.error('Invalid date in getRelativeTime', {
+      input: typeof date === 'string' ? date : 'Date object',
+    });
     return 'Invalid Date';
   }
 

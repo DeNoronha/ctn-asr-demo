@@ -47,15 +47,9 @@ export const MembersGridToolbar: React.FC<MembersGridToolbarProps> = ({
             </Button>
           </Menu.Target>
           <Menu.Dropdown>
-            <Menu.Item onClick={onExcelExport}>
-              Export to Excel (.xlsx)
-            </Menu.Item>
-            <Menu.Item onClick={onCSVExport}>
-              Export to CSV
-            </Menu.Item>
-            <Menu.Item onClick={onPDFExport}>
-              Export to PDF
-            </Menu.Item>
+            <Menu.Item onClick={onExcelExport}>Export to Excel (.xlsx)</Menu.Item>
+            <Menu.Item onClick={onCSVExport}>Export to CSV</Menu.Item>
+            <Menu.Item onClick={onPDFExport}>Export to PDF</Menu.Item>
           </Menu.Dropdown>
         </Menu>
       </div>
@@ -64,7 +58,9 @@ export const MembersGridToolbar: React.FC<MembersGridToolbarProps> = ({
       <div className="toolbar-stats">
         <span>Total: {total}</span>
         <span>Showing: {filteredCount}</span>
-        <span>Page {page} of {Math.ceil(filteredCount / pageSize)}</span>
+        <span>
+          Page {page} of {Math.ceil(filteredCount / pageSize)}
+        </span>
       </div>
     </div>
   );

@@ -137,7 +137,9 @@ test.describe('Contacts Manager - CRUD Operations', () => {
         await submitButton.click();
         await page.waitForTimeout(1000);
 
-        const validationError = page.locator('.mantine-Input-error, .error, [role="alert"]').first();
+        const validationError = page
+          .locator('.mantine-Input-error, .error, [role="alert"]')
+          .first();
         const hasError = await validationError.isVisible({ timeout: 2000 }).catch(() => false);
 
         console.log(`Contact validation error shown: ${hasError}`);
@@ -468,7 +470,9 @@ test.describe('Managers - Loading States', () => {
     await page.goto('/');
 
     // Look for loading indicator
-    const loader = page.locator('.mantine-Loader-root, .mantine-Loader-root, [role="progressbar"]').first();
+    const loader = page
+      .locator('.mantine-Loader-root, .mantine-Loader-root, [role="progressbar"]')
+      .first();
 
     // Navigate to trigger loading
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();

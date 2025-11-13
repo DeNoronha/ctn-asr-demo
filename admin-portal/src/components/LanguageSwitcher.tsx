@@ -1,5 +1,6 @@
 import { Select } from '@mantine/core';
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../utils/logger';
 import './LanguageSwitcher.css';
@@ -16,9 +17,9 @@ const languages: Language[] = [
   { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
 ];
 
-const languageOptions = languages.map(lang => ({
+const languageOptions = languages.map((lang) => ({
   value: lang.code,
-  label: `${lang.flag} ${lang.name}`
+  label: `${lang.flag} ${lang.name}`,
 }));
 
 const DROPDOWN_STYLE = { width: '180px' } as const;

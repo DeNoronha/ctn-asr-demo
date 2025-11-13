@@ -22,15 +22,18 @@ export const MembersGridActions: React.FC<MembersGridActionsProps> = ({
   const [bulkAction, setBulkAction] = useState<string>('');
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
 
-  const handleBulkAction = useCallback((action: string) => {
-    if (selectedIds.length === 0) {
-      notification.showWarning('Please select members first');
-      return;
-    }
+  const handleBulkAction = useCallback(
+    (action: string) => {
+      if (selectedIds.length === 0) {
+        notification.showWarning('Please select members first');
+        return;
+      }
 
-    setBulkAction(action);
-    setShowBulkDialog(true);
-  }, [selectedIds.length, notification]);
+      setBulkAction(action);
+      setShowBulkDialog(true);
+    },
+    [selectedIds.length, notification]
+  );
 
   const executeBulkAction = useCallback(async () => {
     setIsBulkProcessing(true);
@@ -104,7 +107,9 @@ export const MembersGridActions: React.FC<MembersGridActionsProps> = ({
     >
       <p style={{ margin: '20px', fontSize: '16px' }}>{getBulkActionConfirmation()}</p>
       <Group mt="xl" justify="flex-end">
-        <Button onClick={handleDialogClose} variant="default">Cancel</Button>
+        <Button onClick={handleDialogClose} variant="default">
+          Cancel
+        </Button>
         <Button color="blue" onClick={executeBulkAction} disabled={isBulkProcessing}>
           {isBulkProcessing ? 'Processing...' : 'Confirm'}
         </Button>

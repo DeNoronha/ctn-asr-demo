@@ -1,6 +1,5 @@
+import { Button, Group, Modal } from '@mantine/core';
 import type React from 'react';
-import { Button, Modal, Group } from '@mantine/core';
-
 
 interface HelpPanelProps {
   title: string;

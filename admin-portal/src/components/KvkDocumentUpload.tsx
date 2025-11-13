@@ -1,15 +1,15 @@
-import { Button, Loader, Group, Text } from '@mantine/core';
+import { Button, Group, Loader, Text } from '@mantine/core';
 import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
-import { FileText, CheckCircle, XCircle } from './icons';
 import axios from 'axios';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
-import { logger } from '../utils/logger';
 import { TEXT_COLORS } from '../utils/colors';
 import { formatDate, formatDateTime } from '../utils/dateFormat';
+import { logger } from '../utils/logger';
+import { CheckCircle, FileText, XCircle } from './icons';
 
 interface KvkApiResponse {
   kvkNumber: string;
@@ -238,7 +238,15 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
           </div>
 
           {verificationStatus.kvk_verification_status === 'pending' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: TEXT_COLORS.muted, marginBottom: '15px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                color: TEXT_COLORS.muted,
+                marginBottom: '15px',
+              }}
+            >
               <Loader size="sm" />
               <span>Verifying document...</span>
             </div>
@@ -250,7 +258,8 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
               style={{
                 marginBottom: '20px',
                 padding: '15px',
-                backgroundColor: getCompanyStatus().color === TEXT_COLORS.success ? '#f0fdf4' : '#fef2f2',
+                backgroundColor:
+                  getCompanyStatus().color === TEXT_COLORS.success ? '#f0fdf4' : '#fef2f2',
                 border: `2px solid ${getCompanyStatus().color}`,
                 borderRadius: '6px',
               }}
@@ -260,7 +269,9 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                 <div>
                   <strong style={{ fontSize: '1.1em' }}>
                     Company Status (KvK Registry):{' '}
-                    <span style={{ color: getCompanyStatus().color }}>{getCompanyStatus().text}</span>
+                    <span style={{ color: getCompanyStatus().color }}>
+                      {getCompanyStatus().text}
+                    </span>
                   </strong>
                   <div style={{ fontSize: '0.9em', color: TEXT_COLORS.muted, marginTop: '5px' }}>
                     {getKvkApiData()?.statutoryName}
@@ -276,7 +287,8 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
           )}
 
           {/* 3-Column Comparison Grid */}
-          {(verificationStatus.kvk_extracted_company_name || verificationStatus.kvk_extracted_number) && (
+          {(verificationStatus.kvk_extracted_company_name ||
+            verificationStatus.kvk_extracted_number) && (
             <div style={{ marginTop: '20px', marginBottom: '20px' }}>
               <strong style={{ marginBottom: '10px', display: 'block', fontSize: '1.05em' }}>
                 Verification Details:
@@ -285,13 +297,29 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
               {/* Legend - positioned ABOVE the table */}
               <div style={{ marginBottom: '12px', fontSize: '0.85em', color: TEXT_COLORS.muted }}>
                 <strong>Legend:</strong>{' '}
-                <span style={{ backgroundColor: '#d4edda', padding: '2px 6px', borderRadius: '3px', marginRight: '10px' }}>
+                <span
+                  style={{
+                    backgroundColor: '#d4edda',
+                    padding: '2px 6px',
+                    borderRadius: '3px',
+                    marginRight: '10px',
+                  }}
+                >
                   Data matches
                 </span>
-                <span style={{ backgroundColor: '#fee2e2', padding: '2px 6px', borderRadius: '3px', marginRight: '10px' }}>
+                <span
+                  style={{
+                    backgroundColor: '#fee2e2',
+                    padding: '2px 6px',
+                    borderRadius: '3px',
+                    marginRight: '10px',
+                  }}
+                >
                   PDF doesn't match entered data
                 </span>
-                <span style={{ backgroundColor: '#fef3c7', padding: '2px 6px', borderRadius: '3px' }}>
+                <span
+                  style={{ backgroundColor: '#fef3c7', padding: '2px 6px', borderRadius: '3px' }}
+                >
                   KvK doesn't match PDF
                 </span>
               </div>
@@ -299,7 +327,9 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9em' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
-                    <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600, width: '15%' }}>
+                    <th
+                      style={{ padding: '10px', textAlign: 'left', fontWeight: 600, width: '15%' }}
+                    >
                       Field
                     </th>
                     <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600 }}>
@@ -327,11 +357,13 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                     <td
                       style={{
                         padding: '10px',
-                        backgroundColor:
-                          verificationStatus.kvk_mismatch_flags?.includes('entered_name_mismatch')
-                            ? '#fee2e2'  // Red for mismatch
-                            : verificationStatus.kvk_extracted_company_name && verificationStatus.entered_company_name
-                            ? '#d4edda'  // Green for match
+                        backgroundColor: verificationStatus.kvk_mismatch_flags?.includes(
+                          'entered_name_mismatch'
+                        )
+                          ? '#fee2e2' // Red for mismatch
+                          : verificationStatus.kvk_extracted_company_name &&
+                              verificationStatus.entered_company_name
+                            ? '#d4edda' // Green for match
                             : 'inherit',
                       }}
                     >
@@ -342,11 +374,13 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                     <td
                       style={{
                         padding: '10px',
-                        backgroundColor:
-                          verificationStatus.kvk_mismatch_flags?.includes('company_name_mismatch')
-                            ? '#fef3c7'  // Yellow for KvK mismatch
-                            : getKvkApiData()?.statutoryName && verificationStatus.kvk_extracted_company_name
-                            ? '#d4edda'  // Green for match
+                        backgroundColor: verificationStatus.kvk_mismatch_flags?.includes(
+                          'company_name_mismatch'
+                        )
+                          ? '#fef3c7' // Yellow for KvK mismatch
+                          : getKvkApiData()?.statutoryName &&
+                              verificationStatus.kvk_extracted_company_name
+                            ? '#d4edda' // Green for match
                             : 'inherit',
                       }}
                     >
@@ -369,11 +403,13 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                     <td
                       style={{
                         padding: '10px',
-                        backgroundColor:
-                          verificationStatus.kvk_mismatch_flags?.includes('entered_kvk_mismatch')
-                            ? '#fee2e2'  // Red for mismatch
-                            : verificationStatus.kvk_extracted_number && verificationStatus.entered_kvk_number
-                            ? '#d4edda'  // Green for match
+                        backgroundColor: verificationStatus.kvk_mismatch_flags?.includes(
+                          'entered_kvk_mismatch'
+                        )
+                          ? '#fee2e2' // Red for mismatch
+                          : verificationStatus.kvk_extracted_number &&
+                              verificationStatus.entered_kvk_number
+                            ? '#d4edda' // Green for match
                             : 'inherit',
                       }}
                     >
@@ -384,11 +420,12 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                     <td
                       style={{
                         padding: '10px',
-                        backgroundColor:
-                          verificationStatus.kvk_mismatch_flags?.includes('kvk_number_mismatch')
-                            ? '#fef3c7'  // Yellow for KvK mismatch
-                            : getKvkApiData()?.kvkNumber && verificationStatus.kvk_extracted_number
-                            ? '#d4edda'  // Green for match
+                        backgroundColor: verificationStatus.kvk_mismatch_flags?.includes(
+                          'kvk_number_mismatch'
+                        )
+                          ? '#fef3c7' // Yellow for KvK mismatch
+                          : getKvkApiData()?.kvkNumber && verificationStatus.kvk_extracted_number
+                            ? '#d4edda' // Green for match
                             : 'inherit',
                       }}
                     >
@@ -403,20 +440,24 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
           )}
 
           {/* Issues Summary - Only show if there are validation flags */}
-          {verificationStatus.kvk_mismatch_flags && verificationStatus.kvk_mismatch_flags.length > 0 && (
-            <div style={{ marginTop: '15px', marginBottom: '15px' }}>
-              <strong style={{ display: 'block', marginBottom: '8px', fontSize: '1.05em' }}>
-                ⚠️ Validation Issues:
-              </strong>
-              <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
-                {verificationStatus.kvk_mismatch_flags.map((flag, idx) => (
-                  <li key={idx} style={{ color: isEnteredDataMismatch(flag) ? '#dc2626' : '#f59e0b' }}>
-                    {getFlagDescription(flag)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {verificationStatus.kvk_mismatch_flags &&
+            verificationStatus.kvk_mismatch_flags.length > 0 && (
+              <div style={{ marginTop: '15px', marginBottom: '15px' }}>
+                <strong style={{ display: 'block', marginBottom: '8px', fontSize: '1.05em' }}>
+                  ⚠️ Validation Issues:
+                </strong>
+                <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
+                  {verificationStatus.kvk_mismatch_flags.map((flag, idx) => (
+                    <li
+                      key={idx}
+                      style={{ color: isEnteredDataMismatch(flag) ? '#dc2626' : '#f59e0b' }}
+                    >
+                      {getFlagDescription(flag)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
           {verificationStatus.kvk_verification_notes && (
             <div style={{ marginTop: '10px' }}>

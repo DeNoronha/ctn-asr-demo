@@ -1,6 +1,30 @@
-import { Button, TextInput, Select, Modal, Group, Stack, Skeleton, ActionIcon, Tooltip } from '@mantine/core';
-import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
+import {
+  ActionIcon,
+  Button,
+  Group,
+  Modal,
+  Select,
+  Skeleton,
+  Stack,
+  TextInput,
+  Tooltip,
+} from '@mantine/core';
 import axios from 'axios';
+import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { msalInstance } from '../auth/AuthContext';
+import { helpContent } from '../config/helpContent';
+import { useNotification } from '../contexts/NotificationContext';
+import { useApiError } from '../hooks/useApiError';
+import { type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
+import { formatDate } from '../utils/dateUtils';
+import { logger } from '../utils/logger';
+import { sanitizeFormData, sanitizeGridCell } from '../utils/sanitize';
+import { identifierSuccessMessages } from '../utils/successMessages';
+import { ConfirmDialog } from './ConfirmDialog';
+import { EmptyState } from './EmptyState';
+import { ConditionalField } from './forms/ConditionalField';
+import { HelpTooltip } from './help/HelpTooltip';
 import {
   AlertCircle,
   AlertTriangle,
@@ -11,33 +35,27 @@ import {
   Trash2,
   XCircle,
 } from './icons';
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { msalInstance } from '../auth/AuthContext';
-import { useNotification } from '../contexts/NotificationContext';
-import { useApiError } from '../hooks/useApiError';
-import { logger } from '../utils/logger';
-import { type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
-import { formatDate } from '../utils/dateUtils';
-import { sanitizeFormData, sanitizeGridCell } from '../utils/sanitize';
-import { ConfirmDialog } from './ConfirmDialog';
-import { identifierSuccessMessages } from '../utils/successMessages';
-import { EmptyState } from './EmptyState';
-import { HelpTooltip } from './help/HelpTooltip';
-import { helpContent } from '../config/helpContent';
-import { ConditionalField } from './forms/ConditionalField';
 import './IdentifiersManager.css';
 import { getEmptyState } from '../utils/emptyStates';
 import '../styles/progressive-forms.css';
-import { TEXT_COLORS, getStatusColor, getMembershipColor } from '../utils/colors';
-import { getGridActionLabel, getValidationProps, getDescribedById } from '../utils/aria';
+import { getDescribedById, getGridActionLabel, getValidationProps } from '../utils/aria';
+import { TEXT_COLORS, getMembershipColor, getStatusColor } from '../utils/colors';
 import { ErrorBoundary } from './ErrorBoundary';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
 
 interface IdentifiersManagerProps {
   legalEntityId: string;
   identifiers: LegalEntityIdentifier[];
-  onIdentifierCreate: (identifier: Omit<LegalEntityIdentifier, 'legal_entity_reference_id' | 'dt_created' | 'dt_modified'>) => Promise<LegalEntityIdentifier>;
-  onIdentifierUpdate: (identifierId: string, identifier: Partial<LegalEntityIdentifier>) => Promise<LegalEntityIdentifier>;
+  onIdentifierCreate: (
+    identifier: Omit<
+      LegalEntityIdentifier,
+      'legal_entity_reference_id' | 'dt_created' | 'dt_modified'
+    >
+  ) => Promise<LegalEntityIdentifier>;
+  onIdentifierUpdate: (
+    identifierId: string,
+    identifier: Partial<LegalEntityIdentifier>
+  ) => Promise<LegalEntityIdentifier>;
   onIdentifierDelete: (identifierId: string) => Promise<void>;
   onRefresh: () => Promise<void>;
 }
@@ -337,54 +355,63 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
   }, []);
 
   // Handle country code change - filter identifier types
-  const handleCountryCodeChange = useCallback((countryCode: string) => {
-    const upperCode = countryCode.toUpperCase();
-    const types = COUNTRY_IDENTIFIER_MAP[upperCode] || COUNTRY_IDENTIFIER_MAP.default;
-    setAvailableIdentifierTypes(types);
+  const handleCountryCodeChange = useCallback(
+    (countryCode: string) => {
+      const upperCode = countryCode.toUpperCase();
+      const types = COUNTRY_IDENTIFIER_MAP[upperCode] || COUNTRY_IDENTIFIER_MAP.default;
+      setAvailableIdentifierTypes(types);
 
-    // Clear identifier type if it's not available for the new country
-    if (formData.identifier_type && !types.includes(formData.identifier_type)) {
-      setFormData({
-        ...formData,
-        country_code: countryCode,
-        identifier_type: undefined,
-        registry_name: undefined,
-        registry_url: undefined,
-      });
-    } else {
-      setFormData({
-        ...formData,
-        country_code: countryCode,
-      });
-    }
-  }, [formData]);
+      // Clear identifier type if it's not available for the new country
+      if (formData.identifier_type && !types.includes(formData.identifier_type)) {
+        setFormData({
+          ...formData,
+          country_code: countryCode,
+          identifier_type: undefined,
+          registry_name: undefined,
+          registry_url: undefined,
+        });
+      } else {
+        setFormData({
+          ...formData,
+          country_code: countryCode,
+        });
+      }
+    },
+    [formData]
+  );
 
   // Handle identifier type change - auto-populate registry info
-  const handleIdentifierTypeChange = useCallback((type: string) => {
-    const registryInfo = REGISTRY_INFO[type];
-    setFormData({
-      ...formData,
-      identifier_type: type as LegalEntityIdentifier['identifier_type'],
-      registry_name: registryInfo?.name || formData.registry_name,
-      registry_url: registryInfo?.url || formData.registry_url,
-    });
-    // Re-validate with new type
-    if (formData.identifier_value) {
-      validateIdentifierValue(type, formData.identifier_value);
-    }
-  }, [formData]);
+  const handleIdentifierTypeChange = useCallback(
+    (type: string) => {
+      const registryInfo = REGISTRY_INFO[type];
+      setFormData({
+        ...formData,
+        identifier_type: type as LegalEntityIdentifier['identifier_type'],
+        registry_name: registryInfo?.name || formData.registry_name,
+        registry_url: registryInfo?.url || formData.registry_url,
+      });
+      // Re-validate with new type
+      if (formData.identifier_value) {
+        validateIdentifierValue(type, formData.identifier_value);
+      }
+    },
+    [formData]
+  );
 
   // Handle identifier value change with validation
-  const handleIdentifierValueChange = useCallback((value: string) => {
-    setFormData({
-      ...formData,
-      identifier_value: value,
-    });
-    // Validate as user types
-    if (formData.identifier_type) {
-      validateIdentifierValue(formData.identifier_type, value);
-    }
-  }, [formData]);
+  const handleIdentifierValueChange = useCallback(
+    (value: string) => {
+      setFormData({
+        ...formData,
+        identifier_value: value,
+      });
+      // Validate as user types
+      if (formData.identifier_type) {
+        validateIdentifierValue(formData.identifier_type, value);
+      }
+    },
+    [formData]
+  );
 
   const handleDeleteClick = useCallback((identifier: LegalEntityIdentifier) => {
     setIdentifierToDelete(identifier);
@@ -412,18 +439,23 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
 
     try {
       // SEC-006: Sanitize form data before API submission to prevent XSS attacks
-      const sanitizedFormData = sanitizeFormData(formData as Record<string, unknown>) as Partial<LegalEntityIdentifier>;
+      const sanitizedFormData = sanitizeFormData(
+        formData as Record<string, unknown>
+      ) as Partial<LegalEntityIdentifier>;
 
       if (editingIdentifier) {
         // Update existing identifier
         await onIdentifierUpdate(editingIdentifier.legal_entity_reference_id!, sanitizedFormData);
-        const msg = identifierSuccessMessages.updated(String(sanitizedFormData.identifier_type || 'Identifier'));
+        const msg = identifierSuccessMessages.updated(
+          String(sanitizedFormData.identifier_type || 'Identifier')
+        );
         notification.showSuccess(msg.title);
       } else {
         // Add new identifier
         await onIdentifierCreate({
           legal_entity_id: legalEntityId,
-          identifier_type: sanitizedFormData.identifier_type as LegalEntityIdentifier['identifier_type'],
+          identifier_type:
+            sanitizedFormData.identifier_type as LegalEntityIdentifier['identifier_type'],
           identifier_value: sanitizedFormData.identifier_value!,
           country_code: sanitizedFormData.country_code,
           registry_name: sanitizedFormData.registry_name,
@@ -443,16 +475,27 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     } catch (error: unknown) {
       handleError(error, 'saving identifier');
     }
-  }, [formData, isValidIdentifier, editingIdentifier, legalEntityId, onIdentifierUpdate, onIdentifierCreate, notification, handleError]);
+  }, [
+    formData,
+    isValidIdentifier,
+    editingIdentifier,
+    legalEntityId,
+    onIdentifierUpdate,
+    onIdentifierCreate,
+    notification,
+    handleError,
+  ]);
 
   const handleFetchLei = useCallback(async () => {
     // Find a suitable identifier to use for LEI lookup (KVK, HRB, etc.)
-    const suitableIdentifier = identifiers.find(
-      (id) => ['KVK', 'HRB', 'HRA', 'KBO', 'SIREN', 'CRN'].includes(id.identifier_type)
+    const suitableIdentifier = identifiers.find((id) =>
+      ['KVK', 'HRB', 'HRA', 'KBO', 'SIREN', 'CRN'].includes(id.identifier_type)
     );
 
     if (!suitableIdentifier || !suitableIdentifier.country_code) {
-      notification.showError('No suitable identifier found for LEI lookup. Add a KVK, HRB, or similar identifier first.');
+      notification.showError(
+        'No suitable identifier found for LEI lookup. Add a KVK, HRB, or similar identifier first.'
+      );
       return;
     }
 
@@ -472,15 +515,12 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         status: 'found' | 'not_found' | 'already_exists' | 'error';
         was_saved: boolean;
         message?: string;
-      }>(
-        `${API_BASE_URL}/entities/${legalEntityId}/identifiers/fetch-lei`,
-        {
-          identifier_type: suitableIdentifier.identifier_type,
-          identifier_value: suitableIdentifier.identifier_value,
-          country_code: suitableIdentifier.country_code,
-          save_to_database: true,
-        }
-      );
+      }>(`${API_BASE_URL}/entities/${legalEntityId}/identifiers/fetch-lei`, {
+        identifier_type: suitableIdentifier.identifier_type,
+        identifier_value: suitableIdentifier.identifier_value,
+        country_code: suitableIdentifier.country_code,
+        save_to_database: true,
+      });
 
       const result = response.data;
 
@@ -491,7 +531,9 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
       } else if (result.status === 'found' && !result.was_saved) {
         notification.showWarning(`LEI ${result.lei} found but not saved to database`);
       } else if (result.status === 'not_found') {
-        notification.showWarning(`No LEI found for ${suitableIdentifier.identifier_type} ${suitableIdentifier.identifier_value}`);
+        notification.showWarning(
+          `No LEI found for ${suitableIdentifier.identifier_type} ${suitableIdentifier.identifier_value}`
+        );
       } else if (result.status === 'already_exists') {
         notification.showInfo(`LEI already exists: ${result.lei}`);
       }
@@ -520,29 +562,29 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
       VALIDATED: {
         color: '#059669',
         icon: <CheckCircle size={14} />,
-        tooltip: 'This identifier has been verified against the official registry'
+        tooltip: 'This identifier has been verified against the official registry',
       },
       PENDING: {
         color: '#b45309',
         icon: <AlertCircle size={14} />,
-        tooltip: 'Validation pending - awaiting verification against registry'
+        tooltip: 'Validation pending - awaiting verification against registry',
       },
       FAILED: {
         color: '#dc2626',
         icon: <XCircle size={14} />,
-        tooltip: 'Validation failed - identifier could not be verified in registry'
+        tooltip: 'Validation failed - identifier could not be verified in registry',
       },
       EXPIRED: {
         color: '#6b7280',
         icon: <XCircle size={14} />,
-        tooltip: 'Validation expired - re-verification required'
+        tooltip: 'Validation expired - re-verification required',
       },
     };
 
     const { color, icon, tooltip } = config[status] || {
       color: '#6b7280',
       icon: null,
-      tooltip: 'Unknown validation status'
+      tooltip: 'Unknown validation status',
     };
     return (
       <span
@@ -638,7 +680,11 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         resizable: true,
         sortable: true,
         // SEC-007: Sanitize user-generated text fields in grid
-        render: (record) => <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(record.identifier_value || '') }} />,
+        render: (record) => (
+          <div
+            dangerouslySetInnerHTML={{ __html: sanitizeGridCell(record.identifier_value || '') }}
+          />
+        ),
       },
       {
         accessor: 'country_code',
@@ -656,7 +702,9 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         resizable: true,
         sortable: true,
         // SEC-007: Sanitize user-generated text fields in grid
-        render: (record) => <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(record.registry_name || '') }} />,
+        render: (record) => (
+          <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(record.registry_name || '') }} />
+        ),
       },
       {
         accessor: 'validation_status',
@@ -682,7 +730,9 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         toggleable: true,
         resizable: true,
         sortable: true,
-        render: (record) => <div>{record.validation_date ? formatDate(record.validation_date) : '-'}</div>,
+        render: (record) => (
+          <div>{record.validation_date ? formatDate(record.validation_date) : '-'}</div>
+        ),
       },
       {
         accessor: 'dt_modified',
@@ -746,11 +796,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
           >
             {fetchingLei ? 'Fetching...' : 'Fetch LEI'}
           </Button>
-          <Button
-            color="blue"
-            onClick={handleAdd}
-            aria-label="Add new identifier"
-          >
+          <Button color="blue" onClick={handleAdd} aria-label="Add new identifier">
             <Plus size={16} />
             Add Identifier
           </Button>
@@ -833,7 +879,10 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
                 ⚠️ No identifier types available for country code "{formData.country_code}"
               </span>
             ) : (
-              <span className="field-hint" style={{ color: getStatusColor('ACTIVE'), fontWeight: 500 }}>
+              <span
+                className="field-hint"
+                style={{ color: getStatusColor('ACTIVE'), fontWeight: 500 }}
+              >
                 ✓ Available types for {formData.country_code.toUpperCase()}:{' '}
                 {availableIdentifierTypes.join(', ')}
               </span>
@@ -843,7 +892,10 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
           <div className="form-field">
             <label>
               Identifier Value *
-              <HelpTooltip content={helpContent.identifierValue} dataTestId="identifier-value-help" />
+              <HelpTooltip
+                content={helpContent.identifierValue}
+                dataTestId="identifier-value-help"
+              />
             </label>
             <TextInput
               id="identifier_value"
@@ -860,7 +912,10 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
               {...getValidationProps('identifier_value', validationError || undefined)}
             />
             {formData.identifier_type && IDENTIFIER_VALIDATION[formData.identifier_type] && (
-              <span id={getDescribedById('identifier_value', 'hint')} className="field-hint validation-hint">
+              <span
+                id={getDescribedById('identifier_value', 'hint')}
+                className="field-hint validation-hint"
+              >
                 Format: {IDENTIFIER_VALIDATION[formData.identifier_type].description} (e.g.,{' '}
                 {IDENTIFIER_VALIDATION[formData.identifier_type].example})
               </span>
@@ -919,13 +974,13 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         </div>
 
         <Group mt="xl" justify="flex-end">
-          <Button onClick={handleCancel} variant="default">Cancel</Button>
+          <Button onClick={handleCancel} variant="default">
+            Cancel
+          </Button>
           <Button
             color="blue"
             onClick={handleSave}
-            disabled={
-              !isValidIdentifier || !formData.identifier_type || !formData.identifier_value
-            }
+            disabled={!isValidIdentifier || !formData.identifier_type || !formData.identifier_value}
           >
             {editingIdentifier ? 'Update' : 'Add'}
           </Button>

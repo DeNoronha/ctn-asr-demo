@@ -6,8 +6,8 @@
 import { Client } from '@microsoft/microsoft-graph-client';
 import type { User as GraphUser } from '@microsoft/microsoft-graph-types';
 import { msalInstance } from '../auth/AuthContext';
-import { logger } from '../utils/logger';
 import { UserRole } from '../auth/authConfig';
+import { logger } from '../utils/logger';
 
 export interface User {
   id: string;
@@ -65,9 +65,9 @@ function mapGraphUser(graphUser: GraphUser, roles: UserRole[] = []): User {
  */
 function extractRoles(appRoleAssignments: any[]): UserRole[] {
   const roleMap: Record<string, UserRole> = {
-    'SystemAdmin': UserRole.SYSTEM_ADMIN,
-    'AssociationAdmin': UserRole.ASSOCIATION_ADMIN,
-    'Member': UserRole.MEMBER,
+    SystemAdmin: UserRole.SYSTEM_ADMIN,
+    AssociationAdmin: UserRole.ASSOCIATION_ADMIN,
+    Member: UserRole.MEMBER,
   };
 
   const roles: UserRole[] = [];
@@ -109,9 +109,7 @@ export async function listUsers(): Promise<User[]> {
     for (const graphUser of response.value) {
       // Get app role assignments for this user
       try {
-        const appRoleResponse = await client
-          .api(`/users/${graphUser.id}/appRoleAssignments`)
-          .get();
+        const appRoleResponse = await client.api(`/users/${graphUser.id}/appRoleAssignments`).get();
 
         const roles = extractRoles(appRoleResponse.value);
         users.push(mapGraphUser(graphUser, roles));
@@ -149,9 +147,7 @@ export async function inviteUser(
       sendInvitationMessage: true,
     };
 
-    const inviteResponse = await client
-      .api('/invitations')
-      .post(invitation);
+    const inviteResponse = await client.api('/invitations').post(invitation);
 
     logger.log('User invitation created:', inviteResponse.invitedUser.id);
 
@@ -185,9 +181,7 @@ export async function updateUser(
     logger.log('Updating user via Microsoft Graph:', { userId, updates });
     const client = await getGraphClient();
 
-    await client
-      .api(`/users/${userId}`)
-      .patch(updates);
+    await client.api(`/users/${userId}`).patch(updates);
 
     logger.log('User updated successfully:', userId);
   } catch (error) {
@@ -199,10 +193,7 @@ export async function updateUser(
 /**
  * Enable or disable a user account
  */
-export async function toggleUserStatus(
-  userId: string,
-  enabled: boolean
-): Promise<void> {
+export async function toggleUserStatus(userId: string, enabled: boolean): Promise<void> {
   await updateUser(userId, { accountEnabled: enabled });
 }
 
@@ -214,9 +205,7 @@ export async function deleteUser(userId: string): Promise<void> {
     logger.log('Deleting user via Microsoft Graph:', userId);
     const client = await getGraphClient();
 
-    await client
-      .api(`/users/${userId}`)
-      .delete();
+    await client.api(`/users/${userId}`).delete();
 
     logger.log('User deleted successfully:', userId);
   } catch (error) {

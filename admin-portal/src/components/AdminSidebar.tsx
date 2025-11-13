@@ -1,15 +1,15 @@
 import { Stack, Tooltip, UnstyledButton } from '@mantine/core';
 import {
-  IconLayoutDashboard,
-  IconUsers,
-  IconPlug,
-  IconChecklist,
-  IconShield,
-  IconFileText,
   IconActivity,
-  IconSettings,
+  IconChecklist,
+  IconFileText,
   IconInfoCircle,
+  IconLayoutDashboard,
   IconLogout,
+  IconPlug,
+  IconSettings,
+  IconShield,
+  IconUsers,
 } from '@tabler/icons-react';
 import type React from 'react';
 import classes from './AdminSidebar.module.css';
@@ -45,7 +45,12 @@ interface AdminSidebarProps {
   onLogout: () => void;
 }
 
-const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selectedItem, onLogout }) => {
+const AdminSidebar: React.FC<AdminSidebarProps> = ({
+  expanded,
+  onSelect,
+  selectedItem,
+  onLogout,
+}) => {
   const mainLinks = [
     { icon: IconLayoutDashboard, label: 'Dashboard', route: 'dashboard' },
     { icon: IconUsers, label: 'Members', route: 'members' },
@@ -90,11 +95,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ expanded, onSelect, selecte
       <div className={classes.navbarBottom}>
         <Stack justify="center" align="center" gap={0}>
           {bottomLinkElements}
-          <NavbarLink
-            icon={IconLogout}
-            label="Sign out"
-            onClick={onLogout}
-          />
+          <NavbarLink icon={IconLogout} label="Sign out" onClick={onLogout} />
         </Stack>
       </div>
     </nav>

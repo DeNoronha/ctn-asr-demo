@@ -20,10 +20,9 @@
  * See: docs/TEST_PLAN_ADMIN_PORTAL.md
  */
 
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Critical E2E Flows - Admin Portal', () => {
-
   // Test 1: Authentication Flow
   test.describe('Authentication', () => {
     test('should be authenticated and display user information', async ({ page }) => {
@@ -58,9 +57,18 @@ test.describe('Critical E2E Flows - Admin Portal', () => {
 
       // Try to find any visible content (Dashboard or Login page)
       const hasContent = await Promise.race([
-        page.locator('text=Dashboard').isVisible().catch(() => false),
-        page.locator('text=Sign in with Microsoft').isVisible().catch(() => false),
-        page.locator('.mantine-Button-root').isVisible().catch(() => false),
+        page
+          .locator('text=Dashboard')
+          .isVisible()
+          .catch(() => false),
+        page
+          .locator('text=Sign in with Microsoft')
+          .isVisible()
+          .catch(() => false),
+        page
+          .locator('.mantine-Button-root')
+          .isVisible()
+          .catch(() => false),
       ]);
 
       console.log(`✅ Page has content visible: ${hasContent}`);
@@ -187,7 +195,7 @@ test.describe('Critical E2E Flows - Admin Portal', () => {
 
       for (const selector of searchSelectors) {
         const searchInput = page.locator(selector).first();
-        if (await searchInput.count() > 0) {
+        if ((await searchInput.count()) > 0) {
           console.log(`✅ Search input found: ${selector}`);
 
           // Type search query
@@ -447,14 +455,14 @@ test.describe('Critical E2E Flows - Admin Portal', () => {
       expect(apiCalls.length).toBeGreaterThan(0);
 
       // Verify successful responses (200-299)
-      const successfulCalls = apiCalls.filter(call => call.status >= 200 && call.status < 300);
+      const successfulCalls = apiCalls.filter((call) => call.status >= 200 && call.status < 300);
       console.log(`✅ Successful API calls: ${successfulCalls.length}/${apiCalls.length}`);
 
       // Log any failed calls
-      const failedCalls = apiCalls.filter(call => call.status >= 400);
+      const failedCalls = apiCalls.filter((call) => call.status >= 400);
       if (failedCalls.length > 0) {
         console.log('⚠️  Failed API calls:');
-        failedCalls.forEach(call => {
+        failedCalls.forEach((call) => {
           console.log(`   ${call.status} ${call.method} ${call.url}`);
         });
       }

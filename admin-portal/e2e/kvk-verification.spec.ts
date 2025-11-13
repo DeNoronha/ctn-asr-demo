@@ -270,7 +270,12 @@ test.describe('KvK Verification - Review Queue Component', () => {
     await page.goto('/', { waitUntil: 'networkidle' });
 
     // Look for grid or table containing flagged entities
-    const possibleGridSelectors = ['[role="grid"]', 'table', '[data-testid="kvk-grid"]', '.mantine-DataTable-root'];
+    const possibleGridSelectors = [
+      '[role="grid"]',
+      'table',
+      '[data-testid="kvk-grid"]',
+      '.mantine-DataTable-root',
+    ];
 
     let gridFound = false;
     for (const selector of possibleGridSelectors) {

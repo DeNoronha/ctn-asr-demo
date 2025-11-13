@@ -1,7 +1,8 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MantineProvider, Select, MultiSelect } from '@mantine/core';
-import { describe, it, expect, vi } from 'vitest';
-import React, { useState } from 'react';
+import { MantineProvider, MultiSelect, Select } from '@mantine/core';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import type React from 'react';
+import { useState } from 'react';
+import { describe, expect, it, vi } from 'vitest';
 
 // Test data
 const selectOptions = [
@@ -249,11 +250,7 @@ describe('Select - Custom Option Rendering', () => {
 
     const { container } = render(
       <MantineProvider>
-        <Select
-          label="Custom Select"
-          data={customData}
-          data-testid="custom-select"
-        />
+        <Select label="Custom Select" data={customData} data-testid="custom-select" />
       </MantineProvider>
     );
 
@@ -268,11 +265,7 @@ describe('Select - Custom Option Rendering', () => {
 
     const { container } = render(
       <MantineProvider>
-        <Select
-          label="Grouped Select"
-          data={groupedData}
-          data-testid="grouped-select"
-        />
+        <Select label="Grouped Select" data={groupedData} data-testid="grouped-select" />
       </MantineProvider>
     );
 

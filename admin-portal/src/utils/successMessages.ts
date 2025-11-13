@@ -139,7 +139,8 @@ export const endpointSuccessMessages = {
 export const tokenSuccessMessages = {
   generated: (): SuccessMessageConfig => ({
     title: 'API token generated',
-    message: 'Your new API token is ready. Make sure to copy it now - you won\'t be able to see it again',
+    message:
+      "Your new API token is ready. Make sure to copy it now - you won't be able to see it again",
     duration: 6000,
     action: {
       label: 'Copy Token',
@@ -288,7 +289,17 @@ export const genericSuccessMessages = {
  * Provides type-safe access to success messages
  */
 export const getSuccessMessage = (
-  category: 'member' | 'contact' | 'identifier' | 'endpoint' | 'token' | 'task' | 'user' | 'document' | 'settings' | 'generic',
+  category:
+    | 'member'
+    | 'contact'
+    | 'identifier'
+    | 'endpoint'
+    | 'token'
+    | 'task'
+    | 'user'
+    | 'document'
+    | 'settings'
+    | 'generic',
   operation: string,
   ...args: any[]
 ): SuccessMessageConfig => {

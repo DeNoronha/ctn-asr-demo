@@ -136,7 +136,6 @@ export const taskEmptyStates = {
   },
 } as const;
 
-
 /**
  * Empty states for audit/logging
  */
@@ -187,7 +186,7 @@ export const genericEmptyStates = {
   },
   noPermission: {
     message: 'Access restricted',
-    hint: 'You don\'t have permission to view this content. Contact your administrator if you need access',
+    hint: "You don't have permission to view this content. Contact your administrator if you need access",
   },
   comingSoon: {
     message: 'Feature coming soon',
@@ -200,7 +199,16 @@ export const genericEmptyStates = {
  * Provides type-safe access to empty state messages
  */
 export const getEmptyState = (
-  category: 'member' | 'contact' | 'identifier' | 'endpoint' | 'token' | 'task' | 'audit' | 'user' | 'generic',
+  category:
+    | 'member'
+    | 'contact'
+    | 'identifier'
+    | 'endpoint'
+    | 'token'
+    | 'task'
+    | 'audit'
+    | 'user'
+    | 'generic',
   type: string
 ): EmptyStateConfig => {
   const categoryMap = {

@@ -1,13 +1,13 @@
-import { Button, TextInput, Select, Checkbox } from '@mantine/core';
+import { Button, Checkbox, Select, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 
 // ContactForm.tsx - Form for creating/editing contacts
 import type React from 'react';
+import { helpContent } from '../config/helpContent';
 import type { LegalEntityContact } from '../services/api';
 import { sanitizeFormData } from '../utils/sanitize';
-import { FieldLabel } from './help/FieldLabel';
-import { helpContent } from '../config/helpContent';
 import { ProgressiveSection } from './forms/ProgressiveSection';
+import { FieldLabel } from './help/FieldLabel';
 import './ContactForm.css';
 import '../styles/progressive-forms.css';
 
@@ -27,7 +27,9 @@ const contactTypes = ['PRIMARY', 'TECHNICAL', 'BILLING', 'SUPPORT', 'LEGAL', 'OT
 const emailValidator = (value: string) => {
   if (!value) return 'Email is required';
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(value) ? null : 'Please enter a valid email address (e.g., name@company.com)';
+  return emailRegex.test(value)
+    ? null
+    : 'Please enter a valid email address (e.g., name@company.com)';
 };
 
 const nameValidator = (value: string, fieldName: string) => {
@@ -43,7 +45,9 @@ const nameValidator = (value: string, fieldName: string) => {
 const phoneValidator = (value: string) => {
   if (!value) return null; // Optional field
   const phoneRegex = /^\+?[\d\s\-()]{7,20}$/;
-  return phoneRegex.test(value) ? null : 'Please enter a valid phone number (e.g., +31 20 123 4567)';
+  return phoneRegex.test(value)
+    ? null
+    : 'Please enter a valid phone number (e.g., +31 20 123 4567)';
 };
 
 export const ContactForm: React.FC<ContactFormProps> = ({

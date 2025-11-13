@@ -11,12 +11,12 @@
  * ARIA label generator for common grid action buttons
  */
 export const gridActionLabels = {
-  edit: (itemName?: string) => itemName ? `Edit ${itemName}` : 'Edit',
-  delete: (itemName?: string) => itemName ? `Delete ${itemName}` : 'Delete',
-  view: (itemName?: string) => itemName ? `View details for ${itemName}` : 'View details',
-  download: (itemName?: string) => itemName ? `Download ${itemName}` : 'Download',
+  edit: (itemName?: string) => (itemName ? `Edit ${itemName}` : 'Edit'),
+  delete: (itemName?: string) => (itemName ? `Delete ${itemName}` : 'Delete'),
+  view: (itemName?: string) => (itemName ? `View details for ${itemName}` : 'View details'),
+  download: (itemName?: string) => (itemName ? `Download ${itemName}` : 'Download'),
   upload: () => 'Upload file',
-  add: (itemType?: string) => itemType ? `Add ${itemType}` : 'Add',
+  add: (itemType?: string) => (itemType ? `Add ${itemType}` : 'Add'),
   close: () => 'Close',
   save: () => 'Save changes',
   cancel: () => 'Cancel',
@@ -35,19 +35,19 @@ export const gridActionLabels = {
  * ARIA label generator for status-specific actions
  */
 export const statusActionLabels = {
-  approve: (itemName?: string) => itemName ? `Approve ${itemName}` : 'Approve',
-  reject: (itemName?: string) => itemName ? `Reject ${itemName}` : 'Reject',
-  suspend: (itemName?: string) => itemName ? `Suspend ${itemName}` : 'Suspend',
-  activate: (itemName?: string) => itemName ? `Activate ${itemName}` : 'Activate',
-  archive: (itemName?: string) => itemName ? `Archive ${itemName}` : 'Archive',
-  restore: (itemName?: string) => itemName ? `Restore ${itemName}` : 'Restore',
+  approve: (itemName?: string) => (itemName ? `Approve ${itemName}` : 'Approve'),
+  reject: (itemName?: string) => (itemName ? `Reject ${itemName}` : 'Reject'),
+  suspend: (itemName?: string) => (itemName ? `Suspend ${itemName}` : 'Suspend'),
+  activate: (itemName?: string) => (itemName ? `Activate ${itemName}` : 'Activate'),
+  archive: (itemName?: string) => (itemName ? `Archive ${itemName}` : 'Archive'),
+  restore: (itemName?: string) => (itemName ? `Restore ${itemName}` : 'Restore'),
 } as const;
 
 /**
  * ARIA label generator for form actions
  */
 export const formActionLabels = {
-  submit: (formName?: string) => formName ? `Submit ${formName}` : 'Submit form',
+  submit: (formName?: string) => (formName ? `Submit ${formName}` : 'Submit form'),
   reset: () => 'Reset form',
   clear: () => 'Clear all fields',
   previous: () => 'Previous step',
@@ -66,7 +66,7 @@ export const navigationLabels = {
   profile: () => 'View profile',
   logout: () => 'Log out',
   help: () => 'Open help',
-  notifications: (count?: number) => count ? `Notifications (${count} unread)` : 'Notifications',
+  notifications: (count?: number) => (count ? `Notifications (${count} unread)` : 'Notifications'),
 } as const;
 
 /**
@@ -128,7 +128,10 @@ export const getNavigationLabel = (
  * Common ARIA live region announcer for dynamic content updates
  * Use this for announcing status changes, data updates, etc. to screen readers
  */
-export const announceToScreenReader = (message: string, priority: 'polite' | 'assertive' = 'polite'): void => {
+export const announceToScreenReader = (
+  message: string,
+  priority: 'polite' | 'assertive' = 'polite'
+): void => {
   const announcement = document.createElement('div');
   announcement.setAttribute('role', 'status');
   announcement.setAttribute('aria-live', priority);

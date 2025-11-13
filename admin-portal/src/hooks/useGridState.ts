@@ -43,10 +43,7 @@ export interface UseGridStateOptions {
  * @param gridKey Unique identifier for this grid (used in storage keys)
  * @param options Configuration options
  */
-export function useGridState(
-  gridKey: string,
-  options: UseGridStateOptions = {}
-) {
+export function useGridState(gridKey: string, options: UseGridStateOptions = {}) {
   const {
     defaultPage = 1,
     defaultPageSize = 20,
@@ -60,12 +57,12 @@ export function useGridState(
   // Parse current state from URL
   const [page, setPage] = useState(() => {
     const pageParam = searchParams.get('page');
-    return pageParam ? parseInt(pageParam, 10) : defaultPage;
+    return pageParam ? Number.parseInt(pageParam, 10) : defaultPage;
   });
 
   const [pageSize, setPageSize] = useState(() => {
     const sizeParam = searchParams.get('pageSize');
-    return sizeParam ? parseInt(sizeParam, 10) : defaultPageSize;
+    return sizeParam ? Number.parseInt(sizeParam, 10) : defaultPageSize;
   });
 
   const [filters, setFilters] = useState<GridFilters>(() => {
@@ -114,7 +111,16 @@ export function useGridState(
     if (newParamsString !== currentParamsString) {
       setSearchParams(newParams, { replace: true });
     }
-  }, [page, pageSize, filters, enableFilterPersistence, defaultPage, defaultPageSize, searchParams, setSearchParams]);
+  }, [
+    page,
+    pageSize,
+    filters,
+    enableFilterPersistence,
+    defaultPage,
+    defaultPageSize,
+    searchParams,
+    setSearchParams,
+  ]);
 
   // Update page number
   const updatePage = useCallback((newPage: number) => {
@@ -130,12 +136,15 @@ export function useGridState(
   }, []);
 
   // Update filters (resets to page 1)
-  const updateFilters = useCallback((newFilters: GridFilters) => {
-    setFilters(newFilters);
-    if (resetPageOnFilterChange) {
-      setPage(1); // Optional reset when filters change
-    }
-  }, [resetPageOnFilterChange]);
+  const updateFilters = useCallback(
+    (newFilters: GridFilters) => {
+      setFilters(newFilters);
+      if (resetPageOnFilterChange) {
+        setPage(1); // Optional reset when filters change
+      }
+    },
+    [resetPageOnFilterChange]
+  );
 
   // Clear filters (resets to page 1)
   const clearFilters = useCallback(() => {

@@ -7,4 +7,8 @@
  */
 
 // Import the browser-safe version directly
-export { renderToStaticMarkup, renderToString, version } from 'react-dom/cjs/react-dom-server-legacy.browser.production.min.js';
+export {
+  renderToStaticMarkup,
+  renderToString,
+  version,
+} from 'react-dom/cjs/react-dom-server-legacy.browser.production.min.js';

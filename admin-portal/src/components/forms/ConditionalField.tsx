@@ -16,10 +16,7 @@ export const ConditionalField: React.FC<ConditionalFieldProps> = ({
   }
 
   return (
-    <div
-      className={`conditional-field ${show ? 'visible' : 'hidden'}`}
-      aria-hidden={!show}
-    >
+    <div className={`conditional-field ${show ? 'visible' : 'hidden'}`} aria-hidden={!show}>
       {show && children}
     </div>
   );

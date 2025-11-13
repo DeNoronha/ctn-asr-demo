@@ -4,10 +4,10 @@
  */
 
 import { Card } from '@mantine/core';
-import { AlertCircle, Calendar, CheckCircle, Clock, GitBranch, Package } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import LoadingSpinner from './LoadingSpinner';
+import { AlertCircle, Calendar, CheckCircle, Clock, GitBranch, Package } from './icons';
 import { PageHeader } from './shared/PageHeader';
 import './About.css';
 
@@ -115,11 +115,7 @@ const About: React.FC = () => {
     const envLower = environment.toLowerCase();
     // Only show Production badge for production environment
     if (envLower === 'production' || envLower === 'prod') {
-      return (
-        <span className="env-badge env-badge-production">
-          Production
-        </span>
-      );
+      return <span className="env-badge env-badge-production">Production</span>;
     }
     // Don't show environment badge for dev/local
     return null;

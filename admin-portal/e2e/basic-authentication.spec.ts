@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Admin Portal (ASR) - Basic Authentication Tests
@@ -115,11 +115,7 @@ test.describe('Admin Portal - Authentication & Basic Functionality', () => {
     await page.waitForLoadState('networkidle');
 
     // Look for user info display (admin portal specific)
-    const userInfoElements = [
-      '.user-info',
-      '.user-name',
-      '[data-testid="user-menu"]',
-    ];
+    const userInfoElements = ['.user-info', '.user-name', '[data-testid="user-menu"]'];
 
     let foundUserInfo = false;
     for (const selector of userInfoElements) {
@@ -149,8 +145,8 @@ test.describe('Admin Portal - Authentication & Basic Functionality', () => {
       const keys = Object.keys(sessionStorage);
       return {
         totalKeys: keys.length,
-        msalKeys: keys.filter(key => key.includes('msal')),
-        tokenKeys: keys.filter(key => key.includes('accesstoken')),
+        msalKeys: keys.filter((key) => key.includes('msal')),
+        tokenKeys: keys.filter((key) => key.includes('accesstoken')),
       };
     });
 
@@ -193,10 +189,11 @@ test.describe('Admin Portal - Authentication & Basic Functionality', () => {
     }
 
     // Filter out known acceptable errors
-    const criticalErrors = consoleErrors.filter(err =>
-      !err.includes('Failed to load resource') && // Network errors may be acceptable
-      !err.includes('401') && // Auth errors may occur during token refresh
-      !err.includes('403')
+    const criticalErrors = consoleErrors.filter(
+      (err) =>
+        !err.includes('Failed to load resource') && // Network errors may be acceptable
+        !err.includes('401') && // Auth errors may occur during token refresh
+        !err.includes('403')
     );
 
     if (criticalErrors.length > 0) {

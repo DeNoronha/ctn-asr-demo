@@ -5,10 +5,19 @@
 
 import { Card, Loader } from '@mantine/core';
 
-import { Calendar, MapPin, Building2, Users, FileText, ExternalLink, CheckCircle, AlertCircle } from './icons';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { apiV2 } from '../services/apiV2';
+import {
+  AlertCircle,
+  Building2,
+  Calendar,
+  CheckCircle,
+  ExternalLink,
+  FileText,
+  MapPin,
+  Users,
+} from './icons';
 import './KvkRegistryDetails.css';
 import { formatDate } from '../utils/dateFormat';
 
@@ -179,15 +188,16 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
                   <span className="info-value">{registryData.legal_form}</span>
                 </div>
               )}
-              {registryData.total_employees !== null && registryData.total_employees !== undefined && (
-                <div className="info-row">
-                  <span className="info-label">Employees:</span>
-                  <span className="info-value">
-                    <Users size={14} />
-                    {registryData.total_employees}
-                  </span>
-                </div>
-              )}
+              {registryData.total_employees !== null &&
+                registryData.total_employees !== undefined && (
+                  <div className="info-row">
+                    <span className="info-label">Employees:</span>
+                    <span className="info-value">
+                      <Users size={14} />
+                      {registryData.total_employees}
+                    </span>
+                  </div>
+                )}
             </div>
           </div>
         </Card>
@@ -205,13 +215,17 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
               {registryData.formal_registration_date && (
                 <div className="info-row">
                   <span className="info-label">Formal Registration:</span>
-                  <span className="info-value">{formatDate(registryData.formal_registration_date)}</span>
+                  <span className="info-value">
+                    {formatDate(registryData.formal_registration_date)}
+                  </span>
                 </div>
               )}
               {registryData.material_registration_date && (
                 <div className="info-row">
                   <span className="info-label">Material Registration:</span>
-                  <span className="info-value">{formatDate(registryData.material_registration_date)}</span>
+                  <span className="info-value">
+                    {formatDate(registryData.material_registration_date)}
+                  </span>
                 </div>
               )}
               <div className="info-row">
@@ -244,8 +258,12 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
                 <div key={index} className="address-card">
                   <div className="address-type">{address.type}</div>
                   <div className="address-details">
-                    <div>{address.street} {address.houseNumber}</div>
-                    <div>{address.postalCode} {address.city}</div>
+                    <div>
+                      {address.street} {address.houseNumber}
+                    </div>
+                    <div>
+                      {address.postalCode} {address.city}
+                    </div>
                     <div>{address.country}</div>
                   </div>
                 </div>
@@ -311,7 +329,12 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
       )}
 
       <div className="data-source-footer">
-        <p>Data source: {registryData.data_source === 'kvk_api' ? 'KvK API (Dutch Chamber of Commerce)' : registryData.data_source}</p>
+        <p>
+          Data source:{' '}
+          {registryData.data_source === 'kvk_api'
+            ? 'KvK API (Dutch Chamber of Commerce)'
+            : registryData.data_source}
+        </p>
       </div>
     </div>
   );

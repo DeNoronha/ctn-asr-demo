@@ -1,14 +1,14 @@
-import { Button, Modal, Stack, Skeleton, ActionIcon, Tooltip, Group } from '@mantine/core';
+import { ActionIcon, Button, Group, Modal, Skeleton, Stack, Tooltip } from '@mantine/core';
 import { DataTable, useDataTableColumns } from 'mantine-datatable';
-import { AlertTriangle, Pencil, Plus, Trash2, Users } from './icons';
 import React, { useState, useCallback } from 'react';
 import type { LegalEntityContact } from '../services/api';
+import { getContactTypeColor } from '../utils/colors';
 import { safeArray, safeLength } from '../utils/safeArray';
 import { sanitizeText } from '../utils/sanitize';
-import { getContactTypeColor } from '../utils/colors';
 import { ConfirmDialog } from './ConfirmDialog';
 import { ContactForm } from './ContactForm';
 import { EmptyState } from './EmptyState';
+import { AlertTriangle, Pencil, Plus, Trash2, Users } from './icons';
 import { defaultDataTableProps } from './shared/DataTableConfig';
 import './ContactsManager.css';
 import { getEmptyState } from '../utils/emptyStates';
@@ -18,8 +18,13 @@ import { ErrorBoundary } from './ErrorBoundary';
 interface ContactsManagerProps {
   legalEntityId: string;
   contacts: LegalEntityContact[];
-  onContactCreate: (contact: Omit<LegalEntityContact, 'legal_entity_contact_id' | 'dt_created' | 'dt_modified'>) => Promise<LegalEntityContact>;
-  onContactUpdate: (contactId: string, contact: Partial<LegalEntityContact>) => Promise<LegalEntityContact>;
+  onContactCreate: (
+    contact: Omit<LegalEntityContact, 'legal_entity_contact_id' | 'dt_created' | 'dt_modified'>
+  ) => Promise<LegalEntityContact>;
+  onContactUpdate: (
+    contactId: string,
+    contact: Partial<LegalEntityContact>
+  ) => Promise<LegalEntityContact>;
   onContactDelete: (contactId: string) => Promise<void>;
 }
 
@@ -45,22 +50,29 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
     setShowDialog(true);
   }, []);
 
-  const handleSaveContact = useCallback(async (contact: LegalEntityContact) => {
-    if (editingContact && editingContact.legal_entity_contact_id) {
-      // Update existing contact
-      const updated = await onContactUpdate(editingContact.legal_entity_contact_id, contact);
-      const msg = contactSuccessMessages.updated(updated.full_name || 'Contact');
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      msg && (window as any).notification?.showSuccess ? (window as any).notification.showSuccess(msg.title) : null;
-    } else {
-      // Create new contact
-      const created = await onContactCreate(contact);
-      const msg = contactSuccessMessages.created(created.full_name || 'Contact');
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      msg && (window as any).notification?.showSuccess ? (window as any).notification.showSuccess(msg.title) : null;
-    }
-    setShowDialog(false);
-  }, [editingContact, onContactUpdate, onContactCreate]);
+  const handleSaveContact = useCallback(
+    async (contact: LegalEntityContact) => {
+      if (editingContact && editingContact.legal_entity_contact_id) {
+        // Update existing contact
+        const updated = await onContactUpdate(editingContact.legal_entity_contact_id, contact);
+        const msg = contactSuccessMessages.updated(updated.full_name || 'Contact');
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        msg && (window as any).notification?.showSuccess
+          ? (window as any).notification.showSuccess(msg.title)
+          : null;
+      } else {
+        // Create new contact
+        const created = await onContactCreate(contact);
+        const msg = contactSuccessMessages.created(created.full_name || 'Contact');
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        msg && (window as any).notification?.showSuccess
+          ? (window as any).notification.showSuccess(msg.title)
+          : null;
+      }
+      setShowDialog(false);
+    },
+    [editingContact, onContactUpdate, onContactCreate]
+  );
 
   const handleDeleteClick = useCallback((contact: LegalEntityContact) => {
     setContactToDelete(contact);
@@ -90,7 +102,7 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
     Technical: 'Technical contact for system integration and API issues',
     Billing: 'Billing and invoicing contact',
     Support: 'Customer support and service desk contact',
-    General: 'General contact for miscellaneous inquiries'
+    General: 'General contact for miscellaneous inquiries',
   };
 
   const { effectiveColumns } = useDataTableColumns<LegalEntityContact>({
@@ -117,7 +129,11 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
                 {type}
               </span>
               {contact.is_primary && (
-                <span className="primary-indicator" title="Primary Contact" aria-label="Primary contact">
+                <span
+                  className="primary-indicator"
+                  title="Primary Contact"
+                  aria-label="Primary contact"
+                >
                   ★
                 </span>
               )}
@@ -133,7 +149,9 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
         resizable: true,
         sortable: true,
         render: (contact) => {
-          const singleLine = sanitizeText(contact.full_name || '').replace(/\s+/g, ' ').trim();
+          const singleLine = sanitizeText(contact.full_name || '')
+            .replace(/\s+/g, ' ')
+            .trim();
           return <div>{singleLine}</div>;
         },
       },
@@ -145,7 +163,9 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
         resizable: true,
         sortable: true,
         render: (contact) => {
-          const singleLine = sanitizeText(String(contact.email || '')).replace(/\s+/g, ' ').trim();
+          const singleLine = sanitizeText(String(contact.email || ''))
+            .replace(/\s+/g, ' ')
+            .trim();
           return <div>{singleLine}</div>;
         },
       },
@@ -157,7 +177,9 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
         resizable: true,
         sortable: true,
         render: (contact) => {
-          const singleLine = sanitizeText(String(contact.phone || '')).replace(/\s+/g, ' ').trim();
+          const singleLine = sanitizeText(String(contact.phone || ''))
+            .replace(/\s+/g, ' ')
+            .trim();
           return <div>{singleLine}</div>;
         },
       },
@@ -169,7 +191,9 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
         resizable: true,
         sortable: true,
         render: (contact) => {
-          const singleLine = sanitizeText(String(contact.job_title || '')).replace(/\s+/g, ' ').trim();
+          const singleLine = sanitizeText(String(contact.job_title || ''))
+            .replace(/\s+/g, ' ')
+            .trim();
           return <div>{singleLine}</div>;
         },
       },

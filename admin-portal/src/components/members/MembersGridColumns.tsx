@@ -2,8 +2,8 @@ import { TextInput } from '@mantine/core';
 import type { DataTableColumn } from 'mantine-datatable';
 import { useTranslation } from 'react-i18next';
 import type { Member } from '../../services/api';
+import { getMembershipColor, getStatusColor } from '../../utils/colors';
 import { sanitizeGridCell } from '../../utils/sanitize';
-import { getStatusColor, getMembershipColor } from '../../utils/colors';
 
 interface ColumnDefinitionsProps {
   query: string;
@@ -15,16 +15,19 @@ const statusTooltips: Record<string, string> = {
   PENDING: 'Membership application pending approval',
   SUSPENDED: 'Member temporarily suspended - access restricted',
   TERMINATED: 'Membership terminated - no longer active',
-  FLAGGED: 'Member flagged for review'
+  FLAGGED: 'Member flagged for review',
 };
 
 const membershipTooltips: Record<string, string> = {
   PREMIUM: 'Premium membership - full access to all services and priority support',
   FULL: 'Full membership - access to all standard services',
-  BASIC: 'Basic membership - limited access to essential services'
+  BASIC: 'Basic membership - limited access to essential services',
 };
 
-export const useMembersGridColumns = ({ query, onQueryChange }: ColumnDefinitionsProps): DataTableColumn<Member>[] => {
+export const useMembersGridColumns = ({
+  query,
+  onQueryChange,
+}: ColumnDefinitionsProps): DataTableColumn<Member>[] => {
   const { t } = useTranslation();
 
   // Helper function to get translated column title
@@ -59,9 +62,7 @@ export const useMembersGridColumns = ({ query, onQueryChange }: ColumnDefinition
         />
       ),
       filtering: query !== '',
-      render: (member) => (
-        <div>{sanitizeGridCell(member.legal_name)}</div>
-      ),
+      render: (member) => <div>{sanitizeGridCell(member.legal_name)}</div>,
     },
     {
       accessor: 'status',
@@ -132,9 +133,7 @@ export const useMembersGridColumns = ({ query, onQueryChange }: ColumnDefinition
       resizable: true,
       sortable: true,
       defaultToggle: false, // Hidden by default
-      render: (member) => (
-        <div>{sanitizeGridCell(member.domain || '')}</div>
-      ),
+      render: (member) => <div>{sanitizeGridCell(member.domain || '')}</div>,
     },
     {
       accessor: 'membership_level',

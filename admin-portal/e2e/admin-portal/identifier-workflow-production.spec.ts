@@ -674,7 +674,9 @@ test.describe('Production Identifier Workflow - Critical Path', () => {
     console.log('✅ Navigated to Identifiers tab after refresh');
 
     // Verify identifiers list still loads
-    const identifierGridAfterRefresh = page.locator('.mantine-DataTable-root, [role="grid"]').first();
+    const identifierGridAfterRefresh = page
+      .locator('.mantine-DataTable-root, [role="grid"]')
+      .first();
     const hasGridAfterRefresh = await identifierGridAfterRefresh
       .isVisible({ timeout: 5000 })
       .catch(() => false);

@@ -5,9 +5,9 @@
 
 import { Button } from '@mantine/core';
 
-import { ShieldAlert } from '../icons';
 import type React from 'react';
 import { useAuth } from '../../auth/AuthContext';
+import { ShieldAlert } from '../icons';
 import './MFARequired.css';
 
 export const MFARequiredPage: React.FC = () => {

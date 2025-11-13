@@ -3,11 +3,11 @@
  * System Admins can invite new users (Association Admins or Members)
  */
 
-import { Button, Modal, TextInput, Select, Group, Text } from '@mantine/core';
-import { UserPlus } from '../icons';
+import { Button, Group, Modal, Select, Text, TextInput } from '@mantine/core';
 import type React from 'react';
 import { useState } from 'react';
 import { UserRole } from '../../auth/authConfig';
+import { UserPlus } from '../icons';
 import './UserManagement.css';
 
 interface InviteUserDialogProps {

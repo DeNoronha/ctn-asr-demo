@@ -315,7 +315,9 @@ test.describe('Identifiers Manager - Create Identifier', () => {
         await page.waitForTimeout(500);
 
         // Look for inline validation
-        const inlineError = page.locator('.mantine-Input-error, .error-message, [role="alert"]').first();
+        const inlineError = page
+          .locator('.mantine-Input-error, .error-message, [role="alert"]')
+          .first();
         const hasError = await inlineError.isVisible({ timeout: 1000 }).catch(() => false);
 
         console.log(`Inline validation shown: ${hasError}`);

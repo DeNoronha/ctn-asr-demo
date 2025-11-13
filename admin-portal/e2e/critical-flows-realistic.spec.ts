@@ -18,10 +18,9 @@
  * See: docs/TEST_PLAN_ADMIN_PORTAL.md
  */
 
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Critical E2E Flows - Realistic', () => {
-
   // Test 1: Application Loads
   test('should load application without errors', async ({ page }) => {
     console.log('🚀 Test 1: Application loading...');
@@ -54,7 +53,7 @@ test.describe('Critical E2E Flows - Realistic', () => {
     // Log console errors (but don't fail test)
     if (consoleErrors.length > 0) {
       console.log(`⚠️  Console errors (${consoleErrors.length}):`);
-      consoleErrors.slice(0, 5).forEach(err => console.log(`   - ${err}`));
+      consoleErrors.slice(0, 5).forEach((err) => console.log(`   - ${err}`));
     }
 
     await page.screenshot({
@@ -142,7 +141,7 @@ test.describe('Critical E2E Flows - Realistic', () => {
 
     console.log(`📊 Total API responses: ${apiResponses.length}`);
     if (apiResponses.length > 0) {
-      apiResponses.forEach(resp => {
+      apiResponses.forEach((resp) => {
         console.log(`   ${resp.status} - ${resp.url}`);
         if (resp.body && resp.body.length > 0) {
           console.log(`      Body: ${resp.body.substring(0, 100)}`);
@@ -152,11 +151,11 @@ test.describe('Critical E2E Flows - Realistic', () => {
 
     // If we got API responses, verify some were not 404
     if (apiResponses.length > 0) {
-      const healthChecks = apiResponses.filter(r => r.url.includes('/health'));
+      const healthChecks = apiResponses.filter((r) => r.url.includes('/health'));
       console.log(`📋 Health check responses: ${healthChecks.length}`);
 
       if (healthChecks.length > 0) {
-        healthChecks.forEach(hc => {
+        healthChecks.forEach((hc) => {
           console.log(`   Health: ${hc.status} - ${hc.url}`);
         });
       }
@@ -206,7 +205,7 @@ test.describe('Critical E2E Flows - Realistic', () => {
     }
 
     console.log('\n📊 Navigation Results:');
-    routeResults.forEach(result => {
+    routeResults.forEach((result) => {
       console.log(`   ${result.route}: ${result.status}`);
       if (result.error) {
         console.log(`      Error: ${result.error}`);
@@ -214,7 +213,7 @@ test.describe('Critical E2E Flows - Realistic', () => {
     });
 
     // At least / and /login should work
-    const successfulRoutes = routeResults.filter(r => r.status.includes('✅'));
+    const successfulRoutes = routeResults.filter((r) => r.status.includes('✅'));
     expect(successfulRoutes.length).toBeGreaterThanOrEqual(2);
 
     await page.screenshot({
@@ -231,10 +230,11 @@ test.describe('Critical E2E Flows - Realistic', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1000);
 
-    const bodyText = await page.locator('body').textContent() || '';
+    const bodyText = (await page.locator('body').textContent()) || '';
 
     // Look for 404 indicators
-    const has404 = bodyText.includes('404') ||
+    const has404 =
+      bodyText.includes('404') ||
       bodyText.includes('Not Found') ||
       bodyText.includes('not found') ||
       bodyText.includes('Page not found');
@@ -283,7 +283,7 @@ test.describe('Critical E2E Flows - Realistic', () => {
     }
 
     console.log('\n📊 Performance Summary:');
-    measurements.forEach(m => {
+    measurements.forEach((m) => {
       const status = m.loadTime < 3000 ? '🟢' : m.loadTime < 5000 ? '🟡' : '🔴';
       console.log(`   ${status} ${m.page}: ${m.loadTime}ms`);
     });
@@ -356,10 +356,11 @@ test.describe('Critical E2E Flows - Realistic', () => {
     }
 
     // Filter out known acceptable errors
-    const criticalErrors = consoleErrors.filter(err =>
-      !err.includes('Failed to load resource') && // Network errors are expected without auth
-      !err.includes('401') && // Unauthorized is expected
-      !err.includes('403') // Forbidden is expected
+    const criticalErrors = consoleErrors.filter(
+      (err) =>
+        !err.includes('Failed to load resource') && // Network errors are expected without auth
+        !err.includes('401') && // Unauthorized is expected
+        !err.includes('403') // Forbidden is expected
     );
 
     console.log(`\n📊 Critical Errors: ${criticalErrors.length}`);

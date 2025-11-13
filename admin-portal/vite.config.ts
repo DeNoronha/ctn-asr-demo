@@ -1,9 +1,9 @@
-import react from '@vitejs/plugin-react';
 import path from 'path';
+import { terser } from '@rollup/plugin-terser';
+import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
-import { terser } from '@rollup/plugin-terser';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -46,7 +46,8 @@ export default defineConfig({
         // Ignore warnings about externalizing Node.js modules for browser compatibility
         if (
           warning.code === 'UNUSED_EXTERNAL_IMPORT' ||
-          (warning.code === 'PLUGIN_WARNING' && warning.message.includes('externalized for browser compatibility'))
+          (warning.code === 'PLUGIN_WARNING' &&
+            warning.message.includes('externalized for browser compatibility'))
         ) {
           return;
         }
@@ -65,13 +66,13 @@ export default defineConfig({
           'mantine-notifications': ['@mantine/notifications'],
 
           // Icon libraries (can be large)
-          'icons': ['@tabler/icons-react'],
+          icons: ['@tabler/icons-react'],
 
           // Authentication libraries
-          'auth': ['@azure/msal-browser', '@azure/msal-react'],
+          auth: ['@azure/msal-browser', '@azure/msal-react'],
 
           // i18n libraries (embedded translations, no HttpBackend - see CLAUDE.md lesson #11)
-          'i18n': ['i18next', 'react-i18next'],
+          i18n: ['i18next', 'react-i18next'],
 
           // Excel/export libraries (large, rarely used)
           'excel-vendor': ['exceljs'],

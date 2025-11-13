@@ -1,8 +1,8 @@
-import { render, screen, waitFor, act } from '@testing-library/react';
 import { MantineProvider } from '@mantine/core';
 import { Notifications, notifications } from '@mantine/notifications';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import React from 'react';
+import { act, render, screen, waitFor } from '@testing-library/react';
+import type React from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Test wrapper component
 const TestNotifications: React.FC<{ children?: React.ReactNode }> = ({ children }) => {

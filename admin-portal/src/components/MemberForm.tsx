@@ -1,19 +1,36 @@
-import { Button, TextInput, Select } from '@mantine/core';
+import { Button, Select, TextInput } from '@mantine/core';
 // MemberForm.tsx - Enhanced form with validation
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
 // Form label components
 const Label: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <label id={id} className="form-label">{children}</label>
+  <label id={id} className="form-label">
+    {children}
+  </label>
 );
 const Error: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <div id={id} className="form-error" style={{ color: '#f31700', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
+  <div
+    id={id}
+    className="form-error"
+    style={{ color: '#f31700', fontSize: '0.875rem', marginTop: '0.25rem' }}
+  >
+    {children}
+  </div>
 );
 const Hint: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <div id={id} className="form-hint" style={{ color: '#656565', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
+  <div
+    id={id}
+    className="form-hint"
+    style={{ color: '#656565', fontSize: '0.875rem', marginTop: '0.25rem' }}
+  >
+    {children}
+  </div>
 );
+import { helpContent } from '../config/helpContent';
 import { useNotification } from '../contexts/NotificationContext';
 import { logger } from '../utils/logger';
+import { sanitizeFormData } from '../utils/sanitize';
 import {
   type MemberFormData,
   formatDomain,
@@ -22,10 +39,8 @@ import {
   formatOrgId,
   validateMemberForm,
 } from '../utils/validation';
-import { sanitizeFormData } from '../utils/sanitize';
-import { HelpTooltip } from './help/HelpTooltip';
-import { helpContent } from '../config/helpContent';
 import { ProgressiveSection } from './forms/ProgressiveSection';
+import { HelpTooltip } from './help/HelpTooltip';
 import './MemberForm.css';
 import '../styles/progressive-forms.css';
 
@@ -242,10 +257,10 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               aria-invalid={touched.org_id && Boolean(errors.org_id)}
               aria-describedby={`org-id-hint${touched.org_id && errors.org_id ? ' org-id-error' : ''}`}
             />
-            {touched.org_id && errors.org_id && (
-              <Error id="org-id-error">{errors.org_id}</Error>
-            )}
-            <Hint id="org-id-hint">Format: org:company-name (lowercase, letters, numbers, hyphens only)</Hint>
+            {touched.org_id && errors.org_id && <Error id="org-id-error">{errors.org_id}</Error>}
+            <Hint id="org-id-hint">
+              Format: org:company-name (lowercase, letters, numbers, hyphens only)
+            </Hint>
           </div>
 
           <div className="form-field required">
@@ -286,9 +301,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               aria-invalid={touched.domain && Boolean(errors.domain)}
               aria-describedby={`domain-hint${touched.domain && errors.domain ? ' domain-error' : ''}`}
             />
-            {touched.domain && errors.domain && (
-              <Error id="domain-error">{errors.domain}</Error>
-            )}
+            {touched.domain && errors.domain && <Error id="domain-error">{errors.domain}</Error>}
             <Hint id="domain-hint">Primary domain name (e.g., company.com)</Hint>
           </div>
 
@@ -329,7 +342,8 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               }}
             />
             <Hint>
-              {TIER_OPTIONS.find(t => t.tier === formData.authentication_tier)?.access || 'Select tier to see access level'}
+              {TIER_OPTIONS.find((t) => t.tier === formData.authentication_tier)?.access ||
+                'Select tier to see access level'}
             </Hint>
           </div>
         </div>
@@ -355,9 +369,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               aria-invalid={touched.lei && Boolean(errors.lei)}
               aria-describedby={`lei-hint${touched.lei && errors.lei ? ' lei-error' : ''}`}
             />
-            {touched.lei && errors.lei && (
-              <Error id="lei-error">{errors.lei}</Error>
-            )}
+            {touched.lei && errors.lei && <Error id="lei-error">{errors.lei}</Error>}
             <Hint id="lei-hint">20-character alphanumeric code (optional)</Hint>
           </div>
 
@@ -377,9 +389,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               aria-invalid={touched.kvk && Boolean(errors.kvk)}
               aria-describedby={`kvk-hint${touched.kvk && errors.kvk ? ' kvk-error' : ''}`}
             />
-            {touched.kvk && errors.kvk && (
-              <Error id="kvk-error">{errors.kvk}</Error>
-            )}
+            {touched.kvk && errors.kvk && <Error id="kvk-error">{errors.kvk}</Error>}
             <Hint id="kvk-hint">8-digit number (optional)</Hint>
           </div>
         </ProgressiveSection>

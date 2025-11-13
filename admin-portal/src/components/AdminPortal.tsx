@@ -3,8 +3,19 @@
  * Main container for authenticated admin interface
  */
 
-import { AppShell, Button, Container, Group, Tooltip, ActionIcon, useMantineColorScheme, useComputedColorScheme, Paper, Text } from '@mantine/core';
-import { IconSun, IconMoon } from '@tabler/icons-react';
+import {
+  ActionIcon,
+  AppShell,
+  Button,
+  Container,
+  Group,
+  Paper,
+  Text,
+  Tooltip,
+  useComputedColorScheme,
+  useMantineColorScheme,
+} from '@mantine/core';
+import { IconMoon, IconSun } from '@tabler/icons-react';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,9 +29,9 @@ import { logger } from '../utils/logger';
 import type { MemberFormData } from '../utils/validation';
 import About from './About';
 import AdminSidebar, { type MenuItem } from './AdminSidebar';
+import { AllEndpointsView } from './AllEndpointsView';
 import Dashboard from './Dashboard';
 import { EndpointManagement } from './EndpointManagement';
-import { AllEndpointsView } from './AllEndpointsView';
 import { HealthDashboard } from './HealthDashboard';
 import LanguageSwitcher from './LanguageSwitcher';
 import LoadingSpinner from './LoadingSpinner';
@@ -32,8 +43,8 @@ import Settings from './Settings';
 import { SkipToContent } from './SkipToContent';
 import TasksGrid from './TasksGrid';
 import AuditLogViewer from './audit/AuditLogViewer';
-import UserManagement from './users/UserManagement';
 import { PageHeader } from './shared/PageHeader';
+import UserManagement from './users/UserManagement';
 import './AdminPortal.css';
 import { TEXT_COLORS } from '../utils/colors';
 
@@ -61,23 +72,22 @@ const AdminPortal: React.FC = () => {
 
   const { loading, execute: loadMembers } = useAsync(asyncOptions);
 
-  const loadMembersData = useCallback(
-    async () => {
-      try {
-        // Load ALL members for client-side pagination (no pagination params)
-        const result = await loadMembers(() => api.getMembers()) as Member[] | { data: Member[]; total: number };
+  const loadMembersData = useCallback(async () => {
+    try {
+      // Load ALL members for client-side pagination (no pagination params)
+      const result = (await loadMembers(() => api.getMembers())) as
+        | Member[]
+        | { data: Member[]; total: number };
 
-        // api.getMembers() without params returns Member[] directly (not { data, total })
-        const membersArray = Array.isArray(result) ? result : result.data;
-        setMembers(membersArray);
-        setTotalMembers(membersArray.length);
-      } catch (error) {
-        // Handled by useAsync hook, but log for debugging (CR-004)
-        logger.error('Failed to load members data:', error);
-      }
-    },
-    [loadMembers]
-  );
+      // api.getMembers() without params returns Member[] directly (not { data, total })
+      const membersArray = Array.isArray(result) ? result : result.data;
+      setMembers(membersArray);
+      setTotalMembers(membersArray.length);
+    } catch (error) {
+      // Handled by useAsync hook, but log for debugging (CR-004)
+      logger.error('Failed to load members data:', error);
+    }
+  }, [loadMembers]);
 
   useEffect(() => {
     loadMembersData();
@@ -164,12 +174,7 @@ const AdminPortal: React.FC = () => {
         if (!selectedMember) {
           return null;
         }
-        return (
-          <MemberDetailView
-            member={selectedMember}
-            onBack={handleBackToMembers}
-          />
-        );
+        return <MemberDetailView member={selectedMember} onBack={handleBackToMembers} />;
 
       case 'endpoints':
         return (
@@ -221,19 +226,22 @@ const AdminPortal: React.FC = () => {
 
       default:
         return (
-          <div className="not-found-view" style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '400px',
-            textAlign: 'center',
-            padding: '2rem'
-          }}>
+          <div
+            className="not-found-view"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '400px',
+              textAlign: 'center',
+              padding: '2rem',
+            }}
+          >
             <h2 style={{ fontSize: '3rem', color: TEXT_COLORS.info, marginBottom: '1rem' }}>404</h2>
             <h3>{t('errors.pageNotFound', 'Page Not Found')}</h3>
             <p style={{ color: TEXT_COLORS.secondary, marginBottom: '2rem' }}>
-              {t('errors.pageNotFoundMessage', 'The view you\'re looking for doesn\'t exist.')}
+              {t('errors.pageNotFoundMessage', "The view you're looking for doesn't exist.")}
             </p>
             <Button
               color="blue"
@@ -277,14 +285,23 @@ const AdminPortal: React.FC = () => {
                 />
               </Group>
               <Group>
-                <Tooltip label={computedColorScheme === 'light' ? 'Dark mode' : 'Light mode'} position="bottom">
+                <Tooltip
+                  label={computedColorScheme === 'light' ? 'Dark mode' : 'Light mode'}
+                  position="bottom"
+                >
                   <ActionIcon
-                    onClick={() => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')}
+                    onClick={() =>
+                      setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')
+                    }
                     variant="default"
                     size="lg"
                     aria-label="Toggle color scheme"
                   >
-                    {computedColorScheme === 'light' ? <IconMoon size={18} /> : <IconSun size={18} />}
+                    {computedColorScheme === 'light' ? (
+                      <IconMoon size={18} />
+                    ) : (
+                      <IconSun size={18} />
+                    )}
                   </ActionIcon>
                 </Tooltip>
                 <LanguageSwitcher />
@@ -303,9 +320,7 @@ const AdminPortal: React.FC = () => {
         </AppShell.Navbar>
 
         <AppShell.Main>
-          <Container size="xl">
-            {renderContent()}
-          </Container>
+          <Container size="xl">{renderContent()}</Container>
 
           <Container size="xl" mt="xl">
             <Paper withBorder p="md" radius="md" mt="xl">
@@ -317,9 +332,21 @@ const AdminPortal: React.FC = () => {
                   </Text>
                 </Group>
                 <Group gap="xl">
-                  <img src="/assets/logos/contargo.png" alt="Contargo" style={{ height: 30, opacity: 0.7 }} />
-                  <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" style={{ height: 30, opacity: 0.7 }} />
-                  <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" style={{ height: 30, opacity: 0.7 }} />
+                  <img
+                    src="/assets/logos/contargo.png"
+                    alt="Contargo"
+                    style={{ height: 30, opacity: 0.7 }}
+                  />
+                  <img
+                    src="/assets/logos/Inland Terminals Group.png"
+                    alt="Inland Terminals Group"
+                    style={{ height: 30, opacity: 0.7 }}
+                  />
+                  <img
+                    src="/assets/logos/VanBerkel.png"
+                    alt="Van Berkel"
+                    style={{ height: 30, opacity: 0.7 }}
+                  />
                 </Group>
               </Group>
             </Paper>

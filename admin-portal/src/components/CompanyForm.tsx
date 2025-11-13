@@ -1,4 +1,4 @@
-import { Button, TextInput, Select } from '@mantine/core';
+import { Button, Select, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 
 // CompanyForm.tsx - Edit company/legal entity information
@@ -10,8 +10,8 @@ import { apiV2 } from '../services/api';
 import type { LegalEntityIdentifier } from '../services/apiV2';
 import { sanitizeFormData } from '../utils/sanitize';
 import './CompanyForm.css';
-import { FieldLabel } from './help/FieldLabel';
 import { helpContent } from '../config/helpContent';
+import { FieldLabel } from './help/FieldLabel';
 
 interface CompanyFormProps {
   data: LegalEntity;
@@ -68,8 +68,10 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
       country_code: data.country_code || '',
     },
     validate: {
-      primary_legal_name: (value) => (value && value.trim().length > 0 ? null : 'This field is required'),
-      country_code: (value) => (!value || /^[A-Za-z]{2}$/.test(value) ? null : 'Enter 2-letter country code'),
+      primary_legal_name: (value) =>
+        value && value.trim().length > 0 ? null : 'This field is required',
+      country_code: (value) =>
+        !value || /^[A-Za-z]{2}$/.test(value) ? null : 'Enter 2-letter country code',
     },
   });
 
@@ -130,7 +132,14 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
 
         <TextInput
           {...form.getInputProps('primary_legal_name')}
-          label={<FieldLabel text="Legal Name" helpText={helpContent.legalName} required dataTestId="company-legal-name-help" />}
+          label={
+            <FieldLabel
+              text="Legal Name"
+              helpText={helpContent.legalName}
+              required
+              dataTestId="company-legal-name-help"
+            />
+          }
           required
           mb="md"
         />
@@ -144,7 +153,13 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
 
         <TextInput
           {...form.getInputProps('registered_at')}
-          label={<FieldLabel text="Registration Number" helpText={helpContent.kvk} dataTestId="company-reg-help" />}
+          label={
+            <FieldLabel
+              text="Registration Number"
+              helpText={helpContent.kvk}
+              dataTestId="company-reg-help"
+            />
+          }
           placeholder="Chamber of Commerce number"
           mb="md"
         />
@@ -174,10 +189,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
             placeholder="1234 AB"
           />
 
-          <TextInput
-            {...form.getInputProps('city')}
-            label="City"
-          />
+          <TextInput {...form.getInputProps('city')} label="City" />
         </div>
 
         <div className="form-row-group">
@@ -189,100 +201,104 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
 
           <TextInput
             {...form.getInputProps('country_code')}
-            label={<FieldLabel text="Country Code" helpText={helpContent.identifierCountry} dataTestId="company-country-help" />}
+            label={
+              <FieldLabel
+                text="Country Code"
+                helpText={helpContent.identifierCountry}
+                dataTestId="company-country-help"
+              />
+            }
             maxLength={2}
             placeholder="NL"
           />
         </div>
       </fieldset>
 
-          <fieldset className="form-fieldset">
-            <legend>Legal Identifiers</legend>
+      <fieldset className="form-fieldset">
+        <legend>Legal Identifiers</legend>
 
-            {identifiers.length > 0 && (
-              <div className="identifiers-section">
-                {identifiers.map((identifier) => (
-                  <div key={identifier.legal_entity_reference_id} className="identifier-item">
-                    <div className="identifier-details">
-                      <div className="identifier-type">
-                        <strong>{identifier.identifier_type}</strong>
-                        {identifier.country_code && (
-                          <span className="country-code">({identifier.country_code})</span>
-                        )}
-                      </div>
-                      <div className="identifier-value-display">{identifier.identifier_value}</div>
-                      {identifier.registry_name && (
-                        <div className="registry-name-display">{identifier.registry_name}</div>
-                      )}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="subtle"
-                      color="red"
-                      onClick={() => handleRemoveIdentifier(identifier.legal_entity_reference_id!)}
-                    >
-                      Remove
-                    </Button>
+        {identifiers.length > 0 && (
+          <div className="identifiers-section">
+            {identifiers.map((identifier) => (
+              <div key={identifier.legal_entity_reference_id} className="identifier-item">
+                <div className="identifier-details">
+                  <div className="identifier-type">
+                    <strong>{identifier.identifier_type}</strong>
+                    {identifier.country_code && (
+                      <span className="country-code">({identifier.country_code})</span>
+                    )}
                   </div>
-                ))}
+                  <div className="identifier-value-display">{identifier.identifier_value}</div>
+                  {identifier.registry_name && (
+                    <div className="registry-name-display">{identifier.registry_name}</div>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  variant="subtle"
+                  color="red"
+                  onClick={() => handleRemoveIdentifier(identifier.legal_entity_reference_id!)}
+                >
+                  Remove
+                </Button>
               </div>
-            )}
+            ))}
+          </div>
+        )}
 
-            <div className="add-identifier-section">
-              <h4>Add New Identifier</h4>
-              <div className="identifier-form-grid">
-                <div className="form-field">
-                  <label>Type</label>
-                  <Select
-                    data={IDENTIFIER_TYPES}
-                    value={newIdentifier.identifier_type}
-                    onChange={(value) =>
-                      setNewIdentifier({ ...newIdentifier, identifier_type: value as any })
-                    }
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label>Identifier Value</label>
-                  <TextInput
-                    value={newIdentifier.identifier_value || ''}
-                    onChange={(e) => setNewIdentifier({ ...newIdentifier, identifier_value: e.target.value })
-                    }
-                    placeholder="Enter identifier value"
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label>Country</label>
-                  <Select
-                    data={COUNTRY_CODES.map((c) => ({ value: c.code, label: c.name }))}
-                    value={newIdentifier.country_code}
-                    onChange={(value) =>
-                      setNewIdentifier({ ...newIdentifier, country_code: value || '' })
-                    }
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label>Registry Name</label>
-                  <TextInput
-                    value={newIdentifier.registry_name || ''}
-                    onChange={(e) => setNewIdentifier({ ...newIdentifier, registry_name: e.target.value })}
-                    placeholder="e.g., Kamer van Koophandel"
-                  />
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                color="blue"
-                variant="outline"
-                onClick={handleAddIdentifier}
-              >
-                Add Identifier
-              </Button>
+        <div className="add-identifier-section">
+          <h4>Add New Identifier</h4>
+          <div className="identifier-form-grid">
+            <div className="form-field">
+              <label>Type</label>
+              <Select
+                data={IDENTIFIER_TYPES}
+                value={newIdentifier.identifier_type}
+                onChange={(value) =>
+                  setNewIdentifier({ ...newIdentifier, identifier_type: value as any })
+                }
+              />
             </div>
-          </fieldset>
+
+            <div className="form-field">
+              <label>Identifier Value</label>
+              <TextInput
+                value={newIdentifier.identifier_value || ''}
+                onChange={(e) =>
+                  setNewIdentifier({ ...newIdentifier, identifier_value: e.target.value })
+                }
+                placeholder="Enter identifier value"
+              />
+            </div>
+
+            <div className="form-field">
+              <label>Country</label>
+              <Select
+                data={COUNTRY_CODES.map((c) => ({ value: c.code, label: c.name }))}
+                value={newIdentifier.country_code}
+                onChange={(value) =>
+                  setNewIdentifier({ ...newIdentifier, country_code: value || '' })
+                }
+              />
+            </div>
+
+            <div className="form-field">
+              <label>Registry Name</label>
+              <TextInput
+                value={newIdentifier.registry_name || ''}
+                onChange={(e) =>
+                  setNewIdentifier({ ...newIdentifier, registry_name: e.target.value })
+                }
+                placeholder="e.g., Kamer van Koophandel"
+              />
+            </div>
+          </div>
+
+          <Button type="button" color="blue" variant="outline" onClick={handleAddIdentifier}>
+            Add Identifier
+          </Button>
+        </div>
+      </fieldset>
 
       <div className="form-buttons">
         <Button type="submit" color="blue">

@@ -1,17 +1,38 @@
-import { Button, Menu, Modal, Group, TextInput, Stack, Skeleton, CloseButton, Tooltip, ActionIcon, Badge } from '@mantine/core';
-import { IconSearch, IconEye, IconEdit, IconTrash, IconCheck, IconFileSpreadsheet, IconFileTypeCsv, IconBolt } from '@tabler/icons-react';
-import { DataTable, useDataTableColumns, type DataTableSortStatus } from 'mantine-datatable';
+import {
+  ActionIcon,
+  Badge,
+  Button,
+  CloseButton,
+  Group,
+  Menu,
+  Modal,
+  Skeleton,
+  Stack,
+  TextInput,
+  Tooltip,
+} from '@mantine/core';
+import {
+  IconBolt,
+  IconCheck,
+  IconEdit,
+  IconEye,
+  IconFileSpreadsheet,
+  IconFileTypeCsv,
+  IconSearch,
+  IconTrash,
+} from '@tabler/icons-react';
+import { Workbook } from 'exceljs';
+import { DataTable, type DataTableSortStatus, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Workbook } from 'exceljs';
 import { useNotification } from '../contexts/NotificationContext';
-import { useGridState } from '../hooks/useGridState';
 import { useApiError } from '../hooks/useApiError';
+import { useGridState } from '../hooks/useGridState';
 import type { Member } from '../services/api';
 import { apiV2 } from '../services/apiV2';
+import { getMembershipColor, getStatusColor } from '../utils/colors';
 import { exportToCSV, exportToPDF } from '../utils/exportUtils';
 import { sanitizeGridCell } from '../utils/sanitize';
-import { getStatusColor, getMembershipColor } from '../utils/colors';
 import { ErrorBoundary } from './ErrorBoundary';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
 import './MembersGrid.css';
@@ -82,20 +103,20 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     setGridData(members);
   }, [members]);
 
-
   // Client-side sorting, filtering, and pagination (useMemo for sync calculation)
   const { sortedData, filteredCount } = useMemo(() => {
     let filtered = [...gridData];
 
     // Apply search filter
     if (query) {
-      filtered = filtered.filter((member) =>
-        member.legal_name?.toLowerCase().includes(query.toLowerCase()) ||
-        member.status?.toLowerCase().includes(query.toLowerCase()) ||
-        member.lei?.toLowerCase().includes(query.toLowerCase()) ||
-        member.euid?.toLowerCase().includes(query.toLowerCase()) ||
-        member.kvk?.toLowerCase().includes(query.toLowerCase()) ||
-        member.org_id?.toLowerCase().includes(query.toLowerCase())
+      filtered = filtered.filter(
+        (member) =>
+          member.legal_name?.toLowerCase().includes(query.toLowerCase()) ||
+          member.status?.toLowerCase().includes(query.toLowerCase()) ||
+          member.lei?.toLowerCase().includes(query.toLowerCase()) ||
+          member.euid?.toLowerCase().includes(query.toLowerCase()) ||
+          member.kvk?.toLowerCase().includes(query.toLowerCase()) ||
+          member.org_id?.toLowerCase().includes(query.toLowerCase())
       );
     }
 
@@ -131,15 +152,18 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     return { sortedData, filteredCount };
   }, [gridData, sortStatus, query, page, pageSize]);
 
-  const handleBulkAction = useCallback((action: string) => {
-    if (selectedIds.length === 0) {
-      notification.showWarning('Please select members first');
-      return;
-    }
+  const handleBulkAction = useCallback(
+    (action: string) => {
+      if (selectedIds.length === 0) {
+        notification.showWarning('Please select members first');
+        return;
+      }
 
-    setBulkAction(action);
-    setShowBulkDialog(true);
-  }, [selectedIds.length, notification]);
+      setBulkAction(action);
+      setShowBulkDialog(true);
+    },
+    [selectedIds.length, notification]
+  );
 
   const executeBulkAction = useCallback(async () => {
     setIsBulkProcessing(true);
@@ -200,7 +224,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
           // Write to buffer and download
           const buffer = await workbook.xlsx.writeBuffer();
-          const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+          const blob = new Blob([buffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          });
           const url = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
@@ -214,7 +240,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
         case 'approve': {
           // Bulk approve: Update status from PENDING to ACTIVE
-          const approvePromises = selectedIds.map(orgId =>
+          const approvePromises = selectedIds.map((orgId) =>
             apiV2.updateMemberStatus(orgId, 'ACTIVE', 'Bulk approved via admin portal')
           );
           await Promise.all(approvePromises);
@@ -230,7 +256,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
         case 'suspend': {
           // Bulk suspend: Update status to SUSPENDED
-          const suspendPromises = selectedIds.map(orgId =>
+          const suspendPromises = selectedIds.map((orgId) =>
             apiV2.updateMemberStatus(orgId, 'SUSPENDED', 'Bulk suspended via admin portal')
           );
           await Promise.all(suspendPromises);
@@ -246,7 +272,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
         case 'delete': {
           // Bulk delete: Soft delete by updating status to TERMINATED
-          const deletePromises = selectedIds.map(orgId =>
+          const deletePromises = selectedIds.map((orgId) =>
             apiV2.updateMemberStatus(orgId, 'TERMINATED', 'Bulk deleted via admin portal')
           );
           await Promise.all(deletePromises);
@@ -317,7 +343,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
     // Write to buffer and download
     const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -348,9 +376,12 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     setQuery(e.target.value);
   }, []);
 
-  const handleRowClick = useCallback(({ record }: { record: Member }) => {
-    onViewDetails(record);
-  }, [onViewDetails]);
+  const handleRowClick = useCallback(
+    ({ record }: { record: Member }) => {
+      onViewDetails(record);
+    },
+    [onViewDetails]
+  );
 
   const handleSelectedRecordsChange = useCallback((records: Member[]) => {
     setSelectedIds(records.map((r) => r.org_id));
@@ -365,13 +396,13 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     PENDING: 'Membership application pending approval',
     SUSPENDED: 'Member temporarily suspended - access restricted',
     TERMINATED: 'Membership terminated - no longer active',
-    FLAGGED: 'Member flagged for review'
+    FLAGGED: 'Member flagged for review',
   };
 
   const membershipTooltips: Record<string, string> = {
     PREMIUM: 'Premium membership - full access to all services and priority support',
     FULL: 'Full membership - access to all standard services',
-    BASIC: 'Basic membership - limited access to essential services'
+    BASIC: 'Basic membership - limited access to essential services',
   };
 
   // Column definitions for mantine-datatable
@@ -395,9 +426,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         draggable: true,
         resizable: true,
         sortable: true,
-        render: (member) => (
-          <div>{sanitizeGridCell(member.legal_name)}</div>
-        ),
+        render: (member) => <div>{sanitizeGridCell(member.legal_name)}</div>,
       },
       {
         accessor: 'status',
@@ -455,9 +484,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         resizable: true,
         sortable: true,
         defaultToggle: false, // Hidden by default
-        render: (member) => (
-          <div>{sanitizeGridCell(member.domain || '')}</div>
-        ),
+        render: (member) => <div>{sanitizeGridCell(member.domain || '')}</div>,
       },
       {
         accessor: 'membership_level',
@@ -572,11 +599,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             rightSection={
               query ? (
                 <Tooltip label="Clear search" position="bottom">
-                  <CloseButton
-                    aria-label="Clear search"
-                    onClick={() => setQuery('')}
-                    size="sm"
-                  />
+                  <CloseButton aria-label="Clear search" onClick={() => setQuery('')} size="sm" />
                 </Tooltip>
               ) : null
             }
@@ -599,7 +622,10 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                 </Button>
               </Menu.Target>
               <Menu.Dropdown>
-                <Menu.Label>Actions for {selectedIds.length} selected member{selectedIds.length > 1 ? 's' : ''}</Menu.Label>
+                <Menu.Label>
+                  Actions for {selectedIds.length} selected member
+                  {selectedIds.length > 1 ? 's' : ''}
+                </Menu.Label>
                 <Menu.Item
                   leftSection={<IconCheck size={16} />}
                   color="green"
@@ -636,7 +662,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         <div className="toolbar-stats">
           <span>Total: {total}</span>
           <span>Showing: {filteredCount}</span>
-          <span>Page {page} of {Math.ceil(filteredCount / pageSize)}</span>
+          <span>
+            Page {page} of {Math.ceil(filteredCount / pageSize)}
+          </span>
         </div>
       </div>
 
@@ -649,7 +677,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       >
         <p style={{ margin: '20px', fontSize: '16px' }}>{getBulkActionConfirmation()}</p>
         <Group mt="xl" justify="flex-end">
-          <Button onClick={handleDialogClose} variant="default">Cancel</Button>
+          <Button onClick={handleDialogClose} variant="default">
+            Cancel
+          </Button>
           <Button color="blue" onClick={executeBulkAction} disabled={isBulkProcessing}>
             {isBulkProcessing ? 'Processing...' : 'Confirm'}
           </Button>

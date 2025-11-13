@@ -1,6 +1,6 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Alert, Button, Stack, Text } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
+import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -79,13 +79,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         >
           <Stack gap="sm">
             <Text size="sm">
-              {this.state.error?.message || 'An unexpected error occurred while rendering this component.'}
+              {this.state.error?.message ||
+                'An unexpected error occurred while rendering this component.'}
             </Text>
-            <Button
-              size="xs"
-              variant="light"
-              onClick={this.handleReset}
-            >
+            <Button size="xs" variant="light" onClick={this.handleReset}>
               Try Again
             </Button>
           </Stack>

@@ -56,7 +56,15 @@ export const useAsync = <T = unknown>(options: UseAsyncOptions<T> = {}) => {
         setLoading(false);
       }
     },
-    [notification, showSuccessNotification, showErrorNotification, successMessage, errorMessage, onSuccess, onError]
+    [
+      notification,
+      showSuccessNotification,
+      showErrorNotification,
+      successMessage,
+      errorMessage,
+      onSuccess,
+      onError,
+    ]
   );
 
   const reset = useCallback(() => {

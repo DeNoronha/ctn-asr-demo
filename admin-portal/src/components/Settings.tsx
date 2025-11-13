@@ -4,29 +4,30 @@
  */
 
 import {
-  Button,
-  Paper,
-  Title,
-  Text,
-  Stack,
-  Group,
-  SimpleGrid,
-  ThemeIcon,
   Anchor,
-  List,
-  Card,
   Box,
+  Button,
+  Card,
+  Group,
+  List,
+  Paper,
+  SimpleGrid,
+  Stack,
+  Text,
+  ThemeIcon,
+  Title,
 } from '@mantine/core';
-import { BookOpen, ExternalLink, FileText, Globe, HelpCircle } from './icons';
 import type React from 'react';
 import { useTranslation } from 'react-i18next';
+import { BookOpen, ExternalLink, FileText, Globe, HelpCircle } from './icons';
 import { PageHeader } from './shared/PageHeader';
 
 const Settings: React.FC = () => {
   const { t } = useTranslation();
 
   // Derive environment and API details from configuration
-  const apiBase = import.meta.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
+  const apiBase =
+    import.meta.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
   const apiHost = (() => {
     try {
       return new URL(apiBase).host;
@@ -178,7 +179,8 @@ const Settings: React.FC = () => {
             radius="md"
             withBorder
             style={{
-              background: 'linear-gradient(135deg, var(--mantine-color-blue-0) 0%, var(--mantine-color-cyan-0) 100%)',
+              background:
+                'linear-gradient(135deg, var(--mantine-color-blue-0) 0%, var(--mantine-color-cyan-0) 100%)',
             }}
           >
             <Group align="flex-start" gap="xl" wrap="nowrap">
@@ -196,8 +198,12 @@ const Settings: React.FC = () => {
                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
                   <List size="sm" spacing="xs" c="blue.7" icon={<Text fw={700}>✓</Text>}>
                     <List.Item>{t('settings.feature1', 'Real-time translation updates')}</List.Item>
-                    <List.Item>{t('settings.feature2', 'Multi-language support (NL, EN, DE)')}</List.Item>
-                    <List.Item>{t('settings.feature3', 'Context-aware translation editor')}</List.Item>
+                    <List.Item>
+                      {t('settings.feature2', 'Multi-language support (NL, EN, DE)')}
+                    </List.Item>
+                    <List.Item>
+                      {t('settings.feature3', 'Context-aware translation editor')}
+                    </List.Item>
                     <List.Item>{t('settings.feature4', 'Translation quality checks')}</List.Item>
                   </List>
                 </SimpleGrid>

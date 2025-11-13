@@ -4,7 +4,7 @@
  * Extends the Window interface with custom properties used in the application.
  */
 
-import { PublicClientApplication } from '@azure/msal-browser';
+import type { PublicClientApplication } from '@azure/msal-browser';
 
 declare global {
   interface Window {
@@ -15,6 +15,3 @@ declare global {
     msalInstance: PublicClientApplication;
   }
 }
-
-// This export is required to make this file a module
-export {};

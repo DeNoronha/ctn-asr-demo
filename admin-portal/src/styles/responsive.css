@@ -89,32 +89,80 @@
 
 /* Responsive padding */
 @media (max-width: 767px) {
-  .p-mobile-sm { padding: 0.5rem !important; }
-  .p-mobile-md { padding: 1rem !important; }
-  .p-mobile-lg { padding: 1.5rem !important; }
+  .p-mobile-sm {
+    padding: 0.5rem !important;
+  }
+  .p-mobile-md {
+    padding: 1rem !important;
+  }
+  .p-mobile-lg {
+    padding: 1.5rem !important;
+  }
 
-  .px-mobile-sm { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
-  .px-mobile-md { padding-left: 1rem !important; padding-right: 1rem !important; }
-  .px-mobile-lg { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
+  .px-mobile-sm {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  .px-mobile-md {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  .px-mobile-lg {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
 
-  .py-mobile-sm { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
-  .py-mobile-md { padding-top: 1rem !important; padding-bottom: 1rem !important; }
-  .py-mobile-lg { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+  .py-mobile-sm {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+  .py-mobile-md {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+  .py-mobile-lg {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
 }
 
 /* Responsive margin */
 @media (max-width: 767px) {
-  .m-mobile-sm { margin: 0.5rem !important; }
-  .m-mobile-md { margin: 1rem !important; }
-  .m-mobile-lg { margin: 1.5rem !important; }
+  .m-mobile-sm {
+    margin: 0.5rem !important;
+  }
+  .m-mobile-md {
+    margin: 1rem !important;
+  }
+  .m-mobile-lg {
+    margin: 1.5rem !important;
+  }
 
-  .mx-mobile-sm { margin-left: 0.5rem !important; margin-right: 0.5rem !important; }
-  .mx-mobile-md { margin-left: 1rem !important; margin-right: 1rem !important; }
-  .mx-mobile-lg { margin-left: 1.5rem !important; margin-right: 1.5rem !important; }
+  .mx-mobile-sm {
+    margin-left: 0.5rem !important;
+    margin-right: 0.5rem !important;
+  }
+  .mx-mobile-md {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+  }
+  .mx-mobile-lg {
+    margin-left: 1.5rem !important;
+    margin-right: 1.5rem !important;
+  }
 
-  .my-mobile-sm { margin-top: 0.5rem !important; margin-bottom: 0.5rem !important; }
-  .my-mobile-md { margin-top: 1rem !important; margin-bottom: 1rem !important; }
-  .my-mobile-lg { margin-top: 1.5rem !important; margin-bottom: 1.5rem !important; }
+  .my-mobile-sm {
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  .my-mobile-md {
+    margin-top: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+  .my-mobile-lg {
+    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+  }
 }
 
 /* ==========================================================================
@@ -123,17 +171,31 @@
 
 /* Responsive text sizes */
 @media (max-width: 767px) {
-  .text-mobile-sm { font-size: 0.875rem !important; }
-  .text-mobile-base { font-size: 1rem !important; }
-  .text-mobile-lg { font-size: 1.125rem !important; }
-  .text-mobile-xl { font-size: 1.25rem !important; }
+  .text-mobile-sm {
+    font-size: 0.875rem !important;
+  }
+  .text-mobile-base {
+    font-size: 1rem !important;
+  }
+  .text-mobile-lg {
+    font-size: 1.125rem !important;
+  }
+  .text-mobile-xl {
+    font-size: 1.25rem !important;
+  }
 }
 
 /* Responsive text alignment */
 @media (max-width: 767px) {
-  .text-mobile-left { text-align: left !important; }
-  .text-mobile-center { text-align: center !important; }
-  .text-mobile-right { text-align: right !important; }
+  .text-mobile-left {
+    text-align: left !important;
+  }
+  .text-mobile-center {
+    text-align: center !important;
+  }
+  .text-mobile-right {
+    text-align: right !important;
+  }
 }
 
 /* ==========================================================================
@@ -414,7 +476,9 @@
   }
 
   /* Visible borders for tables */
-  table, th, td {
+  table,
+  th,
+  td {
     border: 1px solid #000 !important;
   }
 }

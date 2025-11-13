@@ -33,7 +33,10 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     await page.goto('/', { waitUntil: 'networkidle' });
 
     // Navigate to members page
-    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByText('Members', { exact: true })
+      .click();
     await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible({
       timeout: 10000,
     });
@@ -50,7 +53,10 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     await page.waitForTimeout(2000);
 
     // Click to go to page 2
-    const page2Button = page.locator('.mantine-Pagination-root-nav').filter({ hasText: '2' }).first();
+    const page2Button = page
+      .locator('.mantine-Pagination-root-nav')
+      .filter({ hasText: '2' })
+      .first();
     if (await page2Button.isVisible({ timeout: 2000 })) {
       await page2Button.click();
       await page.waitForTimeout(1000);
@@ -70,7 +76,9 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     console.log('Test: Page size persistence in URL');
 
     // Find and click page size dropdown
-    const pageSizeDropdown = page.locator('.mantine-Pagination-root-sizes select, .mantine-Select-rootlist').first();
+    const pageSizeDropdown = page
+      .locator('.mantine-Pagination-root-sizes select, .mantine-Select-rootlist')
+      .first();
     if (await pageSizeDropdown.isVisible({ timeout: 2000 })) {
       // Try to change page size to 50
       await pageSizeDropdown.click();
@@ -99,7 +107,10 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     console.log('Test: Page state preservation across navigation');
 
     // Navigate to page 2 (if available)
-    const page2Button = page.locator('.mantine-Pagination-root-nav').filter({ hasText: '2' }).first();
+    const page2Button = page
+      .locator('.mantine-Pagination-root-nav')
+      .filter({ hasText: '2' })
+      .first();
     if (await page2Button.isVisible({ timeout: 2000 })) {
       await page2Button.click();
       await page.waitForTimeout(1000);
@@ -108,11 +119,17 @@ test.describe('Grid Pagination - URL State Persistence', () => {
       console.log('URL after going to page 2:', urlAfterPageChange);
 
       // Navigate to Dashboard
-      await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Dashboard', { exact: true }).click();
+      await page
+        .getByRole('navigation', { name: 'Main navigation' })
+        .getByText('Dashboard', { exact: true })
+        .click();
       await page.waitForTimeout(1000);
 
       // Navigate back to Members
-      await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+      await page
+        .getByRole('navigation', { name: 'Main navigation' })
+        .getByText('Members', { exact: true })
+        .click();
       await page.waitForTimeout(2000);
 
       // Check if page parameter is still in URL
@@ -141,7 +158,10 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     await page.goto(`${baseUrl}/?page=2&pageSize=20`, { waitUntil: 'networkidle' });
 
     // Navigate to members
-    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByText('Members', { exact: true })
+      .click();
     await page.waitForTimeout(2000);
 
     // Wait for grid to load
@@ -149,7 +169,9 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     await grid.waitFor({ state: 'visible', timeout: 10000 });
 
     // Check if pager shows page 2 is active
-    const activePage = page.locator('.mantine-Pagination-root-nav.mantine-Pagination-control--active, .mantine-Pagination-root-numbers .mantine-Pagination-control--active');
+    const activePage = page.locator(
+      '.mantine-Pagination-root-nav.mantine-Pagination-control--active, .mantine-Pagination-root-numbers .mantine-Pagination-control--active'
+    );
     const activePageText = await activePage.textContent().catch(() => '1');
     console.log('Active page indicator:', activePageText);
 
@@ -160,11 +182,16 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     console.log('✅ URL parameter loading test completed');
   });
 
-  test('should handle filter application without losing all pagination context', async ({ page }) => {
+  test('should handle filter application without losing all pagination context', async ({
+    page,
+  }) => {
     console.log('Test: Filter application behavior');
 
     // Navigate to page 2 first (if available)
-    const page2Button = page.locator('.mantine-Pagination-root-nav').filter({ hasText: '2' }).first();
+    const page2Button = page
+      .locator('.mantine-Pagination-root-nav')
+      .filter({ hasText: '2' })
+      .first();
     if (await page2Button.isVisible({ timeout: 2000 })) {
       await page2Button.click();
       await page.waitForTimeout(1000);
@@ -212,8 +239,10 @@ test.describe('Grid Pagination - URL State Persistence', () => {
       console.log('Pagination info:', infoText);
 
       // Navigate to next page if available
-      const nextButton = page.locator('.mantine-Pagination-root-nav[aria-label*="next"], button:has-text("Next")').first();
-      if (await nextButton.isVisible({ timeout: 1000 }) && !(await nextButton.isDisabled())) {
+      const nextButton = page
+        .locator('.mantine-Pagination-root-nav[aria-label*="next"], button:has-text("Next")')
+        .first();
+      if ((await nextButton.isVisible({ timeout: 1000 })) && !(await nextButton.isDisabled())) {
         await nextButton.click();
         await page.waitForTimeout(1500);
 
@@ -245,7 +274,10 @@ test.describe('Grid Pagination - URL State Persistence', () => {
       expect(urlAfterSizeChange).toContain('pageSize=50');
 
       // Now change page
-      const page2Button = page.locator('.mantine-Pagination-root-nav').filter({ hasText: '2' }).first();
+      const page2Button = page
+        .locator('.mantine-Pagination-root-nav')
+        .filter({ hasText: '2' })
+        .first();
       if (await page2Button.isVisible({ timeout: 2000 })) {
         await page2Button.click();
         await page.waitForTimeout(1000);
@@ -275,7 +307,10 @@ test.describe('Grid Pagination - URL State Persistence', () => {
     await page.goto(`${baseUrl}/?page=1&pageSize=10`, { waitUntil: 'networkidle' });
 
     // Go to members page
-    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByText('Members', { exact: true })
+      .click();
     await page.waitForTimeout(2000);
 
     // Grid should load
@@ -303,7 +338,10 @@ test.describe('Grid Pagination - URL State Persistence', () => {
 test.describe('Grid Pagination - Edge Cases', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/', { waitUntil: 'networkidle' });
-    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByText('Members', { exact: true })
+      .click();
     await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible({
       timeout: 10000,
     });
@@ -319,14 +357,20 @@ test.describe('Grid Pagination - Edge Cases', () => {
 
     // Navigate to impossible page number
     await page.goto(`${baseUrl}/?page=9999`, { waitUntil: 'networkidle' });
-    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByText('Members', { exact: true })
+      .click();
     await page.waitForTimeout(2000);
 
     // Should gracefully handle (show last page or page 1)
     const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible', timeout: 10000 });
 
-    const hasError = await page.locator('text=/error|failed/i').isVisible({ timeout: 1000 }).catch(() => false);
+    const hasError = await page
+      .locator('text=/error|failed/i')
+      .isVisible({ timeout: 1000 })
+      .catch(() => false);
     expect(hasError).toBe(false);
 
     console.log('✅ Handled invalid page number gracefully');
@@ -339,7 +383,10 @@ test.describe('Grid Pagination - Edge Cases', () => {
 
     // Test page=0
     await page.goto(`${baseUrl}/?page=0`, { waitUntil: 'networkidle' });
-    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByText('Members', { exact: true })
+      .click();
     await page.waitForTimeout(2000);
 
     const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
@@ -359,14 +406,20 @@ test.describe('Grid Pagination - Edge Cases', () => {
 
     // Navigate with very large page size
     await page.goto(`${baseUrl}/?pageSize=1000`, { waitUntil: 'networkidle' });
-    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByText('Members', { exact: true })
+      .click();
     await page.waitForTimeout(3000);
 
     const grid = page.locator('.mantine-DataTable-root, [role="grid"]').first();
     await grid.waitFor({ state: 'visible', timeout: 10000 });
 
     // Should handle gracefully (might cap at max like 1000)
-    const hasError = await page.locator('text=/error|failed/i').isVisible({ timeout: 1000 }).catch(() => false);
+    const hasError = await page
+      .locator('text=/error|failed/i')
+      .isVisible({ timeout: 1000 })
+      .catch(() => false);
     expect(hasError).toBe(false);
 
     console.log('✅ Handled large page size gracefully');

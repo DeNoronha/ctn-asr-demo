@@ -314,12 +314,17 @@ export const apiV2 = {
     return response.data;
   },
 
-  async updateMemberStatus(orgId: string, status: string, notes?: string): Promise<{ message: string; oldStatus: string; newStatus: string }> {
+  async updateMemberStatus(
+    orgId: string,
+    status: string,
+    notes?: string
+  ): Promise<{ message: string; oldStatus: string; newStatus: string }> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.patch<{ message: string; oldStatus: string; newStatus: string }>(
-      `/members/${orgId}/status`,
-      { status, notes }
-    );
+    const response = await axiosInstance.patch<{
+      message: string;
+      oldStatus: string;
+      newStatus: string;
+    }>(`/members/${orgId}/status`, { status, notes });
     return response.data;
   },
 
@@ -362,9 +367,10 @@ export const apiV2 = {
 
   async getIdentifiers(legalEntityId: string): Promise<LegalEntityIdentifier[]> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.get<{ data: LegalEntityIdentifier[]; pagination: PaginationMetadata }>(
-      `/entities/${legalEntityId}/identifiers`
-    );
+    const response = await axiosInstance.get<{
+      data: LegalEntityIdentifier[];
+      pagination: PaginationMetadata;
+    }>(`/entities/${legalEntityId}/identifiers`);
     return response.data.data; // Extract the data array from paginated response
   },
 
@@ -399,11 +405,14 @@ export const apiV2 = {
     await axiosInstance.delete(`/identifiers/${identifierId}`);
   },
 
-  async validateIdentifier(identifierId: string): Promise<{ valid: boolean; details?: IdentifierValidationDetails }> {
+  async validateIdentifier(
+    identifierId: string
+  ): Promise<{ valid: boolean; details?: IdentifierValidationDetails }> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.post<{ valid: boolean; details?: IdentifierValidationDetails }>(
-      `/identifiers/${identifierId}/validate`
-    );
+    const response = await axiosInstance.post<{
+      valid: boolean;
+      details?: IdentifierValidationDetails;
+    }>(`/identifiers/${identifierId}/validate`);
     return response.data;
   },
 
@@ -413,9 +422,10 @@ export const apiV2 = {
 
   async getContacts(legalEntityId: string): Promise<LegalEntityContact[]> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.get<{ data: LegalEntityContact[]; pagination: PaginationMetadata }>(
-      `/legal-entities/${legalEntityId}/contacts`
-    );
+    const response = await axiosInstance.get<{
+      data: LegalEntityContact[];
+      pagination: PaginationMetadata;
+    }>(`/legal-entities/${legalEntityId}/contacts`);
     return response.data.data; // Extract data array from paginated response
   },
 
@@ -572,7 +582,13 @@ export const apiV2 = {
 
   async updateTier(
     legalEntityId: string,
-    data: { tier: number; method: string; dnsVerifiedDomain?: string; eherkenningIdentifier?: string; eherkenningLevel?: string }
+    data: {
+      tier: number;
+      method: string;
+      dnsVerifiedDomain?: string;
+      eherkenningIdentifier?: string;
+      eherkenningLevel?: string;
+    }
   ): Promise<void> {
     const axiosInstance = await getAuthenticatedAxios();
     await axiosInstance.put(`/entities/${legalEntityId}/tier`, data);
@@ -593,9 +609,12 @@ export const apiV2 = {
     if (limit) params.append('limit', limit.toString());
     if (offset) params.append('offset', offset.toString());
 
-    const response = await axiosInstance.get<{ data: Application[]; total: number; limit: number; offset: number }>(
-      `/applications?${params.toString()}`
-    );
+    const response = await axiosInstance.get<{
+      data: Application[];
+      total: number;
+      limit: number;
+      offset: number;
+    }>(`/applications?${params.toString()}`);
     return response.data;
   },
 
@@ -604,10 +623,11 @@ export const apiV2 = {
     reviewNotes?: string
   ): Promise<{ message: string; legalEntityId: string; applicationId: string }> {
     const axiosInstance = await getAuthenticatedAxios();
-    const response = await axiosInstance.post<{ message: string; legalEntityId: string; applicationId: string }>(
-      `/applications/${applicationId}/approve`,
-      { reviewNotes: reviewNotes || '' }
-    );
+    const response = await axiosInstance.post<{
+      message: string;
+      legalEntityId: string;
+      applicationId: string;
+    }>(`/applications/${applicationId}/approve`, { reviewNotes: reviewNotes || '' });
     return response.data;
   },
 

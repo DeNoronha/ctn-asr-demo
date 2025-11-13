@@ -1,7 +1,8 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MantineProvider, Modal, Button } from '@mantine/core';
-import { describe, it, expect, vi } from 'vitest';
-import React, { useState } from 'react';
+import { Button, MantineProvider, Modal } from '@mantine/core';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import type React from 'react';
+import { useState } from 'react';
+import { describe, expect, it, vi } from 'vitest';
 
 // Test wrapper component
 const TestModal: React.FC<{
@@ -22,12 +23,7 @@ const TestModal: React.FC<{
     <MantineProvider>
       <Button onClick={() => setOpened(true)}>Open Modal</Button>
 
-      <Modal
-        opened={opened}
-        onClose={handleClose}
-        title={title}
-        data-testid="test-modal"
-      >
+      <Modal opened={opened} onClose={handleClose} title={title} data-testid="test-modal">
         <div data-testid="modal-content">
           <p>Modal content goes here</p>
           {withNestedModal && (
@@ -104,8 +100,8 @@ describe('Modal - Focus Trap', () => {
     });
 
     // Find and click the overlay (Mantine renders overlay as separate element)
-    const overlay = document.querySelector('[data-overlay]') ||
-                    document.querySelector('.mantine-Modal-overlay');
+    const overlay =
+      document.querySelector('[data-overlay]') || document.querySelector('.mantine-Modal-overlay');
 
     if (overlay) {
       fireEvent.click(overlay);

@@ -89,10 +89,7 @@ export function safeEvery<T>(
 /**
  * Safely format a date string, returning fallback for null/undefined/invalid dates
  */
-export function safeFormatDate(
-  dateString: string | null | undefined,
-  fallback = 'N/A'
-): string {
+export function safeFormatDate(dateString: string | null | undefined, fallback = 'N/A'): string {
   if (!dateString) return fallback;
 
   try {
@@ -107,10 +104,7 @@ export function safeFormatDate(
 /**
  * Safely access nested property with optional chaining fallback
  */
-export function safeGet<T, K extends keyof T>(
-  obj: T | null | undefined,
-  key: K
-): T[K] | undefined {
+export function safeGet<T, K extends keyof T>(obj: T | null | undefined, key: K): T[K] | undefined {
   return obj?.[key];
 }
 

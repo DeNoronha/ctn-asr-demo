@@ -7,10 +7,12 @@
  * See: docs/LESSONS_LEARNED.md #24
  */
 
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-const ADMIN_PORTAL_URL = process.env.VITE_ADMIN_PORTAL_URL || 'https://calm-tree-03352ba03.1.azurestaticapps.net';
-const MEMBER_PORTAL_URL = process.env.VITE_MEMBER_PORTAL_URL || 'https://calm-pebble-043b2db03.1.azurestaticapps.net';
+const ADMIN_PORTAL_URL =
+  process.env.VITE_ADMIN_PORTAL_URL || 'https://calm-tree-03352ba03.1.azurestaticapps.net';
+const MEMBER_PORTAL_URL =
+  process.env.VITE_MEMBER_PORTAL_URL || 'https://calm-pebble-043b2db03.1.azurestaticapps.net';
 
 test.describe('Portal Smoke Tests', () => {
   test('Admin Portal should load without white page', async ({ page }) => {

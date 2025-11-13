@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
 import type { DataTableSortStatus } from 'mantine-datatable';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Member } from '../services/api';
 import { useGridState } from './useGridState';
 
@@ -42,13 +42,14 @@ export const useMembersGridState = ({ members, totalMembers }: UseMembersGridSta
 
     // Apply search filter
     if (query) {
-      filtered = filtered.filter((member) =>
-        member.legal_name?.toLowerCase().includes(query.toLowerCase()) ||
-        member.status?.toLowerCase().includes(query.toLowerCase()) ||
-        member.lei?.toLowerCase().includes(query.toLowerCase()) ||
-        member.euid?.toLowerCase().includes(query.toLowerCase()) ||
-        member.kvk?.toLowerCase().includes(query.toLowerCase()) ||
-        member.org_id?.toLowerCase().includes(query.toLowerCase())
+      filtered = filtered.filter(
+        (member) =>
+          member.legal_name?.toLowerCase().includes(query.toLowerCase()) ||
+          member.status?.toLowerCase().includes(query.toLowerCase()) ||
+          member.lei?.toLowerCase().includes(query.toLowerCase()) ||
+          member.euid?.toLowerCase().includes(query.toLowerCase()) ||
+          member.kvk?.toLowerCase().includes(query.toLowerCase()) ||
+          member.org_id?.toLowerCase().includes(query.toLowerCase())
       );
     }
 

@@ -16,7 +16,7 @@
  * 8. About page: Information display
  */
 
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 const ADMIN_PORTAL_URL =
   process.env.VITE_ADMIN_PORTAL_URL || 'https://calm-tree-03352ba03.1.azurestaticapps.net';
@@ -61,7 +61,9 @@ test.describe('Admin Portal UI Inspection - Pre-Auth Checks', () => {
     await page.waitForTimeout(2000);
 
     // Check if we need authentication
-    const hasLoginButton = await page.locator('button:has-text("Sign in"), button:has-text("Login")').count();
+    const hasLoginButton = await page
+      .locator('button:has-text("Sign in"), button:has-text("Login")')
+      .count();
     const isAuthRedirect = page.url().includes('login.microsoftonline.com');
 
     if (hasLoginButton > 0 || isAuthRedirect) {
@@ -154,11 +156,13 @@ test.describe('Admin Portal UI Inspection - Pre-Auth Checks', () => {
     // Look for specific keywords from requirements
     const keywords = {
       'Member Since': allText?.includes('Member Since') || false,
-      'Endpoint Registration': allText?.includes('Endpoint Registration') || allText?.includes('Endpoint') || false,
-      'Document Verification': allText?.includes('Document Verification') || allText?.includes('Documents') || false,
+      'Endpoint Registration':
+        allText?.includes('Endpoint Registration') || allText?.includes('Endpoint') || false,
+      'Document Verification':
+        allText?.includes('Document Verification') || allText?.includes('Documents') || false,
       'Health Monitor': allText?.includes('Health Monitor') || allText?.includes('Health') || false,
-      'Contact': allText?.includes('Contact') || false,
-      'Email': allText?.includes('Email') || allText?.includes('email') || false,
+      Contact: allText?.includes('Contact') || false,
+      Email: allText?.includes('Email') || allText?.includes('email') || false,
     };
 
     console.log('Keyword detection:', keywords);
@@ -362,8 +366,10 @@ test.describe('Admin Portal UI Inspection - Summary Report', () => {
       findings: {
         hiddenMenuItems: {
           tasks: (await page.locator('text=/Tasks/i').count()) === 0 ? 'Hidden ✅' : 'Visible ⚠️',
-          subscriptions: (await page.locator('text=/Subscriptions/i').count()) === 0 ? 'Hidden ✅' : 'Visible ⚠️',
-          newsletters: (await page.locator('text=/Newsletters/i').count()) === 0 ? 'Hidden ✅' : 'Visible ⚠️',
+          subscriptions:
+            (await page.locator('text=/Subscriptions/i').count()) === 0 ? 'Hidden ✅' : 'Visible ⚠️',
+          newsletters:
+            (await page.locator('text=/Newsletters/i').count()) === 0 ? 'Hidden ✅' : 'Visible ⚠️',
         },
       },
       nextSteps: [
@@ -383,10 +389,7 @@ test.describe('Admin Portal UI Inspection - Summary Report', () => {
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
-    fs.writeFileSync(
-      path.join(outputDir, '10-final-report.json'),
-      JSON.stringify(report, null, 2)
-    );
+    fs.writeFileSync(path.join(outputDir, '10-final-report.json'), JSON.stringify(report, null, 2));
 
     console.log('✅ Comprehensive UI inspection report generated');
   });

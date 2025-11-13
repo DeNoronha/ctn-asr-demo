@@ -1,17 +1,17 @@
-import { Button, TextInput, Textarea, Checkbox, Modal, Group } from '@mantine/core';
-import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
-import { Key, Plus, Trash2, Copy, AlertTriangle } from './icons';
+import { Button, Checkbox, Group, Modal, TextInput, Textarea } from '@mantine/core';
+import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
+import { announceToScreenReader } from '../utils/aria';
 import { formatDate } from '../utils/dateUtils';
+import { getEmptyState } from '../utils/emptyStates';
 import { sanitizeGridCell } from '../utils/sanitize';
+import { tokenSuccessMessages } from '../utils/successMessages';
 import { ConfirmDialog } from './ConfirmDialog';
 import { EmptyState } from './EmptyState';
 import { ErrorBoundary } from './ErrorBoundary';
-import { getEmptyState } from '../utils/emptyStates';
-import { tokenSuccessMessages } from '../utils/successMessages';
-import { announceToScreenReader } from '../utils/aria';
+import { AlertTriangle, Copy, Key, Plus, Trash2 } from './icons';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
 import './IdentifiersManager.css';
 
@@ -122,7 +122,9 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
 
       if (response.ok) {
         const newClient = await response.json();
-        const msg = tokenSuccessMessages.m2mCreated(newClient?.client?.client_name || formData.client_name);
+        const msg = tokenSuccessMessages.m2mCreated(
+          newClient?.client?.client_name || formData.client_name
+        );
         notification.showSuccess(msg.title);
         setShowAddDialog(false);
         setFormData({ client_name: '', description: '', scopes: [] });
@@ -145,37 +147,45 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
     }
   }, [formData, legalEntityId, notification, loadClients]);
 
-  const handleGenerateSecret = useCallback(async (client: M2MClient) => {
-    setLoading(true);
-    try {
-      const token = await getAccessToken();
-      const response = await fetch(
-        `${API_BASE}/m2m-clients/${client.m2m_client_id}/generate-secret`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  const handleGenerateSecret = useCallback(
+    async (client: M2MClient) => {
+      setLoading(true);
+      try {
+        const token = await getAccessToken();
+        const response = await fetch(
+          `${API_BASE}/m2m-clients/${client.m2m_client_id}/generate-secret`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      if (response.ok) {
-        const data = await response.json();
-        setSelectedClient(client);
-        setGeneratedSecret(data.client_secret);
-        setShowSecretDialog(true);
-        notification.showSuccess('New secret generated successfully');
-        try { announceToScreenReader('Client secret generated. Save this secret now; it will not be shown again.', 'assertive'); } catch {}
-      } else {
+        if (response.ok) {
+          const data = await response.json();
+          setSelectedClient(client);
+          setGeneratedSecret(data.client_secret);
+          setShowSecretDialog(true);
+          notification.showSuccess('New secret generated successfully');
+          try {
+            announceToScreenReader(
+              'Client secret generated. Save this secret now; it will not be shown again.',
+              'assertive'
+            );
+          } catch {}
+        } else {
+          notification.showError('Failed to generate secret');
+        }
+      } catch (error) {
+        console.error('Error generating secret:', error);
         notification.showError('Failed to generate secret');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error generating secret:', error);
-      notification.showError('Failed to generate secret');
-    } finally {
-      setLoading(false);
-    }
-  }, [notification]);
+    },
+    [notification]
+  );
 
   const handleDeleteClient = useCallback(async () => {
     if (!selectedClient) return;
@@ -207,18 +217,23 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
     }
   }, [selectedClient, notification, loadClients]);
 
-  const copyToClipboard = useCallback((text: string) => {
-    navigator.clipboard.writeText(text);
-    const msg = tokenSuccessMessages.copied();
-    notification.showSuccess(msg.title);
-    try { announceToScreenReader('Copied to clipboard.'); } catch {}
-  }, [notification]);
+  const copyToClipboard = useCallback(
+    (text: string) => {
+      navigator.clipboard.writeText(text);
+      const msg = tokenSuccessMessages.copied();
+      notification.showSuccess(msg.title);
+      try {
+        announceToScreenReader('Copied to clipboard.');
+      } catch {}
+    },
+    [notification]
+  );
 
   const handleScopeToggle = useCallback((scope: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       scopes: prev.scopes.includes(scope)
-        ? prev.scopes.filter(s => s !== scope)
+        ? prev.scopes.filter((s) => s !== scope)
         : [...prev.scopes, scope],
     }));
   }, []);
@@ -248,11 +263,11 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
   }, []);
 
   const handleClientNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, client_name: e.target.value }));
+    setFormData((prev) => ({ ...prev, client_name: e.target.value }));
   }, []);
 
   const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFormData(prev => ({ ...prev, description: e.target.value }));
+    setFormData((prev) => ({ ...prev, description: e.target.value }));
   }, []);
 
   const handleConfirmSecret = useCallback(() => {
@@ -273,7 +288,9 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
         resizable: true,
         sortable: true,
         // SEC-007: Sanitize user-generated text fields in grid
-        render: (record) => <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(record.client_name) }} />,
+        render: (record) => (
+          <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(record.client_name) }} />
+        ),
       },
       {
         accessor: 'azure_client_id',
@@ -380,7 +397,9 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
               icon={<Key size={48} />}
               message={es.message}
               hint={es.hint}
-              action={es.action ? { label: es.action.label, onClick: handleAddDialogOpen } : undefined}
+              action={
+                es.action ? { label: es.action.label, onClick: handleAddDialogOpen } : undefined
+              }
             />
           );
         })()
@@ -399,12 +418,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
       )}
 
       {/* Add M2M Client Dialog */}
-      <Modal
-        opened={showAddDialog}
-        onClose={handleAddDialogClose}
-        title="Add M2M Client"
-        size="lg"
-      >
+      <Modal opened={showAddDialog} onClose={handleAddDialogClose} title="Add M2M Client" size="lg">
         <div className="identifier-form">
           <div className="form-field">
             <label>Client Name *</label>
@@ -429,7 +443,10 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
             <label>Assigned Scopes *</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
               {AVAILABLE_SCOPES.map((scope) => (
-                <label key={scope.value} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label
+                  key={scope.value}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
                   <Checkbox
                     checked={formData.scopes.includes(scope.value)}
                     onChange={() => handleScopeToggle(scope.value)}
@@ -442,7 +459,9 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
         </div>
 
         <Group mt="xl" justify="flex-end">
-          <Button onClick={handleAddDialogClose} variant="default">Cancel</Button>
+          <Button onClick={handleAddDialogClose} variant="default">
+            Cancel
+          </Button>
           <Button
             color="blue"
             onClick={handleAddClient}
@@ -463,13 +482,21 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
         {selectedClient && (
           <>
             <div style={{ padding: '20px 0' }}>
-              <div style={{ marginBottom: '20px', padding: '12px', background: '#fff3e0', borderRadius: '4px' }}>
+              <div
+                style={{
+                  marginBottom: '20px',
+                  padding: '12px',
+                  background: '#fff3e0',
+                  borderRadius: '4px',
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                   <AlertTriangle size={20} />
                   <div>
                     <strong>Important: Save this secret now!</strong>
                     <p style={{ margin: '4px 0 0 0', fontSize: '0.875rem' }}>
-                      This secret will only be shown once. Store it securely - you won't be able to retrieve it again.
+                      This secret will only be shown once. Store it securely - you won't be able to
+                      retrieve it again.
                     </p>
                   </div>
                 </div>
@@ -523,10 +550,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
             </div>
 
             <Group mt="xl" justify="flex-end">
-              <Button
-                color="blue"
-                onClick={handleConfirmSecret}
-              >
+              <Button color="blue" onClick={handleConfirmSecret}>
                 I've Saved the Secret
               </Button>
             </Group>

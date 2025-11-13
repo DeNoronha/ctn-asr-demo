@@ -9,37 +9,81 @@
    ========================= */
 
 /* Margins */
-.mb-15 { margin-bottom: 15px; }
-.mb-16 { margin-bottom: 16px; }
-.mb-20 { margin-bottom: 20px; }
-.mb-30 { margin-bottom: 30px; }
-.mt-20 { margin-top: 20px; }
-.mr-8 { margin-right: 8px; }
+.mb-15 {
+  margin-bottom: 15px;
+}
+.mb-16 {
+  margin-bottom: 16px;
+}
+.mb-20 {
+  margin-bottom: 20px;
+}
+.mb-30 {
+  margin-bottom: 30px;
+}
+.mt-20 {
+  margin-top: 20px;
+}
+.mr-8 {
+  margin-right: 8px;
+}
 
 /* Padding */
-.p-8 { padding: 8px; }
-.p-10 { padding: 10px; }
-.p-12 { padding: 12px; }
+.p-8 {
+  padding: 8px;
+}
+.p-10 {
+  padding: 10px;
+}
+.p-12 {
+  padding: 12px;
+}
 
 /* =========================
    TEXT UTILITIES
    ========================= */
 
 /* Text Colors - WCAG 2.1 AA compliant (DA-001) */
-.text-muted { color: #757575; }          /* 4.53:1 contrast (was #999 at 2.85:1) */
-.text-secondary { color: #475569; }      /* 8.59:1 contrast (was #6b7280 at 4.68:1) */
-.text-success { color: #0d8558; }        /* 4.53:1 contrast (was #4caf50 at 2.96:1) */
-.text-error { color: #b91c1c; }          /* 5.94:1 contrast (was #d32f2f at 4.86:1) */
-.text-danger { color: #b91c1c; }         /* 5.94:1 contrast (was #dc2626 at 4.52:1) */
-.text-success-lg { color: #0d8558; font-size: 1.2em; }
-.text-error-lg { color: #b91c1c; font-size: 1.2em; }
+.text-muted {
+  color: #757575;
+} /* 4.53:1 contrast (was #999 at 2.85:1) */
+.text-secondary {
+  color: #475569;
+} /* 8.59:1 contrast (was #6b7280 at 4.68:1) */
+.text-success {
+  color: #0d8558;
+} /* 4.53:1 contrast (was #4caf50 at 2.96:1) */
+.text-error {
+  color: #b91c1c;
+} /* 5.94:1 contrast (was #d32f2f at 4.86:1) */
+.text-danger {
+  color: #b91c1c;
+} /* 5.94:1 contrast (was #dc2626 at 4.52:1) */
+.text-success-lg {
+  color: #0d8558;
+  font-size: 1.2em;
+}
+.text-error-lg {
+  color: #b91c1c;
+  font-size: 1.2em;
+}
 
 /* Text Styles */
-.text-italic { font-style: italic; }
-.text-center { text-align: center; }
-.text-left { text-align: left; }
-.fw-600 { font-weight: 600; }
-.fw-bold { font-weight: bold; }
+.text-italic {
+  font-style: italic;
+}
+.text-center {
+  text-align: center;
+}
+.text-left {
+  text-align: left;
+}
+.fw-600 {
+  font-weight: 600;
+}
+.fw-bold {
+  font-weight: bold;
+}
 
 /* =========================
    TABLE UTILITIES
@@ -86,16 +130,27 @@
 }
 
 /* Heights */
-.h-600 { height: 600px; }
+.h-600 {
+  height: 600px;
+}
 
 /* Widths */
-.w-full { width: 100%; }
+.w-full {
+  width: 100%;
+}
 /* max-width utilities removed for consistent full-width layout */
-.max-w-600 { width: 100%; }
-.max-w-800 { width: 100%; }
+.max-w-600 {
+  width: 100%;
+}
+.max-w-800 {
+  width: 100%;
+}
 
 /* Centering */
-.mx-auto { margin-left: auto; margin-right: auto; }
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
 
 /* =========================
    STATUS BADGES (STATIC)

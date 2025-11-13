@@ -1,6 +1,6 @@
+import { Button } from '@mantine/core';
 // CompanyDetails.tsx - Display company/legal entity information
 import type React from 'react';
-import { Button } from '@mantine/core';
 
 import type { LegalEntity } from '../services/api';
 import { formatDateTime } from '../utils/dateFormat';
@@ -62,16 +62,12 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit 
 
             <div className="detail-row">
               <div className="detail-label">Created:</div>
-              <span>
-                {formatDateTime(company.dt_created)}
-              </span>
+              <span>{formatDateTime(company.dt_created)}</span>
             </div>
 
             <div className="detail-row">
               <div className="detail-label">Last Modified:</div>
-              <span>
-                {formatDateTime(company.dt_modified)}
-              </span>
+              <span>{formatDateTime(company.dt_modified)}</span>
             </div>
 
             {company.modified_by && (

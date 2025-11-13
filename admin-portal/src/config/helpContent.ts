@@ -51,7 +51,7 @@ export const helpContent = {
     "The contact's role within your organization (e.g., IT Manager, Supply Chain Director). Helps us route communications appropriately.",
 
   department:
-    "The organizational department this contact belongs to (e.g., IT, Operations, Finance). Used for better communication routing.",
+    'The organizational department this contact belongs to (e.g., IT, Operations, Finance). Used for better communication routing.',
 
   // ==========================================
   // Identifier Management
@@ -139,7 +139,6 @@ export const helpContent = {
 
   documentVerification:
     'Documents are reviewed by CTN staff within 2 business days. You will receive email notification when verification is complete.',
-
 };
 
 export type HelpContentKey = keyof typeof helpContent;

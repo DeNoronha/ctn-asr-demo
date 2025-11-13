@@ -3,9 +3,8 @@
  * Provides multi-criteria filtering with AND/OR logic
  */
 
-import { Button, TextInput, Select } from '@mantine/core';
+import { Button, Select, TextInput } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
-
 
 import type React from 'react';
 import { useState } from 'react';

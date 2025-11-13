@@ -1,7 +1,8 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { MantineProvider, Stepper, Button } from '@mantine/core';
-import { describe, it, expect, vi } from 'vitest';
-import React, { useState } from 'react';
+import { Button, MantineProvider, Stepper } from '@mantine/core';
+import { fireEvent, render, screen } from '@testing-library/react';
+import type React from 'react';
+import { useState } from 'react';
+import { describe, expect, it, vi } from 'vitest';
 
 // Test wrapper component
 const TestStepper: React.FC<{

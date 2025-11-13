@@ -53,12 +53,7 @@ export const ProgressiveSection: React.FC<ProgressiveSectionProps> = ({
       </Button>
 
       {expanded && (
-        <div
-          id={sectionId}
-          className="progressive-content"
-          role="region"
-          aria-label={title}
-        >
+        <div id={sectionId} className="progressive-content" role="region" aria-label={title}>
           {children}
         </div>
       )}

@@ -14,7 +14,7 @@ async function getAccessToken(): Promise<string> {
   try {
     const response = await msalInstance.acquireTokenSilent({
       account: accounts[0],
-      scopes: ['api://d3037c11-a541-4f21-8862-8079137a0cde/access_as_user']
+      scopes: ['api://d3037c11-a541-4f21-8862-8079137a0cde/access_as_user'],
     });
 
     return response.accessToken;
@@ -53,5 +53,5 @@ export const apiClient = new AsrApiClient({
   timeout: 30000,
   retryAttempts: 3,
   getAccessToken,
-  onError: handleApiError
+  onError: handleApiError,
 });

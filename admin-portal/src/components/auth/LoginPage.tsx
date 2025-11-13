@@ -4,10 +4,10 @@
  */
 
 import { Button } from '@mantine/core';
-import { AlertCircle, Key, Shield } from '../icons';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
+import { AlertCircle, Key, Shield } from '../icons';
 import './LoginPage.css';
 
 export const LoginPage: React.FC = () => {

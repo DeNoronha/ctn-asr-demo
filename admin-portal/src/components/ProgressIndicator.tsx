@@ -24,9 +24,8 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
 }) => {
   // Create accessible label
   const ariaLabel = label || 'Loading progress';
-  const ariaValueText = variant === 'indeterminate'
-    ? 'Loading in progress'
-    : `${value} percent complete`;
+  const ariaValueText =
+    variant === 'indeterminate' ? 'Loading in progress' : `${value} percent complete`;
 
   return (
     <div
@@ -40,13 +39,19 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
       aria-live="polite"
       aria-busy={variant === 'indeterminate' ? 'true' : 'false'}
     >
-      {label && <div className="progress-label" aria-hidden="true">{label}</div>}
+      {label && (
+        <div className="progress-label" aria-hidden="true">
+          {label}
+        </div>
+      )}
       <Progress
         value={variant === 'determinate' ? value : 0}
         animated={variant === 'indeterminate'}
       />
       {showPercentage && variant === 'determinate' && (
-        <div className="progress-percentage" aria-hidden="true">{value}%</div>
+        <div className="progress-percentage" aria-hidden="true">
+          {value}%
+        </div>
       )}
     </div>
   );

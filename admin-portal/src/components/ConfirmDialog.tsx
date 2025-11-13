@@ -1,4 +1,4 @@
-import { Button, Modal, Group } from '@mantine/core';
+import { Button, Group, Modal } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useRef } from 'react';
 import './ConfirmDialog.css';
@@ -57,15 +57,13 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   };
 
   return (
-    <Modal
-      opened={isOpen}
-      onClose={onCancel}
-      title={title}
-      size="md"
-      centered
-    >
+    <Modal opened={isOpen} onClose={onCancel} title={title} size="md" centered>
       <div className="confirm-dialog-content">
-        {icon && <div className="confirm-dialog-icon" aria-hidden="true">{icon}</div>}
+        {icon && (
+          <div className="confirm-dialog-icon" aria-hidden="true">
+            {icon}
+          </div>
+        )}
         <p className="confirm-dialog-message">{message}</p>
       </div>
 

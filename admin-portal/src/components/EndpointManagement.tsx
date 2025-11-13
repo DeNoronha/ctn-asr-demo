@@ -1,20 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Group, Modal, Select, Textarea, TextInput, ActionIcon, Tooltip } from '@mantine/core';
-import { DataTable, useDataTableColumns } from 'mantine-datatable';
+import {
+  ActionIcon,
+  Button,
+  Group,
+  Modal,
+  Select,
+  TextInput,
+  Textarea,
+  Tooltip,
+} from '@mantine/core';
 import { IconKey } from '@tabler/icons-react';
+import { DataTable, useDataTableColumns } from 'mantine-datatable';
+import React, { useEffect, useState } from 'react';
 
-import { EmptyState } from './EmptyState';
-import { ErrorBoundary } from './ErrorBoundary';
-import { Plus } from './icons';
-import { HelpTooltip } from './help/HelpTooltip';
-import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
+import { helpContent } from '../config/helpContent';
+import { useNotification } from '../contexts/NotificationContext';
+import { type EndpointAuthorization, type LegalEntityEndpoint, apiV2 } from '../services/apiV2';
 import { announceToScreenReader } from '../utils/aria';
 import { formatDateTime } from '../utils/dateFormat';
 import { getEmptyState } from '../utils/emptyStates';
 import { endpointSuccessMessages, tokenSuccessMessages } from '../utils/successMessages';
-import { helpContent } from '../config/helpContent';
-import { useNotification } from '../contexts/NotificationContext';
-import { apiV2, LegalEntityEndpoint, EndpointAuthorization } from '../services/apiV2';
+import { EmptyState } from './EmptyState';
+import { ErrorBoundary } from './ErrorBoundary';
+import { HelpTooltip } from './help/HelpTooltip';
+import { Plus } from './icons';
+import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
 import './EndpointManagement.css';
 
 interface EndpointManagementProps {
@@ -112,7 +121,12 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
       setShowTokenDialog(true);
       const msg = tokenSuccessMessages.generated();
       notification.showSuccess(msg.title);
-      try { announceToScreenReader('API token generated. Copy it now, it will not be shown again.', 'assertive'); } catch {}
+      try {
+        announceToScreenReader(
+          'API token generated. Copy it now, it will not be shown again.',
+          'assertive'
+        );
+      } catch {}
     } catch (error) {
       console.error('Error issuing token:', error);
       notification.showError('Failed to issue token');
@@ -125,7 +139,9 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
     navigator.clipboard.writeText(text);
     const msg = tokenSuccessMessages.copied();
     notification.showSuccess(msg.title);
-    try { announceToScreenReader('Token copied to clipboard.'); } catch {}
+    try {
+      announceToScreenReader('Token copied to clipboard.');
+    } catch {}
   };
 
   // mantine-datatable column definitions
@@ -241,7 +257,11 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
             <EmptyState
               message={es.message}
               hint={es.hint}
-              action={es.action ? { label: es.action.label, onClick: () => setShowDialog(true) } : undefined}
+              action={
+                es.action
+                  ? { label: es.action.label, onClick: () => setShowDialog(true) }
+                  : undefined
+              }
             />
           );
         })()
@@ -306,7 +326,11 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
         </div>
 
         <Group mt="xl" justify="flex-end">
-          <Button onClick={() => setShowDialog(false)} variant="default" aria-label="Cancel endpoint registration">
+          <Button
+            onClick={() => setShowDialog(false)}
+            variant="default"
+            aria-label="Cancel endpoint registration"
+          >
             Cancel
           </Button>
           <Button

@@ -1,5 +1,5 @@
-import type React from 'react';
 import { Tooltip } from '@mantine/core';
+import type React from 'react';
 import { TEXT_COLORS } from '../../utils/colors';
 
 interface HelpTooltipProps {

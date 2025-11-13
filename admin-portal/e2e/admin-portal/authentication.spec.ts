@@ -136,7 +136,10 @@ test.describe('Authentication & Authorization - Critical Path', () => {
     await page.waitForLoadState('networkidle');
 
     // Navigate to different sections
-    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByText('Members', { exact: true })
+      .click();
     await page.waitForTimeout(2000);
 
     // Verify no unauthorized responses
@@ -169,7 +172,10 @@ test.describe('Authentication & Authorization - Critical Path', () => {
 
     if (userRole?.includes('Admin')) {
       // Navigate to members
-      await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+      await page
+        .getByRole('navigation', { name: 'Main navigation' })
+        .getByText('Members', { exact: true })
+        .click();
       await expect(page.getByRole('heading', { name: 'Member Directory' })).toBeVisible();
 
       // Verify "Register New Member" button exists (admin-only feature)

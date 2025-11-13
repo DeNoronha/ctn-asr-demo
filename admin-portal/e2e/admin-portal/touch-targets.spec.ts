@@ -70,7 +70,10 @@ test.describe('Touch Target Verification - WCAG 2.1 AAA (2.5.5)', () => {
   });
 
   test('should verify toolbar buttons meet 44px minimum', async ({ page }) => {
-    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByText('Members', { exact: true })
+      .click();
     await page.waitForTimeout(2000);
 
     const toolbarButtons = page.locator('.grid-toolbar button, .toolbar-left button');
@@ -109,7 +112,10 @@ test.describe('Touch Target Verification - WCAG 2.1 AAA (2.5.5)', () => {
   });
 
   test('should verify grid action buttons meet 44px minimum', async ({ page }) => {
-    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByText('Members', { exact: true })
+      .click();
     await page.waitForTimeout(2000);
 
     // Wait for grid to load
@@ -159,7 +165,10 @@ test.describe('Touch Target Verification - WCAG 2.1 AAA (2.5.5)', () => {
   });
 
   test('should verify form submit buttons meet 44px minimum', async ({ page }) => {
-    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByText('Members', { exact: true })
+      .click();
     await page.waitForTimeout(2000);
 
     const registerButton = page.getByRole('button', { name: /Register New Member/i });
@@ -298,7 +307,10 @@ test.describe('Touch Target Verification - WCAG 2.1 AAA (2.5.5)', () => {
   });
 
   test('should verify modal/dialog close buttons meet 44px minimum', async ({ page }) => {
-    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByText('Members', { exact: true })
+      .click();
     await page.waitForTimeout(2000);
 
     const registerButton = page.getByRole('button', { name: /Register New Member/i });
@@ -352,7 +364,10 @@ test.describe('Touch Target Verification - WCAG 2.1 AAA (2.5.5)', () => {
 
   test('should verify all interactive elements summary', async ({ page }) => {
     // Navigate to Members view for full test
-    await page.getByRole('navigation', { name: 'Main navigation' }).getByText('Members', { exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByText('Members', { exact: true })
+      .click();
     await page.waitForTimeout(2000);
 
     // Get all interactive elements

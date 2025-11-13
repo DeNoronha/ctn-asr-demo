@@ -2,20 +2,21 @@
  * All Endpoints View - Grid showing all endpoints from all members
  */
 
-import React, { useEffect, useState } from 'react';
 import { Badge, Button, Group, Stack, Text, TextInput } from '@mantine/core';
+import { IconPlug, IconRefresh, IconSearch } from '@tabler/icons-react';
 import { DataTable } from 'mantine-datatable';
-import { IconSearch, IconPlug, IconRefresh } from '@tabler/icons-react';
-import { EmptyState } from './EmptyState';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { RoleGuard } from '../auth/ProtectedRoute';
 import { UserRole } from '../auth/authConfig';
+import { PAGINATION } from '../config/constants';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
 import { apiV2 } from '../services/apiV2';
-import { logger } from '../utils/logger';
 import { formatDateTime } from '../utils/dateFormat';
+import { logger } from '../utils/logger';
+import { EmptyState } from './EmptyState';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
-import { PAGINATION } from '../config/constants';
 import './EndpointManagement.css';
 
 interface EndpointWithMember {
@@ -55,7 +56,7 @@ export const AllEndpointsView: React.FC = () => {
             const memberEndpoints = await apiV2.getEndpoints(member.legal_entity_id);
 
             // Add member info to each endpoint
-            const endpointsWithMember = memberEndpoints.map(endpoint => ({
+            const endpointsWithMember = memberEndpoints.map((endpoint) => ({
               legal_entity_endpoint_id: endpoint.legal_entity_endpoint_id || '',
               legal_entity_id: member.legal_entity_id!,
               legal_entity_name: member.legal_name || '',
@@ -89,11 +90,12 @@ export const AllEndpointsView: React.FC = () => {
   }, []);
 
   // Filter endpoints based on search query
-  const filteredEndpoints = endpoints.filter(endpoint =>
-    endpoint.endpoint_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    endpoint.legal_entity_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    endpoint.endpoint_url.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    endpoint.data_category.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredEndpoints = endpoints.filter(
+    (endpoint) =>
+      endpoint.endpoint_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      endpoint.legal_entity_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      endpoint.endpoint_url.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      endpoint.data_category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Paginate filtered results
@@ -225,7 +227,8 @@ export const AllEndpointsView: React.FC = () => {
 
         {filteredEndpoints.length > 0 && (
           <Text size="sm" c="dimmed">
-            Showing {paginatedEndpoints.length} of {filteredEndpoints.length} endpoint{filteredEndpoints.length !== 1 ? 's' : ''}
+            Showing {paginatedEndpoints.length} of {filteredEndpoints.length} endpoint
+            {filteredEndpoints.length !== 1 ? 's' : ''}
             {searchQuery && ` matching "${searchQuery}"`}
           </Text>
         )}

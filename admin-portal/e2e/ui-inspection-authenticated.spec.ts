@@ -13,9 +13,9 @@
  * 8. About Page - Information display
  */
 
-import { test, expect } from '../playwright/fixtures';
 import * as fs from 'fs';
 import * as path from 'path';
+import { expect, test } from '../playwright/fixtures';
 
 // Ensure output directory exists
 const OUTPUT_DIR = 'test-results/authenticated';
@@ -36,7 +36,7 @@ test.describe('Priority Area Tests - Authenticated', () => {
     await page.goto('/', { waitUntil: 'networkidle' });
 
     // Verify we're authenticated
-    const isAuthenticated = !(page.url().includes('login.microsoftonline.com'));
+    const isAuthenticated = !page.url().includes('login.microsoftonline.com');
     expect(isAuthenticated).toBe(true);
   });
 
@@ -45,12 +45,7 @@ test.describe('Priority Area Tests - Authenticated', () => {
 
     // Try to navigate to Endpoint Registration
     // Check multiple possible navigation patterns
-    const navVariants = [
-      'Endpoints',
-      'Endpoint',
-      'Registration',
-      'Endpoint Registration',
-    ];
+    const navVariants = ['Endpoints', 'Endpoint', 'Registration', 'Endpoint Registration'];
 
     let navigated = false;
     for (const variant of navVariants) {
@@ -116,7 +111,9 @@ test.describe('Priority Area Tests - Authenticated', () => {
       });
 
       // Get all visible menu items for documentation
-      const menuItems = await sidebar.locator('[role="menuitem"], .menu-item, .nav-item, a, button').allTextContents();
+      const menuItems = await sidebar
+        .locator('[role="menuitem"], .menu-item, .nav-item, a, button')
+        .allTextContents();
       console.log('Visible menu items:', menuItems.map((item) => item.trim()).filter(Boolean));
     }
 
@@ -127,14 +124,18 @@ test.describe('Priority Area Tests - Authenticated', () => {
     });
 
     // Check for items that should be hidden
-    const tasksVisible = await page.locator('text=/^Tasks$/i').count() > 0;
-    const subscriptionsVisible = await page.locator('text=/^Subscriptions$/i').count() > 0;
-    const newslettersVisible = await page.locator('text=/^Newsletters$/i').count() > 0;
+    const tasksVisible = (await page.locator('text=/^Tasks$/i').count()) > 0;
+    const subscriptionsVisible = (await page.locator('text=/^Subscriptions$/i').count()) > 0;
+    const newslettersVisible = (await page.locator('text=/^Newsletters$/i').count()) > 0;
 
     console.log('Sidebar visibility check:');
     console.log(`  Tasks: ${tasksVisible ? '❌ VISIBLE (should be hidden)' : '✅ Hidden'}`);
-    console.log(`  Subscriptions: ${subscriptionsVisible ? '❌ VISIBLE (should be hidden)' : '✅ Hidden'}`);
-    console.log(`  Newsletters: ${newslettersVisible ? '❌ VISIBLE (should be hidden)' : '✅ Hidden'}`);
+    console.log(
+      `  Subscriptions: ${subscriptionsVisible ? '❌ VISIBLE (should be hidden)' : '✅ Hidden'}`
+    );
+    console.log(
+      `  Newsletters: ${newslettersVisible ? '❌ VISIBLE (should be hidden)' : '✅ Hidden'}`
+    );
 
     // Save findings
     const findings = {
@@ -190,7 +191,9 @@ test.describe('Priority Area Tests - Authenticated', () => {
 
     let memberSinceFound = false;
     for (const variant of memberSinceVariants) {
-      const count = await page.locator(`th:has-text("${variant}"), [data-field="${variant}"], [data-title="${variant}"]`).count();
+      const count = await page
+        .locator(`th:has-text("${variant}"), [data-field="${variant}"], [data-title="${variant}"]`)
+        .count();
       if (count > 0) {
         console.log(`✅ Found column: "${variant}"`);
         memberSinceFound = true;
@@ -267,7 +270,9 @@ test.describe('Priority Area Tests - Authenticated', () => {
 
     if ((await firstMemberRow.count()) > 0) {
       // Try clicking the row or an action button
-      const viewButton = firstMemberRow.locator('button[title*="View"], button[aria-label*="View"], button').first();
+      const viewButton = firstMemberRow
+        .locator('button[title*="View"], button[aria-label*="View"], button')
+        .first();
 
       if ((await viewButton.count()) > 0) {
         await viewButton.click();
@@ -301,7 +306,10 @@ test.describe('Priority Area Tests - Authenticated', () => {
     console.log(`Email input fields found: ${emailInputs.length}`);
 
     for (const input of emailInputs) {
-      const label = await input.getAttribute('aria-label') || await input.getAttribute('placeholder') || 'No label';
+      const label =
+        (await input.getAttribute('aria-label')) ||
+        (await input.getAttribute('placeholder')) ||
+        'No label';
       const id = await input.getAttribute('id');
 
       // Check if there's a label element for this input
@@ -313,7 +321,9 @@ test.describe('Priority Area Tests - Authenticated', () => {
         }
       }
 
-      console.log(`  Email field - Label: "${associatedLabel || label}", Placeholder: ${await input.getAttribute('placeholder')}`);
+      console.log(
+        `  Email field - Label: "${associatedLabel || label}", Placeholder: ${await input.getAttribute('placeholder')}`
+      );
     }
 
     // Check for checkboxes and their labels
@@ -338,7 +348,9 @@ test.describe('Priority Area Tests - Authenticated', () => {
         return parent ? parent.textContent : null;
       });
 
-      console.log(`  Checkbox - Label: "${associatedLabel || parentLabel || ariaLabel || 'No label'}"`);
+      console.log(
+        `  Checkbox - Label: "${associatedLabel || parentLabel || ariaLabel || 'No label'}"`
+      );
     }
 
     // Save findings
@@ -413,13 +425,15 @@ test.describe('Priority Area Tests - Authenticated', () => {
     const tabLabels = await page.locator('[role="tab"], .mantine-Tabs-tab, .tab').allTextContents();
     console.log('Tab labels:', tabLabels.map((t) => t.trim()).filter(Boolean));
 
-    const hasFileUpload = (await page.locator('input[type="file"], [data-testid*="upload"]').count()) > 0;
+    const hasFileUpload =
+      (await page.locator('input[type="file"], [data-testid*="upload"]').count()) > 0;
     console.log(`File upload component: ${hasFileUpload ? '✅ Present' : '❌ Not found'}`);
 
     const hasStatusBadges = (await page.locator('.badge, .status, [data-status]').count()) > 0;
     console.log(`Status badges: ${hasStatusBadges ? '✅ Present' : '❌ Not found'}`);
 
-    const hasProgressIndicator = (await page.locator('.progress, [role="progressbar"]').count()) > 0;
+    const hasProgressIndicator =
+      (await page.locator('.progress, [role="progressbar"]').count()) > 0;
     console.log(`Progress indicators: ${hasProgressIndicator ? '✅ Present' : '❌ Not found'}`);
 
     // Save findings
@@ -471,7 +485,9 @@ test.describe('Priority Area Tests - Authenticated', () => {
     });
 
     // Check for common health monitor elements
-    const statusIndicators = await page.locator('[data-testid*="status"], .status-indicator, .health-status, .badge').count();
+    const statusIndicators = await page
+      .locator('[data-testid*="status"], .status-indicator, .health-status, .badge')
+      .count();
     const metrics = await page.locator('[data-testid*="metric"], .metric, .chart, canvas').count();
     const timestamps = await page.locator('[data-testid*="time"], .timestamp, time').count();
 
@@ -488,7 +504,7 @@ test.describe('Priority Area Tests - Authenticated', () => {
       // Check for negative margins that might cause overlaps
       elements.forEach((el) => {
         const style = window.getComputedStyle(el);
-        if (parseFloat(style.marginTop) < -20 || parseFloat(style.marginLeft) < -20) {
+        if (Number.parseFloat(style.marginTop) < -20 || Number.parseFloat(style.marginLeft) < -20) {
           issues.push(`Element with negative margin: ${el.tagName}.${el.className}`);
         }
       });
@@ -573,7 +589,9 @@ test.describe('Priority Area Tests - Authenticated', () => {
       console.log(`Link: "${text}"`);
       console.log(`  URL: ${href}`);
       if (isExternal) {
-        console.log(`  External link - Opens in new tab: ${target === '_blank' ? '✅' : '⚠️ Should use target="_blank"'}`);
+        console.log(
+          `  External link - Opens in new tab: ${target === '_blank' ? '✅' : '⚠️ Should use target="_blank"'}`
+        );
       }
     }
 
@@ -621,11 +639,15 @@ test.describe('Priority Area Tests - Authenticated', () => {
     const pageContent = await page.locator('main, [role="main"], body').textContent();
 
     const contentChecks = {
-      version: (pageContent?.toLowerCase().includes('version') || false),
-      copyright: (pageContent?.includes('©') || pageContent?.toLowerCase().includes('copyright') || false),
-      contact: (pageContent?.toLowerCase().includes('contact') || false),
-      license: (pageContent?.toLowerCase().includes('license') || false),
-      documentation: (pageContent?.toLowerCase().includes('documentation') || pageContent?.toLowerCase().includes('docs') || false),
+      version: pageContent?.toLowerCase().includes('version') || false,
+      copyright:
+        pageContent?.includes('©') || pageContent?.toLowerCase().includes('copyright') || false,
+      contact: pageContent?.toLowerCase().includes('contact') || false,
+      license: pageContent?.toLowerCase().includes('license') || false,
+      documentation:
+        pageContent?.toLowerCase().includes('documentation') ||
+        pageContent?.toLowerCase().includes('docs') ||
+        false,
     };
 
     console.log('About page content check:');

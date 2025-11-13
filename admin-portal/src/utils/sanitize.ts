@@ -52,11 +52,17 @@ export const sanitizeFormData = <T extends Record<string, unknown>>(data: T): T 
     if (typeof value === 'string') {
       sanitized[key] = sanitizeText(value) as T[Extract<keyof T, string>];
     } else if (value && typeof value === 'object' && !Array.isArray(value)) {
-      sanitized[key] = sanitizeFormData(value as Record<string, unknown>) as T[Extract<keyof T, string>];
+      sanitized[key] = sanitizeFormData(value as Record<string, unknown>) as T[Extract<
+        keyof T,
+        string
+      >];
     } else if (Array.isArray(value)) {
-      sanitized[key] = value.map(item =>
-        typeof item === 'string' ? sanitizeText(item) :
-        (item && typeof item === 'object' ? sanitizeFormData(item as Record<string, unknown>) : item)
+      sanitized[key] = value.map((item) =>
+        typeof item === 'string'
+          ? sanitizeText(item)
+          : item && typeof item === 'object'
+            ? sanitizeFormData(item as Record<string, unknown>)
+            : item
       ) as T[Extract<keyof T, string>];
     }
   }

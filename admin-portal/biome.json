@@ -20,8 +20,7 @@
       },
       "style": {
         "useConst": "error",
-        "useTemplate": "warn",
-        "noCommentedOutCode": "warn"
+        "useTemplate": "warn"
       },
       "suspicious": {
         "noExplicitAny": "warn",

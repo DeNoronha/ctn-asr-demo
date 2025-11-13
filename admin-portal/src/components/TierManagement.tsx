@@ -4,18 +4,26 @@
 
 import { Button, Select } from '@mantine/core';
 
-
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { apiV2 } from '../services/apiV2';
 import { formatDate, formatDateTime } from '../utils/dateFormat';
 
 // Form label components
 const Label: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <label id={id} className="form-label">{children}</label>
+  <label id={id} className="form-label">
+    {children}
+  </label>
 );
 const Hint: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <div id={id} className="form-hint" style={{ color: '#656565', fontSize: '0.875rem', marginTop: '0.25rem' }}>{children}</div>
+  <div
+    id={id}
+    className="form-hint"
+    style={{ color: '#656565', fontSize: '0.875rem', marginTop: '0.25rem' }}
+  >
+    {children}
+  </div>
 );
 
 interface TierManagementProps {
@@ -76,7 +84,7 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
       setTierInfo(response);
 
       // Set selected tier based on current tier
-      const currentTier = TIER_OPTIONS.find(t => t.tier === response.tier);
+      const currentTier = TIER_OPTIONS.find((t) => t.tier === response.tier);
       if (currentTier) {
         setSelectedTier(currentTier);
       }
@@ -167,7 +175,14 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
             <span style={{ color: '#666' }}>{tierInfo.method}</span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '16px',
+              marginTop: '16px',
+            }}
+          >
             {tierInfo.verifiedAt && (
               <div>
                 <strong>Verified:</strong>
@@ -187,9 +202,7 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
             {tierInfo.eherkenningLevel && (
               <div>
                 <strong>eHerkenning Level:</strong>
-                <p style={{ margin: '4px 0 0 0', color: '#666' }}>
-                  {tierInfo.eherkenningLevel}
-                </p>
+                <p style={{ margin: '4px 0 0 0', color: '#666' }}>{tierInfo.eherkenningLevel}</p>
               </div>
             )}
           </div>
@@ -200,10 +213,10 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
         <div className="form-field">
           <Label>Select New Tier</Label>
           <Select
-            data={TIER_OPTIONS.map(t => ({ value: t.tier.toString(), label: t.name }))}
+            data={TIER_OPTIONS.map((t) => ({ value: t.tier.toString(), label: t.name }))}
             value={selectedTier?.tier.toString() || null}
             onChange={(value) => {
-              const tier = TIER_OPTIONS.find(t => t.tier.toString() === value);
+              const tier = TIER_OPTIONS.find((t) => t.tier.toString() === value);
               setSelectedTier(tier || null);
             }}
           />
@@ -219,18 +232,12 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
             onClick={handleUpdateTier}
             color="blue"
             disabled={
-              updating ||
-              !selectedTier ||
-              !!(tierInfo && selectedTier.tier === tierInfo.tier)
+              updating || !selectedTier || !!(tierInfo && selectedTier.tier === tierInfo.tier)
             }
           >
             {updating ? 'Updating...' : 'Update Tier'}
           </Button>
-          <Button
-            onClick={loadTierInfo}
-            disabled={updating}
-            variant="outline"
-          >
+          <Button onClick={loadTierInfo} disabled={updating} variant="outline">
             Refresh
           </Button>
         </div>
@@ -249,8 +256,8 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
         <h4 style={{ marginTop: 0, color: '#856404' }}>Tier Information</h4>
         <ul style={{ margin: 0, paddingLeft: '20px', color: '#856404' }}>
           <li>
-            <strong>Tier 1 (eHerkenning):</strong> Full access to read, write, and publish
-            sensitive data. Requires eHerkenning EH3/EH4 authentication.
+            <strong>Tier 1 (eHerkenning):</strong> Full access to read, write, and publish sensitive
+            data. Requires eHerkenning EH3/EH4 authentication.
           </li>
           <li>
             <strong>Tier 2 (DNS Verification):</strong> Access to sensitive data read + webhook

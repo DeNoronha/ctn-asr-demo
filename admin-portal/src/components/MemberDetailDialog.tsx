@@ -4,9 +4,9 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntity, type LegalEntityContact, type Member, api } from '../services/api';
+import { getMembershipColor, getStatusColor } from '../utils/colors';
 import { safeFormatDate } from '../utils/safeArray';
 import type { MemberFormData } from '../utils/validation';
-import { getStatusColor, getMembershipColor } from '../utils/colors';
 import { CompanyDetails } from './CompanyDetails';
 import { CompanyForm } from './CompanyForm';
 import { ContactsManager } from './ContactsManager';
@@ -87,7 +87,9 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
     }
   };
 
-  const handleContactCreate = async (contact: Omit<LegalEntityContact, 'legal_entity_contact_id' | 'dt_created' | 'dt_modified'>): Promise<LegalEntityContact> => {
+  const handleContactCreate = async (
+    contact: Omit<LegalEntityContact, 'legal_entity_contact_id' | 'dt_created' | 'dt_modified'>
+  ): Promise<LegalEntityContact> => {
     try {
       const newContact = await api.createContact(contact);
       setContacts((prev) => [...prev, newContact]);
@@ -100,10 +102,15 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
     }
   };
 
-  const handleContactUpdate = async (contactId: string, data: Partial<LegalEntityContact>): Promise<LegalEntityContact> => {
+  const handleContactUpdate = async (
+    contactId: string,
+    data: Partial<LegalEntityContact>
+  ): Promise<LegalEntityContact> => {
     try {
       const updated = await api.updateContact(contactId, data);
-      setContacts((prev) => prev.map((c) => (c.legal_entity_contact_id === contactId ? updated : c)));
+      setContacts((prev) =>
+        prev.map((c) => (c.legal_entity_contact_id === contactId ? updated : c))
+      );
       notification.showSuccess('Contact updated successfully');
       return updated;
     } catch (error) {
@@ -131,7 +138,10 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
 
   const getStatusBadge = (status: string) => {
     return (
-      <span className="detail-badge" style={{ backgroundColor: getStatusColor(status), color: '#ffffff' }}>
+      <span
+        className="detail-badge"
+        style={{ backgroundColor: getStatusColor(status), color: '#ffffff' }}
+      >
         {status}
       </span>
     );
@@ -139,7 +149,10 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
 
   const getMembershipBadge = (level: string) => {
     return (
-      <span className="detail-badge" style={{ backgroundColor: getMembershipColor(level), color: '#ffffff' }}>
+      <span
+        className="detail-badge"
+        style={{ backgroundColor: getMembershipColor(level), color: '#ffffff' }}
+      >
         {level}
       </span>
     );

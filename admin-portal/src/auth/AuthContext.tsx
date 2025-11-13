@@ -59,10 +59,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setShowIdleWarning(false);
     };
 
-    events.forEach(event => window.addEventListener(event, updateActivity));
+    events.forEach((event) => window.addEventListener(event, updateActivity));
 
     return () => {
-      events.forEach(event => window.removeEventListener(event, updateActivity));
+      events.forEach((event) => window.removeEventListener(event, updateActivity));
     };
   }, []);
 
@@ -174,7 +174,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const mfaClaim = idTokenClaims?.amr?.includes('mfa') || false;
       const mfaEnabled = requireMFA ? mfaClaim : true;
 
-      console.error('🔍 AUTH DEBUG: MFA enforcement:', requireMFA ? 'ENABLED' : 'DISABLED (dev mode)');
+      console.error(
+        '🔍 AUTH DEBUG: MFA enforcement:',
+        requireMFA ? 'ENABLED' : 'DISABLED (dev mode)'
+      );
       console.error('🔍 AUTH DEBUG: MFA claim present:', mfaClaim);
       console.error('🔍 AUTH DEBUG: MFA check result:', mfaEnabled);
       logger.log('MFA enforcement:', requireMFA ? 'ENABLED' : 'DISABLED (dev mode)');

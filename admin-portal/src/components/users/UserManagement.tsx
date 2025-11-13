@@ -1,26 +1,26 @@
-import { logger } from '../../utils/logger';
 import * as graphService from '../../services/graphService';
+import { logger } from '../../utils/logger';
 /**
  * User Management Page
  * System Admins can view and manage all users
  */
 
-import { Button, ActionIcon, Tooltip, Group } from '@mantine/core';
-import { DataTable, useDataTableColumns, type DataTableColumn } from 'mantine-datatable';
-import { Edit2, Shield, Trash2, UserPlus } from '../icons';
+import { ActionIcon, Button, Group, Tooltip } from '@mantine/core';
+import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { RoleGuard } from '../../auth/ProtectedRoute';
 import { UserRole } from '../../auth/authConfig';
 import { AuditAction, auditLogService } from '../../services/auditLogService';
 import LoadingSpinner from '../LoadingSpinner';
+import { Edit2, Shield, Trash2, UserPlus } from '../icons';
+import { PageHeader } from '../shared/PageHeader';
 import EditUserDialog from './EditUserDialog';
 import InviteUserDialog from './InviteUserDialog';
-import { PageHeader } from '../shared/PageHeader';
 import './UserManagement.css';
+import { formatDateTimeGB } from '../../utils/dateFormat';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { defaultDataTableProps, defaultPaginationOptions } from '../shared/DataTableConfig';
-import { formatDateTimeGB } from '../../utils/dateFormat';
 
 interface User {
   id: string;
@@ -51,7 +51,7 @@ const UserManagement: React.FC = () => {
       const graphUsers = await graphService.listUsers();
 
       // Map graphService.User to local User interface
-      const mappedUsers: User[] = graphUsers.map(gu => ({
+      const mappedUsers: User[] = graphUsers.map((gu) => ({
         id: gu.id,
         email: gu.email,
         name: gu.displayName,

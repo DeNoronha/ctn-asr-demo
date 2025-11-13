@@ -7,8 +7,8 @@ import './styles/accessibility.css'; // DA-001, DA-006: WCAG 2.1 AA compliant co
 import './i18n'; // Initialize i18n
 import App from './App';
 import { msalInstance } from './auth/AuthContext';
-import { logger } from './utils/logger';
 import reportWebVitals from './reportWebVitals';
+import { logger } from './utils/logger';
 
 // Expose msalInstance globally for debugging (development only)
 if (
