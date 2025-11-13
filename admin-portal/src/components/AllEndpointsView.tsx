@@ -7,7 +7,7 @@ import { Badge, Button, Group, Stack, Text, TextInput } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import { IconSearch, IconPlug, IconRefresh } from '@tabler/icons-react';
 import { EmptyState } from './EmptyState';
-import { PageHeader } from './PageHeader';
+// import { PageHeader } from './PageHeader'; // Component removed
 import { RoleGuard } from '../auth/ProtectedRoute';
 import { UserRole } from '../auth/authConfig';
 import { useNotification } from '../contexts/NotificationContext';
@@ -43,7 +43,8 @@ export const AllEndpointsView: React.FC = () => {
     setLoading(true);
     try {
       // Get all members first
-      const members = await apiV2.getMembers();
+      const membersResponse = await apiV2.getMembers();
+      const members = membersResponse.data || [];
 
       // Load endpoints for each member
       const allEndpoints: EndpointWithMember[] = [];
@@ -55,9 +56,15 @@ export const AllEndpointsView: React.FC = () => {
 
             // Add member info to each endpoint
             const endpointsWithMember = memberEndpoints.map(endpoint => ({
-              ...endpoint,
+              legal_entity_endpoint_id: endpoint.legal_entity_endpoint_id || '',
               legal_entity_id: member.legal_entity_id!,
-              legal_entity_name: member.legal_name,
+              legal_entity_name: member.legal_name || '',
+              endpoint_name: endpoint.endpoint_name,
+              endpoint_url: endpoint.endpoint_url || '',
+              data_category: endpoint.data_category || '',
+              endpoint_type: endpoint.endpoint_type || 'REST_API',
+              is_active: endpoint.is_active ?? false,
+              dt_created: endpoint.dt_created || new Date().toISOString(),
             }));
 
             allEndpoints.push(...endpointsWithMember);
@@ -71,7 +78,6 @@ export const AllEndpointsView: React.FC = () => {
       setEndpoints(allEndpoints);
     } catch (error) {
       logger.error('Failed to load endpoints:', error);
-      handleError(error);
       notification.showError('Failed to load endpoints');
     } finally {
       setLoading(false);
@@ -107,7 +113,7 @@ export const AllEndpointsView: React.FC = () => {
 
   return (
     <div className="endpoints-view">
-      <PageHeader titleKey="endpoints.allEndpoints" />
+      <h1>All Endpoints</h1>
 
       <Stack gap="md">
         <Group justify="space-between">
@@ -135,8 +141,8 @@ export const AllEndpointsView: React.FC = () => {
         {endpoints.length === 0 && !loading ? (
           <EmptyState
             icon={<IconPlug size={48} />}
-            title="No endpoints registered"
-            message="There are no system integration endpoints registered yet. Endpoints can be added from the member detail pages."
+            message="No endpoints registered"
+            hint="There are no system integration endpoints registered yet. Endpoints can be added from the member detail pages."
           />
         ) : (
           <DataTable

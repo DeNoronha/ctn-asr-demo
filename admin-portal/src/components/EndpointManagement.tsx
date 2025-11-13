@@ -93,17 +93,34 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
   const loadEndpoints = async () => {
     setLoading(true);
     try {
+      console.log('🔵 Loading endpoints for legal_entity_id:', legalEntityId);
+      console.log('🔵 API URL:', `${API_BASE}/legal-entities/${legalEntityId}/endpoints`);
+
       const response = await fetch(`${API_BASE}/legal-entities/${legalEntityId}/endpoints`, {
         headers: {
           'Authorization': `Bearer ${await getAccessToken()}`
         }
       });
+
+      console.log('🔵 Response status:', response.status);
+      console.log('🔵 Response ok:', response.ok);
+
       if (response.ok) {
         const data = await response.json();
-        setEndpoints(data);
+        console.log('🔵 Response data:', data);
+        console.log('🔵 Data type:', Array.isArray(data) ? 'Array' : typeof data);
+        console.log('🔵 Data length:', Array.isArray(data) ? data.length : 'N/A');
+
+        // Handle both array and wrapped response formats
+        const endpoints = Array.isArray(data) ? data : (data.endpoints || []);
+        console.log('🔵 Setting endpoints:', endpoints.length, 'items');
+        setEndpoints(endpoints);
+      } else {
+        const errorText = await response.text();
+        console.error('❌ Failed to load endpoints:', response.status, errorText);
       }
     } catch (error) {
-      console.error('Error loading endpoints:', error);
+      console.error('❌ Error loading endpoints:', error);
     } finally {
       setLoading(false);
     }

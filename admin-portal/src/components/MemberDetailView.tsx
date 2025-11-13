@@ -457,7 +457,10 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
             {member.legal_entity_id ? (
               <EndpointManagement legalEntityId={member.legal_entity_id} legalEntityName={member.legal_name} />
             ) : (
-              <EmptyState {...getEmptyState('noLegalEntity')} />
+              <EmptyState
+                message="No legal entity associated with this member"
+                hint="A legal entity must be linked before endpoints can be managed."
+              />
             )}
           </div>
         </Tabs.Panel>
