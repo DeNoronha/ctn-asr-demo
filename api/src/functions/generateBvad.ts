@@ -82,7 +82,26 @@ async function handler(
             AND is_active = true
             AND (is_deleted IS NULL OR is_deleted = false)
           LIMIT 1
-        ) as bdi_connector_uri
+        ) as bdi_connector_uri,
+        (
+          SELECT json_agg(json_build_object(
+            'identifier_type', len.identifier_type,
+            'identifier_value', len.identifier_value,
+            'country_code', len.country_code,
+            'registry_name', len.registry_name,
+            'registry_url', len.registry_url
+          ) ORDER BY
+            CASE
+              WHEN len.identifier_type = 'KVK' THEN 1
+              WHEN len.identifier_type = 'LEI' THEN 2
+              WHEN len.identifier_type = 'EUID' THEN 3
+              ELSE 4
+            END
+          )
+          FROM legal_entity_number len
+          WHERE len.legal_entity_id = m.legal_entity_id
+            AND (len.is_deleted IS NULL OR len.is_deleted = false)
+        ) as registry_identifiers_json
       FROM v_members_full m
       LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
       WHERE 1=1
@@ -122,52 +141,31 @@ async function handler(
 
     const member = result.rows[0];
 
-    // Fetch all registry identifiers for this legal entity
+    // Process registry identifiers from the main query (optimized N+1 → 1)
     let registryIdentifiers: RegistryIdentifier[] = [];
     let primaryCountryCode: string | undefined;
     let euidValue: string | undefined;
 
-    if (member.legal_entity_id) {
-      const registryQuery = await pool.query(
-        `
-        SELECT
-          len.identifier_type,
-          len.identifier_value,
-          len.country_code,
-          len.registry_name,
-          len.registry_url
-        FROM legal_entity_number len
-        WHERE len.legal_entity_id = $1
-          AND (len.is_deleted IS NULL OR len.is_deleted = false)
-        ORDER BY
-          CASE
-            WHEN len.identifier_type = 'KVK' THEN 1
-            WHEN len.identifier_type = 'LEI' THEN 2
-            WHEN len.identifier_type = 'EUID' THEN 3
-            ELSE 4
-          END
-      `,
-        [member.legal_entity_id]
-      );
+    // Parse the JSON aggregated identifiers from the main query
+    const identifiersData = member.registry_identifiers_json || [];
 
-      if (registryQuery.rows.length > 0) {
-        // Extract primary country code from the first identifier
-        primaryCountryCode = registryQuery.rows[0].country_code;
+    if (identifiersData.length > 0) {
+      // Extract primary country code from the first identifier
+      primaryCountryCode = identifiersData[0].country_code;
 
-        // Build registryIdentifiers array
-        for (const row of registryQuery.rows) {
-          // Handle EUID separately
-          if (row.identifier_type === 'EUID') {
-            euidValue = row.identifier_value;
-          }
-
-          registryIdentifiers.push({
-            type: row.identifier_type,
-            value: row.identifier_value,
-            countryCode: row.country_code,
-            registryName: row.registry_name,
-          });
+      // Build registryIdentifiers array
+      for (const row of identifiersData) {
+        // Handle EUID separately
+        if (row.identifier_type === 'EUID') {
+          euidValue = row.identifier_value;
         }
+
+        registryIdentifiers.push({
+          type: row.identifier_type,
+          value: row.identifier_value,
+          countryCode: row.country_code,
+          registryName: row.registry_name,
+        });
       }
     }
 
