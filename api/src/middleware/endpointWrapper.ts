@@ -12,6 +12,7 @@ import { handleError } from '../utils/errors';
 import { getRequestId } from '../utils/requestId';
 import { checkRateLimit, RateLimiterType } from './rateLimiter';
 import { validateContentType, ContentTypeValidationResult } from './contentTypeValidator';
+import { CORS } from '../config/constants';
 
 // Re-export AuthenticatedRequest for convenience
 export type AuthenticatedRequest = AuthRequest;
@@ -107,7 +108,7 @@ function getCorsHeaders(
   const headers: Record<string, string> = {
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Request-ID, X-CSRF-Token',
-    'Access-Control-Max-Age': '86400',
+    'Access-Control-Max-Age': CORS.MAX_AGE_HEADER,
   };
 
   // Check if origin is allowed

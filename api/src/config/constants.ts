@@ -86,6 +86,14 @@ export const CACHE = {
   STATIC_DATA_TTL_MS: 60 * 60 * 1000,
 } as const;
 
+export const CORS = {
+  /** Access-Control-Max-Age in seconds: 24 hours */
+  MAX_AGE_SECONDS: 86400,
+
+  /** Access-Control-Max-Age as string for headers */
+  MAX_AGE_HEADER: '86400',
+} as const;
+
 /**
  * HTTP Status Codes
  * Standard codes used throughout the application
