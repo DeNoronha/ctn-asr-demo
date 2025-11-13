@@ -254,7 +254,7 @@ export async function resolvePartyId(
       INNER JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
       INNER JOIN party_reference pr ON le.party_id = pr.party_id
       WHERE m.azure_ad_object_id = $1
-        AND m.status != 'DELETED'
+        AND le.status != 'DELETED'
         AND le.is_deleted = false
         AND pr.is_deleted = false
       LIMIT 1
