@@ -196,7 +196,21 @@ DO $$ BEGIN RAISE NOTICE 'UNIQUE constraint on legal_entity_id added ✓'; END $
 -- STEP 7: Add CHECK Constraints for Data Integrity
 -- =====================================================
 
-DO $$ BEGIN RAISE NOTICE 'Step 7: Adding CHECK constraints for data integrity...'; END $$;
+DO $$ BEGIN RAISE NOTICE 'Step 7: Cleaning up data before constraints...'; END $$;
+
+-- Fix email with trailing dot
+UPDATE members
+SET email = RTRIM(email, '.')
+WHERE email LIKE '%..'
+  OR email ~ '\.\.$';
+
+DO $$ BEGIN RAISE NOTICE 'Email data cleaned ✓'; END $$;
+
+-- =====================================================
+-- STEP 8: Add CHECK Constraints for Data Integrity
+-- =====================================================
+
+DO $$ BEGIN RAISE NOTICE 'Step 8: Adding CHECK constraints for data integrity...'; END $$;
 
 -- Ensure org_id is not empty
 ALTER TABLE members
@@ -223,10 +237,10 @@ COMMENT ON CONSTRAINT chk_members_email_format ON members IS
 DO $$ BEGIN RAISE NOTICE 'CHECK constraints added ✓'; END $$;
 
 -- =====================================================
--- STEP 8: Document Table Purposes
+-- STEP 9: Document Table Purposes
 -- =====================================================
 
-DO $$ BEGIN RAISE NOTICE 'Step 8: Documenting table purposes...'; END $$;
+DO $$ BEGIN RAISE NOTICE 'Step 9: Documenting table purposes...'; END $$;
 
 -- Update members table comment
 COMMENT ON TABLE members IS
@@ -298,10 +312,10 @@ COMMENT ON COLUMN legal_entity_number.validation_status IS
 DO $$ BEGIN RAISE NOTICE 'Table documentation updated ✓'; END $$;
 
 -- =====================================================
--- STEP 9: Create Helper View for Members List
+-- STEP 10: Create Helper View for Members List
 -- =====================================================
 
-DO $$ BEGIN RAISE NOTICE 'Step 9: Creating v_members_list view...'; END $$;
+DO $$ BEGIN RAISE NOTICE 'Step 10: Creating v_members_list view...'; END $$;
 
 -- Lightweight view for member list pages (no JOINs to identifiers)
 DROP VIEW IF EXISTS v_members_list CASCADE;
@@ -331,10 +345,10 @@ COMMENT ON VIEW v_members_list IS
 DO $$ BEGIN RAISE NOTICE 'View v_members_list created ✓'; END $$;
 
 -- =====================================================
--- STEP 10: Verify Schema Changes
+-- STEP 11: Verify Schema Changes
 -- =====================================================
 
-DO $$ BEGIN RAISE NOTICE 'Step 10: Verifying schema changes...'; END $$;
+DO $$ BEGIN RAISE NOTICE 'Step 11: Verifying schema changes...'; END $$;
 
 -- Verify members table structure
 DO $$
