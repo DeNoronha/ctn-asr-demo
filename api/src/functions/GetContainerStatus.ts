@@ -3,11 +3,11 @@
 // ========================================
 // Allows external systems to retrieve container status
 // Requires: Container.Read scope
-// Authentication: Azure AD or Zitadel (M2M)
+// Authentication: Azure AD or Keycloak (M2M)
 
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { requireScopes } from '../middleware/auth';
-import { authenticateDual } from '../middleware/zitadel-auth';
+import { requireScopes, AuthenticatedRequest } from '../middleware/auth';
+import { authenticateDual } from '../middleware/keycloak-auth';
 
 /**
  * Get container status information
@@ -25,14 +25,14 @@ export async function GetContainerStatus(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  // Step 1: Authenticate (supports both Azure AD and Zitadel M2M)
+  // Step 1: Authenticate (supports both Azure AD and Keycloak M2M)
   const authResult = await authenticateDual(request, context);
   if ('status' in authResult) {
     // Authentication failed
     return authResult;
   }
 
-  const authRequest = authResult.request;
+  const authRequest = (authResult as { request: AuthenticatedRequest }).request;
 
   // Step 2: Require Container.Read scope
   const scopeCheck = await requireScopes('Container.Read')(authRequest, context);

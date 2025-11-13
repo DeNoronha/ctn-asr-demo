@@ -3,11 +3,11 @@
 // ========================================
 // Allows external systems to read/write booking information
 // Requires: Booking.Read for GET, Booking.Write for POST/PUT
-// Authentication: Azure AD or Zitadel (M2M)
+// Authentication: Azure AD or Keycloak (M2M)
 
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { requireScopes } from '../middleware/auth';
-import { authenticateDual } from '../middleware/zitadel-auth';
+import { requireScopes, AuthenticatedRequest } from '../middleware/auth';
+import { authenticateDual } from '../middleware/keycloak-auth';
 
 /**
  * Get booking information
@@ -25,14 +25,14 @@ export async function GetBookings(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  // Step 1: Authenticate (supports both Azure AD and Zitadel M2M)
+  // Step 1: Authenticate (supports both Azure AD and Keycloak M2M)
   const authResult = await authenticateDual(request, context);
   if ('status' in authResult) {
     // Authentication failed
     return authResult;
   }
 
-  const authRequest = authResult.request;
+  const authRequest = (authResult as { request: AuthenticatedRequest }).request;
 
   // Step 2: Require Booking.Read scope
   const scopeCheck = await requireScopes('Booking.Read')(authRequest, context);
@@ -118,14 +118,14 @@ export async function CreateBooking(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  // Step 1: Authenticate (supports both Azure AD and Zitadel M2M)
+  // Step 1: Authenticate (supports both Azure AD and Keycloak M2M)
   const authResult = await authenticateDual(request, context);
   if ('status' in authResult) {
     // Authentication failed
     return authResult;
   }
 
-  const authRequest = authResult.request;
+  const authRequest = (authResult as { request: AuthenticatedRequest }).request;
 
   // Step 2: Require Booking.Write scope
   const scopeCheck = await requireScopes('Booking.Write')(authRequest, context);
