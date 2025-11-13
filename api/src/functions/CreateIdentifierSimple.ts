@@ -2,6 +2,7 @@ import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { Permission } from '../middleware/rbac';
 import { getPool } from '../utils/database';
+import { isValidUUID } from '../utils/validators';
 
 async function handler(
   request: AuthenticatedRequest,
@@ -22,7 +23,7 @@ async function handler(
   }
 
   // Validate UUID format
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(legalEntityId);
+  const isUUID = isValidUUID(legalEntityId);
   if (!isUUID) {
     context.log('ERROR: Invalid UUID format');
     return {

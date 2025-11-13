@@ -4,6 +4,7 @@ import { Permission } from '../middleware/rbac';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { getPool } from '../utils/database';
 import { syncEuidForEntity, supportsEuidGeneration } from '../services/euidService';
+import { isValidUUID } from '../utils/validators';
 
 /**
  * Safely get header value to avoid "Cannot read private member" error
@@ -39,7 +40,7 @@ async function handler(
   }
 
   // Validate UUID format
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifierId);
+  const isUUID = isValidUUID(identifierId);
   if (!isUUID) {
     return {
       status: 400,

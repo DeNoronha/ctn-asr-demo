@@ -3,6 +3,7 @@ import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrappe
 import { Permission, hasAnyRole, UserRole } from '../middleware/rbac';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { getPool } from '../utils/database';
+import { isValidUUID } from '../utils/validators';
 import * as crypto from 'crypto';
 
 /**
@@ -24,7 +25,7 @@ async function initiateRegistrationHandler(
   }
 
   // Validate UUID format
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(legal_entity_id);
+  const isUUID = isValidUUID(legal_entity_id);
   if (!isUUID) {
     return {
       status: 400,
@@ -207,7 +208,7 @@ async function sendVerificationEmailHandler(
   }
 
   // Validate UUID format
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(endpoint_id);
+  const isUUID = isValidUUID(endpoint_id);
   if (!isUUID) {
     return {
       status: 400,
@@ -336,7 +337,7 @@ async function verifyTokenHandler(
   }
 
   // Validate UUID format
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(endpoint_id);
+  const isUUID = isValidUUID(endpoint_id);
   if (!isUUID) {
     return {
       status: 400,
@@ -495,7 +496,7 @@ async function testEndpointHandler(
   }
 
   // Validate UUID format
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(endpoint_id);
+  const isUUID = isValidUUID(endpoint_id);
   if (!isUUID) {
     return {
       status: 400,
@@ -652,7 +653,7 @@ async function activateEndpointHandler(
   }
 
   // Validate UUID format
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(endpoint_id);
+  const isUUID = isValidUUID(endpoint_id);
   if (!isUUID) {
     return {
       status: 400,

@@ -6,6 +6,7 @@ import { addVersionHeaders, logApiRequest } from '../middleware/versioning';
 import { getPool } from '../utils/database';
 import { withTransaction } from '../utils/transaction';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
+import { isValidEmail } from '../utils/validators';
 import { trackEvent, trackMetric, trackException } from '../utils/telemetry';
 import { createApplicationCreatedEvent, publishEvent } from '../utils/eventGrid';
 import { BlobStorageService } from '../services/blobStorageService';
@@ -53,7 +54,7 @@ interface RegistrationData {
   gdprConsent: boolean;
 }
 
-function validateEmail(email: string): boolean {
+function validateEmail_OLD(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
@@ -203,7 +204,7 @@ async function handler(
     }
 
     // Validate email format
-    if (!validateEmail(body.contactEmail!)) {
+    if (!isValidEmail(body.contactEmail!)) {
       return {
         status: 400,
         body: JSON.stringify({ error: 'Invalid email address format' })

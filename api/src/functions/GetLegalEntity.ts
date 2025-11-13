@@ -3,6 +3,7 @@ import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrappe
 import { Permission, hasAnyRole, UserRole } from '../middleware/rbac';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { getPool } from '../utils/database';
+import { isValidUUID } from '../utils/validators';
 
 async function handler(request: AuthenticatedRequest, context: InvocationContext): Promise<HttpResponseInit> {
   const pool = getPool();
@@ -16,7 +17,7 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
   }
 
   // Validate UUID format
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(legalEntityId);
+  const isUUID = isValidUUID(legalEntityId);
   if (!isUUID) {
     return {
       status: 400,

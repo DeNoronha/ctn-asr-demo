@@ -3,6 +3,7 @@ import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrappe
 import { Permission, hasAnyRole, UserRole } from '../middleware/rbac';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { getPool } from '../utils/database';
+import { isValidUUID } from '../utils/validators';
 import * as crypto from 'crypto';
 
 // List endpoints for entity
@@ -18,7 +19,7 @@ async function listEndpointsHandler(request: AuthenticatedRequest, context: Invo
   }
 
   // Validate UUID format
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(legal_entity_id);
+  const isUUID = isValidUUID(legal_entity_id);
   if (!isUUID) {
     return {
       status: 400,
@@ -163,7 +164,7 @@ async function createEndpointHandler(request: AuthenticatedRequest, context: Inv
   }
 
   // Validate UUID format
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(legal_entity_id);
+  const isUUID = isValidUUID(legal_entity_id);
   if (!isUUID) {
     return {
       status: 400,
@@ -317,7 +318,7 @@ async function issueTokenHandler(request: AuthenticatedRequest, context: Invocat
   }
 
   // Validate UUID format
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(endpoint_id);
+  const isUUID = isValidUUID(endpoint_id);
   if (!isUUID) {
     return {
       status: 400,
