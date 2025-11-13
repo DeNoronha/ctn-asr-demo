@@ -136,7 +136,7 @@ az pipelines runs show --id <build-id> --query "status,result"
 
 **Frontend:**
 - React 18 + TypeScript
-- Kendo React UI components
+- Mantine v8 UI components
 - MSAL authentication (Azure AD)
 - Azure Static Web Apps
 
