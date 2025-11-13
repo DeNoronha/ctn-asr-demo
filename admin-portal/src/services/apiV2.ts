@@ -288,6 +288,20 @@ export interface M2MClient {
   modified_by?: string;
 }
 
+export interface VerificationRecord {
+  verification_id: string;
+  identifier_type: string;
+  identifier_value: string;
+  document_url: string | null;
+  verification_status: 'pending' | 'verified' | 'failed' | 'flagged';
+  verified_at: string | null;
+  verified_by: string | null;
+  verification_notes: string | null;
+  uploaded_at: string;
+  extracted_data: Record<string, string> | null;
+  mismatch_flags: string[] | null;
+}
+
 interface MembersResponse {
   data: Member[];
   count: number;
@@ -698,6 +712,44 @@ export const apiV2 = {
   async deleteM2MClient(clientId: string): Promise<void> {
     const axiosInstance = await getAuthenticatedAxios();
     await axiosInstance.delete(`/m2m-clients/${clientId}`);
+  },
+
+  // ========================================================================
+  // IDENTIFIER VERIFICATION
+  // ========================================================================
+
+  async getVerificationRecords(legalEntityId: string): Promise<{ verifications: VerificationRecord[] }> {
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get<{ verifications: VerificationRecord[] }>(
+      `/v1/legal-entities/${legalEntityId}/verifications`
+    );
+    return response.data;
+  },
+
+  async uploadVerificationDocument(
+    legalEntityId: string,
+    file: File,
+    identifierType: string,
+    identifierValue: string,
+    identifierId: string
+  ): Promise<any> {
+    const axiosInstance = await getAuthenticatedAxios();
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    formData.append('identifier_type', identifierType);
+    formData.append('identifier_value', identifierValue);
+    formData.append('identifier_id', identifierId);
+
+    const response = await axiosInstance.post(
+      `/v1/legal-entities/${legalEntityId}/verifications`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
   },
 };
 

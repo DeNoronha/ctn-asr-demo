@@ -4,28 +4,13 @@ import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-da
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
-import type { LegalEntityIdentifier } from '../services/apiV2';
+import { apiV2, type LegalEntityIdentifier, type VerificationRecord } from '../services/apiV2';
 import { getVerificationColor } from '../utils/colors';
 import { formatDateTime } from '../utils/dateUtils';
 import { EmptyState } from './EmptyState';
 import { AlertTriangle, CheckCircle, FileText, FolderOpen, XCircle } from './icons';
 import './IdentifierVerificationManager.css';
-import { msalInstance } from '../auth/AuthContext';
 import { ErrorBoundary } from './ErrorBoundary';
-
-interface VerificationRecord {
-  verification_id: string;
-  identifier_type: string;
-  identifier_value: string;
-  document_url: string | null;
-  verification_status: 'pending' | 'verified' | 'failed' | 'flagged';
-  verified_at: string | null;
-  verified_by: string | null;
-  verification_notes: string | null;
-  uploaded_at: string;
-  extracted_data: Record<string, string> | null;
-  mismatch_flags: string[] | null;
-}
 
 interface IdentifierVerificationManagerProps {
   legalEntityId: string;
@@ -45,25 +30,6 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
   const notification = useNotification();
   const { handleError } = useApiError();
 
-  const API_BASE =
-    import.meta.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
-
-  // Helper to get access token
-  const getAccessToken = async (): Promise<string> => {
-    const accounts = msalInstance.getAllAccounts();
-    if (accounts.length === 0) {
-      throw new Error('No authenticated accounts found');
-    }
-
-    const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
-    const response = await msalInstance.acquireTokenSilent({
-      scopes: [`api://${clientId}/access_as_user`],
-      account: accounts[0],
-    });
-
-    return response.accessToken;
-  };
-
   // Load verification records
   useEffect(() => {
     loadVerificationRecords();
@@ -72,18 +38,7 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
   const loadVerificationRecords = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/v1/legal-entities/${legalEntityId}/verifications`, {
-        headers: {
-          Authorization: `Bearer ${await getAccessToken()}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to load verifications: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await apiV2.getVerificationRecords(legalEntityId);
       setVerificationRecords(data.verifications || []);
     } catch (error) {
       console.error('Failed to load verification records:', error);
@@ -111,26 +66,14 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
     setUploading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file, file.name);
-      formData.append('identifier_type', selectedIdentifier.identifier_type);
-      formData.append('identifier_value', selectedIdentifier.identifier_value || '');
-      formData.append('identifier_id', selectedIdentifier.legal_entity_reference_id || '');
+      await apiV2.uploadVerificationDocument(
+        legalEntityId,
+        file,
+        selectedIdentifier.identifier_type,
+        selectedIdentifier.identifier_value || '',
+        selectedIdentifier.legal_entity_reference_id || ''
+      );
 
-      const response = await fetch(`${API_BASE}/v1/legal-entities/${legalEntityId}/verifications`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${await getAccessToken()}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Upload failed: ${response.statusText}`);
-      }
-
-      const result = await response.json();
       notification.showSuccess(
         `${selectedIdentifier.identifier_type} document uploaded successfully`
       );
