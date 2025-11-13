@@ -109,10 +109,10 @@ SELECT
   MAX(CASE WHEN len.identifier_type = 'DUNS' THEN len.identifier_value END) as duns,
   -- Count related entities
   (SELECT COUNT(*) FROM legal_entity_contact lec
-   WHERE lec.legal_entity_id = le.legal_entity_id
+   WHERE lec.legal_entity_id = m.legal_entity_id
      AND lec.is_deleted = false) as contact_count,
   (SELECT COUNT(*) FROM legal_entity_endpoint lee
-   WHERE lee.legal_entity_id = le.legal_entity_id
+   WHERE lee.legal_entity_id = m.legal_entity_id
      AND lee.is_deleted = false) as endpoint_count
 FROM members m
 LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
