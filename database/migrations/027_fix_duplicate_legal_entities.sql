@@ -83,18 +83,15 @@ END $$;
 DO $$ BEGIN RAISE NOTICE 'Step 3: Updating foreign key references...'; END $$;
 
 -- Update legal_entity_contact
-WITH updates AS (
-  UPDATE legal_entity_contact lec
-  SET
-    legal_entity_id = c.canonical_id,
-    dt_modified = NOW(),
-    modified_by = 'MIGRATION_027'
-  FROM legal_entity le_old
-  JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
-  WHERE lec.legal_entity_id = le_old.legal_entity_id
-    AND le_old.legal_entity_id != c.canonical_id
-  RETURNING lec.legal_entity_contact_id
-);
+UPDATE legal_entity_contact lec
+SET
+  legal_entity_id = c.canonical_id,
+  dt_modified = NOW(),
+  modified_by = 'MIGRATION_027'
+FROM legal_entity le_old
+JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
+WHERE lec.legal_entity_id = le_old.legal_entity_id
+  AND le_old.legal_entity_id != c.canonical_id;
 
 DO $$ DECLARE v_count INTEGER; BEGIN
   SELECT COUNT(*)
@@ -280,18 +277,15 @@ DO $$ BEGIN RAISE NOTICE 'Completed updating foreign key references'; END $$;
 
 DO $$ BEGIN RAISE NOTICE 'Step 4: Soft-deleting duplicate legal_entity records...'; END $$;
 
-WITH duplicates_to_delete AS (
-  UPDATE legal_entity le
-  SET
-    is_deleted = true,
-    dt_modified = NOW(),
-    modified_by = 'MIGRATION_027_CLEANUP'
-  FROM canonical_legal_entities c
-  WHERE le.party_id = c.party_id
-    AND le.legal_entity_id != c.canonical_id
-    AND le.is_deleted = false
-  RETURNING le.legal_entity_id, le.primary_legal_name
-);
+UPDATE legal_entity le
+SET
+  is_deleted = true,
+  dt_modified = NOW(),
+  modified_by = 'MIGRATION_027_CLEANUP'
+FROM canonical_legal_entities c
+WHERE le.party_id = c.party_id
+  AND le.legal_entity_id != c.canonical_id
+  AND le.is_deleted = false;
 
 DO $$
 DECLARE
