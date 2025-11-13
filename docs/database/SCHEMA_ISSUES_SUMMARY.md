@@ -218,16 +218,18 @@ COMMIT;
 - ✅ UNIQUE INDEX created to prevent future duplicates
 - ✅ Backup table preserved (legal_entity_backup_20251113)
 
-### Phase 2: Schema Refactoring (COMPLETED - Nov 13, 2025)
+### Phase 2: Schema Refactoring (DEPLOYED - Nov 13, 2025)
 - [x] Remove duplicate columns from members
 - [x] Document table purposes
 - [x] Add CHECK constraints
 - [x] Update API queries with LIMIT 1
 - [x] Create backward compatibility views (v_members_full, v_members_list)
 - [x] Add UNIQUE constraint on members.legal_entity_id
-- [ ] Run in development
+- [x] Run in development (SUCCESS - commits: bb40e30, ed2aac7, 2ce74e0, 0f620b7)
+- [x] Test verification (22/22 tests passed)
 - [ ] Test API endpoints
-- [ ] Deploy to production
+- [ ] Test frontend portals
+- [ ] Monitor production for 24 hours
 
 **Risk:** Medium
 **Effort:** 1 day (actual: 3 hours)
@@ -238,10 +240,16 @@ COMMIT;
 - ✅ v_members_full view created for backward compatibility
 - ✅ v_members_list view created for performance
 - ✅ UNIQUE constraint on members.legal_entity_id (enforces 1:1)
-- ✅ CHECK constraints added (org_id format, email format)
+- ✅ CHECK constraints added (org_id not empty, email format validation)
 - ✅ Table documentation complete (COMMENT ON TABLE/COLUMN)
 - ✅ Backup table preserved (members_backup_20251113)
 - ✅ All API queries reviewed - NO CHANGES REQUIRED (see API_QUERY_REVIEW_PHASE2.md)
+- ✅ 22/22 verification tests passed
+
+**Issues Fixed During Deployment:**
+1. Correlated subquery GROUP BY issue (le.legal_entity_id → m.legal_entity_id)
+2. Relaxed org_id CHECK constraint (mixed formats: org:, UUIDs, codes)
+3. Email data cleanup (trailing dot: R.deNoronha@scotchwhiskyinternational.com.)
 
 ### Phase 3: Full Simplification (1 month)
 - [ ] Evaluate merging party_reference into legal_entity
