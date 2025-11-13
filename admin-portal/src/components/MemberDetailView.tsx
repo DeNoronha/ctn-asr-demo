@@ -454,7 +454,11 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
                 These are <strong>outbound integrations</strong> from CTN to your systems.
               </p>
             </div>
-            <EndpointManagement legalEntityId={member.org_id} legalEntityName={member.legal_name} />
+            {member.legal_entity_id ? (
+              <EndpointManagement legalEntityId={member.legal_entity_id} legalEntityName={member.legal_name} />
+            ) : (
+              <EmptyState {...getEmptyState('noLegalEntity')} />
+            )}
           </div>
         </Tabs.Panel>
 

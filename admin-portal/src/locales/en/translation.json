@@ -149,6 +149,7 @@
   },
   "endpoints": {
     "title": "CTN Association Endpoints",
+    "allEndpoints": "All Endpoints",
     "myEndpoints": "My Endpoints",
     "addEndpoint": "Add Endpoint",
     "editEndpoint": "Edit Endpoint",

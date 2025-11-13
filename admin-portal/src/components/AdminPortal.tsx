@@ -20,6 +20,7 @@ import About from './About';
 import AdminSidebar, { type MenuItem } from './AdminSidebar';
 import Dashboard from './Dashboard';
 import { EndpointManagement } from './EndpointManagement';
+import { AllEndpointsView } from './AllEndpointsView';
 import { HealthDashboard } from './HealthDashboard';
 import LanguageSwitcher from './LanguageSwitcher';
 import LoadingSpinner from './LoadingSpinner';
@@ -172,33 +173,9 @@ const AdminPortal: React.FC = () => {
 
       case 'endpoints':
         return (
-          <div className="endpoints-view">
-            <RoleGuard allowedRoles={[UserRole.ASSOCIATION_ADMIN, UserRole.SYSTEM_ADMIN]}>
-              {selectedMember ? (
-                <EndpointManagement
-                  legalEntityId={selectedMember.org_id}
-                  legalEntityName={selectedMember.legal_name}
-                />
-              ) : (
-                <div className="empty-state">
-                  <h3>{t('endpoints.title')}</h3>
-                  <p>
-                    {t(
-                      'endpoints.selectMemberFirst',
-                      'Select a member from the Members view to manage their endpoints.'
-                    )}
-                  </p>
-                  <Button
-                    onClick={() => setSelectedView('members')}
-                    color="blue"
-                    aria-label={t('navigation.members')}
-                  >
-                    {t('navigation.members')}
-                  </Button>
-                </div>
-              )}
-            </RoleGuard>
-          </div>
+          <RoleGuard allowedRoles={[UserRole.ASSOCIATION_ADMIN, UserRole.SYSTEM_ADMIN]}>
+            <AllEndpointsView />
+          </RoleGuard>
         );
 
       case 'settings':
