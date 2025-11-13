@@ -176,7 +176,7 @@ async function createEndpointHandler(
 
 // GET endpoints for a legal entity
 app.http('GetEndpointsByEntity', {
-  methods: ['GET', 'OPTIONS'],
+  methods: ['GET'],
   authLevel: 'anonymous',
   route: 'v1/legal-entities/{legalentityid}/endpoints',
   handler: wrapEndpoint(getEndpointsByEntityHandler, {
