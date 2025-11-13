@@ -198,11 +198,10 @@ DO $$ BEGIN RAISE NOTICE 'UNIQUE constraint on legal_entity_id added ✓'; END $
 
 DO $$ BEGIN RAISE NOTICE 'Step 7: Cleaning up data before constraints...'; END $$;
 
--- Fix email with trailing dot
+-- Fix email with trailing dot(s)
 UPDATE members
 SET email = RTRIM(email, '.')
-WHERE email LIKE '%..'
-  OR email ~ '\.\.$';
+WHERE email ~ '\.$';
 
 DO $$ BEGIN RAISE NOTICE 'Email data cleaned ✓'; END $$;
 
