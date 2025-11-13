@@ -159,115 +159,118 @@ JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
 WHERE bit.legal_entity_id = le_old.legal_entity_id
   AND le_old.legal_entity_id != c.canonical_id;
 
--- Update subscriptions
-UPDATE subscriptions s
-SET
-  legal_entity_id = c.canonical_id,
-  updated_at = NOW(),
-  updated_by = 'MIGRATION_027'
-FROM legal_entity le_old
-JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
-WHERE s.legal_entity_id = le_old.legal_entity_id
-  AND le_old.legal_entity_id != c.canonical_id;
+-- NOTE: The following tables don't exist in current schema - commented out
+-- If these tables are added in future, uncomment and run a separate migration
 
--- Update invoices
-UPDATE invoices i
-SET
-  legal_entity_id = c.canonical_id,
-  updated_at = NOW()
-FROM legal_entity le_old
-JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
-WHERE i.legal_entity_id = le_old.legal_entity_id
-  AND le_old.legal_entity_id != c.canonical_id;
+-- -- Update subscriptions (table doesn't exist)
+-- UPDATE subscriptions s
+-- SET
+--   legal_entity_id = c.canonical_id,
+--   updated_at = NOW(),
+--   updated_by = 'MIGRATION_027'
+-- FROM legal_entity le_old
+-- JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
+-- WHERE s.legal_entity_id = le_old.legal_entity_id
+--   AND le_old.legal_entity_id != c.canonical_id;
 
--- Update dns_verification_tokens
-UPDATE dns_verification_tokens dvt
-SET
-  legal_entity_id = c.canonical_id,
-  created_at = NOW()
-FROM legal_entity le_old
-JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
-WHERE dvt.legal_entity_id = le_old.legal_entity_id
-  AND le_old.legal_entity_id != c.canonical_id;
+-- -- Update invoices (table doesn't exist)
+-- UPDATE invoices i
+-- SET
+--   legal_entity_id = c.canonical_id,
+--   updated_at = NOW()
+-- FROM legal_entity le_old
+-- JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
+-- WHERE i.legal_entity_id = le_old.legal_entity_id
+--   AND le_old.legal_entity_id != c.canonical_id;
 
--- Update kvk_registry_data
-UPDATE kvk_registry_data krd
-SET
-  legal_entity_id = c.canonical_id,
-  dt_modified = NOW(),
-  modified_by = 'MIGRATION_027'
-FROM legal_entity le_old
-JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
-WHERE krd.legal_entity_id = le_old.legal_entity_id
-  AND le_old.legal_entity_id != c.canonical_id;
+-- -- Update dns_verification_tokens (table doesn't exist)
+-- UPDATE dns_verification_tokens dvt
+-- SET
+--   legal_entity_id = c.canonical_id,
+--   created_at = NOW()
+-- FROM legal_entity le_old
+-- JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
+-- WHERE dvt.legal_entity_id = le_old.legal_entity_id
+--   AND le_old.legal_entity_id != c.canonical_id;
 
--- Update identifier_verification_history
-UPDATE identifier_verification_history ivh
-SET
-  legal_entity_id = c.canonical_id,
-  dt_modified = NOW(),
-  modified_by = 'MIGRATION_027'
-FROM legal_entity le_old
-JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
-WHERE ivh.legal_entity_id = le_old.legal_entity_id
-  AND le_old.legal_entity_id != c.canonical_id;
+-- -- Update kvk_registry_data (table doesn't exist)
+-- UPDATE kvk_registry_data krd
+-- SET
+--   legal_entity_id = c.canonical_id,
+--   dt_modified = NOW(),
+--   modified_by = 'MIGRATION_027'
+-- FROM legal_entity le_old
+-- JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
+-- WHERE krd.legal_entity_id = le_old.legal_entity_id
+--   AND le_old.legal_entity_id != c.canonical_id;
 
--- Update bdi_orchestration_participants
-UPDATE bdi_orchestration_participants bop
-SET
-  legal_entity_id = c.canonical_id,
-  dt_modified = NOW(),
-  modified_by = 'MIGRATION_027'
-FROM legal_entity le_old
-JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
-WHERE bop.legal_entity_id = le_old.legal_entity_id
-  AND le_old.legal_entity_id != c.canonical_id;
+-- -- Update identifier_verification_history (table doesn't exist)
+-- UPDATE identifier_verification_history ivh
+-- SET
+--   legal_entity_id = c.canonical_id,
+--   dt_modified = NOW(),
+--   modified_by = 'MIGRATION_027'
+-- FROM legal_entity le_old
+-- JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
+-- WHERE ivh.legal_entity_id = le_old.legal_entity_id
+--   AND le_old.legal_entity_id != c.canonical_id;
 
--- Update authorization_log
-UPDATE authorization_log al
-SET
-  legal_entity_id = c.canonical_id
-FROM legal_entity le_old
-JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
-WHERE al.legal_entity_id = le_old.legal_entity_id
-  AND le_old.legal_entity_id != c.canonical_id;
+-- -- Update bdi_orchestration_participants (table doesn't exist)
+-- UPDATE bdi_orchestration_participants bop
+-- SET
+--   legal_entity_id = c.canonical_id,
+--   dt_modified = NOW(),
+--   modified_by = 'MIGRATION_027'
+-- FROM legal_entity le_old
+-- JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
+-- WHERE bop.legal_entity_id = le_old.legal_entity_id
+--   AND le_old.legal_entity_id != c.canonical_id;
 
--- Update admin_tasks
-UPDATE admin_tasks at
-SET
-  related_entity_id = c.canonical_id,
-  updated_at = NOW()
-FROM legal_entity le_old
-JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
-WHERE at.related_entity_id = le_old.legal_entity_id
-  AND le_old.legal_entity_id != c.canonical_id;
+-- -- Update authorization_log (table doesn't exist)
+-- UPDATE authorization_log al
+-- SET
+--   legal_entity_id = c.canonical_id
+-- FROM legal_entity le_old
+-- JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
+-- WHERE al.legal_entity_id = le_old.legal_entity_id
+--   AND le_old.legal_entity_id != c.canonical_id;
 
--- Update newsletter_recipients
-UPDATE newsletter_recipients nr
-SET
-  legal_entity_id = c.canonical_id,
-  updated_at = NOW()
-FROM legal_entity le_old
-JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
-WHERE nr.legal_entity_id = le_old.legal_entity_id
-  AND le_old.legal_entity_id != c.canonical_id;
+-- -- Update admin_tasks (table doesn't exist)
+-- UPDATE admin_tasks at
+-- SET
+--   related_entity_id = c.canonical_id,
+--   updated_at = NOW()
+-- FROM legal_entity le_old
+-- JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
+-- WHERE at.related_entity_id = le_old.legal_entity_id
+--   AND le_old.legal_entity_id != c.canonical_id;
 
--- Update applications (if exists)
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'applications') THEN
-    EXECUTE '
-      UPDATE applications app
-      SET
-        created_member_id = c.canonical_id
-      FROM legal_entity le_old
-      JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
-      WHERE app.created_member_id = le_old.legal_entity_id
-        AND le_old.legal_entity_id != c.canonical_id
-    ';
-    RAISE NOTICE 'Updated applications table';
-  END IF;
-END $$;
+-- -- Update newsletter_recipients (table doesn't exist)
+-- UPDATE newsletter_recipients nr
+-- SET
+--   legal_entity_id = c.canonical_id,
+--   updated_at = NOW()
+-- FROM legal_entity le_old
+-- JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
+-- WHERE nr.legal_entity_id = le_old.legal_entity_id
+--   AND le_old.legal_entity_id != c.canonical_id;
+
+-- -- Update applications (table doesn't exist)
+-- DO $$
+-- BEGIN
+--   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'applications') THEN
+--     EXECUTE '
+--       UPDATE applications app
+--       SET
+--         created_member_id = c.canonical_id
+--       FROM legal_entity le_old
+--       JOIN canonical_legal_entities c ON le_old.party_id = c.party_id
+--       WHERE app.created_member_id = le_old.legal_entity_id
+--         AND le_old.legal_entity_id != c.canonical_id
+--     ';
+--     RAISE NOTICE 'Updated applications table';
+--   END IF;
+-- END $$;
 
 DO $$ BEGIN RAISE NOTICE 'Completed updating foreign key references'; END $$;
 
