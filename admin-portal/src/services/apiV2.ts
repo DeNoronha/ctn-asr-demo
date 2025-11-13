@@ -274,6 +274,20 @@ export interface Application {
   review_notes?: string;
 }
 
+export interface M2MClient {
+  m2m_client_id: string;
+  legal_entity_id: string;
+  client_name: string;
+  azure_client_id: string;
+  description: string;
+  assigned_scopes: string[];
+  is_active: boolean;
+  dt_created: string;
+  dt_modified?: string;
+  created_by?: string;
+  modified_by?: string;
+}
+
 interface MembersResponse {
   data: Member[];
   count: number;
@@ -641,6 +655,49 @@ export const apiV2 = {
       { reviewNotes }
     );
     return response.data;
+  },
+
+  // ========================================================================
+  // M2M CLIENT MANAGEMENT
+  // ========================================================================
+
+  async getM2MClients(legalEntityId: string): Promise<M2MClient[]> {
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get<M2MClient[]>(
+      `/legal-entities/${legalEntityId}/m2m-clients`
+    );
+    return response.data;
+  },
+
+  async createM2MClient(
+    legalEntityId: string,
+    data: {
+      client_name: string;
+      description: string;
+      assigned_scopes: string[];
+    }
+  ): Promise<{ client: M2MClient; client_secret: string }> {
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.post<{ client: M2MClient; client_secret: string }>(
+      `/legal-entities/${legalEntityId}/m2m-clients`,
+      data
+    );
+    return response.data;
+  },
+
+  async generateM2MClientSecret(
+    clientId: string
+  ): Promise<{ client_secret: string }> {
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.post<{ client_secret: string }>(
+      `/m2m-clients/${clientId}/generate-secret`
+    );
+    return response.data;
+  },
+
+  async deleteM2MClient(clientId: string): Promise<void> {
+    const axiosInstance = await getAuthenticatedAxios();
+    await axiosInstance.delete(`/m2m-clients/${clientId}`);
   },
 };
 
