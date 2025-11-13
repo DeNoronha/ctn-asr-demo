@@ -4,6 +4,7 @@ import { addVersionHeaders, logApiRequest } from '../middleware/versioning';
 import { getPool } from '../utils/database';
 import { getPaginationParams, executePaginatedQuery } from '../utils/pagination';
 import { trackEvent, trackMetric, trackException, trackDependency } from '../utils/telemetry';
+import { handleError } from '../utils/errors';
 
 async function handler(
   request: AuthenticatedRequest,
@@ -77,7 +78,7 @@ async function handler(
 
     // Add version headers
     return addVersionHeaders(response, 'v1');
-  } catch (error) {
+  } catch (error: any) {
     const totalDuration = Date.now() - startTime;
     context.error('Error fetching members:', error);
 
@@ -91,10 +92,7 @@ async function handler(
       error: (error as Error).message
     }, { duration: totalDuration }, context);
 
-    return {
-      status: 500,
-      jsonBody: { error: 'Failed to fetch members' }
-    };
+    return handleError(error, context);
   }
 }
 

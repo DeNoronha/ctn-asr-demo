@@ -12,6 +12,7 @@ import { createApplicationCreatedEvent, publishEvent } from '../utils/eventGrid'
 import { BlobStorageService } from '../services/blobStorageService';
 import { DocumentIntelligenceService } from '../services/documentIntelligenceService';
 import { KvKService } from '../services/kvkService';
+import { handleError } from '../utils/errors';
 
 /**
  * Member Registration Endpoint

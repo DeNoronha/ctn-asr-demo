@@ -5,6 +5,7 @@ import { getPool } from '../utils/database';
 import { withTransaction } from '../utils/transaction';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { trackEvent, trackMetric, trackException, trackDependency } from '../utils/telemetry';
+import { handleError } from '../utils/errors';
 
 async function handler(
   request: AuthenticatedRequest,

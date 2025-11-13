@@ -33,6 +33,7 @@ import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrappe
 import { getPool } from '../utils/database';
 import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 import { trackEvent, trackMetric, trackException, trackDependency } from '../utils/telemetry';
+import { handleError } from '../utils/errors';
 
 async function handler(
   request: AuthenticatedRequest,
