@@ -17,7 +17,7 @@ async function handler(
 
     context.log(`Fetching member data for user: ${userEmail} (${userId})`);
 
-    // Query member data based on user's email
+    // Query member data with identifiers in a single query (optimized N+1 → 1)
     let result = await pool.query(
       `
       SELECT DISTINCT
@@ -34,11 +34,37 @@ async function handler(
         m.legal_entity_id as "legalEntityId",
         c.full_name as "contactName",
         c.email,
-        c.job_title as "jobTitle"
+        c.job_title as "jobTitle",
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'identifierType', len.identifier_type,
+              'identifierValue', len.identifier_value,
+              'countryCode', len.country_code,
+              'registryName', len.registry_name,
+              'registryUrl', len.registry_url,
+              'validationStatus', len.validation_status
+            )
+            ORDER BY
+              CASE len.identifier_type
+                WHEN 'LEI' THEN 1
+                WHEN 'EUID' THEN 2
+                WHEN 'KVK' THEN 3
+                ELSE 4
+              END,
+              len.identifier_type
+          ) FILTER (WHERE len.identifier_type IS NOT NULL),
+          '[]'::json
+        ) as "registryIdentifiers"
       FROM v_members_full m
       LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
       LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
+      LEFT JOIN legal_entity_number len ON le.legal_entity_id = len.legal_entity_id
+        AND (len.is_deleted = false OR len.is_deleted IS NULL)
       WHERE c.email = $1 AND c.is_active = true
+      GROUP BY m.org_id, m.legal_name, m.lei, m.kvk, m.domain, m.status,
+               m.membership_level, m.created_at, le.primary_legal_name,
+               le.entity_legal_form, m.legal_entity_id, c.full_name, c.email, c.job_title
       LIMIT 1
     `,
       [userEmail]
@@ -60,43 +86,40 @@ async function handler(
           m.created_at as "createdAt",
           le.primary_legal_name as "entityName",
           le.entity_legal_form as "entityType",
-          m.legal_entity_id as "legalEntityId"
+          m.legal_entity_id as "legalEntityId",
+          COALESCE(
+            json_agg(
+              json_build_object(
+                'identifierType', len.identifier_type,
+                'identifierValue', len.identifier_value,
+                'countryCode', len.country_code,
+                'registryName', len.registry_name,
+                'registryUrl', len.registry_url,
+                'validationStatus', len.validation_status
+              )
+              ORDER BY
+                CASE len.identifier_type
+                  WHEN 'LEI' THEN 1
+                  WHEN 'EUID' THEN 2
+                  WHEN 'KVK' THEN 3
+                  ELSE 4
+                END,
+                len.identifier_type
+            ) FILTER (WHERE len.identifier_type IS NOT NULL),
+            '[]'::json
+          ) as "registryIdentifiers"
         FROM v_members_full m
         LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
+        LEFT JOIN legal_entity_number len ON le.legal_entity_id = len.legal_entity_id
+          AND (len.is_deleted = false OR len.is_deleted IS NULL)
         WHERE m.domain = $1
+        GROUP BY m.org_id, m.legal_name, m.lei, m.kvk, m.domain, m.status,
+                 m.membership_level, m.created_at, le.primary_legal_name,
+                 le.entity_legal_form, m.legal_entity_id
         LIMIT 1
       `,
         [emailDomain]
       );
-    }
-
-    // Fetch registry identifiers if we found a member
-    if (result.rows.length > 0 && result.rows[0].legalEntityId) {
-      const identifiersResult = await pool.query(
-        `
-        SELECT
-          len.identifier_type as "identifierType",
-          len.identifier_value as "identifierValue",
-          len.country_code as "countryCode",
-          len.registry_name as "registryName",
-          len.registry_url as "registryUrl",
-          len.validation_status as "validationStatus"
-        FROM legal_entity_number len
-        WHERE len.legal_entity_id = $1
-          AND (len.is_deleted = false OR len.is_deleted IS NULL)
-        ORDER BY
-          CASE len.identifier_type
-            WHEN 'LEI' THEN 1
-            WHEN 'EUID' THEN 2
-            WHEN 'KVK' THEN 3
-            ELSE 4
-          END,
-          len.identifier_type
-      `,
-        [result.rows[0].legalEntityId]
-      );
-
-      result.rows[0].registryIdentifiers = identifiersResult.rows;
     }
 
     if (result.rows.length === 0) {

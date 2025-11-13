@@ -8,7 +8,7 @@ import { handleError } from '../utils/errors';
 /**
  * Safely get header value to avoid "Cannot read private member" error
  */
-function safeGetHeader(headers: Headers, name: string): string | null {
+function safeGetHeader(headers: any, name: string): string | null {
   try {
     return headers.get(name);
   } catch (error) {

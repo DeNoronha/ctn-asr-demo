@@ -47,7 +47,7 @@ describe('handleError', () => {
     const response = handleError(dbError, mockContext);
 
     expect(response.status).toBe(409);
-    const body = JSON.parse(response.body);
+    const body = JSON.parse(response.body as string);
     expect(body.error).toBe('Resource already exists');
     expect(body.code).toBe(ErrorCodes.DUPLICATE);
   });
@@ -59,7 +59,7 @@ describe('handleError', () => {
     const response = handleError(dbError, mockContext);
 
     expect(response.status).toBe(400);
-    const body = JSON.parse(response.body);
+    const body = JSON.parse(response.body as string);
     expect(body.error).toBe('Referenced resource not found');
   });
 
@@ -70,7 +70,7 @@ describe('handleError', () => {
     const response = handleError(dbError, mockContext);
 
     expect(response.status).toBe(400);
-    const body = JSON.parse(response.body);
+    const body = JSON.parse(response.body as string);
     expect(body.error).toBe('Required field is missing');
     expect(body.code).toBe(ErrorCodes.MISSING_FIELD);
   });
@@ -82,7 +82,7 @@ describe('handleError', () => {
     const response = handleError(jwtError, mockContext);
 
     expect(response.status).toBe(401);
-    const body = JSON.parse(response.body);
+    const body = JSON.parse(response.body as string);
     expect(body.error).toBe('Invalid authentication token');
     expect(body.code).toBe(ErrorCodes.INVALID_TOKEN);
   });
@@ -94,7 +94,7 @@ describe('handleError', () => {
     const response = handleError(expiredError, mockContext);
 
     expect(response.status).toBe(401);
-    const body = JSON.parse(response.body);
+    const body = JSON.parse(response.body as string);
     expect(body.error).toBe('Authentication token has expired');
     expect(body.code).toBe(ErrorCodes.TOKEN_EXPIRED);
   });
@@ -106,7 +106,7 @@ describe('handleError', () => {
     const response = handleError(error, mockContext, requestId);
 
     expect(response.headers?.['X-Request-ID']).toBe(requestId);
-    const body = JSON.parse(response.body);
+    const body = JSON.parse(response.body as string);
     expect(body.requestId).toBe(requestId);
   });
 
@@ -116,7 +116,7 @@ describe('handleError', () => {
     const response = handleError(error, mockContext);
 
     expect(response.status).toBe(500);
-    const body = JSON.parse(response.body);
+    const body = JSON.parse(response.body as string);
     expect(body.error).toBe('An internal error occurred');
     expect(body.code).toBe(ErrorCodes.INTERNAL_ERROR);
   });

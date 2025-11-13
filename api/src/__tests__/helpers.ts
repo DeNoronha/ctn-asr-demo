@@ -143,7 +143,7 @@ export function createMockAuthenticatedRequest(options: {
     userId,
     userEmail,
     userRoles
-  } as AuthenticatedRequest;
+  } as unknown as AuthenticatedRequest;
 }
 
 /**
