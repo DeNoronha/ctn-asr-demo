@@ -6,6 +6,7 @@ import { KvKService } from '../services/kvkService';
 import { getPool } from '../utils/database';
 import { getRequestId } from '../utils/requestId';
 import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
+import { handleError } from '../utils/errors';
 
 const pool = getPool(); // ✅ SECURITY FIX: Use shared pool with SSL validation
 
@@ -415,11 +416,7 @@ async function handler(
     };
 
   } catch (error: any) {
-    context.error('Upload error:', error);
-    return {
-      status: 500,
-      jsonBody: { error: 'Failed to upload document', details: error.message },
-    };
+    return handleError(error, context);
   }
 }
 

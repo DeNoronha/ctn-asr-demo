@@ -1,6 +1,7 @@
 import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { authenticatedEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { getPool } from '../utils/database';
+import { handleError } from '../utils/errors';
 
 async function handler(
   request: AuthenticatedRequest,
@@ -116,17 +117,8 @@ async function handler(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(result.rows[0]),
     };
-  } catch (error) {
-    context.error('Error fetching authenticated member:', error);
-    return {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        error: 'internal_server_error',
-        error_description: 'Failed to fetch member data',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      }),
-    };
+  } catch (error: any) {
+    return handleError(error, context);
   }
 }
 

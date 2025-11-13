@@ -10,6 +10,7 @@ import { Permission } from '../middleware/rbac';
 import { getPool } from '../utils/database';
 import { generateBvad, RegistryIdentifier } from '../services/bdiJwtService';
 import { DEFAULTS } from '../config/constants';
+import { handleError } from '../utils/errors';
 import crypto from 'crypto';
 
 interface GenerateBvadRequest {
@@ -286,18 +287,8 @@ async function handler(
         jti,
       }),
     };
-  } catch (error) {
-    context.error('Error generating BVAD:', error);
-
-    return {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        error: 'internal_server_error',
-        error_description: 'Failed to generate BVAD token',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      }),
-    };
+  } catch (error: any) {
+    return handleError(error, context);
   }
 }
 
