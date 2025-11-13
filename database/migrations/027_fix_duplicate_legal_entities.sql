@@ -94,8 +94,7 @@ WITH updates AS (
   WHERE lec.legal_entity_id = le_old.legal_entity_id
     AND le_old.legal_entity_id != c.canonical_id
   RETURNING lec.legal_entity_contact_id
-)
-SELECT COUNT(*) INTO @contact_count FROM updates;
+);
 
 DO $$ DECLARE v_count INTEGER; BEGIN
   SELECT COUNT(*)
@@ -292,8 +291,7 @@ WITH duplicates_to_delete AS (
     AND le.legal_entity_id != c.canonical_id
     AND le.is_deleted = false
   RETURNING le.legal_entity_id, le.primary_legal_name
-)
-SELECT COUNT(*) INTO @deleted_count FROM duplicates_to_delete;
+);
 
 DO $$
 DECLARE
