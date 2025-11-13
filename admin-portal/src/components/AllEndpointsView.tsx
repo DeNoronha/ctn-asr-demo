@@ -7,7 +7,6 @@ import { Badge, Button, Group, Stack, Text, TextInput } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import { IconSearch, IconPlug, IconRefresh } from '@tabler/icons-react';
 import { EmptyState } from './EmptyState';
-// import { PageHeader } from './PageHeader'; // Component removed
 import { RoleGuard } from '../auth/ProtectedRoute';
 import { UserRole } from '../auth/authConfig';
 import { useNotification } from '../contexts/NotificationContext';
