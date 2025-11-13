@@ -336,16 +336,14 @@ END $$;
 DO $$ BEGIN RAISE NOTICE 'Step 6: Adding UNIQUE constraint on legal_entity(party_id)...'; END $$;
 
 -- Drop if exists (idempotent)
-ALTER TABLE legal_entity
-  DROP CONSTRAINT IF EXISTS uq_legal_entity_party_id_active;
+DROP INDEX IF EXISTS uq_legal_entity_party_id_active;
 
--- Add partial UNIQUE constraint (respects soft deletes)
-ALTER TABLE legal_entity
-  ADD CONSTRAINT uq_legal_entity_party_id_active
-    UNIQUE (party_id)
-    WHERE is_deleted = false;
+-- Add partial UNIQUE index (respects soft deletes)
+CREATE UNIQUE INDEX uq_legal_entity_party_id_active
+  ON legal_entity(party_id)
+  WHERE is_deleted = false;
 
-COMMENT ON CONSTRAINT uq_legal_entity_party_id_active ON legal_entity IS
+COMMENT ON INDEX uq_legal_entity_party_id_active IS
   'Ensures 1:1 relationship between party_reference and legal_entity (respects soft deletes)';
 
 DO $$ BEGIN RAISE NOTICE 'UNIQUE constraint added successfully ✓'; END $$;
@@ -501,8 +499,8 @@ COMMIT;
 --
 -- BEGIN;
 --
--- -- 1. Drop UNIQUE constraint
--- ALTER TABLE legal_entity DROP CONSTRAINT IF EXISTS uq_legal_entity_party_id_active;
+-- -- 1. Drop UNIQUE index
+-- DROP INDEX IF EXISTS uq_legal_entity_party_id_active;
 --
 -- -- 2. Restore duplicate legal_entity records from backup
 -- UPDATE legal_entity le
