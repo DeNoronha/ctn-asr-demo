@@ -1,6 +1,7 @@
 import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { getPool } from '../utils/database';
+import { handleError } from '../utils/errors';
 
 async function handler(
   request: AuthenticatedRequest,
@@ -44,12 +45,8 @@ async function handler(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(result.rows[0])
     };
-  } catch (error) {
-    context.error('Error creating contact:', error);
-    return {
-      status: 500,
-      body: JSON.stringify({ error: 'Failed to create contact' })
-    };
+  } catch (error: any) {
+    return handleError(error, context);
   }
 }
 

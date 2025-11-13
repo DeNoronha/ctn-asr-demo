@@ -11,6 +11,7 @@ import { getPool } from '../utils/database';
 import { wrapEndpoint, type AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { UserRole } from '../middleware/rbac';
 import { randomUUID } from 'crypto';
+import { handleError } from '../utils/errors';
 
 const pool = getPool();
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB

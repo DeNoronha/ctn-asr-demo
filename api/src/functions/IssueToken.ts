@@ -2,6 +2,7 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/fu
 import * as jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { getPool } from '../utils/database';
+import { handleError } from '../utils/errors';
 
 export async function IssueToken(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   try {

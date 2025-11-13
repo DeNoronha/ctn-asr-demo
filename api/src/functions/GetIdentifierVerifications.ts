@@ -6,6 +6,7 @@
 import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { adminEndpoint, type AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { query } from '../utils/database';
+import { handleError } from '../utils/errors';
 
 interface IdentifierVerification {
   verification_id: string;

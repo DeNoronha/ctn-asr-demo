@@ -8,6 +8,7 @@ import { EmailClient } from "@azure/communication-email";
 import { emailTemplateService } from "../services/emailTemplateService";
 import { withEventGridValidation, validateEventGridSchema } from "../middleware/eventGridValidation";
 import { TIMEOUT_CONFIG, withTimeout } from "../utils/timeoutConfig";
+import { handleError } from '../utils/errors';
 
 // Event type to template mapping
 const EVENT_TEMPLATE_MAPPING: Record<string, { templateName: string; subjectKey: string }> = {

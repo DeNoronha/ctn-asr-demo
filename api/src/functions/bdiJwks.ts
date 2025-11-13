@@ -6,6 +6,7 @@
 
 import { app, HttpResponseInit, InvocationContext, HttpRequest } from '@azure/functions';
 import { importSPKI, exportJWK } from 'jose';
+import { handleError } from '../utils/errors';
 
 /**
  * JWKS Handler

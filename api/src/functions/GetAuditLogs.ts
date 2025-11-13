@@ -2,6 +2,7 @@ import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { getPool } from '../utils/database';
 import { getPaginationParams, createPaginatedResponse } from '../utils/pagination';
+import { handleError } from '../utils/errors';
 
 /**
  * Handler for retrieving audit logs with filtering and pagination

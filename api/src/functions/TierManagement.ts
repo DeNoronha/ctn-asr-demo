@@ -2,6 +2,7 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/fu
 import { adminEndpoint, memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { tierService, AuthenticationTier, AuthenticationMethod } from '../services/tierService';
 import { dnsVerificationService } from '../services/dnsVerificationService';
+import { handleError } from '../utils/errors';
 
 // ===================================
 // GET Tier Info

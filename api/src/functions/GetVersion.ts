@@ -1,6 +1,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import * as fs from 'fs';
 import * as path from 'path';
+import { handleError } from '../utils/errors';
 
 /**
  * GetVersion - Returns API build and version information

@@ -1,5 +1,6 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { getPool } from '../utils/database';
+import { handleError } from '../utils/errors';
 
 export async function diagnosticCheck(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   const pool = getPool();

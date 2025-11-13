@@ -3,6 +3,7 @@ import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrappe
 import { Permission } from '../middleware/rbac';
 import { getPool } from '../utils/database';
 import { isValidUUID } from '../utils/validators';
+import { handleError } from '../utils/errors';
 
 async function handler(
   request: AuthenticatedRequest,

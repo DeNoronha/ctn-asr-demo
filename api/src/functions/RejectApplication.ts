@@ -8,6 +8,7 @@ import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { getPool } from '../utils/database';
 import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { addVersionHeaders } from '../middleware/versioning';
+import { handleError } from '../utils/errors';
 
 async function handler(
   request: AuthenticatedRequest,
