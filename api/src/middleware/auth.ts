@@ -15,6 +15,7 @@ import {
   logAuthEvent,
   logSecurityEvent,
 } from '../utils/logger';
+import { TIMEOUTS } from '../config/constants';
 
 // Azure AD configuration
 const AZURE_AD_TENANT_ID = process.env.AZURE_AD_TENANT_ID || '598664e7-725c-4daa-bd1f-89c4ada717ff';
@@ -25,7 +26,7 @@ const JWKS_URI = `https://login.microsoftonline.com/${AZURE_AD_TENANT_ID}/discov
 const jwksClientInstance = jwksClient({
   jwksUri: JWKS_URI,
   cache: true,
-  cacheMaxAge: 600000, // 10 minutes
+  cacheMaxAge: TIMEOUTS.JWKS_CACHE_MS,
   rateLimit: true,
   jwksRequestsPerMinute: 10,
 });

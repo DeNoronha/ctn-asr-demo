@@ -9,6 +9,7 @@ import { wrapEndpoint, AuthenticatedRequest } from '../middleware/endpointWrappe
 import { Permission } from '../middleware/rbac';
 import { getPool } from '../utils/database';
 import { generateBvad, RegistryIdentifier } from '../services/bdiJwtService';
+import { DEFAULTS } from '../config/constants';
 import crypto from 'crypto';
 
 interface GenerateBvadRequest {
@@ -218,11 +219,11 @@ async function handler(
       complianceLastChecked,
       ownerChecked,
       ownerLastChecked,
-      termsVersion: member.metadata?.termsVersion || 'v3.2.0', // Dynamic version from metadata
+      termsVersion: member.metadata?.termsVersion || DEFAULTS.TERMS_VERSION,
       termsAcceptedAt: member.created_at ? new Date(member.created_at) : undefined,
       adminContact,
       bdiConnectorUri: member.bdi_connector_uri,
-      validityHours: validityHours || 24,
+      validityHours: validityHours || DEFAULTS.BVAD_VALIDITY_HOURS,
     });
 
     // Decode token to get jti and claims

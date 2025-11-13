@@ -17,6 +17,7 @@ import {
   logSecurityEvent,
 } from '../utils/logger';
 import { AuthenticatedRequest, JwtPayload } from './auth';
+import { TIMEOUTS } from '../config/constants';
 
 // Keycloak configuration from environment
 const KEYCLOAK_ISSUER = process.env.KEYCLOAK_ISSUER || 'http://localhost:8080';
@@ -38,7 +39,7 @@ const FULL_ISSUER = `${KEYCLOAK_ISSUER}/realms/${KEYCLOAK_REALM}`;
 const keycloakJwksClient = jwksClient({
   jwksUri: `${FULL_ISSUER}/protocol/openid-connect/certs`,
   cache: true,
-  cacheMaxAge: 600000, // 10 minutes
+  cacheMaxAge: TIMEOUTS.JWKS_CACHE_MS,
   rateLimit: true,
   jwksRequestsPerMinute: 10,
 });

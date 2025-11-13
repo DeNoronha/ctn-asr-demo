@@ -16,6 +16,7 @@ import { apiV2 } from '../services/apiV2';
 import { logger } from '../utils/logger';
 import { formatDateTime } from '../utils/dateFormat';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
+import { PAGINATION } from '../config/constants';
 import './EndpointManagement.css';
 
 interface EndpointWithMember {
@@ -34,8 +35,8 @@ export const AllEndpointsView: React.FC = () => {
   const [endpoints, setEndpoints] = useState<EndpointWithMember[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const [page, setPage] = useState(PAGINATION.DEFAULT_PAGE);
+  const pageSize = PAGINATION.DEFAULT_PAGE_SIZE;
   const notification = useNotification();
   const { handleError } = useApiError();
 
