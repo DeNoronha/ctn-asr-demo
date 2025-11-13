@@ -16,11 +16,19 @@ This document identifies API queries that need review after Phase 2 schema chang
 3. Created views: `v_members_full`, `v_members_list` for backward compatibility
 4. Migration 027 added UNIQUE constraint on `legal_entity.party_id` (enforces 1:1 with party_reference)
 
-**Key Findings:**
-- No API queries join `legal_entity` by `party_id` without LIMIT 1
+**Key Findings (CORRECTED):**
+- ❌ Initial analysis was INCORRECT - 6 functions queried removed columns directly
+- ✅ FIXED: Updated 6 functions to use `v_members_full` view
 - Migration 027 UNIQUE constraint prevents duplicate legal_entity records
 - Migration 028 views provide backward compatibility for removed members columns
-- All queries reviewed are **SAFE** - no changes required
+
+**Functions Updated:**
+1. GetMembers.ts - Simplified query using view (removed GROUP BY)
+2. GetAuthenticatedMember.ts - Both contact and domain queries
+3. GetMemberContacts.ts - Domain lookup query
+4. GetMemberEndpoints.ts - Domain lookup query
+5. ResolveParty.ts - Added legal_name and status from view
+6. generateBvad.ts - Full query with all removed columns
 
 ---
 
