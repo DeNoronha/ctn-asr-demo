@@ -458,7 +458,7 @@ DO $$
 DECLARE
   v_total_parties INTEGER;
   v_total_legal_entities INTEGER;
-  v_constraint_exists BOOLEAN;
+  v_index_exists BOOLEAN;
 BEGIN
   -- Count parties
   SELECT COUNT(*) INTO v_total_parties FROM party_reference WHERE is_deleted = false;
@@ -468,17 +468,18 @@ BEGIN
   SELECT COUNT(*) INTO v_total_legal_entities FROM legal_entity WHERE is_deleted = false;
   RAISE NOTICE 'Total active legal_entities: %', v_total_legal_entities;
 
-  -- Verify constraint exists
+  -- Verify unique index exists
   SELECT EXISTS (
     SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'uq_legal_entity_party_id_active'
-  ) INTO v_constraint_exists;
+    FROM pg_indexes
+    WHERE indexname = 'uq_legal_entity_party_id_active'
+      AND schemaname = 'public'
+  ) INTO v_index_exists;
 
-  IF v_constraint_exists THEN
-    RAISE NOTICE 'UNIQUE constraint exists ✓';
+  IF v_index_exists THEN
+    RAISE NOTICE 'UNIQUE index exists ✓';
   ELSE
-    RAISE EXCEPTION 'UNIQUE constraint missing! Migration failed.';
+    RAISE EXCEPTION 'UNIQUE index missing! Migration failed.';
   END IF;
 
   -- Verify view exists
