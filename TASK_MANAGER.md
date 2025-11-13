@@ -2,11 +2,76 @@
 
 **Purpose:** Track important tasks, refactoring needs, and technical debt that require attention.
 
-**Last Updated:** November 13, 2025 (Updated post-Keycloak migration)
+**Last Updated:** November 13, 2025 (Merged tasks from Desktop ROADMAP.md)
 
 ---
 
 ## 🔴 High Priority
+
+### Security - Secret Rotation (URGENT)
+
+**Status:** Not Started
+**Priority:** Critical
+**Source:** Desktop ROADMAP.md (November 10, 2025)
+
+**Context:** DG agent found exposed secrets in local.settings.json files during audit
+
+**Tasks:**
+- [ ] **SEC-ROTATE-001: Rotate PostgreSQL password** - CRITICAL
+  - **Exposed in:** api/local.settings.json (gitignored but exists locally)
+  - **Action:** Change in Azure Portal, update Key Vault, update local settings
+  - **Timeline:** 30 minutes
+
+- [ ] **SEC-ROTATE-002: Rotate Storage Account keys** - CRITICAL
+  - **Exposed in:** api/local.settings.json
+  - **Action:** Regenerate keys in Azure Portal, update Function App settings
+  - **Timeline:** 20 minutes
+
+- [ ] **SEC-ROTATE-003: Rotate KVK API Key** - HIGH
+  - **Exposed in:** api/local.settings.json
+  - **Action:** Request new key from KVK, update Key Vault
+  - **Timeline:** 1 hour (includes KVK request)
+
+- [ ] **SEC-ROTATE-004: Rotate Anthropic API Key** - HIGH
+  - **Exposed in:** booking-portal/api/local.settings.json
+  - **Action:** Generate new key in Anthropic Console, update Key Vault
+  - **Timeline:** 15 minutes
+
+- [ ] **SEC-ROTATE-005: Rotate Cosmos DB keys (booking portal)** - HIGH
+  - **Exposed in:** booking-portal/api/local.settings.json
+  - **Action:** Regenerate in Azure Portal, update Function App settings
+  - **Timeline:** 20 minutes
+
+---
+
+### Azure Key Vault Migration
+
+**Status:** Not Started
+**Priority:** High
+**Source:** Desktop ROADMAP.md (November 10, 2025)
+**Estimated Effort:** 2-3 hours
+
+**Problem:**
+Secrets currently in environment variables, need centralized secure storage.
+
+**Tasks:**
+- [ ] Move all secrets to Azure Key Vault
+  - PostgreSQL connection strings
+  - JWT secrets
+  - Azure Storage account keys
+  - Event Grid access keys
+- [ ] Update Function App configuration to reference Key Vault secrets
+- [ ] Create/update .credentials file (not in Git) for local development
+- [ ] Store all credentials, URLs, Azure Function info for all 4 portals
+
+**Impact:**
+- Security best practice
+- Enables centralized secret rotation
+- Reduces risk of credential exposure
+
+**Reference:** See docs/SECURITY_AUDIT_REPORT.md for migration instructions
+
+---
 
 ### Database Schema Refactoring
 
@@ -73,6 +138,110 @@ The current schema has overcomplicated relationships with redundancy between:
 
 ## 🟡 Medium Priority
 
+### Admin Portal - Testing & Quality Assurance
+
+**Status:** Not Started
+**Priority:** Medium
+**Source:** Desktop ROADMAP.md (November 10, 2025)
+
+**Tasks:**
+
+#### Improve Authentication Test Coverage
+- [ ] Fix test expecting login flow (design issue)
+- [ ] Investigate API request timeouts
+- [ ] Fix admin feature visibility checks
+- **Impact:** Tests don't accurately reflect production behavior
+- **Timeline:** 2 hours
+- **Priority:** P1 - HIGH (Next Sprint)
+
+#### Investigate KvK Identifier Bug
+- [ ] Debug why tests cannot find identifier UI elements
+- [ ] Verify endpoint URLs are correct
+- **Impact:** Known production bug affecting user workflows
+- **Timeline:** 4 hours
+- **Priority:** P2 - MEDIUM (Backlog)
+
+---
+
+### BDI Production Setup
+
+**Status:** Not Started
+**Priority:** Medium
+**Source:** Desktop ROADMAP.md (November 10, 2025)
+**Estimated Effort:** 5.5 hours
+
+**Tasks:**
+- [ ] **Configure BDI RSA keys in Key Vault**
+  - **Keys:** BDI_PRIVATE_KEY, BDI_PUBLIC_KEY
+  - **Timeline:** 30 minutes
+
+- [ ] **Set BDI_KEY_ID in Function App Settings**
+  - **Timeline:** 15 minutes
+
+- [ ] **Test BVAD generation with international companies**
+  - **Timeline:** 1 hour
+
+- [ ] **Test BVOD validation with sample orchestrations**
+  - **Timeline:** 1 hour
+
+- [ ] **Register external BDI systems**
+  - **Action:** Register DHL, Maersk, etc. in `bdi_external_systems` table
+  - **Timeline:** 2 hours
+
+- [ ] **BDI token generation and validation E2E testing**
+  - **Note:** Member portal is now stable and production-ready, can focus on BDI testing
+  - **Timeline:** 4 hours
+
+---
+
+### API Development
+
+**Status:** Not Started
+**Priority:** Medium
+**Source:** Desktop ROADMAP.md (November 10, 2025)
+
+**Tasks:**
+- [ ] **Define API versioning strategy**
+  - **Timeline:** 2 hours
+
+- [ ] **SEC-API-001: API keys visible in network requests**
+  - Move to secure backend proxy
+  - **Location:** Currently none, but needed for future integrations
+  - **Timeline:** 2 hours
+  - **Priority:** P0 - Address before production release
+
+---
+
+### Monitoring & Observability
+
+**Status:** Not Started
+**Priority:** Medium
+**Source:** Desktop ROADMAP.md (November 10, 2025)
+**Estimated Effort:** 12 hours
+
+**Tasks:**
+- [ ] **Configure Application Insights telemetry**
+  - **Action:** Set up detailed metrics
+  - **Timeline:** 2 hours
+
+- [ ] **Set up alerting rules**
+  - **Action:** Configure alerts for failed requests, slow queries, errors
+  - **Timeline:** 2 hours
+
+- [ ] **Create operational dashboard**
+  - **Action:** Build dashboard in Azure Monitor
+  - **Timeline:** 3 hours
+
+- [ ] **Configure Alert Action Groups**
+  - **Action:** Add email/SMS notifications for alerts
+  - **Timeline:** 1 hour
+
+- [ ] **Instrument Remaining API Functions**
+  - **Action:** Add telemetry to 30+ additional functions
+  - **Timeline:** 4 hours
+
+---
+
 ### Add Database Constraints for Data Integrity
 
 **Status:** Not Started
@@ -87,6 +256,40 @@ The current schema has overcomplicated relationships with redundancy between:
 ---
 
 ## 🟢 Low Priority / Future Enhancements
+
+### Architecture & Infrastructure Improvements
+
+**Status:** Not Started
+**Priority:** Low
+**Source:** Desktop ROADMAP.md (November 10, 2025)
+
+**Tasks:**
+
+#### Create Shared API Client Package
+- [ ] **Issue:** All 3 React portals implement their own axios wrapper and auth logic
+- [ ] **Solution:** Create @ctn/api-client NPM package with shared services
+- [ ] **Benefits:** Single source of truth, consistent error handling, easier maintenance
+- [ ] **Reference:** Code Reviewer finding #5
+
+#### Set Up Proper Production Environment
+- [ ] **Issue:** Using "dev" naming convention
+- [ ] **Current:** `func-ctn-demo-asr-dev.azurewebsites.net`
+- [ ] **Recommended:** `fa-ctn-asr-{env}.azurewebsites.net` (dev/staging/prod)
+- [ ] **WARNING:** Requires new Function App deployment + DNS updates (breaking change)
+
+#### Implement Keycloak as Self-Hosted IdP
+- [ ] **Action:** Deploy Keycloak in CTN Azure environment for member endpoint token generation
+- [ ] **Configure Keycloak realm for BDI** (if using external Keycloak)
+  - Documentation needed
+
+#### Add Metadata Headers to All Documentation Files
+- [ ] **Issue:** Files have stable names but no "Last Updated" metadata at document top
+- [ ] **Solution:** Add structured metadata headers (Last Updated, Status, Version) to all markdown files
+- [ ] **Scope:** Apply to all 66+ documentation files
+- [ ] **Timeline:** 4-6 hours (52+ files)
+- [ ] **Priority:** LOW - Time-consuming, low-impact task
+
+---
 
 ### Keycloak M2M Authentication - Production Readiness
 
@@ -160,22 +363,26 @@ The current schema has overcomplicated relationships with redundancy between:
 ## 🎯 Next Actions
 
 **Immediate (This Week):**
-1. ✅ ~~Complete Keycloak M2M setup~~ (DONE - November 13, 2025)
-2. ✅ ~~Test M2M authentication end-to-end~~ (DONE)
+1. **CRITICAL:** Execute secret rotation tasks (SEC-ROTATE-001 through SEC-ROTATE-005)
+2. Complete Azure Key Vault migration (2-3 hours)
 3. Invoke DE (Database Expert) agent to analyze schema redundancy
 4. Create duplicate legal_entity cleanup script
 
 **Short Term (Next 2 Weeks):**
 1. Fix duplicate legal_entity records issue
 2. Add UNIQUE constraint on legal_entity(party_id)
-3. Create production service accounts for partners
-4. Set up M2M usage monitoring dashboard
+3. Configure BDI production setup (RSA keys, testing)
+4. Improve Admin Portal authentication test coverage
+5. Set up monitoring & observability (Application Insights, alerts, dashboard)
 
 **Long Term (Next Month):**
 1. Design and implement schema simplification (party/legal_entity/members)
-2. Add unit tests for Keycloak middleware
-3. Implement per-client rate limiting
-4. Secret rotation policy implementation
+2. Complete BDI E2E testing and external system registration
+3. Investigate and fix KvK identifier bug
+4. Define API versioning strategy
+5. Create production service accounts for partners
+6. Implement per-client rate limiting
+7. Secret rotation policy implementation (90-day cycle)
 
 ---
 
