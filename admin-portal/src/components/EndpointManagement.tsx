@@ -14,21 +14,8 @@ import { getEmptyState } from '../utils/emptyStates';
 import { endpointSuccessMessages, tokenSuccessMessages } from '../utils/successMessages';
 import { helpContent } from '../config/helpContent';
 import { useNotification } from '../contexts/NotificationContext';
+import { apiV2 } from '../services/apiV2';
 import './EndpointManagement.css';
-
-// Auth helper
-const getAccessToken = async (): Promise<string> => {
-  const accounts = (window as any).msalInstance?.getAllAccounts();
-  if (!accounts || accounts.length === 0) {
-    throw new Error('No authenticated user');
-  }
-  const request = {
-    scopes: ['api://d3037c11-a541-4f21-8862-8079137a0cde/access_as_user'],
-    account: accounts[0],
-  };
-  const response = await (window as any).msalInstance.acquireTokenSilent(request);
-  return response.accessToken;
-};
 
 interface Endpoint {
   legal_entity_endpoint_id: string;
@@ -83,9 +70,6 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
     endpoint_type: 'REST_API',
   });
 
-  const API_BASE =
-    import.meta.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
-
   useEffect(() => {
     loadEndpoints();
   }, [legalEntityId]);
@@ -93,20 +77,8 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
   const loadEndpoints = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/legal-entities/${legalEntityId}/endpoints`, {
-        headers: {
-          'Authorization': `Bearer ${await getAccessToken()}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Handle both array and wrapped response formats
-        const endpoints = Array.isArray(data) ? data : (data.endpoints || []);
-        setEndpoints(endpoints);
-      } else {
-        console.error('Failed to load endpoints:', response.status);
-      }
+      const endpoints = await apiV2.getEndpoints(legalEntityId);
+      setEndpoints(endpoints);
     } catch (error) {
       console.error('Error loading endpoints:', error);
     } finally {
@@ -117,34 +89,30 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
   const handleCreateEndpoint = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/legal-entities/${legalEntityId}/endpoints`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await getAccessToken()}`
-        },
-        body: JSON.stringify(formData),
+      await apiV2.addEndpoint({
+        legal_entity_id: legalEntityId,
+        endpoint_name: formData.endpoint_name,
+        endpoint_url: formData.endpoint_url,
+        endpoint_description: formData.endpoint_description,
+        data_category: formData.data_category,
+        endpoint_type: formData.endpoint_type,
+        is_active: true,
       });
 
-      if (response.ok) {
-        const msg = endpointSuccessMessages.created(formData.endpoint_url);
-        notification.showSuccess(msg.title);
-        setShowDialog(false);
-        setFormData({
-          endpoint_name: '',
-          endpoint_url: '',
-          endpoint_description: '',
-          data_category: 'CONTAINER',
-          endpoint_type: 'REST_API',
-        });
-        loadEndpoints();
-      } else {
-        const error = await response.json();
-        notification.showError(error.error || 'Failed to create endpoint');
-      }
-    } catch (error) {
+      const msg = endpointSuccessMessages.created(formData.endpoint_url);
+      notification.showSuccess(msg.title);
+      setShowDialog(false);
+      setFormData({
+        endpoint_name: '',
+        endpoint_url: '',
+        endpoint_description: '',
+        data_category: 'CONTAINER',
+        endpoint_type: 'REST_API',
+      });
+      loadEndpoints();
+    } catch (error: any) {
       console.error('Error creating endpoint:', error);
-      notification.showError('Failed to create endpoint');
+      notification.showError(error.response?.data?.error || 'Failed to create endpoint');
     } finally {
       setLoading(false);
     }
@@ -153,29 +121,13 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
   const handleIssueToken = async (endpoint: Endpoint) => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${API_BASE}/endpoints/${endpoint.legal_entity_endpoint_id}/tokens`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${await getAccessToken()}`
-          },
-          body: JSON.stringify({}),
-        }
-      );
-
-      if (response.ok) {
-        const token = await response.json();
-        setNewToken(token);
-        setSelectedEndpoint(endpoint);
-        setShowTokenDialog(true);
-        const msg = tokenSuccessMessages.generated();
-        notification.showSuccess(msg.title);
-        try { announceToScreenReader('API token generated. Copy it now, it will not be shown again.', 'assertive'); } catch {}
-      } else {
-        notification.showError('Failed to issue token');
-      }
+      const token = await apiV2.issueEndpointToken(endpoint.legal_entity_endpoint_id);
+      setNewToken(token);
+      setSelectedEndpoint(endpoint);
+      setShowTokenDialog(true);
+      const msg = tokenSuccessMessages.generated();
+      notification.showSuccess(msg.title);
+      try { announceToScreenReader('API token generated. Copy it now, it will not be shown again.', 'assertive'); } catch {}
     } catch (error) {
       console.error('Error issuing token:', error);
       notification.showError('Failed to issue token');
