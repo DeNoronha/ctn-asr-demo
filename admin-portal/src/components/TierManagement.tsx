@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { apiV2 } from '../services/apiV2';
 import { formatDate, formatDateTime } from '../utils/dateFormat';
+import { LoadingState } from './shared/LoadingState';
 
 // Form label components
 const Label: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
@@ -132,21 +133,13 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
     }
   };
 
-  if (loading) {
-    return (
-      <div style={{ padding: '24px', textAlign: 'center' }}>
-        <div className="loader" />
-        <p>Loading tier information...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="tier-management" style={{ padding: '24px' }}>
-      <h3>Authentication Tier Management</h3>
-      <p style={{ color: '#666', marginBottom: '24px' }}>
-        Manage the member's authentication tier to control their data access level.
-      </p>
+    <LoadingState loading={loading} minHeight={400}>
+      <div className="tier-management" style={{ padding: '24px' }}>
+        <h3>Authentication Tier Management</h3>
+        <p style={{ color: '#666', marginBottom: '24px' }}>
+          Manage the member's authentication tier to control their data access level.
+        </p>
 
       {tierInfo && (
         <div
@@ -269,6 +262,7 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
           </li>
         </ul>
       </div>
-    </div>
+      </div>
+    </LoadingState>
   );
 };
