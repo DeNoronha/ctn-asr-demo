@@ -1,4 +1,17 @@
-import { Button, Checkbox, Group, Modal, TextInput, Textarea } from '@mantine/core';
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Code,
+  Group,
+  Modal,
+  Paper,
+  Stack,
+  Text,
+  TextInput,
+  Textarea,
+  Title,
+} from '@mantine/core';
 import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
@@ -400,81 +413,54 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({ legalEnt
         size="xl"
       >
         {selectedClient && (
-          <>
-            <div style={{ padding: '20px 0' }}>
-              <div
-                style={{
-                  marginBottom: '20px',
-                  padding: '12px',
-                  background: '#fff3e0',
-                  borderRadius: '4px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <AlertTriangle size={20} />
-                  <div>
-                    <strong>Important: Save this secret now!</strong>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '0.875rem' }}>
-                      This secret will only be shown once. Store it securely - you won't be able to
-                      retrieve it again.
-                    </p>
-                  </div>
-                </div>
-              </div>
+          <Stack gap="lg">
+            <Alert color="orange" icon={<AlertTriangle size={20} />} title="Important: Save this secret now!">
+              <Text size="sm">
+                This secret will only be shown once. Store it securely - you won't be able to retrieve it again.
+              </Text>
+            </Alert>
 
-              <div style={{ marginBottom: '16px' }}>
-                <strong>Client Name:</strong> {selectedClient.client_name}
-              </div>
+            <Paper>
+              <Text fw={500} mb="xs">
+                Client Name:
+              </Text>
+              <Text>{selectedClient.client_name}</Text>
+            </Paper>
 
-              <div style={{ marginBottom: '16px' }}>
-                <strong>Client ID:</strong>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                  <code
-                    style={{
-                      flex: 1,
-                      padding: '8px',
-                      background: '#f5f5f5',
-                      borderRadius: '4px',
-                      fontFamily: 'monospace',
-                    }}
-                  >
-                    {selectedClient.azure_client_id}
-                  </code>
-                  <Button size="sm" onClick={() => copyToClipboard(selectedClient.azure_client_id)}>
-                    <Copy size={14} /> Copy
-                  </Button>
-                </div>
-              </div>
+            <Paper>
+              <Text fw={500} mb="xs">
+                Client ID:
+              </Text>
+              <Group gap="xs" align="flex-start">
+                <Code block style={{ flex: 1 }}>
+                  {selectedClient.azure_client_id}
+                </Code>
+                <Button size="sm" onClick={() => copyToClipboard(selectedClient.azure_client_id)}>
+                  <Copy size={14} /> Copy
+                </Button>
+              </Group>
+            </Paper>
 
-              <div>
-                <strong>Client Secret:</strong>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                  <code
-                    style={{
-                      flex: 1,
-                      padding: '8px',
-                      background: '#fff3e0',
-                      border: '2px solid #ff9800',
-                      borderRadius: '4px',
-                      fontFamily: 'monospace',
-                      wordBreak: 'break-all',
-                    }}
-                  >
-                    {generatedSecret}
-                  </code>
-                  <Button size="sm" color="blue" onClick={() => copyToClipboard(generatedSecret)}>
-                    <Copy size={14} /> Copy
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <Paper>
+              <Text fw={500} mb="xs">
+                Client Secret:
+              </Text>
+              <Group gap="xs" align="flex-start">
+                <Code block color="orange" style={{ flex: 1, wordBreak: 'break-all' }}>
+                  {generatedSecret}
+                </Code>
+                <Button size="sm" color="blue" onClick={() => copyToClipboard(generatedSecret)}>
+                  <Copy size={14} /> Copy
+                </Button>
+              </Group>
+            </Paper>
 
             <Group mt="xl" justify="flex-end">
               <Button color="blue" onClick={handleConfirmSecret}>
                 I've Saved the Secret
               </Button>
             </Group>
-          </>
+          </Stack>
         )}
       </Modal>
 
