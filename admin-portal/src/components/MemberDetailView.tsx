@@ -353,19 +353,19 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
                       <h3>Member Information</h3>
                       <div className="info-grid">
                         <div className="info-field">
-                          <label>Organization ID</label>
+                          <strong>Organization ID</strong>
                           <span>{member.org_id}</span>
                         </div>
                         <div className="info-field">
-                          <label>Domain</label>
+                          <strong>Domain</strong>
                           <span>{member.domain}</span>
                         </div>
                         <div className="info-field">
-                          <label>Status</label>
+                          <strong>Status</strong>
                           {getStatusBadge(member.status)}
                         </div>
                         <div className="info-field">
-                          <label>Membership Level</label>
+                          <strong>Membership Level</strong>
                           {getMembershipBadge(member.membership_level)}
                         </div>
                       </div>
@@ -383,23 +383,23 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
                   <h3>Basic Information</h3>
                   <div className="info-grid">
                     <div className="info-field">
-                      <label>Organization ID</label>
+                      <strong>Organization ID</strong>
                       <span>{member.org_id}</span>
                     </div>
                     <div className="info-field">
-                      <label>Legal Name</label>
+                      <strong>Legal Name</strong>
                       <span>{member.legal_name}</span>
                     </div>
                     <div className="info-field">
-                      <label>Domain</label>
+                      <strong>Domain</strong>
                       <span>{member.domain}</span>
                     </div>
                     <div className="info-field">
-                      <label>Status</label>
+                      <strong>Status</strong>
                       {getStatusBadge(member.status)}
                     </div>
                     <div className="info-field">
-                      <label>Membership Level</label>
+                      <strong>Membership Level</strong>
                       {getMembershipBadge(member.membership_level)}
                     </div>
                   </div>

@@ -189,23 +189,23 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
                   <h3>Organization Information</h3>
                   <div className="detail-grid">
                     <div className="detail-field">
-                      <label>Organization ID</label>
+                      <strong>Organization ID</strong>
                       <span>{member.org_id}</span>
                     </div>
                     <div className="detail-field">
-                      <label>Legal Name</label>
+                      <strong>Legal Name</strong>
                       <span>{member.legal_name}</span>
                     </div>
                     <div className="detail-field">
-                      <label>Domain</label>
+                      <strong>Domain</strong>
                       <span>{member.domain}</span>
                     </div>
                     <div className="detail-field">
-                      <label>Status</label>
+                      <strong>Status</strong>
                       {getStatusBadge(member.status)}
                     </div>
                     <div className="detail-field">
-                      <label>Membership Level</label>
+                      <strong>Membership Level</strong>
                       {getMembershipBadge(member.membership_level)}
                     </div>
                   </div>
@@ -215,11 +215,11 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
                   <h3>Identifiers</h3>
                   <div className="detail-grid">
                     <div className="detail-field">
-                      <label>LEI</label>
+                      <strong>LEI</strong>
                       <span>{member.lei || 'Not provided'}</span>
                     </div>
                     <div className="detail-field">
-                      <label>KVK Number</label>
+                      <strong>KVK Number</strong>
                       <span>{member.kvk || 'Not provided'}</span>
                     </div>
                   </div>
@@ -229,12 +229,12 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
                   <h3>Timestamps</h3>
                   <div className="detail-grid">
                     <div className="detail-field">
-                      <label>Created</label>
+                      <strong>Created</strong>
                       <span>{formatDate(member.created_at)}</span>
                     </div>
                     {member.updated_at && (
                       <div className="detail-field">
-                        <label>Last Updated</label>
+                        <strong>Last Updated</strong>
                         <span>{formatDate(member.updated_at)}</span>
                       </div>
                     )}
