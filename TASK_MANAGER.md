@@ -73,47 +73,22 @@ Secrets currently in environment variables, need centralized secure storage.
 
 ---
 
-### Database Schema Refactoring
+### Database Schema Simplification
 
-**Issue Identified:** November 13, 2025 during Keycloak M2M setup
-**Status:** Partially Complete (Duplicates fixed, further simplification needed)
-**Priority:** Medium
+**Status:** Not Started
+**Priority:** Low
 **Estimated Effort:** 1-2 days
 
+**Note:** Duplicate legal_entity issue was fixed in Migration 027 (November 13, 2025). This task is optional further optimization.
+
 **Problem:**
-The current schema has overcomplicated relationships with potential redundancy between:
-- `party_reference` (base entity)
-- `legal_entity` (organization details)
-- `members` (unclear if still needed, potential duplication)
+Potential redundancy between `party_reference`, `legal_entity`, and `members` tables. May benefit from further normalization.
 
-**Completed (November 13, 2025 - Migration 027):**
-- ✅ Identified and fixed duplicate `legal_entity` rows for same `party_id`
-- ✅ Created comprehensive cleanup script (migration 027_fix_duplicate_legal_entities.sql)
-- ✅ Added UNIQUE constraint: `uq_legal_entity_party_id_active` on `(party_id) WHERE is_deleted = false`
-- ✅ Fixed `v_m2m_credentials_active` view to prevent duplicate rows
-- ✅ Added data quality CHECK constraints on legal_entity table
-
-**Remaining Tasks:**
-
-1. **Schema Simplification Analysis (Optional)**
-   - [ ] Evaluate if `members` table is still needed or can be consolidated
-   - [ ] Determine if further normalization is beneficial
-   - [ ] Identify any remaining redundant columns across tables
-   - [ ] Design migration path if simplification is pursued
-
-**Impact:**
-- **Low Risk:** Core duplicate issue is resolved with UNIQUE constraint
-- **Optional Enhancement:** Further simplification is nice-to-have, not urgent
-
-**Related Files:**
-- `database/migrations/027_fix_duplicate_legal_entities.sql` - Duplicate cleanup
-- `database/current_schema.sql`
-- `api/src/middleware/keycloak-auth.ts` (party resolution)
-
-**Notes:**
-- ✅ UNIQUE constraint now prevents future duplicates
-- ✅ All foreign key references updated to canonical legal_entity records
-- ✅ Backup table created: `legal_entity_backup_20251113`
+**Tasks:**
+- [ ] Evaluate if `members` table is still needed or can be consolidated
+- [ ] Determine if further normalization is beneficial
+- [ ] Identify any remaining redundant columns across tables
+- [ ] Design migration path if simplification is pursued
 
 ---
 
@@ -223,17 +198,14 @@ The current schema has overcomplicated relationships with potential redundancy b
 
 ---
 
-### Add Database Constraints for Data Integrity
+### Review Database Constraints
 
-**Status:** Partially Complete
+**Status:** Not Started
 **Priority:** Low
 
-**Completed (Migration 027 - November 13, 2025):**
-- ✅ Added UNIQUE constraint on `legal_entity(party_id)` WHERE is_deleted = false
-- ✅ Added CHECK constraint: `primary_legal_name` length >= 2
-- ✅ Added CHECK constraint: `status` IN ('PENDING', 'ACTIVE', 'SUSPENDED', 'INACTIVE', 'REJECTED')
+**Note:** Core constraints added in Migration 027 (November 13, 2025). Tasks below are optional enhancements.
 
-**Remaining Tasks (Optional):**
+**Tasks:**
 - [ ] Review all foreign key constraints for CASCADE vs RESTRICT
 - [ ] Add partial indexes for additional soft-deleted tables (if needed)
 
