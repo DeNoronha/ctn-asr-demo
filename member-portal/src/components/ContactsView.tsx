@@ -8,10 +8,7 @@ import { LoadingState } from './shared/LoadingState';
 const contactTypes = ['PRIMARY', 'TECHNICAL', 'BILLING', 'SUPPORT', 'LEGAL', 'OTHER'];
 const contactMethods = ['EMAIL', 'PHONE', 'MOBILE'];
 
-export const ContactsView: React.FC<ComponentProps> = ({
-  onNotification,
-  onDataChange,
-}) => {
+export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataChange }) => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
@@ -72,23 +69,33 @@ export const ContactsView: React.FC<ComponentProps> = ({
         const updateRequest = {
           email: formData.email,
           full_name: formData.full_name,
-          contact_type: formData.contact_type as 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER' | undefined,
+          contact_type: formData.contact_type as
+            | 'PRIMARY'
+            | 'TECHNICAL'
+            | 'BILLING'
+            | 'SUPPORT'
+            | 'LEGAL'
+            | 'OTHER'
+            | undefined,
           phone: formData.phone,
           mobile: formData.mobile,
           job_title: formData.job_title,
           department: formData.department,
         };
-        await apiClient.member.updateContact(
-          editingContact.legal_entity_contact_id,
-          updateRequest
-        );
+        await apiClient.member.updateContact(editingContact.legal_entity_contact_id, updateRequest);
         onNotification('Contact updated successfully', 'success');
       } else {
         // Transform formData to ContactRequest format (name instead of full_name, type instead of contact_type)
         const createRequest = {
           email: formData.email || '',
           name: formData.full_name || '',
-          type: (formData.contact_type || 'OTHER') as 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER',
+          type: (formData.contact_type || 'OTHER') as
+            | 'PRIMARY'
+            | 'TECHNICAL'
+            | 'BILLING'
+            | 'SUPPORT'
+            | 'LEGAL'
+            | 'OTHER',
           phone: formData.phone,
           mobile: formData.mobile,
           job_title: formData.job_title,

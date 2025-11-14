@@ -12,9 +12,7 @@ interface TierInfo {
   eherkenningLevel?: string;
 }
 
-export const Dashboard: React.FC<ComponentProps> = ({
-  memberData,
-}) => {
+export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [tokens, setTokens] = useState<Token[]>([]);

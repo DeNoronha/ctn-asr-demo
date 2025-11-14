@@ -310,7 +310,10 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
       >
         <div style={{ padding: '20px 0' }}>
           <div style={{ marginBottom: '20px' }}>
-            <label htmlFor="client_name" style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+            <label
+              htmlFor="client_name"
+              style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}
+            >
               Client Name *
             </label>
             <TextInput
@@ -323,7 +326,10 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label htmlFor="description" style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+            <label
+              htmlFor="description"
+              style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}
+            >
               Description
             </label>
             <Textarea
@@ -340,7 +346,11 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
             <div style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
               Assigned Scopes *
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }} role="group" aria-label="Assigned Scopes">
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}
+              role="group"
+              aria-label="Assigned Scopes"
+            >
               {AVAILABLE_SCOPES.map((scope) => (
                 <label
                   key={scope.value}

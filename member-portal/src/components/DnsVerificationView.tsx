@@ -25,10 +25,7 @@ interface VerificationResult {
   }>;
 }
 
-export const DnsVerificationView: React.FC<ComponentProps> = ({
-  memberData,
-  onNotification,
-}) => {
+export const DnsVerificationView: React.FC<ComponentProps> = ({ memberData, onNotification }) => {
   const [domain, setDomain] = useState('');
   const [tokens, setTokens] = useState<DnsToken[]>([]);
   const [loading, setLoading] = useState(false);

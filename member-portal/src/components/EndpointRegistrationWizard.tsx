@@ -44,16 +44,6 @@ interface EndpointData {
   endpoint_type: string;
 }
 
-interface EndpointResponse {
-  legal_entity_endpoint_id: string;
-  endpoint_name: string;
-  endpoint_url: string;
-  verification_status: string;
-  is_active: boolean;
-  verification_token?: string;
-  verification_expires_at?: string;
-}
-
 export function EndpointRegistrationWizard({
   legalEntityId,
   apiBaseUrl,
