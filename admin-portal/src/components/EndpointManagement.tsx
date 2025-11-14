@@ -60,9 +60,9 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
     endpoint_type: 'REST_API',
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Load function is stable, depends only on legalEntityId
   useEffect(() => {
     loadEndpoints();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [legalEntityId]);
 
   const loadEndpoints = async () => {

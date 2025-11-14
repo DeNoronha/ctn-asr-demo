@@ -60,14 +60,15 @@ interface KvkRegistryDetailsProps {
   legalEntityId: string;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: KVK registry display requires extensive conditional rendering for nested data
 export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEntityId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [registryData, setRegistryData] = useState<KvkRegistryData | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Load function is stable, depends only on legalEntityId
   useEffect(() => {
     loadRegistryData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [legalEntityId]);
 
   const loadRegistryData = async () => {

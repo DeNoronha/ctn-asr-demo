@@ -31,9 +31,9 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
   const { handleError } = useApiError();
 
   // Load verification records
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Load function is stable, depends only on legalEntityId
   useEffect(() => {
     loadVerificationRecords();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [legalEntityId]);
 
   const loadVerificationRecords = async () => {

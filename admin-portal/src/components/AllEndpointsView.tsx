@@ -85,9 +85,9 @@ export const AllEndpointsView: React.FC = () => {
     }
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Load function is stable, intentionally run only on mount
   useEffect(() => {
     loadAllEndpoints();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Filter endpoints based on search query

@@ -35,6 +35,7 @@ interface HealthStatus {
   };
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Health dashboard requires multiple status checks and conditional rendering
 export const HealthDashboard: React.FC = () => {
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,17 +63,17 @@ export const HealthDashboard: React.FC = () => {
     }
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Fetch function is stable, intentionally run only on mount
   useEffect(() => {
     fetchHealth();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Fetch function is stable, interval should update only when autoRefresh changes
   useEffect(() => {
     if (autoRefresh) {
       const interval = setInterval(fetchHealth, 30000); // Refresh every 30 seconds
       return () => clearInterval(interval);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefresh]);
 
   const getStatusIcon = (status: string) => {

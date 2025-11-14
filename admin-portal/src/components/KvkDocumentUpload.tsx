@@ -41,7 +41,8 @@ interface KvkDocumentUploadProps {
   onVerificationComplete?: () => void;
 }
 
-export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
+export // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Document upload requires extensive validation, status checks, and conditional rendering
+const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
   legalEntityId,
   onVerificationComplete,
 }) => {
@@ -80,6 +81,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
     });
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Fetch function and status check are stable, polling interval should run on mount
   useEffect(() => {
     fetchVerificationStatus();
     // Poll for status updates every 5 seconds if verification is pending
@@ -452,9 +454,9 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
                     ⚠️ Validation Issues:
                   </strong>
                   <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
-                    {verificationStatus.kvk_mismatch_flags.map((flag, idx) => (
+                    {verificationStatus.kvk_mismatch_flags.map((flag) => (
                       <li
-                        key={idx}
+                        key={flag}
                         style={{ color: isEnteredDataMismatch(flag) ? '#dc2626' : '#f59e0b' }}
                       >
                         {getFlagDescription(flag)}

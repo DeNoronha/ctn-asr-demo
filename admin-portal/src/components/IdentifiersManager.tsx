@@ -425,6 +425,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     notification.showSuccess(msg.title);
   }, [identifierToDelete, onIdentifierDelete, notification]);
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Form validation and save logic requires multiple conditional checks
   const handleSave = useCallback(async () => {
     if (!formData.identifier_type || !formData.identifier_value) {
       notification.showError('Please fill in all required fields');
@@ -445,18 +446,27 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
 
       if (editingIdentifier) {
         // Update existing identifier
-        await onIdentifierUpdate(editingIdentifier.legal_entity_reference_id!, sanitizedFormData);
+        const refId = editingIdentifier.legal_entity_reference_id;
+        if (!refId) {
+          notification.showError('Invalid identifier reference');
+          return;
+        }
+        await onIdentifierUpdate(refId, sanitizedFormData);
         const msg = identifierSuccessMessages.updated(
           String(sanitizedFormData.identifier_type || 'Identifier')
         );
         notification.showSuccess(msg.title);
       } else {
         // Add new identifier
+        if (!sanitizedFormData.identifier_value) {
+          notification.showError('Identifier value is required');
+          return;
+        }
         await onIdentifierCreate({
           legal_entity_id: legalEntityId,
           identifier_type:
             sanitizedFormData.identifier_type as LegalEntityIdentifier['identifier_type'],
-          identifier_value: sanitizedFormData.identifier_value!,
+          identifier_value: sanitizedFormData.identifier_value,
           country_code: sanitizedFormData.country_code,
           registry_name: sanitizedFormData.registry_name,
           registry_url: sanitizedFormData.registry_url,
@@ -590,6 +600,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
       <span
         className="validation-badge"
         style={{ backgroundColor: color }}
+        // biome-ignore lint/a11y/useSemanticElements: Inline badge with styling - semantic equivalent not available
         role="status"
         aria-label={`Validation status: ${status}`}
         title={tooltip}
@@ -600,6 +611,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     );
   };
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Document verification badge requires complex conditional logic for multiple mismatch scenarios
   const getDocumentVerificationBadge = (identifierType: string) => {
     // Only show for KvK identifiers with uploaded document
     if (identifierType !== 'KVK' || !hasKvkDocument) {
@@ -634,6 +646,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
       <span
         className="validation-badge"
         style={{ backgroundColor: color }}
+        // biome-ignore lint/a11y/useSemanticElements: Inline badge with styling - semantic equivalent not available
         role="status"
         aria-label={`Document verification: ${label}`}
         title={
@@ -710,7 +723,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         render: (record) => <div>{getValidationBadge(record.validation_status)}</div>,
       },
       {
-        accessor: 'document_verification' as any,
+        accessor: 'document_verification' as unknown as string,
         title: 'Doc Verification',
         width: 160,
         toggleable: true,
@@ -738,7 +751,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         render: (record) => <div>{record.dt_modified ? formatDate(record.dt_modified) : '-'}</div>,
       },
       {
-        accessor: 'actions' as any,
+        accessor: 'actions' as unknown as string,
         title: 'Actions',
         width: '0%',
         toggleable: false,
