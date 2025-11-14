@@ -20,7 +20,7 @@ async function handler(
     // Query member data with identifiers in a single query (optimized N+1 → 1)
     let result = await pool.query(
       `
-      SELECT DISTINCT
+      SELECT
         m.org_id as "organizationId",
         m.legal_name as "legalName",
         m.lei,

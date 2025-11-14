@@ -190,7 +190,7 @@ app.http('GetEvents', {
   authLevel: 'anonymous',
   handler: wrapEndpoint(handler, {
     requireAuth: true,
-    requiredPermissions: [Permission.READ_ORCHESTRATIONS],
+    requiredPermissions: [Permission.VIEW_AUDIT_LOGS],
     requireAllPermissions: false
   })
 });
