@@ -43,6 +43,15 @@ export class EmailTemplateService {
     data: EmailTemplateData
   ): Promise<string> {
     try {
+      // SECURITY: Validate templateName to prevent path traversal attacks
+      // Only allow alphanumeric characters, hyphens, and underscores
+      if (!/^[a-zA-Z0-9_-]+$/.test(templateName)) {
+        throw new Error(
+          `Invalid template name: ${templateName}. ` +
+          'Template names must contain only alphanumeric characters, hyphens, and underscores.'
+        );
+      }
+
       // Default to English if language not found
       const lang = ['en', 'nl', 'de'].includes(language) ? language : 'en';
 
@@ -54,11 +63,32 @@ export class EmailTemplateService {
       // Load content template
       const contentPath = path.join(this.templatesDir, lang, `${templateName}.hbs`);
 
+      // SECURITY: Verify the resolved path is within the templates directory
+      const resolvedContentPath = path.resolve(contentPath);
+      const resolvedTemplatesDir = path.resolve(this.templatesDir);
+      if (!resolvedContentPath.startsWith(resolvedTemplatesDir)) {
+        throw new Error(
+          `Security violation: Template path escapes templates directory. ` +
+          `Requested: ${templateName}, Language: ${lang}`
+        );
+      }
+
       // Fallback to English if template doesn't exist in requested language
       let actualContentPath = contentPath;
       if (!fs.existsSync(contentPath)) {
         console.warn(`Template ${templateName} not found for language ${lang}, falling back to English`);
-        actualContentPath = path.join(this.templatesDir, 'en', `${templateName}.hbs`);
+        const fallbackPath = path.join(this.templatesDir, 'en', `${templateName}.hbs`);
+
+        // SECURITY: Also validate fallback path
+        const resolvedFallbackPath = path.resolve(fallbackPath);
+        if (!resolvedFallbackPath.startsWith(resolvedTemplatesDir)) {
+          throw new Error(
+            `Security violation: Fallback template path escapes templates directory. ` +
+            `Requested: ${templateName}`
+          );
+        }
+
+        actualContentPath = fallbackPath;
       }
 
       const contentTemplate = fs.readFileSync(actualContentPath, 'utf-8');
@@ -68,9 +98,11 @@ export class EmailTemplateService {
       const renderedContent = compiledContent(data);
 
       // Render layout with content
+      // Use SafeString to explicitly mark pre-rendered template content as trusted
+      // This prevents XSS while allowing HTML formatting in email templates
       const html = layoutTemplate({
         ...data,
-        body: renderedContent,
+        body: new Handlebars.SafeString(renderedContent),
         language: lang
       });
 

@@ -20,6 +20,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
     enableRbacAuthorization: true
     enableSoftDelete: true
     softDeleteRetentionInDays: 90
+    enablePurgeProtection: true  // SECURITY: Prevents permanent deletion of secrets
     publicNetworkAccess: 'Enabled'
   }
 }

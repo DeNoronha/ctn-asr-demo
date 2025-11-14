@@ -20,7 +20,7 @@
     "@azure/functions": "^4.0.0",
     "@azure/storage-blob": "^12.28.0",
     "applicationinsights": "^2.9.0",
-    "axios": "1.6.8",
+    "axios": "^1.13.2",
     "gremlin": "^3.7.4",
     "handlebars": "^4.7.8",
     "jose": "^6.1.0",
