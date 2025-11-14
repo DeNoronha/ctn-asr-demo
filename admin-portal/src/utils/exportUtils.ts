@@ -92,7 +92,8 @@ export const exportToPDF = (members: Member[], options: ExportOptions = {}) => {
       // Add footer with page numbers
       const pageCount = doc.getNumberOfPages();
       // jsPDF internal API doesn't have complete TypeScript types
-      const pageNumber = (doc.internal as { getCurrentPageInfo: () => { pageNumber: number } }).getCurrentPageInfo().pageNumber;
+      // biome-ignore lint/suspicious/noExplicitAny: jsPDF internal API lacks proper TypeScript definitions
+      const pageNumber = (doc.internal as any).getCurrentPageInfo().pageNumber as number;
 
       doc.setFontSize(9);
       doc.setTextColor(100);

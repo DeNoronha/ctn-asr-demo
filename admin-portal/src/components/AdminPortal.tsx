@@ -310,7 +310,6 @@ const AdminPortal: React.FC = () => {
 
         <AppShell.Navbar p="md">
           <AdminSidebar
-            expanded={true}
             onSelect={handleMenuSelect}
             selectedItem={selectedView === 'member-detail' ? 'members' : selectedView}
             onLogout={handleLogout}
