@@ -1,6 +1,6 @@
 # MCP Server Mapping for Agents
 
-**Last Updated:** November 2, 2025
+**Last Updated:** November 14, 2025
 **Global MCP Config:** `/Users/ramondenoronha/.config/claude-code/mcp.json`
 
 This document defines which MCP servers each specialized agent should use. These MCP servers are configured globally and available to all agents across all projects.
@@ -64,16 +64,17 @@ This document defines which MCP servers each specialized agent should use. These
 
 ### Test Engineer (TE)
 **Primary MCP Servers:**
-- ✅ **playwright** - For creating and running E2E tests in `web/e2e/`
+- ✅ **playwright** - For creating and running E2E tests in `admin-portal/e2e/` and `member-portal/e2e/`
 - ✅ **chrome-devtools** - For debugging test failures, capturing console errors, analyzing network requests
 - ✅ **browser** - For web automation tasks during test setup
 
 **Use Cases:**
-- Create Playwright test files for new features
+- Create Playwright test files for new features in admin or member portal
 - Debug failing tests by inspecting console logs
 - Capture network traffic to diagnose API call issues
 - Automate browser interactions for test coverage
 - Investigate visual regression issues
+- Test both portals independently with separate test suites
 
 **When NOT to use MCP servers:**
 - API testing with curl (use Bash tool directly)
@@ -170,12 +171,21 @@ This document defines which MCP servers each specialized agent should use. These
 - ✅ **icepanel** - For querying architecture diagrams and system landscape
 
 **Primary Tools:**
-- 📁 **Glob/Grep** - For searching Arc42 documentation in docs/ and ctn-docs-portal/
+- 📁 **Glob/Grep** - For searching Arc42 documentation in `docs/` and external repository
 - 📄 **Read** - For reviewing infrastructure Bicep templates and configuration files
+
+**Arc42 Documentation Location:**
+- **Separate Repository:** [DEV-CTN-Documentation](https://github.com/ramondenoronha/DEV-CTN-Documentation)
+- **Key Documents:**
+  - Three-Tier Authentication: `docs/arc42/05-building-blocks/ctn-three-tier-authentication.md`
+  - Deployment Procedures: `docs/arc42/07-deployment/ctn-asr-deployment-procedures.md`
+  - Coding Standards: `docs/arc42/08-crosscutting/ctn-coding-standards.md`
+  - Security Hardening: `docs/arc42/08-crosscutting/ctn-security-hardening.md`
+  - WCAG Compliance: `docs/arc42/10-quality/ctn-accessibility-wcag-compliance.md`
 
 **Use Cases:**
 - Query IcePanel for documented system architecture and components
-- Search Arc42 documentation for architectural decisions and patterns
+- Reference Arc42 documentation for architectural decisions and patterns (external repository)
 - Compare documented architecture vs actual implementation
 - Validate Azure services are documented, declared, and actually used
 - Check authentication patterns match Arc42 security concepts
@@ -183,7 +193,7 @@ This document defines which MCP servers each specialized agent should use. These
 - Create architecture discrepancy reports
 
 **When NOT to use MCP servers:**
-- Arc42 documentation search (use Glob/Grep instead)
+- Arc42 documentation reference (external GitHub repository, use URLs from CLAUDE.md)
 - Reading Bicep templates (use Read tool)
 - Checking .credentials file (use Read tool)
 
