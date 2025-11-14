@@ -37,24 +37,24 @@ export const Support: React.FC = () => {
           </p>
           <ul className="simple-list">
             <li>
-              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
-                Getting Started Guide
-              </a>
+              <span style={{ color: '#999', cursor: 'not-allowed' }}>
+                Getting Started Guide (Coming Soon)
+              </span>
             </li>
             <li>
-              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
-                API Documentation
-              </a>
+              <span style={{ color: '#999', cursor: 'not-allowed' }}>
+                API Documentation (Coming Soon)
+              </span>
             </li>
             <li>
-              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
-                Integration Examples
-              </a>
+              <span style={{ color: '#999', cursor: 'not-allowed' }}>
+                Integration Examples (Coming Soon)
+              </span>
             </li>
             <li>
-              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
-                Troubleshooting Guide
-              </a>
+              <span style={{ color: '#999', cursor: 'not-allowed' }}>
+                Troubleshooting Guide (Coming Soon)
+              </span>
             </li>
           </ul>
         </div>
@@ -68,24 +68,24 @@ export const Support: React.FC = () => {
           </p>
           <ul className="simple-list">
             <li>
-              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
-                Member Forum
-              </a>
+              <span style={{ color: '#999', cursor: 'not-allowed' }}>
+                Member Forum (Coming Soon)
+              </span>
             </li>
             <li>
-              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
-                Technical Blog
-              </a>
+              <span style={{ color: '#999', cursor: 'not-allowed' }}>
+                Technical Blog (Coming Soon)
+              </span>
             </li>
             <li>
-              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
-                Webinars & Events
-              </a>
+              <span style={{ color: '#999', cursor: 'not-allowed' }}>
+                Webinars & Events (Coming Soon)
+              </span>
             </li>
             <li>
-              <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer">
-                Release Notes
-              </a>
+              <span style={{ color: '#999', cursor: 'not-allowed' }}>
+                Release Notes (Coming Soon)
+              </span>
             </li>
           </ul>
         </div>
@@ -118,18 +118,15 @@ export const Support: React.FC = () => {
           <p style={{ fontSize: '0.85rem', color: 'var(--ctn-text-light)' }}>
             Last updated: Just now
           </p>
-          <a
-            href="javascript:void(0)"
-            target="_blank"
-            rel="noopener noreferrer"
+          <span
             style={{
-              color: 'var(--ctn-orange)',
-              textDecoration: 'none',
+              color: '#999',
               fontSize: '0.9rem',
+              cursor: 'not-allowed',
             }}
           >
-            View Detailed Status →
-          </a>
+            View Detailed Status → (Coming Soon)
+          </span>
         </div>
       </div>
 

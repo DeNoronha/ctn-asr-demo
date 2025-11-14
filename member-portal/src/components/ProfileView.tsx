@@ -5,8 +5,6 @@ import { apiClient } from '../services/apiClient';
 import type { ComponentProps } from '../types';
 
 export const ProfileView: React.FC<ComponentProps> = ({
-  apiBaseUrl,
-  getAccessToken,
   memberData,
   onNotification,
   onDataChange,
