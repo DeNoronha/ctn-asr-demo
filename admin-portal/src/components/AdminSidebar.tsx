@@ -39,14 +39,12 @@ function NavbarLink({ icon: Icon, label, active, onClick }: NavbarLinkProps) {
 }
 
 interface AdminSidebarProps {
-  expanded: boolean;
   onSelect: (item: MenuItem) => void;
   selectedItem: string;
   onLogout: () => void;
 }
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({
-  expanded,
   onSelect,
   selectedItem,
   onLogout,

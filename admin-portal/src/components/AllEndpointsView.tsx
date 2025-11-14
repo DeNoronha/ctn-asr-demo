@@ -39,7 +39,6 @@ export const AllEndpointsView: React.FC = () => {
   const [page, setPage] = useState<number>(PAGINATION.DEFAULT_PAGE);
   const pageSize = PAGINATION.DEFAULT_PAGE_SIZE;
   const notification = useNotification();
-  const { handleError } = useApiError();
 
   const loadAllEndpoints = async () => {
     setLoading(true);

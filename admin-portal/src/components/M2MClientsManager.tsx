@@ -29,7 +29,6 @@ const AVAILABLE_SCOPES = [
 
 const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
   legalEntityId,
-  legalEntityName,
 }) => {
   const [clients, setClients] = useState<M2MClient[]>([]);
   const [loading, setLoading] = useState(false);

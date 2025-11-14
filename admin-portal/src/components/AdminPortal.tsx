@@ -50,7 +50,7 @@ import { TEXT_COLORS } from '../utils/colors';
 
 const AdminPortal: React.FC = () => {
   const { t } = useTranslation();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const notification = useNotification();
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme('light', { getInitialValueInEffect: true });

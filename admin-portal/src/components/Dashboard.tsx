@@ -58,8 +58,6 @@ const MEMBERSHIP_COLORS: Record<string, string> = {
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers, loading = false }) => {
-  const { t } = useTranslation();
-
   // Calculate statistics (CR-002: Safe array operations with null checks)
   const stats = useMemo(() => {
     const safeMembersList = safeArray(members);
