@@ -837,11 +837,13 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
       >
         <div className="identifier-form">
           <div className="form-field">
-            <label>
-              Country Code *
-              <HelpTooltip content={helpContent.identifierCountry} dataTestId="country-code-help" />
-            </label>
             <TextInput
+              label={
+                <>
+                  Country Code *
+                  <HelpTooltip content={helpContent.identifierCountry} dataTestId="country-code-help" />
+                </>
+              }
               value={formData.country_code || ''}
               onChange={(e) => handleCountryCodeChange(e.target.value)}
               placeholder="e.g., NL, DE, BE, FR, GB"
@@ -853,11 +855,13 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
           </div>
 
           <div className="form-field">
-            <label>
-              Identifier Type *
-              <HelpTooltip content={helpContent.identifierType} dataTestId="identifier-type-help" />
-            </label>
             <Select
+              label={
+                <>
+                  Identifier Type *
+                  <HelpTooltip content={helpContent.identifierType} dataTestId="identifier-type-help" />
+                </>
+              }
               data={availableIdentifierTypes}
               value={formData.identifier_type}
               onChange={(value) => handleIdentifierTypeChange(value || '')}
@@ -890,14 +894,16 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
           </div>
 
           <div className="form-field">
-            <label>
-              Identifier Value *
-              <HelpTooltip
-                content={helpContent.identifierValue}
-                dataTestId="identifier-value-help"
-              />
-            </label>
             <TextInput
+              label={
+                <>
+                  Identifier Value *
+                  <HelpTooltip
+                    content={helpContent.identifierValue}
+                    dataTestId="identifier-value-help"
+                  />
+                </>
+              }
               id="identifier_value"
               value={formData.identifier_value || ''}
               onChange={(e) => handleIdentifierValueChange(e.target.value)}
@@ -932,8 +938,8 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
 
           <ConditionalField show={!!formData.identifier_type}>
             <div className="form-field">
-              <label>Registry Name</label>
               <TextInput
+                label="Registry Name"
                 value={formData.registry_name || ''}
                 onChange={(e) => setFormData({ ...formData, registry_name: e.target.value })}
                 placeholder="Auto-populated based on identifier type"
@@ -942,8 +948,8 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
             </div>
 
             <div className="form-field">
-              <label>Registry URL</label>
               <TextInput
+                label="Registry URL"
                 value={formData.registry_url || ''}
                 onChange={(e) => setFormData({ ...formData, registry_url: e.target.value })}
                 placeholder="Auto-populated based on identifier type"
@@ -954,8 +960,8 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
 
           <ConditionalField show={!!formData.identifier_value && !!formData.identifier_type}>
             <div className="form-field">
-              <label>Validation Status</label>
               <Select
+                label="Validation Status"
                 data={VALIDATION_STATUSES}
                 value={formData.validation_status}
                 onChange={(value) => setFormData({ ...formData, validation_status: value as any })}
@@ -963,8 +969,8 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
             </div>
 
             <div className="form-field">
-              <label>Verification Notes</label>
               <TextInput
+                label="Verification Notes"
                 value={formData.verification_notes || ''}
                 onChange={(e) => setFormData({ ...formData, verification_notes: e.target.value })}
                 placeholder="Any notes about verification"
