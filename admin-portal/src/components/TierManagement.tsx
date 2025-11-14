@@ -11,22 +11,6 @@ import { apiV2 } from '../services/apiV2';
 import { formatDate, formatDateTime } from '../utils/dateFormat';
 import { LoadingState } from './shared/LoadingState';
 
-// Form label components
-const Label: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <label id={id} className="form-label">
-    {children}
-  </label>
-);
-const Hint: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
-  <div
-    id={id}
-    className="form-hint"
-    style={{ color: '#656565', fontSize: '0.875rem', marginTop: '0.25rem' }}
-  >
-    {children}
-  </div>
-);
-
 interface TierManagementProps {
   legalEntityId: string;
 }
@@ -206,20 +190,20 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
 
         <div className="tier-selector" style={{ marginTop: '24px' }}>
           <div className="form-field">
-            <Label>Select New Tier</Label>
             <Select
+              label="Select New Tier"
               data={TIER_OPTIONS.map((t) => ({ value: t.tier.toString(), label: t.name }))}
               value={selectedTier?.tier.toString() || null}
               onChange={(value) => {
                 const tier = TIER_OPTIONS.find((t) => t.tier.toString() === value);
                 setSelectedTier(tier || null);
               }}
+              description={
+                selectedTier
+                  ? `${selectedTier.access} - Method: ${selectedTier.method}`
+                  : 'Select a tier to update'
+              }
             />
-            <Hint>
-              {selectedTier
-                ? `${selectedTier.access} - Method: ${selectedTier.method}`
-                : 'Select a tier to update'}
-            </Hint>
           </div>
 
           <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>

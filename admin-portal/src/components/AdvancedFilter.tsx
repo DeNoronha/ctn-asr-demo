@@ -165,8 +165,8 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onApply, onClear }) => 
       <div className="filter-header">
         <h3>Advanced Filters</h3>
         <div className="logic-selector">
-          <label>Match: </label>
           <Select
+            label="Match"
             data={['and', 'or']}
             value={logic}
             onChange={(value) => setLogic((value as 'and' | 'or') || 'and')}

@@ -393,14 +393,12 @@ const KvkReviewQueueComponent: React.FC = () => {
 
                 {/* Review Notes */}
                 <div style={{ marginBottom: '15px' }}>
-                  <label>
-                    <strong>Review Notes:</strong>
-                  </label>
                   <Textarea
+                    label={<strong>Review Notes:</strong>}
                     value={reviewNotes}
                     onChange={(e) => setReviewNotes(e.target.value || '')}
                     rows={4}
-                    style={{ width: '100%', marginTop: '5px' }}
+                    style={{ width: '100%' }}
                     placeholder="Enter your review notes here (optional)..."
                   />
                 </div>

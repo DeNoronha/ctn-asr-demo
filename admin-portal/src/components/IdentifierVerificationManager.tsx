@@ -209,8 +209,8 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
         <>
           <div className="verification-upload-section">
             <div className="form-field">
-              <label>Select Identifier to Verify</label>
               <Select
+                label="Select Identifier to Verify"
                 data={identifierOptions.map((opt) => ({
                   value: opt.legal_entity_reference_id || '',
                   label: opt.displayText,

@@ -207,16 +207,16 @@ const AuditLogViewer: React.FC = () => {
 
         <div className="filters-panel">
           <div className="filter-group">
-            <label>Action Type</label>
             <Select
+              label="Action Type"
               data={actions}
               value={selectedAction}
               onChange={(value) => setSelectedAction(value || '')}
             />
           </div>
           <div className="filter-group">
-            <label>Target Type</label>
             <Select
+              label="Target Type"
               data={targetTypes}
               value={selectedTargetType}
               onChange={(value) => setSelectedTargetType(value || '')}
