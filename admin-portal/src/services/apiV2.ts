@@ -751,6 +751,71 @@ export const apiV2 = {
     );
     return response.data;
   },
+
+  // ========================================================================
+  // TASK MANAGEMENT (Admin)
+  // ========================================================================
+
+  async getAdminTasks(): Promise<{ tasks: any[] }> {
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get<{ tasks: any[] }>('/admin/tasks');
+    return response.data;
+  },
+
+  async getKvkReviewTasks(): Promise<any[]> {
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.get<any[]>('/admin/kvk-verification/flagged-entities');
+    return response.data;
+  },
+
+  async reviewKvkVerification(data: {
+    legal_entity_id: string;
+    decision: 'approve' | 'reject';
+    reviewer_notes: string;
+  }): Promise<any> {
+    const axiosInstance = await getAuthenticatedAxios();
+    const response = await axiosInstance.post('/admin/kvk-verification/review', data);
+    return response.data;
+  },
+
+  // ========================================================================
+  // HEALTH MONITORING (Public Endpoint)
+  // ========================================================================
+
+  async getHealthStatus(): Promise<{
+    status: 'healthy' | 'degraded' | 'unhealthy';
+    timestamp: string;
+    uptime: number;
+    environment: string;
+    version: string;
+    checks: {
+      database: { status: 'up' | 'down'; responseTime?: number; error?: string; details?: any };
+      applicationInsights: { status: 'up' | 'down'; error?: string; details?: any };
+      azureKeyVault: { status: 'up' | 'down'; responseTime?: number; error?: string };
+      staticWebApps: { status: 'up' | 'down'; responseTime?: number; error?: string; details?: any };
+    };
+  }> {
+    // Health endpoint is at /api/health (not /api/v1/health), so we need a separate base URL
+    const healthBaseUrl = API_BASE_URL.replace('/v1', '');
+    const axiosInstance = axios.create({
+      baseURL: healthBaseUrl,
+      headers: { Accept: 'application/json' },
+    });
+    const response = await axiosInstance.get<{
+      status: 'healthy' | 'degraded' | 'unhealthy';
+      timestamp: string;
+      uptime: number;
+      environment: string;
+      version: string;
+      checks: {
+        database: { status: 'up' | 'down'; responseTime?: number; error?: string; details?: any };
+        applicationInsights: { status: 'up' | 'down'; error?: string; details?: any };
+        azureKeyVault: { status: 'up' | 'down'; responseTime?: number; error?: string };
+        staticWebApps: { status: 'up' | 'down'; responseTime?: number; error?: string; details?: any };
+      };
+    }>('/health');
+    return response.data;
+  },
 };
 
 // Export default for convenience

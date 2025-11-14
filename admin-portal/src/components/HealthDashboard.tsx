@@ -11,6 +11,7 @@ import { formatDateTime } from '../utils/dateFormat';
 import { Activity, AlertTriangle, CheckCircle, RefreshCw, XCircle } from './icons';
 import { PageHeader } from './shared/PageHeader';
 import './HealthDashboard.css';
+import { apiV2 } from '../services/apiV2';
 
 interface HealthCheck {
   status: 'up' | 'down';
@@ -40,9 +41,6 @@ export const HealthDashboard: React.FC = () => {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  const API_URL =
-    import.meta.env.VITE_API_URL?.replace('/v1', '') ||
-    'https://func-ctn-demo-asr-dev.azurewebsites.net/api';
   const environmentName =
     (import.meta.env as any).VITE_ENVIRONMENT_NAME ||
     (import.meta.env.MODE === 'production' ? 'Production' : 'Development');
@@ -50,18 +48,7 @@ export const HealthDashboard: React.FC = () => {
   const fetchHealth = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/health`, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await apiV2.getHealthStatus();
       setHealth(data);
       setError(null);
       setLastRefresh(new Date());

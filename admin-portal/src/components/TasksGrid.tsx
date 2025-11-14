@@ -1,4 +1,3 @@
-import { useMsal } from '@azure/msal-react';
 import {
   ActionIcon,
   Button,
@@ -14,7 +13,6 @@ import {
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { IconCheck, IconEdit, IconEye } from '@tabler/icons-react';
-import axios from 'axios';
 import { DataTable, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { formatDate } from '../utils/dateUtils';
@@ -57,7 +55,6 @@ interface ReviewTask {
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api';
 
 const TasksGrid: React.FC = () => {
-  const { instance, accounts } = useMsal();
   const [tasks, setTasks] = useState<AdminTask[]>([]);
   const [reviewTasks, setReviewTasks] = useState<ReviewTask[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
@@ -118,83 +115,28 @@ const TasksGrid: React.FC = () => {
   const loadTasks = useCallback(async () => {
     setLoading(true);
     try {
-      const account = accounts[0];
-      if (!account) {
-        logger.log('TasksGrid: No MSAL account available for tasks');
-        setTasks([]);
-        return;
-      }
-
-      logger.log('TasksGrid: Acquiring token for tasks...');
-      const tokenResponse = await instance.acquireTokenSilent({
-        scopes: ['api://d3037c11-a541-4f21-8862-8079137a0cde/access_as_user'],
-        account: account,
-      });
-
-      const axiosInstance = axios.create({
-        baseURL: API_BASE_URL,
-        headers: {
-          Authorization: `Bearer ${tokenResponse.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
       logger.log('TasksGrid: Fetching tasks from API...');
-      const response = await axiosInstance.get<{ tasks: AdminTask[] }>('/v1/admin/tasks');
-      logger.log(`TasksGrid: Loaded ${response.data.tasks.length} tasks`);
-      setTasks(response.data.tasks);
+      const response = await apiV2.getAdminTasks();
+      logger.log(`TasksGrid: Loaded ${response.tasks.length} tasks`);
+      setTasks(response.tasks);
     } catch (error) {
       logger.error('Error loading tasks:', error);
       setTasks([]);
     } finally {
       setLoading(false);
     }
-  }, [accounts, instance]);
+  }, []);
 
   const loadReviewTasks = useCallback(async () => {
     try {
-      const account = accounts[0];
-      if (!account) {
-        logger.log('TasksGrid: No MSAL account available for review tasks');
-        return;
-      }
-
-      logger.log('TasksGrid: Acquiring token for review tasks...');
-      const tokenResponse = await instance.acquireTokenSilent({
-        scopes: ['api://d3037c11-a541-4f21-8862-8079137a0cde/access_as_user'],
-        account: account,
-      });
-
-      const axiosInstance = axios.create({
-        baseURL: API_BASE_URL,
-        headers: {
-          Authorization: `Bearer ${tokenResponse.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
       logger.log('TasksGrid: Fetching review tasks from API...');
-      const response = await axiosInstance.get<ReviewTask[]>(
-        '/v1/admin/kvk-verification/flagged-entities'
-      );
-      logger.log(`TasksGrid: Loaded ${response.data.length} review tasks`, response.data);
-      setReviewTasks(response.data);
+      const response = await apiV2.getKvkReviewTasks();
+      logger.log(`TasksGrid: Loaded ${response.length} review tasks`, response);
+      setReviewTasks(response);
     } catch (error: unknown) {
       logger.error('TasksGrid: Error loading review tasks:', error);
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as {
-          response?: { status: number; statusText: string; data: unknown };
-        };
-        if (axiosError.response) {
-          logger.error('TasksGrid: API error details:', {
-            status: axiosError.response.status,
-            statusText: axiosError.response.statusText,
-            data: axiosError.response.data,
-          });
-        }
-      }
     }
-  }, [accounts, instance]);
+  }, []);
 
   const loadApplications = useCallback(async () => {
     try {
@@ -297,23 +239,7 @@ const TasksGrid: React.FC = () => {
       if (!selectedReviewTask) return;
 
       try {
-        const account = accounts[0];
-        if (!account) return;
-
-        const tokenResponse = await instance.acquireTokenSilent({
-          scopes: ['api://d3037c11-a541-4f21-8862-8079137a0cde/access_as_user'],
-          account: account,
-        });
-
-        const axiosInstance = axios.create({
-          baseURL: API_BASE_URL,
-          headers: {
-            Authorization: `Bearer ${tokenResponse.accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        await axiosInstance.post('/v1/admin/kvk-verification/review', {
+        await apiV2.reviewKvkVerification({
           legal_entity_id: selectedReviewTask.legal_entity_id,
           decision,
           reviewer_notes: notes || '',
@@ -327,7 +253,7 @@ const TasksGrid: React.FC = () => {
         alert('Failed to submit review decision');
       }
     },
-    [selectedReviewTask, accounts, instance, loadReviewTasks]
+    [selectedReviewTask, loadReviewTasks]
   );
 
   const openReviewDialog = useCallback((task: ReviewTask) => {
