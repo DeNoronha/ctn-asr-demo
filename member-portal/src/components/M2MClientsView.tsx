@@ -7,6 +7,7 @@ import { Button, TextInput, Textarea, Checkbox, Modal, Group } from '@mantine/co
 import { DataTable } from 'mantine-datatable';
 import { Key, Plus, Trash2, Copy, AlertTriangle } from './icons';
 import React, { useEffect, useState } from 'react';
+import { apiClient } from '../services/apiClient';
 
 interface M2MClient {
   m2m_client_id: string;
@@ -63,18 +64,8 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
   const loadClients = async () => {
     setLoading(true);
     try {
-      const token = await getAccessToken();
-      const response = await fetch(`${apiBaseUrl}/legal-entities/${legalEntityId}/m2m-clients`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setClients(data);
-      } else {
-        onNotification('Failed to load M2M clients', 'error');
-      }
+      const data = await apiClient.member.getM2MClients(legalEntityId);
+      setClients(data);
     } catch (error) {
       console.error('Error loading M2M clients:', error);
       onNotification('Failed to load M2M clients', 'error');
@@ -91,39 +82,25 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
 
     setLoading(true);
     try {
-      const token = await getAccessToken();
-      const response = await fetch(`${apiBaseUrl}/legal-entities/${legalEntityId}/m2m-clients`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          client_name: formData.client_name,
-          description: formData.description,
-          assigned_scopes: formData.scopes,
-        }),
+      const newClient = await apiClient.member.createM2MClient(legalEntityId, {
+        client_name: formData.client_name,
+        description: formData.description,
+        assigned_scopes: formData.scopes,
       });
 
-      if (response.ok) {
-        const newClient = await response.json();
-        onNotification('M2M client created successfully', 'success');
-        setShowAddDialog(false);
-        setFormData({ client_name: '', description: '', scopes: [] });
+      onNotification('M2M client created successfully', 'success');
+      setShowAddDialog(false);
+      setFormData({ client_name: '', description: '', scopes: [] });
 
-        // Show secret dialog with the generated secret
-        setSelectedClient(newClient.client);
-        setGeneratedSecret(newClient.client_secret);
-        setShowSecretDialog(true);
+      // Show secret dialog with the generated secret
+      setSelectedClient(newClient.client);
+      setGeneratedSecret(newClient.client_secret);
+      setShowSecretDialog(true);
 
-        loadClients();
-      } else {
-        const error = await response.json();
-        onNotification(error.error || 'Failed to create M2M client', 'error');
-      }
-    } catch (error) {
+      loadClients();
+    } catch (error: any) {
       console.error('Error creating M2M client:', error);
-      onNotification('Failed to create M2M client', 'error');
+      onNotification(error.response?.data?.error || 'Failed to create M2M client', 'error');
     } finally {
       setLoading(false);
     }
@@ -132,26 +109,11 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
   const handleGenerateSecret = async (client: M2MClient) => {
     setLoading(true);
     try {
-      const token = await getAccessToken();
-      const response = await fetch(
-        `${apiBaseUrl}/m2m-clients/${client.m2m_client_id}/generate-secret`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setSelectedClient(client);
-        setGeneratedSecret(data.client_secret);
-        setShowSecretDialog(true);
-        onNotification('New secret generated successfully', 'success');
-      } else {
-        onNotification('Failed to generate secret', 'error');
-      }
+      const data = await apiClient.member.generateM2MClientSecret(client.m2m_client_id);
+      setSelectedClient(client);
+      setGeneratedSecret(data.client_secret);
+      setShowSecretDialog(true);
+      onNotification('New secret generated successfully', 'success');
     } catch (error) {
       console.error('Error generating secret:', error);
       onNotification('Failed to generate secret', 'error');
@@ -165,22 +127,11 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
 
     setLoading(true);
     try {
-      const token = await getAccessToken();
-      const response = await fetch(`${apiBaseUrl}/m2m-clients/${selectedClient.m2m_client_id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        onNotification('M2M client deactivated successfully', 'success');
-        setShowDeleteDialog(false);
-        setSelectedClient(null);
-        loadClients();
-      } else {
-        onNotification('Failed to deactivate M2M client', 'error');
-      }
+      await apiClient.member.deleteM2MClient(selectedClient.m2m_client_id);
+      onNotification('M2M client deactivated successfully', 'success');
+      setShowDeleteDialog(false);
+      setSelectedClient(null);
+      loadClients();
     } catch (error) {
       console.error('Error deleting M2M client:', error);
       onNotification('Failed to deactivate M2M client', 'error');

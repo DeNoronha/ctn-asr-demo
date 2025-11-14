@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, TextInput, Text } from '@mantine/core';
 
 import type { ComponentProps } from '../types';
+import { apiClient } from '../services/apiClient';
 
 interface DnsToken {
   tokenId: string;
@@ -40,19 +41,8 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
 
   const loadPendingTokens = async () => {
     try {
-      const token = await getAccessToken();
-      const response = await fetch(
-        `${apiBaseUrl}/entities/${memberData.legalEntityId}/dns/tokens`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
+      if (memberData.legalEntityId) {
+        const data = await apiClient.member.getDnsTokens(memberData.legalEntityId);
         setTokens(data.tokens || []);
       }
     } catch (error) {
@@ -77,27 +67,12 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
     setError(null);
 
     try {
-      const token = await getAccessToken();
-      const response = await fetch(
-        `${apiBaseUrl}/entities/${memberData.legalEntityId}/dns/token`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ domain }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to generate token: ${response.status}`);
+      if (memberData.legalEntityId) {
+        const data = await apiClient.member.generateDnsToken(memberData.legalEntityId, domain);
+        setTokens([data, ...tokens]);
+        setDomain('');
+        onNotification('DNS verification token generated successfully', 'success');
       }
-
-      const data = await response.json();
-      setTokens([data, ...tokens]);
-      setDomain('');
-      onNotification('DNS verification token generated successfully', 'success');
     } catch (error) {
       console.error('Error generating DNS token:', error);
       setError(error instanceof Error ? error.message : 'Failed to generate token');
@@ -111,20 +86,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
     setVerifying(tokenId);
 
     try {
-      const token = await getAccessToken();
-      const response = await fetch(`${apiBaseUrl}/dns/verify/${tokenId}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Verification failed: ${response.status}`);
-      }
-
-      const result: VerificationResult = await response.json();
+      const result: VerificationResult = await apiClient.member.verifyDnsToken(tokenId);
 
       if (result.verified) {
         onNotification(

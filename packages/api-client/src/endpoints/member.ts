@@ -112,34 +112,42 @@ export class MemberEndpoint {
   }
 
   /**
-   * Get DNS verification records for current member
+   * Get DNS verification tokens for a legal entity
    */
-  async getDnsVerification(): Promise<any> {
-    const { data } = await this.axios.get('/member/dns-verification');
+  async getDnsTokens(legalEntityId: string): Promise<any> {
+    const { data } = await this.axios.get(`/entities/${legalEntityId}/dns/tokens`);
     return data;
   }
 
   /**
-   * Verify DNS records for current member
+   * Generate DNS verification token for a legal entity
    */
-  async verifyDns(): Promise<any> {
-    const { data } = await this.axios.post('/member/dns-verification/verify', {});
+  async generateDnsToken(legalEntityId: string, domain: string): Promise<any> {
+    const { data } = await this.axios.post(`/entities/${legalEntityId}/dns/token`, { domain });
     return data;
   }
 
   /**
-   * Get M2M clients for current member
+   * Verify DNS token
    */
-  async getM2MClients(): Promise<any> {
-    const { data } = await this.axios.get('/member/m2m-clients');
+  async verifyDnsToken(tokenId: string): Promise<any> {
+    const { data } = await this.axios.post(`/dns/verify/${tokenId}`, {});
     return data;
   }
 
   /**
-   * Create M2M client for current member
+   * Get M2M clients for a legal entity
    */
-  async createM2MClient(clientData: any): Promise<any> {
-    const { data } = await this.axios.post('/member/m2m-clients', clientData);
+  async getM2MClients(legalEntityId: string): Promise<any> {
+    const { data } = await this.axios.get(`/legal-entities/${legalEntityId}/m2m-clients`);
+    return data;
+  }
+
+  /**
+   * Create M2M client for a legal entity
+   */
+  async createM2MClient(legalEntityId: string, clientData: any): Promise<any> {
+    const { data } = await this.axios.post(`/legal-entities/${legalEntityId}/m2m-clients`, clientData);
     return data;
   }
 
@@ -147,14 +155,14 @@ export class MemberEndpoint {
    * Delete M2M client
    */
   async deleteM2MClient(clientId: string): Promise<void> {
-    await this.axios.delete(`/member/m2m-clients/${clientId}`);
+    await this.axios.delete(`/m2m-clients/${clientId}`);
   }
 
   /**
    * Generate secret for M2M client
    */
   async generateM2MClientSecret(clientId: string): Promise<any> {
-    const { data } = await this.axios.post(`/member/m2m-clients/${clientId}/secret`, {});
+    const { data } = await this.axios.post(`/m2m-clients/${clientId}/generate-secret`, {});
     return data;
   }
 }
