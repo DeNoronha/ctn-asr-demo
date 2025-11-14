@@ -92,16 +92,6 @@ Potential redundancy between `party_reference`, `legal_entity`, and `members` ta
 
 ---
 
-## 🟡 Medium Priority
-
-### Admin Portal - Testing & Quality Assurance
-
-**Status:** Not Started
-**Priority:** Medium
-**Source:** Desktop ROADMAP.md (November 10, 2025)
-
-**Tasks:**
-
 #### Improve Authentication Test Coverage
 - [ ] Fix test expecting login flow (design issue)
 - [ ] Investigate API request timeouts
@@ -109,13 +99,6 @@ Potential redundancy between `party_reference`, `legal_entity`, and `members` ta
 - **Impact:** Tests don't accurately reflect production behavior
 - **Timeline:** 2 hours
 - **Priority:** P1 - HIGH (Next Sprint)
-
-#### Investigate KvK Identifier Bug
-- [ ] Debug why tests cannot find identifier UI elements
-- [ ] Verify endpoint URLs are correct
-- **Impact:** Known production bug affecting user workflows
-- **Timeline:** 4 hours
-- **Priority:** P2 - MEDIUM (Backlog)
 
 ---
 
@@ -148,25 +131,7 @@ Potential redundancy between `party_reference`, `legal_entity`, and `members` ta
   - **Note:** Member portal is now stable and production-ready, can focus on BDI testing
   - **Timeline:** 4 hours
 
----
 
-### API Development
-
-**Status:** Not Started
-**Priority:** Medium
-**Source:** Desktop ROADMAP.md (November 10, 2025)
-
-**Tasks:**
-- [ ] **Define API versioning strategy**
-  - **Timeline:** 2 hours
-
-- [ ] **SEC-API-001: API keys visible in network requests**
-  - Move to secure backend proxy
-  - **Location:** Currently none, but needed for future integrations
-  - **Timeline:** 2 hours
-  - **Priority:** P0 - Address before production release
-
----
 
 ### Monitoring & Observability
 
@@ -198,18 +163,7 @@ Potential redundancy between `party_reference`, `legal_entity`, and `members` ta
 
 ---
 
-### Review Database Constraints
 
-**Status:** Not Started
-**Priority:** Low
-
-**Note:** Core constraints added in Migration 027 (November 13, 2025). Tasks below are optional enhancements.
-
-**Tasks:**
-- [ ] Review all foreign key constraints for CASCADE vs RESTRICT
-- [ ] Add partial indexes for additional soft-deleted tables (if needed)
-
----
 
 ## 🟢 Low Priority / Future Enhancements
 
@@ -227,11 +181,6 @@ Potential redundancy between `party_reference`, `legal_entity`, and `members` ta
 - [ ] **Recommended:** `fa-ctn-asr-{env}.azurewebsites.net` (dev/staging/prod)
 - [ ] **WARNING:** Requires new Function App deployment + DNS updates (breaking change)
 
-#### Implement Keycloak as Self-Hosted IdP
-- [ ] **Action:** Deploy Keycloak in CTN Azure environment for member endpoint token generation
-- [ ] **Configure Keycloak realm for BDI** (if using external Keycloak)
-  - Documentation needed
-
 #### Add Metadata Headers to All Documentation Files
 - [ ] **Issue:** Files have stable names but no "Last Updated" metadata at document top
 - [ ] **Solution:** Add structured metadata headers (Last Updated, Status, Version) to all markdown files
@@ -244,17 +193,6 @@ Potential redundancy between `party_reference`, `legal_entity`, and `members` ta
 ### Keycloak M2M Authentication - Production Readiness
 
 **Status:** ✅ Core Implementation Complete (November 13, 2025)
-
-**Completed:**
-- ✅ Database migration to generic M2M naming (migration 026)
-- ✅ Keycloak middleware created (`keycloak-auth.ts`)
-- ✅ Cloud IAM instance configured (France, EU)
-- ✅ Test service account mapped to database
-- ✅ Azure Functions environment variables configured
-- ✅ API functions updated to use Keycloak middleware
-- ✅ Deployed and tested end-to-end (all M2M endpoints working)
-- ✅ Documentation created (`docs/KEYCLOAK_M2M_AUTHENTICATION.md`)
-- ✅ Removed Zitadel remnants
 
 **Remaining Production Tasks:**
 - [ ] Create additional service accounts for production partners
@@ -295,64 +233,7 @@ Potential redundancy between `party_reference`, `legal_entity`, and `members` ta
 - Extract modal dialogs
 - Create service layers for business logic
 
----
 
-## 📊 Code Quality Refactoring (5-Phase Plan)
-
-**Status:** ✅ COMPLETE (November 13, 2025)
-
-**Summary:**
-- ✅ Phase 1: Foundation - Quick Wins (28 hours actual vs 36 hours estimated)
-- ✅ Phase 2: Critical Path - Testing Framework (12 new tests, Jest configured)
-- ✅ Phase 3: Database Optimization (Indexes added, N+1 queries optimized, guide created)
-- ✅ Phase 4: Frontend Standardization (API client migration complete, LoadingState standardized, patterns guide created)
-- ✅ Phase 5: Operational Documentation (Runbook created, deployment procedures documented)
-
-**Deliverables Created:**
-- ✅ `docs/DATABASE_OPTIMIZATION_GUIDE.md` (224 lines)
-- ✅ `docs/FRONTEND_PATTERNS.md` (271 lines)
-- ✅ `docs/OPERATIONAL_RUNBOOK.md` (325 lines)
-- ✅ `api/src/utils/__tests__/errors.test.ts` (146 lines, 12 tests)
-- ✅ `api/jest.config.js` + test infrastructure
-
-**Key Achievements:**
-- 62 API functions refactored to use `handleError()` utility
-- All admin/member portal components migrated to `@ctn/api-client`
-- All components migrated to `LoadingState` wrapper (11 components, 14 loading states)
-- Database performance indexes added (50-80% improvement potential)
-- N+1 query patterns optimized (generateBvad, GetAuthenticatedMember)
-- 500+ lines of duplicate code eliminated
-- Code health score improved: 4.2 → 5.0
-
-**Reference Commits:**
-- `c99736d` - Phase 1 Complete
-- `f2aa132` - Phases 2-5 Complete
-- `08afaae` - Performance indexes
-- `14a139c`, `7ebf7a0` - N+1 optimizations
-- `e76ccfe`, `a1fb0b1` - API client migrations
-- `f7769a1` through `e3a9cf8` - LoadingState migrations (7 batches)
-
----
-
-## 🎯 Next Actions
-
-**Immediate (This Week):**
-1. **CRITICAL:** Execute secret rotation tasks (SEC-ROTATE-001 through SEC-ROTATE-005)
-2. Complete Azure Key Vault migration (2-3 hours)
-
-**Short Term (Next 2 Weeks):**
-1. Configure BDI production setup (RSA keys, testing)
-2. Improve Admin Portal authentication test coverage
-3. Set up monitoring & observability (Application Insights, alerts, dashboard)
-
-**Long Term (Next Month):**
-1. (Optional) Evaluate schema simplification for members table
-2. Complete BDI E2E testing and external system registration
-3. Investigate and fix KvK identifier bug
-4. Define API versioning strategy
-5. Create production service accounts for partners
-6. Implement per-client rate limiting
-7. Secret rotation policy implementation (90-day cycle)
 
 ---
 
