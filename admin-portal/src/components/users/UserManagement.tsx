@@ -12,9 +12,9 @@ import { useAuth } from '../../auth/AuthContext';
 import { RoleGuard } from '../../auth/ProtectedRoute';
 import { UserRole } from '../../auth/authConfig';
 import { AuditAction, auditLogService } from '../../services/auditLogService';
-import LoadingSpinner from '../LoadingSpinner';
 import { Edit2, Shield, Trash2, UserPlus } from '../icons';
 import { PageHeader } from '../shared/PageHeader';
+import { LoadingState } from '../shared/LoadingState';
 import EditUserDialog from './EditUserDialog';
 import InviteUserDialog from './InviteUserDialog';
 import './UserManagement.css';
@@ -304,34 +304,32 @@ const UserManagement: React.FC = () => {
           </Button>
         </div>
 
-        <div className="user-stats">
-          <div className="stat-item">
-            <span className="stat-label">Total Users</span>
-            <span className="stat-value">{users.length}</span>
+        <LoadingState loading={loading} minHeight={400}>
+          <div className="user-stats">
+            <div className="stat-item">
+              <span className="stat-label">Total Users</span>
+              <span className="stat-value">{users.length}</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-label">System Admins</span>
+              <span className="stat-value">
+                {users.filter((u) => u.primaryRole === UserRole.SYSTEM_ADMIN).length}
+              </span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-label">Association Admins</span>
+              <span className="stat-value">
+                {users.filter((u) => u.primaryRole === UserRole.ASSOCIATION_ADMIN).length}
+              </span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-label">Members</span>
+              <span className="stat-value">
+                {users.filter((u) => u.primaryRole === UserRole.MEMBER).length}
+              </span>
+            </div>
           </div>
-          <div className="stat-item">
-            <span className="stat-label">System Admins</span>
-            <span className="stat-value">
-              {users.filter((u) => u.primaryRole === UserRole.SYSTEM_ADMIN).length}
-            </span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Association Admins</span>
-            <span className="stat-value">
-              {users.filter((u) => u.primaryRole === UserRole.ASSOCIATION_ADMIN).length}
-            </span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Members</span>
-            <span className="stat-value">
-              {users.filter((u) => u.primaryRole === UserRole.MEMBER).length}
-            </span>
-          </div>
-        </div>
 
-        {loading ? (
-          <LoadingSpinner size="large" message="Loading users..." />
-        ) : (
           <ErrorBoundary>
             <DataTable
               records={users}
@@ -343,7 +341,7 @@ const UserManagement: React.FC = () => {
               highlightOnHover
             />
           </ErrorBoundary>
-        )}
+        </LoadingState>
 
         {showInviteDialog && (
           <InviteUserDialog

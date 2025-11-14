@@ -3,13 +3,14 @@
  * Displays comprehensive system health monitoring with real-time status checks
  */
 
-import { Button, Card, Checkbox, Loader } from '@mantine/core';
+import { Button, Card, Checkbox } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 
 import { formatDateTime } from '../utils/dateFormat';
 import { Activity, AlertTriangle, CheckCircle, RefreshCw, XCircle } from './icons';
 import { PageHeader } from './shared/PageHeader';
+import { LoadingState } from './shared/LoadingState';
 import './HealthDashboard.css';
 import { apiV2 } from '../services/apiV2';
 
@@ -118,32 +119,19 @@ export const HealthDashboard: React.FC = () => {
     return `${hours}h ago`;
   };
 
-  if (loading && !health) {
-    return (
-      <div className="health-dashboard-loading">
-        <Loader type="infinite-spinner" size="lg" />
-        <p>Loading health status...</p>
-      </div>
-    );
-  }
-
-  if (error && !health) {
-    return (
-      <div className="health-dashboard-error">
-        <XCircle className="error-icon" size={48} />
-        <h2>Error Loading Health Status</h2>
-        <p>{error}</p>
-        <Button onClick={fetchHealth} color="blue">
-          <RefreshCw size={16} /> Retry
-        </Button>
-      </div>
-    );
-  }
-
-  if (!health) return null;
-
   return (
-    <div className="health-dashboard">
+    <LoadingState loading={loading && !health} minHeight={400}>
+      {error && !health ? (
+        <div className="health-dashboard-error">
+          <XCircle className="error-icon" size={48} />
+          <h2>Error Loading Health Status</h2>
+          <p>{error}</p>
+          <Button onClick={fetchHealth} color="blue">
+            <RefreshCw size={16} /> Retry
+          </Button>
+        </div>
+      ) : !health ? null : (
+        <div className="health-dashboard">
       <div className="health-header">
         <PageHeader titleKey="healthMonitor" />
         <div className="health-actions">
@@ -351,6 +339,8 @@ export const HealthDashboard: React.FC = () => {
           )}
         </div>
       )}
-    </div>
+        </div>
+      )}
+    </LoadingState>
   );
 };
