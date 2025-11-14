@@ -213,9 +213,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
         resizable: true,
         sortable: true,
         // SEC-007: Sanitize user-generated text fields in grid
-        render: (record) => (
-          <div>{sanitizeGridCell(record.client_name)}</div>
-        ),
+        render: (record) => <div>{sanitizeGridCell(record.client_name)}</div>,
       },
       {
         accessor: 'azure_client_id',
@@ -346,8 +344,8 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
       <Modal opened={showAddDialog} onClose={handleAddDialogClose} title="Add M2M Client" size="lg">
         <div className="identifier-form">
           <div className="form-field">
-            <label>Client Name *</label>
             <TextInput
+              label="Client Name *"
               value={formData.client_name}
               onChange={handleClientNameChange}
               placeholder="e.g., Container Tracking System"
@@ -355,8 +353,8 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
           </div>
 
           <div className="form-field">
-            <label>Description</label>
             <Textarea
+              label="Description"
               value={formData.description}
               onChange={handleDescriptionChange}
               placeholder="Brief description of this client application"
@@ -365,8 +363,8 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
           </div>
 
           <div className="form-field">
-            <label>Assigned Scopes *</label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+            <div style={{ marginBottom: '8px', fontWeight: 500 }}>Assigned Scopes *</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {AVAILABLE_SCOPES.map((scope) => (
                 <label
                   key={scope.value}
