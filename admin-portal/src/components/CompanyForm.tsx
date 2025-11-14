@@ -259,7 +259,10 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
                 data={IDENTIFIER_TYPES}
                 value={newIdentifier.identifier_type}
                 onChange={(value) =>
-                  setNewIdentifier({ ...newIdentifier, identifier_type: value || 'KVK' })
+                  setNewIdentifier({
+                    ...newIdentifier,
+                    identifier_type: (value || 'KVK') as LegalEntityIdentifier['identifier_type'],
+                  })
                 }
               />
             </div>

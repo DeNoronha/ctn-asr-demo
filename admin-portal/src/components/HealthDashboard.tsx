@@ -240,7 +240,7 @@ export const HealthDashboard: React.FC = () => {
                           {health.checks.applicationInsights.status}
                         </span>
                       </div>
-                      {health.checks.applicationInsights.details?.configured && (
+                      {Boolean(health.checks.applicationInsights.details?.configured) && (
                         <div className="check-detail">
                           <span className="detail-label">Configured:</span>
                           <span className="detail-value">Yes</span>
@@ -323,13 +323,13 @@ export const HealthDashboard: React.FC = () => {
                           <div className="check-detail">
                             <span className="detail-label">Admin Portal:</span>
                             <span className="detail-value">
-                              {health.checks.staticWebApps.details.adminPortal}
+                              {String(health.checks.staticWebApps.details.adminPortal)}
                             </span>
                           </div>
                           <div className="check-detail">
                             <span className="detail-label">Member Portal:</span>
                             <span className="detail-value">
-                              {health.checks.staticWebApps.details.memberPortal}
+                              {String(health.checks.staticWebApps.details.memberPortal)}
                             </span>
                           </div>
                         </>

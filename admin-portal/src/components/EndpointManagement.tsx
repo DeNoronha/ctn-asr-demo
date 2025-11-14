@@ -85,8 +85,10 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
         endpoint_name: formData.endpoint_name,
         endpoint_url: formData.endpoint_url,
         endpoint_description: formData.endpoint_description,
-        data_category: formData.data_category || 'CONTAINER',
-        endpoint_type: formData.endpoint_type || 'REST',
+        data_category: (formData.data_category ||
+          'CONTAINER') as LegalEntityEndpoint['data_category'],
+        endpoint_type: (formData.endpoint_type ||
+          'REST_API') as LegalEntityEndpoint['endpoint_type'],
         is_active: true,
       });
 
