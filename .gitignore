@@ -4,8 +4,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+
+# Build outputs (ignored globally)
 dist/
 build/
+
+# EXCEPTION: Track api-client dist files (needed for CI/CD)
+# Lesson learned: November 14, 2025 - Missing dist files caused member portal build failure
+# See: docs/LESSONS_LEARNED_BUILD_FAILURE_2025-11-14.md
+!packages/api-client/dist/
 
 # Azure
 .azure-pipelines/variables.secret.yml
@@ -83,10 +90,12 @@ console-logs.json
 network-requests.json
 debug-summary.txt
 
-# Compiled TypeScript (except config files)
-# Note: Some projects may track compiled files intentionally (e.g., packages/api-client/dist/)
-# Use project-specific .gitignore files to override if needed
+# Compiled TypeScript source maps (ignored globally)
 *.js.map
+
+# EXCEPTION: Track api-client source maps (needed for debugging)
+!packages/api-client/dist/**/*.js.map
+
 # Keep JavaScript config files
 !*.config.js
 !vite.config.js
