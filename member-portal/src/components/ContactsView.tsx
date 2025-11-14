@@ -68,13 +68,33 @@ export const ContactsView: React.FC<ComponentProps> = ({
     e.preventDefault();
     try {
       if (editingContact) {
+        // Transform formData to UpdateContactRequest format
+        const updateRequest = {
+          email: formData.email,
+          full_name: formData.full_name,
+          contact_type: formData.contact_type as 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER' | undefined,
+          phone: formData.phone,
+          mobile: formData.mobile,
+          job_title: formData.job_title,
+          department: formData.department,
+        };
         await apiClient.member.updateContact(
           editingContact.legal_entity_contact_id,
-          formData as import('../types').Contact
+          updateRequest
         );
         onNotification('Contact updated successfully', 'success');
       } else {
-        await apiClient.member.createContact(formData as import('../types').Contact);
+        // Transform formData to ContactRequest format (name instead of full_name, type instead of contact_type)
+        const createRequest = {
+          email: formData.email || '',
+          name: formData.full_name || '',
+          type: (formData.contact_type || 'OTHER') as 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER',
+          phone: formData.phone,
+          mobile: formData.mobile,
+          job_title: formData.job_title,
+          department: formData.department,
+        };
+        await apiClient.member.createContact(createRequest);
         onNotification('Contact created successfully', 'success');
       }
 

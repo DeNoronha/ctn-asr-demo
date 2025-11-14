@@ -42,36 +42,7 @@
   - **Action:** Regenerate in Azure Portal, update Function App settings
   - **Timeline:** 20 minutes
 
----
 
-### Azure Key Vault Migration
-
-**Status:** Not Started
-**Priority:** High
-**Source:** Desktop ROADMAP.md (November 10, 2025)
-**Estimated Effort:** 2-3 hours
-
-**Problem:**
-Secrets currently in environment variables, need centralized secure storage.
-
-**Tasks:**
-- [ ] Move all secrets to Azure Key Vault
-  - PostgreSQL connection strings
-  - JWT secrets
-  - Azure Storage account keys
-  - Event Grid access keys
-- [ ] Update Function App configuration to reference Key Vault secrets
-- [ ] Create/update .credentials file (not in Git) for local development
-- [ ] Store all credentials, URLs, Azure Function info for all 4 portals
-
-**Impact:**
-- Security best practice
-- Enables centralized secret rotation
-- Reduces risk of credential exposure
-
-**Reference:** See docs/SECURITY_AUDIT_REPORT.md for migration instructions
-
----
 
 ### Database Schema Simplification
 
