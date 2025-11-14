@@ -142,48 +142,9 @@ steps:
     displayName: 'Run npm security audit'
     continueOnError: true
 
-  - script: |
-      npm install -g @aikidosec/ci-api-client
-      aikido-api-client apikey $(AIKIDO-CI-API-KEY)
-    displayName: 'Install Aikido CI client'
-    continueOnError: true
-
-  - script: |
-      cd admin-portal
-
-      # Get current commit
-      HEAD_COMMIT=$(git rev-parse HEAD)
-      echo "Current commit: $HEAD_COMMIT"
-
-      # Try to get parent commit, fallback to first commit if not available
-      if git rev-parse HEAD~1 >/dev/null 2>&1; then
-        BASE_COMMIT=$(git rev-parse HEAD~1)
-        echo "Parent commit found: $BASE_COMMIT"
-      else
-        # Fallback: use the first commit in the repo or an empty tree
-        BASE_COMMIT=$(git rev-list --max-parents=0 HEAD 2>/dev/null || echo "4b825dc642cb6eb9a060e54bf8d69288fbee4904")
-        echo "Using fallback base commit: $BASE_COMMIT"
-      fi
-
-      echo "Scanning commits: $BASE_COMMIT -> $HEAD_COMMIT"
-
-      # Run Aikido scan (free tier - no fail-on flags)
-      # Note: --fail-on-sast-scan and --fail-on-secrets-scan require paid plan
-      aikido-api-client scan 1094319 $BASE_COMMIT $HEAD_COMMIT main \
-        --minimum-severity-level MEDIUM
-    displayName: 'Run Aikido Security scan'
-    env:
-      AIKIDO_CI_API_KEY: $(AIKIDO-CI-API-KEY)
-    continueOnError: true
-
-  - task: PublishPipelineArtifact@1
-    displayName: 'Publish security reports'
-    condition: always()
-    inputs:
-      targetPath: 'admin-portal/reports'
-      artifact: 'security-reports-admin'
-      publishLocation: 'pipeline'
-    continueOnError: true
+  # Note: Aikido security scanning removed due to free tier limitations
+  # The free tier does not support CI/CD integration features
+  # Security findings can still be viewed at: https://app.aikido.dev
 
   # ========================================
   # Verify API Deployment
