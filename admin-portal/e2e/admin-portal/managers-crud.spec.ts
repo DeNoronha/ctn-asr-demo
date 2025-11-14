@@ -449,16 +449,18 @@ test.describe('Managers - Error Handling', () => {
 
     // Override window.alert to detect if it's called
     await page.evaluate(() => {
-      (window as any).alertCalled = false;
+      (window as unknown as { alertCalled: boolean }).alertCalled = false;
       window.alert = () => {
-        (window as any).alertCalled = true;
+        (window as unknown as { alertCalled: boolean }).alertCalled = true;
       };
     });
 
     await page.locator('.sidebar').getByText('Members', { exact: true }).click();
     await page.waitForTimeout(2000);
 
-    const alertCalled = await page.evaluate(() => (window as any).alertCalled);
+    const alertCalled = await page.evaluate(
+      () => (window as unknown as { alertCalled: boolean }).alertCalled
+    );
 
     expect(alertCalled).toBe(false);
     console.log('✅ No browser alerts used (toast notifications instead)');

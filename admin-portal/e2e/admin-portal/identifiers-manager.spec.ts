@@ -503,7 +503,7 @@ test.describe('Identifiers Manager - Delete Identifier', () => {
     }
   });
 
-  test('should perform soft delete (not hard delete)', async ({ page }) => {
+  test('should perform soft delete (not hard delete)', async ({ page: _page }) => {
     // This test would verify that deleted identifiers are marked as deleted
     // rather than removed from the database
     console.log('Note: Soft delete verification requires backend inspection');
@@ -565,7 +565,7 @@ test.describe('Identifiers Manager - All 12 Identifier Types', () => {
     }
   });
 
-  test('should validate identifier formats for different types', async ({ page }) => {
+  test('should validate identifier formats for different types', async ({ page: _page }) => {
     // Test that different identifier types have appropriate validation
     // For example: KVK should be 8 digits, LEI should be 20 alphanumeric, etc.
     console.log('Note: Format validation testing requires type-specific test data');

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { type Page, expect, test } from '@playwright/test';
 
 /**
  * Width Consistency Investigation Test
@@ -31,7 +31,7 @@ test.describe('Admin Portal Width Consistency Investigation', () => {
    * Helper function to measure widths on any screen
    */
   async function measureScreenWidths(
-    page: any,
+    page: Page,
     screenName: string,
     waitForSelector?: string
   ): Promise<WidthMeasurement> {

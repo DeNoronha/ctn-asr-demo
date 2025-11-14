@@ -697,7 +697,7 @@ test.describe('Priority Area Tests - Authenticated', () => {
 });
 
 test.describe('Summary Report Generation', () => {
-  test('Generate comprehensive findings report', async ({ page }) => {
+  test('Generate comprehensive findings report', async ({ page: _page }) => {
     console.log('📊 Generating comprehensive findings report...');
 
     // Compile all findings from JSON files
@@ -711,7 +711,7 @@ test.describe('Summary Report Generation', () => {
       '08-about-page-findings.json',
     ];
 
-    const allFindings: Record<string, any> = {};
+    const allFindings: Record<string, unknown> = {};
 
     for (const file of findingsFiles) {
       const filePath = path.join(OUTPUT_DIR, file);
