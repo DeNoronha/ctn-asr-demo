@@ -3,6 +3,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import type { ComponentProps, Endpoint } from '../types';
 import { EndpointRegistrationWizard } from './EndpointRegistrationWizard';
+import { apiClient } from '../services/apiClient';
 
 export const EndpointsView: React.FC<ComponentProps> = ({
   apiBaseUrl,
@@ -22,27 +23,9 @@ export const EndpointsView: React.FC<ComponentProps> = ({
   const loadEndpoints = async () => {
     setLoading(true);
     try {
-      const token = await getAccessToken();
-
-      console.log('Loading endpoints from:', `${apiBaseUrl}/member-endpoints`);
-
-      const response = await fetch(`${apiBaseUrl}/member-endpoints`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      console.log('Endpoints response status:', response.status);
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Endpoints loaded:', data);
-        setEndpoints(data.endpoints || []);
-      } else {
-        const errorText = await response.text();
-        console.error('Failed to load endpoints:', response.status, errorText);
-      }
+      const data = await apiClient.member.getEndpoints();
+      console.log('Endpoints loaded:', data);
+      setEndpoints(data.endpoints || []);
     } catch (error) {
       console.error('Error loading endpoints:', error);
       onNotification('Failed to load endpoints', 'error');

@@ -2,6 +2,7 @@ import { Button, Modal } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import type { ComponentProps, Token } from '../types';
+import { apiClient } from '../services/apiClient';
 
 export const TokensView: React.FC<ComponentProps> = ({
   apiBaseUrl,
@@ -21,18 +22,8 @@ export const TokensView: React.FC<ComponentProps> = ({
   const loadTokens = async () => {
     setLoading(true);
     try {
-      const token = await getAccessToken();
-      const response = await fetch(`${apiBaseUrl}/member/tokens`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setTokens(data.tokens || []);
-      }
+      const data = await apiClient.member.getTokens();
+      setTokens(data.tokens || []);
     } catch (error) {
       console.error('Error loading tokens:', error);
       onNotification('Failed to load tokens', 'error');
@@ -44,24 +35,11 @@ export const TokensView: React.FC<ComponentProps> = ({
   const handleGenerateToken = async () => {
     setGenerating(true);
     try {
-      const token = await getAccessToken();
-      const response = await fetch(`${apiBaseUrl}/oauth/token`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          grant_type: 'client_credentials',
-          scope: 'member.read member.write',
-        }),
+      const data = await apiClient.member.createToken({
+        grant_type: 'client_credentials',
+        scope: 'member.read member.write',
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate token');
-      }
-
-      const data = await response.json();
       setNewToken(data.access_token);
       setShowTokenDialog(true);
       onNotification('Token generated successfully', 'success');
