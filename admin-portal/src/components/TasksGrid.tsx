@@ -721,8 +721,8 @@ const TasksGrid: React.FC = () => {
       >
         <div className="dialog-content">
           <div className="form-field">
-            <label>Task Type</label>
             <Select
+              label="Task Type"
               data={taskTypeOptions}
               value={formData.task_type}
               onChange={(value) => setFormData({ ...formData, task_type: value || '' })}
@@ -730,8 +730,8 @@ const TasksGrid: React.FC = () => {
           </div>
 
           <div className="form-field">
-            <label>Title</label>
             <TextInput
+              label="Title"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="Task title"
@@ -739,8 +739,8 @@ const TasksGrid: React.FC = () => {
           </div>
 
           <div className="form-field">
-            <label>Description</label>
             <Textarea
+              label="Description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Task description..."
@@ -749,8 +749,8 @@ const TasksGrid: React.FC = () => {
           </div>
 
           <div className="form-field">
-            <label>Priority</label>
             <Select
+              label="Priority"
               data={priorityOptions}
               value={formData.priority}
               onChange={(value) =>
@@ -763,8 +763,8 @@ const TasksGrid: React.FC = () => {
           </div>
 
           <div className="form-field">
-            <label>Assign To (Email)</label>
             <TextInput
+              label="Assign To (Email)"
               value={formData.assigned_to_email}
               onChange={(e) => setFormData({ ...formData, assigned_to_email: e.target.value })}
               placeholder="admin@ctn.nl"
@@ -772,8 +772,8 @@ const TasksGrid: React.FC = () => {
           </div>
 
           <div className="form-field">
-            <label>Due Date</label>
             <DatePickerInput
+              label="Due Date"
               value={formData.due_date}
               onChange={(value) =>
                 setFormData({ ...formData, due_date: value ? new Date(value) : null })
@@ -805,16 +805,16 @@ const TasksGrid: React.FC = () => {
           <>
             <div className="dialog-content">
               <div className="form-field">
-                <label>Title</label>
                 <TextInput
+                  label="Title"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 />
               </div>
 
               <div className="form-field">
-                <label>Description</label>
                 <Textarea
+                  label="Description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={4}
@@ -822,8 +822,8 @@ const TasksGrid: React.FC = () => {
               </div>
 
               <div className="form-field">
-                <label>Priority</label>
                 <Select
+                  label="Priority"
                   data={priorityOptions}
                   value={formData.priority}
                   onChange={(value) =>
@@ -836,8 +836,8 @@ const TasksGrid: React.FC = () => {
               </div>
 
               <div className="form-field">
-                <label>Assign To (Email)</label>
                 <TextInput
+                  label="Assign To (Email)"
                   value={formData.assigned_to_email}
                   onChange={(e) => setFormData({ ...formData, assigned_to_email: e.target.value })}
                   placeholder="admin@ctn.nl"
@@ -845,8 +845,8 @@ const TasksGrid: React.FC = () => {
               </div>
 
               <div className="form-field">
-                <label>Due Date</label>
                 <DatePickerInput
+                  label="Due Date"
                   value={formData.due_date}
                   onChange={(value) =>
                     setFormData({ ...formData, due_date: value ? new Date(value) : null })
@@ -1079,13 +1079,15 @@ const TasksGrid: React.FC = () => {
                 </table>
 
                 <div style={{ marginTop: '20px' }}>
-                  <label style={{ fontWeight: 600, marginBottom: '8px', display: 'block' }}>
-                    Review Notes{' '}
-                    <span style={{ color: '#999', fontWeight: 400 }}>
-                      (optional for approval, required for rejection)
-                    </span>
-                  </label>
                   <Textarea
+                    label={
+                      <>
+                        Review Notes{' '}
+                        <span style={{ color: '#999', fontWeight: 400 }}>
+                          (optional for approval, required for rejection)
+                        </span>
+                      </>
+                    }
                     value={applicationReviewNotes}
                     onChange={(e) => setApplicationReviewNotes(e.target.value)}
                     placeholder="Add notes about your decision..."
