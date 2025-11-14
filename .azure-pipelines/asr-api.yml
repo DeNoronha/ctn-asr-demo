@@ -35,6 +35,15 @@ stages:
             inputs:
               versionSpec: '20.x'
 
+          # Fetch NVD API Key from Azure Key Vault
+          - task: AzureKeyVault@2
+            displayName: 'Fetch NVD API Key from Key Vault'
+            inputs:
+              azureSubscription: $(azureSubscription)
+              KeyVaultName: 'kv-ctn-demo-asr-dev'
+              SecretsFilter: 'NVD-API-KEY'
+              RunAsPreJob: false
+
           - script: |
               node --version
               npm --version
@@ -89,6 +98,7 @@ stages:
               format: 'HTML,JSON'
               failOnCVSS: '7'
               enableExperimental: true
+              nvdApiKey: $(NVD-API-KEY)
 
           # Verify essential functions are compiled
           - script: |

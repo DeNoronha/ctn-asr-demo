@@ -39,7 +39,7 @@ steps:
     inputs:
       azureSubscription: $(azureSubscription)
       KeyVaultName: $(keyVaultName)
-      SecretsFilter: 'AIKIDO-CI-API-KEY,AZURE-STATIC-WEB-APPS-API-TOKEN-ADMIN'
+      SecretsFilter: 'AIKIDO-CI-API-KEY,AZURE-STATIC-WEB-APPS-API-TOKEN-ADMIN,NVD-API-KEY'
       RunAsPreJob: true
 
   - task: NodeTool@0
@@ -177,6 +177,7 @@ steps:
       format: 'HTML,JSON'
       failOnCVSS: '7'
       enableExperimental: true
+      nvdApiKey: $(NVD-API-KEY)
 
   # ========================================
   # Verify API Deployment
