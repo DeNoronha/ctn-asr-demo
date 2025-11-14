@@ -130,7 +130,7 @@ steps:
   # ========================================
   # OWASP Dependency Check
   # ========================================
-  - task: dependency-check-build-task@6
+  - task: dependency-check.dependencycheck.dependency-check-build-task.dependency-check-build-task@6
     displayName: 'OWASP Dependency Check'
     continueOnError: true
     inputs:
