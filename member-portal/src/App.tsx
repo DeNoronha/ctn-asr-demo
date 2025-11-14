@@ -63,7 +63,7 @@ interface MemberData {
   jobTitle?: string;
 }
 
-function AppContent({ instance }: AppContentProps) {
+function AppContent({}: AppContentProps) {
   const { instance: msal, accounts } = useMsal();
   const [memberData, setMemberData] = useState<MemberData | null>(null);
   const [loading, setLoading] = useState(false);

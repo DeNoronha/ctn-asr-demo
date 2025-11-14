@@ -172,6 +172,7 @@ export const TokensView: React.FC<ComponentProps> = ({
           }}
         >
           <label
+            htmlFor="access_token"
             style={{
               display: 'block',
               marginBottom: '0.5rem',
@@ -183,6 +184,7 @@ export const TokensView: React.FC<ComponentProps> = ({
             Access Token:
           </label>
           <textarea
+            id="access_token"
             readOnly
             value={newToken || ''}
             rows={8}

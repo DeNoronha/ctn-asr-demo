@@ -26,8 +26,6 @@ interface VerificationResult {
 }
 
 export const DnsVerificationView: React.FC<ComponentProps> = ({
-  apiBaseUrl,
-  getAccessToken,
   memberData,
   onNotification,
 }) => {

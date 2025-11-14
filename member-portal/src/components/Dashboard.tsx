@@ -13,10 +13,7 @@ interface TierInfo {
 }
 
 export const Dashboard: React.FC<ComponentProps> = ({
-  apiBaseUrl,
-  getAccessToken,
   memberData,
-  onNotification,
 }) => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);

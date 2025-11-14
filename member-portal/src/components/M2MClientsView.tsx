@@ -310,10 +310,11 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
       >
         <div style={{ padding: '20px 0' }}>
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+            <label htmlFor="client_name" style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
               Client Name *
             </label>
             <TextInput
+              id="client_name"
               value={formData.client_name}
               onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
               placeholder="e.g., Container Tracking System"
@@ -322,10 +323,11 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+            <label htmlFor="description" style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
               Description
             </label>
             <Textarea
+              id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Brief description of this client application"
@@ -335,10 +337,10 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+            <div style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
               Assigned Scopes *
-            </label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }} role="group" aria-label="Assigned Scopes">
               {AVAILABLE_SCOPES.map((scope) => (
                 <label
                   key={scope.value}
