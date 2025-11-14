@@ -285,8 +285,8 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
       >
         <div className="endpoint-form">
           <div className="form-field">
-            <label>Endpoint Name *</label>
             <TextInput
+              label="Endpoint Name *"
               value={formData.endpoint_name}
               onChange={(e) => setFormData({ ...formData, endpoint_name: e.target.value })}
               placeholder="e.g., Container Tracking System"
@@ -294,11 +294,13 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
           </div>
 
           <div className="form-field">
-            <label>
-              Endpoint URL *
-              <HelpTooltip content={helpContent.endpointUrl} dataTestId="endpoint-url-help" />
-            </label>
             <TextInput
+              label={
+                <>
+                  Endpoint URL *
+                  <HelpTooltip content={helpContent.endpointUrl} dataTestId="endpoint-url-help" />
+                </>
+              }
               value={formData.endpoint_url}
               onChange={(e) => setFormData({ ...formData, endpoint_url: e.target.value })}
               placeholder="https://your-system.com/api"
@@ -306,8 +308,8 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
           </div>
 
           <div className="form-field">
-            <label>Description</label>
             <Textarea
+              label="Description"
               value={formData.endpoint_description}
               onChange={(e) => setFormData({ ...formData, endpoint_description: e.target.value })}
               placeholder="Brief description of this endpoint"
@@ -316,8 +318,8 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
           </div>
 
           <div className="form-field">
-            <label>Data Category *</label>
             <Select
+              label="Data Category *"
               data={DATA_CATEGORIES}
               value={formData.data_category}
               onChange={(value) => setFormData({ ...formData, data_category: value || '' })}
@@ -358,7 +360,7 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
               </p>
 
               <div className="token-info">
-                <label>Token Value:</label>
+                <strong>Token Value:</strong>
                 <div className="token-value-container">
                   <code className="token-value">{newToken.token_value}</code>
                   <Button
