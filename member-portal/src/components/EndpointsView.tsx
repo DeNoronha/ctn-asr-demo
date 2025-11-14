@@ -1,9 +1,9 @@
 import { Button, Modal } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { apiClient } from '../services/apiClient';
 import type { ComponentProps, Endpoint } from '../types';
 import { EndpointRegistrationWizard } from './EndpointRegistrationWizard';
-import { apiClient } from '../services/apiClient';
 import { LoadingState } from './shared/LoadingState';
 
 export const EndpointsView: React.FC<ComponentProps> = ({
@@ -60,46 +60,46 @@ export const EndpointsView: React.FC<ComponentProps> = ({
             </div>
           ) : (
             <table className="data-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>URL</th>
-                <th>Type</th>
-                <th>Category</th>
-                <th>Auth Method</th>
-                <th>Last Test</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {endpoints.map((endpoint) => (
-                <tr key={endpoint.legal_entity_endpoint_id}>
-                  <td>
-                    <strong>{endpoint.endpoint_name}</strong>
-                  </td>
-                  <td style={{ fontSize: '0.85rem' }}>{endpoint.endpoint_url}</td>
-                  <td>{endpoint.endpoint_type}</td>
-                  <td>{endpoint.data_category || '-'}</td>
-                  <td>{endpoint.authentication_method || '-'}</td>
-                  <td>
-                    {endpoint.last_connection_status ? (
-                      <span
-                        className={`status-badge ${endpoint.last_connection_status === 'SUCCESS' ? 'status-active' : 'status-inactive'}`}
-                      >
-                        {endpoint.last_connection_status}
-                      </span>
-                    ) : (
-                      '-'
-                    )}
-                  </td>
-                  <td>
-                    <span className={endpoint.is_active ? 'status-active' : 'status-inactive'}>
-                      {endpoint.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>URL</th>
+                  <th>Type</th>
+                  <th>Category</th>
+                  <th>Auth Method</th>
+                  <th>Last Test</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
+              </thead>
+              <tbody>
+                {endpoints.map((endpoint) => (
+                  <tr key={endpoint.legal_entity_endpoint_id}>
+                    <td>
+                      <strong>{endpoint.endpoint_name}</strong>
+                    </td>
+                    <td style={{ fontSize: '0.85rem' }}>{endpoint.endpoint_url}</td>
+                    <td>{endpoint.endpoint_type}</td>
+                    <td>{endpoint.data_category || '-'}</td>
+                    <td>{endpoint.authentication_method || '-'}</td>
+                    <td>
+                      {endpoint.last_connection_status ? (
+                        <span
+                          className={`status-badge ${endpoint.last_connection_status === 'SUCCESS' ? 'status-active' : 'status-inactive'}`}
+                        >
+                          {endpoint.last_connection_status}
+                        </span>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                    <td>
+                      <span className={endpoint.is_active ? 'status-active' : 'status-inactive'}>
+                        {endpoint.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
           )}
         </LoadingState>

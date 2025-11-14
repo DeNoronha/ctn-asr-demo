@@ -13,8 +13,8 @@
  * 8. About Page - Information display
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { expect, test } from '../playwright/fixtures';
 
 // Ensure output directory exists
@@ -49,7 +49,7 @@ test.describe('Priority Area Tests - Authenticated', () => {
 
     let navigated = false;
     for (const variant of navVariants) {
-      const nav = page.locator(`nav, .sidebar, .drawer`).getByText(variant, { exact: false });
+      const nav = page.locator('nav, .sidebar, .drawer').getByText(variant, { exact: false });
       if ((await nav.count()) > 0) {
         await nav.first().click();
         await page.waitForTimeout(1500);

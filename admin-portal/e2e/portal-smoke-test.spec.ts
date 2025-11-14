@@ -29,7 +29,7 @@ test.describe('Portal Smoke Tests', () => {
     // The login page should be visible (we're not authenticated)
     const bodyText = await page.locator('body').textContent();
     expect(bodyText).toBeTruthy();
-    expect(bodyText!.length).toBeGreaterThan(100); // Should have substantial content
+    expect(bodyText?.length).toBeGreaterThan(100); // Should have substantial content
 
     // Check for common UI elements that indicate the app rendered
     // Look for either the login button or the main app container
@@ -67,7 +67,7 @@ test.describe('Portal Smoke Tests', () => {
     // Verify the page is not just a white page by checking for visible content
     const bodyText = await page.locator('body').textContent();
     expect(bodyText).toBeTruthy();
-    expect(bodyText!.length).toBeGreaterThan(100); // Should have substantial content
+    expect(bodyText?.length).toBeGreaterThan(100); // Should have substantial content
 
     // Check for common UI elements that indicate the app rendered
     const hasLoginOrApp = await page.locator('button, [role="main"], .mantine-Button-root').count();

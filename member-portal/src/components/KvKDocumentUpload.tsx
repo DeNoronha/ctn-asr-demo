@@ -3,10 +3,11 @@
  * Drag-and-drop file upload for KvK extracts
  */
 
-import React, { useState, useRef } from 'react';
 import { Button } from '@mantine/core';
+import type React from 'react';
+import { useRef, useState } from 'react';
 
-import { Upload, FileText, XCircle, CheckCircle, AlertTriangle } from './icons';
+import { AlertTriangle, CheckCircle, FileText, Upload, XCircle } from './icons';
 
 interface KvKDocumentUploadProps {
   onFileSelect: (file: File | null) => void;
@@ -35,7 +36,7 @@ export const KvKDocumentUpload: React.FC<KvKDocumentUploadProps> = ({
 
     // Check file size
     if (file.size > MAX_FILE_SIZE) {
-      return `File size exceeds 10MB. Please upload a smaller file.`;
+      return 'File size exceeds 10MB. Please upload a smaller file.';
     }
 
     return null;
@@ -123,7 +124,7 @@ export const KvKDocumentUpload: React.FC<KvKDocumentUploadProps> = ({
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    return `${Math.round((bytes / k ** i) * 100) / 100} ${sizes[i]}`;
   };
 
   return (
@@ -149,9 +150,7 @@ export const KvKDocumentUpload: React.FC<KvKDocumentUploadProps> = ({
           <Upload size={48} />
           <h4>Drag and drop your KvK extract here</h4>
           <p>or click to browse</p>
-          <p className="file-types">
-            Accepted: PDF, PNG, JPG (max 10MB)
-          </p>
+          <p className="file-types">Accepted: PDF, PNG, JPG (max 10MB)</p>
         </div>
       ) : (
         <div className="file-preview">
@@ -166,19 +165,15 @@ export const KvKDocumentUpload: React.FC<KvKDocumentUploadProps> = ({
             <div className="file-details">
               <div className="file-name">{selectedFile.name}</div>
               <div className="file-meta">
-                {formatFileSize(selectedFile.size)} • {selectedFile.type.split('/')[1].toUpperCase()}
+                {formatFileSize(selectedFile.size)} •{' '}
+                {selectedFile.type.split('/')[1].toUpperCase()}
               </div>
               <div className="file-status">
                 <CheckCircle size={16} />
                 <span>Ready to upload</span>
               </div>
             </div>
-            <Button
-              variant="subtle"
-              onClick={handleClear}
-              disabled={disabled}
-              title="Remove file"
-            >
+            <Button variant="subtle" onClick={handleClear} disabled={disabled} title="Remove file">
               <XCircle size={20} />
             </Button>
           </div>

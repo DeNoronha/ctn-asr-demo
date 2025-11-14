@@ -1,32 +1,32 @@
-import { useState, useMemo } from 'react';
+import { AsrApiClient } from '@ctn/api-client';
 import {
-  Stepper,
+  Alert,
+  Badge,
   Button,
+  Code,
   Group,
+  List,
+  Loader,
+  Paper,
+  Select,
+  Stack,
+  Stepper,
+  Text,
   TextInput,
   Textarea,
-  Select,
-  Paper,
-  Text,
-  Stack,
-  Alert,
-  Code,
-  Loader,
-  Badge,
-  List,
   ThemeIcon,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import {
-  IconCheck,
-  IconMail,
-  IconKey,
-  IconRocket,
   IconAlertCircle,
+  IconCheck,
   IconClock,
+  IconKey,
+  IconMail,
+  IconRocket,
 } from '@tabler/icons-react';
-import { AsrApiClient } from '@ctn/api-client';
+import { useMemo, useState } from 'react';
 
 interface EndpointRegistrationWizardProps {
   legalEntityId: string;
@@ -112,7 +112,10 @@ export function EndpointRegistrationWizard({
       setLoading(true);
       try {
         // Create endpoint using api-client with automatic retry and token management
-        const endpoint = await apiClient.endpoints.initiateRegistration(legalEntityId, form.values) as any;
+        const endpoint = (await apiClient.endpoints.initiateRegistration(
+          legalEntityId,
+          form.values
+        )) as any;
         setEndpointId(endpoint.legal_entity_endpoint_id);
 
         // Automatically send verification email
@@ -357,11 +360,7 @@ export function EndpointRegistrationWizard({
           </Stack>
         </Stepper.Step>
 
-        <Stepper.Step
-          label="3. Test"
-          description="Connection test"
-          icon={<IconKey size={18} />}
-        >
+        <Stepper.Step label="3. Test" description="Connection test" icon={<IconKey size={18} />}>
           <Stack gap="md" mt="md">
             <Alert icon={<IconCheck size={16} />} title="Email Verified" color="green">
               Your email has been verified successfully. Now let's test the endpoint connection.
@@ -377,13 +376,31 @@ export function EndpointRegistrationWizard({
                   responding correctly.
                 </Text>
                 <List size="sm" mt="xs">
-                  <List.Item icon={<ThemeIcon size={16} radius="xl" color="blue"><IconCheck size={12} /></ThemeIcon>}>
+                  <List.Item
+                    icon={
+                      <ThemeIcon size={16} radius="xl" color="blue">
+                        <IconCheck size={12} />
+                      </ThemeIcon>
+                    }
+                  >
                     Verify HTTPS connection
                   </List.Item>
-                  <List.Item icon={<ThemeIcon size={16} radius="xl" color="blue"><IconCheck size={12} /></ThemeIcon>}>
+                  <List.Item
+                    icon={
+                      <ThemeIcon size={16} radius="xl" color="blue">
+                        <IconCheck size={12} />
+                      </ThemeIcon>
+                    }
+                  >
                     Check response time
                   </List.Item>
-                  <List.Item icon={<ThemeIcon size={16} radius="xl" color="blue"><IconCheck size={12} /></ThemeIcon>}>
+                  <List.Item
+                    icon={
+                      <ThemeIcon size={16} radius="xl" color="blue">
+                        <IconCheck size={12} />
+                      </ThemeIcon>
+                    }
+                  >
                     Validate response format
                   </List.Item>
                 </List>
@@ -392,9 +409,7 @@ export function EndpointRegistrationWizard({
 
             {testResults && (
               <Alert icon={<IconCheck size={16} />} title="Test Results" color="green">
-                <Text size="sm">
-                  Response time: {testResults.response_time_ms}ms
-                </Text>
+                <Text size="sm">Response time: {testResults.response_time_ms}ms</Text>
                 <Text size="sm">Status: {testResults.test_result}</Text>
               </Alert>
             )}
@@ -410,11 +425,7 @@ export function EndpointRegistrationWizard({
           </Stack>
         </Stepper.Step>
 
-        <Stepper.Step
-          label="4. Activate"
-          description="Final step"
-          icon={<IconRocket size={18} />}
-        >
+        <Stepper.Step label="4. Activate" description="Final step" icon={<IconRocket size={18} />}>
           <Stack gap="md" mt="md">
             <Alert icon={<IconCheck size={16} />} title="Test Successful" color="green">
               Your endpoint passed all tests and is ready to be activated.
@@ -426,9 +437,9 @@ export function EndpointRegistrationWizard({
                   Ready for Activation
                 </Text>
                 <Text size="sm" c="dimmed">
-                  Click "Activate Endpoint" below to make this endpoint available for data
-                  exchange. Once activated, other members will be able to discover and communicate
-                  with this endpoint.
+                  Click "Activate Endpoint" below to make this endpoint available for data exchange.
+                  Once activated, other members will be able to discover and communicate with this
+                  endpoint.
                 </Text>
               </Stack>
             </Paper>

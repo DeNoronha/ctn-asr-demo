@@ -6,7 +6,7 @@
  */
 
 const { chromium } = require('playwright');
-const path = require('path');
+const path = require('node:path');
 
 async function inspectWidths() {
   console.log('🔍 Starting manual width inspection...\n');

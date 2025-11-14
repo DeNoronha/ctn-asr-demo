@@ -7,7 +7,7 @@
   --ctn-text: #1e293b;
   --ctn-text-light: #64748b;
   --ctn-border: #e2e8f0;
-  --ctn-success: #059669;     /* WCAG AA compliant (7.2:1 contrast) */
+  --ctn-success: #059669; /* WCAG AA compliant (7.2:1 contrast) */
   --ctn-error: #ef4444;
   --ctn-warning: #f59e0b;
 }

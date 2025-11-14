@@ -1,16 +1,14 @@
 import { Button, Modal } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import type { ComponentProps, Contact } from '../types';
 import { apiClient } from '../services/apiClient';
+import type { ComponentProps, Contact } from '../types';
 import { LoadingState } from './shared/LoadingState';
 
 const contactTypes = ['PRIMARY', 'TECHNICAL', 'BILLING', 'SUPPORT', 'LEGAL', 'OTHER'];
 const contactMethods = ['EMAIL', 'PHONE', 'MOBILE'];
 
 export const ContactsView: React.FC<ComponentProps> = ({
-  apiBaseUrl,
-  getAccessToken,
   onNotification,
   onDataChange,
 }) => {
@@ -72,11 +70,11 @@ export const ContactsView: React.FC<ComponentProps> = ({
       if (editingContact) {
         await apiClient.member.updateContact(
           editingContact.legal_entity_contact_id,
-          formData as any
+          formData as import('../types').Contact
         );
         onNotification('Contact updated successfully', 'success');
       } else {
-        await apiClient.member.createContact(formData as any);
+        await apiClient.member.createContact(formData as import('../types').Contact);
         onNotification('Contact created successfully', 'success');
       }
 
@@ -157,133 +155,143 @@ export const ContactsView: React.FC<ComponentProps> = ({
         size="lg"
       >
         <form onSubmit={handleSubmit} className="simple-form">
+          <div className="form-field">
+            <label htmlFor="full_name">Full Name *</label>
+            <input
+              type="text"
+              id="full_name"
+              name="full_name"
+              value={formData.full_name || ''}
+              onChange={handleChange}
+              required
+              className="form-input"
+            />
+          </div>
+          <div className="form-row">
             <div className="form-field">
-              <label>Full Name *</label>
+              <label htmlFor="first_name">First Name</label>
               <input
                 type="text"
-                name="full_name"
-                value={formData.full_name || ''}
+                id="first_name"
+                name="first_name"
+                value={formData.first_name || ''}
                 onChange={handleChange}
-                required
                 className="form-input"
               />
             </div>
-            <div className="form-row">
-              <div className="form-field">
-                <label>First Name</label>
-                <input
-                  type="text"
-                  name="first_name"
-                  value={formData.first_name || ''}
-                  onChange={handleChange}
-                  className="form-input"
-                />
-              </div>
-              <div className="form-field">
-                <label>Last Name</label>
-                <input
-                  type="text"
-                  name="last_name"
-                  value={formData.last_name || ''}
-                  onChange={handleChange}
-                  className="form-input"
-                />
-              </div>
-            </div>
             <div className="form-field">
-              <label>Email *</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email || ''}
-                onChange={handleChange}
-                required
-                className="form-input"
-              />
-            </div>
-            <div className="form-row">
-              <div className="form-field">
-                <label>Phone</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone || ''}
-                  onChange={handleChange}
-                  className="form-input"
-                />
-              </div>
-              <div className="form-field">
-                <label>Mobile</label>
-                <input
-                  type="tel"
-                  name="mobile"
-                  value={formData.mobile || ''}
-                  onChange={handleChange}
-                  className="form-input"
-                />
-              </div>
-            </div>
-            <div className="form-field">
-              <label>Job Title</label>
+              <label htmlFor="last_name">Last Name</label>
               <input
                 type="text"
-                name="job_title"
-                value={formData.job_title || ''}
+                id="last_name"
+                name="last_name"
+                value={formData.last_name || ''}
+                onChange={handleChange}
+                className="form-input"
+              />
+            </div>
+          </div>
+          <div className="form-field">
+            <label htmlFor="email">Email *</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email || ''}
+              onChange={handleChange}
+              required
+              className="form-input"
+            />
+          </div>
+          <div className="form-row">
+            <div className="form-field">
+              <label htmlFor="phone">Phone</label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone || ''}
                 onChange={handleChange}
                 className="form-input"
               />
             </div>
             <div className="form-field">
-              <label>Department</label>
+              <label htmlFor="mobile">Mobile</label>
               <input
-                type="text"
-                name="department"
-                value={formData.department || ''}
+                type="tel"
+                id="mobile"
+                name="mobile"
+                value={formData.mobile || ''}
                 onChange={handleChange}
                 className="form-input"
               />
             </div>
-            <div className="form-row">
-              <div className="form-field">
-                <label>Contact Type</label>
-                <select
-                  name="contact_type"
-                  value={formData.contact_type || 'TECHNICAL'}
-                  onChange={handleChange}
-                  className="form-input"
-                >
-                  {contactTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-field">
-                <label>Preferred Contact Method</label>
-                <select
-                  name="preferred_contact_method"
-                  value={formData.preferred_contact_method || 'EMAIL'}
-                  onChange={handleChange}
-                  className="form-input"
-                >
-                  {contactMethods.map((method) => (
-                    <option key={method} value={method}>
-                      {method}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          </div>
+          <div className="form-field">
+            <label htmlFor="job_title">Job Title</label>
+            <input
+              type="text"
+              id="job_title"
+              name="job_title"
+              value={formData.job_title || ''}
+              onChange={handleChange}
+              className="form-input"
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="department">Department</label>
+            <input
+              type="text"
+              id="department"
+              name="department"
+              value={formData.department || ''}
+              onChange={handleChange}
+              className="form-input"
+            />
+          </div>
+          <div className="form-row">
+            <div className="form-field">
+              <label htmlFor="contact_type">Contact Type</label>
+              <select
+                id="contact_type"
+                name="contact_type"
+                value={formData.contact_type || 'TECHNICAL'}
+                onChange={handleChange}
+                className="form-input"
+              >
+                {contactTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="form-actions">
-              <Button type="button" onClick={() => setShowDialog(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" color="blue">
-                Save Contact
-              </Button>
+            <div className="form-field">
+              <label htmlFor="preferred_contact_method">Preferred Contact Method</label>
+              <select
+                id="preferred_contact_method"
+                name="preferred_contact_method"
+                value={formData.preferred_contact_method || 'EMAIL'}
+                onChange={handleChange}
+                className="form-input"
+              >
+                {contactMethods.map((method) => (
+                  <option key={method} value={method}>
+                    {method}
+                  </option>
+                ))}
+              </select>
             </div>
-          </form>
+          </div>
+          <div className="form-actions">
+            <Button type="button" onClick={() => setShowDialog(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" color="blue">
+              Save Contact
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { terser } from '@rollup/plugin-terser';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';

@@ -33,8 +33,8 @@ test.describe('Admin Portal - Authentication & Basic Functionality', () => {
     // Verify page has content (not blank)
     const bodyText = await page.locator('body').textContent();
     expect(bodyText).toBeTruthy();
-    expect(bodyText!.length).toBeGreaterThan(100);
-    console.log(`✅ Page has content (${bodyText!.length} characters)`);
+    expect(bodyText?.length).toBeGreaterThan(100);
+    console.log(`✅ Page has content (${bodyText?.length} characters)`);
 
     // Verify CTN branding is visible
     const hasCTNBranding = await page.locator('text=CTN').count();

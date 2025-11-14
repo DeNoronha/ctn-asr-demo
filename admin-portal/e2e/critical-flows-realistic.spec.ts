@@ -42,8 +42,8 @@ test.describe('Critical E2E Flows - Realistic', () => {
     // Verify app loaded (not a blank page)
     const bodyText = await page.locator('body').textContent();
     expect(bodyText).toBeTruthy();
-    expect(bodyText!.length).toBeGreaterThan(100);
-    console.log(`✅ Page has content (${bodyText!.length} characters)`);
+    expect(bodyText?.length).toBeGreaterThan(100);
+    console.log(`✅ Page has content (${bodyText?.length} characters)`);
 
     // Verify CTN branding visible
     const ctnVisible = await page.locator('text=CTN').count();
@@ -106,7 +106,7 @@ test.describe('Critical E2E Flows - Realistic', () => {
         let body = '';
         try {
           body = await response.text();
-        } catch (e) {
+        } catch (_e) {
           body = '[Could not read body]';
         }
         apiResponses.push({ url, status, body: body.substring(0, 200) });
@@ -122,7 +122,7 @@ test.describe('Critical E2E Flows - Realistic', () => {
       await page.goto('/members', { timeout: 10000 });
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(2000);
-    } catch (e) {
+    } catch (_e) {
       console.log('⚠️  Could not navigate to /members (may need auth)');
     }
 
@@ -184,7 +184,7 @@ test.describe('Critical E2E Flows - Realistic', () => {
         await page.waitForLoadState('networkidle');
         await page.waitForTimeout(1000);
 
-        const url = page.url();
+        const _url = page.url();
         const bodyLength = (await page.locator('body').textContent())?.length || 0;
 
         routeResults.push({
@@ -306,7 +306,7 @@ test.describe('Critical E2E Flows - Realistic', () => {
     // Verify content is visible and not cut off
     const bodyText = await page.locator('body').textContent();
     expect(bodyText).toBeTruthy();
-    expect(bodyText!.length).toBeGreaterThan(100);
+    expect(bodyText?.length).toBeGreaterThan(100);
 
     console.log('✅ Mobile viewport renders content');
 

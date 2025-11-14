@@ -6,8 +6,8 @@ import { msalInstance } from '../auth/AuthContext';
 import { formatDate } from '../utils/dateFormat';
 import { ErrorBoundary } from './ErrorBoundary';
 import { AlertCircle, AlertTriangle, CheckCircle, XCircle } from './icons';
-import { LoadingState } from './shared/LoadingState';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
+import { LoadingState } from './shared/LoadingState';
 
 interface ReviewTask {
   legal_entity_id: string;
@@ -386,7 +386,9 @@ const ReviewTasksComponent: React.FC = () => {
                     </thead>
                     <tbody>
                       <tr>
-                        <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}>
+                        <td
+                          style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}
+                        >
                           Company Name
                         </td>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>
@@ -395,8 +397,12 @@ const ReviewTasksComponent: React.FC = () => {
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>
                           {reviewDialog.task.extracted_company_name}
                         </td>
-                        <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'center' }}>
-                          {reviewDialog.task.kvk_mismatch_flags.includes('entered_name_mismatch') ? (
+                        <td
+                          style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'center' }}
+                        >
+                          {reviewDialog.task.kvk_mismatch_flags.includes(
+                            'entered_name_mismatch'
+                          ) ? (
                             <span style={{ color: '#d32f2f', fontSize: '1.2em' }}>✗</span>
                           ) : (
                             <span style={{ color: '#4caf50', fontSize: '1.2em' }}>✓</span>
@@ -404,7 +410,9 @@ const ReviewTasksComponent: React.FC = () => {
                         </td>
                       </tr>
                       <tr>
-                        <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}>
+                        <td
+                          style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}
+                        >
                           Legal ID ({reviewDialog.task.registry_type || 'KVK'})
                         </td>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>
@@ -415,7 +423,9 @@ const ReviewTasksComponent: React.FC = () => {
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>
                           {reviewDialog.task.extracted_legal_id}
                         </td>
-                        <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'center' }}>
+                        <td
+                          style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'center' }}
+                        >
                           {reviewDialog.task.kvk_mismatch_flags.includes('entered_kvk_mismatch') ? (
                             <span style={{ color: '#d32f2f', fontSize: '1.2em' }}>✗</span>
                           ) : (

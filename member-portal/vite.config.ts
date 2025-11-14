@@ -1,12 +1,12 @@
+import path from 'node:path';
+import { terser } from '@rollup/plugin-terser';
 import react from '@vitejs/plugin-react';
-import path from 'path';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
-import { terser } from '@rollup/plugin-terser';
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => ({
   plugins: [
     react(),
     viteTsconfigPaths(),

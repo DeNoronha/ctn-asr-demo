@@ -30,7 +30,7 @@ async function getGraphClient(): Promise<Client> {
     throw new Error('No authenticated accounts found');
   }
 
-  const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
+  const _clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
 
   const tokenResponse = await msalInstance.acquireTokenSilent({
     scopes: ['User.Read.All', 'User.ReadWrite.All', 'Directory.Read.All'],
@@ -153,7 +153,7 @@ export async function inviteUser(
 
     // Assign app roles (requires additional configuration)
     // Note: Role assignment requires the app to have AppRoleAssignment.ReadWrite.All permission
-    const userId = inviteResponse.invitedUser.id;
+    const _userId = inviteResponse.invitedUser.id;
 
     // TODO: Implement role assignment once app permissions are configured
     // This requires:

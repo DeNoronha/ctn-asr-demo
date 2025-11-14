@@ -652,7 +652,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     );
   };
 
-  const handleKeyDown = useCallback((event: React.KeyboardEvent, action: () => void) => {
+  const _handleKeyDown = useCallback((event: React.KeyboardEvent, action: () => void) => {
     // Handle Enter and Space keys for keyboard accessibility (WCAG 2.1 Level AA)
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault(); // Prevent page scroll on Space

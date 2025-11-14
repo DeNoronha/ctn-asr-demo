@@ -3,11 +3,12 @@
  * Member-scoped M2M client management (members see only their own clients)
  */
 
-import { Button, TextInput, Textarea, Checkbox, Modal, Group } from '@mantine/core';
+import { Button, Checkbox, Group, Modal, TextInput, Textarea } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
-import { Key, Plus, Trash2, Copy, AlertTriangle } from './icons';
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { apiClient } from '../services/apiClient';
+import { AlertTriangle, Copy, Key, Plus, Trash2 } from './icons';
 import { LoadingState } from './shared/LoadingState';
 
 interface M2MClient {
@@ -146,10 +147,10 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
   };
 
   const handleScopeToggle = (scope: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       scopes: prev.scopes.includes(scope)
-        ? prev.scopes.filter(s => s !== scope)
+        ? prev.scopes.filter((s) => s !== scope)
         : [...prev.scopes, scope],
     }));
   };
@@ -166,7 +167,14 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+        }}
+      >
         <div>
           <h3 style={{ margin: 0 }}>API Clients (M2M Authentication)</h3>
           <p style={{ color: '#666', fontSize: '0.875rem', margin: '8px 0 0 0' }}>
@@ -180,7 +188,14 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
 
       <LoadingState loading={loading && clients.length === 0} minHeight={400}>
         {clients.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f9fafb', borderRadius: '8px' }}>
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              background: '#f9fafb',
+              borderRadius: '8px',
+            }}
+          >
             <Key size={48} style={{ color: '#9ca3af' }} />
             <p style={{ fontSize: '1.125rem', fontWeight: 500, margin: '16px 0 8px 0' }}>
               No M2M clients configured
@@ -230,14 +245,16 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
                 title: 'Status',
                 width: 100,
                 render: (client) => (
-                  <span style={{
-                    padding: '4px 12px',
-                    borderRadius: '12px',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    backgroundColor: client.is_active ? '#dcfce7' : '#fee2e2',
-                    color: client.is_active ? '#166534' : '#991b1b',
-                  }}>
+                  <span
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: '12px',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      backgroundColor: client.is_active ? '#dcfce7' : '#fee2e2',
+                      color: client.is_active ? '#166534' : '#991b1b',
+                    }}
+                  >
                     {client.is_active ? '● Active' : '○ Inactive'}
                   </span>
                 ),
@@ -292,53 +309,62 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
         size="lg"
       >
         <div style={{ padding: '20px 0' }}>
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Client Name *</label>
-              <TextInput
-                value={formData.client_name}
-                onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-                placeholder="e.g., Container Tracking System"
-                style={{ width: '100%' }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Description</label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Brief description of this client application"
-                rows={3}
-                style={{ width: '100%' }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Assigned Scopes *</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
-                {AVAILABLE_SCOPES.map((scope) => (
-                  <label key={scope.value} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Checkbox
-                      checked={formData.scopes.includes(scope.value)}
-                      onChange={() => handleScopeToggle(scope.value)}
-                    />
-                    <span>{scope.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+              Client Name *
+            </label>
+            <TextInput
+              value={formData.client_name}
+              onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
+              placeholder="e.g., Container Tracking System"
+              style={{ width: '100%' }}
+            />
           </div>
 
-          <Group justify="flex-end" mt="md">
-            <Button onClick={() => setShowAddDialog(false)}>Cancel</Button>
-            <Button
-              color="blue"
-              onClick={handleAddClient}
-              disabled={!formData.client_name || formData.scopes.length === 0 || loading}
-            >
-              Create Client
-            </Button>
-          </Group>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+              Description
+            </label>
+            <Textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Brief description of this client application"
+              rows={3}
+              style={{ width: '100%' }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+              Assigned Scopes *
+            </label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+              {AVAILABLE_SCOPES.map((scope) => (
+                <label
+                  key={scope.value}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  <Checkbox
+                    checked={formData.scopes.includes(scope.value)}
+                    onChange={() => handleScopeToggle(scope.value)}
+                  />
+                  <span>{scope.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <Group justify="flex-end" mt="md">
+          <Button onClick={() => setShowAddDialog(false)}>Cancel</Button>
+          <Button
+            color="blue"
+            onClick={handleAddClient}
+            disabled={!formData.client_name || formData.scopes.length === 0 || loading}
+          >
+            Create Client
+          </Button>
+        </Group>
       </Modal>
 
       {/* Secret Display Dialog */}
@@ -354,13 +380,21 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
       >
         {selectedClient && (
           <div style={{ padding: '20px 0' }}>
-            <div style={{ marginBottom: '20px', padding: '12px', background: '#fff3e0', borderRadius: '4px' }}>
+            <div
+              style={{
+                marginBottom: '20px',
+                padding: '12px',
+                background: '#fff3e0',
+                borderRadius: '4px',
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                 <AlertTriangle size={20} />
                 <div>
                   <strong>Important: Save this secret now!</strong>
                   <p style={{ margin: '4px 0 0 0', fontSize: '0.875rem' }}>
-                    This secret will only be shown once. Store it securely - you won't be able to retrieve it again.
+                    This secret will only be shown once. Store it securely - you won't be able to
+                    retrieve it again.
                   </p>
                 </div>
               </div>

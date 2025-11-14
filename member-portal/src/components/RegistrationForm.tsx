@@ -3,9 +3,10 @@
  * Self-service registration for new CTN members
  */
 
-import React, { useState } from 'react';
-import { Button, TextInput, Textarea, Select, Checkbox, Text } from '@mantine/core';
+import { Button, Checkbox, Select, Text, TextInput, Textarea } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import type React from 'react';
+import { useState } from 'react';
 
 import { KvKDocumentUpload } from './KvKDocumentUpload';
 
@@ -39,18 +40,10 @@ interface RegistrationFormProps {
   loading?: boolean;
 }
 
-const countries = [
-  'Netherlands',
-  'Belgium',
-  'Germany',
-  'France',
-  'United Kingdom',
-  'Other',
-];
+const countries = ['Netherlands', 'Belgium', 'Germany', 'France', 'United Kingdom', 'Other'];
 
 // Validators (Mantine format - return null for valid, error message for invalid)
-const requiredValidator = (value: any) =>
-  value ? null : 'This field is required';
+const requiredValidator = (value: any) => (value ? null : 'This field is required');
 
 const emailValidator = (value: string) => {
   if (!value) return 'Email is required';
@@ -143,12 +136,20 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const validateCurrentStep = (): boolean => {
     if (currentStep === 1) {
       const step1Errors = form.validate();
-      const step1Fields = ['legalName', 'kvkNumber', 'companyAddress', 'postalCode', 'city', 'country'];
-      return !step1Fields.some(field => step1Errors.errors[field]);
-    } else if (currentStep === 2) {
+      const step1Fields = [
+        'legalName',
+        'kvkNumber',
+        'companyAddress',
+        'postalCode',
+        'city',
+        'country',
+      ];
+      return !step1Fields.some((field) => step1Errors.errors[field]);
+    }
+    if (currentStep === 2) {
       const step2Errors = form.validate();
       const step2Fields = ['contactName', 'contactEmail', 'contactPhone', 'jobTitle'];
-      return !step2Fields.some(field => step2Errors.errors[field]);
+      return !step2Fields.some((field) => step2Errors.errors[field]);
     }
     return true;
   };
@@ -229,7 +230,14 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               mb="sm"
             />
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '12px',
+                marginBottom: '12px',
+              }}
+            >
               <TextInput
                 {...form.getInputProps('postalCode')}
                 label="Postal Code"
@@ -245,22 +253,13 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               />
             </div>
 
-            <Select
-              {...form.getInputProps('country')}
-              label="Country"
-              data={countries}
-              required
-            />
+            <Select {...form.getInputProps('country')} label="Country" data={countries} required />
 
             <div className="form-actions">
               <Button onClick={onCancel} disabled={loading} variant="default">
                 Cancel
               </Button>
-              <Button
-                color="blue"
-                onClick={handleNext}
-                disabled={!isStep1Valid()}
-              >
+              <Button color="blue" onClick={handleNext} disabled={!isStep1Valid()}>
                 Next: Contact Details
               </Button>
             </div>
@@ -273,12 +272,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             <h3>Contact Information</h3>
             <p>Primary contact person for your organization</p>
 
-            <TextInput
-              {...form.getInputProps('contactName')}
-              label="Full Name"
-              required
-              mb="sm"
-            />
+            <TextInput {...form.getInputProps('contactName')} label="Full Name" required mb="sm" />
 
             <TextInput
               {...form.getInputProps('contactEmail')}
@@ -296,21 +290,13 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               mb="sm"
             />
 
-            <TextInput
-              {...form.getInputProps('jobTitle')}
-              label="Job Title"
-              required
-            />
+            <TextInput {...form.getInputProps('jobTitle')} label="Job Title" required />
 
             <div className="form-actions">
               <Button onClick={handlePrevious} disabled={loading} variant="default">
                 Previous
               </Button>
-              <Button
-                color="blue"
-                onClick={handleNext}
-                disabled={!isStep2Valid()}
-              >
+              <Button color="blue" onClick={handleNext} disabled={!isStep2Valid()}>
                 Next: Documents
               </Button>
             </div>
@@ -331,10 +317,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 Upload your official KvK extract. We'll verify your company details automatically.
                 Accepted formats: PDF, PNG, JPG (max 10MB)
               </Text>
-              <KvKDocumentUpload
-                onFileSelect={setKvkDocument}
-                disabled={loading}
-              />
+              <KvKDocumentUpload onFileSelect={setKvkDocument} disabled={loading} />
             </div>
 
             <div className="review-section">
@@ -374,11 +357,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               <Button onClick={handlePrevious} disabled={loading} variant="default">
                 Previous
               </Button>
-              <Button
-                color="blue"
-                type="submit"
-                disabled={loading || !isStep3Valid()}
-              >
+              <Button color="blue" type="submit" disabled={loading || !isStep3Valid()}>
                 {loading ? 'Submitting...' : 'Submit Application'}
               </Button>
             </div>

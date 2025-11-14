@@ -22,7 +22,7 @@ export const MembersGridActions: React.FC<MembersGridActionsProps> = ({
   const [bulkAction, setBulkAction] = useState<string>('');
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
 
-  const handleBulkAction = useCallback(
+  const _handleBulkAction = useCallback(
     (action: string) => {
       if (selectedIds.length === 0) {
         notification.showWarning('Please select members first');

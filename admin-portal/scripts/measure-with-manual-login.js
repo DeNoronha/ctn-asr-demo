@@ -5,8 +5,8 @@
  */
 
 const { chromium } = require('playwright');
-const path = require('path');
-const fs = require('fs');
+const path = require('node:path');
+const fs = require('node:fs');
 
 async function measureWithManualLogin() {
   console.log('🔍 Starting width measurement with manual login...\n');
@@ -35,7 +35,7 @@ async function measureWithManualLogin() {
   try {
     await page.waitForSelector('.app-header', { timeout: 120000 }); // 2 minutes
     console.log('✅ Dashboard loaded!\n');
-  } catch (error) {
+  } catch (_error) {
     console.error('❌ Timeout waiting for dashboard. Please check login.');
     await browser.close();
     return;
@@ -176,13 +176,13 @@ async function measureWithManualLogin() {
   console.log('═══════════════════════════════════════════════════════════════\n');
 
   const inconsistentScreens = measurements.filter((m) => !m.isConsistent);
-  console.log(`📊 Summary:`);
+  console.log('📊 Summary:');
   console.log(`   Total screens: ${measurements.length}`);
   console.log(`   Consistent: ${measurements.length - inconsistentScreens.length}`);
   console.log(`   Inconsistent: ${inconsistentScreens.length}\n`);
 
   if (inconsistentScreens.length > 0) {
-    console.log(`❌ INCONSISTENT SCREENS (difference > 10px):\n`);
+    console.log('❌ INCONSISTENT SCREENS (difference > 10px):\n');
     inconsistentScreens.forEach((m) => {
       console.log(`   ${m.screen}:`);
       console.log(`      Header: ${m.headerWidth}px`);
@@ -245,7 +245,7 @@ async function measureWithManualLogin() {
       }
     });
   } else {
-    console.log(`✅ All screens are consistent!`);
+    console.log('✅ All screens are consistent!');
   }
 
   // Save full report

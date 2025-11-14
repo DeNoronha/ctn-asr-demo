@@ -41,7 +41,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
   const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(null);
   const [contacts, setContacts] = useState<LegalEntityContact[]>([]);
   const [identifiers, setIdentifiers] = useState<LegalEntityIdentifier[]>([]);
-  const [endpoints, setEndpoints] = useState<LegalEntityEndpoint[]>([]);
+  const [_endpoints, setEndpoints] = useState<LegalEntityEndpoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasKvkRegistryData, setHasKvkRegistryData] = useState(false);
   const notification = useNotification();
@@ -345,7 +345,10 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
               {legalEntity ? (
                 !isEditingCompany ? (
                   <>
-                    <CompanyDetails company={legalEntity} onEdit={() => setIsEditingCompany(true)} />
+                    <CompanyDetails
+                      company={legalEntity}
+                      onEdit={() => setIsEditingCompany(true)}
+                    />
                     <div className="info-section">
                       <h3>Member Information</h3>
                       <div className="info-grid">

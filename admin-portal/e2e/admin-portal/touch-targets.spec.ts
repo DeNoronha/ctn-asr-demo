@@ -161,7 +161,7 @@ test.describe('Touch Target Verification - WCAG 2.1 AAA (2.5.5)', () => {
     }
 
     expect(failedItems).toBe(0);
-    console.log(`\n✅ All grid action buttons meet 44px minimum touch target size\n`);
+    console.log('\n✅ All grid action buttons meet 44px minimum touch target size\n');
   });
 
   test('should verify form submit buttons meet 44px minimum', async ({ page }) => {

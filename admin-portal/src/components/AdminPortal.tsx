@@ -275,8 +275,6 @@ const AdminPortal: React.FC = () => {
                   alt="CTN Logo"
                   style={{ height: 40, cursor: 'pointer' }}
                   onClick={() => setSelectedView('dashboard')}
-                  role="button"
-                  tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       setSelectedView('dashboard');

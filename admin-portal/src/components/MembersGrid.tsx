@@ -33,8 +33,8 @@ import { getMembershipColor, getStatusColor } from '../utils/colors';
 import { exportToCSV, exportToPDF } from '../utils/exportUtils';
 import { sanitizeGridCell } from '../utils/sanitize';
 import { ErrorBoundary } from './ErrorBoundary';
-import { LoadingState } from './shared/LoadingState';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
+import { LoadingState } from './shared/LoadingState';
 import './MembersGrid.css';
 
 interface MembersGridProps {
@@ -296,7 +296,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     }
   }, [gridData, selectedIds, bulkAction, notification, handleError, onRefresh]);
 
-  const handleCSVExport = useCallback(() => {
+  const _handleCSVExport = useCallback(() => {
     const dataToExport =
       selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
 
@@ -304,7 +304,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     notification.showSuccess(`Exported ${dataToExport.length} members to CSV`);
   }, [selectedIds, gridData, notification]);
 
-  const handleExcelExport = useCallback(async () => {
+  const _handleExcelExport = useCallback(async () => {
     const dataToExport =
       selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
 
@@ -356,7 +356,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     notification.showSuccess(`Exported ${dataToExport.length} members to ${fileName}`);
   }, [selectedIds, gridData, notification]);
 
-  const handlePDFExport = useCallback(() => {
+  const _handlePDFExport = useCallback(() => {
     const dataToExport =
       selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
 
@@ -560,7 +560,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     ],
   });
 
-  const bulkActions = [
+  const _bulkActions = [
     { text: 'Suspend Selected', icon: 'pause', click: () => handleBulkAction('suspend') },
     { text: 'Delete Selected', icon: 'trash', click: () => handleBulkAction('delete') },
   ];

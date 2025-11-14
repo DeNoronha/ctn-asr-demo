@@ -7,8 +7,8 @@ import { Card } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { AlertCircle, Calendar, CheckCircle, Clock, GitBranch, Package } from './icons';
-import { PageHeader } from './shared/PageHeader';
 import { LoadingState } from './shared/LoadingState';
+import { PageHeader } from './shared/PageHeader';
 import './About.css';
 
 interface VersionInfo {
@@ -137,135 +137,135 @@ const About: React.FC = () => {
           <PageHeader titleKey="about" />
 
           <div className="about-grid">
-        {/* Admin Portal Version Card */}
-        <Card className="version-card" withBorder shadow="sm" padding="lg">
-          <div className="card-header">
-            <div className="card-title">
-              <Package size={20} />
-              Admin Portal
-            </div>
-          </div>
-          <div className="card-body">
-            {portalVersion && (
-              <div className="version-details">
-                {isProductionBuild(portalVersion.buildNumber) && (
-                  <>
-                    <div className="version-item">
-                      <strong>Version:</strong>
-                      <span className="version-number">#{portalVersion.version}</span>
-                    </div>
-                    <div className="version-item">
-                      <strong>Build Number:</strong>
-                      <span>{portalVersion.buildNumber}</span>
-                    </div>
-                  </>
-                )}
-                <div className="version-item">
-                  <strong>Environment:</strong>
-                  <span>{portalVersion.environment || 'Development'}</span>
-                  {getEnvironmentBadge(portalVersion.environment)}
-                </div>
-                {portalVersion.branch &&
-                  portalVersion.branch !== 'unknown' &&
-                  portalVersion.branch !== 'local' && (
-                    <div className="version-item">
-                      <GitBranch size={16} />
-                      <strong>Branch:</strong>
-                      <span>{portalVersion.branch}</span>
-                    </div>
-                  )}
-                {portalVersion.commitSha &&
-                  portalVersion.commitSha !== 'unknown' &&
-                  portalVersion.commitSha !== 'local' && (
-                    <div className="version-item">
-                      <strong>Commit:</strong>
-                      <code className="commit-sha">{portalVersion.commitSha}</code>
-                    </div>
-                  )}
-                <div className="version-item">
-                  <Calendar size={16} />
-                  <strong>Built:</strong>
-                  <span>{formatTimestamp(portalVersion.timestamp)}</span>
+            {/* Admin Portal Version Card */}
+            <Card className="version-card" withBorder shadow="sm" padding="lg">
+              <div className="card-header">
+                <div className="card-title">
+                  <Package size={20} />
+                  Admin Portal
                 </div>
               </div>
-            )}
-          </div>
-        </Card>
+              <div className="card-body">
+                {portalVersion && (
+                  <div className="version-details">
+                    {isProductionBuild(portalVersion.buildNumber) && (
+                      <>
+                        <div className="version-item">
+                          <strong>Version:</strong>
+                          <span className="version-number">#{portalVersion.version}</span>
+                        </div>
+                        <div className="version-item">
+                          <strong>Build Number:</strong>
+                          <span>{portalVersion.buildNumber}</span>
+                        </div>
+                      </>
+                    )}
+                    <div className="version-item">
+                      <strong>Environment:</strong>
+                      <span>{portalVersion.environment || 'Development'}</span>
+                      {getEnvironmentBadge(portalVersion.environment)}
+                    </div>
+                    {portalVersion.branch &&
+                      portalVersion.branch !== 'unknown' &&
+                      portalVersion.branch !== 'local' && (
+                        <div className="version-item">
+                          <GitBranch size={16} />
+                          <strong>Branch:</strong>
+                          <span>{portalVersion.branch}</span>
+                        </div>
+                      )}
+                    {portalVersion.commitSha &&
+                      portalVersion.commitSha !== 'unknown' &&
+                      portalVersion.commitSha !== 'local' && (
+                        <div className="version-item">
+                          <strong>Commit:</strong>
+                          <code className="commit-sha">{portalVersion.commitSha}</code>
+                        </div>
+                      )}
+                    <div className="version-item">
+                      <Calendar size={16} />
+                      <strong>Built:</strong>
+                      <span>{formatTimestamp(portalVersion.timestamp)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
 
-        {/* API Version Card */}
-        <Card className="version-card" withBorder shadow="sm" padding="lg">
-          <div className="card-header">
-            <div className="card-title">
-              <Package size={20} />
-              Backend API
-            </div>
-          </div>
-          <div className="card-body">
-            {apiVersion ? (
-              <div className="version-details">
-                <div className="version-item">
-                  <CheckCircle size={16} className="status-online" />
-                  <strong>Status:</strong>
-                  <span className="status-text">Online</span>
+            {/* API Version Card */}
+            <Card className="version-card" withBorder shadow="sm" padding="lg">
+              <div className="card-header">
+                <div className="card-title">
+                  <Package size={20} />
+                  Backend API
                 </div>
-                {isProductionBuild(apiVersion.buildNumber) && (
-                  <>
+              </div>
+              <div className="card-body">
+                {apiVersion ? (
+                  <div className="version-details">
                     <div className="version-item">
-                      <strong>Version:</strong>
-                      <span className="version-number">#{apiVersion.version}</span>
+                      <CheckCircle size={16} className="status-online" />
+                      <strong>Status:</strong>
+                      <span className="status-text">Online</span>
+                    </div>
+                    {isProductionBuild(apiVersion.buildNumber) && (
+                      <>
+                        <div className="version-item">
+                          <strong>Version:</strong>
+                          <span className="version-number">#{apiVersion.version}</span>
+                        </div>
+                        <div className="version-item">
+                          <strong>Build Number:</strong>
+                          <span>{apiVersion.buildNumber}</span>
+                        </div>
+                      </>
+                    )}
+                    <div className="version-item">
+                      <strong>Environment:</strong>
+                      <span>{apiVersion.environment || 'Development'}</span>
+                      {getEnvironmentBadge(apiVersion.environment)}
+                    </div>
+                    {apiVersion.branch &&
+                      apiVersion.branch !== 'unknown' &&
+                      apiVersion.branch !== 'local' && (
+                        <div className="version-item">
+                          <GitBranch size={16} />
+                          <strong>Branch:</strong>
+                          <span>{apiVersion.branch}</span>
+                        </div>
+                      )}
+                    {apiVersion.commitSha &&
+                      apiVersion.commitSha !== 'unknown' &&
+                      apiVersion.commitSha !== 'local' && (
+                        <div className="version-item">
+                          <strong>Commit:</strong>
+                          <code className="commit-sha">{apiVersion.commitSha}</code>
+                        </div>
+                      )}
+                    <div className="version-item">
+                      <Calendar size={16} />
+                      <strong>Built:</strong>
+                      <span>{formatTimestamp(apiVersion.timestamp)}</span>
                     </div>
                     <div className="version-item">
-                      <strong>Build Number:</strong>
-                      <span>{apiVersion.buildNumber}</span>
+                      <Clock size={16} />
+                      <strong>Uptime:</strong>
+                      <span>{formatUptime(apiVersion.api.uptime)}</span>
                     </div>
-                  </>
+                    <div className="version-item">
+                      <strong>Node.js:</strong>
+                      <span>{apiVersion.api.nodeVersion}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="version-unavailable">
+                    <AlertCircle size={16} />
+                    <span>API version information unavailable</span>
+                  </div>
                 )}
-                <div className="version-item">
-                  <strong>Environment:</strong>
-                  <span>{apiVersion.environment || 'Development'}</span>
-                  {getEnvironmentBadge(apiVersion.environment)}
-                </div>
-                {apiVersion.branch &&
-                  apiVersion.branch !== 'unknown' &&
-                  apiVersion.branch !== 'local' && (
-                    <div className="version-item">
-                      <GitBranch size={16} />
-                      <strong>Branch:</strong>
-                      <span>{apiVersion.branch}</span>
-                    </div>
-                  )}
-                {apiVersion.commitSha &&
-                  apiVersion.commitSha !== 'unknown' &&
-                  apiVersion.commitSha !== 'local' && (
-                    <div className="version-item">
-                      <strong>Commit:</strong>
-                      <code className="commit-sha">{apiVersion.commitSha}</code>
-                    </div>
-                  )}
-                <div className="version-item">
-                  <Calendar size={16} />
-                  <strong>Built:</strong>
-                  <span>{formatTimestamp(apiVersion.timestamp)}</span>
-                </div>
-                <div className="version-item">
-                  <Clock size={16} />
-                  <strong>Uptime:</strong>
-                  <span>{formatUptime(apiVersion.api.uptime)}</span>
-                </div>
-                <div className="version-item">
-                  <strong>Node.js:</strong>
-                  <span>{apiVersion.api.nodeVersion}</span>
-                </div>
               </div>
-            ) : (
-              <div className="version-unavailable">
-                <AlertCircle size={16} />
-                <span>API version information unavailable</span>
-              </div>
-            )}
+            </Card>
           </div>
-        </Card>
-      </div>
         </div>
       )}
     </LoadingState>

@@ -16,32 +16,36 @@ const NotFound: React.FC<NotFoundProps> = ({ onGoHome }) => {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '400px',
-      textAlign: 'center',
-      padding: '2rem',
-      background: 'white',
-      borderRadius: '8px',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-    }}>
-      <div style={{ fontSize: '6rem', fontWeight: '800', color: '#667eea', lineHeight: 1, marginBottom: '1rem' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '400px',
+        textAlign: 'center',
+        padding: '2rem',
+        background: 'white',
+        borderRadius: '8px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      }}
+    >
+      <div
+        style={{
+          fontSize: '6rem',
+          fontWeight: '800',
+          color: '#667eea',
+          lineHeight: 1,
+          marginBottom: '1rem',
+        }}
+      >
         404
       </div>
-      <h2 style={{ fontSize: '2rem', color: '#2d3748', marginBottom: '1rem' }}>
-        Page Not Found
-      </h2>
+      <h2 style={{ fontSize: '2rem', color: '#2d3748', marginBottom: '1rem' }}>Page Not Found</h2>
       <p style={{ fontSize: '1.125rem', color: '#4a5568', marginBottom: '2rem' }}>
         The page you're looking for doesn't exist or has been moved.
       </p>
-      <Button
-        color="blue"
-        size="lg"
-        onClick={handleGoHome}
-      >
+      <Button color="blue" size="lg" onClick={handleGoHome}>
         🏠 Go to Dashboard
       </Button>
     </div>

@@ -3,7 +3,7 @@
  * Consolidates M2M Clients (modern) and Tokens (legacy) in one view
  */
 
-import React from 'react';
+import type React from 'react';
 import { M2MClientsView } from './M2MClientsView';
 import { TokensView } from './TokensView';
 
@@ -35,11 +35,20 @@ export const APIAccessView: React.FC<APIAccessViewProps> = ({
     <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
       {/* M2M API Clients Section */}
       <div style={{ marginBottom: '60px' }}>
-        <div style={{ marginBottom: '16px', padding: '20px', background: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+        <div
+          style={{
+            marginBottom: '16px',
+            padding: '20px',
+            background: '#f0f9ff',
+            borderRadius: '8px',
+            border: '1px solid #bae6fd',
+          }}
+        >
           <h3 style={{ margin: '0 0 8px 0' }}>M2M API Clients (Modern Authentication)</h3>
           <p style={{ color: '#0369a1', fontSize: '0.875rem', margin: 0, maxWidth: '800px' }}>
-            Create API clients for your systems to securely access CTN data using OAuth 2.0 Client Credentials flow.
-            Each client receives a unique Client ID and Secret with granular scope-based permissions.
+            Create API clients for your systems to securely access CTN data using OAuth 2.0 Client
+            Credentials flow. Each client receives a unique Client ID and Secret with granular
+            scope-based permissions.
             <strong> This is the recommended method for system-to-system integration.</strong>
           </p>
         </div>
@@ -55,11 +64,19 @@ export const APIAccessView: React.FC<APIAccessViewProps> = ({
 
       {/* Legacy Tokens Section */}
       <div>
-        <div style={{ marginBottom: '16px', padding: '20px', background: '#fef3c7', borderRadius: '8px', border: '1px solid #fde68a' }}>
+        <div
+          style={{
+            marginBottom: '16px',
+            padding: '20px',
+            background: '#fef3c7',
+            borderRadius: '8px',
+            border: '1px solid #fde68a',
+          }}
+        >
           <h3 style={{ margin: '0 0 8px 0' }}>Access Tokens (Legacy)</h3>
           <p style={{ color: '#92400e', fontSize: '0.875rem', margin: 0, maxWidth: '800px' }}>
-            Legacy token-based authentication for registered endpoints. Tokens are tied to specific system endpoints
-            and provide endpoint-level access control.
+            Legacy token-based authentication for registered endpoints. Tokens are tied to specific
+            system endpoints and provide endpoint-level access control.
             <strong> For new integrations, use M2M API Clients above instead.</strong>
           </p>
         </div>

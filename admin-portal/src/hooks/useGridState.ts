@@ -43,7 +43,7 @@ export interface UseGridStateOptions {
  * @param gridKey Unique identifier for this grid (used in storage keys)
  * @param options Configuration options
  */
-export function useGridState(gridKey: string, options: UseGridStateOptions = {}) {
+export function useGridState(_gridKey: string, options: UseGridStateOptions = {}) {
   const {
     defaultPage = 1,
     defaultPageSize = 20,

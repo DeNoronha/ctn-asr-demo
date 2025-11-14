@@ -221,7 +221,7 @@ test.describe('Admin Portal - Security Best Practices', () => {
     const headers = response?.headers();
 
     // Should not expose server version (or if it does, should not contain version numbers)
-    const serverHeader = headers?.['server'];
+    const serverHeader = headers?.server;
     if (serverHeader) {
       expect(serverHeader).not.toContain('Apache/');
       expect(serverHeader).not.toContain('nginx/');

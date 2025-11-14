@@ -16,8 +16,8 @@ import { apiV2 } from '../services/apiV2';
 import { formatDateTime } from '../utils/dateFormat';
 import { logger } from '../utils/logger';
 import { EmptyState } from './EmptyState';
-import { LoadingState } from './shared/LoadingState';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
+import { LoadingState } from './shared/LoadingState';
 import './EndpointManagement.css';
 
 interface EndpointWithMember {
@@ -150,82 +150,86 @@ export const AllEndpointsView: React.FC = () => {
             />
           ) : (
             <DataTable
-            {...defaultDataTableProps}
-            columns={[
-              {
-                accessor: 'legal_entity_name',
-                title: 'Organization',
-                sortable: true,
-                width: 200,
-              },
-              {
-                accessor: 'endpoint_name',
-                title: 'Endpoint Name',
-                sortable: true,
-                width: 180,
-              },
-              {
-                accessor: 'endpoint_url',
-                title: 'URL',
-                sortable: true,
-                render: (endpoint) => (
-                  <Text size="sm" c="dimmed" style={{ fontFamily: 'monospace', fontSize: '11px' }}>
-                    {endpoint.endpoint_url}
-                  </Text>
-                ),
-              },
-              {
-                accessor: 'data_category',
-                title: 'Category',
-                sortable: true,
-                width: 140,
-                render: (endpoint) => (
-                  <Badge color={getDataCategoryColor(endpoint.data_category)} size="sm">
-                    {endpoint.data_category}
-                  </Badge>
-                ),
-              },
-              {
-                accessor: 'endpoint_type',
-                title: 'Type',
-                sortable: true,
-                width: 120,
-                render: (endpoint) => (
-                  <Badge color="gray" size="sm" variant="outline">
-                    {endpoint.endpoint_type}
-                  </Badge>
-                ),
-              },
-              {
-                accessor: 'is_active',
-                title: 'Status',
-                sortable: true,
-                width: 100,
-                render: (endpoint) => (
-                  <Badge color={endpoint.is_active ? 'green' : 'red'} size="sm">
-                    {endpoint.is_active ? 'Active' : 'Inactive'}
-                  </Badge>
-                ),
-              },
-              {
-                accessor: 'dt_created',
-                title: 'Created',
-                sortable: true,
-                width: 150,
-                render: (endpoint) => formatDateTime(endpoint.dt_created),
-              },
-            ]}
-            records={paginatedEndpoints}
-            totalRecords={filteredEndpoints.length}
-            recordsPerPage={pageSize}
-            page={page}
-            onPageChange={setPage}
-            paginationSize="sm"
-            paginationActiveBackgroundColor="blue"
-            fetching={loading}
-            noRecordsText="No endpoints found"
-          />
-        )}
+              {...defaultDataTableProps}
+              columns={[
+                {
+                  accessor: 'legal_entity_name',
+                  title: 'Organization',
+                  sortable: true,
+                  width: 200,
+                },
+                {
+                  accessor: 'endpoint_name',
+                  title: 'Endpoint Name',
+                  sortable: true,
+                  width: 180,
+                },
+                {
+                  accessor: 'endpoint_url',
+                  title: 'URL',
+                  sortable: true,
+                  render: (endpoint) => (
+                    <Text
+                      size="sm"
+                      c="dimmed"
+                      style={{ fontFamily: 'monospace', fontSize: '11px' }}
+                    >
+                      {endpoint.endpoint_url}
+                    </Text>
+                  ),
+                },
+                {
+                  accessor: 'data_category',
+                  title: 'Category',
+                  sortable: true,
+                  width: 140,
+                  render: (endpoint) => (
+                    <Badge color={getDataCategoryColor(endpoint.data_category)} size="sm">
+                      {endpoint.data_category}
+                    </Badge>
+                  ),
+                },
+                {
+                  accessor: 'endpoint_type',
+                  title: 'Type',
+                  sortable: true,
+                  width: 120,
+                  render: (endpoint) => (
+                    <Badge color="gray" size="sm" variant="outline">
+                      {endpoint.endpoint_type}
+                    </Badge>
+                  ),
+                },
+                {
+                  accessor: 'is_active',
+                  title: 'Status',
+                  sortable: true,
+                  width: 100,
+                  render: (endpoint) => (
+                    <Badge color={endpoint.is_active ? 'green' : 'red'} size="sm">
+                      {endpoint.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  ),
+                },
+                {
+                  accessor: 'dt_created',
+                  title: 'Created',
+                  sortable: true,
+                  width: 150,
+                  render: (endpoint) => formatDateTime(endpoint.dt_created),
+                },
+              ]}
+              records={paginatedEndpoints}
+              totalRecords={filteredEndpoints.length}
+              recordsPerPage={pageSize}
+              page={page}
+              onPageChange={setPage}
+              paginationSize="sm"
+              paginationActiveBackgroundColor="blue"
+              fetching={loading}
+              noRecordsText="No endpoints found"
+            />
+          )}
 
           {filteredEndpoints.length > 0 && (
             <Text size="sm" c="dimmed">

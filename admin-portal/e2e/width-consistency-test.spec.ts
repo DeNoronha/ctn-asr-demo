@@ -270,7 +270,7 @@ test.describe('Admin Portal Width Consistency Investigation', () => {
     console.log('\n=================================================================\n');
 
     // Save measurements to JSON file for further analysis
-    const fs = require('fs');
+    const fs = require('node:fs');
     fs.writeFileSync(
       'admin-portal/e2e/width-measurements.json',
       JSON.stringify(

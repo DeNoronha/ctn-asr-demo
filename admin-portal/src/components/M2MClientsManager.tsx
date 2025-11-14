@@ -2,7 +2,7 @@ import { Button, Checkbox, Group, Modal, TextInput, Textarea } from '@mantine/co
 import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
-import { apiV2, type M2MClient } from '../services/apiV2';
+import { type M2MClient, apiV2 } from '../services/apiV2';
 import { announceToScreenReader } from '../utils/aria';
 import { formatDate } from '../utils/dateUtils';
 import { getEmptyState } from '../utils/emptyStates';

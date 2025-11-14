@@ -1,8 +1,8 @@
 import { Button, Modal } from '@mantine/core';
 import type React from 'react';
 import { useState } from 'react';
-import type { ComponentProps } from '../types';
 import { apiClient } from '../services/apiClient';
+import type { ComponentProps } from '../types';
 
 export const ProfileView: React.FC<ComponentProps> = ({
   apiBaseUrl,
@@ -140,102 +140,97 @@ export const ProfileView: React.FC<ComponentProps> = ({
         </>
       ) : null}
 
-      <Modal
-        opened={editMode}
-        onClose={() => setEditMode(false)}
-        title="Edit Profile"
-        size="lg"
-      >
+      <Modal opened={editMode} onClose={() => setEditMode(false)} title="Edit Profile" size="lg">
         <form onSubmit={handleSubmit} className="simple-form">
+          <div className="form-field">
+            <label htmlFor="domain">Domain</label>
+            <input
+              type="text"
+              id="domain"
+              name="domain"
+              value={formData.domain}
+              onChange={handleChange}
+              className="form-input"
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="address_line1">Address Line 1</label>
+            <input
+              type="text"
+              id="address_line1"
+              name="address_line1"
+              value={formData.address_line1}
+              onChange={handleChange}
+              className="form-input"
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="address_line2">Address Line 2</label>
+            <input
+              type="text"
+              id="address_line2"
+              name="address_line2"
+              value={formData.address_line2}
+              onChange={handleChange}
+              className="form-input"
+            />
+          </div>
+          <div className="form-row">
             <div className="form-field">
-              <label htmlFor="domain">Domain</label>
+              <label htmlFor="postal_code">Postal Code</label>
               <input
                 type="text"
-                id="domain"
-                name="domain"
-                value={formData.domain}
+                id="postal_code"
+                name="postal_code"
+                value={formData.postal_code}
                 onChange={handleChange}
                 className="form-input"
               />
             </div>
             <div className="form-field">
-              <label htmlFor="address_line1">Address Line 1</label>
+              <label htmlFor="city">City</label>
               <input
                 type="text"
-                id="address_line1"
-                name="address_line1"
-                value={formData.address_line1}
+                id="city"
+                name="city"
+                value={formData.city}
                 onChange={handleChange}
                 className="form-input"
               />
             </div>
-            <div className="form-field">
-              <label htmlFor="address_line2">Address Line 2</label>
-              <input
-                type="text"
-                id="address_line2"
-                name="address_line2"
-                value={formData.address_line2}
-                onChange={handleChange}
-                className="form-input"
-              />
-            </div>
-            <div className="form-row">
-              <div className="form-field">
-                <label htmlFor="postal_code">Postal Code</label>
-                <input
-                  type="text"
-                  id="postal_code"
-                  name="postal_code"
-                  value={formData.postal_code}
-                  onChange={handleChange}
-                  className="form-input"
-                />
-              </div>
-              <div className="form-field">
-                <label htmlFor="city">City</label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  className="form-input"
-                />
-              </div>
-            </div>
-            <div className="form-field">
-              <label htmlFor="province">Province/State</label>
-              <input
-                type="text"
-                id="province"
-                name="province"
-                value={formData.province}
-                onChange={handleChange}
-                className="form-input"
-              />
-            </div>
-            <div className="form-field">
-              <label htmlFor="country_code">Country Code (2 letters)</label>
-              <input
-                type="text"
-                id="country_code"
-                name="country_code"
-                value={formData.country_code}
-                onChange={handleChange}
-                maxLength={2}
-                className="form-input"
-              />
-            </div>
-            <div className="form-actions">
-              <Button type="button" onClick={() => setEditMode(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" color="blue" disabled={saving}>
-                {saving ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </div>
-          </form>
+          </div>
+          <div className="form-field">
+            <label htmlFor="province">Province/State</label>
+            <input
+              type="text"
+              id="province"
+              name="province"
+              value={formData.province}
+              onChange={handleChange}
+              className="form-input"
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="country_code">Country Code (2 letters)</label>
+            <input
+              type="text"
+              id="country_code"
+              name="country_code"
+              value={formData.country_code}
+              onChange={handleChange}
+              maxLength={2}
+              className="form-input"
+            />
+          </div>
+          <div className="form-actions">
+            <Button type="button" onClick={() => setEditMode(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" color="blue" disabled={saving}>
+              {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

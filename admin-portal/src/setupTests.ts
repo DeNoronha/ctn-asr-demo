@@ -28,7 +28,6 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Mock IntersectionObserver for Mantine components
 global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
   disconnect() {}
   observe() {}
   takeRecords() {

@@ -55,7 +55,7 @@ const TestDataTable: React.FC<{
     direction: 'asc',
   });
   const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(2);
+  const [pageSize, _setPageSize] = React.useState(2);
 
   const defaultColumns: DataTableColumn<TestRecord>[] = columns || [
     { accessor: 'name', title: 'Name', sortable: withSorting, toggleable: withColumnToggle },

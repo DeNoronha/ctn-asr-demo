@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Member Portal - Basic Authentication Tests
@@ -33,8 +33,8 @@ test.describe('Member Portal - Authentication & Navigation', () => {
     // Verify page has content (not blank)
     const bodyText = await page.locator('body').textContent();
     expect(bodyText).toBeTruthy();
-    expect(bodyText!.length).toBeGreaterThan(100);
-    console.log(`✅ Page has content (${bodyText!.length} characters)`);
+    expect(bodyText?.length).toBeGreaterThan(100);
+    console.log(`✅ Page has content (${bodyText?.length} characters)`);
 
     // Verify CTN branding is visible
     const hasCTNBranding = await page.locator('text=CTN').count();
@@ -56,7 +56,9 @@ test.describe('Member Portal - Authentication & Navigation', () => {
     await page.waitForLoadState('networkidle');
 
     // Look for sign-out button (indicates authenticated state)
-    const signOutButton = page.locator('button:has-text("Sign Out"), button:has-text("🚪 Sign Out")');
+    const signOutButton = page.locator(
+      'button:has-text("Sign Out"), button:has-text("🚪 Sign Out")'
+    );
     const signOutCount = await signOutButton.count();
 
     if (signOutCount > 0) {
@@ -69,7 +71,9 @@ test.describe('Member Portal - Authentication & Navigation', () => {
 
     // Verify we're logged in by checking for user-specific elements
     // (This may vary based on the portal's design)
-    const userInfoElements = await page.locator('.user-info, .user-name, [data-testid="user-menu"]').count();
+    const userInfoElements = await page
+      .locator('.user-info, .user-name, [data-testid="user-menu"]')
+      .count();
     if (userInfoElements > 0) {
       console.log('✅ User info elements found');
     } else {
@@ -89,12 +93,7 @@ test.describe('Member Portal - Authentication & Navigation', () => {
 
     // Try to find and click navigation links
     // Note: Actual navigation elements depend on the portal's design
-    const navLinks = [
-      'Dashboard',
-      'Profile',
-      'Settings',
-      'Home',
-    ];
+    const navLinks = ['Dashboard', 'Profile', 'Settings', 'Home'];
 
     for (const linkText of navLinks) {
       const link = page.locator(`a:has-text("${linkText}"), button:has-text("${linkText}")`);
@@ -109,7 +108,9 @@ test.describe('Member Portal - Authentication & Navigation', () => {
           const newUrl = page.url();
           console.log(`📍 Navigated to: ${newUrl}`);
         } catch (error) {
-          console.log(`⚠️  Could not navigate to ${linkText}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          console.log(
+            `⚠️  Could not navigate to ${linkText}: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
         }
       } else {
         console.log(`ℹ️  Navigation link not found: ${linkText}`);
@@ -146,10 +147,11 @@ test.describe('Member Portal - Authentication & Navigation', () => {
     }
 
     // Filter out known acceptable errors
-    const criticalErrors = consoleErrors.filter(err =>
-      !err.includes('Failed to load resource') && // Network errors may be acceptable
-      !err.includes('401') && // Auth errors may occur during token refresh
-      !err.includes('403')
+    const criticalErrors = consoleErrors.filter(
+      (err) =>
+        !err.includes('Failed to load resource') && // Network errors may be acceptable
+        !err.includes('401') && // Auth errors may occur during token refresh
+        !err.includes('403')
     );
 
     if (criticalErrors.length > 0) {

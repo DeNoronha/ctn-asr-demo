@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Button, TextInput, Text } from '@mantine/core';
+import { Button, Text, TextInput } from '@mantine/core';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
-import type { ComponentProps } from '../types';
 import { apiClient } from '../services/apiClient';
+import type { ComponentProps } from '../types';
 import { LoadingState } from './shared/LoadingState';
 
 interface DnsToken {
@@ -61,7 +62,8 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
     }
 
     // Validate domain format
-    const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
+    const domainRegex =
+      /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
     if (!domainRegex.test(domain)) {
       setError('Invalid domain format. Example: company.com');
       return;
@@ -132,7 +134,9 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
         </div>
 
         <div className="form-field">
-          <Text fw={500} mb="xs">Domain Name</Text>
+          <Text fw={500} mb="xs">
+            Domain Name
+          </Text>
           <div style={{ display: 'flex', gap: '12px' }}>
             <TextInput
               value={domain}
@@ -145,11 +149,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
               disabled={loading}
               error={error}
             />
-            <Button
-              onClick={handleGenerateToken}
-              color="blue"
-              disabled={loading || !domain.trim()}
-            >
+            <Button onClick={handleGenerateToken} color="blue" disabled={loading || !domain.trim()}>
               {loading ? 'Generating...' : 'Generate Token'}
             </Button>
           </div>
@@ -182,14 +182,18 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
 
                   <div className="dns-record-info">
                     <div className="dns-field">
-                      <Text fw={500} mb="xs">Record Type</Text>
+                      <Text fw={500} mb="xs">
+                        Record Type
+                      </Text>
                       <div className="copy-field">
                         <code>TXT</code>
                       </div>
                     </div>
 
                     <div className="dns-field">
-                      <Text fw={500} mb="xs">Record Name</Text>
+                      <Text fw={500} mb="xs">
+                        Record Name
+                      </Text>
                       <div className="copy-field">
                         <code>{token.recordName}</code>
                         <Button
@@ -202,7 +206,9 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
                     </div>
 
                     <div className="dns-field">
-                      <Text fw={500} mb="xs">Record Value</Text>
+                      <Text fw={500} mb="xs">
+                        Record Value
+                      </Text>
                       <div className="copy-field">
                         <code>{token.token}</code>
                         <Button
@@ -215,7 +221,9 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
                     </div>
 
                     <div className="dns-field">
-                      <Text fw={500} mb="xs">TTL</Text>
+                      <Text fw={500} mb="xs">
+                        TTL
+                      </Text>
                       <div className="copy-field">
                         <code>3600</code>
                       </div>
@@ -239,9 +247,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
                   </div>
 
                   <div className="dns-token-footer">
-                    <small>
-                      Token expires: {new Date(token.expiresAt).toLocaleString()}
-                    </small>
+                    <small>Token expires: {new Date(token.expiresAt).toLocaleString()}</small>
                   </div>
                 </div>
               </div>

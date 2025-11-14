@@ -699,9 +699,7 @@ export const apiV2 = {
     return response.data;
   },
 
-  async generateM2MClientSecret(
-    clientId: string
-  ): Promise<{ client_secret: string }> {
+  async generateM2MClientSecret(clientId: string): Promise<{ client_secret: string }> {
     const axiosInstance = await getAuthenticatedAxios();
     const response = await axiosInstance.post<{ client_secret: string }>(
       `/m2m-clients/${clientId}/generate-secret`
@@ -718,7 +716,9 @@ export const apiV2 = {
   // IDENTIFIER VERIFICATION
   // ========================================================================
 
-  async getVerificationRecords(legalEntityId: string): Promise<{ verifications: VerificationRecord[] }> {
+  async getVerificationRecords(
+    legalEntityId: string
+  ): Promise<{ verifications: VerificationRecord[] }> {
     const axiosInstance = await getAuthenticatedAxios();
     const response = await axiosInstance.get<{ verifications: VerificationRecord[] }>(
       `/v1/legal-entities/${legalEntityId}/verifications`
@@ -792,7 +792,12 @@ export const apiV2 = {
       database: { status: 'up' | 'down'; responseTime?: number; error?: string; details?: any };
       applicationInsights: { status: 'up' | 'down'; error?: string; details?: any };
       azureKeyVault: { status: 'up' | 'down'; responseTime?: number; error?: string };
-      staticWebApps: { status: 'up' | 'down'; responseTime?: number; error?: string; details?: any };
+      staticWebApps: {
+        status: 'up' | 'down';
+        responseTime?: number;
+        error?: string;
+        details?: any;
+      };
     };
   }> {
     // Health endpoint is at /api/health (not /api/v1/health), so we need a separate base URL
@@ -811,7 +816,12 @@ export const apiV2 = {
         database: { status: 'up' | 'down'; responseTime?: number; error?: string; details?: any };
         applicationInsights: { status: 'up' | 'down'; error?: string; details?: any };
         azureKeyVault: { status: 'up' | 'down'; responseTime?: number; error?: string };
-        staticWebApps: { status: 'up' | 'down'; responseTime?: number; error?: string; details?: any };
+        staticWebApps: {
+          status: 'up' | 'down';
+          responseTime?: number;
+          error?: string;
+          details?: any;
+        };
       };
     }>('/health');
     return response.data;

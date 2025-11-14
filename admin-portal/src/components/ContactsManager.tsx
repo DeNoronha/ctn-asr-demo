@@ -52,7 +52,7 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
 
   const handleSaveContact = useCallback(
     async (contact: LegalEntityContact) => {
-      if (editingContact && editingContact.legal_entity_contact_id) {
+      if (editingContact?.legal_entity_contact_id) {
         // Update existing contact
         const updated = await onContactUpdate(editingContact.legal_entity_contact_id, contact);
         const msg = contactSuccessMessages.updated(updated.full_name || 'Contact');

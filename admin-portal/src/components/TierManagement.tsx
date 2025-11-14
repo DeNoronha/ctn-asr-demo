@@ -141,127 +141,129 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
           Manage the member's authentication tier to control their data access level.
         </p>
 
-      {tierInfo && (
-        <div
-          className="current-tier-info"
-          style={{
-            background: '#f5f5f5',
-            border: '1px solid #ddd',
-            borderRadius: '8px',
-            padding: '20px',
-            marginBottom: '24px',
-          }}
-        >
-          <h4 style={{ marginTop: 0 }}>Current Tier</h4>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+        {tierInfo && (
+          <div
+            className="current-tier-info"
+            style={{
+              background: '#f5f5f5',
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              padding: '20px',
+              marginBottom: '24px',
+            }}
+          >
+            <h4 style={{ marginTop: 0 }}>Current Tier</h4>
+            <div
+              style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}
+            >
+              <div
+                style={{
+                  background: getTierColor(tierInfo.tier),
+                  color: 'white',
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  fontWeight: 600,
+                }}
+              >
+                Tier {tierInfo.tier}
+              </div>
+              <span style={{ color: '#666' }}>{tierInfo.method}</span>
+            </div>
+
             <div
               style={{
-                background: getTierColor(tierInfo.tier),
-                color: 'white',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontWeight: 600,
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '16px',
+                marginTop: '16px',
               }}
             >
-              Tier {tierInfo.tier}
+              {tierInfo.verifiedAt && (
+                <div>
+                  <strong>Verified:</strong>
+                  <p style={{ margin: '4px 0 0 0', color: '#666' }}>
+                    {formatDateTime(tierInfo.verifiedAt)}
+                  </p>
+                </div>
+              )}
+              {tierInfo.reverificationDue && (
+                <div>
+                  <strong>Re-verification Due:</strong>
+                  <p style={{ margin: '4px 0 0 0', color: '#ff9800' }}>
+                    {formatDate(tierInfo.reverificationDue)}
+                  </p>
+                </div>
+              )}
+              {tierInfo.eherkenningLevel && (
+                <div>
+                  <strong>eHerkenning Level:</strong>
+                  <p style={{ margin: '4px 0 0 0', color: '#666' }}>{tierInfo.eherkenningLevel}</p>
+                </div>
+              )}
             </div>
-            <span style={{ color: '#666' }}>{tierInfo.method}</span>
+          </div>
+        )}
+
+        <div className="tier-selector" style={{ marginTop: '24px' }}>
+          <div className="form-field">
+            <Label>Select New Tier</Label>
+            <Select
+              data={TIER_OPTIONS.map((t) => ({ value: t.tier.toString(), label: t.name }))}
+              value={selectedTier?.tier.toString() || null}
+              onChange={(value) => {
+                const tier = TIER_OPTIONS.find((t) => t.tier.toString() === value);
+                setSelectedTier(tier || null);
+              }}
+            />
+            <Hint>
+              {selectedTier
+                ? `${selectedTier.access} - Method: ${selectedTier.method}`
+                : 'Select a tier to update'}
+            </Hint>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '16px',
-              marginTop: '16px',
-            }}
-          >
-            {tierInfo.verifiedAt && (
-              <div>
-                <strong>Verified:</strong>
-                <p style={{ margin: '4px 0 0 0', color: '#666' }}>
-                  {formatDateTime(tierInfo.verifiedAt)}
-                </p>
-              </div>
-            )}
-            {tierInfo.reverificationDue && (
-              <div>
-                <strong>Re-verification Due:</strong>
-                <p style={{ margin: '4px 0 0 0', color: '#ff9800' }}>
-                  {formatDate(tierInfo.reverificationDue)}
-                </p>
-              </div>
-            )}
-            {tierInfo.eherkenningLevel && (
-              <div>
-                <strong>eHerkenning Level:</strong>
-                <p style={{ margin: '4px 0 0 0', color: '#666' }}>{tierInfo.eherkenningLevel}</p>
-              </div>
-            )}
+          <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
+            <Button
+              onClick={handleUpdateTier}
+              color="blue"
+              disabled={
+                updating || !selectedTier || !!(tierInfo && selectedTier.tier === tierInfo.tier)
+              }
+            >
+              {updating ? 'Updating...' : 'Update Tier'}
+            </Button>
+            <Button onClick={loadTierInfo} disabled={updating} variant="outline">
+              Refresh
+            </Button>
           </div>
         </div>
-      )}
 
-      <div className="tier-selector" style={{ marginTop: '24px' }}>
-        <div className="form-field">
-          <Label>Select New Tier</Label>
-          <Select
-            data={TIER_OPTIONS.map((t) => ({ value: t.tier.toString(), label: t.name }))}
-            value={selectedTier?.tier.toString() || null}
-            onChange={(value) => {
-              const tier = TIER_OPTIONS.find((t) => t.tier.toString() === value);
-              setSelectedTier(tier || null);
-            }}
-          />
-          <Hint>
-            {selectedTier
-              ? `${selectedTier.access} - Method: ${selectedTier.method}`
-              : 'Select a tier to update'}
-          </Hint>
+        <div
+          className="tier-info-panel"
+          style={{
+            marginTop: '32px',
+            background: '#fff3cd',
+            border: '1px solid #ffecb5',
+            borderRadius: '8px',
+            padding: '16px',
+          }}
+        >
+          <h4 style={{ marginTop: 0, color: '#856404' }}>Tier Information</h4>
+          <ul style={{ margin: 0, paddingLeft: '20px', color: '#856404' }}>
+            <li>
+              <strong>Tier 1 (eHerkenning):</strong> Full access to read, write, and publish
+              sensitive data. Requires eHerkenning EH3/EH4 authentication.
+            </li>
+            <li>
+              <strong>Tier 2 (DNS Verification):</strong> Access to sensitive data read + webhook
+              configuration. Requires DNS TXT record verification. Re-verification every 90 days.
+            </li>
+            <li>
+              <strong>Tier 3 (Email + KvK):</strong> Public data access only. Default tier for
+              email-verified members with KvK document upload.
+            </li>
+          </ul>
         </div>
-
-        <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
-          <Button
-            onClick={handleUpdateTier}
-            color="blue"
-            disabled={
-              updating || !selectedTier || !!(tierInfo && selectedTier.tier === tierInfo.tier)
-            }
-          >
-            {updating ? 'Updating...' : 'Update Tier'}
-          </Button>
-          <Button onClick={loadTierInfo} disabled={updating} variant="outline">
-            Refresh
-          </Button>
-        </div>
-      </div>
-
-      <div
-        className="tier-info-panel"
-        style={{
-          marginTop: '32px',
-          background: '#fff3cd',
-          border: '1px solid #ffecb5',
-          borderRadius: '8px',
-          padding: '16px',
-        }}
-      >
-        <h4 style={{ marginTop: 0, color: '#856404' }}>Tier Information</h4>
-        <ul style={{ margin: 0, paddingLeft: '20px', color: '#856404' }}>
-          <li>
-            <strong>Tier 1 (eHerkenning):</strong> Full access to read, write, and publish sensitive
-            data. Requires eHerkenning EH3/EH4 authentication.
-          </li>
-          <li>
-            <strong>Tier 2 (DNS Verification):</strong> Access to sensitive data read + webhook
-            configuration. Requires DNS TXT record verification. Re-verification every 90 days.
-          </li>
-          <li>
-            <strong>Tier 3 (Email + KvK):</strong> Public data access only. Default tier for
-            email-verified members with KvK document upload.
-          </li>
-        </ul>
-      </div>
       </div>
     </LoadingState>
   );

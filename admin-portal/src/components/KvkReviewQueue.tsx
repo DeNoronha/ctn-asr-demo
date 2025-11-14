@@ -5,8 +5,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { msalInstance } from '../auth/AuthContext';
 import { formatDate } from '../utils/dateFormat';
 import { ErrorBoundary } from './ErrorBoundary';
-import { LoadingState } from './shared/LoadingState';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
+import { LoadingState } from './shared/LoadingState';
 
 interface FlaggedEntity {
   legal_entity_id: string;
@@ -307,7 +307,9 @@ const KvkReviewQueueComponent: React.FC = () => {
                     </thead>
                     <tbody>
                       <tr>
-                        <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}>
+                        <td
+                          style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}
+                        >
                           Company Name
                         </td>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>
@@ -316,7 +318,9 @@ const KvkReviewQueueComponent: React.FC = () => {
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>
                           {reviewDialog.entity.kvk_extracted_company_name}
                         </td>
-                        <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'center' }}>
+                        <td
+                          style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'center' }}
+                        >
                           {reviewDialog.entity.kvk_mismatch_flags.includes(
                             'entered_name_mismatch'
                           ) ? (
@@ -327,7 +331,9 @@ const KvkReviewQueueComponent: React.FC = () => {
                         </td>
                       </tr>
                       <tr>
-                        <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}>
+                        <td
+                          style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold' }}
+                        >
                           KvK Number
                         </td>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>
@@ -338,8 +344,12 @@ const KvkReviewQueueComponent: React.FC = () => {
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>
                           {reviewDialog.entity.kvk_extracted_number}
                         </td>
-                        <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'center' }}>
-                          {reviewDialog.entity.kvk_mismatch_flags.includes('entered_kvk_mismatch') ? (
+                        <td
+                          style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'center' }}
+                        >
+                          {reviewDialog.entity.kvk_mismatch_flags.includes(
+                            'entered_kvk_mismatch'
+                          ) ? (
                             <span style={{ color: '#d32f2f', fontSize: '1.2em' }}>✗</span>
                           ) : (
                             <span style={{ color: '#4caf50', fontSize: '1.2em' }}>✓</span>

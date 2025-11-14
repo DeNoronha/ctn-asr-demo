@@ -8,7 +8,7 @@ import {
 import React, { useEffect, useState } from 'react';
 
 // Mantine imports
-import { MantineProvider, createTheme, Button } from '@mantine/core';
+import { Button, MantineProvider, createTheme } from '@mantine/core';
 import { Notifications, notifications } from '@mantine/notifications';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
@@ -20,7 +20,8 @@ import './App.css';
 const theme = createTheme({
   primaryColor: 'blue',
   defaultRadius: 'md',
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  fontFamily:
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
 });
 
 import { APIAccessView } from './components/APIAccessView';
@@ -37,7 +38,14 @@ interface AppContentProps {
   instance: IPublicClientApplication;
 }
 
-type TabType = 'dashboard' | 'profile' | 'contacts' | 'integrations' | 'api-access' | 'dns-verification' | 'support';
+type TabType =
+  | 'dashboard'
+  | 'profile'
+  | 'contacts'
+  | 'integrations'
+  | 'api-access'
+  | 'dns-verification'
+  | 'support';
 
 interface MemberData {
   organizationId: string;
@@ -75,9 +83,23 @@ function AppContent({ instance }: AppContentProps) {
     type: 'success' | 'error' | 'warning' | 'info' = 'success'
   ) => {
     notifications.show({
-      title: type === 'error' ? 'Error' : type === 'warning' ? 'Warning' : type === 'info' ? 'Info' : 'Success',
+      title:
+        type === 'error'
+          ? 'Error'
+          : type === 'warning'
+            ? 'Warning'
+            : type === 'info'
+              ? 'Info'
+              : 'Success',
       message,
-      color: type === 'error' ? 'red' : type === 'warning' ? 'yellow' : type === 'info' ? 'blue' : 'green',
+      color:
+        type === 'error'
+          ? 'red'
+          : type === 'warning'
+            ? 'yellow'
+            : type === 'info'
+              ? 'blue'
+              : 'green',
       autoClose: 5000,
     });
   };
@@ -199,7 +221,10 @@ function AppContent({ instance }: AppContentProps) {
       setShowRegistration(false);
     } catch (error) {
       console.error('Registration error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Registration failed. Please try again or contact support.';
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Registration failed. Please try again or contact support.';
       showNotification(errorMessage, 'error');
     } finally {
       setRegistrationLoading(false);
@@ -337,8 +362,8 @@ function AppContent({ instance }: AppContentProps) {
                 <div>
                   <h3>Member Portal Access</h3>
                   <p style={{ fontSize: '14px', color: '#475569', lineHeight: '1.6' }}>
-                    Access your organization's CTN network dashboard, manage contacts, configure system
-                    integrations, and manage API access for secure data exchange.
+                    Access your organization's CTN network dashboard, manage contacts, configure
+                    system integrations, and manage API access for secure data exchange.
                   </p>
                 </div>
               </div>
@@ -366,14 +391,20 @@ function AppContent({ instance }: AppContentProps) {
               </Button>
 
               <div className="login-footer">
-                <p>New to CTN? Click "Register as Member" to start the registration process. Already registered? Use "Sign In" to access your portal.</p>
+                <p>
+                  New to CTN? Click "Register as Member" to start the registration process. Already
+                  registered? Use "Sign In" to access your portal.
+                </p>
               </div>
 
               <div className="login-partners">
                 <p>In Partnership With</p>
                 <div className="partner-logos-login">
                   <img src="/assets/logos/contargo.png" alt="Contargo" />
-                  <img src="/assets/logos/Inland Terminals Group.png" alt="Inland Terminals Group" />
+                  <img
+                    src="/assets/logos/Inland Terminals Group.png"
+                    alt="Inland Terminals Group"
+                  />
                   <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" />
                 </div>
               </div>
@@ -390,12 +421,15 @@ function AppContent({ instance }: AppContentProps) {
           )}
 
           {!loading && error && (
-            <div className="error-container" style={{
-              padding: '40px 20px',
-              maxWidth: '600px',
-              margin: '0 auto',
-              textAlign: 'center'
-            }}>
+            <div
+              className="error-container"
+              style={{
+                padding: '40px 20px',
+                maxWidth: '600px',
+                margin: '0 auto',
+                textAlign: 'center',
+              }}
+            >
               <h3 style={{ color: '#d32f2f', marginBottom: '16px' }}>Unable to Load Member Data</h3>
               <p style={{ marginBottom: '8px' }}>{error}</p>
               <p style={{ color: '#666', fontSize: '0.9em', marginTop: '16px' }}>
@@ -442,14 +476,22 @@ function AppContent({ instance }: AppContentProps) {
         <footer className="App-footer">
           <div className="footer-content">
             <div className="footer-logos">
-              <img src="/assets/logos/DIL.png" alt="Data in Logistics" className="partner-logo-img" />
+              <img
+                src="/assets/logos/DIL.png"
+                alt="Data in Logistics"
+                className="partner-logo-img"
+              />
               <img src="/assets/logos/contargo.png" alt="Contargo" className="partner-logo-img" />
               <img
                 src="/assets/logos/Inland Terminals Group.png"
                 alt="Inland Terminals Group"
                 className="partner-logo-img"
               />
-              <img src="/assets/logos/VanBerkel.png" alt="Van Berkel" className="partner-logo-img" />
+              <img
+                src="/assets/logos/VanBerkel.png"
+                alt="Van Berkel"
+                className="partner-logo-img"
+              />
             </div>
 
             <div className="footer-bottom">

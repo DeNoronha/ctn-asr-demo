@@ -1,8 +1,8 @@
 import { Button, Modal } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import type { ComponentProps, Token } from '../types';
 import { apiClient } from '../services/apiClient';
+import type { ComponentProps, Token } from '../types';
 import { LoadingState } from './shared/LoadingState';
 
 export const TokensView: React.FC<ComponentProps> = ({
@@ -111,33 +111,35 @@ export const TokensView: React.FC<ComponentProps> = ({
                 <strong>{activeTokens}</strong>
               </div>
               <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Token ID</th>
-                  <th>Type</th>
-                  <th>Issued</th>
-                  <th>Expires</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tokens.map((token) => {
-                  const status = getTokenStatus(token);
-                  return (
-                    <tr key={token.jti}>
-                      <td>
-                        <code style={{ fontSize: '0.85rem' }}>{token.jti.substring(0, 12)}...</code>
-                      </td>
-                      <td>{token.token_type}</td>
-                      <td>{new Date(token.issued_at).toLocaleString()}</td>
-                      <td>{new Date(token.expires_at).toLocaleString()}</td>
-                      <td>
-                        <span className={status.class}>{status.text}</span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
+                <thead>
+                  <tr>
+                    <th>Token ID</th>
+                    <th>Type</th>
+                    <th>Issued</th>
+                    <th>Expires</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tokens.map((token) => {
+                    const status = getTokenStatus(token);
+                    return (
+                      <tr key={token.jti}>
+                        <td>
+                          <code style={{ fontSize: '0.85rem' }}>
+                            {token.jti.substring(0, 12)}...
+                          </code>
+                        </td>
+                        <td>{token.token_type}</td>
+                        <td>{new Date(token.issued_at).toLocaleString()}</td>
+                        <td>{new Date(token.expires_at).toLocaleString()}</td>
+                        <td>
+                          <span className={status.class}>{status.text}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
               </table>
             </>
           )}
@@ -153,62 +155,62 @@ export const TokensView: React.FC<ComponentProps> = ({
         title="Token Generated Successfully"
         size="xl"
       >
-          <div className="alert alert-warning" style={{ marginBottom: '1rem' }}>
-            <strong>⚠️ Copy this token now!</strong>
-            <p style={{ margin: '0.5rem 0 0 0' }}>
-              You won't be able to see it again. Store it securely.
-            </p>
-          </div>
+        <div className="alert alert-warning" style={{ marginBottom: '1rem' }}>
+          <strong>⚠️ Copy this token now!</strong>
+          <p style={{ margin: '0.5rem 0 0 0' }}>
+            You won't be able to see it again. Store it securely.
+          </p>
+        </div>
 
-          <div
+        <div
+          style={{
+            background: 'var(--ctn-bg)',
+            padding: '1rem',
+            borderRadius: '6px',
+            border: '1px solid var(--ctn-border)',
+            marginBottom: '1rem',
+          }}
+        >
+          <label
             style={{
-              background: 'var(--ctn-bg)',
-              padding: '1rem',
-              borderRadius: '6px',
-              border: '1px solid var(--ctn-border)',
-              marginBottom: '1rem',
+              display: 'block',
+              marginBottom: '0.5rem',
+              fontSize: '0.9rem',
+              fontWeight: 600,
+              color: 'var(--ctn-text)',
             }}
           >
-            <label
-              style={{
-                display: 'block',
-                marginBottom: '0.5rem',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                color: 'var(--ctn-text)',
-              }}
-            >
-              Access Token:
-            </label>
-            <textarea
-              readOnly
-              value={newToken || ''}
-              rows={8}
-              style={{
-                width: '100%',
-                fontFamily: 'monospace',
-                fontSize: '0.85rem',
-                padding: '0.5rem',
-                border: '1px solid var(--ctn-border)',
-                borderRadius: '4px',
-                resize: 'vertical',
-              }}
-            />
-          </div>
+            Access Token:
+          </label>
+          <textarea
+            readOnly
+            value={newToken || ''}
+            rows={8}
+            style={{
+              width: '100%',
+              fontFamily: 'monospace',
+              fontSize: '0.85rem',
+              padding: '0.5rem',
+              border: '1px solid var(--ctn-border)',
+              borderRadius: '4px',
+              resize: 'vertical',
+            }}
+          />
+        </div>
 
-          <div className="k-form-buttons k-justify-content-end">
-            <Button onClick={copyToClipboard} color="blue">
-              Copy to Clipboard
-            </Button>
-            <Button
-              onClick={() => {
-                setShowTokenDialog(false);
-                setNewToken(null);
-              }}
-            >
-              Close
-            </Button>
-          </div>
+        <div className="k-form-buttons k-justify-content-end">
+          <Button onClick={copyToClipboard} color="blue">
+            Copy to Clipboard
+          </Button>
+          <Button
+            onClick={() => {
+              setShowTokenDialog(false);
+              setNewToken(null);
+            }}
+          >
+            Close
+          </Button>
+        </div>
       </Modal>
     </div>
   );

@@ -7,7 +7,7 @@
  * Created: October 18, 2025
  */
 
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 const MEMBER_PORTAL_URL = 'https://calm-pebble-043b2db03.1.azurestaticapps.net';
 
@@ -40,12 +40,7 @@ test.describe('Member Portal - Security Headers', () => {
 
   test('should have security headers on all routes', async ({ page }) => {
     // Test a few different routes to ensure headers are consistent
-    const routes = [
-      '/',
-      '/dashboard',
-      '/legal-entity',
-      '/settings'
-    ];
+    const routes = ['/', '/dashboard', '/legal-entity', '/settings'];
 
     for (const route of routes) {
       const response = await page.goto(`${MEMBER_PORTAL_URL}${route}`);
@@ -64,7 +59,7 @@ test.describe('Member Portal - Security Headers', () => {
   test('CSP should not block legitimate resources', async ({ page }) => {
     // Listen for CSP violations
     const cspViolations: any[] = [];
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       if (msg.type() === 'error' && msg.text().includes('Content Security Policy')) {
         cspViolations.push(msg.text());
       }
@@ -94,15 +89,14 @@ test.describe('Member Portal - Security Headers', () => {
 
     // Page should load without CSP errors
     const pageErrors: string[] = [];
-    page.on('pageerror', error => {
+    page.on('pageerror', (error) => {
       pageErrors.push(error.message);
     });
 
     await page.waitForTimeout(2000);
 
-    const cspErrors = pageErrors.filter(err =>
-      err.includes('Content Security Policy') ||
-      err.includes('CSP')
+    const cspErrors = pageErrors.filter(
+      (err) => err.includes('Content Security Policy') || err.includes('CSP')
     );
 
     expect(cspErrors.length).toBe(0);
@@ -130,7 +124,7 @@ test.describe('Member Portal - Security Headers', () => {
     // Extract max-age value
     const maxAgeMatch = hsts?.match(/max-age=(\d+)/);
     if (maxAgeMatch) {
-      const maxAge = parseInt(maxAgeMatch[1]);
+      const maxAge = Number.parseInt(maxAgeMatch[1]);
 
       // Should be at least 1 year (31536000 seconds)
       expect(maxAge).toBeGreaterThanOrEqual(31536000);
@@ -186,7 +180,7 @@ test.describe('Member Portal - Security Best Practices', () => {
     const headers = response?.headers();
 
     // Should not expose server version (or if it does, should not contain version numbers)
-    const serverHeader = headers?.['server'];
+    const serverHeader = headers?.server;
     if (serverHeader) {
       expect(serverHeader).not.toContain('Apache/');
       expect(serverHeader).not.toContain('nginx/');

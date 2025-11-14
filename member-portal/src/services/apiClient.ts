@@ -13,7 +13,7 @@ async function getAccessToken(): Promise<string> {
   try {
     const response = await msalInstance.acquireTokenSilent({
       account: accounts[0],
-      scopes: ['api://bcc3ddce-6891-42aa-91f6-99d85b02bb7d/.default']
+      scopes: ['api://bcc3ddce-6891-42aa-91f6-99d85b02bb7d/.default'],
     });
 
     return response.accessToken;
@@ -30,7 +30,7 @@ function handleApiError(error: Error): void {
   console.error('API Client Error:', {
     message: error.message,
     name: error.name,
-    stack: error.stack
+    stack: error.stack,
   });
 
   // You can add additional error handling here:
@@ -47,5 +47,5 @@ export const apiClient = new AsrApiClient({
   timeout: 30000,
   retryAttempts: 3,
   getAccessToken,
-  onError: handleApiError
+  onError: handleApiError,
 });

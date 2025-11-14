@@ -230,327 +230,340 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
         <h3>KvK Document Verification</h3>
 
         {verificationStatus?.kvk_document_url ? (
-        <div className="verification-status" style={{ marginBottom: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-            <strong>Status:</strong> {getStatusBadge(verificationStatus.kvk_verification_status)}
-          </div>
-
-          {verificationStatus.kvk_verification_status === 'pending' && (
+          <div className="verification-status" style={{ marginBottom: '20px' }}>
             <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                color: TEXT_COLORS.muted,
-                marginBottom: '15px',
-              }}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}
             >
-              <Loader size="sm" />
-              <span>Verifying document...</span>
+              <strong>Status:</strong> {getStatusBadge(verificationStatus.kvk_verification_status)}
             </div>
-          )}
 
-          {/* KvK Company Status - Prominent Display */}
-          {getKvkApiData() && (
-            <div
-              style={{
-                marginBottom: '20px',
-                padding: '15px',
-                backgroundColor:
-                  getCompanyStatus().color === TEXT_COLORS.success ? '#f0fdf4' : '#fef2f2',
-                border: `2px solid ${getCompanyStatus().color}`,
-                borderRadius: '6px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '1.5em' }}>{getCompanyStatus().icon}</span>
-                <div>
-                  <strong style={{ fontSize: '1.1em' }}>
-                    Company Status (KvK Registry):{' '}
-                    <span style={{ color: getCompanyStatus().color }}>
-                      {getCompanyStatus().text}
-                    </span>
-                  </strong>
-                  <div style={{ fontSize: '0.9em', color: TEXT_COLORS.muted, marginTop: '5px' }}>
-                    {getKvkApiData()?.statutoryName}
-                    {verificationStatus?.kvk_verified_at && (
-                      <span style={{ marginLeft: '10px', fontSize: '0.95em' }}>
-                        • Last verified: {formatDate(verificationStatus.kvk_verified_at)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 3-Column Comparison Grid */}
-          {(verificationStatus.kvk_extracted_company_name ||
-            verificationStatus.kvk_extracted_number) && (
-            <div style={{ marginTop: '20px', marginBottom: '20px' }}>
-              <strong style={{ marginBottom: '10px', display: 'block', fontSize: '1.05em' }}>
-                Verification Details:
-              </strong>
-
-              {/* Legend - positioned ABOVE the table */}
-              <div style={{ marginBottom: '12px', fontSize: '0.85em', color: TEXT_COLORS.muted }}>
-                <strong>Legend:</strong>{' '}
-                <span
-                  style={{
-                    backgroundColor: '#d4edda',
-                    padding: '2px 6px',
-                    borderRadius: '3px',
-                    marginRight: '10px',
-                  }}
-                >
-                  Data matches
-                </span>
-                <span
-                  style={{
-                    backgroundColor: '#fee2e2',
-                    padding: '2px 6px',
-                    borderRadius: '3px',
-                    marginRight: '10px',
-                  }}
-                >
-                  PDF doesn't match entered data
-                </span>
-                <span
-                  style={{ backgroundColor: '#fef3c7', padding: '2px 6px', borderRadius: '3px' }}
-                >
-                  KvK doesn't match PDF
-                </span>
-              </div>
-
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9em' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
-                    <th
-                      style={{ padding: '10px', textAlign: 'left', fontWeight: 600, width: '15%' }}
-                    >
-                      Field
-                    </th>
-                    <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600 }}>
-                      Entered by User
-                    </th>
-                    <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600 }}>
-                      From PDF
-                    </th>
-                    <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600 }}>
-                      KvK Registry
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Company Name Row */}
-                  <tr style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '10px', fontWeight: 500, backgroundColor: '#fafafa' }}>
-                      Company Name
-                    </td>
-                    <td style={{ padding: '10px' }}>
-                      {verificationStatus.entered_company_name || (
-                        <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
-                      )}
-                    </td>
-                    <td
-                      style={{
-                        padding: '10px',
-                        backgroundColor: verificationStatus.kvk_mismatch_flags?.includes(
-                          'entered_name_mismatch'
-                        )
-                          ? '#fee2e2' // Red for mismatch
-                          : verificationStatus.kvk_extracted_company_name &&
-                              verificationStatus.entered_company_name
-                            ? '#d4edda' // Green for match
-                            : 'inherit',
-                      }}
-                    >
-                      {verificationStatus.kvk_extracted_company_name || (
-                        <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
-                      )}
-                    </td>
-                    <td
-                      style={{
-                        padding: '10px',
-                        backgroundColor: verificationStatus.kvk_mismatch_flags?.includes(
-                          'company_name_mismatch'
-                        )
-                          ? '#fef3c7' // Yellow for KvK mismatch
-                          : getKvkApiData()?.statutoryName &&
-                              verificationStatus.kvk_extracted_company_name
-                            ? '#d4edda' // Green for match
-                            : 'inherit',
-                      }}
-                    >
-                      {getKvkApiData()?.statutoryName || (
-                        <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
-                      )}
-                    </td>
-                  </tr>
-
-                  {/* KvK Number Row */}
-                  <tr style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '10px', fontWeight: 500, backgroundColor: '#fafafa' }}>
-                      KvK Number
-                    </td>
-                    <td style={{ padding: '10px' }}>
-                      {verificationStatus.entered_kvk_number || (
-                        <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
-                      )}
-                    </td>
-                    <td
-                      style={{
-                        padding: '10px',
-                        backgroundColor: verificationStatus.kvk_mismatch_flags?.includes(
-                          'entered_kvk_mismatch'
-                        )
-                          ? '#fee2e2' // Red for mismatch
-                          : verificationStatus.kvk_extracted_number &&
-                              verificationStatus.entered_kvk_number
-                            ? '#d4edda' // Green for match
-                            : 'inherit',
-                      }}
-                    >
-                      {verificationStatus.kvk_extracted_number || (
-                        <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
-                      )}
-                    </td>
-                    <td
-                      style={{
-                        padding: '10px',
-                        backgroundColor: verificationStatus.kvk_mismatch_flags?.includes(
-                          'kvk_number_mismatch'
-                        )
-                          ? '#fef3c7' // Yellow for KvK mismatch
-                          : getKvkApiData()?.kvkNumber && verificationStatus.kvk_extracted_number
-                            ? '#d4edda' // Green for match
-                            : 'inherit',
-                      }}
-                    >
-                      {getKvkApiData()?.kvkNumber || (
-                        <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Issues Summary - Only show if there are validation flags */}
-          {verificationStatus.kvk_mismatch_flags &&
-            verificationStatus.kvk_mismatch_flags.length > 0 && (
-              <div style={{ marginTop: '15px', marginBottom: '15px' }}>
-                <strong style={{ display: 'block', marginBottom: '8px', fontSize: '1.05em' }}>
-                  ⚠️ Validation Issues:
-                </strong>
-                <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
-                  {verificationStatus.kvk_mismatch_flags.map((flag, idx) => (
-                    <li
-                      key={idx}
-                      style={{ color: isEnteredDataMismatch(flag) ? '#dc2626' : '#f59e0b' }}
-                    >
-                      {getFlagDescription(flag)}
-                    </li>
-                  ))}
-                </ul>
+            {verificationStatus.kvk_verification_status === 'pending' && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  color: TEXT_COLORS.muted,
+                  marginBottom: '15px',
+                }}
+              >
+                <Loader size="sm" />
+                <span>Verifying document...</span>
               </div>
             )}
 
-          {verificationStatus.kvk_verification_notes && (
-            <div style={{ marginTop: '10px' }}>
-              <strong>Admin Notes:</strong>
+            {/* KvK Company Status - Prominent Display */}
+            {getKvkApiData() && (
               <div
                 style={{
-                  padding: '10px',
-                  backgroundColor: '#f5f5f5',
-                  borderRadius: '4px',
-                  marginTop: '5px',
+                  marginBottom: '20px',
+                  padding: '15px',
+                  backgroundColor:
+                    getCompanyStatus().color === TEXT_COLORS.success ? '#f0fdf4' : '#fef2f2',
+                  border: `2px solid ${getCompanyStatus().color}`,
+                  borderRadius: '6px',
                 }}
               >
-                {verificationStatus.kvk_verification_notes}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '1.5em' }}>{getCompanyStatus().icon}</span>
+                  <div>
+                    <strong style={{ fontSize: '1.1em' }}>
+                      Company Status (KvK Registry):{' '}
+                      <span style={{ color: getCompanyStatus().color }}>
+                        {getCompanyStatus().text}
+                      </span>
+                    </strong>
+                    <div style={{ fontSize: '0.9em', color: TEXT_COLORS.muted, marginTop: '5px' }}>
+                      {getKvkApiData()?.statutoryName}
+                      {verificationStatus?.kvk_verified_at && (
+                        <span style={{ marginLeft: '10px', fontSize: '0.95em' }}>
+                          • Last verified: {formatDate(verificationStatus.kvk_verified_at)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {verificationStatus.kvk_verified_at && (
-            <div style={{ marginTop: '10px', fontSize: '0.9em', color: TEXT_COLORS.muted }}>
-              Verified: {formatDateTime(verificationStatus.kvk_verified_at)}
-              {verificationStatus.kvk_verified_by && ` by ${verificationStatus.kvk_verified_by}`}
-            </div>
-          )}
+            {/* 3-Column Comparison Grid */}
+            {(verificationStatus.kvk_extracted_company_name ||
+              verificationStatus.kvk_extracted_number) && (
+              <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+                <strong style={{ marginBottom: '10px', display: 'block', fontSize: '1.05em' }}>
+                  Verification Details:
+                </strong>
 
-          <div style={{ marginTop: '15px' }}>
-            <a href={verificationStatus.kvk_document_url} target="_blank" rel="noopener noreferrer">
-              <Button color="cyan" size="sm">
-                View Uploaded Document
+                {/* Legend - positioned ABOVE the table */}
+                <div style={{ marginBottom: '12px', fontSize: '0.85em', color: TEXT_COLORS.muted }}>
+                  <strong>Legend:</strong>{' '}
+                  <span
+                    style={{
+                      backgroundColor: '#d4edda',
+                      padding: '2px 6px',
+                      borderRadius: '3px',
+                      marginRight: '10px',
+                    }}
+                  >
+                    Data matches
+                  </span>
+                  <span
+                    style={{
+                      backgroundColor: '#fee2e2',
+                      padding: '2px 6px',
+                      borderRadius: '3px',
+                      marginRight: '10px',
+                    }}
+                  >
+                    PDF doesn't match entered data
+                  </span>
+                  <span
+                    style={{ backgroundColor: '#fef3c7', padding: '2px 6px', borderRadius: '3px' }}
+                  >
+                    KvK doesn't match PDF
+                  </span>
+                </div>
+
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9em' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+                      <th
+                        style={{
+                          padding: '10px',
+                          textAlign: 'left',
+                          fontWeight: 600,
+                          width: '15%',
+                        }}
+                      >
+                        Field
+                      </th>
+                      <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600 }}>
+                        Entered by User
+                      </th>
+                      <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600 }}>
+                        From PDF
+                      </th>
+                      <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600 }}>
+                        KvK Registry
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Company Name Row */}
+                    <tr style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: '10px', fontWeight: 500, backgroundColor: '#fafafa' }}>
+                        Company Name
+                      </td>
+                      <td style={{ padding: '10px' }}>
+                        {verificationStatus.entered_company_name || (
+                          <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
+                        )}
+                      </td>
+                      <td
+                        style={{
+                          padding: '10px',
+                          backgroundColor: verificationStatus.kvk_mismatch_flags?.includes(
+                            'entered_name_mismatch'
+                          )
+                            ? '#fee2e2' // Red for mismatch
+                            : verificationStatus.kvk_extracted_company_name &&
+                                verificationStatus.entered_company_name
+                              ? '#d4edda' // Green for match
+                              : 'inherit',
+                        }}
+                      >
+                        {verificationStatus.kvk_extracted_company_name || (
+                          <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
+                        )}
+                      </td>
+                      <td
+                        style={{
+                          padding: '10px',
+                          backgroundColor: verificationStatus.kvk_mismatch_flags?.includes(
+                            'company_name_mismatch'
+                          )
+                            ? '#fef3c7' // Yellow for KvK mismatch
+                            : getKvkApiData()?.statutoryName &&
+                                verificationStatus.kvk_extracted_company_name
+                              ? '#d4edda' // Green for match
+                              : 'inherit',
+                        }}
+                      >
+                        {getKvkApiData()?.statutoryName || (
+                          <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
+                        )}
+                      </td>
+                    </tr>
+
+                    {/* KvK Number Row */}
+                    <tr style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: '10px', fontWeight: 500, backgroundColor: '#fafafa' }}>
+                        KvK Number
+                      </td>
+                      <td style={{ padding: '10px' }}>
+                        {verificationStatus.entered_kvk_number || (
+                          <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
+                        )}
+                      </td>
+                      <td
+                        style={{
+                          padding: '10px',
+                          backgroundColor: verificationStatus.kvk_mismatch_flags?.includes(
+                            'entered_kvk_mismatch'
+                          )
+                            ? '#fee2e2' // Red for mismatch
+                            : verificationStatus.kvk_extracted_number &&
+                                verificationStatus.entered_kvk_number
+                              ? '#d4edda' // Green for match
+                              : 'inherit',
+                        }}
+                      >
+                        {verificationStatus.kvk_extracted_number || (
+                          <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
+                        )}
+                      </td>
+                      <td
+                        style={{
+                          padding: '10px',
+                          backgroundColor: verificationStatus.kvk_mismatch_flags?.includes(
+                            'kvk_number_mismatch'
+                          )
+                            ? '#fef3c7' // Yellow for KvK mismatch
+                            : getKvkApiData()?.kvkNumber && verificationStatus.kvk_extracted_number
+                              ? '#d4edda' // Green for match
+                              : 'inherit',
+                        }}
+                      >
+                        {getKvkApiData()?.kvkNumber || (
+                          <span style={{ color: TEXT_COLORS.muted, fontStyle: 'italic' }}>—</span>
+                        )}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Issues Summary - Only show if there are validation flags */}
+            {verificationStatus.kvk_mismatch_flags &&
+              verificationStatus.kvk_mismatch_flags.length > 0 && (
+                <div style={{ marginTop: '15px', marginBottom: '15px' }}>
+                  <strong style={{ display: 'block', marginBottom: '8px', fontSize: '1.05em' }}>
+                    ⚠️ Validation Issues:
+                  </strong>
+                  <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
+                    {verificationStatus.kvk_mismatch_flags.map((flag, idx) => (
+                      <li
+                        key={idx}
+                        style={{ color: isEnteredDataMismatch(flag) ? '#dc2626' : '#f59e0b' }}
+                      >
+                        {getFlagDescription(flag)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+            {verificationStatus.kvk_verification_notes && (
+              <div style={{ marginTop: '10px' }}>
+                <strong>Admin Notes:</strong>
+                <div
+                  style={{
+                    padding: '10px',
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: '4px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {verificationStatus.kvk_verification_notes}
+                </div>
+              </div>
+            )}
+
+            {verificationStatus.kvk_verified_at && (
+              <div style={{ marginTop: '10px', fontSize: '0.9em', color: TEXT_COLORS.muted }}>
+                Verified: {formatDateTime(verificationStatus.kvk_verified_at)}
+                {verificationStatus.kvk_verified_by && ` by ${verificationStatus.kvk_verified_by}`}
+              </div>
+            )}
+
+            <div style={{ marginTop: '15px' }}>
+              <a
+                href={verificationStatus.kvk_document_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button color="cyan" size="sm">
+                  View Uploaded Document
+                </Button>
+              </a>
+            </div>
+
+            <div style={{ marginTop: '10px' }}>
+              <Button color="blue" size="sm" onClick={() => setVerificationStatus(null)}>
+                Upload New Document
               </Button>
-            </a>
-          </div>
-
-          <div style={{ marginTop: '10px' }}>
-            <Button color="blue" size="sm" onClick={() => setVerificationStatus(null)}>
-              Upload New Document
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <div>
-          <p>Upload a KvK (Chamber of Commerce) statement to verify company details.</p>
-
-          <Dropzone
-            onDrop={handleUpload}
-            onReject={(files) => {
-              if (files[0]?.errors[0]?.code === 'file-invalid-type') {
-                notification.showError('Only PDF files are allowed');
-              } else if (files[0]?.errors[0]?.code === 'file-too-large') {
-                notification.showError('File size must be less than 10MB');
-              }
-            }}
-            maxSize={10 * 1024 * 1024} // 10MB
-            accept={[MIME_TYPES.pdf]}
-            multiple={false}
-            disabled={uploading}
-          >
-            <Group justify="center" gap="xl" mih={220} style={{ pointerEvents: 'none' }}>
-              <Dropzone.Accept>
-                <CheckCircle size={52} style={{ color: 'var(--mantine-color-blue-6)' }} />
-              </Dropzone.Accept>
-              <Dropzone.Reject>
-                <XCircle size={52} style={{ color: 'var(--mantine-color-red-6)' }} />
-              </Dropzone.Reject>
-              <Dropzone.Idle>
-                <FileText size={52} style={{ color: 'var(--mantine-color-dimmed)' }} />
-              </Dropzone.Idle>
-
-              <div>
-                <Text size="xl" inline>
-                  Drag PDF here or click to select
-                </Text>
-                <Text size="sm" c="dimmed" inline mt={7}>
-                  File should not exceed 10MB
-                </Text>
-              </div>
-            </Group>
-          </Dropzone>
-
-          {uploading && (
-            <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Loader size="sm" />
-              <span>Uploading and verifying document...</span>
             </div>
-          )}
-
-          <div style={{ marginTop: '15px', fontSize: '0.9em', color: TEXT_COLORS.muted }}>
-            <strong>Requirements:</strong>
-            <ul>
-              <li>PDF format only</li>
-              <li>Maximum file size: 10MB</li>
-              <li>Must contain KvK number and company name</li>
-            </ul>
           </div>
-        </div>
-      )}
+        ) : (
+          <div>
+            <p>Upload a KvK (Chamber of Commerce) statement to verify company details.</p>
+
+            <Dropzone
+              onDrop={handleUpload}
+              onReject={(files) => {
+                if (files[0]?.errors[0]?.code === 'file-invalid-type') {
+                  notification.showError('Only PDF files are allowed');
+                } else if (files[0]?.errors[0]?.code === 'file-too-large') {
+                  notification.showError('File size must be less than 10MB');
+                }
+              }}
+              maxSize={10 * 1024 * 1024} // 10MB
+              accept={[MIME_TYPES.pdf]}
+              multiple={false}
+              disabled={uploading}
+            >
+              <Group justify="center" gap="xl" mih={220} style={{ pointerEvents: 'none' }}>
+                <Dropzone.Accept>
+                  <CheckCircle size={52} style={{ color: 'var(--mantine-color-blue-6)' }} />
+                </Dropzone.Accept>
+                <Dropzone.Reject>
+                  <XCircle size={52} style={{ color: 'var(--mantine-color-red-6)' }} />
+                </Dropzone.Reject>
+                <Dropzone.Idle>
+                  <FileText size={52} style={{ color: 'var(--mantine-color-dimmed)' }} />
+                </Dropzone.Idle>
+
+                <div>
+                  <Text size="xl" inline>
+                    Drag PDF here or click to select
+                  </Text>
+                  <Text size="sm" c="dimmed" inline mt={7}>
+                    File should not exceed 10MB
+                  </Text>
+                </div>
+              </Group>
+            </Dropzone>
+
+            {uploading && (
+              <div
+                style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}
+              >
+                <Loader size="sm" />
+                <span>Uploading and verifying document...</span>
+              </div>
+            )}
+
+            <div style={{ marginTop: '15px', fontSize: '0.9em', color: TEXT_COLORS.muted }}>
+              <strong>Requirements:</strong>
+              <ul>
+                <li>PDF format only</li>
+                <li>Maximum file size: 10MB</li>
+                <li>Must contain KvK number and company name</li>
+              </ul>
+            </div>
+          </div>
+        )}
       </div>
     </LoadingState>
   );

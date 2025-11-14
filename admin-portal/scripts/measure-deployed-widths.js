@@ -5,8 +5,8 @@
  */
 
 const { chromium } = require('playwright');
-const path = require('path');
-const fs = require('fs');
+const path = require('node:path');
+const fs = require('node:fs');
 
 async function measureDeployedWidths() {
   console.log('🔍 Starting automated width measurement on DEPLOYED application...\n');
@@ -135,13 +135,13 @@ async function measureDeployedWidths() {
   console.log('═══════════════════════════════════════════════════════════════\n');
 
   const inconsistentScreens = measurements.filter((m) => !m.isConsistent);
-  console.log(`📊 Summary:`);
+  console.log('📊 Summary:');
   console.log(`   Total screens: ${measurements.length}`);
   console.log(`   Consistent: ${measurements.length - inconsistentScreens.length}`);
   console.log(`   Inconsistent: ${inconsistentScreens.length}\n`);
 
   if (inconsistentScreens.length > 0) {
-    console.log(`❌ INCONSISTENT SCREENS (difference > 10px):\n`);
+    console.log('❌ INCONSISTENT SCREENS (difference > 10px):\n');
     inconsistentScreens.forEach((m) => {
       console.log(`   ${m.screen}:`);
       console.log(`      Header: ${m.headerWidth}px`);
@@ -151,7 +151,7 @@ async function measureDeployedWidths() {
       console.log('');
     });
   } else {
-    console.log(`✅ All screens are consistent!`);
+    console.log('✅ All screens are consistent!');
   }
 
   // Save full report
