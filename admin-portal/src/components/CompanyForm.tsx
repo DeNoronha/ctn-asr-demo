@@ -250,8 +250,8 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
           <h4>Add New Identifier</h4>
           <div className="identifier-form-grid">
             <div className="form-field">
-              <label>Type</label>
               <Select
+                label="Type"
                 data={IDENTIFIER_TYPES}
                 value={newIdentifier.identifier_type}
                 onChange={(value) =>
@@ -261,8 +261,8 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
             </div>
 
             <div className="form-field">
-              <label>Identifier Value</label>
               <TextInput
+                label="Identifier Value"
                 value={newIdentifier.identifier_value || ''}
                 onChange={(e) =>
                   setNewIdentifier({ ...newIdentifier, identifier_value: e.target.value })
@@ -272,8 +272,8 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
             </div>
 
             <div className="form-field">
-              <label>Country</label>
               <Select
+                label="Country"
                 data={COUNTRY_CODES.map((c) => ({ value: c.code, label: c.name }))}
                 value={newIdentifier.country_code}
                 onChange={(value) =>
@@ -283,8 +283,8 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
             </div>
 
             <div className="form-field">
-              <label>Registry Name</label>
               <TextInput
+                label="Registry Name"
                 value={newIdentifier.registry_name || ''}
                 onChange={(e) =>
                   setNewIdentifier({ ...newIdentifier, registry_name: e.target.value })
