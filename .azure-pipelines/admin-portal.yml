@@ -29,6 +29,10 @@ variables:
     value: 'Azure-CTN-ASR-ServiceConnection'
 
 steps:
+  # Checkout with sufficient history for Aikido scanning
+  - checkout: self
+    fetchDepth: 10
+    persistCredentials: true
   # Fetch secrets from Azure Key Vault
   - task: AzureKeyVault@2
     displayName: 'Fetch secrets from Key Vault'
@@ -146,12 +150,24 @@ steps:
 
   - script: |
       cd admin-portal
-      # Fetch origin to ensure we have the reference
-      git fetch origin main --depth=50
-      # Use the commit before HEAD as base (for comparing current changes)
-      BASE_COMMIT=$(git rev-parse HEAD~1)
+
+      # Get current commit
       HEAD_COMMIT=$(git rev-parse HEAD)
+      echo "Current commit: $HEAD_COMMIT"
+
+      # Try to get parent commit, fallback to first commit if not available
+      if git rev-parse HEAD~1 >/dev/null 2>&1; then
+        BASE_COMMIT=$(git rev-parse HEAD~1)
+        echo "Parent commit found: $BASE_COMMIT"
+      else
+        # Fallback: use the first commit in the repo or an empty tree
+        BASE_COMMIT=$(git rev-list --max-parents=0 HEAD 2>/dev/null || echo "4b825dc642cb6eb9a060e54bf8d69288fbee4904")
+        echo "Using fallback base commit: $BASE_COMMIT"
+      fi
+
       echo "Scanning commits: $BASE_COMMIT -> $HEAD_COMMIT"
+
+      # Run Aikido scan
       aikido-api-client scan 1094319 $BASE_COMMIT $HEAD_COMMIT main \
         --minimum-severity-level MEDIUM \
         --fail-on-sast-scan \
