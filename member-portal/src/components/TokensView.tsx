@@ -3,6 +3,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import type { ComponentProps, Token } from '../types';
 import { apiClient } from '../services/apiClient';
+import { LoadingState } from './shared/LoadingState';
 
 export const TokensView: React.FC<ComponentProps> = ({
   apiBaseUrl,
@@ -97,23 +98,19 @@ export const TokensView: React.FC<ComponentProps> = ({
       </div>
 
       <div className="card">
-        {loading ? (
-          <div className="loading-container">
-            <div className="loading-spinner" />
-            <p>Loading tokens...</p>
-          </div>
-        ) : tokens.length === 0 ? (
-          <div className="empty-state">
-            <h3>No Tokens</h3>
-            <p>Generate your first API token to get started.</p>
-          </div>
-        ) : (
-          <>
-            <div style={{ padding: '1rem', borderBottom: '1px solid var(--ctn-border)' }}>
-              Total Tokens: <strong>{tokens.length}</strong> | Active:{' '}
-              <strong>{activeTokens}</strong>
+        <LoadingState loading={loading} minHeight={300}>
+          {tokens.length === 0 ? (
+            <div className="empty-state">
+              <h3>No Tokens</h3>
+              <p>Generate your first API token to get started.</p>
             </div>
-            <table className="data-table">
+          ) : (
+            <>
+              <div style={{ padding: '1rem', borderBottom: '1px solid var(--ctn-border)' }}>
+                Total Tokens: <strong>{tokens.length}</strong> | Active:{' '}
+                <strong>{activeTokens}</strong>
+              </div>
+              <table className="data-table">
               <thead>
                 <tr>
                   <th>Token ID</th>
@@ -141,9 +138,10 @@ export const TokensView: React.FC<ComponentProps> = ({
                   );
                 })}
               </tbody>
-            </table>
-          </>
-        )}
+              </table>
+            </>
+          )}
+        </LoadingState>
       </div>
 
       <Modal

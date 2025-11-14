@@ -4,8 +4,6 @@ import {
   Group,
   Modal,
   Select,
-  Skeleton,
-  Stack,
   Tabs,
   TextInput,
   Textarea,
@@ -22,6 +20,7 @@ import { PageHeader } from './shared/PageHeader';
 import './TasksGrid.css';
 import { type Application, apiV2 } from '../services/apiV2';
 import { ErrorBoundary } from './ErrorBoundary';
+import { LoadingState } from './shared/LoadingState';
 
 interface AdminTask {
   task_id: string;
@@ -668,22 +667,14 @@ const TasksGrid: React.FC = () => {
             Total Tasks: {tasks.length}
           </div>
           <ErrorBoundary>
-            {_loading && tasks.length === 0 ? (
-              <Stack gap="xs">
-                <Skeleton height={50} radius="md" />
-                <Skeleton height={50} radius="md" />
-                <Skeleton height={50} radius="md" />
-                <Skeleton height={50} radius="md" />
-                <Skeleton height={50} radius="md" />
-              </Stack>
-            ) : (
+            <LoadingState loading={_loading && tasks.length === 0} minHeight={400}>
               <DataTable
                 {...defaultDataTableProps}
                 records={tasks}
                 columns={tasksEffectiveColumns}
                 storeColumnsKey="tasks-grid"
               />
-            )}
+            </LoadingState>
           </ErrorBoundary>
         </Tabs.Panel>
 
@@ -692,22 +683,14 @@ const TasksGrid: React.FC = () => {
             Total Reviews: {reviewTasks.length}
           </div>
           <ErrorBoundary>
-            {_loading && reviewTasks.length === 0 ? (
-              <Stack gap="xs">
-                <Skeleton height={50} radius="md" />
-                <Skeleton height={50} radius="md" />
-                <Skeleton height={50} radius="md" />
-                <Skeleton height={50} radius="md" />
-                <Skeleton height={50} radius="md" />
-              </Stack>
-            ) : (
+            <LoadingState loading={_loading && reviewTasks.length === 0} minHeight={400}>
               <DataTable
                 {...defaultDataTableProps}
                 records={reviewTasks}
                 columns={reviewEffectiveColumns}
                 storeColumnsKey="review-tasks-grid"
               />
-            )}
+            </LoadingState>
           </ErrorBoundary>
         </Tabs.Panel>
 
@@ -716,22 +699,14 @@ const TasksGrid: React.FC = () => {
             Total Applications: {applications.length}
           </div>
           <ErrorBoundary>
-            {_loading && applications.length === 0 ? (
-              <Stack gap="xs">
-                <Skeleton height={50} radius="md" />
-                <Skeleton height={50} radius="md" />
-                <Skeleton height={50} radius="md" />
-                <Skeleton height={50} radius="md" />
-                <Skeleton height={50} radius="md" />
-              </Stack>
-            ) : (
+            <LoadingState loading={_loading && applications.length === 0} minHeight={400}>
               <DataTable
                 {...defaultDataTableProps}
                 records={applications}
                 columns={applicationsEffectiveColumns}
                 storeColumnsKey="applications-grid"
               />
-            )}
+            </LoadingState>
           </ErrorBoundary>
         </Tabs.Panel>
       </Tabs>

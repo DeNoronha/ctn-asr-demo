@@ -2,6 +2,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import type { ComponentProps, Contact, Endpoint, Token } from '../types';
 import { apiClient } from '../services/apiClient';
+import { LoadingState } from './shared/LoadingState';
 
 interface TierInfo {
   tier: number;
@@ -125,17 +126,9 @@ export const Dashboard: React.FC<ComponentProps> = ({
     }
   };
 
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner" />
-        <p>Loading dashboard...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="dashboard">
+    <LoadingState loading={loading} minHeight={600}>
+      <div className="dashboard">
       <div className="page-header">
         <div>
           <h2>Dashboard</h2>
@@ -289,6 +282,7 @@ export const Dashboard: React.FC<ComponentProps> = ({
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </LoadingState>
   );
 };

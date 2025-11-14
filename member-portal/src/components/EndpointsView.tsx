@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import type { ComponentProps, Endpoint } from '../types';
 import { EndpointRegistrationWizard } from './EndpointRegistrationWizard';
 import { apiClient } from '../services/apiClient';
+import { LoadingState } from './shared/LoadingState';
 
 export const EndpointsView: React.FC<ComponentProps> = ({
   apiBaseUrl,
@@ -51,18 +52,14 @@ export const EndpointsView: React.FC<ComponentProps> = ({
       </div>
 
       <div className="card">
-        {loading ? (
-          <div className="loading-container">
-            <div className="loading-spinner" />
-            <p>Loading endpoints...</p>
-          </div>
-        ) : endpoints.length === 0 ? (
-          <div className="empty-state">
-            <h3>No Endpoints</h3>
-            <p>Add your first data endpoint to get started.</p>
-          </div>
-        ) : (
-          <table className="data-table">
+        <LoadingState loading={loading} minHeight={300}>
+          {endpoints.length === 0 ? (
+            <div className="empty-state">
+              <h3>No Endpoints</h3>
+              <p>Add your first data endpoint to get started.</p>
+            </div>
+          ) : (
+            <table className="data-table">
             <thead>
               <tr>
                 <th>Name</th>
@@ -103,8 +100,9 @@ export const EndpointsView: React.FC<ComponentProps> = ({
                 </tr>
               ))}
             </tbody>
-          </table>
-        )}
+            </table>
+          )}
+        </LoadingState>
       </div>
 
       <Modal
