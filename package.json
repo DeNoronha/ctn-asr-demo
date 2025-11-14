@@ -7,6 +7,9 @@
     "api",
     "packages/*"
   ],
+  "overrides": {
+    "undici": "^7.16.0"
+  },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
     "@rollup/plugin-terser": "^0.4.4"
