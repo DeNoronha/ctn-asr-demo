@@ -6,7 +6,6 @@ import {
   Group,
   Menu,
   Modal,
-  Skeleton,
   Stack,
   TextInput,
   Tooltip,
@@ -34,6 +33,7 @@ import { getMembershipColor, getStatusColor } from '../utils/colors';
 import { exportToCSV, exportToPDF } from '../utils/exportUtils';
 import { sanitizeGridCell } from '../utils/sanitize';
 import { ErrorBoundary } from './ErrorBoundary';
+import { LoadingState } from './shared/LoadingState';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
 import './MembersGrid.css';
 
@@ -688,18 +688,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
       {/* DataTable from mantine-datatable wrapped in ErrorBoundary */}
       <ErrorBoundary>
-        {loading && sortedData.length === 0 ? (
-          <Stack gap="xs">
-            <Skeleton height={50} radius="md" />
-            <Skeleton height={50} radius="md" />
-            <Skeleton height={50} radius="md" />
-            <Skeleton height={50} radius="md" />
-            <Skeleton height={50} radius="md" />
-            <Skeleton height={50} radius="md" />
-            <Skeleton height={50} radius="md" />
-            <Skeleton height={50} radius="md" />
-          </Stack>
-        ) : (
+        <LoadingState loading={loading && sortedData.length === 0} minHeight={500}>
           <DataTable
             {...defaultDataTableProps}
             records={sortedData}
@@ -730,7 +719,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             })}
             pinLastColumn
           />
-        )}
+        </LoadingState>
       </ErrorBoundary>
     </div>
   );
