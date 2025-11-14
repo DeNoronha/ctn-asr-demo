@@ -56,18 +56,22 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
         // Update existing contact
         const updated = await onContactUpdate(editingContact.legal_entity_contact_id, contact);
         const msg = contactSuccessMessages.updated(updated.full_name || 'Contact');
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        msg && (window as any).notification?.showSuccess
-          ? (window as any).notification.showSuccess(msg.title)
-          : null;
+        const notification = (
+          window as unknown as { notification?: { showSuccess: (title: string) => void } }
+        ).notification;
+        if (msg && notification?.showSuccess) {
+          notification.showSuccess(msg.title);
+        }
       } else {
         // Create new contact
         const created = await onContactCreate(contact);
         const msg = contactSuccessMessages.created(created.full_name || 'Contact');
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        msg && (window as any).notification?.showSuccess
-          ? (window as any).notification.showSuccess(msg.title)
-          : null;
+        const notification = (
+          window as unknown as { notification?: { showSuccess: (title: string) => void } }
+        ).notification;
+        if (msg && notification?.showSuccess) {
+          notification.showSuccess(msg.title);
+        }
       }
       setShowDialog(false);
     },
@@ -118,7 +122,7 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
         render: (contact) => {
           const type = contact.contact_type || 'General';
           return (
-            <div>
+            <span>
               <span
                 className="contact-type-badge"
                 style={{ backgroundColor: getContactTypeColor(type) }}
@@ -137,7 +141,7 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
                   ★
                 </span>
               )}
-            </div>
+            </span>
           );
         },
       },

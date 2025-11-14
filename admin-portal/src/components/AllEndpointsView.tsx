@@ -58,7 +58,7 @@ export const AllEndpointsView: React.FC = () => {
             // Add member info to each endpoint
             const endpointsWithMember = memberEndpoints.map((endpoint) => ({
               legal_entity_endpoint_id: endpoint.legal_entity_endpoint_id || '',
-              legal_entity_id: member.legal_entity_id!,
+              legal_entity_id: member.legal_entity_id || '',
               legal_entity_name: member.legal_name || '',
               endpoint_name: endpoint.endpoint_name,
               endpoint_url: endpoint.endpoint_url || '',
@@ -87,6 +87,7 @@ export const AllEndpointsView: React.FC = () => {
 
   useEffect(() => {
     loadAllEndpoints();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Filter endpoints based on search query

@@ -11,6 +11,7 @@ interface CompanyDetailsProps {
   onEdit: () => void;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Display component renders comprehensive company details with many conditional fields
 export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit }) => {
   return (
     <div className="company-details">

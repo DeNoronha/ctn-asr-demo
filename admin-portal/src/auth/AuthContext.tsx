@@ -70,6 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (!user) return;
 
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Authentication timeout logic requires multiple checks for security
     const interval = setInterval(async () => {
       const now = Date.now();
       const idleTime = now - lastActivity;

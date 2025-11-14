@@ -84,8 +84,8 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
         endpoint_name: formData.endpoint_name,
         endpoint_url: formData.endpoint_url,
         endpoint_description: formData.endpoint_description,
-        data_category: formData.data_category as any,
-        endpoint_type: formData.endpoint_type as any,
+        data_category: formData.data_category || 'CONTAINER',
+        endpoint_type: formData.endpoint_type || 'REST',
         is_active: true,
       });
 

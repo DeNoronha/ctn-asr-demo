@@ -31,6 +31,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div
       className={`empty-state ${size === 'small' ? 'empty-state-small' : ''}`}
+      // biome-ignore lint/a11y/useSemanticElements: Using div with role="status" for ARIA live region - semantic equivalent not available
       role="status"
       aria-live="polite"
       aria-label={ariaLabel}

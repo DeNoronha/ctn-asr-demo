@@ -94,9 +94,9 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
     try {
       const created = await apiV2.addIdentifier({
         legal_entity_id: data.legal_entity_id,
-        identifier_type: newIdentifier.identifier_type!,
-        identifier_value: newIdentifier.identifier_value!,
-        country_code: newIdentifier.country_code!,
+        identifier_type: newIdentifier.identifier_type || 'KVK',
+        identifier_value: newIdentifier.identifier_value || '',
+        country_code: newIdentifier.country_code || 'NL',
         registry_name: newIdentifier.registry_name,
       });
 
@@ -237,7 +237,11 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
                   type="button"
                   variant="subtle"
                   color="red"
-                  onClick={() => handleRemoveIdentifier(identifier.legal_entity_reference_id!)}
+                  onClick={() =>
+                    identifier.legal_entity_reference_id &&
+                    handleRemoveIdentifier(identifier.legal_entity_reference_id)
+                  }
+                  disabled={!identifier.legal_entity_reference_id}
                 >
                   Remove
                 </Button>
@@ -255,7 +259,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel
                 data={IDENTIFIER_TYPES}
                 value={newIdentifier.identifier_type}
                 onChange={(value) =>
-                  setNewIdentifier({ ...newIdentifier, identifier_type: value as any })
+                  setNewIdentifier({ ...newIdentifier, identifier_type: value || 'KVK' })
                 }
               />
             </div>

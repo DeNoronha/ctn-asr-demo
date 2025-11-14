@@ -139,7 +139,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers }) => {
     data[data.length - 1].members = stats.total;
 
     return data;
-  }, [members, stats.total]);
+  }, [stats.total]);
 
   return (
     <Stack gap="lg">
@@ -251,8 +251,8 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers }) => {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  {statusData.map((entry) => (
+                    <Cell key={`cell-${entry.name}`} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -279,8 +279,8 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers }) => {
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="members" fill={COLORS.primary}>
-                  {membershipData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  {membershipData.map((entry) => (
+                    <Cell key={`cell-${entry.name}`} fill={entry.color} />
                   ))}
                 </Bar>
               </BarChart>
