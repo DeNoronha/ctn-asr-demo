@@ -12,7 +12,7 @@
  * - Be authenticated via Azure Entra ID (cloud-based, not local files)
  */
 
-import type { Configuration, PopupRequest } from '@azure/msal-browser';
+import { LogLevel, type Configuration, type PopupRequest } from '@azure/msal-browser';
 
 // Azure Entra ID Configuration
 export const msalConfig: Configuration = {
@@ -25,6 +25,34 @@ export const msalConfig: Configuration = {
   cache: {
     cacheLocation: 'sessionStorage', // Use sessionStorage for security
     storeAuthStateInCookie: false, // Set to true for IE11/Edge
+  },
+  system: {
+    loggerOptions: {
+      // Only log errors and warnings in production, verbose logs in development
+      logLevel: import.meta.env.MODE === 'production' ? LogLevel.Error : LogLevel.Warning,
+      piiLoggingEnabled: false, // Never log PII (Personally Identifiable Information)
+      loggerCallback: (level, message, containsPii) => {
+        if (containsPii) return; // Never log PII
+
+        // Only log to console in development
+        if (import.meta.env.MODE !== 'production') {
+          switch (level) {
+            case LogLevel.Error:
+              console.error(message);
+              break;
+            case LogLevel.Warning:
+              console.warn(message);
+              break;
+            case LogLevel.Info:
+              console.info(message);
+              break;
+            case LogLevel.Verbose:
+              console.debug(message);
+              break;
+          }
+        }
+      },
+    },
   },
 };
 
