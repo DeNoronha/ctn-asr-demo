@@ -214,22 +214,6 @@ export interface PartyInfo {
   member_name: string;
 }
 
-// Orchestration types
-export interface Orchestration {
-  id: string;
-  orchestration_type: string;
-  status: string;
-  created_at: string;
-  updated_at?: string;
-  party_id: string;
-  details?: Record<string, unknown>;
-}
-
-export interface CreateOrchestrationRequest {
-  orchestration_type: string;
-  details?: Record<string, unknown>;
-}
-
 // API Client configuration
 export interface ApiClientConfig {
   baseURL: string;

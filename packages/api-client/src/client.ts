@@ -9,7 +9,6 @@ import { ContactsEndpoint } from './endpoints/contacts';
 import { IdentifiersEndpoint } from './endpoints/identifiers';
 import { EndpointsEndpoint } from './endpoints/endpoints';
 import { AuditLogsEndpoint } from './endpoints/audit';
-import { OrchestrationsEndpoint } from './endpoints/orchestrations';
 import { AuthEndpoint } from './endpoints/auth';
 
 /**
@@ -50,7 +49,6 @@ export class AsrApiClient {
   public identifiers: IdentifiersEndpoint;
   public endpoints: EndpointsEndpoint;
   public auditLogs: AuditLogsEndpoint;
-  public orchestrations: OrchestrationsEndpoint;
   public auth: AuthEndpoint;
 
   constructor(config: ApiClientConfig) {
@@ -89,7 +87,6 @@ export class AsrApiClient {
     this.identifiers = new IdentifiersEndpoint(this.axiosInstance);
     this.endpoints = new EndpointsEndpoint(this.axiosInstance);
     this.auditLogs = new AuditLogsEndpoint(this.axiosInstance);
-    this.orchestrations = new OrchestrationsEndpoint(this.axiosInstance);
     this.auth = new AuthEndpoint(this.axiosInstance);
   }
 

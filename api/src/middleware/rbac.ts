@@ -50,10 +50,6 @@ export enum Permission {
   // KvK verification permissions
   UPLOAD_KVK_DOCUMENTS = 'upload:kvk_documents',
   REVIEW_KVK_DOCUMENTS = 'review:kvk_documents',
-
-  // Orchestration permissions
-  READ_ORCHESTRATIONS = 'read:orchestrations',
-  MANAGE_ORCHESTRATIONS = 'manage:orchestrations',
 }
 
 /**
@@ -88,10 +84,6 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 
     // KvK verification
     Permission.REVIEW_KVK_DOCUMENTS,
-
-    // Orchestrations
-    Permission.READ_ORCHESTRATIONS,
-    Permission.MANAGE_ORCHESTRATIONS,
   ],
 
   [UserRole.MEMBER_ADMIN]: [
@@ -109,10 +101,6 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 
     // KvK uploads
     Permission.UPLOAD_KVK_DOCUMENTS,
-
-    // Orchestrations
-    Permission.READ_ORCHESTRATIONS,
-    Permission.MANAGE_ORCHESTRATIONS,
   ],
 
   [UserRole.MEMBER_USER]: [
@@ -124,9 +112,6 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 
     // View own tokens
     Permission.VIEW_OWN_TOKENS,
-
-    // Orchestrations
-    Permission.READ_ORCHESTRATIONS,
   ],
 
   [UserRole.MEMBER_READONLY]: [
@@ -134,9 +119,6 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.READ_OWN_ENTITY,
     Permission.READ_OWN_ENDPOINTS,
     Permission.VIEW_OWN_TOKENS,
-
-    // Orchestrations
-    Permission.READ_ORCHESTRATIONS,
   ],
 };
 

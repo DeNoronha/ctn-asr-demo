@@ -60,9 +60,20 @@ import './functions/getTasks';
 import './functions/createTask';
 import './functions/updateTask';
 
-// Orchestration (graph database - Cosmos DB Gremlin API)
-import './functions/GetOrchestrations';
-import './functions/GetOrchestrationDetails';
+// Member self-service endpoints
+import './functions/GetMemberContacts';
+import './functions/GetMemberEndpoints';
+import './functions/GetMemberTokens';
+
+// Application management (admin portal)
+import './functions/GetApplications';
+import './functions/ApproveApplication';
+import './functions/RejectApplication';
+
+// Tier management (authentication tiers)
+import './functions/TierManagement';
+
+// Event management
 import './functions/GetEvents';
 import './functions/GetWebhooks';
 
@@ -83,5 +94,10 @@ import './functions/CreateIdentifierSimple';
 
 // API Documentation
 import './functions/swagger';
+
+// M2M Authentication Endpoints (external systems)
+import './functions/GetETAUpdates';
+import './functions/GetContainerStatus';
+import './functions/ManageBookings';
 
 console.log('✓ Essential functions loaded');

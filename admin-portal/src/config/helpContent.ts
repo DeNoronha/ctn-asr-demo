@@ -115,17 +115,8 @@ export const helpContent = {
     'Multi-factor authentication adds an extra security layer. Required for admin users. Recommended for all users handling sensitive data.',
 
   // ==========================================
-  // Orchestration
+  // Webhooks
   // ==========================================
-
-  orchestrationFlow:
-    'An orchestration represents a complete workflow from booking to delivery, involving multiple parties (shipper, carrier, terminal, customs) and systems.',
-
-  orchestrationParty:
-    'Each party in the orchestration has a specific role (shipper, carrier, consignee) and contributes data at different stages of the process.',
-
-  orchestrationStatus:
-    'Tracks the current state: Draft, Active, Completed, Cancelled. Status updates trigger webhook notifications to subscribed endpoints.',
 
   webhookRetry:
     'Failed webhook deliveries are automatically retried up to 5 times with exponential backoff. Check the delivery log for retry history and error details.',

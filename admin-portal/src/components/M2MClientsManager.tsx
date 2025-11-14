@@ -25,7 +25,6 @@ const AVAILABLE_SCOPES = [
   { value: 'Container.Read', label: 'Container.Read - Read container status' },
   { value: 'Booking.Read', label: 'Booking.Read - Read bookings' },
   { value: 'Booking.Write', label: 'Booking.Write - Create/update bookings' },
-  { value: 'Orchestration.Read', label: 'Orchestration.Read - Access orchestration data' },
 ];
 
 const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
