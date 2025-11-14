@@ -6,9 +6,9 @@
 import { Card } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import LoadingSpinner from './LoadingSpinner';
 import { AlertCircle, Calendar, CheckCircle, Clock, GitBranch, Package } from './icons';
 import { PageHeader } from './shared/PageHeader';
+import { LoadingState } from './shared/LoadingState';
 import './About.css';
 
 interface VersionInfo {
@@ -125,24 +125,18 @@ const About: React.FC = () => {
     return buildNumber !== 'dev' && buildNumber !== 'local' && buildNumber !== '0';
   };
 
-  if (loading) {
-    return <LoadingSpinner size="large" message="Loading version information..." fullScreen />;
-  }
-
-  if (error) {
-    return (
-      <div className="about-error">
-        <AlertCircle size={48} />
-        <p>{error}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="about-view">
-      <PageHeader titleKey="about" />
+    <LoadingState loading={loading} minHeight={400}>
+      {error ? (
+        <div className="about-error">
+          <AlertCircle size={48} />
+          <p>{error}</p>
+        </div>
+      ) : (
+        <div className="about-view">
+          <PageHeader titleKey="about" />
 
-      <div className="about-grid">
+          <div className="about-grid">
         {/* Admin Portal Version Card */}
         <Card className="version-card" withBorder shadow="sm" padding="lg">
           <div className="card-header">
@@ -272,7 +266,9 @@ const About: React.FC = () => {
           </div>
         </Card>
       </div>
-    </div>
+        </div>
+      )}
+    </LoadingState>
   );
 };
 

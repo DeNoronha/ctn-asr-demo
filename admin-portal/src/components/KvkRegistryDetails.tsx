@@ -3,7 +3,7 @@
  * Displays complete KvK registry data fetched from the Dutch Chamber of Commerce API
  */
 
-import { Card, Loader } from '@mantine/core';
+import { Card } from '@mantine/core';
 
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -20,6 +20,7 @@ import {
 } from './icons';
 import './KvkRegistryDetails.css';
 import { formatDate } from '../utils/dateFormat';
+import { LoadingState } from './shared/LoadingState';
 
 interface KvkRegistryData {
   registry_data_id: string;
@@ -116,39 +117,24 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
     return <span className="status-badge">{status}</span>;
   };
 
-  if (loading) {
-    return (
-      <div className="kvk-registry-loading">
-        <Loader size="lg" />
-        <p>Loading KvK registry data...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="kvk-registry-error">
-        <AlertCircle size={48} />
-        <p>{error}</p>
-      </div>
-    );
-  }
-
-  if (!registryData) {
-    return (
-      <div className="kvk-registry-empty">
-        <FileText size={48} />
-        <h3>No KvK Registry Data</h3>
-        <p>
-          KvK registry data will appear here after uploading and verifying a KvK document in the
-          "Document Verification" tab.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="kvk-registry-details">
+    <LoadingState loading={loading} minHeight={400}>
+      {error ? (
+        <div className="kvk-registry-error">
+          <AlertCircle size={48} />
+          <p>{error}</p>
+        </div>
+      ) : !registryData ? (
+        <div className="kvk-registry-empty">
+          <FileText size={48} />
+          <h3>No KvK Registry Data</h3>
+          <p>
+            KvK registry data will appear here after uploading and verifying a KvK document in the
+            "Document Verification" tab.
+          </p>
+        </div>
+      ) : (
+        <div className="kvk-registry-details">
       <div className="registry-header">
         <div>
           <h2>{registryData.company_name}</h2>
@@ -328,14 +314,16 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
         </div>
       )}
 
-      <div className="data-source-footer">
-        <p>
-          Data source:{' '}
-          {registryData.data_source === 'kvk_api'
-            ? 'KvK API (Dutch Chamber of Commerce)'
-            : registryData.data_source}
-        </p>
-      </div>
-    </div>
+        <div className="data-source-footer">
+          <p>
+            Data source:{' '}
+            {registryData.data_source === 'kvk_api'
+              ? 'KvK API (Dutch Chamber of Commerce)'
+              : registryData.data_source}
+          </p>
+        </div>
+        </div>
+      )}
+    </LoadingState>
   );
 };

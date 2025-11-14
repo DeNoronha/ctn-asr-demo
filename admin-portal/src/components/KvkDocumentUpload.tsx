@@ -10,6 +10,7 @@ import { TEXT_COLORS } from '../utils/colors';
 import { formatDate, formatDateTime } from '../utils/dateFormat';
 import { logger } from '../utils/logger';
 import { CheckCircle, FileText, XCircle } from './icons';
+import { LoadingState } from './shared/LoadingState';
 
 interface KvkApiResponse {
   kvkNumber: string;
@@ -223,15 +224,12 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
     return flag === 'entered_kvk_mismatch' || flag === 'entered_name_mismatch';
   };
 
-  if (loading) {
-    return <Loader size="lg" />;
-  }
-
   return (
-    <div className="kvk-document-upload">
-      <h3>KvK Document Verification</h3>
+    <LoadingState loading={loading} minHeight={400}>
+      <div className="kvk-document-upload">
+        <h3>KvK Document Verification</h3>
 
-      {verificationStatus?.kvk_document_url ? (
+        {verificationStatus?.kvk_document_url ? (
         <div className="verification-status" style={{ marginBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
             <strong>Status:</strong> {getStatusBadge(verificationStatus.kvk_verification_status)}
@@ -553,6 +551,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </LoadingState>
   );
 };
