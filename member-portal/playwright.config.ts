@@ -1,14 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright Configuration for CTN ASR Portal Testing
+ * Playwright Configuration for CTN Member Portal Testing
  *
- * This configuration is optimized for testing deployed Azure Static Web Apps
- * across both Admin Portal and Member Portal.
+ * This configuration is optimized for testing the deployed Azure Static Web App.
  *
  * Test Structure:
- * - web/e2e/vite-migration/ - Vite migration verification tests
- * - web/e2e/common/ - Shared utilities and helpers
+ * - e2e/ - E2E test files for member portal functionality
  */
 
 export default defineConfig({
