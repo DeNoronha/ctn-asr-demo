@@ -2,6 +2,7 @@ import { Button, Modal } from '@mantine/core';
 import type React from 'react';
 import { useState } from 'react';
 import type { ComponentProps } from '../types';
+import { apiClient } from '../services/apiClient';
 
 export const ProfileView: React.FC<ComponentProps> = ({
   apiBaseUrl,
@@ -26,20 +27,7 @@ export const ProfileView: React.FC<ComponentProps> = ({
     e.preventDefault();
     setSaving(true);
     try {
-      const token = await getAccessToken();
-      const response = await fetch(`${apiBaseUrl}/member/profile`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
-      }
-
+      await apiClient.member.updateProfile(formData);
       onNotification('Profile updated successfully', 'success');
       setEditMode(false);
       onDataChange();

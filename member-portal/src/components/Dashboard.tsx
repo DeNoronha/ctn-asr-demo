@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import type { ComponentProps, Contact, Endpoint, Token } from '../types';
+import { apiClient } from '../services/apiClient';
 
 interface TierInfo {
   tier: number;
@@ -29,38 +30,38 @@ export const Dashboard: React.FC<ComponentProps> = ({
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      const token = await getAccessToken();
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      };
-
       // Load contacts
-      const contactsRes = await fetch(`${apiBaseUrl}/member-contacts`, { headers });
-      if (contactsRes.ok) {
-        const contactsData = await contactsRes.json();
+      try {
+        const contactsData = await apiClient.member.getContacts();
         setContacts(contactsData.contacts || []);
+      } catch (error) {
+        console.error('Error loading contacts:', error);
       }
 
       // Load endpoints
-      const endpointsRes = await fetch(`${apiBaseUrl}/member-endpoints`, { headers });
-      if (endpointsRes.ok) {
-        const endpointsData = await endpointsRes.json();
+      try {
+        const endpointsData = await apiClient.member.getEndpoints();
         setEndpoints(endpointsData.endpoints || []);
+      } catch (error) {
+        console.error('Error loading endpoints:', error);
       }
 
       // Load tokens
-      const tokensRes = await fetch(`${apiBaseUrl}/member/tokens`, { headers });
-      if (tokensRes.ok) {
-        const tokensData = await tokensRes.json();
+      try {
+        const tokensData = await apiClient.member.getTokens();
         setTokens(tokensData.tokens || []);
+      } catch (error) {
+        console.error('Error loading tokens:', error);
       }
 
       // Load tier information
-      const tierRes = await fetch(`${apiBaseUrl}/entities/${memberData.legalEntityId}/tier`, { headers });
-      if (tierRes.ok) {
-        const tierData = await tierRes.json();
-        setTierInfo(tierData);
+      try {
+        if (memberData.legalEntityId) {
+          const tierData = await apiClient.member.getTierInfo(memberData.legalEntityId);
+          setTierInfo(tierData);
+        }
+      } catch (error) {
+        console.error('Error loading tier info:', error);
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error);

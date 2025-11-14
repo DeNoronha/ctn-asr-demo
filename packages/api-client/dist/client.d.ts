@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { ApiClientConfig } from './types';
 import { MembersEndpoint } from './endpoints/members';
+import { MemberEndpoint } from './endpoints/member';
 import { LegalEntitiesEndpoint } from './endpoints/legalEntities';
 import { ContactsEndpoint } from './endpoints/contacts';
 import { IdentifiersEndpoint } from './endpoints/identifiers';
@@ -38,6 +39,7 @@ import { AuthEndpoint } from './endpoints/auth';
 export declare class AsrApiClient {
     private axiosInstance;
     members: MembersEndpoint;
+    member: MemberEndpoint;
     legalEntities: LegalEntitiesEndpoint;
     contacts: ContactsEndpoint;
     identifiers: IdentifiersEndpoint;

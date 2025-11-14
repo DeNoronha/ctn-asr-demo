@@ -2,6 +2,7 @@ import { Button, Modal } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import type { ComponentProps, Contact } from '../types';
+import { apiClient } from '../services/apiClient';
 
 const contactTypes = ['PRIMARY', 'TECHNICAL', 'BILLING', 'SUPPORT', 'LEGAL', 'OTHER'];
 const contactMethods = ['EMAIL', 'PHONE', 'MOBILE'];
@@ -26,18 +27,8 @@ export const ContactsView: React.FC<ComponentProps> = ({
   const loadContacts = async () => {
     setLoading(true);
     try {
-      const token = await getAccessToken();
-      const response = await fetch(`${apiBaseUrl}/member-contacts`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setContacts(data.contacts || []);
-      }
+      const data = await apiClient.member.getContacts();
+      setContacts(data.contacts || []);
     } catch (error) {
       console.error('Error loading contacts:', error);
       onNotification('Failed to load contacts', 'error');
@@ -77,29 +68,17 @@ export const ContactsView: React.FC<ComponentProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const token = await getAccessToken();
-      const method = editingContact ? 'PUT' : 'POST';
-      const url = editingContact
-        ? `${apiBaseUrl}/member/contacts/${editingContact.legal_entity_contact_id}`
-        : `${apiBaseUrl}/member/contacts`;
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save contact');
+      if (editingContact) {
+        await apiClient.member.updateContact(
+          editingContact.legal_entity_contact_id,
+          formData as any
+        );
+        onNotification('Contact updated successfully', 'success');
+      } else {
+        await apiClient.member.createContact(formData as any);
+        onNotification('Contact created successfully', 'success');
       }
 
-      onNotification(
-        editingContact ? 'Contact updated successfully' : 'Contact created successfully',
-        'success'
-      );
       setShowDialog(false);
       loadContacts();
       onDataChange();

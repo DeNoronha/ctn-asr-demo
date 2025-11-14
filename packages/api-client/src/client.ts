@@ -3,6 +3,7 @@ import { ApiClientConfig } from './types';
 import { configureRetry } from './utils/retry';
 import { configureInterceptors } from './utils/interceptors';
 import { MembersEndpoint } from './endpoints/members';
+import { MemberEndpoint } from './endpoints/member';
 import { LegalEntitiesEndpoint } from './endpoints/legalEntities';
 import { ContactsEndpoint } from './endpoints/contacts';
 import { IdentifiersEndpoint } from './endpoints/identifiers';
@@ -43,6 +44,7 @@ export class AsrApiClient {
 
   // Endpoints
   public members: MembersEndpoint;
+  public member: MemberEndpoint;
   public legalEntities: LegalEntitiesEndpoint;
   public contacts: ContactsEndpoint;
   public identifiers: IdentifiersEndpoint;
@@ -81,6 +83,7 @@ export class AsrApiClient {
 
     // Initialize endpoints
     this.members = new MembersEndpoint(this.axiosInstance);
+    this.member = new MemberEndpoint(this.axiosInstance);
     this.legalEntities = new LegalEntitiesEndpoint(this.axiosInstance);
     this.contacts = new ContactsEndpoint(this.axiosInstance);
     this.identifiers = new IdentifiersEndpoint(this.axiosInstance);

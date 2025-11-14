@@ -6,6 +6,7 @@ export * from './types';
 export { AsrApiError } from './utils/error';
 // Endpoint exports (for advanced usage)
 export { MembersEndpoint } from './endpoints/members';
+export { MemberEndpoint } from './endpoints/member';
 export { LegalEntitiesEndpoint } from './endpoints/legalEntities';
 export { ContactsEndpoint } from './endpoints/contacts';
 export { IdentifiersEndpoint } from './endpoints/identifiers';
