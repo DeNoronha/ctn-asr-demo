@@ -76,63 +76,44 @@ Secrets currently in environment variables, need centralized secure storage.
 ### Database Schema Refactoring
 
 **Issue Identified:** November 13, 2025 during Keycloak M2M setup
-**Status:** Not Started
-**Priority:** High
-**Estimated Effort:** 2-3 days
+**Status:** Partially Complete (Duplicates fixed, further simplification needed)
+**Priority:** Medium
+**Estimated Effort:** 1-2 days
 
 **Problem:**
-The current schema has overcomplicated relationships with redundancy between:
+The current schema has overcomplicated relationships with potential redundancy between:
 - `party_reference` (base entity)
 - `legal_entity` (organization details)
-- `members` (duplicate/overlapping data?)
+- `members` (unclear if still needed, potential duplication)
 
-**Symptoms:**
-- Duplicate `legal_entity` rows for same `party_id` found during M2M credential mapping
-- View `v_m2m_credentials_active` returns duplicate rows due to multiple legal_entity records
-- Unclear separation of concerns between tables
-- Data redundancy causing maintenance issues
+**Completed (November 13, 2025 - Migration 027):**
+- ✅ Identified and fixed duplicate `legal_entity` rows for same `party_id`
+- ✅ Created comprehensive cleanup script (migration 027_fix_duplicate_legal_entities.sql)
+- ✅ Added UNIQUE constraint: `uq_legal_entity_party_id_active` on `(party_id) WHERE is_deleted = false`
+- ✅ Fixed `v_m2m_credentials_active` view to prevent duplicate rows
+- ✅ Added data quality CHECK constraints on legal_entity table
 
-**Tasks:**
+**Remaining Tasks:**
 
-1. **Invoke DE (Database Expert) Agent for Analysis**
-   - [ ] Analyze current schema relationships
-   - [ ] Identify duplicate data patterns
-   - [ ] Document redundancies and inconsistencies
-   - [ ] Recommend normalized schema structure
-
-2. **Remove Duplicate Legal Entities**
-   - [ ] Query to find all duplicate legal_entity records per party_id
-   - [ ] Create cleanup script to remove duplicates (keeping most recent)
-   - [ ] Add UNIQUE constraint: `(party_id) WHERE is_deleted = false`
-   - [ ] Update views to handle edge cases
-
-3. **Schema Simplification Proposal**
-   - [ ] Evaluate if `members` table is still needed
-   - [ ] Determine proper relationship: party_reference → legal_entity
-   - [ ] Identify which columns are truly needed vs redundant
-   - [ ] Design migration path with zero downtime
-
-4. **Implementation Plan**
-   - [ ] Create migration scripts (with rollback)
-   - [ ] Test in development environment
-   - [ ] Update all API queries and views
-   - [ ] Update Keycloak middleware (resolvePartyIdFromKeycloak)
-   - [ ] Deploy to production
+1. **Schema Simplification Analysis (Optional)**
+   - [ ] Evaluate if `members` table is still needed or can be consolidated
+   - [ ] Determine if further normalization is beneficial
+   - [ ] Identify any remaining redundant columns across tables
+   - [ ] Design migration path if simplification is pursued
 
 **Impact:**
-- **Medium Risk:** Changes affect core data model
-- **High Reward:** Cleaner schema, fewer bugs, easier maintenance
-- **Breaking Changes:** Potentially affects all party/entity queries
+- **Low Risk:** Core duplicate issue is resolved with UNIQUE constraint
+- **Optional Enhancement:** Further simplification is nice-to-have, not urgent
 
 **Related Files:**
+- `database/migrations/027_fix_duplicate_legal_entities.sql` - Duplicate cleanup
 - `database/current_schema.sql`
-- `database/migrations/026-rename-zitadel-to-generic-m2m-fixed-v2.sql` (view definition)
 - `api/src/middleware/keycloak-auth.ts` (party resolution)
 
 **Notes:**
-- Current workaround: View uses `LEFT JOIN legal_entity ... AND le.is_deleted = false`
-- This masks the underlying duplicate issue but doesn't fix it
-- Need proper UNIQUE constraints to prevent future duplicates
+- ✅ UNIQUE constraint now prevents future duplicates
+- ✅ All foreign key references updated to canonical legal_entity records
+- ✅ Backup table created: `legal_entity_backup_20251113`
 
 ---
 
@@ -244,14 +225,17 @@ The current schema has overcomplicated relationships with redundancy between:
 
 ### Add Database Constraints for Data Integrity
 
-**Status:** Not Started
-**Priority:** Medium
+**Status:** Partially Complete
+**Priority:** Low
 
-**Tasks:**
-- [ ] Add UNIQUE constraint on `legal_entity(party_id)` WHERE is_deleted = false
-- [ ] Add CHECK constraint to prevent NULL in critical fields
+**Completed (Migration 027 - November 13, 2025):**
+- ✅ Added UNIQUE constraint on `legal_entity(party_id)` WHERE is_deleted = false
+- ✅ Added CHECK constraint: `primary_legal_name` length >= 2
+- ✅ Added CHECK constraint: `status` IN ('PENDING', 'ACTIVE', 'SUSPENDED', 'INACTIVE', 'REJECTED')
+
+**Remaining Tasks (Optional):**
 - [ ] Review all foreign key constraints for CASCADE vs RESTRICT
-- [ ] Add partial indexes for soft-deleted records
+- [ ] Add partial indexes for additional soft-deleted tables (if needed)
 
 ---
 
@@ -383,18 +367,14 @@ The current schema has overcomplicated relationships with redundancy between:
 **Immediate (This Week):**
 1. **CRITICAL:** Execute secret rotation tasks (SEC-ROTATE-001 through SEC-ROTATE-005)
 2. Complete Azure Key Vault migration (2-3 hours)
-3. Invoke DE (Database Expert) agent to analyze schema redundancy
-4. Create duplicate legal_entity cleanup script
 
 **Short Term (Next 2 Weeks):**
-1. Fix duplicate legal_entity records issue
-2. Add UNIQUE constraint on legal_entity(party_id)
-3. Configure BDI production setup (RSA keys, testing)
-4. Improve Admin Portal authentication test coverage
-5. Set up monitoring & observability (Application Insights, alerts, dashboard)
+1. Configure BDI production setup (RSA keys, testing)
+2. Improve Admin Portal authentication test coverage
+3. Set up monitoring & observability (Application Insights, alerts, dashboard)
 
 **Long Term (Next Month):**
-1. Design and implement schema simplification (party/legal_entity/members)
+1. (Optional) Evaluate schema simplification for members table
 2. Complete BDI E2E testing and external system registration
 3. Investigate and fix KvK identifier bug
 4. Define API versioning strategy
