@@ -42,12 +42,12 @@
 
 /* Required field indicator - WCAG AA compliant */
 .form-field .form-label::after {
-  content: '';
+  content: "";
 }
 
 /* Add required class to form fields for proper styling */
 .form-field.required .form-label::after {
-  content: ' *';
+  content: " *";
   color: #dc2626; /* WCAG AA compliant: 5.48:1 contrast on white */
   font-weight: 700;
   font-size: 18px;

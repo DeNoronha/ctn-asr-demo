@@ -680,11 +680,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         resizable: true,
         sortable: true,
         // SEC-007: Sanitize user-generated text fields in grid
-        render: (record) => (
-          <div>
-            {sanitizeGridCell(record.identifier_value || '')}
-          </div>
-        ),
+        render: (record) => <div>{sanitizeGridCell(record.identifier_value || '')}</div>,
       },
       {
         accessor: 'country_code',
@@ -702,9 +698,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         resizable: true,
         sortable: true,
         // SEC-007: Sanitize user-generated text fields in grid
-        render: (record) => (
-          <div>{sanitizeGridCell(record.registry_name || '')}</div>
-        ),
+        render: (record) => <div>{sanitizeGridCell(record.registry_name || '')}</div>,
       },
       {
         accessor: 'validation_status',
@@ -841,7 +835,10 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
               label={
                 <>
                   Country Code *
-                  <HelpTooltip content={helpContent.identifierCountry} dataTestId="country-code-help" />
+                  <HelpTooltip
+                    content={helpContent.identifierCountry}
+                    dataTestId="country-code-help"
+                  />
                 </>
               }
               value={formData.country_code || ''}
@@ -859,7 +856,10 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
               label={
                 <>
                   Identifier Type *
-                  <HelpTooltip content={helpContent.identifierType} dataTestId="identifier-type-help" />
+                  <HelpTooltip
+                    content={helpContent.identifierType}
+                    dataTestId="identifier-type-help"
+                  />
                 </>
               }
               data={availableIdentifierTypes}

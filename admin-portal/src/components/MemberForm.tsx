@@ -258,7 +258,9 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               aria-invalid={touched.org_id && Boolean(errors.org_id)}
               aria-describedby={`org-id-hint${touched.org_id && errors.org_id ? ' org-id-error' : ''}`}
             />
-            {touched.org_id && errors.org_id && <FormError id="org-id-error">{errors.org_id}</FormError>}
+            {touched.org_id && errors.org_id && (
+              <FormError id="org-id-error">{errors.org_id}</FormError>
+            )}
             <Hint id="org-id-hint">
               Format: org:company-name (lowercase, letters, numbers, hyphens only)
             </Hint>
@@ -302,7 +304,9 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               aria-invalid={touched.domain && Boolean(errors.domain)}
               aria-describedby={`domain-hint${touched.domain && errors.domain ? ' domain-error' : ''}`}
             />
-            {touched.domain && errors.domain && <FormError id="domain-error">{errors.domain}</FormError>}
+            {touched.domain && errors.domain && (
+              <FormError id="domain-error">{errors.domain}</FormError>
+            )}
             <Hint id="domain-hint">Primary domain name (e.g., company.com)</Hint>
           </div>
 

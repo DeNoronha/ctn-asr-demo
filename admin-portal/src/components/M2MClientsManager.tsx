@@ -27,9 +27,7 @@ const AVAILABLE_SCOPES = [
   { value: 'Booking.Write', label: 'Booking.Write - Create/update bookings' },
 ];
 
-const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
-  legalEntityId,
-}) => {
+const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({ legalEntityId }) => {
   const [clients, setClients] = useState<M2MClient[]>([]);
   const [loading, setLoading] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);

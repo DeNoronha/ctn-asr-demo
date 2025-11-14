@@ -44,11 +44,7 @@ interface AdminSidebarProps {
   onLogout: () => void;
 }
 
-const AdminSidebar: React.FC<AdminSidebarProps> = ({
-  onSelect,
-  selectedItem,
-  onLogout,
-}) => {
+const AdminSidebar: React.FC<AdminSidebarProps> = ({ onSelect, selectedItem, onLogout }) => {
   const mainLinks = [
     { icon: IconLayoutDashboard, label: 'Dashboard', route: 'dashboard' },
     { icon: IconUsers, label: 'Members', route: 'members' },

@@ -301,7 +301,7 @@ export const getSuccessMessage = (
     | 'settings'
     | 'generic',
   operation: string,
-  ...args: any[]
+  ...args: unknown[]
 ): SuccessMessageConfig => {
   const categoryMap = {
     member: memberSuccessMessages,
@@ -317,10 +317,12 @@ export const getSuccessMessage = (
   };
 
   const messages = categoryMap[category];
-  const messageFn = messages[operation as keyof typeof messages] as any;
+  const messageFn = messages[operation as keyof typeof messages] as
+    | ((...args: unknown[]) => SuccessMessageConfig)
+    | undefined;
 
   if (typeof messageFn === 'function') {
-    return messageFn(...args) as SuccessMessageConfig;
+    return messageFn(...args);
   }
 
   return genericSuccessMessages.saved();
