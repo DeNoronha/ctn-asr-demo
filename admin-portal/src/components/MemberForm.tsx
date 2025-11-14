@@ -3,13 +3,14 @@ import { Button, Select, TextInput } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 
-// Form label components
+// Form label components - reusable helpers for progressive forms
+// biome-ignore lint/a11y/noLabelWithoutControl: Generic label component used with controls throughout the form
 const Label: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
   <label id={id} className="form-label">
     {children}
   </label>
 );
-const Error: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
+const FormError: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
   <div
     id={id}
     className="form-error"
@@ -257,7 +258,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               aria-invalid={touched.org_id && Boolean(errors.org_id)}
               aria-describedby={`org-id-hint${touched.org_id && errors.org_id ? ' org-id-error' : ''}`}
             />
-            {touched.org_id && errors.org_id && <Error id="org-id-error">{errors.org_id}</Error>}
+            {touched.org_id && errors.org_id && <FormError id="org-id-error">{errors.org_id}</FormError>}
             <Hint id="org-id-hint">
               Format: org:company-name (lowercase, letters, numbers, hyphens only)
             </Hint>
@@ -280,7 +281,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               aria-describedby={`legal-name-hint${touched.legal_name && errors.legal_name ? ' legal-name-error' : ''}`}
             />
             {touched.legal_name && errors.legal_name && (
-              <Error id="legal-name-error">{errors.legal_name}</Error>
+              <FormError id="legal-name-error">{errors.legal_name}</FormError>
             )}
             <Hint id="legal-name-hint">Official registered business name</Hint>
           </div>
@@ -301,7 +302,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               aria-invalid={touched.domain && Boolean(errors.domain)}
               aria-describedby={`domain-hint${touched.domain && errors.domain ? ' domain-error' : ''}`}
             />
-            {touched.domain && errors.domain && <Error id="domain-error">{errors.domain}</Error>}
+            {touched.domain && errors.domain && <FormError id="domain-error">{errors.domain}</FormError>}
             <Hint id="domain-hint">Primary domain name (e.g., company.com)</Hint>
           </div>
 
@@ -369,7 +370,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               aria-invalid={touched.lei && Boolean(errors.lei)}
               aria-describedby={`lei-hint${touched.lei && errors.lei ? ' lei-error' : ''}`}
             />
-            {touched.lei && errors.lei && <Error id="lei-error">{errors.lei}</Error>}
+            {touched.lei && errors.lei && <FormError id="lei-error">{errors.lei}</FormError>}
             <Hint id="lei-hint">20-character alphanumeric code (optional)</Hint>
           </div>
 
@@ -389,7 +390,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
               aria-invalid={touched.kvk && Boolean(errors.kvk)}
               aria-describedby={`kvk-hint${touched.kvk && errors.kvk ? ' kvk-error' : ''}`}
             />
-            {touched.kvk && errors.kvk && <Error id="kvk-error">{errors.kvk}</Error>}
+            {touched.kvk && errors.kvk && <FormError id="kvk-error">{errors.kvk}</FormError>}
             <Hint id="kvk-hint">8-digit number (optional)</Hint>
           </div>
         </ProgressiveSection>

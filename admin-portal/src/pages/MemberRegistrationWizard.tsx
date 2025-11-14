@@ -3,13 +3,14 @@ import { Button, TextInput } from '@mantine/core';
 import type React from 'react';
 import { useState } from 'react';
 
-// Form label components
+// Form label components - reusable helpers for progressive forms
+// biome-ignore lint/a11y/noLabelWithoutControl: Generic label component used with controls throughout the form
 const Label: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
   <label id={id} className="form-label">
     {children}
   </label>
 );
-const Error: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
+const FormError: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
   <div
     id={id}
     className="form-error"
@@ -240,7 +241,7 @@ export const MemberRegistrationWizard: React.FC = () => {
               error={touched.org_id && errors.org_id}
               className={touched.org_id && errors.org_id ? 'invalid' : ''}
             />
-            {touched.org_id && errors.org_id && <Error>{errors.org_id}</Error>}
+            {touched.org_id && errors.org_id && <FormError>{errors.org_id}</FormError>}
             <Hint>Format: org:company-name (lowercase, letters, numbers, hyphens only)</Hint>
           </div>
 
@@ -258,7 +259,7 @@ export const MemberRegistrationWizard: React.FC = () => {
               error={touched.legal_name && errors.legal_name}
               className={touched.legal_name && errors.legal_name ? 'invalid' : ''}
             />
-            {touched.legal_name && errors.legal_name && <Error>{errors.legal_name}</Error>}
+            {touched.legal_name && errors.legal_name && <FormError>{errors.legal_name}</FormError>}
             <Hint>Official registered business name</Hint>
           </div>
 
@@ -276,7 +277,7 @@ export const MemberRegistrationWizard: React.FC = () => {
               error={touched.domain && errors.domain}
               className={touched.domain && errors.domain ? 'invalid' : ''}
             />
-            {touched.domain && errors.domain && <Error>{errors.domain}</Error>}
+            {touched.domain && errors.domain && <FormError>{errors.domain}</FormError>}
             <Hint>Primary domain name (e.g., company.com)</Hint>
           </div>
         </div>
@@ -307,7 +308,7 @@ export const MemberRegistrationWizard: React.FC = () => {
               error={touched.lei && errors.lei ? errors.lei : undefined}
               className={touched.lei && errors.lei ? 'invalid' : ''}
             />
-            {touched.lei && errors.lei && <Error>{errors.lei}</Error>}
+            {touched.lei && errors.lei && <FormError>{errors.lei}</FormError>}
             <Hint>20-character alphanumeric code (optional)</Hint>
           </div>
 
@@ -325,7 +326,7 @@ export const MemberRegistrationWizard: React.FC = () => {
               error={touched.kvk && errors.kvk ? errors.kvk : undefined}
               className={touched.kvk && errors.kvk ? 'invalid' : ''}
             />
-            {touched.kvk && errors.kvk && <Error>{errors.kvk}</Error>}
+            {touched.kvk && errors.kvk && <FormError>{errors.kvk}</FormError>}
             <Hint>8-digit number (optional)</Hint>
           </div>
         </div>

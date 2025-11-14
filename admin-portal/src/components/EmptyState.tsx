@@ -44,6 +44,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {hint && <p className="empty-state-hint">{hint}</p>}
       {action && (
         <button
+          type="button"
           className="empty-state-action"
           onClick={action.onClick}
           aria-label={`${action.label}: ${message}`}
