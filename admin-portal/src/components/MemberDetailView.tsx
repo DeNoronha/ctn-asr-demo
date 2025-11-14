@@ -2,7 +2,7 @@
  * Member Detail View - Full page member details with tabs
  */
 
-import { Button, Loader, Tabs } from '@mantine/core';
+import { Button, Tabs } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { RoleGuard } from '../auth/ProtectedRoute';
@@ -26,6 +26,7 @@ import { KvkDocumentUpload } from './KvkDocumentUpload';
 import { KvkRegistryDetails } from './KvkRegistryDetails';
 import { TierManagement } from './TierManagement';
 import { ArrowLeft, Plus } from './icons';
+import { LoadingState } from './shared/LoadingState';
 import './MemberDetailView.css';
 
 interface MemberDetailViewProps {
@@ -340,125 +341,119 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
 
         <Tabs.Panel value="company-details" pt="md">
           <div className="tab-content">
-            {loading ? (
-              <div className="loading-state">
-                <Loader size="md" />
-                <span>Loading company information...</span>
-              </div>
-            ) : legalEntity ? (
-              !isEditingCompany ? (
-                <>
-                  <CompanyDetails company={legalEntity} onEdit={() => setIsEditingCompany(true)} />
-                  <div className="info-section">
-                    <h3>Member Information</h3>
-                    <div className="info-grid">
-                      <div className="info-field">
-                        <label>Organization ID</label>
-                        <span>{member.org_id}</span>
-                      </div>
-                      <div className="info-field">
-                        <label>Domain</label>
-                        <span>{member.domain}</span>
-                      </div>
-                      <div className="info-field">
-                        <label>Status</label>
-                        {getStatusBadge(member.status)}
-                      </div>
-                      <div className="info-field">
-                        <label>Membership Level</label>
-                        {getMembershipBadge(member.membership_level)}
+            <LoadingState loading={loading} minHeight={300}>
+              {legalEntity ? (
+                !isEditingCompany ? (
+                  <>
+                    <CompanyDetails company={legalEntity} onEdit={() => setIsEditingCompany(true)} />
+                    <div className="info-section">
+                      <h3>Member Information</h3>
+                      <div className="info-grid">
+                        <div className="info-field">
+                          <label>Organization ID</label>
+                          <span>{member.org_id}</span>
+                        </div>
+                        <div className="info-field">
+                          <label>Domain</label>
+                          <span>{member.domain}</span>
+                        </div>
+                        <div className="info-field">
+                          <label>Status</label>
+                          {getStatusBadge(member.status)}
+                        </div>
+                        <div className="info-field">
+                          <label>Membership Level</label>
+                          {getMembershipBadge(member.membership_level)}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </>
+                  </>
+                ) : (
+                  <CompanyForm
+                    data={legalEntity}
+                    onSave={handleUpdateCompany}
+                    onCancel={() => setIsEditingCompany(false)}
+                  />
+                )
               ) : (
-                <CompanyForm
-                  data={legalEntity}
-                  onSave={handleUpdateCompany}
-                  onCancel={() => setIsEditingCompany(false)}
-                />
-              )
-            ) : (
-              <div className="info-section">
-                <h3>Basic Information</h3>
-                <div className="info-grid">
-                  <div className="info-field">
-                    <label>Organization ID</label>
-                    <span>{member.org_id}</span>
+                <div className="info-section">
+                  <h3>Basic Information</h3>
+                  <div className="info-grid">
+                    <div className="info-field">
+                      <label>Organization ID</label>
+                      <span>{member.org_id}</span>
+                    </div>
+                    <div className="info-field">
+                      <label>Legal Name</label>
+                      <span>{member.legal_name}</span>
+                    </div>
+                    <div className="info-field">
+                      <label>Domain</label>
+                      <span>{member.domain}</span>
+                    </div>
+                    <div className="info-field">
+                      <label>Status</label>
+                      {getStatusBadge(member.status)}
+                    </div>
+                    <div className="info-field">
+                      <label>Membership Level</label>
+                      {getMembershipBadge(member.membership_level)}
+                    </div>
                   </div>
-                  <div className="info-field">
-                    <label>Legal Name</label>
-                    <span>{member.legal_name}</span>
-                  </div>
-                  <div className="info-field">
-                    <label>Domain</label>
-                    <span>{member.domain}</span>
-                  </div>
-                  <div className="info-field">
-                    <label>Status</label>
-                    {getStatusBadge(member.status)}
-                  </div>
-                  <div className="info-field">
-                    <label>Membership Level</label>
-                    {getMembershipBadge(member.membership_level)}
-                  </div>
+                  {(() => {
+                    const es = getEmptyState('generic', 'noData');
+                    return <EmptyState message={es.message} hint={es.hint} />;
+                  })()}
                 </div>
-                {(() => {
-                  const es = getEmptyState('generic', 'noData');
-                  return <EmptyState message={es.message} hint={es.hint} />;
-                })()}
-              </div>
-            )}
+              )}
+            </LoadingState>
           </div>
         </Tabs.Panel>
 
         <Tabs.Panel value="identifiers" pt="md">
           <div className="tab-content">
-            {loading ? (
-              <div className="loading-state">
-                <Loader size="md" />
-                <span>Loading identifiers...</span>
-              </div>
-            ) : legalEntity ? (
-              <IdentifiersManager
-                legalEntityId={member.legal_entity_id!}
-                identifiers={identifiers}
-                onIdentifierCreate={handleIdentifierCreate}
-                onIdentifierUpdate={handleIdentifierUpdate}
-                onIdentifierDelete={handleIdentifierDelete}
-                onRefresh={handleRefreshIdentifiers}
-              />
-            ) : member.legal_entity_id ? (
-              (() => {
-                const es = getEmptyState('identifier', 'noIdentifiers');
-                return (
-                  <div
-                    className="info-section"
-                    style={{ textAlign: 'center', padding: '40px 20px' }}
-                  >
-                    <h3>Legal Identifiers</h3>
-                    <EmptyState
-                      message={es.message}
-                      hint={es.hint}
-                      action={{ label: 'Create Legal Entity', onClick: handleCreateLegalEntity }}
-                    />
-                  </div>
-                );
-              })()
-            ) : (
-              (() => {
-                const es = getEmptyState('generic', 'noData');
-                return (
-                  <div
-                    className="info-section"
-                    style={{ textAlign: 'center', padding: '40px 20px' }}
-                  >
-                    <h3>Legal Identifiers</h3>
-                    <EmptyState message={es.message} hint={es.hint} />
-                  </div>
-                );
-              })()
-            )}
+            <LoadingState loading={loading} minHeight={300}>
+              {legalEntity ? (
+                <IdentifiersManager
+                  legalEntityId={member.legal_entity_id!}
+                  identifiers={identifiers}
+                  onIdentifierCreate={handleIdentifierCreate}
+                  onIdentifierUpdate={handleIdentifierUpdate}
+                  onIdentifierDelete={handleIdentifierDelete}
+                  onRefresh={handleRefreshIdentifiers}
+                />
+              ) : member.legal_entity_id ? (
+                (() => {
+                  const es = getEmptyState('identifier', 'noIdentifiers');
+                  return (
+                    <div
+                      className="info-section"
+                      style={{ textAlign: 'center', padding: '40px 20px' }}
+                    >
+                      <h3>Legal Identifiers</h3>
+                      <EmptyState
+                        message={es.message}
+                        hint={es.hint}
+                        action={{ label: 'Create Legal Entity', onClick: handleCreateLegalEntity }}
+                      />
+                    </div>
+                  );
+                })()
+              ) : (
+                (() => {
+                  const es = getEmptyState('generic', 'noData');
+                  return (
+                    <div
+                      className="info-section"
+                      style={{ textAlign: 'center', padding: '40px 20px' }}
+                    >
+                      <h3>Legal Identifiers</h3>
+                      <EmptyState message={es.message} hint={es.hint} />
+                    </div>
+                  );
+                })()
+              )}
+            </LoadingState>
           </div>
         </Tabs.Panel>
 
@@ -516,30 +511,27 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
 
         <Tabs.Panel value="contacts" pt="md">
           <div className="tab-content">
-            {loading ? (
-              <div className="loading-state">
-                <Loader size="md" />
-                <span>Loading contacts...</span>
-              </div>
-            ) : legalEntity ? (
-              <ContactsManager
-                legalEntityId={legalEntity.legal_entity_id!}
-                contacts={contacts}
-                onContactCreate={handleContactCreate}
-                onContactUpdate={handleContactUpdate}
-                onContactDelete={handleContactDelete}
-              />
-            ) : (
-              (() => {
-                const es = getEmptyState('contact', 'noContacts');
-                return (
-                  <div className="info-section">
-                    <h3>Contact Information</h3>
-                    <EmptyState message={es.message} hint={es.hint} />
-                  </div>
-                );
-              })()
-            )}
+            <LoadingState loading={loading} minHeight={300}>
+              {legalEntity ? (
+                <ContactsManager
+                  legalEntityId={legalEntity.legal_entity_id!}
+                  contacts={contacts}
+                  onContactCreate={handleContactCreate}
+                  onContactUpdate={handleContactUpdate}
+                  onContactDelete={handleContactDelete}
+                />
+              ) : (
+                (() => {
+                  const es = getEmptyState('contact', 'noContacts');
+                  return (
+                    <div className="info-section">
+                      <h3>Contact Information</h3>
+                      <EmptyState message={es.message} hint={es.hint} />
+                    </div>
+                  );
+                })()
+              )}
+            </LoadingState>
           </div>
         </Tabs.Panel>
 

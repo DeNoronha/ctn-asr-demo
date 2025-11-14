@@ -16,6 +16,7 @@ import { apiV2 } from '../services/apiV2';
 import { formatDateTime } from '../utils/dateFormat';
 import { logger } from '../utils/logger';
 import { EmptyState } from './EmptyState';
+import { LoadingState } from './shared/LoadingState';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
 import './EndpointManagement.css';
 
@@ -117,37 +118,38 @@ export const AllEndpointsView: React.FC = () => {
     <div className="endpoints-view">
       <h1>All Endpoints</h1>
 
-      <Stack gap="md">
-        <Group justify="space-between">
-          <TextInput
-            placeholder="Search by name, member, URL, or category..."
-            leftSection={<IconSearch size={16} />}
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setPage(1); // Reset to first page on search
-            }}
-            style={{ width: '400px' }}
-          />
+      <LoadingState loading={loading && endpoints.length === 0} minHeight={400}>
+        <Stack gap="md">
+          <Group justify="space-between">
+            <TextInput
+              placeholder="Search by name, member, URL, or category..."
+              leftSection={<IconSearch size={16} />}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1); // Reset to first page on search
+              }}
+              style={{ width: '400px' }}
+            />
 
-          <Button
-            leftSection={<IconRefresh size={16} />}
-            onClick={loadAllEndpoints}
-            loading={loading}
-            variant="light"
-          >
-            Refresh
-          </Button>
-        </Group>
+            <Button
+              leftSection={<IconRefresh size={16} />}
+              onClick={loadAllEndpoints}
+              loading={loading}
+              variant="light"
+            >
+              Refresh
+            </Button>
+          </Group>
 
-        {endpoints.length === 0 && !loading ? (
-          <EmptyState
-            icon={<IconPlug size={48} />}
-            message="No endpoints registered"
-            hint="There are no system integration endpoints registered yet. Endpoints can be added from the member detail pages."
-          />
-        ) : (
-          <DataTable
+          {endpoints.length === 0 ? (
+            <EmptyState
+              icon={<IconPlug size={48} />}
+              message="No endpoints registered"
+              hint="There are no system integration endpoints registered yet. Endpoints can be added from the member detail pages."
+            />
+          ) : (
+            <DataTable
             {...defaultDataTableProps}
             columns={[
               {
@@ -225,14 +227,15 @@ export const AllEndpointsView: React.FC = () => {
           />
         )}
 
-        {filteredEndpoints.length > 0 && (
-          <Text size="sm" c="dimmed">
-            Showing {paginatedEndpoints.length} of {filteredEndpoints.length} endpoint
-            {filteredEndpoints.length !== 1 ? 's' : ''}
-            {searchQuery && ` matching "${searchQuery}"`}
-          </Text>
-        )}
-      </Stack>
+          {filteredEndpoints.length > 0 && (
+            <Text size="sm" c="dimmed">
+              Showing {paginatedEndpoints.length} of {filteredEndpoints.length} endpoint
+              {filteredEndpoints.length !== 1 ? 's' : ''}
+              {searchQuery && ` matching "${searchQuery}"`}
+            </Text>
+          )}
+        </Stack>
+      </LoadingState>
     </div>
   );
 };
