@@ -192,9 +192,9 @@ const KvkReviewQueueComponent: React.FC = () => {
           const flags = record.kvk_mismatch_flags || [];
           return (
             <div>
-              {flags.map((flag: string, idx: number) => (
+              {flags.map((flag: string) => (
                 <span
-                  key={idx}
+                  key={flag}
                   className={`k-badge k-badge-${isEnteredDataMismatch(flag) ? 'error' : 'warning'}`}
                   style={{
                     marginRight: '5px',
@@ -218,7 +218,7 @@ const KvkReviewQueueComponent: React.FC = () => {
         render: (record) => <div>{formatDate(record.document_uploaded_at)}</div>,
       },
       {
-        accessor: 'actions' as any,
+        accessor: 'actions' as unknown as string,
         title: 'Actions',
         width: 100,
         toggleable: false,
@@ -364,9 +364,9 @@ const KvkReviewQueueComponent: React.FC = () => {
                 <div style={{ marginBottom: '15px' }}>
                   <strong>All Validation Issues:</strong>
                   <ul style={{ marginTop: '5px' }}>
-                    {reviewDialog.entity.kvk_mismatch_flags.map((flag, idx) => (
+                    {reviewDialog.entity.kvk_mismatch_flags.map((flag) => (
                       <li
-                        key={idx}
+                        key={flag}
                         style={{
                           color: isEnteredDataMismatch(flag) ? '#d32f2f' : 'inherit',
                           fontWeight: isEnteredDataMismatch(flag) ? 'bold' : 'normal',

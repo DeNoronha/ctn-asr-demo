@@ -62,6 +62,7 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
 
   useEffect(() => {
     loadEndpoints();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [legalEntityId]);
 
   const loadEndpoints = async () => {
@@ -100,9 +101,10 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
         endpoint_type: 'REST_API',
       });
       loadEndpoints();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating endpoint:', error);
-      notification.showError(error.response?.data?.error || 'Failed to create endpoint');
+      const err = error as { response?: { data?: { error?: string } } };
+      notification.showError(err.response?.data?.error || 'Failed to create endpoint');
     } finally {
       setLoading(false);
     }

@@ -18,7 +18,7 @@ interface HealthCheck {
   status: 'up' | 'down';
   responseTime?: number;
   error?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 interface HealthStatus {
@@ -43,7 +43,7 @@ export const HealthDashboard: React.FC = () => {
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   const environmentName =
-    (import.meta.env as any).VITE_ENVIRONMENT_NAME ||
+    (import.meta.env as unknown as { VITE_ENVIRONMENT_NAME?: string }).VITE_ENVIRONMENT_NAME ||
     (import.meta.env.MODE === 'production' ? 'Production' : 'Development');
 
   const fetchHealth = async () => {
@@ -64,6 +64,7 @@ export const HealthDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchHealth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -71,6 +72,7 @@ export const HealthDashboard: React.FC = () => {
       const interval = setInterval(fetchHealth, 30000); // Refresh every 30 seconds
       return () => clearInterval(interval);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefresh]);
 
   const getStatusIcon = (status: string) => {

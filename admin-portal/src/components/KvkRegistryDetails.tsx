@@ -67,6 +67,7 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
 
   useEffect(() => {
     loadRegistryData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [legalEntityId]);
 
   const loadRegistryData = async () => {
@@ -242,8 +243,8 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
               </div>
               <div className="card-body">
                 <div className="addresses-grid">
-                  {registryData.addresses.map((address, index) => (
-                    <div key={index} className="address-card">
+                  {registryData.addresses.map((address) => (
+                    <div key={`${address.type}-${address.postalCode}-${address.houseNumber}`} className="address-card">
                       <div className="address-type">{address.type}</div>
                       <div className="address-details">
                         <div>
@@ -272,8 +273,8 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
               </div>
               <div className="card-body">
                 <div className="sbi-activities">
-                  {registryData.sbi_activities.map((activity, index) => (
-                    <div key={index} className="sbi-activity">
+                  {registryData.sbi_activities.map((activity) => (
+                    <div key={activity.sbiCode} className="sbi-activity">
                       <div className="sbi-code">
                         {activity.sbiCode}
                         {activity.indHoofdactiviteit === 'Ja' && (

@@ -126,6 +126,7 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
               <span
                 className="contact-type-badge"
                 style={{ backgroundColor: getContactTypeColor(type) }}
+                // biome-ignore lint/a11y/useSemanticElements: Inline badge element with styling - semantic equivalent not available
                 role="status"
                 aria-label={`Contact type: ${type}`}
                 title={contactTypeTooltips[type] || `${type} contact`}

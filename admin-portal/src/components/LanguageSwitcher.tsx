@@ -47,7 +47,12 @@ const LanguageSwitcher: React.FC = () => {
   };
 
   return (
-    <div className="language-switcher" role="region" aria-label="Language selection">
+    <div
+      className="language-switcher"
+      // biome-ignore lint/a11y/useSemanticElements: ARIA region for language selector - nav element inappropriate
+      role="region"
+      aria-label="Language selection"
+    >
       <Select
         data={languageOptions}
         value={selectedLanguage}

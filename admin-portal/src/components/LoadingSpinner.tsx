@@ -23,6 +23,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   const content = (
     <div
       className={`loading-spinner-content ${fullScreen ? 'fullscreen' : ''}`}
+      // biome-ignore lint/a11y/useSemanticElements: Using div with role="status" for ARIA live region - semantic equivalent not available
       role="status"
       aria-live="polite"
       aria-label={message || 'Loading'}

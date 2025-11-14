@@ -128,6 +128,19 @@ steps:
     displayName: 'Trivy: Scan filesystem for vulnerabilities (HIGH/CRITICAL only)'
 
   # ========================================
+  # OWASP Dependency Check
+  # ========================================
+  - task: dependency-check-build-task@6
+    displayName: 'OWASP Dependency Check'
+    continueOnError: true
+    inputs:
+      projectName: 'ASR-Member-Portal'
+      scanPath: '.'
+      format: 'HTML,JSON'
+      failOnCVSS: '7'
+      enableExperimental: true
+
+  # ========================================
   # Verify API Deployment
   # Member portal depends on ASR API - verify it's deployed and healthy
   # ========================================

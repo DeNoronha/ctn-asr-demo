@@ -77,6 +77,19 @@ stages:
               trivy fs --severity HIGH,CRITICAL --exit-code 1 --scanners vuln .
             displayName: 'Trivy: Scan filesystem for vulnerabilities (HIGH/CRITICAL only)'
 
+          # ========================================
+          # OWASP Dependency Check
+          # ========================================
+          - task: dependency-check-build-task@6
+            displayName: 'OWASP Dependency Check'
+            continueOnError: true
+            inputs:
+              projectName: 'ASR-API'
+              scanPath: '.'
+              format: 'HTML,JSON'
+              failOnCVSS: '7'
+              enableExperimental: true
+
           # Verify essential functions are compiled
           - script: |
               cd api

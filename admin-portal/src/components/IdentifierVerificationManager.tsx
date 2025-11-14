@@ -33,6 +33,7 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
   // Load verification records
   useEffect(() => {
     loadVerificationRecords();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [legalEntityId]);
 
   const loadVerificationRecords = async () => {
@@ -168,7 +169,7 @@ const IdentifierVerificationManagerComponent: React.FC<IdentifierVerificationMan
         sortable: true,
       },
       {
-        accessor: 'actions' as any,
+        accessor: 'actions' as unknown as string,
         title: 'Actions',
         width: 100,
         toggleable: false,
