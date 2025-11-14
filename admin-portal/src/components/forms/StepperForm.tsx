@@ -18,7 +18,6 @@ export const StepperForm = <T = Record<string, unknown>>({
   steps,
   onComplete,
   formData = {} as T,
-  onFormDataChange,
 }: StepperFormProps<T>) => {
   const [currentStep, setCurrentStep] = useState(0);
 

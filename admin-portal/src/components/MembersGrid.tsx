@@ -50,7 +50,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   members,
   totalMembers,
   onViewDetails,
-  onPageChange,
   loading = false,
   onRefresh,
 }) => {
@@ -59,7 +58,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   const { handleError } = useApiError();
 
   // Use grid state hook for URL-based pagination persistence
-  const { page, pageSize, skip, updatePage, updatePageSize } = useGridState('members-grid', {
+  const { page, pageSize, updatePage, updatePageSize } = useGridState('members-grid', {
     defaultPage: 1,
     defaultPageSize: 10, // Match DataTable's first recordsPerPageOptions value
     enableFilterPersistence: true,
@@ -406,7 +405,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   };
 
   // Column definitions for mantine-datatable
-  const { effectiveColumns, resetColumnsToggle, resetColumnsOrder } = useDataTableColumns<Member>({
+  const { effectiveColumns } = useDataTableColumns<Member>({
     key: 'members-grid',
     columns: [
       {

@@ -147,6 +147,25 @@ steps:
   # Security findings can still be viewed at: https://app.aikido.dev
 
   # ========================================
+  # Trivy Security Scanning
+  # ========================================
+  - script: |
+      echo "📦 Installing Trivy security scanner..."
+      sudo apt-get update -qq
+      sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+      wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+      echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+      sudo apt-get update -qq
+      sudo apt-get install -y trivy
+      trivy --version
+    displayName: 'Install Trivy security scanner'
+
+  - script: |
+      echo "🔍 Scanning admin-portal for HIGH and CRITICAL vulnerabilities..."
+      trivy fs --severity HIGH,CRITICAL --exit-code 1 admin-portal/
+    displayName: 'Trivy: Scan filesystem for vulnerabilities (HIGH/CRITICAL only)'
+
+  # ========================================
   # Verify API Deployment
   # Admin portal depends on ASR API - verify it's deployed and healthy
   # ========================================

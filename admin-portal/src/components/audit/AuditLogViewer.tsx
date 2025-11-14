@@ -19,7 +19,6 @@ import { ErrorBoundary } from '../ErrorBoundary';
 import { defaultDataTableProps, defaultPaginationOptions } from '../shared/DataTableConfig';
 
 const AuditLogViewer: React.FC = () => {
-  const { user } = useAuth();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [_loading, setLoading] = useState(false);
 
