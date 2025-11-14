@@ -15,9 +15,9 @@
 -- FOREIGN KEY INDEXES (for JOIN performance)
 -- ===========================================================================
 
--- Index on legal_entity.party_reference_id for faster joins to party_reference
+-- Index on legal_entity.party_id for faster joins to party_reference
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_legal_entity_party_ref
-  ON legal_entity(party_reference_id)
+  ON legal_entity(party_id)
   WHERE is_deleted = false;
 
 -- Index on legal_entity_contact.legal_entity_id for faster contact lookups
