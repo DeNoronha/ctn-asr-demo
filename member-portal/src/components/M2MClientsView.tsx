@@ -8,6 +8,7 @@ import { DataTable } from 'mantine-datatable';
 import { Key, Plus, Trash2, Copy, AlertTriangle } from './icons';
 import React, { useEffect, useState } from 'react';
 import { apiClient } from '../services/apiClient';
+import { LoadingState } from './shared/LoadingState';
 
 interface M2MClient {
   m2m_client_id: string;
@@ -178,109 +179,111 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
         </Button>
       </div>
 
-      {clients.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f9fafb', borderRadius: '8px' }}>
-          <Key size={48} style={{ color: '#9ca3af' }} />
-          <p style={{ fontSize: '1.125rem', fontWeight: 500, margin: '16px 0 8px 0' }}>
-            No M2M clients configured
-          </p>
-          <p style={{ color: '#6b7280', margin: 0 }}>
-            Create API clients to allow your systems to access CTN data securely
-          </p>
-        </div>
-      ) : (
-        <DataTable
-          records={clients}
-          columns={[
-            {
-              accessor: 'client_name',
-              title: 'Client Name',
-              width: 200,
-            },
-            {
-              accessor: 'azure_client_id',
-              title: 'Client ID',
-              width: 280,
-            },
-            {
-              accessor: 'assigned_scopes',
-              title: 'Scopes',
-              width: 300,
-              render: (client) => (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                  {client.assigned_scopes.map((scope: string) => (
-                    <span
-                      key={scope}
-                      style={{
-                        padding: '2px 8px',
-                        background: '#e3f2fd',
-                        borderRadius: '4px',
-                        fontSize: '0.75rem',
-                      }}
+      <LoadingState loading={loading && clients.length === 0} minHeight={400}>
+        {clients.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f9fafb', borderRadius: '8px' }}>
+            <Key size={48} style={{ color: '#9ca3af' }} />
+            <p style={{ fontSize: '1.125rem', fontWeight: 500, margin: '16px 0 8px 0' }}>
+              No M2M clients configured
+            </p>
+            <p style={{ color: '#6b7280', margin: 0 }}>
+              Create API clients to allow your systems to access CTN data securely
+            </p>
+          </div>
+        ) : (
+          <DataTable
+            records={clients}
+            columns={[
+              {
+                accessor: 'client_name',
+                title: 'Client Name',
+                width: 200,
+              },
+              {
+                accessor: 'azure_client_id',
+                title: 'Client ID',
+                width: 280,
+              },
+              {
+                accessor: 'assigned_scopes',
+                title: 'Scopes',
+                width: 300,
+                render: (client) => (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                    {client.assigned_scopes.map((scope: string) => (
+                      <span
+                        key={scope}
+                        style={{
+                          padding: '2px 8px',
+                          background: '#e3f2fd',
+                          borderRadius: '4px',
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        {scope}
+                      </span>
+                    ))}
+                  </div>
+                ),
+              },
+              {
+                accessor: 'is_active',
+                title: 'Status',
+                width: 100,
+                render: (client) => (
+                  <span style={{
+                    padding: '4px 12px',
+                    borderRadius: '12px',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    backgroundColor: client.is_active ? '#dcfce7' : '#fee2e2',
+                    color: client.is_active ? '#166534' : '#991b1b',
+                  }}>
+                    {client.is_active ? '● Active' : '○ Inactive'}
+                  </span>
+                ),
+              },
+              {
+                accessor: 'dt_created',
+                title: 'Created',
+                width: 150,
+                render: (client) => formatDate(client.dt_created),
+              },
+              {
+                accessor: 'actions',
+                title: 'Actions',
+                width: 200,
+                render: (client) => (
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <Button
+                      size="sm"
+                      onClick={() => handleGenerateSecret(client)}
+                      disabled={loading || !client.is_active}
+                      title="Generate new secret"
                     >
-                      {scope}
-                    </span>
-                  ))}
-                </div>
-              ),
-            },
-            {
-              accessor: 'is_active',
-              title: 'Status',
-              width: 100,
-              render: (client) => (
-                <span style={{
-                  padding: '4px 12px',
-                  borderRadius: '12px',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  backgroundColor: client.is_active ? '#dcfce7' : '#fee2e2',
-                  color: client.is_active ? '#166534' : '#991b1b',
-                }}>
-                  {client.is_active ? '● Active' : '○ Inactive'}
-                </span>
-              ),
-            },
-            {
-              accessor: 'dt_created',
-              title: 'Created',
-              width: 150,
-              render: (client) => formatDate(client.dt_created),
-            },
-            {
-              accessor: 'actions',
-              title: 'Actions',
-              width: 200,
-              render: (client) => (
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <Button
-                    size="sm"
-                    onClick={() => handleGenerateSecret(client)}
-                    disabled={loading || !client.is_active}
-                    title="Generate new secret"
-                  >
-                    <Key size={16} /> New Secret
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="subtle"
-                    onClick={() => {
-                      setSelectedClient(client);
-                      setShowDeleteDialog(true);
-                    }}
-                    disabled={loading}
-                    title="Deactivate client"
-                  >
-                    <Trash2 size={16} />
-                  </Button>
-                </div>
-              ),
-            },
-          ]}
-          minHeight={400}
-          fetching={loading}
-        />
-      )}
+                      <Key size={16} /> New Secret
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="subtle"
+                      onClick={() => {
+                        setSelectedClient(client);
+                        setShowDeleteDialog(true);
+                      }}
+                      disabled={loading}
+                      title="Deactivate client"
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </div>
+                ),
+              },
+            ]}
+            minHeight={400}
+            fetching={loading}
+          />
+        )}
+      </LoadingState>
 
       {/* Add M2M Client Dialog */}
       <Modal

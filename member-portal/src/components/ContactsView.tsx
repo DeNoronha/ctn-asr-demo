@@ -3,6 +3,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import type { ComponentProps, Contact } from '../types';
 import { apiClient } from '../services/apiClient';
+import { LoadingState } from './shared/LoadingState';
 
 const contactTypes = ['PRIMARY', 'TECHNICAL', 'BILLING', 'SUPPORT', 'LEGAL', 'OTHER'];
 const contactMethods = ['EMAIL', 'PHONE', 'MOBILE'];
@@ -100,56 +101,53 @@ export const ContactsView: React.FC<ComponentProps> = ({
       </div>
 
       <div className="card">
-        {loading ? (
-          <div className="loading-container">
-            <div className="loading-spinner" />
-            <p>Loading contacts...</p>
-          </div>
-        ) : contacts.length === 0 ? (
-          <div className="empty-state">
-            <h3>No Contacts</h3>
-            <p>Add your first contact to get started.</p>
-          </div>
-        ) : (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Full Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Job Title</th>
-                <th>Type</th>
-                <th>Primary</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {contacts.map((contact) => (
-                <tr key={contact.legal_entity_contact_id}>
-                  <td>{contact.full_name}</td>
-                  <td>{contact.email}</td>
-                  <td>{contact.phone || '-'}</td>
-                  <td>{contact.job_title || '-'}</td>
-                  <td>{contact.contact_type}</td>
-                  <td>{contact.is_primary ? '✓' : ''}</td>
-                  <td>
-                    <span className={contact.is_active ? 'status-active' : 'status-inactive'}>
-                      {contact.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="table-actions">
-                      <Button size="sm" onClick={() => handleEdit(contact)}>
-                        Edit
-                      </Button>
-                    </div>
-                  </td>
+        <LoadingState loading={loading} minHeight={300}>
+          {contacts.length === 0 ? (
+            <div className="empty-state">
+              <h3>No Contacts</h3>
+              <p>Add your first contact to get started.</p>
+            </div>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Job Title</th>
+                  <th>Type</th>
+                  <th>Primary</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody>
+                {contacts.map((contact) => (
+                  <tr key={contact.legal_entity_contact_id}>
+                    <td>{contact.full_name}</td>
+                    <td>{contact.email}</td>
+                    <td>{contact.phone || '-'}</td>
+                    <td>{contact.job_title || '-'}</td>
+                    <td>{contact.contact_type}</td>
+                    <td>{contact.is_primary ? '✓' : ''}</td>
+                    <td>
+                      <span className={contact.is_active ? 'status-active' : 'status-inactive'}>
+                        {contact.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="table-actions">
+                        <Button size="sm" onClick={() => handleEdit(contact)}>
+                          Edit
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </LoadingState>
       </div>
 
       <Modal

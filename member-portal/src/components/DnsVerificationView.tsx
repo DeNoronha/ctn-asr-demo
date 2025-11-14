@@ -3,6 +3,7 @@ import { Button, TextInput, Text } from '@mantine/core';
 
 import type { ComponentProps } from '../types';
 import { apiClient } from '../services/apiClient';
+import { LoadingState } from './shared/LoadingState';
 
 interface DnsToken {
   tokenId: string;
@@ -32,6 +33,7 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
   const [domain, setDomain] = useState('');
   const [tokens, setTokens] = useState<DnsToken[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [verifying, setVerifying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,6 +49,8 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
       }
     } catch (error) {
       console.error('Error loading DNS tokens:', error);
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -156,100 +160,102 @@ export const DnsVerificationView: React.FC<ComponentProps> = ({
         </div>
       </div>
 
-      {tokens.length > 0 && (
-        <div className="card">
-          <div className="card-header">
-            <h3>Pending DNS Verifications</h3>
-          </div>
-
-          {tokens.map((token) => (
-            <div key={token.tokenId} className="dns-token-card">
-              <div className="dns-token-header">
-                <h4>{token.domain}</h4>
-                <span className={`status-badge status-${token.status}`}>
-                  {token.status.toUpperCase()}
-                </span>
-              </div>
-
-              <div className="dns-instructions">
-                <h5>Step 1: Add DNS TXT Record</h5>
-                <p>Add the following TXT record to your DNS provider:</p>
-
-                <div className="dns-record-info">
-                  <div className="dns-field">
-                    <Text fw={500} mb="xs">Record Type</Text>
-                    <div className="copy-field">
-                      <code>TXT</code>
-                    </div>
-                  </div>
-
-                  <div className="dns-field">
-                    <Text fw={500} mb="xs">Record Name</Text>
-                    <div className="copy-field">
-                      <code>{token.recordName}</code>
-                      <Button
-                        variant="subtle"
-                        onClick={() => copyToClipboard(token.recordName, 'Record name')}
-                      >
-                        📋 Copy
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="dns-field">
-                    <Text fw={500} mb="xs">Record Value</Text>
-                    <div className="copy-field">
-                      <code>{token.token}</code>
-                      <Button
-                        variant="subtle"
-                        onClick={() => copyToClipboard(token.token, 'Token value')}
-                      >
-                        📋 Copy
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="dns-field">
-                    <Text fw={500} mb="xs">TTL</Text>
-                    <div className="copy-field">
-                      <code>3600</code>
-                    </div>
-                  </div>
-                </div>
-
-                <h5>Step 2: Wait for DNS Propagation</h5>
-                <p>
-                  After adding the record, wait 5-10 minutes for DNS propagation. Then click
-                  "Verify DNS Record" below.
-                </p>
-
-                <div style={{ marginTop: '16px' }}>
-                  <Button
-                    onClick={() => handleVerifyToken(token.tokenId)}
-                    color="blue"
-                    disabled={verifying === token.tokenId}
-                  >
-                    {verifying === token.tokenId ? 'Verifying...' : 'Verify DNS Record'}
-                  </Button>
-                </div>
-
-                <div className="dns-token-footer">
-                  <small>
-                    Token expires: {new Date(token.expiresAt).toLocaleString()}
-                  </small>
-                </div>
-              </div>
+      <LoadingState loading={initialLoading} minHeight={300}>
+        {tokens.length > 0 && (
+          <div className="card">
+            <div className="card-header">
+              <h3>Pending DNS Verifications</h3>
             </div>
-          ))}
-        </div>
-      )}
 
-      {tokens.length === 0 && (
-        <div className="empty-state">
-          <h3>No pending DNS verifications</h3>
-          <p>Generate a token above to start the verification process.</p>
-        </div>
-      )}
+            {tokens.map((token) => (
+              <div key={token.tokenId} className="dns-token-card">
+                <div className="dns-token-header">
+                  <h4>{token.domain}</h4>
+                  <span className={`status-badge status-${token.status}`}>
+                    {token.status.toUpperCase()}
+                  </span>
+                </div>
+
+                <div className="dns-instructions">
+                  <h5>Step 1: Add DNS TXT Record</h5>
+                  <p>Add the following TXT record to your DNS provider:</p>
+
+                  <div className="dns-record-info">
+                    <div className="dns-field">
+                      <Text fw={500} mb="xs">Record Type</Text>
+                      <div className="copy-field">
+                        <code>TXT</code>
+                      </div>
+                    </div>
+
+                    <div className="dns-field">
+                      <Text fw={500} mb="xs">Record Name</Text>
+                      <div className="copy-field">
+                        <code>{token.recordName}</code>
+                        <Button
+                          variant="subtle"
+                          onClick={() => copyToClipboard(token.recordName, 'Record name')}
+                        >
+                          📋 Copy
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="dns-field">
+                      <Text fw={500} mb="xs">Record Value</Text>
+                      <div className="copy-field">
+                        <code>{token.token}</code>
+                        <Button
+                          variant="subtle"
+                          onClick={() => copyToClipboard(token.token, 'Token value')}
+                        >
+                          📋 Copy
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="dns-field">
+                      <Text fw={500} mb="xs">TTL</Text>
+                      <div className="copy-field">
+                        <code>3600</code>
+                      </div>
+                    </div>
+                  </div>
+
+                  <h5>Step 2: Wait for DNS Propagation</h5>
+                  <p>
+                    After adding the record, wait 5-10 minutes for DNS propagation. Then click
+                    "Verify DNS Record" below.
+                  </p>
+
+                  <div style={{ marginTop: '16px' }}>
+                    <Button
+                      onClick={() => handleVerifyToken(token.tokenId)}
+                      color="blue"
+                      disabled={verifying === token.tokenId}
+                    >
+                      {verifying === token.tokenId ? 'Verifying...' : 'Verify DNS Record'}
+                    </Button>
+                  </div>
+
+                  <div className="dns-token-footer">
+                    <small>
+                      Token expires: {new Date(token.expiresAt).toLocaleString()}
+                    </small>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tokens.length === 0 && (
+          <div className="empty-state">
+            <h3>No pending DNS verifications</h3>
+            <p>Generate a token above to start the verification process.</p>
+          </div>
+        )}
+      </LoadingState>
 
       <style>{`
         .dns-verification {
