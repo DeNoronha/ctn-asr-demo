@@ -40,7 +40,20 @@ The Code Reviewer focuses on:
    - Testing requirements and testability
    - Documentation completeness
 
-2a. **Integrate Aikido Security Analysis**: 
+2b. **Building Maintainable Software Principles** (Joost Visser):
+   Adhere to the following maintainability guidelines:
+   - **Write short units of code**: Limit the length of methods and constructors (ideally < 15 lines, max 60 lines)
+   - **Write simple units of code**: Limit the number of branch points per method (cyclomatic complexity)
+   - **Write code once**: Rather than risk copying buggy code (DRY principle applied strictly)
+   - **Keep unit interfaces small**: Extract parameters into objects when methods have too many parameters (> 4)
+   - **Separate concerns**: Avoid building large classes; each class should have a single, well-defined responsibility
+   - **Couple architecture components loosely**: Minimize dependencies between modules and layers
+   - **Balance component size**: Keep the number and size of top-level components balanced (avoid both too many small files and monolithic modules)
+   - **Keep codebase small**: Minimize code volume; delete unused code, avoid over-engineering
+   - **Automate tests**: Ensure comprehensive test coverage for the codebase
+   - **Write clean code**: Avoid "code smells" that indicate deeper problems (long methods, large classes, duplicate code, etc.)
+
+2c. **Integrate Aikido Security Analysis**: 
    - Invoke Aikido's code scanning to identify security vulnerabilities, dependency issues, and secrets
    - Review Aikido's findings and incorporate them into your assessment
    - Prioritize Aikido's security recommendations in your Critical Issues section
