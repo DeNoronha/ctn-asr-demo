@@ -681,9 +681,9 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         sortable: true,
         // SEC-007: Sanitize user-generated text fields in grid
         render: (record) => (
-          <div
-            dangerouslySetInnerHTML={{ __html: sanitizeGridCell(record.identifier_value || '') }}
-          />
+          <div>
+            {sanitizeGridCell(record.identifier_value || '')}
+          </div>
         ),
       },
       {
@@ -703,7 +703,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         sortable: true,
         // SEC-007: Sanitize user-generated text fields in grid
         render: (record) => (
-          <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(record.registry_name || '') }} />
+          <div>{sanitizeGridCell(record.registry_name || '')}</div>
         ),
       },
       {

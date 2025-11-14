@@ -214,7 +214,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({
         sortable: true,
         // SEC-007: Sanitize user-generated text fields in grid
         render: (record) => (
-          <div dangerouslySetInnerHTML={{ __html: sanitizeGridCell(record.client_name) }} />
+          <div>{sanitizeGridCell(record.client_name)}</div>
         ),
       },
       {
