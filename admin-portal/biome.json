@@ -53,6 +53,21 @@
     }
   },
   "files": {
-    "ignore": ["node_modules", "build", "dist", ".next", "coverage", "reports", "*.config.js"]
+    "ignore": [
+      "node_modules",
+      "build",
+      "dist",
+      ".next",
+      "coverage",
+      "reports",
+      "*.config.js",
+      "e2e/**",
+      "playwright/**",
+      "scripts/**",
+      "**/*.spec.ts",
+      "**/*.spec.tsx",
+      "**/*.test.ts",
+      "**/*.test.tsx"
+    ]
   }
 }
