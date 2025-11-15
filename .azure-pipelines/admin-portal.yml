@@ -177,6 +177,11 @@ steps:
       restoreKeys: |
         owasp-nvd | "$(Agent.OS)"
 
+  # ========================================
+  # OWASP Dependency Check
+  # Note: v6.3.0+ supports Node 20 (resolves Node 16 EOL warning)
+  # Release: https://github.com/dependency-check/azuredevops/releases/tag/6.3.0
+  # ========================================
   - task: dependency-check.dependencycheck.dependency-check-build-task.dependency-check-build-task@6
     displayName: 'OWASP Dependency Check'
     continueOnError: true
