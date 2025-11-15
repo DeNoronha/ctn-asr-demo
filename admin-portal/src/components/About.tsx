@@ -42,11 +42,40 @@ const About: React.FC = () => {
   const [apiVersion, setApiVersion] = useState<APIVersionInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const getReadablePlatform = () => {
+    const ua = navigator.userAgent;
+    if (ua.includes('Mac OS X')) {
+      const match = ua.match(/Mac OS X ([\d_]+)/);
+      if (match) {
+        const version = match[1].replace(/_/g, '.');
+        return `macOS ${version}`;
+      }
+      return 'macOS';
+    }
+    if (ua.includes('Windows NT')) {
+      const match = ua.match(/Windows NT ([\d.]+)/);
+      if (match) {
+        const versionMap: Record<string, string> = {
+          '10.0': 'Windows 10/11',
+          '6.3': 'Windows 8.1',
+          '6.2': 'Windows 8',
+          '6.1': 'Windows 7',
+        };
+        return versionMap[match[1]] || `Windows NT ${match[1]}`;
+      }
+      return 'Windows';
+    }
+    if (ua.includes('Linux')) return 'Linux';
+    if (ua.includes('Android')) return 'Android';
+    if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) return 'iOS';
+    return navigator.platform;
+  };
+
   const [systemInfo] = useState({
     browser: navigator.userAgent,
     viewport: `${window.innerWidth}x${window.innerHeight}`,
     language: navigator.language,
-    platform: navigator.platform,
+    platform: getReadablePlatform(),
   });
 
   useEffect(() => {
@@ -228,7 +257,6 @@ const About: React.FC = () => {
                     <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
                       Environment:
                     </Text>
-                    <Text size="sm">{portalVersion.environment || 'Development'}</Text>
                     {getEnvironmentBadge(portalVersion.environment)}
                   </Group>
                   {portalVersion.branch &&
@@ -340,7 +368,6 @@ const About: React.FC = () => {
                     <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
                       Environment:
                     </Text>
-                    <Text size="sm">{apiVersion.environment || 'Development'}</Text>
                     {getEnvironmentBadge(apiVersion.environment)}
                   </Group>
                   {apiVersion.branch &&
@@ -472,16 +499,6 @@ const About: React.FC = () => {
 
           {/* Partner Logos Section */}
           <PartnerLogos />
-
-          {/* Copyright Footer */}
-          {apiVersion && (
-            <div className="copyright-footer">
-              <p>
-                © {apiVersion.copyright.year} {apiVersion.copyright.owner}
-              </p>
-              <p>{apiVersion.copyright.license}</p>
-            </div>
-          )}
         </div>
       )}
     </LoadingState>
