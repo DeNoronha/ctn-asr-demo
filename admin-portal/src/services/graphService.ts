@@ -178,7 +178,7 @@ export async function listUsers(): Promise<User[]> {
     // Step 4: Fetch user details for each assigned user
     const users: User[] = [];
 
-    for (const userId of userIds) {
+    for (const userId of Array.from(userIds)) {
       try {
         const userResponse = await client
           .api(`/users/${userId}`)
