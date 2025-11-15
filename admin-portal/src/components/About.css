@@ -17,7 +17,7 @@
 
 .about-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
   margin-bottom: 2rem;
 }
@@ -116,7 +116,7 @@
 .version-number {
   font-family: "Courier New", monospace;
   font-weight: 600;
-  color: #667eea;
+  color: #0066B3; /* CTN primary blue - WCAG AA compliant (4.52:1 contrast) */
   font-size: 1.1rem;
 }
 
@@ -161,49 +161,7 @@
   font-size: 0.9rem;
 }
 
-/* Partner Logos - Same as Dashboard */
-.partner-logos {
-  margin-top: 2rem;
-  padding: 24px;
-  background: #f9fafb;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-}
-
-.partner-logos h3 {
-  margin: 0 0 20px 0;
-  color: #374151;
-  font-size: 16px;
-  font-weight: 600;
-  text-align: center;
-}
-
-.logos-grid {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 32px;
-  flex-wrap: wrap;
-}
-
-.logo-container {
-  padding: 16px 24px;
-  background: white;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
-  transition: all 0.2s ease;
-}
-
-.logo-container:hover {
-  border-color: #0066b3;
-  box-shadow: 0 2px 8px rgba(0, 102, 179, 0.1);
-}
-
-.logo-container img {
-  height: 32px;
-  width: auto;
-  display: block;
-}
+/* Partner logos styling moved to shared component */
 
 .about-error {
   display: flex;
@@ -217,23 +175,6 @@
 
 .about-error p {
   font-size: 1.1rem;
-}
-
-/* Environment badge styling */
-.env-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-left: 0.5rem;
-}
-
-.env-badge-production {
-  background-color: #28a745;
-  color: white;
 }
 
 /* Responsive adjustments */

@@ -83,6 +83,8 @@ export const UserPlus: React.FC<IconProps> = (props) => (
 export const Edit2: React.FC<IconProps> = (props) => <Icon {...props} icon="✏️" label="Edit" />;
 export const ArrowLeft: React.FC<IconProps> = (props) => <Icon {...props} icon="⬅️" label="Back" />;
 export const Copy: React.FC<IconProps> = (props) => <Icon {...props} icon="📋" label="Copy" />;
+export const Check: React.FC<IconProps> = (props) => <Icon {...props} icon="✓" label="Check" />;
+export const Monitor: React.FC<IconProps> = (props) => <Icon {...props} icon="🖥️" label="Monitor" />;
 export const FolderOpen: React.FC<IconProps> = (props) => (
   <Icon {...props} icon="📂" label="Folder" />
 );

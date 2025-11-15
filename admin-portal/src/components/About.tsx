@@ -3,12 +3,13 @@
  * Displays build information for both admin portal and API
  */
 
-import { Card } from '@mantine/core';
+import { ActionIcon, Badge, Card, CopyButton, Group, Stack, Text, ThemeIcon, Tooltip, Code } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { AlertCircle, Calendar, CheckCircle, Clock, GitBranch, Package } from './icons';
+import { AlertCircle, Calendar, CheckCircle, Clock, Copy, Check, GitBranch, Monitor, Package } from './icons';
 import { LoadingState } from './shared/LoadingState';
 import { PageHeader } from './shared/PageHeader';
+import { PartnerLogos } from './shared/PartnerLogos';
 import './About.css';
 
 interface VersionInfo {
@@ -41,6 +42,12 @@ const About: React.FC = () => {
   const [apiVersion, setApiVersion] = useState<APIVersionInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [systemInfo] = useState({
+    browser: navigator.userAgent,
+    viewport: `${window.innerWidth}x${window.innerHeight}`,
+    language: navigator.language,
+    platform: navigator.platform,
+  });
 
   useEffect(() => {
     loadVersionInfo();
@@ -86,8 +93,22 @@ const About: React.FC = () => {
     }
   };
 
+  const getRelativeTime = (date: Date) => {
+    const now = Date.now();
+    const diffMs = date.getTime() - now;
+    const diffMins = Math.round(Math.abs(diffMs) / 60000);
+    const diffHours = Math.round(diffMins / 60);
+    const diffDays = Math.round(diffHours / 24);
+
+    if (diffDays >= 1) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    if (diffHours >= 1) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffMins >= 1) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    return 'just now';
+  };
+
   const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString('en-US', {
+    const date = new Date(timestamp);
+    const absolute = date.toLocaleString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -95,6 +116,8 @@ const About: React.FC = () => {
       minute: '2-digit',
       timeZoneName: 'short',
     });
+    const relative = getRelativeTime(date);
+    return `${absolute} (${relative})`;
   };
 
   const formatUptime = (seconds: number) => {
@@ -113,12 +136,24 @@ const About: React.FC = () => {
 
   const getEnvironmentBadge = (environment: string) => {
     const envLower = environment.toLowerCase();
-    // Only show Production badge for production environment
-    if (envLower === 'production' || envLower === 'prod') {
-      return <span className="env-badge env-badge-production">Production</span>;
-    }
-    // Don't show environment badge for dev/local
-    return null;
+
+    const badgeConfig: Record<string, { color: string; label: string }> = {
+      production: { color: 'green', label: 'Production' },
+      prod: { color: 'green', label: 'Production' },
+      staging: { color: 'yellow', label: 'Staging' },
+      development: { color: 'blue', label: 'Development' },
+      dev: { color: 'blue', label: 'Development' },
+      local: { color: 'gray', label: 'Local' }
+    };
+
+    const config = badgeConfig[envLower];
+    if (!config) return null;
+
+    return (
+      <Badge size="sm" color={config.color} variant="filled">
+        {config.label}
+      </Badge>
+    );
   };
 
   const isProductionBuild = (buildNumber: string) => {
@@ -138,134 +173,315 @@ const About: React.FC = () => {
 
           <div className="about-grid">
             {/* Admin Portal Version Card */}
-            <Card className="version-card" withBorder shadow="sm" padding="lg">
-              <div className="card-header">
-                <div className="card-title">
-                  <Package size={20} />
-                  Admin Portal
-                </div>
-              </div>
-              <div className="card-body">
-                {portalVersion && (
-                  <div className="version-details">
-                    {isProductionBuild(portalVersion.buildNumber) && (
-                      <>
-                        <div className="version-item">
-                          <strong>Version:</strong>
-                          <span className="version-number">#{portalVersion.version}</span>
-                        </div>
-                        <div className="version-item">
-                          <strong>Build Number:</strong>
-                          <span>{portalVersion.buildNumber}</span>
-                        </div>
-                      </>
+            <Card withBorder shadow="sm" padding="lg" radius="md">
+              <Card.Section
+                withBorder
+                inheritPadding
+                py="md"
+                style={{
+                  background: 'linear-gradient(135deg, #003366 0%, #005a9c 100%)',
+                }}
+              >
+                <Group gap="xs">
+                  <ThemeIcon size="lg" variant="transparent" c="white">
+                    <Package size={20} />
+                  </ThemeIcon>
+                  <Text size="lg" fw={600} c="white">
+                    Admin Portal
+                  </Text>
+                </Group>
+              </Card.Section>
+
+              {portalVersion && (
+                <Stack gap="md" mt="md">
+                  {isProductionBuild(portalVersion.buildNumber) && (
+                    <>
+                      <Group gap="xs" wrap="nowrap" align="center">
+                        <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
+                          Version:
+                        </Text>
+                        <Code color="blue" fw={600}>#{portalVersion.version}</Code>
+                        <CopyButton value={portalVersion.version} timeout={2000}>
+                          {({ copied, copy }) => (
+                            <Tooltip label={copied ? 'Copied' : 'Copy version'} withArrow>
+                              <ActionIcon
+                                color={copied ? 'teal' : 'gray'}
+                                variant="subtle"
+                                onClick={copy}
+                                size="sm"
+                              >
+                                {copied ? <Check size={14} /> : <Copy size={14} />}
+                              </ActionIcon>
+                            </Tooltip>
+                          )}
+                        </CopyButton>
+                      </Group>
+                      <Group gap="xs" wrap="nowrap">
+                        <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
+                          Build Number:
+                        </Text>
+                        <Text size="sm">{portalVersion.buildNumber}</Text>
+                      </Group>
+                    </>
+                  )}
+                  <Group gap="xs" wrap="nowrap">
+                    <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
+                      Environment:
+                    </Text>
+                    <Text size="sm">{portalVersion.environment || 'Development'}</Text>
+                    {getEnvironmentBadge(portalVersion.environment)}
+                  </Group>
+                  {portalVersion.branch &&
+                    portalVersion.branch !== 'unknown' &&
+                    portalVersion.branch !== 'local' && (
+                      <Group gap="xs" wrap="nowrap">
+                        <GitBranch size={16} />
+                        <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 104 }}>
+                          Branch:
+                        </Text>
+                        <Text size="sm">{portalVersion.branch}</Text>
+                      </Group>
                     )}
-                    <div className="version-item">
-                      <strong>Environment:</strong>
-                      <span>{portalVersion.environment || 'Development'}</span>
-                      {getEnvironmentBadge(portalVersion.environment)}
-                    </div>
-                    {portalVersion.branch &&
-                      portalVersion.branch !== 'unknown' &&
-                      portalVersion.branch !== 'local' && (
-                        <div className="version-item">
-                          <GitBranch size={16} />
-                          <strong>Branch:</strong>
-                          <span>{portalVersion.branch}</span>
-                        </div>
-                      )}
-                    {portalVersion.commitSha &&
-                      portalVersion.commitSha !== 'unknown' &&
-                      portalVersion.commitSha !== 'local' && (
-                        <div className="version-item">
-                          <strong>Commit:</strong>
-                          <code className="commit-sha">{portalVersion.commitSha}</code>
-                        </div>
-                      )}
-                    <div className="version-item">
-                      <Calendar size={16} />
-                      <strong>Built:</strong>
-                      <span>{formatTimestamp(portalVersion.timestamp)}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
+                  {portalVersion.commitSha &&
+                    portalVersion.commitSha !== 'unknown' &&
+                    portalVersion.commitSha !== 'local' && (
+                      <Group gap="xs" wrap="nowrap" align="center">
+                        <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
+                          Commit:
+                        </Text>
+                        <Code>{portalVersion.commitSha}</Code>
+                        <CopyButton value={portalVersion.commitShaFull} timeout={2000}>
+                          {({ copied, copy }) => (
+                            <Tooltip label={copied ? 'Copied full commit SHA' : 'Copy full SHA'} withArrow>
+                              <ActionIcon
+                                color={copied ? 'teal' : 'gray'}
+                                variant="subtle"
+                                onClick={copy}
+                                size="sm"
+                              >
+                                {copied ? <Check size={14} /> : <Copy size={14} />}
+                              </ActionIcon>
+                            </Tooltip>
+                          )}
+                        </CopyButton>
+                      </Group>
+                    )}
+                  <Group gap="xs" wrap="nowrap">
+                    <Calendar size={16} />
+                    <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 104 }}>
+                      Built:
+                    </Text>
+                    <Text size="sm">{formatTimestamp(portalVersion.timestamp)}</Text>
+                  </Group>
+                </Stack>
+              )}
             </Card>
 
             {/* API Version Card */}
-            <Card className="version-card" withBorder shadow="sm" padding="lg">
-              <div className="card-header">
-                <div className="card-title">
-                  <Package size={20} />
-                  Backend API
-                </div>
-              </div>
-              <div className="card-body">
-                {apiVersion ? (
-                  <div className="version-details">
-                    <div className="version-item">
-                      <CheckCircle size={16} className="status-online" />
-                      <strong>Status:</strong>
-                      <span className="status-text">Online</span>
-                    </div>
-                    {isProductionBuild(apiVersion.buildNumber) && (
-                      <>
-                        <div className="version-item">
-                          <strong>Version:</strong>
-                          <span className="version-number">#{apiVersion.version}</span>
-                        </div>
-                        <div className="version-item">
-                          <strong>Build Number:</strong>
-                          <span>{apiVersion.buildNumber}</span>
-                        </div>
-                      </>
+            <Card withBorder shadow="sm" padding="lg" radius="md">
+              <Card.Section
+                withBorder
+                inheritPadding
+                py="md"
+                style={{
+                  background: 'linear-gradient(135deg, #003366 0%, #005a9c 100%)',
+                }}
+              >
+                <Group gap="xs">
+                  <ThemeIcon size="lg" variant="transparent" c="white">
+                    <Package size={20} />
+                  </ThemeIcon>
+                  <Text size="lg" fw={600} c="white">
+                    Backend API
+                  </Text>
+                </Group>
+              </Card.Section>
+
+              {apiVersion ? (
+                <Stack gap="md" mt="md">
+                  <Group gap="xs" wrap="nowrap">
+                    <CheckCircle size={16} style={{ color: '#28a745' }} />
+                    <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 104 }}>
+                      Status:
+                    </Text>
+                    <Text size="sm" fw={600} c="green">Online</Text>
+                  </Group>
+                  {isProductionBuild(apiVersion.buildNumber) && (
+                    <>
+                      <Group gap="xs" wrap="nowrap" align="center">
+                        <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
+                          Version:
+                        </Text>
+                        <Code color="blue" fw={600}>#{apiVersion.version}</Code>
+                        <CopyButton value={apiVersion.version} timeout={2000}>
+                          {({ copied, copy }) => (
+                            <Tooltip label={copied ? 'Copied' : 'Copy version'} withArrow>
+                              <ActionIcon
+                                color={copied ? 'teal' : 'gray'}
+                                variant="subtle"
+                                onClick={copy}
+                                size="sm"
+                              >
+                                {copied ? <Check size={14} /> : <Copy size={14} />}
+                              </ActionIcon>
+                            </Tooltip>
+                          )}
+                        </CopyButton>
+                      </Group>
+                      <Group gap="xs" wrap="nowrap">
+                        <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
+                          Build Number:
+                        </Text>
+                        <Text size="sm">{apiVersion.buildNumber}</Text>
+                      </Group>
+                    </>
+                  )}
+                  <Group gap="xs" wrap="nowrap">
+                    <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
+                      Environment:
+                    </Text>
+                    <Text size="sm">{apiVersion.environment || 'Development'}</Text>
+                    {getEnvironmentBadge(apiVersion.environment)}
+                  </Group>
+                  {apiVersion.branch &&
+                    apiVersion.branch !== 'unknown' &&
+                    apiVersion.branch !== 'local' && (
+                      <Group gap="xs" wrap="nowrap">
+                        <GitBranch size={16} />
+                        <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 104 }}>
+                          Branch:
+                        </Text>
+                        <Text size="sm">{apiVersion.branch}</Text>
+                      </Group>
                     )}
-                    <div className="version-item">
-                      <strong>Environment:</strong>
-                      <span>{apiVersion.environment || 'Development'}</span>
-                      {getEnvironmentBadge(apiVersion.environment)}
-                    </div>
-                    {apiVersion.branch &&
-                      apiVersion.branch !== 'unknown' &&
-                      apiVersion.branch !== 'local' && (
-                        <div className="version-item">
-                          <GitBranch size={16} />
-                          <strong>Branch:</strong>
-                          <span>{apiVersion.branch}</span>
-                        </div>
-                      )}
-                    {apiVersion.commitSha &&
-                      apiVersion.commitSha !== 'unknown' &&
-                      apiVersion.commitSha !== 'local' && (
-                        <div className="version-item">
-                          <strong>Commit:</strong>
-                          <code className="commit-sha">{apiVersion.commitSha}</code>
-                        </div>
-                      )}
-                    <div className="version-item">
-                      <Calendar size={16} />
-                      <strong>Built:</strong>
-                      <span>{formatTimestamp(apiVersion.timestamp)}</span>
-                    </div>
-                    <div className="version-item">
-                      <Clock size={16} />
-                      <strong>Uptime:</strong>
-                      <span>{formatUptime(apiVersion.api.uptime)}</span>
-                    </div>
-                    <div className="version-item">
-                      <strong>Node.js:</strong>
-                      <span>{apiVersion.api.nodeVersion}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="version-unavailable">
-                    <AlertCircle size={16} />
-                    <span>API version information unavailable</span>
-                  </div>
-                )}
-              </div>
+                  {apiVersion.commitSha &&
+                    apiVersion.commitSha !== 'unknown' &&
+                    apiVersion.commitSha !== 'local' && (
+                      <Group gap="xs" wrap="nowrap" align="center">
+                        <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
+                          Commit:
+                        </Text>
+                        <Code>{apiVersion.commitSha}</Code>
+                        <CopyButton value={apiVersion.commitShaFull} timeout={2000}>
+                          {({ copied, copy }) => (
+                            <Tooltip label={copied ? 'Copied full commit SHA' : 'Copy full SHA'} withArrow>
+                              <ActionIcon
+                                color={copied ? 'teal' : 'gray'}
+                                variant="subtle"
+                                onClick={copy}
+                                size="sm"
+                              >
+                                {copied ? <Check size={14} /> : <Copy size={14} />}
+                              </ActionIcon>
+                            </Tooltip>
+                          )}
+                        </CopyButton>
+                      </Group>
+                    )}
+                  <Group gap="xs" wrap="nowrap">
+                    <Calendar size={16} />
+                    <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 104 }}>
+                      Built:
+                    </Text>
+                    <Text size="sm">{formatTimestamp(apiVersion.timestamp)}</Text>
+                  </Group>
+                  <Group gap="xs" wrap="nowrap">
+                    <Clock size={16} />
+                    <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 104 }}>
+                      Uptime:
+                    </Text>
+                    <Text size="sm">{formatUptime(apiVersion.api.uptime)}</Text>
+                    {apiVersion.api.uptime > 86400 && (
+                      <ThemeIcon size="xs" color="green" variant="light">
+                        <CheckCircle size={12} />
+                      </ThemeIcon>
+                    )}
+                  </Group>
+                  <Group gap="xs" wrap="nowrap">
+                    <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
+                      Node.js:
+                    </Text>
+                    <Text size="sm">{apiVersion.api.nodeVersion}</Text>
+                  </Group>
+                </Stack>
+              ) : (
+                <Stack gap="md" p="md" style={{ background: '#fff3cd', borderRadius: '6px' }} mt="md">
+                  <Group gap="xs">
+                    <AlertCircle size={20} style={{ color: '#856404' }} />
+                    <Text size="sm" c="#856404" fw={500}>
+                      API version information unavailable
+                    </Text>
+                  </Group>
+                  <Text size="xs" c="#856404">
+                    The backend API may be offline or unreachable. Please contact support if this persists.
+                  </Text>
+                </Stack>
+              )}
+            </Card>
+
+            {/* Browser Info Card */}
+            <Card withBorder shadow="sm" padding="lg" radius="md">
+              <Card.Section
+                withBorder
+                inheritPadding
+                py="md"
+                style={{
+                  background: 'linear-gradient(135deg, #003366 0%, #005a9c 100%)',
+                }}
+              >
+                <Group gap="xs">
+                  <ThemeIcon size="lg" variant="transparent" c="white">
+                    <Monitor size={20} />
+                  </ThemeIcon>
+                  <Text size="lg" fw={600} c="white">
+                    Browser Info
+                  </Text>
+                </Group>
+              </Card.Section>
+
+              <Stack gap="md" mt="md">
+                <Group gap="xs" wrap="nowrap">
+                  <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
+                    Viewport:
+                  </Text>
+                  <Text size="sm">{systemInfo.viewport}</Text>
+                </Group>
+                <Group gap="xs" wrap="nowrap">
+                  <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
+                    Platform:
+                  </Text>
+                  <Text size="sm">{systemInfo.platform}</Text>
+                </Group>
+                <Group gap="xs" wrap="nowrap">
+                  <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
+                    Language:
+                  </Text>
+                  <Text size="sm">{systemInfo.language}</Text>
+                </Group>
+                <Group gap="xs" wrap="nowrap" align="flex-start">
+                  <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120, flexShrink: 0 }}>
+                    User Agent:
+                  </Text>
+                  <Text size="xs" c="dimmed" style={{ wordBreak: 'break-word', flex: 1 }}>
+                    {systemInfo.browser}
+                  </Text>
+                </Group>
+              </Stack>
             </Card>
           </div>
+
+          {/* Partner Logos Section */}
+          <PartnerLogos />
+
+          {/* Copyright Footer */}
+          {apiVersion && (
+            <div className="copyright-footer">
+              <p>
+                © {apiVersion.copyright.year} {apiVersion.copyright.owner}
+              </p>
+              <p>{apiVersion.copyright.license}</p>
+            </div>
+          )}
         </div>
       )}
     </LoadingState>
