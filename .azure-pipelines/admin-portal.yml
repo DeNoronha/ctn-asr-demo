@@ -166,18 +166,28 @@ steps:
     displayName: 'Trivy: Scan filesystem for vulnerabilities (HIGH/CRITICAL only)'
 
   # ========================================
-  # OWASP Dependency Check
+  # OWASP Dependency Check with NVD Database Caching
+  # Cache saves 3-5 minutes by reusing downloaded CVE database
   # ========================================
+  - task: Cache@2
+    displayName: 'Cache OWASP NVD database'
+    inputs:
+      key: 'owasp-nvd | "$(Agent.OS)" | "v1"'
+      path: $(Pipeline.Workspace)/.owasp-dependency-check-data
+      restoreKeys: |
+        owasp-nvd | "$(Agent.OS)"
+
   - task: dependency-check.dependencycheck.dependency-check-build-task.dependency-check-build-task@6
     displayName: 'OWASP Dependency Check'
     continueOnError: true
     inputs:
       projectName: 'ASR-Admin-Portal'
-      scanPath: '.'
+      scanPath: 'admin-portal'  # Only scan admin-portal directory, not entire monorepo
       format: 'HTML,JSON'
       failOnCVSS: '7'
       enableExperimental: true
       nvdApiKey: $(NVD-API-KEY)
+      dataDirectory: $(Pipeline.Workspace)/.owasp-dependency-check-data  # Use cached NVD data
 
   # ========================================
   # Verify API Deployment
