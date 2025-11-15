@@ -38,7 +38,7 @@ const AuditLogViewer: React.FC = () => {
 
   // Pagination state
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(10);
 
   // Sorting state
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<AuditLog>>({
@@ -387,7 +387,7 @@ const AuditLogViewer: React.FC = () => {
               onPageChange={setPage}
               recordsPerPage={pageSize}
               onRecordsPerPageChange={setPageSize}
-              recordsPerPageOptions={[25, 50, 100]}
+              recordsPerPageOptions={[10, 25, 50, 100]}
               sortStatus={sortStatus}
               onSortStatusChange={setSortStatus}
               fetching={loading}

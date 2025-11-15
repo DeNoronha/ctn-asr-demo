@@ -68,8 +68,16 @@ async function getGraphClient(): Promise<Client> {
     });
   } catch (error: any) {
     // Check if this is an interaction required error (consent needed)
-    if (error?.errorCode === 'consent_required' || error?.errorCode === 'interaction_required') {
+    // AADSTS65001 = invalid_grant (no consent)
+    const isConsentError =
+      error?.errorCode === 'consent_required' ||
+      error?.errorCode === 'interaction_required' ||
+      error?.errorCode === 'invalid_grant' ||
+      error?.errorMessage?.includes('AADSTS65001');
+
+    if (isConsentError) {
       logger.warn('Interaction required for Graph API access. User needs to grant consent.');
+      logger.warn('Error details:', error);
       // Re-throw with a more specific error type
       const consentError = new Error('CONSENT_REQUIRED');
       (consentError as any).originalError = error;
