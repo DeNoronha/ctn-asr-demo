@@ -25,18 +25,6 @@ import { PageHeader } from './shared/PageHeader';
 const Settings: React.FC = () => {
   const { t } = useTranslation();
 
-  // Derive environment and API details from configuration
-  const apiBase =
-    import.meta.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
-  const apiHost = (() => {
-    try {
-      return new URL(apiBase).host;
-    } catch {
-      return apiBase;
-    }
-  })();
-  const environmentLabel = 'Production';
-
   const handleLokaliseClick = () => {
     // Open Lokalise translation management platform
     window.open('https://app.lokalise.com', '_blank', 'noopener,noreferrer');
@@ -224,47 +212,6 @@ const Settings: React.FC = () => {
         </Stack>
       </Paper>
 
-      {/* Application Information */}
-      <Paper shadow="sm" p="xl" radius="md" withBorder>
-        <Stack gap="md">
-          <Title order={3}>{t('settings.appInfo', 'Application Information')}</Title>
-
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
-            <Paper shadow="xs" p="md" radius="md" withBorder>
-              <Stack gap="xs">
-                <Text size="xs" tt="uppercase" fw={600} c="dimmed">
-                  {t('settings.environment', 'Environment')}
-                </Text>
-                <Text size="sm" fw={500} ff="monospace">
-                  {environmentLabel}
-                </Text>
-              </Stack>
-            </Paper>
-
-            <Paper shadow="xs" p="md" radius="md" withBorder>
-              <Stack gap="xs">
-                <Text size="xs" tt="uppercase" fw={600} c="dimmed">
-                  {t('settings.apiUrl', 'API URL')}
-                </Text>
-                <Text size="sm" fw={500} ff="monospace">
-                  {apiHost}
-                </Text>
-              </Stack>
-            </Paper>
-
-            <Paper shadow="xs" p="md" radius="md" withBorder>
-              <Stack gap="xs">
-                <Text size="xs" tt="uppercase" fw={600} c="dimmed">
-                  {t('settings.region', 'Region')}
-                </Text>
-                <Text size="sm" fw={500} ff="monospace">
-                  West Europe
-                </Text>
-              </Stack>
-            </Paper>
-          </SimpleGrid>
-        </Stack>
-      </Paper>
     </Stack>
   );
 };

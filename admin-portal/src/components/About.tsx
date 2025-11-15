@@ -6,7 +6,7 @@
 import { ActionIcon, Badge, Card, CopyButton, Group, Stack, Text, ThemeIcon, Tooltip, Code } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { AlertCircle, Calendar, CheckCircle, Clock, Copy, Check, GitBranch, Monitor, Package } from './icons';
+import { AlertCircle, Calendar, CheckCircle, Clock, Copy, Check, GitBranch, Globe, Monitor, Package } from './icons';
 import { LoadingState } from './shared/LoadingState';
 import { PageHeader } from './shared/PageHeader';
 import { PartnerLogos } from './shared/PartnerLogos';
@@ -429,6 +429,41 @@ const About: React.FC = () => {
                       Node.js:
                     </Text>
                     <Text size="sm">{apiVersion.api.nodeVersion}</Text>
+                  </Group>
+                  <Group gap="xs" wrap="nowrap" align="center">
+                    <Globe size={16} />
+                    <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 104 }}>
+                      API URL:
+                    </Text>
+                    <Code style={{ fontSize: '0.8rem' }}>
+                      {(() => {
+                        try {
+                          return new URL(import.meta.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1').host;
+                        } catch {
+                          return 'func-ctn-demo-asr-dev.azurewebsites.net';
+                        }
+                      })()}
+                    </Code>
+                    <CopyButton value={import.meta.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1'} timeout={2000}>
+                      {({ copied, copy }) => (
+                        <Tooltip label={copied ? 'Copied' : 'Copy full API URL'} withArrow>
+                          <ActionIcon
+                            color={copied ? 'teal' : 'gray'}
+                            variant="subtle"
+                            onClick={copy}
+                            size="sm"
+                          >
+                            {copied ? <Check size={14} /> : <Copy size={14} />}
+                          </ActionIcon>
+                        </Tooltip>
+                      )}
+                    </CopyButton>
+                  </Group>
+                  <Group gap="xs" wrap="nowrap">
+                    <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
+                      Region:
+                    </Text>
+                    <Text size="sm">West Europe</Text>
                   </Group>
                 </Stack>
               ) : (
