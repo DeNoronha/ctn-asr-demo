@@ -8,7 +8,6 @@ import {
   Button,
   Group,
   Paper,
-  Select,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -23,7 +22,7 @@ import { useNotification } from '../../contexts/NotificationContext';
 import { AuditAction, type AuditLog, auditLogService } from '../../services/auditLogService';
 import { formatDateTimeGB } from '../../utils/dateFormat';
 import { ErrorBoundary } from '../ErrorBoundary';
-import { Activity, Clock, Download, Search, FileText, RefreshCw } from '../icons';
+import { Activity, Clock, Download, FileText, RefreshCw } from '../icons';
 import { defaultDataTableProps } from '../shared/DataTableConfig';
 import { PageHeader } from '../shared/PageHeader';
 import './AuditLogViewer.css';
@@ -46,10 +45,6 @@ const AuditLogViewer: React.FC = () => {
     direction: 'desc',
   });
 
-  // Filter state
-  const [selectedAction, setSelectedAction] = useState<string | null>(null);
-  const [selectedTargetType, setSelectedTargetType] = useState<string | null>(null);
-
   const loadLogs = useCallback(async () => {
     setLoading(true);
     try {
@@ -69,18 +64,9 @@ const AuditLogViewer: React.FC = () => {
     loadLogs();
   }, [loadLogs]);
 
-  // Apply filters
-  const filteredLogs = useMemo(() => {
-    return logs.filter((log) => {
-      if (selectedAction && log.action !== selectedAction) return false;
-      if (selectedTargetType && log.targetType !== selectedTargetType) return false;
-      return true;
-    });
-  }, [logs, selectedAction, selectedTargetType]);
-
   // Apply sorting
   const sortedLogs = useMemo(() => {
-    const sorted = [...filteredLogs];
+    const sorted = [...logs];
     if (sortStatus.columnAccessor === 'timestamp') {
       sorted.sort((a, b) => {
         const aTime = new Date(a.timestamp).getTime();
@@ -89,7 +75,7 @@ const AuditLogViewer: React.FC = () => {
       });
     }
     return sorted;
-  }, [filteredLogs, sortStatus]);
+  }, [logs, sortStatus]);
 
   // Calculate stats
   const todayCount = useMemo(() => {
@@ -120,12 +106,6 @@ const AuditLogViewer: React.FC = () => {
     }
   }, [logs.length, notification]);
 
-  const handleClearFilters = useCallback(() => {
-    setSelectedAction(null);
-    setSelectedTargetType(null);
-    setPage(1); // Reset to first page when clearing filters
-  }, []);
-
   // mantine-datatable column definitions
   const { effectiveColumns } = useDataTableColumns<AuditLog>({
     key: 'audit-log-grid',
@@ -146,6 +126,7 @@ const AuditLogViewer: React.FC = () => {
         toggleable: true,
         resizable: true,
         sortable: true,
+        filtering: true,
         render: (record) => {
           const action = record.action;
           // Map actions to Mantine color names
@@ -227,27 +208,10 @@ const AuditLogViewer: React.FC = () => {
         toggleable: true,
         resizable: true,
         sortable: true,
+        filtering: true,
       },
     ],
   });
-
-  // Filter options
-  const actionOptions = useMemo(
-    () => [{ value: '', label: 'All Actions' }, ...Object.values(AuditAction).map((a) => ({ value: a, label: a.replace(/_/g, ' ') }))],
-    []
-  );
-  const targetTypeOptions = useMemo(
-    () => [
-      { value: '', label: 'All Types' },
-      { value: 'user', label: 'User' },
-      { value: 'member', label: 'Member' },
-      { value: 'token', label: 'Token' },
-      { value: 'm2m_client', label: 'M2M Client' },
-      { value: 'legal_entity', label: 'Legal Entity' },
-      { value: 'system', label: 'System' },
-    ],
-    []
-  );
 
   return (
     <RoleGuard allowedRoles={[UserRole.SYSTEM_ADMIN]}>
@@ -268,7 +232,7 @@ const AuditLogViewer: React.FC = () => {
         </Group>
 
         {/* Stats Cards - Mantine Paper Components */}
-        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg">
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
           <Paper withBorder p="md" radius="md">
             <Group justify="space-between">
               <div>
@@ -292,25 +256,6 @@ const AuditLogViewer: React.FC = () => {
             <Group justify="space-between">
               <div>
                 <Text c="dimmed" tt="uppercase" fw={700} size="xs">
-                  Filtered Results
-                </Text>
-                <Text fw={700} size="xl" component="p" aria-live="polite">
-                  {filteredLogs.length}
-                </Text>
-              </div>
-              <ThemeIcon color="cyan" variant="light" size={38} radius="md" aria-hidden="true">
-                <Search size={20} />
-              </ThemeIcon>
-            </Group>
-            <Text c="dimmed" size="xs" mt="md">
-              Matching current filters
-            </Text>
-          </Paper>
-
-          <Paper withBorder p="md" radius="md">
-            <Group justify="space-between">
-              <div>
-                <Text c="dimmed" tt="uppercase" fw={700} size="xs">
                   Today's Activity
                 </Text>
                 <Text fw={700} size="xl" component="p" aria-live="polite">
@@ -327,47 +272,8 @@ const AuditLogViewer: React.FC = () => {
           </Paper>
         </SimpleGrid>
 
-        {/* Filters Panel - Mantine Paper */}
-        <Paper withBorder p="md" radius="md">
-          <Stack gap="md">
-            <Group grow align="flex-end">
-              <Select
-                label="Action Type"
-                placeholder="All actions"
-                data={actionOptions}
-                value={selectedAction || ''}
-                onChange={(value) => {
-                  setSelectedAction(value || null);
-                  setPage(1);
-                }}
-                clearable
-                searchable
-                aria-label="Filter by action type"
-              />
-              <Select
-                label="Target Type"
-                placeholder="All targets"
-                data={targetTypeOptions}
-                value={selectedTargetType || ''}
-                onChange={(value) => {
-                  setSelectedTargetType(value || null);
-                  setPage(1);
-                }}
-                clearable
-                searchable
-                aria-label="Filter by target type"
-              />
-            </Group>
-            <Group justify="flex-end">
-              <Button onClick={handleClearFilters} variant="subtle" size="sm" aria-label="Clear all filters">
-                Clear All Filters
-              </Button>
-            </Group>
-          </Stack>
-        </Paper>
-
         <ErrorBoundary>
-          {loading && filteredLogs.length === 0 ? (
+          {loading && logs.length === 0 ? (
             <Stack gap="xs">
               <Skeleton height={50} radius="md" />
               <Skeleton height={50} radius="md" />
