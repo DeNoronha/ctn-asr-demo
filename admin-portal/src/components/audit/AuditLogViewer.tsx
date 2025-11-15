@@ -23,7 +23,7 @@ import { useNotification } from '../../contexts/NotificationContext';
 import { AuditAction, type AuditLog, auditLogService } from '../../services/auditLogService';
 import { formatDateTimeGB } from '../../utils/dateFormat';
 import { ErrorBoundary } from '../ErrorBoundary';
-import { Activity, Clock, Download, Filter, FileText, RefreshCw } from '../icons';
+import { Activity, Clock, Download, Search, FileText, RefreshCw } from '../icons';
 import { defaultDataTableProps } from '../shared/DataTableConfig';
 import { PageHeader } from '../shared/PageHeader';
 import './AuditLogViewer.css';
@@ -299,7 +299,7 @@ const AuditLogViewer: React.FC = () => {
                 </Text>
               </div>
               <ThemeIcon color="cyan" variant="light" size={38} radius="md" aria-hidden="true">
-                <Filter size={20} />
+                <Search size={20} />
               </ThemeIcon>
             </Group>
             <Text c="dimmed" size="xs" mt="md">
@@ -387,7 +387,7 @@ const AuditLogViewer: React.FC = () => {
               onPageChange={setPage}
               recordsPerPage={pageSize}
               onRecordsPerPageChange={setPageSize}
-              recordsPerPageOptions={defaultPaginationOptions}
+              recordsPerPageOptions={[25, 50, 100]}
               sortStatus={sortStatus}
               onSortStatusChange={setSortStatus}
               fetching={loading}
