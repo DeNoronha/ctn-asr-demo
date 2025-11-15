@@ -156,8 +156,12 @@ export async function listUsers(): Promise<User[]> {
 
     logger.log(`Fetched ${users.length} users from Microsoft Graph`);
     return users;
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Failed to list users:', error);
+    // Preserve consent errors so the UI can handle them
+    if (error?.message === 'CONSENT_REQUIRED') {
+      throw error;
+    }
     throw new Error('Failed to fetch users from Microsoft Graph');
   }
 }
@@ -199,8 +203,12 @@ export async function inviteUser(
     logger.log('User invited successfully. Role assignment requires additional configuration.');
 
     return mapGraphUser(inviteResponse.invitedUser, roles);
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Failed to invite user:', error);
+    // Preserve consent errors so the UI can handle them
+    if (error?.message === 'CONSENT_REQUIRED') {
+      throw error;
+    }
     throw new Error('Failed to invite user via Microsoft Graph');
   }
 }
@@ -219,8 +227,12 @@ export async function updateUser(
     await client.api(`/users/${userId}`).patch(updates);
 
     logger.log('User updated successfully:', userId);
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Failed to update user:', error);
+    // Preserve consent errors so the UI can handle them
+    if (error?.message === 'CONSENT_REQUIRED') {
+      throw error;
+    }
     throw new Error('Failed to update user via Microsoft Graph');
   }
 }
@@ -243,8 +255,12 @@ export async function deleteUser(userId: string): Promise<void> {
     await client.api(`/users/${userId}`).delete();
 
     logger.log('User deleted successfully:', userId);
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Failed to delete user:', error);
+    // Preserve consent errors so the UI can handle them
+    if (error?.message === 'CONSENT_REQUIRED') {
+      throw error;
+    }
     throw new Error('Failed to delete user via Microsoft Graph');
   }
 }
