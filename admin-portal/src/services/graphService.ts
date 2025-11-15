@@ -21,6 +21,29 @@ export interface User {
 }
 
 /**
+ * Microsoft Graph API scopes required for user management
+ */
+export const GRAPH_SCOPES = ['User.Read.All', 'User.ReadWrite.All', 'Directory.Read.All'];
+
+/**
+ * Request admin consent for Microsoft Graph API scopes
+ * Opens a popup for the user to grant consent
+ */
+export async function requestGraphConsent(): Promise<void> {
+  try {
+    logger.log('Requesting Graph API consent...');
+    await msalInstance.loginPopup({
+      scopes: GRAPH_SCOPES,
+      prompt: 'consent',
+    });
+    logger.log('Graph API consent granted successfully');
+  } catch (error) {
+    logger.error('Failed to obtain Graph API consent:', error);
+    throw new Error('Failed to obtain consent for Microsoft Graph API');
+  }
+}
+
+/**
  * Get authenticated Microsoft Graph client
  */
 async function getGraphClient(): Promise<Client> {
@@ -32,16 +55,28 @@ async function getGraphClient(): Promise<Client> {
 
   const _clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
 
-  const tokenResponse = await msalInstance.acquireTokenSilent({
-    scopes: ['User.Read.All', 'User.ReadWrite.All', 'Directory.Read.All'],
-    account: accounts[0],
-  });
+  try {
+    const tokenResponse = await msalInstance.acquireTokenSilent({
+      scopes: GRAPH_SCOPES,
+      account: accounts[0],
+    });
 
-  return Client.init({
-    authProvider: (done) => {
-      done(null, tokenResponse.accessToken);
-    },
-  });
+    return Client.init({
+      authProvider: (done) => {
+        done(null, tokenResponse.accessToken);
+      },
+    });
+  } catch (error: any) {
+    // Check if this is an interaction required error (consent needed)
+    if (error?.errorCode === 'consent_required' || error?.errorCode === 'interaction_required') {
+      logger.warn('Interaction required for Graph API access. User needs to grant consent.');
+      // Re-throw with a more specific error type
+      const consentError = new Error('CONSENT_REQUIRED');
+      (consentError as any).originalError = error;
+      throw consentError;
+    }
+    throw error;
+  }
 }
 
 /**

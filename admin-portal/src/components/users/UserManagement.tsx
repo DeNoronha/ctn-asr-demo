@@ -5,7 +5,7 @@ import { logger } from '../../utils/logger';
  * System Admins can view and manage all users
  */
 
-import { ActionIcon, Button, Group, Tooltip } from '@mantine/core';
+import { ActionIcon, Alert, Button, Group, Stack, Text, Tooltip } from '@mantine/core';
 import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../../auth/AuthContext';
@@ -40,6 +40,8 @@ const UserManagement: React.FC = () => {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [consentRequired, setConsentRequired] = useState(false);
+  const [consentError, setConsentError] = useState<string | null>(null);
 
   useEffect(() => {
     loadUsers();
@@ -47,6 +49,8 @@ const UserManagement: React.FC = () => {
 
   const loadUsers = async () => {
     setLoading(true);
+    setConsentRequired(false);
+    setConsentError(null);
     try {
       const graphUsers = await graphService.listUsers();
 
@@ -64,10 +68,30 @@ const UserManagement: React.FC = () => {
 
       setUsers(mappedUsers);
       logger.log(`Loaded ${mappedUsers.length} users from Microsoft Graph`);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error loading users:', error);
-      throw error;
+
+      // Check if this is a consent error
+      if (error?.message === 'CONSENT_REQUIRED') {
+        setConsentRequired(true);
+        setConsentError('Administrator consent is required to access Microsoft Graph API for user management.');
+      } else {
+        setConsentError('Failed to load users. Please try again or contact support.');
+      }
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGrantConsent = async () => {
+    try {
+      setLoading(true);
+      await graphService.requestGraphConsent();
+      // After consent is granted, reload users
+      await loadUsers();
+    } catch (error) {
+      logger.error('Failed to grant consent:', error);
+      setConsentError('Failed to grant consent. Please ensure you have administrator privileges.');
       setLoading(false);
     }
   };
@@ -298,13 +322,46 @@ const UserManagement: React.FC = () => {
       <div className="user-management">
         <div className="view-header">
           <PageHeader titleKey="userManagement" />
-          <Button color="blue" onClick={() => setShowInviteDialog(true)}>
+          <Button color="blue" onClick={() => setShowInviteDialog(true)} disabled={consentRequired}>
             <UserPlus size={18} style={{ marginRight: 8 }} />
             Invite User
           </Button>
         </div>
 
-        <LoadingState loading={loading} minHeight={400}>
+        {consentRequired && (
+          <Alert color="orange" title="Microsoft Graph API Consent Required" mb="lg">
+            <Stack gap="md">
+              <Text size="sm">
+                To manage users, this application needs permission to access Microsoft Graph API.
+                These permissions require administrator consent.
+              </Text>
+              <Text size="sm" fw={500}>
+                Required permissions:
+              </Text>
+              <ul style={{ margin: '0', paddingLeft: '20px' }}>
+                <li><Text size="sm">User.Read.All - Read all user profiles</Text></li>
+                <li><Text size="sm">User.ReadWrite.All - Read and write all user profiles</Text></li>
+                <li><Text size="sm">Directory.Read.All - Read directory data</Text></li>
+              </ul>
+              <Button
+                color="blue"
+                onClick={handleGrantConsent}
+                loading={loading}
+                style={{ alignSelf: 'flex-start' }}
+              >
+                <Shield size={18} style={{ marginRight: 8 }} />
+                Grant Admin Consent
+              </Button>
+              {consentError && (
+                <Alert color="red" title="Error" mt="sm">
+                  <Text size="sm">{consentError}</Text>
+                </Alert>
+              )}
+            </Stack>
+          </Alert>
+        )}
+
+        <LoadingState loading={loading && !consentRequired} minHeight={400}>
           <div className="user-stats">
             <div className="stat-item">
               <span className="stat-label">Total Users</span>
