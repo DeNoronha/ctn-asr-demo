@@ -66,6 +66,7 @@ import './functions/ResolveParty';
 
 // Audit Logs
 import './functions/GetAuditLogs';
+import './functions/CreateAuditLog';
 
 // Task Management
 import './functions/getTasks';

@@ -104,7 +104,7 @@ const UserManagement: React.FC = () => {
 
       // Log the action
       if (currentUser) {
-        auditLogService.log({
+        await auditLogService.log({
           action: AuditAction.USER_INVITED,
           userId: currentUser.account.localAccountId,
           userName: currentUser.account.name || '',
@@ -143,7 +143,7 @@ const UserManagement: React.FC = () => {
       // Log the action
       if (currentUser) {
         const user = users.find((u) => u.id === userId);
-        auditLogService.log({
+        await auditLogService.log({
           action: AuditAction.USER_UPDATED,
           userId: currentUser.account.localAccountId,
           userName: currentUser.account.name || '',
@@ -174,7 +174,7 @@ const UserManagement: React.FC = () => {
       // Log the action
       if (currentUser) {
         const user = users.find((u) => u.id === userId);
-        auditLogService.log({
+        await auditLogService.log({
           action: enabled ? AuditAction.USER_ENABLED : AuditAction.USER_DISABLED,
           userId: currentUser.account.localAccountId,
           userName: currentUser.account.name || '',

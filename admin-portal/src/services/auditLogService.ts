@@ -253,10 +253,10 @@ class AuditLogService {
   }
 
   /**
-   * Log an action (deprecated - logs are now created on backend)
-   * Kept for backward compatibility
+   * Log an action by POSTing to the API
+   * Used for operations that happen outside the ASR API (e.g., Microsoft Graph API)
    */
-  log(params: {
+  async log(params: {
     action: AuditAction;
     userId: string;
     userName: string;
@@ -266,9 +266,32 @@ class AuditLogService {
     targetName?: string;
     details: string;
     metadata?: Record<string, any>;
-  }): void {
-    logger.log('[AUDIT] Client-side logging (backend handles persistence):', params);
-    // Note: Actual audit logging happens on backend via auditMiddleware
+  }): Promise<void> {
+    try {
+      const token = await getAccessToken();
+      if (!token) {
+        logger.warn('[AUDIT] Cannot log audit entry - no access token');
+        return;
+      }
+
+      logger.log('[AUDIT] Creating audit log entry:', params.action);
+
+      await axios.post(
+        `${API_BASE_URL}/audit-logs`,
+        params,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      logger.log('[AUDIT] Audit log entry created successfully');
+    } catch (error) {
+      logger.error('[AUDIT] Failed to create audit log entry:', error);
+      // Don't throw - audit logging failures shouldn't break the UI
+    }
   }
 }
 
