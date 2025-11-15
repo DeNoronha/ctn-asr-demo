@@ -48,9 +48,8 @@ const AuditLogViewer: React.FC = () => {
   const loadLogs = useCallback(async () => {
     setLoading(true);
     try {
-      // Load all logs for now (will be filtered client-side)
-      // TODO: Implement server-side filtering in API
-      const allLogs = await auditLogService.getLogs(1, 1000);
+      // Load last 500 logs (more recent entries, better performance)
+      const allLogs = await auditLogService.getLogs(1, 500);
       setLogs(allLogs);
     } catch (error) {
       console.error('Failed to load audit logs:', error);
@@ -126,7 +125,6 @@ const AuditLogViewer: React.FC = () => {
         toggleable: true,
         resizable: true,
         sortable: true,
-        filtering: true,
         render: (record) => {
           const action = record.action;
           // Map actions to Mantine color names
@@ -208,7 +206,6 @@ const AuditLogViewer: React.FC = () => {
         toggleable: true,
         resizable: true,
         sortable: true,
-        filtering: true,
       },
     ],
   });
