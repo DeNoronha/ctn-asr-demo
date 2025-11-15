@@ -5,6 +5,13 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Workspace package-lock.json files (workspaces use root lock file only)
+# Lesson learned: November 15, 2025 - Individual workspace lock files cause OWASP Dependency Check failures
+api/package-lock.json
+admin-portal/package-lock.json
+member-portal/package-lock.json
+packages/*/package-lock.json
+
 # Build outputs (ignored globally)
 dist/
 build/
