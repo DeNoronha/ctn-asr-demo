@@ -142,7 +142,7 @@ export async function listUsers(): Promise<User[]> {
         'mail',
         'accountEnabled',
         'createdDateTime',
-        'signInActivity',
+        // 'signInActivity', // Requires AuditLog.Read.All permission
       ])
       .top(100)
       .get();
