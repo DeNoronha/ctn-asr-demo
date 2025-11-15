@@ -126,94 +126,49 @@ function extractRoles(appRoleAssignments: any[]): UserRole[] {
 }
 
 /**
- * List all users who have roles assigned in the CTN application
- * Uses service principal app role assignments for accurate filtering
+ * List all users in the directory who have CTN app roles assigned
  */
 export async function listUsers(): Promise<User[]> {
   try {
-    logger.log('Fetching CTN users from Microsoft Graph...');
+    logger.log('Fetching users from Microsoft Graph...');
     const client = await getGraphClient();
 
-    const ctnClientId = import.meta.env.VITE_AZURE_CLIENT_ID;
-
-    // Step 1: Find the CTN application's service principal
-    const spResponse = await client
-      .api('/servicePrincipals')
-      .filter(`appId eq '${ctnClientId}'`)
-      .select('id,displayName,appId')
+    const response = await client
+      .api('/users')
+      .select([
+        'id',
+        'displayName',
+        'userPrincipalName',
+        'mail',
+        'accountEnabled',
+        'createdDateTime',
+        'signInActivity', // Requires AuditLog.Read.All delegated permission
+      ])
+      .top(100)
       .get();
 
-    if (!spResponse.value || spResponse.value.length === 0) {
-      logger.error('CTN service principal not found');
-      return [];
-    }
-
-    const servicePrincipalId = spResponse.value[0].id;
-    logger.log(`Found CTN service principal: ${servicePrincipalId}`);
-
-    // Step 2: Get all app role assignments for the CTN application
-    const assignmentsResponse = await client
-      .api(`/servicePrincipals/${servicePrincipalId}/appRoleAssignedTo`)
-      .select('principalId,principalDisplayName,principalType,appRoleId')
-      .get();
-
-    // Step 3: Extract unique user IDs who have role assignments
-    const userIds = new Set<string>();
-    const userRoleMap = new Map<string, any[]>();
-
-    for (const assignment of assignmentsResponse.value) {
-      // Only include user principals (not groups or service principals)
-      if (assignment.principalType === 'User') {
-        userIds.add(assignment.principalId);
-
-        if (!userRoleMap.has(assignment.principalId)) {
-          userRoleMap.set(assignment.principalId, []);
-        }
-        userRoleMap.get(assignment.principalId)?.push(assignment);
-      }
-    }
-
-    logger.log(`Found ${userIds.size} users with CTN role assignments`);
-
-    // Step 4: Fetch user details for each assigned user
     const users: User[] = [];
 
-    for (const userId of Array.from(userIds)) {
+    for (const graphUser of response.value) {
+      // Get app role assignments for this user
       try {
-        const userResponse = await client
-          .api(`/users/${userId}`)
-          .select([
-            'id',
-            'displayName',
-            'userPrincipalName',
-            'mail',
-            'accountEnabled',
-            'createdDateTime',
-            'signInActivity', // Requires AuditLog.Read.All delegated permission
-          ])
-          .get();
-
-        // Get the user's app role assignments to determine their roles
-        const userAssignments = userRoleMap.get(userId) || [];
-
-        // Get full assignment details to extract role names
-        const appRoleResponse = await client
-          .api(`/users/${userId}/appRoleAssignments`)
-          .filter(`resourceId eq '${servicePrincipalId}'`)
-          .get();
+        const appRoleResponse = await client.api(`/users/${graphUser.id}/appRoleAssignments`).get();
 
         const roles = extractRoles(appRoleResponse.value);
 
+        // Only include users who have explicit CTN roles (SystemAdmin, AssociationAdmin, Member)
         if (roles.length > 0) {
-          users.push(mapGraphUser(userResponse, roles));
+          users.push(mapGraphUser(graphUser, roles));
+        } else {
+          logger.log(`Skipping user ${graphUser.userPrincipalName} - no CTN roles found`);
         }
       } catch (error) {
-        logger.warn(`Failed to fetch user ${userId}:`, error);
-        // Continue with other users
+        logger.warn(`Failed to get roles for user ${graphUser.id}:`, error);
+        // Don't include users if we can't determine their roles
       }
     }
 
-    logger.log(`Successfully fetched ${users.length} CTN users from Microsoft Graph`);
+    logger.log(`Fetched ${users.length} users with CTN roles from Microsoft Graph`);
     return users;
   } catch (error: any) {
     logger.error('Failed to list users:', error);
