@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Last Updated:** November 11, 2025
+**Last Updated:** November 16, 2025
 
 ---
 
@@ -314,6 +314,45 @@ git push origin main
 # Full deployment verification after push
 ./scripts/verify-deployment-sync.sh
 ```
+
+### Git Configuration
+
+**ALL commits MUST use the following author information:**
+
+```bash
+Name:  Ramon de Noronha
+Email: ramon@denoronha.consulting
+```
+
+**Setup (required once per machine):**
+```bash
+# Configure git for this repository
+git config user.name "Ramon de Noronha"
+git config user.email "ramon@denoronha.consulting"
+
+# Verify configuration
+git config user.name && git config user.email
+```
+
+**Fixing incorrect commits:**
+```bash
+# Check recent commit authors
+git log -5 --format="%h - %an <%ae> - %s"
+
+# Fix last N commits with wrong author (e.g., N=2)
+GIT_SEQUENCE_EDITOR=: git rebase -i HEAD~2 \
+  --exec "git commit --amend --author='Ramon de Noronha <ramon@denoronha.consulting>' --no-edit"
+
+# Force push corrected commits
+git push --force-with-lease origin main
+```
+
+**Common incorrect emails to watch for:**
+- `ramon@MacBookPro.local` ❌
+- `claude@anthropic.com` ❌
+- Any other variations ❌
+
+**Only `ramon@denoronha.consulting` is correct** ✅
 
 ### Autonomous Operation
 
