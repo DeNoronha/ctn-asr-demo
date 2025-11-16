@@ -119,6 +119,12 @@ async function getCtnServicePrincipalId(client: Client): Promise<string> {
 
   const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
 
+  // Validate client ID is a valid UUID to prevent injection
+  const uuidRegex = /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+  if (!clientId || !uuidRegex.test(clientId)) {
+    throw new Error('Invalid Azure client ID format - must be a valid UUID');
+  }
+
   try {
     // Query for the service principal using the app's client ID
     const response = await client
