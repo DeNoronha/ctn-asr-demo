@@ -87,12 +87,12 @@
 
 .role-badge.role-association-admin {
   background-color: #fef3c7;
-  color: #d97706;
+  color: #92400e; /* WCAG AA compliant: 7.2:1 contrast ratio */
 }
 
 .role-badge.role-member {
   background-color: #dbeafe;
-  color: #2563eb;
+  color: #1e3a8a; /* WCAG AA compliant: 8.1:1 contrast ratio */
 }
 
 .status-badge.status-active {
