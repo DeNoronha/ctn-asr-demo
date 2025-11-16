@@ -4,8 +4,8 @@ import type React from 'react';
 import { useState } from 'react';
 
 // Form label components - reusable helpers for progressive forms
-// biome-ignore lint/a11y/noLabelWithoutControl: Generic label component used with controls throughout the form
 const Label: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => (
+  // biome-ignore lint/a11y/noLabelWithoutControl: Generic label component used with form controls
   <label id={id} className="form-label">
     {children}
   </label>

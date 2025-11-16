@@ -12,18 +12,6 @@ const _API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api
 // Re-export types for backward compatibility
 export type { LegalEntity, LegalEntityContact, Member };
 
-interface MembersResponse {
-  data: Member[];
-  count: number;
-}
-
-interface TokenResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-  scope: string;
-}
-
 // Legacy API - delegates to apiV2
 export const api = {
   async getMembers(

@@ -26,7 +26,6 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
       <span
         className="help-icon"
         data-testid={dataTestId}
-        role="button"
         aria-label="Help information"
         style={{
           color: TEXT_COLORS.info,

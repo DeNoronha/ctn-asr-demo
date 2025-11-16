@@ -221,7 +221,7 @@ interface DocumentVerificationSectionProps {
 }
 
 export const DocumentVerificationSection: React.FC<DocumentVerificationSectionProps> = ({
-  member,
+  member: _member,
   legalEntity,
   onVerificationComplete,
 }) => {

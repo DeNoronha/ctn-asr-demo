@@ -51,8 +51,8 @@ export const StepperForm = <T = Record<string, unknown>>({
   return (
     <div className="stepper-form">
       <Stepper active={currentStep} onStepClick={handleStepClick}>
-        {steps.map((step, index) => (
-          <Stepper.Step key={index} label={step.label} />
+        {steps.map((step) => (
+          <Stepper.Step key={step.label} label={step.label} />
         ))}
       </Stepper>
 

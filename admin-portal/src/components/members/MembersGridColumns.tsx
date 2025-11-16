@@ -72,15 +72,14 @@ export const useMembersGridColumns = ({
       resizable: true,
       sortable: true,
       render: (member) => (
-        <span
+        <output
           className="status-badge"
           style={{ backgroundColor: getStatusColor(member.status) }}
           title={statusTooltips[member.status] || 'Member status'}
-          role="status"
           aria-label={`Status: ${member.status}`}
         >
           {member.status}
-        </span>
+        </output>
       ),
     },
     {
@@ -144,15 +143,14 @@ export const useMembersGridColumns = ({
       sortable: true,
       defaultToggle: false, // Hidden by default
       render: (member) => (
-        <span
+        <output
           className="membership-badge"
           style={{ backgroundColor: getMembershipColor(member.membership_level) }}
           title={membershipTooltips[member.membership_level] || 'Membership level'}
-          role="status"
           aria-label={`Membership: ${member.membership_level}`}
         >
           {member.membership_level}
-        </span>
+        </output>
       ),
     },
   ];

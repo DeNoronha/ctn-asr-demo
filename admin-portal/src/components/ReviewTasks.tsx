@@ -169,7 +169,7 @@ const ReviewTasksComponent: React.FC = () => {
     }
 
     return (
-      <span
+      <output
         className="validation-badge"
         style={{
           backgroundColor: color,
@@ -183,12 +183,11 @@ const ReviewTasksComponent: React.FC = () => {
           fontWeight: 600,
           textTransform: 'uppercase',
         }}
-        role="status"
         aria-label={`Document verification: ${label}`}
       >
         <span aria-hidden="true">{icon}</span>
         {label}
-      </span>
+      </output>
     );
   };
 
@@ -261,9 +260,9 @@ const ReviewTasksComponent: React.FC = () => {
           const flags = record.kvk_mismatch_flags || [];
           return (
             <div>
-              {flags.map((flag: string, idx: number) => (
+              {flags.map((flag: string) => (
                 <span
-                  key={idx}
+                  key={flag}
                   className={`k-badge k-badge-${isEnteredDataMismatch(flag) ? 'error' : 'warning'}`}
                   style={{
                     marginRight: '5px',
@@ -451,9 +450,9 @@ const ReviewTasksComponent: React.FC = () => {
                 <div style={{ marginBottom: '15px' }}>
                   <strong>All Validation Issues:</strong>
                   <ul style={{ marginTop: '5px' }}>
-                    {reviewDialog.task.kvk_mismatch_flags.map((flag, idx) => (
+                    {reviewDialog.task.kvk_mismatch_flags.map((flag) => (
                       <li
-                        key={idx}
+                        key={flag}
                         style={{
                           color: isEnteredDataMismatch(flag) ? '#d32f2f' : 'inherit',
                           fontWeight: isEnteredDataMismatch(flag) ? 'bold' : 'normal',

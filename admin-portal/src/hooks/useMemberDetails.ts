@@ -21,7 +21,6 @@ import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntity, type LegalEntityContact, api } from '../services/api';
 import { type LegalEntityEndpoint, type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
 import { logger } from '../utils/logger';
-import { useApiError } from './useApiError';
 
 interface UseMemberDetailsReturn {
   legalEntity: LegalEntity | null;
@@ -64,7 +63,6 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
   const [hasKvkRegistryData, setHasKvkRegistryData] = useState(false);
   const [loading, setLoading] = useState(false);
   const notification = useNotification();
-  const { handleError } = useApiError();
 
   // Load all data when legalEntityId changes
   useEffect(() => {
