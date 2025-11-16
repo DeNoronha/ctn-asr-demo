@@ -169,6 +169,28 @@
   color: light-dark(#475569, var(--mantine-color-dark-1));
 }
 
+/* Mobile Card Layout */
+.user-cards-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* Margin is handled by individual cards */
+}
+
+.user-card-mobile {
+  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+  transition: box-shadow 0.2s ease;
+}
+
+.user-card-mobile:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure touch targets meet WCAG 2.1 AA (44x44px minimum) */
+.user-card-mobile button {
+  min-height: 44px;
+  min-width: 44px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .user-stats {
@@ -179,5 +201,15 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
+  }
+
+  /* Ensure "Invite User" button is full width on mobile */
+  .view-header > button {
+    width: 100%;
+  }
+
+  /* Hide horizontal scroll on mobile */
+  .mantine-DataTable-root {
+    overflow-x: hidden;
   }
 }

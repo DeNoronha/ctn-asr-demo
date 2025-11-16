@@ -90,7 +90,7 @@ stages:
               PLAYWRIGHT_BASE_URL: $(PlaywrightBaseURL)
               E2E_TEST_USER_EMAIL: $(E2ETestUserEmail)
               E2E_TEST_USER_PASSWORD: $(E2ETestUserPassword)
-            continueOnError: true
+            continueOnError: false
 
           - task: PublishTestResults@2
             displayName: 'Publish test results'

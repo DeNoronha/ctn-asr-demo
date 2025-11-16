@@ -5,7 +5,8 @@ import { logger } from '../../utils/logger';
  * System Admins can view and manage all users
  */
 
-import { ActionIcon, Alert, Button, Group, Paper, Stack, Text, Tooltip } from '@mantine/core';
+import { ActionIcon, Alert, Badge, Button, Group, Paper, Stack, Text, Tooltip } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -45,6 +46,9 @@ const UserManagement: React.FC = () => {
   const [consentRequired, setConsentRequired] = useState(false);
   const [consentError, setConsentError] = useState<string | null>(null);
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
+
+  // Responsive breakpoint detection (768px = tablet breakpoint)
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   useEffect(() => {
     loadUsers();
@@ -199,6 +203,111 @@ const UserManagement: React.FC = () => {
     } finally {
       setActionInProgress(null);
     }
+  };
+
+  // Mobile card view rendering
+  const renderMobileUserCard = (user: User) => {
+    const isCurrentUser = user.id === currentUser?.account.localAccountId;
+    const isActionInProgress = actionInProgress === user.id;
+    const isAnyActionInProgress = actionInProgress !== null;
+
+    const roleColors: Record<UserRole, string> = {
+      [UserRole.SYSTEM_ADMIN]: 'red',
+      [UserRole.ASSOCIATION_ADMIN]: 'yellow',
+      [UserRole.MEMBER]: 'blue',
+    };
+
+    return (
+      <Paper
+        key={user.id}
+        p="md"
+        withBorder
+        radius="md"
+        className="user-card-mobile"
+        style={{ marginBottom: '12px' }}
+      >
+        <Stack gap="sm">
+          {/* Name and Status Row */}
+          <Group justify="space-between" align="flex-start">
+            <div style={{ flex: 1 }}>
+              <Text fw={600} size="md" mb={4}>
+                {user.name}
+              </Text>
+              <Text size="sm" c="dimmed" style={{ wordBreak: 'break-all' }}>
+                {user.email}
+              </Text>
+            </div>
+            <Badge
+              color={user.enabled ? 'green' : 'red'}
+              variant="light"
+              size="sm"
+              style={{ flexShrink: 0 }}
+            >
+              {user.enabled ? 'Active' : 'Disabled'}
+            </Badge>
+          </Group>
+
+          {/* Role Badge */}
+          <Group gap="xs">
+            <Text size="xs" c="dimmed" fw={500}>
+              Role:
+            </Text>
+            <Badge color={roleColors[user.primaryRole]} variant="light" size="sm">
+              {user.primaryRole}
+            </Badge>
+          </Group>
+
+          {/* Login and Created Info */}
+          <Stack gap={4}>
+            <Group gap="xs">
+              <Text size="xs" c="dimmed" fw={500}>
+                Last Login:
+              </Text>
+              <Text size="xs">
+                {user.lastLogin ? formatDateTimeGB(user.lastLogin) : '—'}
+              </Text>
+            </Group>
+            <Group gap="xs">
+              <Text size="xs" c="dimmed" fw={500}>
+                Created:
+              </Text>
+              <Text size="xs">{new Date(user.createdAt).toLocaleDateString('en-GB')}</Text>
+            </Group>
+          </Stack>
+
+          {/* Action Buttons */}
+          <Group gap="sm" mt="xs">
+            <Button
+              variant="light"
+              color="gray"
+              size="sm"
+              leftSection={<Edit2 size={16} />}
+              disabled={isAnyActionInProgress}
+              onClick={() => handleEditUser(user)}
+              aria-label={`Edit ${user.name}`}
+              style={{ flex: 1 }}
+            >
+              Edit
+            </Button>
+            {!isCurrentUser && (
+              <Button
+                variant="light"
+                color="red"
+                size="sm"
+                leftSection={<Trash2 size={16} />}
+                loading={isActionInProgress}
+                disabled={isAnyActionInProgress}
+                onClick={() => handleToggleUserStatus(user.id, !user.enabled)}
+                aria-label={user.enabled ? `Disable ${user.name}` : `Enable ${user.name}`}
+                style={{ flex: 1 }}
+              >
+                {user.enabled ? 'Disable' : 'Enable'}
+              </Button>
+            )}
+          </Group>
+        </Stack>
+      </Paper>
+    );
   };
 
   // mantine-datatable column definitions
@@ -410,15 +519,19 @@ const UserManagement: React.FC = () => {
               </div>
 
               <ErrorBoundary>
-                <DataTable
-                  records={users}
-                  columns={effectiveColumns}
-                  storeColumnsKey="user-management-grid"
-                  withTableBorder
-                  withColumnBorders
-                  striped
-                  highlightOnHover
-                />
+                {isMobile ? (
+                  <div className="user-cards-mobile">{users.map(renderMobileUserCard)}</div>
+                ) : (
+                  <DataTable
+                    records={users}
+                    columns={effectiveColumns}
+                    storeColumnsKey="user-management-grid"
+                    withTableBorder
+                    withColumnBorders
+                    striped
+                    highlightOnHover
+                  />
+                )}
               </ErrorBoundary>
             </>
           ) : (

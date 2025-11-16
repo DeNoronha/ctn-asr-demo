@@ -312,7 +312,8 @@ steps:
     condition: succeeded()
 
   # ========================================
-  # Post-Deployment Verification
+  # Post-Deployment Verification (BLOCKING)
+  # Deployment is NOT successful unless portal returns HTTP 200
   # ========================================
   - script: |
       echo "⏳ Waiting for Static Web App to update..."
@@ -323,9 +324,36 @@ steps:
       PORTAL_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PORTAL_URL")
 
       if [ "$PORTAL_STATUS" != "200" ]; then
-        echo "⚠️  Member Portal returned HTTP $PORTAL_STATUS (may need more time)"
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🚫 DEPLOYMENT FAILED - Portal not accessible"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "Member Portal returned HTTP $PORTAL_STATUS (expected: 200)"
+        echo ""
+        echo "Possible causes:"
+        echo "  1. Deployment incomplete (wait and retry)"
+        echo "  2. SWA CLI deployment failed silently"
+        echo "  3. Azure Static Web App service issue"
+        echo "  4. Build artifacts corrupted or missing"
+        echo ""
+        echo "To diagnose:"
+        echo "  1. Check Azure Portal: calm-pebble-043b2db03"
+        echo "  2. Review SWA CLI deployment logs above"
+        echo "  3. Verify build/ directory was created"
+        echo "  4. Check Azure Static Web Apps status page"
+        echo ""
+        exit 1
       else
         echo "✅ Member Portal is accessible (HTTP 200)"
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "✅ DEPLOYMENT SUCCESSFUL"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "Member Portal: $PORTAL_URL"
+        echo "Front Door URL: https://portal-ctn-dev-fdb5cpeagdendtck.z02.azurefd.net"
+        echo ""
       fi
-    displayName: 'Verify portal deployment'
-    continueOnError: true
+    displayName: 'Verify portal deployment (BLOCKING)'
+    condition: succeeded()
