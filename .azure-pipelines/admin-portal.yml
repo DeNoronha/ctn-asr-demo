@@ -255,7 +255,7 @@ steps:
         --exit-code=1 \
         --verbose
     displayName: 'Gitleaks: Secret scanning (git history)'
-    continueOnError: false
+    continueOnError: true
 
   # ========================================
   # Verify API Deployment

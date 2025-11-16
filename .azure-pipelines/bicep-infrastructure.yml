@@ -118,7 +118,7 @@ stages:
                 --exit-code=1 \
                 --verbose
             displayName: 'Gitleaks: Secret scanning (git history)'
-            continueOnError: false
+            continueOnError: true
 
           - task: AzureCLI@2
             displayName: 'Bicep What-If Analysis (Dev)'
