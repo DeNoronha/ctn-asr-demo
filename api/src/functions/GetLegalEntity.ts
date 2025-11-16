@@ -33,15 +33,46 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
     // Admin users can read any entity (permissions already validated by endpoint wrapper)
     if (hasAnyRole(request, [UserRole.SYSTEM_ADMIN, UserRole.ASSOCIATION_ADMIN])) {
       const result = await pool.query(
-        `SELECT legal_entity_id, party_id, dt_created, dt_modified, created_by, modified_by,
-                is_deleted, primary_legal_name, address_line1, address_line2, postal_code,
-                city, province, country_code, entity_legal_form, registered_at,
-                direct_parent_legal_entity_id, ultimate_parent_legal_entity_id,
-                kvk_document_url, kvk_verification_status, kvk_verified_at, kvk_verified_by,
-                kvk_verification_notes, kvk_extracted_company_name, kvk_extracted_number,
-                kvk_api_response, kvk_mismatch_flags, document_uploaded_at
-         FROM legal_entity
-         WHERE legal_entity_id = $1 AND (is_deleted IS NULL OR is_deleted = FALSE)`,
+        `SELECT le.legal_entity_id, le.party_id, le.dt_created, le.dt_modified, le.created_by, le.modified_by,
+                le.is_deleted, le.primary_legal_name, le.address_line1, le.address_line2, le.postal_code,
+                le.city, le.province, le.country_code, le.entity_legal_form, le.registered_at,
+                le.direct_parent_legal_entity_id, le.ultimate_parent_legal_entity_id,
+                le.kvk_document_url, le.kvk_verification_status, le.kvk_verified_at, le.kvk_verified_by,
+                le.kvk_verification_notes, le.kvk_extracted_company_name, le.kvk_extracted_number,
+                le.kvk_api_response, le.kvk_mismatch_flags, le.document_uploaded_at,
+                COALESCE(
+                  json_agg(
+                    json_build_object(
+                      'legal_entity_reference_id', len.legal_entity_reference_id,
+                      'legal_entity_id', len.legal_entity_id,
+                      'identifier_type', len.identifier_type,
+                      'identifier_value', len.identifier_value,
+                      'country_code', len.country_code,
+                      'registry_name', len.registry_name,
+                      'registry_url', len.registry_url,
+                      'valid_from', len.valid_from,
+                      'valid_to', len.valid_to,
+                      'issued_by', len.issued_by,
+                      'validated_by', len.validated_by,
+                      'validation_status', len.validation_status,
+                      'validation_date', len.validation_date,
+                      'verification_document_url', len.verification_document_url,
+                      'verification_notes', len.verification_notes,
+                      'dt_created', len.dt_created,
+                      'dt_modified', len.dt_modified,
+                      'created_by', len.created_by,
+                      'modified_by', len.modified_by,
+                      'is_deleted', len.is_deleted
+                    ) ORDER BY len.dt_created DESC
+                  ) FILTER (WHERE len.legal_entity_reference_id IS NOT NULL),
+                  '[]'
+                ) as identifiers
+         FROM legal_entity le
+         LEFT JOIN legal_entity_number len
+           ON len.legal_entity_id = le.legal_entity_id
+           AND (len.is_deleted IS NULL OR len.is_deleted = FALSE)
+         WHERE le.legal_entity_id = $1 AND (le.is_deleted IS NULL OR le.is_deleted = FALSE)
+         GROUP BY le.legal_entity_id`,
         [legalEntityId]
       );
 
@@ -52,20 +83,7 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
         };
       }
 
-      // Fetch identifiers for this entity
-      const identifiersResult = await pool.query(
-        `SELECT legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
-                country_code, registry_name, registry_url, valid_from, valid_to, issued_by,
-                validated_by, validation_status, validation_date, verification_document_url,
-                verification_notes, dt_created, dt_modified, created_by, modified_by, is_deleted
-         FROM legal_entity_number
-         WHERE legal_entity_id = $1 AND (is_deleted IS NULL OR is_deleted = FALSE)
-         ORDER BY dt_created DESC`,
-        [legalEntityId]
-      );
-
       const entity = result.rows[0];
-      entity.identifiers = identifiersResult.rows;
 
       // Log successful access
       await logAuditEvent({
@@ -98,13 +116,44 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
               le.direct_parent_legal_entity_id, le.ultimate_parent_legal_entity_id,
               le.kvk_document_url, le.kvk_verification_status, le.kvk_verified_at, le.kvk_verified_by,
               le.kvk_verification_notes, le.kvk_extracted_company_name, le.kvk_extracted_number,
-              le.kvk_api_response, le.kvk_mismatch_flags, le.document_uploaded_at
+              le.kvk_api_response, le.kvk_mismatch_flags, le.document_uploaded_at,
+              COALESCE(
+                json_agg(
+                  json_build_object(
+                    'legal_entity_reference_id', len.legal_entity_reference_id,
+                    'legal_entity_id', len.legal_entity_id,
+                    'identifier_type', len.identifier_type,
+                    'identifier_value', len.identifier_value,
+                    'country_code', len.country_code,
+                    'registry_name', len.registry_name,
+                    'registry_url', len.registry_url,
+                    'valid_from', len.valid_from,
+                    'valid_to', len.valid_to,
+                    'issued_by', len.issued_by,
+                    'validated_by', len.validated_by,
+                    'validation_status', len.validation_status,
+                    'validation_date', len.validation_date,
+                    'verification_document_url', len.verification_document_url,
+                    'verification_notes', len.verification_notes,
+                    'dt_created', len.dt_created,
+                    'dt_modified', len.dt_modified,
+                    'created_by', len.created_by,
+                    'modified_by', len.modified_by,
+                    'is_deleted', len.is_deleted
+                  ) ORDER BY len.dt_created DESC
+                ) FILTER (WHERE len.legal_entity_reference_id IS NOT NULL),
+                '[]'
+              ) as identifiers
        FROM legal_entity le
        JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
+       LEFT JOIN legal_entity_number len
+         ON len.legal_entity_id = le.legal_entity_id
+         AND (len.is_deleted IS NULL OR len.is_deleted = FALSE)
        WHERE le.legal_entity_id = $1
          AND c.email = $2
          AND c.is_active = true
-         AND (le.is_deleted IS NULL OR le.is_deleted = FALSE)`,
+         AND (le.is_deleted IS NULL OR le.is_deleted = FALSE)
+       GROUP BY le.legal_entity_id`,
       [legalEntityId, userEmail]
     );
 
@@ -135,20 +184,7 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
       };
     }
 
-    // Fetch identifiers for this entity
-    const identifiersResult = await pool.query(
-      `SELECT legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
-              country_code, registry_name, registry_url, valid_from, valid_to, issued_by,
-              validated_by, validation_status, validation_date, verification_document_url,
-              verification_notes, dt_created, dt_modified, created_by, modified_by, is_deleted
-       FROM legal_entity_number
-       WHERE legal_entity_id = $1 AND (is_deleted IS NULL OR is_deleted = FALSE)
-       ORDER BY dt_created DESC`,
-      [legalEntityId]
-    );
-
     const entity = result.rows[0];
-    entity.identifiers = identifiersResult.rows;
 
     // Log successful access
     await logAuditEvent({
