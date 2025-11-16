@@ -15,8 +15,8 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 - **Database Expert (DE)** - Schema optimization, query performance, data integrity
 - **DevOps Guardian (DG)** - Pipeline reliability, deployment safety, monitoring
 
-**Total Tasks:** 59 (17 completed ✅, 42 remaining)
-**Critical:** 1 | **High:** 0 | **Medium:** 18 | **Low:** 23
+**Total Tasks:** 59 (21 completed ✅, 38 remaining)
+**Critical:** 1 | **High:** 0 | **Medium:** 14 | **Low:** 23
 
 ---
 
@@ -186,7 +186,7 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 
 ---
 
-## Medium Priority 🟡 (18 tasks - Complete within 1 month)
+## Medium Priority 🟡 (14 tasks - Complete within 1 month)
 
 ### Code Quality (Medium)
 
@@ -914,6 +914,68 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 - **Compliance:** OWASP A03:2021 (Injection)
 - **Testing:** TypeScript compilation passed, all unit tests passed, pre-commit hook passed (7/7 checks)
 
+### TASK-DG-PIPE-002: Make E2E Tests Blocking ✅
+- **Completed:** November 16, 2025 (Batch 5)
+- **Commit:** `225ff58`
+- **Category:** DevOps / CI/CD / Quality
+- **Impact:** Prevents broken UI from being deployed to production
+- **Changes:**
+  - Modified .azure-pipelines/playwright-tests.yml:93
+  - Changed continueOnError from true to false
+  - E2E test failures now block pipeline instead of passing silently
+  - Catches UI regressions before production deployment
+- **Time Savings:** Prevents deployment rollbacks and production incidents
+- **Testing:** YAML syntax validated
+
+### TASK-DG-PIPE-003: Portal Deployment Verification Must Block ✅
+- **Completed:** November 16, 2025 (Batch 5)
+- **Commit:** `225ff58`
+- **Category:** DevOps / CI/CD / Safety
+- **Impact:** Silent deployment failures now properly fail the pipeline
+- **Changes:**
+  - Modified .azure-pipelines/admin-portal.yml:345-389
+  - Modified .azure-pipelines/member-portal.yml:315-359
+  - Removed continueOnError from health check steps
+  - Added exit 1 on verification failure (admin:376, member:346)
+  - Added comprehensive error messaging with 4 diagnostic steps
+  - Added success banner with Direct URL and Front Door URL
+  - Health checks run only after successful deployment (condition: succeeded())
+- **Developer Experience:** Clear error messages explain why deployment was blocked
+- **Testing:** YAML syntax validated
+
+### TASK-DA-009: Responsive Design - User Management Table on Mobile ✅
+- **Completed:** November 16, 2025 (Batch 5)
+- **Commit:** `225ff58`
+- **Category:** UX/UI / Responsive Design
+- **Impact:** Improved mobile UX for system admins managing users
+- **Changes:**
+  - Modified admin-portal/src/components/users/UserManagement.tsx
+  - Modified admin-portal/src/components/users/UserManagement.css
+  - Implemented card-based layout for mobile (breakpoint: 768px)
+  - Added useMediaQuery hook from @mantine/hooks
+  - Desktop: Preserves existing DataTable layout (7 columns, sorting, resizing)
+  - Mobile: Stacked cards showing all data (name, email, role, status, last login, created, actions)
+  - Touch targets meet WCAG 2.1 AA (44x44px minimum)
+  - All functionality preserved (edit, toggle status, invite user)
+- **Accessibility:** WCAG 2.1 Level AA compliant, proper ARIA labels, keyboard navigation
+- **Testing:** TypeScript compilation passed, pre-commit hook passed (7/7 checks)
+
+### TASK-DE-003: Add CHECK Constraints for Enum Fields ✅
+- **Completed:** November 14, 2025 (Pre-existing migration)
+- **Migration:** `030_optional_enum_constraints.sql`
+- **Category:** Database / Data Integrity
+- **Impact:** Database-level validation prevents invalid enum values
+- **Changes:**
+  - Applied 5 CHECK constraints across 3 tables
+  - legal_entity_number: chk_identifier_type_valid (13 values), chk_validation_status_valid (5 values)
+  - legal_entity_endpoint: chk_endpoint_type_valid (5 values), chk_endpoint_verification_status_valid (5 values)
+  - ctn_m2m_credentials: chk_auth_provider_valid (4 values, case-insensitive)
+  - All constraints include comprehensive COMMENT ON CONSTRAINT documentation
+  - Safe migration with DROP CONSTRAINT IF EXISTS for idempotency
+- **Data Protection:** Prevents invalid data from external scripts, SQL injection, or manual operations
+- **Testing:** All constraints verified active in production database
+- **Note:** Task was already completed before Batch 5, discovered during agent review
+
 ---
 
 ## Notes
@@ -927,6 +989,6 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 **Last Agent Review:**
 - Code Reviewer: November 16, 2025 (Batch 4: CR-007)
 - Security Analyst: November 16, 2025 (Batch 4: SEC-004)
-- Design Analyst: November 16, 2025 (Batch 4: DA-007)
-- Database Expert: November 16, 2025 (Batch 2: DE-001, DE-002)
-- DevOps Guardian: November 16, 2025 (Batch 1: DG-PIPE-001)
+- Design Analyst: November 16, 2025 (Batch 5: DA-009)
+- Database Expert: November 16, 2025 (Batch 5: DE-003 verified)
+- DevOps Guardian: November 16, 2025 (Batch 5: DG-PIPE-002, DG-PIPE-003)
