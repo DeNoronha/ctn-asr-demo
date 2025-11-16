@@ -8,6 +8,7 @@ import { logger } from '../../utils/logger';
 import { ActionIcon, Alert, Button, Group, Paper, Stack, Text, Tooltip } from '@mantine/core';
 import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/AuthContext';
 import { RoleGuard } from '../../auth/ProtectedRoute';
 import { UserRole } from '../../auth/authConfig';
@@ -34,6 +35,7 @@ interface User {
 }
 
 const UserManagement: React.FC = () => {
+  const { t } = useTranslation();
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -326,7 +328,7 @@ const UserManagement: React.FC = () => {
           <PageHeader titleKey="userManagement" />
           <Button color="blue" onClick={() => setShowInviteDialog(true)} disabled={consentRequired}>
             <UserPlus size={18} style={{ marginRight: 8 }} />
-            Invite User
+            {t('userManagement.inviteUser')}
           </Button>
         </div>
 
@@ -415,11 +417,10 @@ const UserManagement: React.FC = () => {
                 <UserPlus size={48} style={{ color: 'var(--mantine-color-gray-5)' }} />
                 <div>
                   <Text size="lg" fw={600} mb="xs">
-                    No users found
+                    {t('userManagement.emptyState.title')}
                   </Text>
                   <Text size="sm" c="dimmed" mb="lg">
-                    Get started by inviting users to your organization. Invited users will receive an
-                    email with instructions to join.
+                    {t('userManagement.emptyState.description')}
                   </Text>
                 </div>
                 <Button
@@ -428,7 +429,7 @@ const UserManagement: React.FC = () => {
                   onClick={() => setShowInviteDialog(true)}
                   leftSection={<UserPlus size={18} />}
                 >
-                  Invite Your First User
+                  {t('userManagement.emptyState.inviteFirstUser')}
                 </Button>
               </Stack>
             </Paper>

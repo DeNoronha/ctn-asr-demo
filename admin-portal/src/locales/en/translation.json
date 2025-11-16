@@ -283,5 +283,63 @@
     "notFound": "The requested resource was not found.",
     "validationError": "Please correct the errors in the form.",
     "unknownError": "An unknown error occurred."
+  },
+  "userManagement": {
+    "title": "User Management",
+    "inviteUser": "Invite User",
+    "editUser": "Edit User",
+    "inviteUserTitle": "Invite New User",
+    "editUserTitle": "Edit User: {{userName}}",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "user@example.com",
+    "emailDescription": "User will receive an invitation email",
+    "emailDisabledDescription": "Email cannot be changed",
+    "nameLabel": "Full Name",
+    "namePlaceholder": "John Smith",
+    "nameDisabledDescription": "Name is managed in Azure Entra ID",
+    "roleLabel": "Role",
+    "roles": {
+      "systemAdmin": "System Admin",
+      "associationAdmin": "Association Admin",
+      "member": "Member"
+    },
+    "roleDescriptions": {
+      "systemAdmin": "Full access. Can create and manage Association Admins.",
+      "associationAdmin": "Can manage association data via Admin Portal.",
+      "member": "Limited access via Member Portal for self-service."
+    },
+    "accountEnabledLabel": "Account Enabled",
+    "accountEnabledDescription": "Disabled users cannot log in",
+    "sendInvitation": "Send Invitation",
+    "saveChanges": "Save Changes",
+    "emptyState": {
+      "title": "No users found",
+      "description": "Get started by inviting users to your organization. Invited users will receive an email with instructions to join.",
+      "inviteFirstUser": "Invite Your First User"
+    },
+    "status": {
+      "active": "Active",
+      "disabled": "Disabled"
+    },
+    "tableColumns": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "lastLogin": "Last Login",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "actions": {
+      "edit": "Edit user",
+      "enable": "Enable user",
+      "disable": "Disable user"
+    },
+    "stats": {
+      "totalUsers": "Total Users",
+      "systemAdmins": "System Admins",
+      "associationAdmins": "Association Admins",
+      "members": "Members"
+    }
   }
 }

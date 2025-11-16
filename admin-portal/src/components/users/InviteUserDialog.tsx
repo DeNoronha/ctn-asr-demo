@@ -6,6 +6,7 @@
 import { Button, Group, Modal, Select, Text, TextInput } from '@mantine/core';
 import type React from 'react';
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { UserRole } from '../../auth/authConfig';
 import { UserPlus } from '../icons';
 import './UserManagement.css';
@@ -16,6 +17,7 @@ interface InviteUserDialogProps {
 }
 
 const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ onClose, onInvite }) => {
+  const { t } = useTranslation();
   const emailInputRef = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
@@ -23,9 +25,9 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ onClose, onInvite }
   const [errors, setErrors] = useState<{ email?: string; name?: string }>({});
 
   const roleDescriptions = {
-    [UserRole.SYSTEM_ADMIN]: 'Full access. Can create and manage Association Admins.',
-    [UserRole.ASSOCIATION_ADMIN]: 'Can manage association data via Admin Portal.',
-    [UserRole.MEMBER]: 'Limited access via Member Portal for self-service.',
+    [UserRole.SYSTEM_ADMIN]: t('userManagement.roleDescriptions.systemAdmin'),
+    [UserRole.ASSOCIATION_ADMIN]: t('userManagement.roleDescriptions.associationAdmin'),
+    [UserRole.MEMBER]: t('userManagement.roleDescriptions.member'),
   };
 
   const validateForm = () => {
@@ -52,39 +54,39 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ onClose, onInvite }
   };
 
   return (
-    <Modal opened onClose={onClose} title="Invite New User" size="md" trapFocus>
+    <Modal opened onClose={onClose} title={t('userManagement.inviteUserTitle')} size="md" trapFocus>
       <TextInput
         ref={emailInputRef}
-        label="Email Address"
+        label={t('userManagement.emailLabel')}
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="user@example.com"
+        placeholder={t('userManagement.emailPlaceholder')}
         error={errors.email}
-        description="User will receive an invitation email"
+        description={t('userManagement.emailDescription')}
         required
         mb="md"
         data-autofocus
       />
 
       <TextInput
-        label="Full Name"
+        label={t('userManagement.nameLabel')}
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="John Smith"
+        placeholder={t('userManagement.namePlaceholder')}
         error={errors.name}
         required
         mb="md"
       />
 
       <Select
-        label="Role"
+        label={t('userManagement.roleLabel')}
         value={role}
         onChange={(value) => setRole((value as UserRole) || UserRole.ASSOCIATION_ADMIN)}
         data={[
-          { value: UserRole.ASSOCIATION_ADMIN, label: 'Association Admin' },
-          { value: UserRole.MEMBER, label: 'Member' },
-          { value: UserRole.SYSTEM_ADMIN, label: 'System Admin' },
+          { value: UserRole.ASSOCIATION_ADMIN, label: t('userManagement.roles.associationAdmin') },
+          { value: UserRole.MEMBER, label: t('userManagement.roles.member') },
+          { value: UserRole.SYSTEM_ADMIN, label: t('userManagement.roles.systemAdmin') },
         ]}
         required
         mb="xs"
@@ -95,10 +97,10 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ onClose, onInvite }
 
       <Group justify="flex-end">
         <Button onClick={onClose} variant="default">
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button color="blue" onClick={handleSubmit} leftSection={<UserPlus size={16} />}>
-          Send Invitation
+          {t('userManagement.sendInvitation')}
         </Button>
       </Group>
     </Modal>
