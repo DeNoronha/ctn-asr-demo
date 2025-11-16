@@ -29,7 +29,6 @@ variables:
     value: 'Azure-CTN-ASR-ServiceConnection'
 
 steps:
-  # Checkout with sufficient history for Aikido scanning
   - checkout: self
     fetchDepth: 10
     persistCredentials: true
@@ -39,7 +38,7 @@ steps:
     inputs:
       azureSubscription: $(azureSubscription)
       KeyVaultName: $(keyVaultName)
-      SecretsFilter: 'AIKIDO-CI-API-KEY,AZURE-STATIC-WEB-APPS-API-TOKEN-MEMBER,NVD-API-KEY'
+      SecretsFilter: 'AZURE-STATIC-WEB-APPS-API-TOKEN-MEMBER,NVD-API-KEY'
       RunAsPreJob: true
 
   - task: NodeTool@0
@@ -103,10 +102,6 @@ steps:
       npm run security:summary
     displayName: 'Run npm security audit'
     continueOnError: true
-
-  # Note: Aikido security scanning removed due to free tier limitations
-  # The free tier does not support CI/CD integration features
-  # Security findings can still be viewed at: https://app.aikido.dev
 
   # ========================================
   # Trivy Security Scanning
