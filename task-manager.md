@@ -686,6 +686,18 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
   - Member badge: #2563eb → #1e3a8a (8.1:1 contrast ratio)
 - **Testing:** Visual inspection, WebAIM Contrast Checker verified
 
+### TASK-DA-005: Modal Accessibility - Missing Focus Management ✅
+- **Completed:** November 16, 2025
+- **Commit:** `8695861`
+- **Category:** UX/UI / Accessibility
+- **Impact:** WCAG 2.1 SC 2.4.3 (Focus Order) compliance achieved
+- **Changes:**
+  - Added `trapFocus` prop to InviteUserDialog and EditUserDialog modals
+  - Added refs and `data-autofocus` to first interactive elements
+  - InviteUserDialog: Focus set to email input on open
+  - EditUserDialog: Focus set to role select on open
+- **Testing:** TypeScript compilation passed, pre-commit hook passed (7/7 checks)
+
 ---
 
 ## Notes
