@@ -698,6 +698,18 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
   - EditUserDialog: Focus set to role select on open
 - **Testing:** TypeScript compilation passed, pre-commit hook passed (7/7 checks)
 
+### TASK-CR-001: SQL Injection Risk in Graph API Filter ✅
+- **Completed:** November 16, 2025
+- **Commit:** `58a6e11`
+- **Category:** Code Quality / Security
+- **Impact:** Defense-in-depth protection against OData filter injection
+- **Changes:**
+  - Added UUID regex validation for Azure client ID before using in OData filter
+  - Validates format: /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i
+  - Throws clear error message if client ID is invalid or missing
+  - Prevents potential injection if environment variable is ever compromised
+- **Testing:** TypeScript compilation passed, pre-commit hook passed (7/7 checks)
+
 ---
 
 ## Notes
