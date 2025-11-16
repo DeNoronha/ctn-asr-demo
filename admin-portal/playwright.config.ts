@@ -34,6 +34,7 @@ export default defineConfig({
     ['html', { outputFolder: 'playwright-report' }],
     ['list'],
     ['json', { outputFile: 'playwright-report/results.json' }],
+    ['junit', { outputFile: 'playwright-report/results.xml' }],
   ],
 
   // Shared settings for all projects

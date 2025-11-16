@@ -31,6 +31,7 @@ export default defineConfig({
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'test-results/results.json' }],
+    ['junit', { outputFile: 'playwright-report/results.xml' }],
     ['list'],
   ],
 
