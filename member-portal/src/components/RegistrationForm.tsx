@@ -43,7 +43,7 @@ interface RegistrationFormProps {
 const countries = ['Netherlands', 'Belgium', 'Germany', 'France', 'United Kingdom', 'Other'];
 
 // Validators (Mantine format - return null for valid, error message for invalid)
-const requiredValidator = (value: any) => (value ? null : 'This field is required');
+const requiredValidator = (value: unknown) => (value ? null : 'This field is required');
 
 const emailValidator = (value: string) => {
   if (!value) return 'Email is required';

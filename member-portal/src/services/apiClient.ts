@@ -11,7 +11,8 @@ async function getAccessToken(): Promise<string> {
   }
 
   try {
-    const apiClientId = import.meta.env.VITE_API_CLIENT_ID || 'd3037c11-a541-4f21-8862-8079137a0cde';
+    const apiClientId =
+      import.meta.env.VITE_API_CLIENT_ID || 'd3037c11-a541-4f21-8862-8079137a0cde';
     const response = await msalInstance.acquireTokenSilent({
       account: accounts[0],
       scopes: [`api://${apiClientId}/access_as_user`],

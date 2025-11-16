@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Member Portal Error Detection Test
@@ -8,7 +8,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Member Portal Error Detection', () => {
   const errors: string[] = [];
-  const apiErrors: Array<{ url: string; status: number; statusText: string; response?: any }> = [];
+  const apiErrors: Array<{ url: string; status: number; statusText: string; response?: unknown }> =
+    [];
   const consoleErrors: string[] = [];
 
   test.beforeEach(async ({ page }) => {
@@ -42,19 +43,20 @@ test.describe('Member Portal Error Detection', () => {
             url,
             status,
             statusText: response.statusText(),
-            response: responseBody
+            response: responseBody,
           });
-        } catch (e) {
+        } catch (_e) {
           apiErrors.push({
             url,
             status,
-            statusText: response.statusText()
+            statusText: response.statusText(),
           });
         }
       }
     });
   });
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Comprehensive integration test needs to check many scenarios
   test('should capture all errors during member portal navigation', async ({ page }) => {
     console.log('\n========================================');
     console.log('Member Portal Error Detection Test');
@@ -111,7 +113,7 @@ test.describe('Member Portal Error Detection', () => {
     // Take screenshot of dashboard
     await page.screenshot({
       path: '/Users/ramondenoronha/Dev/DIL/DEV-CTN-ASR/member-portal/e2e/screenshots/dashboard.png',
-      fullPage: true
+      fullPage: true,
     });
     console.log('✅ Dashboard screenshot saved\n');
 
@@ -183,8 +185,8 @@ test.describe('Member Portal Error Detection', () => {
       summary: {
         totalApiErrors: apiErrors.length,
         totalConsoleErrors: consoleErrors.length,
-        totalPageErrors: errors.length
-      }
+        totalPageErrors: errors.length,
+      },
     };
 
     await page.evaluate((report) => {

@@ -58,7 +58,7 @@ test.describe('Member Portal - Security Headers', () => {
 
   test('CSP should not block legitimate resources', async ({ page }) => {
     // Listen for CSP violations
-    const cspViolations: any[] = [];
+    const cspViolations: string[] = [];
     page.on('console', (msg) => {
       if (msg.type() === 'error' && msg.text().includes('Content Security Policy')) {
         cspViolations.push(msg.text());

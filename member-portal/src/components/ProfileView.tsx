@@ -96,8 +96,11 @@ export const ProfileView: React.FC<ComponentProps> = ({
                 <h3>Registry Identifiers</h3>
               </div>
               <div className="registry-identifiers">
-                {memberData.registryIdentifiers.map((identifier, index) => (
-                  <div key={index} className="registry-item">
+                {memberData.registryIdentifiers.map((identifier) => (
+                  <div
+                    key={`${identifier.identifierType}-${identifier.identifierValue}`}
+                    className="registry-item"
+                  >
                     <div className="registry-header">
                       <div className="registry-type-badge">
                         {identifier.identifierType}

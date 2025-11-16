@@ -48,8 +48,8 @@ export const Tokens: React.FC<TokensProps> = ({ apiBaseUrl, getAccessToken }) =>
 
       // Refresh token list
       await loadTokens();
-    } catch (err: any) {
-      setError(err.message || 'Failed to generate token');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to generate token');
     } finally {
       setLoading(false);
     }
@@ -85,7 +85,7 @@ export const Tokens: React.FC<TokensProps> = ({ apiBaseUrl, getAccessToken }) =>
 
       <div className="tokens-header">
         <p>Generate API tokens to authenticate your systems with the CTN network.</p>
-        <button onClick={requestToken} disabled={loading} className="btn-primary">
+        <button type="button" onClick={requestToken} disabled={loading} className="btn-primary">
           {loading ? 'Generating...' : 'Generate New Token'}
         </button>
       </div>
@@ -98,7 +98,7 @@ export const Tokens: React.FC<TokensProps> = ({ apiBaseUrl, getAccessToken }) =>
           <p className="text-warning">⚠️ Copy this token now. You won't be able to see it again!</p>
           <div className="token-display">
             <code>{newToken}</code>
-            <button onClick={copyToken} className="btn-secondary">
+            <button type="button" onClick={copyToken} className="btn-secondary">
               Copy
             </button>
           </div>

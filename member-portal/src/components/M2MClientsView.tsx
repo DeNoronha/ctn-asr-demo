@@ -39,9 +39,9 @@ const AVAILABLE_SCOPES = [
 
 export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
   legalEntityId,
-  legalEntityName,
-  getAccessToken,
-  apiBaseUrl,
+  legalEntityName: _legalEntityName,
+  getAccessToken: _getAccessToken,
+  apiBaseUrl: _apiBaseUrl,
   onNotification,
 }) => {
   const [clients, setClients] = useState<M2MClient[]>([]);
@@ -58,6 +58,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
     scopes: [] as string[],
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legalEntityId is a prop, loadClients is stable
   useEffect(() => {
     loadClients();
   }, [legalEntityId]);
@@ -99,9 +100,12 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
       setShowSecretDialog(true);
 
       loadClients();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating M2M client:', error);
-      onNotification(error.response?.data?.error || 'Failed to create M2M client', 'error');
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? ((error as {response?: {data?: {error?: string}}}).response?.data?.error || 'Failed to create M2M client')
+        : 'Failed to create M2M client';
+      onNotification(errorMessage, 'error');
     } finally {
       setLoading(false);
     }

@@ -6,8 +6,8 @@ import type { ComponentProps, Token } from '../types';
 import { LoadingState } from './shared/LoadingState';
 
 export const TokensView: React.FC<ComponentProps> = ({
-  apiBaseUrl,
-  getAccessToken,
+  apiBaseUrl: _apiBaseUrl,
+  getAccessToken: _getAccessToken,
   onNotification,
 }) => {
   const [tokens, setTokens] = useState<Token[]>([]);

@@ -63,7 +63,25 @@ interface MemberData {
   jobTitle?: string;
 }
 
-function AppContent({}: AppContentProps) {
+interface RegistrationFormData {
+  legalName: string;
+  kvkNumber: string;
+  lei?: string;
+  companyAddress: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  jobTitle: string;
+  membershipType: string;
+  termsAccepted: boolean;
+  gdprConsent: boolean;
+  kvkDocument: File;
+}
+
+function AppContent(_props: AppContentProps) {
   const { instance: msal, accounts } = useMsal();
   const [memberData, setMemberData] = useState<MemberData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -82,24 +100,18 @@ function AppContent({}: AppContentProps) {
     message: string,
     type: 'success' | 'error' | 'warning' | 'info' = 'success'
   ) => {
+    const notificationConfig = {
+      success: { title: 'Success', color: 'green' },
+      error: { title: 'Error', color: 'red' },
+      warning: { title: 'Warning', color: 'yellow' },
+      info: { title: 'Info', color: 'blue' },
+    };
+
+    const config = notificationConfig[type];
     notifications.show({
-      title:
-        type === 'error'
-          ? 'Error'
-          : type === 'warning'
-            ? 'Warning'
-            : type === 'info'
-              ? 'Info'
-              : 'Success',
+      title: config.title,
       message,
-      color:
-        type === 'error'
-          ? 'red'
-          : type === 'warning'
-            ? 'yellow'
-            : type === 'info'
-              ? 'blue'
-              : 'green',
+      color: config.color,
       autoClose: 5000,
     });
   };
@@ -168,39 +180,54 @@ function AppContent({}: AppContentProps) {
     });
   };
 
-  const handleRegistrationSubmit = async (formData: any) => {
+  const buildRegistrationFormData = (formData: RegistrationFormData): FormData => {
+    const formDataToSend = new FormData();
+
+    // String fields
+    const stringFields: (keyof Omit<
+      RegistrationFormData,
+      'termsAccepted' | 'gdprConsent' | 'kvkDocument'
+    >)[] = [
+      'legalName',
+      'kvkNumber',
+      'lei',
+      'companyAddress',
+      'postalCode',
+      'city',
+      'country',
+      'contactName',
+      'contactEmail',
+      'contactPhone',
+      'jobTitle',
+      'membershipType',
+    ];
+
+    for (const field of stringFields) {
+      formDataToSend.append(field, formData[field] || '');
+    }
+
+    // Boolean fields
+    formDataToSend.append('termsAccepted', formData.termsAccepted ? 'true' : 'false');
+    formDataToSend.append('gdprConsent', formData.gdprConsent ? 'true' : 'false');
+
+    // File field
+    if (formData.kvkDocument instanceof File) {
+      formDataToSend.append('kvkDocument', formData.kvkDocument);
+    } else {
+      throw new Error('KvK document is required');
+    }
+
+    return formDataToSend;
+  };
+
+  const handleRegistrationSubmit = async (formData: RegistrationFormData) => {
     setRegistrationLoading(true);
 
     try {
-      // Create FormData for multipart/form-data submission
-      const formDataToSend = new FormData();
-
-      // Append all form fields
-      formDataToSend.append('legalName', formData.legalName || '');
-      formDataToSend.append('kvkNumber', formData.kvkNumber || '');
-      formDataToSend.append('lei', formData.lei || '');
-      formDataToSend.append('companyAddress', formData.companyAddress || '');
-      formDataToSend.append('postalCode', formData.postalCode || '');
-      formDataToSend.append('city', formData.city || '');
-      formDataToSend.append('country', formData.country || '');
-      formDataToSend.append('contactName', formData.contactName || '');
-      formDataToSend.append('contactEmail', formData.contactEmail || '');
-      formDataToSend.append('contactPhone', formData.contactPhone || '');
-      formDataToSend.append('jobTitle', formData.jobTitle || '');
-      formDataToSend.append('membershipType', formData.membershipType || '');
-      formDataToSend.append('termsAccepted', formData.termsAccepted ? 'true' : 'false');
-      formDataToSend.append('gdprConsent', formData.gdprConsent ? 'true' : 'false');
-
-      // Append KvK document file
-      if (formData.kvkDocument && formData.kvkDocument instanceof File) {
-        formDataToSend.append('kvkDocument', formData.kvkDocument);
-      } else {
-        throw new Error('KvK document is required');
-      }
+      const formDataToSend = buildRegistrationFormData(formData);
 
       const response = await fetch(`${process.env.VITE_API_BASE_URL}/register-member`, {
         method: 'POST',
-        // Don't set Content-Type header - browser will set it with boundary for multipart/form-data
         body: formDataToSend,
       });
 
@@ -210,14 +237,11 @@ function AppContent({}: AppContentProps) {
         throw new Error(result.error || 'Registration failed');
       }
 
-      // Show success message with verification status
       const successMessage = result.verificationMessage
         ? `${result.verificationMessage}\n\nApplication ID: ${result.applicationId}\n\nYou will receive a confirmation email shortly.`
         : `Registration submitted successfully! Application ID: ${result.applicationId}. You will receive a confirmation email shortly.`;
 
       showNotification(successMessage, 'success');
-
-      // Close registration modal
       setShowRegistration(false);
     } catch (error) {
       console.error('Registration error:', error);

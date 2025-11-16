@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiClient } from '../services/apiClient';
 import type { ComponentProps, Contact, Endpoint, Token } from '../types';
 import { LoadingState } from './shared/LoadingState';
@@ -19,52 +19,59 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
   const [tierInfo, setTierInfo] = useState<TierInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
+  const loadContacts = async () => {
+    try {
+      const contactsData = await apiClient.member.getContacts();
+      setContacts(contactsData.contacts || []);
+    } catch (error) {
+      console.error('Error loading contacts:', error);
+    }
+  };
 
-  const loadDashboardData = async () => {
+  const loadEndpoints = async () => {
+    try {
+      const endpointsData = await apiClient.member.getEndpoints();
+      setEndpoints(endpointsData.endpoints || []);
+    } catch (error) {
+      console.error('Error loading endpoints:', error);
+    }
+  };
+
+  const loadTokens = async () => {
+    try {
+      const tokensData = await apiClient.member.getTokens();
+      setTokens(tokensData.tokens || []);
+    } catch (error) {
+      console.error('Error loading tokens:', error);
+    }
+  };
+
+  const loadTierInfo = async () => {
+    try {
+      if (memberData.legalEntityId) {
+        const tierData = await apiClient.member.getTierInfo(memberData.legalEntityId);
+        setTierInfo(tierData);
+      }
+    } catch (error) {
+      console.error('Error loading tier info:', error);
+    }
+  };
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Load functions don't need to be dependencies as they don't change
+  const loadDashboardData = useCallback(async () => {
     setLoading(true);
     try {
-      // Load contacts
-      try {
-        const contactsData = await apiClient.member.getContacts();
-        setContacts(contactsData.contacts || []);
-      } catch (error) {
-        console.error('Error loading contacts:', error);
-      }
-
-      // Load endpoints
-      try {
-        const endpointsData = await apiClient.member.getEndpoints();
-        setEndpoints(endpointsData.endpoints || []);
-      } catch (error) {
-        console.error('Error loading endpoints:', error);
-      }
-
-      // Load tokens
-      try {
-        const tokensData = await apiClient.member.getTokens();
-        setTokens(tokensData.tokens || []);
-      } catch (error) {
-        console.error('Error loading tokens:', error);
-      }
-
-      // Load tier information
-      try {
-        if (memberData.legalEntityId) {
-          const tierData = await apiClient.member.getTierInfo(memberData.legalEntityId);
-          setTierInfo(tierData);
-        }
-      } catch (error) {
-        console.error('Error loading tier info:', error);
-      }
+      await Promise.all([loadContacts(), loadEndpoints(), loadTokens(), loadTierInfo()]);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
@@ -227,8 +234,11 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
                   <h4 style={{ fontSize: '0.95rem', margin: 0 }}>Registry Identifiers</h4>
                 </div>
                 <div className="info-grid">
-                  {memberData.registryIdentifiers.slice(0, 4).map((identifier, index) => (
-                    <div key={index} className="info-item">
+                  {memberData.registryIdentifiers.slice(0, 4).map((identifier) => (
+                    <div
+                      key={`${identifier.identifierType}-${identifier.identifierValue}`}
+                      className="info-item"
+                    >
                       <strong>
                         {identifier.identifierType}
                         {identifier.countryCode && ` (${identifier.countryCode})`}:

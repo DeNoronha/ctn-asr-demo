@@ -7,10 +7,16 @@ import type React from 'react';
 import { M2MClientsView } from './M2MClientsView';
 import { TokensView } from './TokensView';
 
+interface MemberData {
+  legal_entity_id?: string;
+  legal_name?: string;
+  [key: string]: unknown;
+}
+
 interface APIAccessViewProps {
   getAccessToken: () => Promise<string>;
   apiBaseUrl: string;
-  memberData: any;
+  memberData: MemberData | null;
   onNotification: (message: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
 }
 
