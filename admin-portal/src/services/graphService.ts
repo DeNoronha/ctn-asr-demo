@@ -126,7 +126,8 @@ function extractRoles(appRoleAssignments: any[]): UserRole[] {
 }
 
 /**
- * List all users in the directory who have CTN app roles assigned
+ * List all users in the directory (excluding service principals and system accounts)
+ * Users without explicit app role assignments are assigned a default Member role
  */
 export async function listUsers(): Promise<User[]> {
   try {
@@ -150,25 +151,33 @@ export async function listUsers(): Promise<User[]> {
     const users: User[] = [];
 
     for (const graphUser of response.value) {
+      // Skip service principals and system accounts
+      const isServicePrincipal = graphUser.userType === 'Guest' && !graphUser.mail;
+      const isSystemAccount = graphUser.userPrincipalName?.endsWith('#EXT#@');
+
+      if (isServicePrincipal || isSystemAccount) {
+        logger.log(`Skipping system account: ${graphUser.userPrincipalName}`);
+        continue;
+      }
+
       // Get app role assignments for this user
       try {
         const appRoleResponse = await client.api(`/users/${graphUser.id}/appRoleAssignments`).get();
-
         const roles = extractRoles(appRoleResponse.value);
 
-        // Only include users who have explicit CTN roles (SystemAdmin, AssociationAdmin, Member)
-        if (roles.length > 0) {
-          users.push(mapGraphUser(graphUser, roles));
-        } else {
-          logger.log(`Skipping user ${graphUser.userPrincipalName} - no CTN roles found`);
-        }
+        // Include user even if they don't have explicit app roles
+        // Default to Member role if no roles assigned
+        const finalRoles = roles.length > 0 ? roles : [UserRole.MEMBER];
+
+        users.push(mapGraphUser(graphUser, finalRoles));
       } catch (error) {
         logger.warn(`Failed to get roles for user ${graphUser.id}:`, error);
-        // Don't include users if we can't determine their roles
+        // Include user with default Member role if role fetch fails
+        users.push(mapGraphUser(graphUser, [UserRole.MEMBER]));
       }
     }
 
-    logger.log(`Fetched ${users.length} users with CTN roles from Microsoft Graph`);
+    logger.log(`Fetched ${users.length} users from Microsoft Graph (excluding service principals)`);
     return users;
   } catch (error: any) {
     logger.error('Failed to list users:', error);
