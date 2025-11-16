@@ -5,7 +5,7 @@ import { logger } from '../../utils/logger';
  * System Admins can view and manage all users
  */
 
-import { ActionIcon, Alert, Button, Group, Stack, Text, Tooltip } from '@mantine/core';
+import { ActionIcon, Alert, Button, Group, Paper, Stack, Text, Tooltip } from '@mantine/core';
 import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../../auth/AuthContext';
@@ -370,42 +370,69 @@ const UserManagement: React.FC = () => {
         )}
 
         <LoadingState loading={loading && !consentRequired} minHeight={400}>
-          <div className="user-stats">
-            <div className="stat-item">
-              <span className="stat-label">Total Users</span>
-              <span className="stat-value">{users.length}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-label">System Admins</span>
-              <span className="stat-value">
-                {users.filter((u) => u.primaryRole === UserRole.SYSTEM_ADMIN).length}
-              </span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-label">Association Admins</span>
-              <span className="stat-value">
-                {users.filter((u) => u.primaryRole === UserRole.ASSOCIATION_ADMIN).length}
-              </span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-label">Members</span>
-              <span className="stat-value">
-                {users.filter((u) => u.primaryRole === UserRole.MEMBER).length}
-              </span>
-            </div>
-          </div>
+          {users.length > 0 ? (
+            <>
+              <div className="user-stats">
+                <div className="stat-item">
+                  <span className="stat-label">Total Users</span>
+                  <span className="stat-value">{users.length}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">System Admins</span>
+                  <span className="stat-value">
+                    {users.filter((u) => u.primaryRole === UserRole.SYSTEM_ADMIN).length}
+                  </span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Association Admins</span>
+                  <span className="stat-value">
+                    {users.filter((u) => u.primaryRole === UserRole.ASSOCIATION_ADMIN).length}
+                  </span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Members</span>
+                  <span className="stat-value">
+                    {users.filter((u) => u.primaryRole === UserRole.MEMBER).length}
+                  </span>
+                </div>
+              </div>
 
-          <ErrorBoundary>
-            <DataTable
-              records={users}
-              columns={effectiveColumns}
-              storeColumnsKey="user-management-grid"
-              withTableBorder
-              withColumnBorders
-              striped
-              highlightOnHover
-            />
-          </ErrorBoundary>
+              <ErrorBoundary>
+                <DataTable
+                  records={users}
+                  columns={effectiveColumns}
+                  storeColumnsKey="user-management-grid"
+                  withTableBorder
+                  withColumnBorders
+                  striped
+                  highlightOnHover
+                />
+              </ErrorBoundary>
+            </>
+          ) : (
+            <Paper p="xl" withBorder radius="md" style={{ textAlign: 'center' }}>
+              <Stack align="center" gap="md">
+                <UserPlus size={48} style={{ color: 'var(--mantine-color-gray-5)' }} />
+                <div>
+                  <Text size="lg" fw={600} mb="xs">
+                    No users found
+                  </Text>
+                  <Text size="sm" c="dimmed" mb="lg">
+                    Get started by inviting users to your organization. Invited users will receive an
+                    email with instructions to join.
+                  </Text>
+                </div>
+                <Button
+                  color="blue"
+                  size="md"
+                  onClick={() => setShowInviteDialog(true)}
+                  leftSection={<UserPlus size={18} />}
+                >
+                  Invite Your First User
+                </Button>
+              </Stack>
+            </Paper>
+          )}
         </LoadingState>
 
         {showInviteDialog && (
