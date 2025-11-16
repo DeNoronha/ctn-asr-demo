@@ -128,9 +128,10 @@ async function getCtnServicePrincipalId(client: Client): Promise<string> {
       .get();
 
     if (response.value && response.value.length > 0) {
-      ctnServicePrincipalId = response.value[0].id;
-      logger.log(`CTN service principal ID: ${ctnServicePrincipalId}`);
-      return ctnServicePrincipalId;
+      const spId = response.value[0].id;
+      ctnServicePrincipalId = spId;
+      logger.log(`CTN service principal ID: ${spId}`);
+      return spId;
     }
 
     throw new Error('CTN application service principal not found');
@@ -239,7 +240,7 @@ export async function listUsers(): Promise<User[]> {
     };
 
     // Fetch full user details for each assigned user
-    for (const [userId, roleNames] of userRoleMap.entries()) {
+    for (const [userId, roleNames] of Array.from(userRoleMap.entries())) {
       try {
         const graphUser = await client
           .api(`/users/${userId}`)
@@ -256,7 +257,7 @@ export async function listUsers(): Promise<User[]> {
 
         // Map role names to UserRole enum
         const roles: UserRole[] = [];
-        for (const roleName of roleNames) {
+        for (const roleName of Array.from(roleNames)) {
           if (roleMap[roleName]) {
             roles.push(roleMap[roleName]);
           }
