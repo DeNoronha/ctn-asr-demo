@@ -5,7 +5,7 @@
 import { Button, Select } from '@mantine/core';
 
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { apiV2 } from '../services/apiV2';
 import { formatDate, formatDateTime } from '../utils/dateFormat';
@@ -58,11 +58,7 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
   const [updating, setUpdating] = useState(false);
   const notification = useNotification();
 
-  useEffect(() => {
-    loadTierInfo();
-  }, [legalEntityId]);
-
-  const loadTierInfo = async () => {
+  const loadTierInfo = useCallback(async () => {
     setLoading(true);
     try {
       const response = await apiV2.getTierInfo(legalEntityId);
@@ -79,7 +75,11 @@ export const TierManagement: React.FC<TierManagementProps> = ({ legalEntityId })
     } finally {
       setLoading(false);
     }
-  };
+  }, [legalEntityId, notification]);
+
+  useEffect(() => {
+    loadTierInfo();
+  }, [loadTierInfo]);
 
   const handleUpdateTier = async () => {
     if (!selectedTier) {

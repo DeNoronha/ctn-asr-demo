@@ -82,11 +82,11 @@ const Settings: React.FC = () => {
           </Text>
 
           <SimpleGrid cols={{ base: 1, sm: 1, md: 3 }} spacing="md">
-            {externalLinks.map((link, index) => {
+            {externalLinks.map((link) => {
               const IconComponent = link.icon;
               return (
                 <Anchor
-                  key={index}
+                  key={link.url}
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"

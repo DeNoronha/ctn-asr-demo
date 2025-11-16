@@ -27,6 +27,129 @@ interface IdentifierDialogProps {
   onIdentifierValueChange: (value: string) => void;
 }
 
+const CountryCodeHint: React.FC<{
+  hasCountryCode: boolean;
+  availableTypesCount: number;
+  countryCode?: string;
+  availableTypes: string[];
+}> = ({ hasCountryCode, availableTypesCount, countryCode, availableTypes }) => {
+  if (!hasCountryCode) {
+    return (
+      <span
+        className="field-hint field-hint-warning"
+        style={{ color: TEXT_COLORS.error, fontWeight: 500 }}
+      >
+        ⚠️ Please enter country code first to see applicable types
+      </span>
+    );
+  }
+
+  if (availableTypesCount === 0) {
+    return (
+      <span
+        className="field-hint field-hint-warning"
+        style={{ color: TEXT_COLORS.error, fontWeight: 500 }}
+      >
+        ⚠️ No identifier types available for country code "{countryCode}"
+      </span>
+    );
+  }
+
+  return (
+    <span className="field-hint" style={{ color: getStatusColor('ACTIVE'), fontWeight: 500 }}>
+      ✓ Available types for {countryCode?.toUpperCase()}: {availableTypes.join(', ')}
+    </span>
+  );
+};
+
+const ValidationFeedback: React.FC<{
+  formData: Partial<LegalEntityIdentifier>;
+  validationError: string;
+  isValidIdentifier: boolean;
+}> = ({ formData, validationError, isValidIdentifier }) => {
+  const validation = formData.identifier_type
+    ? IDENTIFIER_VALIDATION[formData.identifier_type]
+    : null;
+
+  return (
+    <>
+      {validation && (
+        <span
+          id={getDescribedById('identifier_value', 'hint')}
+          className="field-hint validation-hint"
+        >
+          Format: {validation.description} (e.g., {validation.example})
+        </span>
+      )}
+      {validationError && (
+        <span id={getDescribedById('identifier_value', 'error')} className="field-error">
+          {validationError}
+        </span>
+      )}
+      {isValidIdentifier && formData.identifier_value && formData.identifier_type && (
+        <span className="field-success">✓ Valid format</span>
+      )}
+    </>
+  );
+};
+
+const RegistryFields: React.FC<{
+  formData: Partial<LegalEntityIdentifier>;
+  setFormData: (data: Partial<LegalEntityIdentifier>) => void;
+}> = ({ formData, setFormData }) => (
+  <ConditionalField show={!!formData.identifier_type}>
+    <div className="form-field">
+      <TextInput
+        label="Registry Name"
+        value={formData.registry_name || ''}
+        onChange={(e) => setFormData({ ...formData, registry_name: e.target.value })}
+        placeholder="Auto-populated based on identifier type"
+      />
+      <span className="field-hint">Auto-populated when identifier type is selected</span>
+    </div>
+
+    <div className="form-field">
+      <TextInput
+        label="Registry URL"
+        value={formData.registry_url || ''}
+        onChange={(e) => setFormData({ ...formData, registry_url: e.target.value })}
+        placeholder="Auto-populated based on identifier type"
+      />
+      <span className="field-hint">Auto-populated when identifier type is selected</span>
+    </div>
+  </ConditionalField>
+);
+
+const ValidationFields: React.FC<{
+  formData: Partial<LegalEntityIdentifier>;
+  setFormData: (data: Partial<LegalEntityIdentifier>) => void;
+}> = ({ formData, setFormData }) => (
+  <ConditionalField show={!!formData.identifier_value && !!formData.identifier_type}>
+    <div className="form-field">
+      <Select
+        label="Validation Status"
+        data={VALIDATION_STATUSES}
+        value={formData.validation_status}
+        onChange={(value) =>
+          setFormData({
+            ...formData,
+            validation_status: value as LegalEntityIdentifier['validation_status'],
+          })
+        }
+      />
+    </div>
+
+    <div className="form-field">
+      <TextInput
+        label="Verification Notes"
+        value={formData.verification_notes || ''}
+        onChange={(e) => setFormData({ ...formData, verification_notes: e.target.value })}
+        placeholder="Any notes about verification"
+      />
+    </div>
+  </ConditionalField>
+);
+
 export const IdentifierDialog: React.FC<IdentifierDialogProps> = ({
   isOpen,
   editingIdentifier,
@@ -87,29 +210,12 @@ export const IdentifierDialog: React.FC<IdentifierDialogProps> = ({
             disabled={!formData.country_code || availableIdentifierTypes.length === 0}
             placeholder={formData.country_code ? 'Select type...' : 'Enter country code first'}
           />
-          {!formData.country_code ? (
-            <span
-              className="field-hint field-hint-warning"
-              style={{ color: TEXT_COLORS.error, fontWeight: 500 }}
-            >
-              ⚠️ Please enter country code first to see applicable types
-            </span>
-          ) : availableIdentifierTypes.length === 0 ? (
-            <span
-              className="field-hint field-hint-warning"
-              style={{ color: TEXT_COLORS.error, fontWeight: 500 }}
-            >
-              ⚠️ No identifier types available for country code "{formData.country_code}"
-            </span>
-          ) : (
-            <span
-              className="field-hint"
-              style={{ color: getStatusColor('ACTIVE'), fontWeight: 500 }}
-            >
-              ✓ Available types for {formData.country_code.toUpperCase()}:{' '}
-              {availableIdentifierTypes.join(', ')}
-            </span>
-          )}
+          <CountryCodeHint
+            hasCountryCode={!!formData.country_code}
+            availableTypesCount={availableIdentifierTypes.length}
+            countryCode={formData.country_code}
+            availableTypes={availableIdentifierTypes}
+          />
         </div>
 
         <div className="form-field">
@@ -136,71 +242,15 @@ export const IdentifierDialog: React.FC<IdentifierDialogProps> = ({
             }
             {...getValidationProps('identifier_value', validationError || undefined)}
           />
-          {formData.identifier_type && IDENTIFIER_VALIDATION[formData.identifier_type] && (
-            <span
-              id={getDescribedById('identifier_value', 'hint')}
-              className="field-hint validation-hint"
-            >
-              Format: {IDENTIFIER_VALIDATION[formData.identifier_type].description} (e.g.,{' '}
-              {IDENTIFIER_VALIDATION[formData.identifier_type].example})
-            </span>
-          )}
-          {validationError && (
-            <span id={getDescribedById('identifier_value', 'error')} className="field-error">
-              {validationError}
-            </span>
-          )}
-          {isValidIdentifier && formData.identifier_value && formData.identifier_type && (
-            <span className="field-success">✓ Valid format</span>
-          )}
+          <ValidationFeedback
+            formData={formData}
+            validationError={validationError}
+            isValidIdentifier={isValidIdentifier}
+          />
         </div>
 
-        <ConditionalField show={!!formData.identifier_type}>
-          <div className="form-field">
-            <TextInput
-              label="Registry Name"
-              value={formData.registry_name || ''}
-              onChange={(e) => setFormData({ ...formData, registry_name: e.target.value })}
-              placeholder="Auto-populated based on identifier type"
-            />
-            <span className="field-hint">Auto-populated when identifier type is selected</span>
-          </div>
-
-          <div className="form-field">
-            <TextInput
-              label="Registry URL"
-              value={formData.registry_url || ''}
-              onChange={(e) => setFormData({ ...formData, registry_url: e.target.value })}
-              placeholder="Auto-populated based on identifier type"
-            />
-            <span className="field-hint">Auto-populated when identifier type is selected</span>
-          </div>
-        </ConditionalField>
-
-        <ConditionalField show={!!formData.identifier_value && !!formData.identifier_type}>
-          <div className="form-field">
-            <Select
-              label="Validation Status"
-              data={VALIDATION_STATUSES}
-              value={formData.validation_status}
-              onChange={(value) =>
-                setFormData({
-                  ...formData,
-                  validation_status: value as LegalEntityIdentifier['validation_status'],
-                })
-              }
-            />
-          </div>
-
-          <div className="form-field">
-            <TextInput
-              label="Verification Notes"
-              value={formData.verification_notes || ''}
-              onChange={(e) => setFormData({ ...formData, verification_notes: e.target.value })}
-              placeholder="Any notes about verification"
-            />
-          </div>
-        </ConditionalField>
+        <RegistryFields formData={formData} setFormData={setFormData} />
+        <ValidationFields formData={formData} setFormData={setFormData} />
       </div>
 
       <Group mt="xl" justify="flex-end">

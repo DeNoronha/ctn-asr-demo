@@ -369,6 +369,7 @@ export function useIdentifierManagement(
     notification.showSuccess(msg.title);
   }, [identifierToDelete, onIdentifierDelete, notification]);
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Form save logic requires validation checks and conditional API calls
   const handleSave = useCallback(async () => {
     if (!formData.identifier_type || !formData.identifier_value) {
       notification.showError('Please fill in all required fields');
@@ -504,6 +505,7 @@ export function useIdentifierVerification(
     }
   }, [legalEntityId]);
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: LEI fetch requires precondition validation and multiple API response scenarios
   const handleFetchLei = useCallback(async () => {
     const suitableIdentifier = identifiers.find((id) =>
       ['KVK', 'HRB', 'HRA', 'KBO', 'SIREN', 'CRN'].includes(id.identifier_type)
