@@ -15,7 +15,7 @@ import {
   logAuthEvent,
   logSecurityEvent,
 } from '../utils/logger';
-import { TIMEOUTS } from '../config/constants';
+import { TIMEOUTS, URLS } from '../config/constants';
 
 // Azure AD configuration - REQUIRED environment variables
 const AZURE_AD_TENANT_ID = process.env.AZURE_AD_TENANT_ID;
@@ -33,7 +33,7 @@ if (!AZURE_AD_TENANT_ID || !AZURE_AD_CLIENT_ID) {
   );
 }
 
-const JWKS_URI = `https://login.microsoftonline.com/${AZURE_AD_TENANT_ID}/discovery/v2.0/keys`;
+const JWKS_URI = URLS.JWKS_URI_TEMPLATE.replace('{tenantId}', AZURE_AD_TENANT_ID);
 
 // JWKS client for retrieving Azure AD public keys
 const jwksClientInstance = jwksClient({
@@ -199,7 +199,7 @@ export async function validateJwtToken(
       token,
       getKey,
       {
-        issuer: `https://login.microsoftonline.com/${AZURE_AD_TENANT_ID}/v2.0`,
+        issuer: URLS.ISSUER_TEMPLATE.replace('{tenantId}', AZURE_AD_TENANT_ID),
         algorithms: ['RS256'],
       },
       (err, decoded) => {

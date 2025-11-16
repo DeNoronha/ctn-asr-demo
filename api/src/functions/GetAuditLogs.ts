@@ -1,6 +1,6 @@
 import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
-import { getPool } from '../utils/database';
+import { getPool, escapeSqlWildcards } from '../utils/database';
 import { getPaginationParams, createPaginatedResponse } from '../utils/pagination';
 import { handleError } from '../utils/errors';
 
@@ -41,7 +41,7 @@ async function handler(
 
     if (userEmail) {
       conditions.push(`user_email ILIKE $${paramIndex++}`);
-      params.push(`%${userEmail}%`);
+      params.push(`%${escapeSqlWildcards(userEmail)}%`);
     }
 
     if (resourceType) {

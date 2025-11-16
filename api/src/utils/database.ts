@@ -96,3 +96,47 @@ export async function withTransaction<T>(
     client.release();
   }
 }
+
+/**
+ * Escapes SQL wildcard characters in user input for LIKE/ILIKE queries
+ *
+ * **Security Rationale:**
+ * Without escaping, attackers can inject wildcard characters (%, _) to bypass
+ * search filters and enumerate data. For example:
+ * - Searching for "%" returns all records
+ * - Searching for "test_%" finds patterns matching "test" + any character + any suffix
+ * - Searching for "\_" escapes the literal underscore
+ *
+ * This function prevents wildcard injection attacks by escaping:
+ * - Backslash (\) → Double backslash (\\) [must be escaped first]
+ * - Percent (%) → Backslash + percent (\%)
+ * - Underscore (_) → Backslash + underscore (\_)
+ *
+ * **Usage Example:**
+ * ```typescript
+ * const userInput = "test%"; // Malicious input attempting to match all "test*"
+ * const escaped = escapeSqlWildcards(userInput); // Returns "test\\%"
+ * const query = `SELECT * FROM users WHERE email ILIKE $1`;
+ * const params = [`%${escaped}%`]; // Safe: searches for literal "test%" substring
+ * ```
+ *
+ * **PostgreSQL LIKE Escape Behavior:**
+ * By default, PostgreSQL uses backslash as the escape character in LIKE/ILIKE.
+ * After escaping, the query treats %, _, and \ as literal characters, not wildcards.
+ *
+ * **CVSS 4.3 (MEDIUM) - CWE-89: SQL Injection (Wildcard Injection)**
+ * Impact: Data enumeration, bypass of search filtering
+ *
+ * @param input User-provided string to be used in LIKE/ILIKE queries
+ * @returns Escaped string safe for use in LIKE/ILIKE patterns
+ */
+export function escapeSqlWildcards(input: string): string {
+  if (!input || typeof input !== 'string') {
+    return input;
+  }
+
+  return input
+    .replace(/\\/g, '\\\\')  // Escape backslash first (\ → \\)
+    .replace(/%/g, '\\%')    // Escape percent (% → \%)
+    .replace(/_/g, '\\_');   // Escape underscore (_ → \_)
+}

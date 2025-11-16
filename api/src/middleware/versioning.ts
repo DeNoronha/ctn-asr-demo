@@ -6,6 +6,7 @@
 // See: docs/API_VERSIONING_STRATEGY.md
 
 import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { URLS } from '../config/constants';
 
 /**
  * Version information including deprecation and sunset dates
@@ -206,8 +207,8 @@ export function checkVersionSunset(version: string): HttpResponseInit | null {
         message: `API version ${version} is no longer supported`,
         sunset_date: versionInfo?.sunsetDate || 'unknown',
         current_version: getCurrentVersion(),
-        migration_guide: versionInfo?.migrationGuide || 'https://docs.ctn.cloud/api',
-        documentation: 'https://docs.ctn.cloud/api'
+        migration_guide: versionInfo?.migrationGuide || URLS.API_DOCS,
+        documentation: URLS.API_DOCS
       }
     };
   }
@@ -271,7 +272,7 @@ export function addDeprecationNotice(
     message: `API ${version} is deprecated and will be sunset on ${versionInfo.sunsetDate || 'a future date'}`,
     sunset_date: versionInfo.sunsetDate,
     current_version: getCurrentVersion(),
-    migration_guide: versionInfo.migrationGuide || 'https://docs.ctn.cloud/api',
+    migration_guide: versionInfo.migrationGuide || URLS.API_DOCS,
     action_required: 'Please migrate to the current API version before the sunset date'
   };
 
@@ -348,7 +349,7 @@ export function logDeprecatedVersionUsage(
     client_ip: request.headers.get('x-forwarded-for'),
     user_agent: request.headers.get('user-agent'),
     sunset_date: versionInfo?.sunsetDate || 'unknown',
-    migration_guide: versionInfo?.migrationGuide || 'https://docs.ctn.cloud/api',
+    migration_guide: versionInfo?.migrationGuide || URLS.API_DOCS,
     days_until_sunset: versionInfo?.sunsetDate
       ? Math.floor((new Date(versionInfo.sunsetDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
       : null

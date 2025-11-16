@@ -12,7 +12,7 @@ import { handleError } from '../utils/errors';
 import { getRequestId } from '../utils/requestId';
 import { checkRateLimit, RateLimiterType } from './rateLimiter';
 import { validateContentType, ContentTypeValidationResult } from './contentTypeValidator';
-import { CORS } from '../config/constants';
+import { CORS, RATE_LIMIT, DEFAULT_CORS_ORIGINS, STATE_CHANGING_METHODS } from '../config/constants';
 
 // Re-export AuthenticatedRequest for convenience
 export type AuthenticatedRequest = AuthRequest;
@@ -89,25 +89,15 @@ function headersToPlainObject(headers: any): any {
 }
 
 /**
- * Default CORS origins based on environment
- */
-const DEFAULT_CORS_ORIGINS = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'https://calm-tree-03352ba03.1.azurestaticapps.net', // Admin portal
-  'https://calm-pebble-043b2db03.1.azurestaticapps.net', // Member portal
-];
-
-/**
  * Get CORS headers
  */
 function getCorsHeaders(
   origin: string | null,
-  allowedOrigins: string[]
+  allowedOrigins: string[] | readonly string[]
 ): Record<string, string> {
   const headers: Record<string, string> = {
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Request-ID, X-CSRF-Token',
+    'Access-Control-Allow-Methods': CORS.ALLOWED_METHODS,
+    'Access-Control-Allow-Headers': CORS.ALLOWED_HEADERS,
     'Access-Control-Max-Age': CORS.MAX_AGE_HEADER,
   };
 
@@ -388,8 +378,7 @@ export function wrapEndpoint(
       // - Require presence of custom X-CSRF-Token header on POST/PUT/PATCH/DELETE
       // - This header cannot be set by cross-site forms, mitigating CSRF
       // - When/if same-domain cookies are feasible, switch to validateCsrf()
-      const stateChangingMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
-      if (requireAuth && stateChangingMethods.includes(request.method.toUpperCase())) {
+      if (requireAuth && STATE_CHANGING_METHODS.includes(request.method.toUpperCase() as any)) {
         const csrfHeader = authenticatedRequest.headers.get('x-csrf-token');
         if (!csrfHeader) {
           const duration = Date.now() - startTime;
@@ -428,7 +417,7 @@ export function wrapEndpoint(
       if (rateLimitResult && rateLimitResult.allowed) {
         response.headers = {
           ...response.headers,
-          'X-RateLimit-Limit': '100',
+          'X-RateLimit-Limit': RATE_LIMIT.API_POINTS.toString(),
           'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
           'X-RateLimit-Reset': rateLimitResult.resetTime.toISOString(),
         };

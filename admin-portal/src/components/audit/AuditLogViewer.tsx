@@ -55,11 +55,11 @@ const AuditLogViewer: React.FC = () => {
       setLogs(allLogs);
     } catch (error) {
       console.error('Failed to load audit logs:', error);
-      notification.showError('Failed to load audit logs');
+      notification.showError(t('auditLogs.notifications.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [notification]);
+  }, [notification, t]);
 
   useEffect(() => {
     loadLogs();
@@ -98,14 +98,14 @@ const AuditLogViewer: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      notification.showSuccess(`Exported ${logs.length} audit logs successfully`);
+      notification.showSuccess(t('auditLogs.notifications.exportSuccess', { count: logs.length }));
     } catch (error) {
       console.error('Failed to export logs:', error);
-      notification.showError('Failed to export audit logs');
+      notification.showError(t('auditLogs.notifications.exportFailed'));
     } finally {
       setIsExporting(false);
     }
-  }, [logs.length, notification]);
+  }, [logs.length, notification, t]);
 
   // mantine-datatable column definitions
   const { effectiveColumns } = useDataTableColumns<AuditLog>({
@@ -113,7 +113,7 @@ const AuditLogViewer: React.FC = () => {
     columns: [
       {
         accessor: 'timestamp',
-        title: 'Timestamp',
+        title: t('auditLogs.columns.timestamp'),
         width: 180,
         toggleable: true,
         resizable: true,
@@ -122,7 +122,7 @@ const AuditLogViewer: React.FC = () => {
       },
       {
         accessor: 'action',
-        title: 'Action',
+        title: t('auditLogs.columns.action'),
         width: 200,
         toggleable: true,
         resizable: true,
@@ -156,7 +156,7 @@ const AuditLogViewer: React.FC = () => {
       },
       {
         accessor: 'userName',
-        title: 'User',
+        title: t('auditLogs.columns.user'),
         width: 180,
         toggleable: true,
         resizable: true,
@@ -164,7 +164,7 @@ const AuditLogViewer: React.FC = () => {
       },
       {
         accessor: 'userRole',
-        title: 'Role',
+        title: t('auditLogs.columns.role'),
         width: 150,
         toggleable: true,
         resizable: true,
@@ -186,7 +186,7 @@ const AuditLogViewer: React.FC = () => {
       },
       {
         accessor: 'details',
-        title: 'Details',
+        title: t('auditLogs.columns.details'),
         width: 300,
         toggleable: true,
         resizable: true,
@@ -195,7 +195,7 @@ const AuditLogViewer: React.FC = () => {
             <div>{record.details}</div>
             {record.targetName && (
               <div className="target-info">
-                Target: <strong>{record.targetName}</strong>
+                {t('auditLogs.details.targetLabel')} <strong>{record.targetName}</strong>
               </div>
             )}
           </div>
@@ -203,7 +203,7 @@ const AuditLogViewer: React.FC = () => {
       },
       {
         accessor: 'targetType',
-        title: 'Target Type',
+        title: t('auditLogs.columns.targetType'),
         width: 120,
         toggleable: true,
         resizable: true,
@@ -221,11 +221,11 @@ const AuditLogViewer: React.FC = () => {
           <Group>
             <Button onClick={loadLogs} variant="outline" loading={loading}>
               <RefreshCw size={18} style={{ marginRight: 8 }} />
-              Refresh
+              {t('auditLogs.actions.refresh')}
             </Button>
             <Button color="blue" onClick={handleExport} loading={isExporting}>
               <Download size={18} style={{ marginRight: 8 }} />
-              Export Logs
+              {t('auditLogs.actions.exportLogs')}
             </Button>
           </Group>
         </Group>
@@ -236,7 +236,7 @@ const AuditLogViewer: React.FC = () => {
             <Group justify="space-between">
               <div>
                 <Text c="dimmed" tt="uppercase" fw={700} size="xs">
-                  Total Logs
+                  {t('auditLogs.stats.totalLogs')}
                 </Text>
                 <Text fw={700} size="xl" component="p" aria-live="polite">
                   {logs.length}
@@ -247,7 +247,7 @@ const AuditLogViewer: React.FC = () => {
               </ThemeIcon>
             </Group>
             <Text c="dimmed" size="xs" mt="md">
-              All audit entries
+              {t('auditLogs.stats.totalLogsDescription')}
             </Text>
           </Paper>
 
@@ -255,7 +255,7 @@ const AuditLogViewer: React.FC = () => {
             <Group justify="space-between">
               <div>
                 <Text c="dimmed" tt="uppercase" fw={700} size="xs">
-                  Today's Activity
+                  {t('auditLogs.stats.todaysActivity')}
                 </Text>
                 <Text fw={700} size="xl" component="p" aria-live="polite">
                   {todayCount}
@@ -266,7 +266,7 @@ const AuditLogViewer: React.FC = () => {
               </ThemeIcon>
             </Group>
             <Text c="dimmed" size="xs" mt="md">
-              Logs from last 24 hours
+              {t('auditLogs.stats.todaysActivityDescription')}
             </Text>
           </Paper>
         </SimpleGrid>

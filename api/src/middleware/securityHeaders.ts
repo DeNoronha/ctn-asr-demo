@@ -5,6 +5,7 @@
 // Includes CSP, HSTS, X-Frame-Options, etc.
 
 import { HttpResponseInit } from '@azure/functions';
+import { URLS } from '../config/constants';
 
 /**
  * Security header configuration
@@ -41,7 +42,7 @@ function getCSPHeader(): string {
     "style-src 'self' 'unsafe-inline'", // Allow inline styles
     "img-src 'self' data: https:", // Allow images from same origin, data URLs, and HTTPS
     "font-src 'self' data:", // Allow fonts from same origin and data URLs
-    "connect-src 'self' https://login.microsoftonline.com", // Allow API calls to self and Azure AD
+    `connect-src 'self' ${URLS.AZURE_AD_CONNECT}`, // Allow API calls to self and Azure AD
     "frame-ancestors 'none'", // Prevent embedding in iframes (clickjacking protection)
     "base-uri 'self'", // Restrict base URL
     "form-action 'self'", // Restrict form submissions

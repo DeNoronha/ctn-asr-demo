@@ -344,6 +344,32 @@
   },
   "auditLogs": {
     "title": "Audit Logs",
+    "actions": {
+      "refresh": "Refresh",
+      "exportLogs": "Export Logs"
+    },
+    "columns": {
+      "timestamp": "Timestamp",
+      "action": "Action",
+      "user": "User",
+      "role": "Role",
+      "details": "Details",
+      "targetType": "Target Type"
+    },
+    "details": {
+      "targetLabel": "Target:"
+    },
+    "stats": {
+      "totalLogs": "Total Logs",
+      "totalLogsDescription": "All audit entries",
+      "todaysActivity": "Today's Activity",
+      "todaysActivityDescription": "Logs from last 24 hours"
+    },
+    "notifications": {
+      "loadFailed": "Failed to load audit logs",
+      "exportSuccess": "Exported {{count}} audit logs successfully",
+      "exportFailed": "Failed to export audit logs"
+    },
     "emptyState": {
       "title": "No audit logs found",
       "description": "System activity will be recorded here automatically. Audit logs track user actions, access events, and security-relevant operations.",

@@ -7,6 +7,7 @@ import { HttpRequest, InvocationContext } from '@azure/functions';
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 import { AuthenticatedRequest } from './endpointWrapper';
 import { createLogger, logSecurityEvent } from '../utils/logger';
+import { RATE_LIMIT, HTTP_STATUS } from '../config/constants';
 
 /**
  * Rate limiter configurations
@@ -14,37 +15,37 @@ import { createLogger, logSecurityEvent } from '../utils/logger';
 
 // General API rate limiter - 100 requests per minute per user
 const apiRateLimiter = new RateLimiterMemory({
-  points: 100, // Number of requests
-  duration: 60, // Per 60 seconds (1 minute)
-  blockDuration: 60, // Block for 60 seconds if exceeded
+  points: RATE_LIMIT.API_POINTS,
+  duration: RATE_LIMIT.API_DURATION,
+  blockDuration: RATE_LIMIT.API_BLOCK_DURATION,
 });
 
 // Authentication endpoints - stricter limit (10 per minute)
 const authRateLimiter = new RateLimiterMemory({
-  points: 10,
-  duration: 60,
-  blockDuration: 300, // Block for 5 minutes
+  points: RATE_LIMIT.AUTH_POINTS,
+  duration: RATE_LIMIT.AUTH_DURATION,
+  blockDuration: RATE_LIMIT.AUTH_BLOCK_DURATION,
 });
 
 // Token issuance - very strict (5 per hour)
 const tokenRateLimiter = new RateLimiterMemory({
-  points: 5,
-  duration: 3600, // Per hour
-  blockDuration: 3600, // Block for 1 hour
+  points: RATE_LIMIT.TOKEN_POINTS,
+  duration: RATE_LIMIT.TOKEN_DURATION,
+  blockDuration: RATE_LIMIT.TOKEN_BLOCK_DURATION,
 });
 
 // Failed authentication attempts - by IP (5 per hour)
 const failedAuthRateLimiter = new RateLimiterMemory({
-  points: 5,
-  duration: 3600,
-  blockDuration: 3600,
+  points: RATE_LIMIT.FAILED_AUTH_POINTS,
+  duration: RATE_LIMIT.FAILED_AUTH_DURATION,
+  blockDuration: RATE_LIMIT.FAILED_AUTH_BLOCK_DURATION,
 });
 
 // File upload endpoints - 20 per hour
 const uploadRateLimiter = new RateLimiterMemory({
-  points: 20,
-  duration: 3600,
-  blockDuration: 1800, // Block for 30 minutes
+  points: RATE_LIMIT.UPLOAD_POINTS,
+  duration: RATE_LIMIT.UPLOAD_DURATION,
+  blockDuration: RATE_LIMIT.UPLOAD_BLOCK_DURATION,
 });
 
 /**
@@ -182,7 +183,7 @@ export async function checkRateLimit(
         remaining: 0,
         resetTime,
         response: {
-          status: 429,
+          status: HTTP_STATUS.TOO_MANY_REQUESTS,
           headers: {
             'Content-Type': 'application/json',
             'Retry-After': retryAfter.toString(),
@@ -264,7 +265,7 @@ export function addRateLimitHeaders(
 export async function penalizeFailedAttempt(
   request: HttpRequest | AuthenticatedRequest,
   context: InvocationContext,
-  points: number = 2
+  points: number = RATE_LIMIT.PENALTY_POINTS
 ): Promise<void> {
   const key = getRateLimitKey(request, context);
 
