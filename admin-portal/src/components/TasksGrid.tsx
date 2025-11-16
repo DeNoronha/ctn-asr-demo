@@ -12,13 +12,15 @@ import {
 import { DatePickerInput } from '@mantine/dates';
 import { IconCheck, IconEdit, IconEye } from '@tabler/icons-react';
 import { DataTable, useDataTableColumns } from 'mantine-datatable';
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { formatDate } from '../utils/dateUtils';
-import { logger } from '../utils/logger';
 import { defaultDataTableProps } from './shared/DataTableConfig';
 import { PageHeader } from './shared/PageHeader';
 import './TasksGrid.css';
-import { type Application, apiV2 } from '../services/apiV2';
+import { useReviewTasks } from '../hooks/useReviewTasks';
+import { useTaskDialogs } from '../hooks/useTaskDialogs';
+import { useTaskManagement } from '../hooks/useTaskManagement';
+import type { Application } from '../services/apiV2';
 import { ErrorBoundary } from './ErrorBoundary';
 import { LoadingState } from './shared/LoadingState';
 
@@ -51,31 +53,13 @@ interface ReviewTask {
   document_uploaded_at: string;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api';
-
 const TasksGrid: React.FC = () => {
-  const [tasks, setTasks] = useState<AdminTask[]>([]);
-  const [reviewTasks, setReviewTasks] = useState<ReviewTask[]>([]);
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [_loading, setLoading] = useState(true);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showReviewDialog, setShowReviewDialog] = useState(false);
-  const [showApplicationDialog, setShowApplicationDialog] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<AdminTask | null>(null);
-  const [selectedReviewTask, setSelectedReviewTask] = useState<ReviewTask | null>(null);
-  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
-  const [applicationReviewNotes, setApplicationReviewNotes] = useState('');
   const [activeTab, setActiveTab] = useState<string | null>('my-tasks');
 
-  const [formData, setFormData] = useState({
-    task_type: 'other' as string,
-    title: '',
-    description: '',
-    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
-    assigned_to_email: '',
-    due_date: null as Date | null,
-  });
+  // Use custom hooks for state management
+  const taskManagement = useTaskManagement();
+  const reviewTasksState = useReviewTasks();
+  const dialogs = useTaskDialogs();
 
   const taskTypeOptions = [
     { label: 'KvK Verification', value: 'kvk_verification' },
@@ -104,220 +88,83 @@ const TasksGrid: React.FC = () => {
     { text: 'Cancelled', value: 'cancelled' },
   ];
 
+  // Load data on mount
   useEffect(() => {
-    loadTasks();
-    loadReviewTasks();
-    loadApplications();
+    taskManagement.loadTasks();
+    reviewTasksState.loadReviewTasks();
+    reviewTasksState.loadApplications();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loadTasks = useCallback(async () => {
-    setLoading(true);
-    try {
-      logger.log('TasksGrid: Fetching tasks from API...');
-      const response = await apiV2.getAdminTasks();
-      logger.log(`TasksGrid: Loaded ${response.tasks.length} tasks`);
-      setTasks(response.tasks);
-    } catch (error) {
-      logger.error('Error loading tasks:', error);
-      setTasks([]);
-    } finally {
-      setLoading(false);
+  // Handler wrappers that integrate with dialogs
+  const handleCreateTask = useCallback(async () => {
+    const success = await taskManagement.handleCreate();
+    if (success) {
+      dialogs.closeCreateDialog();
     }
-  }, []);
+  }, [taskManagement, dialogs]);
 
-  const loadReviewTasks = useCallback(async () => {
-    try {
-      logger.log('TasksGrid: Fetching review tasks from API...');
-      const response = await apiV2.getKvkReviewTasks();
-      logger.log(`TasksGrid: Loaded ${response.length} review tasks`, response);
-      setReviewTasks(response);
-    } catch (error: unknown) {
-      logger.error('TasksGrid: Error loading review tasks:', error);
+  const handleUpdateTask = useCallback(async () => {
+    const success = await taskManagement.handleUpdate();
+    if (success) {
+      dialogs.closeEditDialog();
     }
-  }, []);
+  }, [taskManagement, dialogs]);
 
-  const loadApplications = useCallback(async () => {
-    try {
-      logger.log('TasksGrid: Fetching applications...');
-      const response = await apiV2.getApplications('pending');
-      logger.log(`TasksGrid: Loaded ${response.data.length} applications`, response.data);
-      setApplications(response.data);
-    } catch (error: unknown) {
-      logger.error('TasksGrid: Error loading applications:', error);
-    }
-  }, []);
-
-  const resetForm = useCallback(() => {
-    setFormData({
-      task_type: 'other',
-      title: '',
-      description: '',
-      priority: 'medium',
-      assigned_to_email: '',
-      due_date: null,
-    });
-  }, []);
-
-  const handleCreate = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/v1/admin/tasks`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          due_date: formData.due_date ? formData.due_date.toISOString() : undefined,
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to create task');
-
-      setShowCreateDialog(false);
-      resetForm();
-      loadTasks();
-    } catch (error) {
-      logger.error('Error creating task:', error);
-      alert('Failed to create task');
-    }
-  }, [formData, resetForm, loadTasks]);
-
-  const handleUpdate = useCallback(
-    async (status?: string) => {
-      if (!selectedTask) return;
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/v1/admin/tasks/${selectedTask.task_id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: formData.title,
-            description: formData.description,
-            priority: formData.priority,
-            status: status || selectedTask.status,
-            assigned_to_email: formData.assigned_to_email,
-            due_date: formData.due_date ? formData.due_date.toISOString() : undefined,
-          }),
-        });
-
-        if (!response.ok) throw new Error('Failed to update task');
-
-        setShowEditDialog(false);
-        setSelectedTask(null);
-        resetForm();
-        loadTasks();
-      } catch (error) {
-        logger.error('Error updating task:', error);
-        alert('Failed to update task');
-      }
+  const handleEditDialogOpen = useCallback(
+    (task: AdminTask) => {
+      taskManagement.populateFormWithTask(task);
+      dialogs.openEditDialog(task);
     },
-    [selectedTask, formData, resetForm, loadTasks]
-  );
-
-  const handleCompleteTask = useCallback(
-    async (taskId: string) => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/v1/admin/tasks/${taskId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'completed' }),
-        });
-
-        if (!response.ok) throw new Error('Failed to complete task');
-
-        loadTasks();
-      } catch (error) {
-        logger.error('Error completing task:', error);
-        alert('Failed to complete task');
-      }
-    },
-    [loadTasks]
+    [taskManagement, dialogs]
   );
 
   const handleReviewDecision = useCallback(
     async (decision: 'approve' | 'reject', notes?: string) => {
-      if (!selectedReviewTask) return;
+      if (!dialogs.selectedReviewTask) return;
 
-      try {
-        await apiV2.reviewKvkVerification({
-          legal_entity_id: selectedReviewTask.legal_entity_id,
-          decision,
-          reviewer_notes: notes || '',
-        });
+      const success = await reviewTasksState.handleReviewDecision(
+        dialogs.selectedReviewTask.legal_entity_id,
+        decision,
+        notes
+      );
 
-        setShowReviewDialog(false);
-        setSelectedReviewTask(null);
-        loadReviewTasks();
-      } catch (error) {
-        logger.error('Error submitting review:', error);
-        alert('Failed to submit review decision');
+      if (success) {
+        dialogs.closeReviewDialog();
       }
     },
-    [selectedReviewTask, loadReviewTasks]
+    [dialogs, reviewTasksState]
   );
 
-  const openReviewDialog = useCallback((task: ReviewTask) => {
-    setSelectedReviewTask(task);
-    setShowReviewDialog(true);
-  }, []);
+  const handleApplicationApprove = useCallback(async () => {
+    if (!dialogs.selectedApplication) return;
 
-  const openEditDialog = useCallback((task: AdminTask) => {
-    setSelectedTask(task);
-    setFormData({
-      task_type: task.task_type,
-      title: task.title,
-      description: task.description,
-      priority: task.priority,
-      assigned_to_email: task.assigned_to_email || '',
-      due_date: task.due_date ? new Date(task.due_date) : null,
-    });
-    setShowEditDialog(true);
-  }, []);
+    const success = await reviewTasksState.handleApplicationReview(
+      dialogs.selectedApplication.application_id,
+      'approve',
+      dialogs.applicationReviewNotes
+    );
 
-  const openApplicationDialog = useCallback((application: Application) => {
-    setSelectedApplication(application);
-    setApplicationReviewNotes('');
-    setShowApplicationDialog(true);
-  }, []);
-
-  const handleApproveApplication = useCallback(async () => {
-    if (!selectedApplication) return;
-
-    try {
-      logger.log('TasksGrid: Approving application:', selectedApplication.application_id);
-      await apiV2.approveApplication(selectedApplication.application_id, applicationReviewNotes);
-      logger.log('TasksGrid: Application approved successfully');
-      setShowApplicationDialog(false);
-      setSelectedApplication(null);
-      setApplicationReviewNotes('');
-      loadApplications();
-    } catch (error) {
-      logger.error('TasksGrid: Error approving application:', error);
-      alert('Failed to approve application. Please try again.');
+    if (success) {
+      dialogs.closeApplicationDialog();
     }
-  }, [selectedApplication, applicationReviewNotes, loadApplications]);
+  }, [dialogs, reviewTasksState]);
 
-  const handleRejectApplication = useCallback(async () => {
-    if (!selectedApplication) return;
+  const handleApplicationReject = useCallback(async () => {
+    if (!dialogs.selectedApplication) return;
 
-    if (!applicationReviewNotes.trim()) {
-      alert('Please provide review notes for rejection.');
-      return;
+    const success = await reviewTasksState.handleApplicationReview(
+      dialogs.selectedApplication.application_id,
+      'reject',
+      dialogs.applicationReviewNotes
+    );
+
+    if (success) {
+      dialogs.closeApplicationDialog();
     }
+  }, [dialogs, reviewTasksState]);
 
-    try {
-      logger.log('TasksGrid: Rejecting application:', selectedApplication.application_id);
-      await apiV2.rejectApplication(selectedApplication.application_id, applicationReviewNotes);
-      logger.log('TasksGrid: Application rejected successfully');
-      setShowApplicationDialog(false);
-      setSelectedApplication(null);
-      setApplicationReviewNotes('');
-      loadApplications();
-    } catch (error) {
-      logger.error('TasksGrid: Error rejecting application:', error);
-      alert('Failed to reject application. Please try again.');
-    }
-  }, [selectedApplication, applicationReviewNotes, loadApplications]);
-
+  // Utility functions
   const formatTaskDate = useCallback((dateString?: string) => {
     if (!dateString) return 'N/A';
     return formatDate(dateString);
@@ -329,6 +176,13 @@ const TasksGrid: React.FC = () => {
     }
     return new Date(task.due_date) < new Date();
   }, []);
+
+  // Task counts
+  const pendingCount = taskManagement.tasks.filter((t) => t.status === 'pending').length;
+  const inProgressCount = taskManagement.tasks.filter((t) => t.status === 'in_progress').length;
+  const overdueCount = taskManagement.tasks.filter((t) => isOverdue(t)).length;
+  const reviewCount = reviewTasksState.reviewTasks.length;
+  const applicationsCount = reviewTasksState.applications.length;
 
   // Column definitions for "My Tasks" grid using mantine-datatable
   const { effectiveColumns: tasksEffectiveColumns } = useDataTableColumns<AdminTask>({
@@ -432,7 +286,7 @@ const TasksGrid: React.FC = () => {
                 color="gray"
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
-                  openEditDialog(task);
+                  handleEditDialogOpen(task);
                 }}
               >
                 <IconEdit size={16} />
@@ -445,7 +299,7 @@ const TasksGrid: React.FC = () => {
                   color="green"
                   onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
-                    handleCompleteTask(task.task_id);
+                    taskManagement.handleCompleteTask(task.task_id);
                   }}
                 >
                   <IconCheck size={16} />
@@ -523,7 +377,7 @@ const TasksGrid: React.FC = () => {
                 color="blue"
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
-                  openReviewDialog(task);
+                  dialogs.openReviewDialog(task);
                 }}
               >
                 <IconEye size={16} />
@@ -604,7 +458,7 @@ const TasksGrid: React.FC = () => {
                 color="blue"
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
-                  openApplicationDialog(app);
+                  dialogs.openApplicationDialog(app);
                 }}
               >
                 <IconEye size={16} />
@@ -616,18 +470,11 @@ const TasksGrid: React.FC = () => {
     ],
   });
 
-  // Count tasks by status
-  const pendingCount = tasks.filter((t) => t.status === 'pending').length;
-  const inProgressCount = tasks.filter((t) => t.status === 'in_progress').length;
-  const overdueCount = tasks.filter((t) => isOverdue(t)).length;
-  const reviewCount = reviewTasks.length;
-  const applicationsCount = applications.length;
-
   return (
     <div className="tasks-grid">
       <div className="grid-header">
         <PageHeader titleKey="tasks" />
-        <Button leftSection="plus" color="blue" onClick={() => setShowCreateDialog(true)}>
+        <Button leftSection="plus" color="blue" onClick={dialogs.openCreateDialog}>
           New Task
         </Button>
       </div>
@@ -664,13 +511,16 @@ const TasksGrid: React.FC = () => {
 
         <Tabs.Panel value="my-tasks" pt="md">
           <div className="grid-toolbar-info" style={{ marginBottom: '10px' }}>
-            Total Tasks: {tasks.length}
+            Total Tasks: {taskManagement.tasks.length}
           </div>
           <ErrorBoundary>
-            <LoadingState loading={_loading && tasks.length === 0} minHeight={400}>
+            <LoadingState
+              loading={taskManagement.loading && taskManagement.tasks.length === 0}
+              minHeight={400}
+            >
               <DataTable
                 {...defaultDataTableProps}
-                records={tasks}
+                records={taskManagement.tasks}
                 columns={tasksEffectiveColumns}
                 storeColumnsKey="tasks-grid"
               />
@@ -680,13 +530,16 @@ const TasksGrid: React.FC = () => {
 
         <Tabs.Panel value="verify" pt="md">
           <div className="grid-toolbar-info" style={{ marginBottom: '10px' }}>
-            Total Reviews: {reviewTasks.length}
+            Total Reviews: {reviewTasksState.reviewTasks.length}
           </div>
           <ErrorBoundary>
-            <LoadingState loading={_loading && reviewTasks.length === 0} minHeight={400}>
+            <LoadingState
+              loading={taskManagement.loading && reviewTasksState.reviewTasks.length === 0}
+              minHeight={400}
+            >
               <DataTable
                 {...defaultDataTableProps}
-                records={reviewTasks}
+                records={reviewTasksState.reviewTasks}
                 columns={reviewEffectiveColumns}
                 storeColumnsKey="review-tasks-grid"
               />
@@ -696,13 +549,16 @@ const TasksGrid: React.FC = () => {
 
         <Tabs.Panel value="applications" pt="md">
           <div className="grid-toolbar-info" style={{ marginBottom: '10px' }}>
-            Total Applications: {applications.length}
+            Total Applications: {reviewTasksState.applications.length}
           </div>
           <ErrorBoundary>
-            <LoadingState loading={_loading && applications.length === 0} minHeight={400}>
+            <LoadingState
+              loading={taskManagement.loading && reviewTasksState.applications.length === 0}
+              minHeight={400}
+            >
               <DataTable
                 {...defaultDataTableProps}
-                records={applications}
+                records={reviewTasksState.applications}
                 columns={applicationsEffectiveColumns}
                 storeColumnsKey="applications-grid"
               />
@@ -713,8 +569,8 @@ const TasksGrid: React.FC = () => {
 
       {/* Create Dialog */}
       <Modal
-        opened={showCreateDialog}
-        onClose={() => setShowCreateDialog(false)}
+        opened={dialogs.showCreateDialog}
+        onClose={dialogs.closeCreateDialog}
         title="Create Task"
         size="lg"
         trapFocus
@@ -724,16 +580,20 @@ const TasksGrid: React.FC = () => {
             <Select
               label="Task Type"
               data={taskTypeOptions}
-              value={formData.task_type}
-              onChange={(value) => setFormData({ ...formData, task_type: value || '' })}
+              value={taskManagement.formData.task_type}
+              onChange={(value) =>
+                taskManagement.setFormData({ ...taskManagement.formData, task_type: value || '' })
+              }
             />
           </div>
 
           <div className="form-field">
             <TextInput
               label="Title"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              value={taskManagement.formData.title}
+              onChange={(e) =>
+                taskManagement.setFormData({ ...taskManagement.formData, title: e.target.value })
+              }
               placeholder="Task title"
             />
           </div>
@@ -741,8 +601,13 @@ const TasksGrid: React.FC = () => {
           <div className="form-field">
             <Textarea
               label="Description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              value={taskManagement.formData.description}
+              onChange={(e) =>
+                taskManagement.setFormData({
+                  ...taskManagement.formData,
+                  description: e.target.value,
+                })
+              }
               placeholder="Task description..."
               rows={4}
             />
@@ -752,10 +617,10 @@ const TasksGrid: React.FC = () => {
             <Select
               label="Priority"
               data={priorityOptions}
-              value={formData.priority}
+              value={taskManagement.formData.priority}
               onChange={(value) =>
-                setFormData({
-                  ...formData,
+                taskManagement.setFormData({
+                  ...taskManagement.formData,
                   priority: (value as 'low' | 'medium' | 'high' | 'urgent') || 'medium',
                 })
               }
@@ -765,8 +630,13 @@ const TasksGrid: React.FC = () => {
           <div className="form-field">
             <TextInput
               label="Assign To (Email)"
-              value={formData.assigned_to_email}
-              onChange={(e) => setFormData({ ...formData, assigned_to_email: e.target.value })}
+              value={taskManagement.formData.assigned_to_email}
+              onChange={(e) =>
+                taskManagement.setFormData({
+                  ...taskManagement.formData,
+                  assigned_to_email: e.target.value,
+                })
+              }
               placeholder="admin@ctn.nl"
             />
           </div>
@@ -774,9 +644,12 @@ const TasksGrid: React.FC = () => {
           <div className="form-field">
             <DatePickerInput
               label="Due Date"
-              value={formData.due_date}
+              value={taskManagement.formData.due_date}
               onChange={(value) =>
-                setFormData({ ...formData, due_date: value ? new Date(value) : null })
+                taskManagement.setFormData({
+                  ...taskManagement.formData,
+                  due_date: value ? new Date(value) : null,
+                })
               }
               valueFormat="DD/MM/YYYY"
             />
@@ -784,10 +657,10 @@ const TasksGrid: React.FC = () => {
         </div>
 
         <Group mt="xl" justify="flex-end">
-          <Button onClick={() => setShowCreateDialog(false)} variant="default">
+          <Button onClick={dialogs.closeCreateDialog} variant="default">
             Cancel
           </Button>
-          <Button color="blue" onClick={handleCreate}>
+          <Button color="blue" onClick={handleCreateTask}>
             Create Task
           </Button>
         </Group>
@@ -795,28 +668,38 @@ const TasksGrid: React.FC = () => {
 
       {/* Edit Dialog */}
       <Modal
-        opened={showEditDialog && !!selectedTask}
-        onClose={() => setShowEditDialog(false)}
+        opened={dialogs.showEditDialog && !!dialogs.selectedTask}
+        onClose={dialogs.closeEditDialog}
         title="Edit Task"
         size="lg"
         trapFocus
       >
-        {selectedTask && (
+        {dialogs.selectedTask && (
           <>
             <div className="dialog-content">
               <div className="form-field">
                 <TextInput
                   label="Title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  value={taskManagement.formData.title}
+                  onChange={(e) =>
+                    taskManagement.setFormData({
+                      ...taskManagement.formData,
+                      title: e.target.value,
+                    })
+                  }
                 />
               </div>
 
               <div className="form-field">
                 <Textarea
                   label="Description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  value={taskManagement.formData.description}
+                  onChange={(e) =>
+                    taskManagement.setFormData({
+                      ...taskManagement.formData,
+                      description: e.target.value,
+                    })
+                  }
                   rows={4}
                 />
               </div>
@@ -825,10 +708,10 @@ const TasksGrid: React.FC = () => {
                 <Select
                   label="Priority"
                   data={priorityOptions}
-                  value={formData.priority}
+                  value={taskManagement.formData.priority}
                   onChange={(value) =>
-                    setFormData({
-                      ...formData,
+                    taskManagement.setFormData({
+                      ...taskManagement.formData,
                       priority: (value as 'low' | 'medium' | 'high' | 'urgent') || 'medium',
                     })
                   }
@@ -838,8 +721,13 @@ const TasksGrid: React.FC = () => {
               <div className="form-field">
                 <TextInput
                   label="Assign To (Email)"
-                  value={formData.assigned_to_email}
-                  onChange={(e) => setFormData({ ...formData, assigned_to_email: e.target.value })}
+                  value={taskManagement.formData.assigned_to_email}
+                  onChange={(e) =>
+                    taskManagement.setFormData({
+                      ...taskManagement.formData,
+                      assigned_to_email: e.target.value,
+                    })
+                  }
                   placeholder="admin@ctn.nl"
                 />
               </div>
@@ -847,9 +735,12 @@ const TasksGrid: React.FC = () => {
               <div className="form-field">
                 <DatePickerInput
                   label="Due Date"
-                  value={formData.due_date}
+                  value={taskManagement.formData.due_date}
                   onChange={(value) =>
-                    setFormData({ ...formData, due_date: value ? new Date(value) : null })
+                    taskManagement.setFormData({
+                      ...taskManagement.formData,
+                      due_date: value ? new Date(value) : null,
+                    })
                   }
                   valueFormat="DD/MM/YYYY"
                 />
@@ -857,10 +748,10 @@ const TasksGrid: React.FC = () => {
             </div>
 
             <Group mt="xl" justify="flex-end">
-              <Button onClick={() => setShowEditDialog(false)} variant="default">
+              <Button onClick={dialogs.closeEditDialog} variant="default">
                 Cancel
               </Button>
-              <Button color="blue" onClick={() => handleUpdate()}>
+              <Button color="blue" onClick={handleUpdateTask}>
                 Update Task
               </Button>
             </Group>
@@ -870,17 +761,17 @@ const TasksGrid: React.FC = () => {
 
       {/* Review Dialog */}
       <Modal
-        opened={showReviewDialog && !!selectedReviewTask}
-        onClose={() => setShowReviewDialog(false)}
+        opened={dialogs.showReviewDialog && !!dialogs.selectedReviewTask}
+        onClose={dialogs.closeReviewDialog}
         title={
-          selectedReviewTask
-            ? `Verify Registration - ${selectedReviewTask.entered_company_name}`
+          dialogs.selectedReviewTask
+            ? `Verify Registration - ${dialogs.selectedReviewTask.entered_company_name}`
             : 'Verify Registration'
         }
         size="xl"
         trapFocus
       >
-        {selectedReviewTask && (
+        {dialogs.selectedReviewTask && (
           <>
             <div className="dialog-content">
               <div style={{ marginBottom: '20px' }}>
@@ -904,22 +795,26 @@ const TasksGrid: React.FC = () => {
                       <td
                         style={{
                           padding: '12px',
-                          background: selectedReviewTask.kvk_mismatch_flags.includes('company_name')
+                          background: dialogs.selectedReviewTask.kvk_mismatch_flags.includes(
+                            'company_name'
+                          )
                             ? '#fee2e2'
                             : 'transparent',
                         }}
                       >
-                        {selectedReviewTask.entered_company_name}
+                        {dialogs.selectedReviewTask.entered_company_name}
                       </td>
                       <td
                         style={{
                           padding: '12px',
-                          background: selectedReviewTask.kvk_mismatch_flags.includes('company_name')
+                          background: dialogs.selectedReviewTask.kvk_mismatch_flags.includes(
+                            'company_name'
+                          )
                             ? '#dcfce7'
                             : 'transparent',
                         }}
                       >
-                        {selectedReviewTask.extracted_company_name}
+                        {dialogs.selectedReviewTask.extracted_company_name}
                       </td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
@@ -927,29 +822,33 @@ const TasksGrid: React.FC = () => {
                       <td
                         style={{
                           padding: '12px',
-                          background: selectedReviewTask.kvk_mismatch_flags.includes('legal_id')
+                          background: dialogs.selectedReviewTask.kvk_mismatch_flags.includes(
+                            'legal_id'
+                          )
                             ? '#fee2e2'
                             : 'transparent',
                         }}
                       >
-                        {selectedReviewTask.entered_legal_id || 'Not provided'}
+                        {dialogs.selectedReviewTask.entered_legal_id || 'Not provided'}
                       </td>
                       <td
                         style={{
                           padding: '12px',
-                          background: selectedReviewTask.kvk_mismatch_flags.includes('legal_id')
+                          background: dialogs.selectedReviewTask.kvk_mismatch_flags.includes(
+                            'legal_id'
+                          )
                             ? '#dcfce7'
                             : 'transparent',
                         }}
                       >
-                        {selectedReviewTask.extracted_legal_id}
+                        {dialogs.selectedReviewTask.extracted_legal_id}
                       </td>
                     </tr>
                     <tr>
                       <td style={{ padding: '12px', fontWeight: 600 }}>Registry Type</td>
                       <td style={{ padding: '12px' }} colSpan={2}>
-                        {selectedReviewTask.registry_type} (
-                        {selectedReviewTask.country_code || 'NL'})
+                        {dialogs.selectedReviewTask.registry_type} (
+                        {dialogs.selectedReviewTask.country_code || 'NL'})
                       </td>
                     </tr>
                   </tbody>
@@ -958,7 +857,7 @@ const TasksGrid: React.FC = () => {
                 <div style={{ marginTop: '20px' }}>
                   <p style={{ fontWeight: 600, marginBottom: '8px' }}>Mismatch Flags:</p>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {selectedReviewTask.kvk_mismatch_flags.map((flag) => (
+                    {dialogs.selectedReviewTask.kvk_mismatch_flags.map((flag) => (
                       <span
                         key={flag}
                         className="priority-badge priority-urgent"
@@ -973,7 +872,7 @@ const TasksGrid: React.FC = () => {
                 <div style={{ marginTop: '20px' }}>
                   <p style={{ fontWeight: 600, marginBottom: '8px' }}>Document:</p>
                   <a
-                    href={selectedReviewTask.kvk_document_url}
+                    href={dialogs.selectedReviewTask.kvk_document_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ color: '#0066b3', textDecoration: 'underline' }}
@@ -985,7 +884,7 @@ const TasksGrid: React.FC = () => {
             </div>
 
             <Group mt="xl" justify="flex-end">
-              <Button onClick={() => setShowReviewDialog(false)} variant="default">
+              <Button onClick={dialogs.closeReviewDialog} variant="default">
                 Cancel
               </Button>
               <Button color="red" onClick={() => handleReviewDecision('reject')}>
@@ -1001,17 +900,17 @@ const TasksGrid: React.FC = () => {
 
       {/* Application Review Dialog */}
       <Modal
-        opened={showApplicationDialog && !!selectedApplication}
-        onClose={() => setShowApplicationDialog(false)}
+        opened={dialogs.showApplicationDialog && !!dialogs.selectedApplication}
+        onClose={dialogs.closeApplicationDialog}
         title={
-          selectedApplication
-            ? `Review Application - ${selectedApplication.legal_name}`
+          dialogs.selectedApplication
+            ? `Review Application - ${dialogs.selectedApplication.legal_name}`
             : 'Review Application'
         }
         size="lg"
         trapFocus
       >
-        {selectedApplication && (
+        {dialogs.selectedApplication && (
           <>
             <div className="dialog-content">
               <div style={{ marginBottom: '20px' }}>
@@ -1023,56 +922,60 @@ const TasksGrid: React.FC = () => {
                       <td style={{ padding: '12px', fontWeight: 600, width: '30%' }}>
                         Company Name
                       </td>
-                      <td style={{ padding: '12px' }}>{selectedApplication.legal_name}</td>
+                      <td style={{ padding: '12px' }}>{dialogs.selectedApplication.legal_name}</td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
                       <td style={{ padding: '12px', fontWeight: 600 }}>KvK Number</td>
                       <td style={{ padding: '12px' }}>
-                        {selectedApplication.kvk_number || 'Not provided'}
+                        {dialogs.selectedApplication.kvk_number || 'Not provided'}
                       </td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
                       <td style={{ padding: '12px', fontWeight: 600 }}>Address</td>
                       <td style={{ padding: '12px' }}>
-                        {selectedApplication.company_address}
+                        {dialogs.selectedApplication.company_address}
                         <br />
-                        {selectedApplication.postal_code} {selectedApplication.city}
+                        {dialogs.selectedApplication.postal_code} {dialogs.selectedApplication.city}
                         <br />
-                        {selectedApplication.country}
+                        {dialogs.selectedApplication.country}
                       </td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
                       <td style={{ padding: '12px', fontWeight: 600 }}>Contact Name</td>
-                      <td style={{ padding: '12px' }}>{selectedApplication.applicant_name}</td>
+                      <td style={{ padding: '12px' }}>
+                        {dialogs.selectedApplication.applicant_name}
+                      </td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
                       <td style={{ padding: '12px', fontWeight: 600 }}>Contact Email</td>
-                      <td style={{ padding: '12px' }}>{selectedApplication.applicant_email}</td>
+                      <td style={{ padding: '12px' }}>
+                        {dialogs.selectedApplication.applicant_email}
+                      </td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
                       <td style={{ padding: '12px', fontWeight: 600 }}>Contact Phone</td>
                       <td style={{ padding: '12px' }}>
-                        {selectedApplication.applicant_phone || 'Not provided'}
+                        {dialogs.selectedApplication.applicant_phone || 'Not provided'}
                       </td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
                       <td style={{ padding: '12px', fontWeight: 600 }}>Job Title</td>
                       <td style={{ padding: '12px' }}>
-                        {selectedApplication.job_title || 'Not provided'}
+                        {dialogs.selectedApplication.job_title || 'Not provided'}
                       </td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
                       <td style={{ padding: '12px', fontWeight: 600 }}>Membership Type</td>
                       <td style={{ padding: '12px' }}>
                         <span className="priority-badge priority-medium">
-                          {selectedApplication.membership_type.toUpperCase()}
+                          {dialogs.selectedApplication.membership_type.toUpperCase()}
                         </span>
                       </td>
                     </tr>
                     <tr>
                       <td style={{ padding: '12px', fontWeight: 600 }}>Submitted</td>
                       <td style={{ padding: '12px' }}>
-                        {formatTaskDate(selectedApplication.submitted_at)}
+                        {formatTaskDate(dialogs.selectedApplication.submitted_at)}
                       </td>
                     </tr>
                   </tbody>
@@ -1088,8 +991,8 @@ const TasksGrid: React.FC = () => {
                         </span>
                       </>
                     }
-                    value={applicationReviewNotes}
-                    onChange={(e) => setApplicationReviewNotes(e.target.value)}
+                    value={dialogs.applicationReviewNotes}
+                    onChange={(e) => dialogs.setApplicationReviewNotes(e.target.value)}
                     placeholder="Add notes about your decision..."
                     rows={4}
                   />
@@ -1098,13 +1001,13 @@ const TasksGrid: React.FC = () => {
             </div>
 
             <Group mt="xl" justify="flex-end">
-              <Button onClick={() => setShowApplicationDialog(false)} variant="default">
+              <Button onClick={dialogs.closeApplicationDialog} variant="default">
                 Cancel
               </Button>
-              <Button color="red" onClick={handleRejectApplication}>
+              <Button color="red" onClick={handleApplicationReject}>
                 Reject
               </Button>
-              <Button color="blue" onClick={handleApproveApplication}>
+              <Button color="blue" onClick={handleApplicationApprove}>
                 Approve
               </Button>
             </Group>

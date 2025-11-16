@@ -20,17 +20,15 @@ import {
   IconSearch,
   IconTrash,
 } from '@tabler/icons-react';
-import { Workbook } from 'exceljs';
 import { DataTable, type DataTableSortStatus, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../contexts/NotificationContext';
-import { useApiError } from '../hooks/useApiError';
+import { useBulkActions } from '../hooks/useBulkActions';
 import { useGridState } from '../hooks/useGridState';
 import type { Member } from '../services/api';
-import { apiV2 } from '../services/apiV2';
 import { getMembershipColor, getStatusColor } from '../utils/colors';
-import { exportToCSV, exportToPDF } from '../utils/exportUtils';
+import { sortMembers } from '../utils/memberSorting';
 import { sanitizeGridCell } from '../utils/sanitize';
 import { ErrorBoundary } from './ErrorBoundary';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
@@ -55,7 +53,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 }) => {
   const { t } = useTranslation();
   const notification = useNotification();
-  const { handleError } = useApiError();
 
   // Use grid state hook for URL-based pagination persistence
   const { page, pageSize, updatePage, updatePageSize } = useGridState('members-grid', {
@@ -69,13 +66,23 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [bulkAction, setBulkAction] = useState<string>('');
-  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const [total, setTotal] = useState(totalMembers || members.length);
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<Member>>({
     columnAccessor: 'legal_name',
     direction: 'asc',
   });
   const [query, setQuery] = useState('');
+
+  // Use bulk actions hook
+  const { executeBulkAction: performBulkAction, isBulkProcessing } = useBulkActions({
+    gridData,
+    selectedIds,
+    onRefresh,
+    onComplete: () => {
+      setSelectedIds([]);
+      setShowBulkDialog(false);
+    },
+  });
 
   // Helper function to get translated column title
   const getColumnTitle = (field: string) => {
@@ -119,34 +126,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       );
     }
 
-    // Apply sorting
-    if (sortStatus.columnAccessor) {
-      const accessor = sortStatus.columnAccessor as keyof Member;
-      filtered.sort((a, b) => {
-        const aVal = a[accessor];
-        const bVal = b[accessor];
-
-        if (aVal === null || aVal === undefined) return 1;
-        if (bVal === null || bVal === undefined) return -1;
-
-        if (typeof aVal === 'string' && typeof bVal === 'string') {
-          return sortStatus.direction === 'asc'
-            ? aVal.localeCompare(bVal)
-            : bVal.localeCompare(aVal);
-        }
-
-        if (aVal < bVal) return sortStatus.direction === 'asc' ? -1 : 1;
-        if (aVal > bVal) return sortStatus.direction === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-
-    const filteredCount = filtered.length;
+    // Apply sorting using extracted utility
+    const sorted = sortMembers(filtered, sortStatus);
+    const filteredCount = sorted.length;
 
     // Apply pagination - required when using controlled mode (page prop)
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    const sortedData = filtered.slice(startIndex, endIndex);
+    const sortedData = sorted.slice(startIndex, endIndex);
 
     return { sortedData, filteredCount };
   }, [gridData, sortStatus, query, page, pageSize]);
@@ -165,211 +152,8 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   );
 
   const executeBulkAction = useCallback(async () => {
-    setIsBulkProcessing(true);
-
-    try {
-      const selectedMembers = gridData.filter((m) => selectedIds.includes(m.org_id));
-
-      switch (bulkAction) {
-        case 'export-pdf': {
-          const pdfFileName = exportToPDF(selectedMembers, {
-            title: `CTN Members Export (${selectedIds.length} records)`,
-            orientation: 'landscape',
-            includeTimestamp: true,
-          });
-          notification.showSuccess(`Exported ${selectedIds.length} members to ${pdfFileName}`);
-          break;
-        }
-
-        case 'export-csv': {
-          exportToCSV(selectedMembers, `CTN_Members_${new Date().toISOString().split('T')[0]}.csv`);
-          notification.showSuccess(`Exported ${selectedIds.length} members to CSV`);
-          break;
-        }
-
-        case 'export-excel': {
-          // Create workbook and worksheet
-          const workbook = new Workbook();
-          const worksheet = workbook.addWorksheet('Members');
-
-          // Define columns with headers and widths
-          worksheet.columns = [
-            { header: 'Legal Name', key: 'legalName', width: 30 },
-            { header: 'Status', key: 'status', width: 12 },
-            { header: 'LEI', key: 'lei', width: 20 },
-            { header: 'EUID', key: 'euid', width: 20 },
-            { header: 'KVK', key: 'kvk', width: 12 },
-            { header: 'Organization ID', key: 'orgId', width: 25 },
-            { header: 'Domain', key: 'domain', width: 20 },
-            { header: 'Membership', key: 'membership', width: 12 },
-          ];
-
-          // Add data rows
-          selectedMembers.forEach((member) => {
-            worksheet.addRow({
-              legalName: member.legal_name,
-              status: member.status,
-              lei: member.lei || '',
-              euid: member.euid || '',
-              kvk: member.kvk || '',
-              orgId: member.org_id,
-              domain: member.domain || '',
-              membership: member.membership_level || '',
-            });
-          });
-
-          // Generate filename with timestamp
-          const fileName = `CTN_Members_${new Date().toISOString().split('T')[0]}.xlsx`;
-
-          // Write to buffer and download
-          const buffer = await workbook.xlsx.writeBuffer();
-          const blob = new Blob([buffer], {
-            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          });
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = fileName;
-          link.click();
-          window.URL.revokeObjectURL(url);
-
-          notification.showSuccess(`Exported ${selectedMembers.length} members to ${fileName}`);
-          break;
-        }
-
-        case 'approve': {
-          // Bulk approve: Update status from PENDING to ACTIVE
-          const approvePromises = selectedIds.map((orgId) =>
-            apiV2.updateMemberStatus(orgId, 'ACTIVE', 'Bulk approved via admin portal')
-          );
-          await Promise.all(approvePromises);
-          notification.showSuccess(
-            `Approved ${selectedIds.length} member${selectedIds.length > 1 ? 's' : ''}`
-          );
-          // Refresh the grid to show updated statuses
-          if (onRefresh) {
-            await onRefresh();
-          }
-          break;
-        }
-
-        case 'suspend': {
-          // Bulk suspend: Update status to SUSPENDED
-          const suspendPromises = selectedIds.map((orgId) =>
-            apiV2.updateMemberStatus(orgId, 'SUSPENDED', 'Bulk suspended via admin portal')
-          );
-          await Promise.all(suspendPromises);
-          notification.showSuccess(
-            `Suspended ${selectedIds.length} member${selectedIds.length > 1 ? 's' : ''}`
-          );
-          // Refresh the grid to show updated statuses
-          if (onRefresh) {
-            await onRefresh();
-          }
-          break;
-        }
-
-        case 'delete': {
-          // Bulk delete: Soft delete by updating status to TERMINATED
-          const deletePromises = selectedIds.map((orgId) =>
-            apiV2.updateMemberStatus(orgId, 'TERMINATED', 'Bulk deleted via admin portal')
-          );
-          await Promise.all(deletePromises);
-          notification.showSuccess(
-            `Deleted ${selectedIds.length} member${selectedIds.length > 1 ? 's' : ''}`
-          );
-          // Refresh the grid to remove deleted members
-          if (onRefresh) {
-            await onRefresh();
-          }
-          break;
-        }
-      }
-
-      setSelectedIds([]);
-    } catch (error: unknown) {
-      handleError(error, 'performing bulk action');
-    } finally {
-      setIsBulkProcessing(false);
-      setShowBulkDialog(false);
-    }
-  }, [gridData, selectedIds, bulkAction, notification, handleError, onRefresh]);
-
-  const _handleCSVExport = useCallback(() => {
-    const dataToExport =
-      selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
-
-    exportToCSV(dataToExport);
-    notification.showSuccess(`Exported ${dataToExport.length} members to CSV`);
-  }, [selectedIds, gridData, notification]);
-
-  const _handleExcelExport = useCallback(async () => {
-    const dataToExport =
-      selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
-
-    // Create workbook and worksheet
-    const workbook = new Workbook();
-    const worksheet = workbook.addWorksheet('Members');
-
-    // Define columns with headers and widths
-    worksheet.columns = [
-      { header: 'Legal Name', key: 'legalName', width: 30 },
-      { header: 'Status', key: 'status', width: 12 },
-      { header: 'LEI', key: 'lei', width: 20 },
-      { header: 'EUID', key: 'euid', width: 20 },
-      { header: 'KVK', key: 'kvk', width: 12 },
-      { header: 'Organization ID', key: 'orgId', width: 25 },
-      { header: 'Domain', key: 'domain', width: 20 },
-      { header: 'Membership', key: 'membership', width: 12 },
-    ];
-
-    // Add data rows
-    dataToExport.forEach((member) => {
-      worksheet.addRow({
-        legalName: member.legal_name,
-        status: member.status,
-        lei: member.lei || '',
-        euid: member.euid || '',
-        kvk: member.kvk || '',
-        orgId: member.org_id,
-        domain: member.domain || '',
-        membership: member.membership_level || '',
-      });
-    });
-
-    // Generate filename with timestamp
-    const fileName = `CTN_Members_${new Date().toISOString().split('T')[0]}.xlsx`;
-
-    // Write to buffer and download
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    window.URL.revokeObjectURL(url);
-
-    notification.showSuccess(`Exported ${dataToExport.length} members to ${fileName}`);
-  }, [selectedIds, gridData, notification]);
-
-  const _handlePDFExport = useCallback(() => {
-    const dataToExport =
-      selectedIds.length > 0 ? gridData.filter((m) => selectedIds.includes(m.org_id)) : gridData;
-
-    const fileName = exportToPDF(dataToExport, {
-      title:
-        selectedIds.length > 0
-          ? `CTN Members Export (${selectedIds.length} selected)`
-          : `CTN Members Export (All ${gridData.length} records)`,
-      orientation: 'landscape',
-      includeTimestamp: true,
-    });
-
-    notification.showSuccess(`Exported to ${fileName}`);
-  }, [selectedIds, gridData, notification]);
+    await performBulkAction(bulkAction);
+  }, [performBulkAction, bulkAction]);
 
   const handleQueryChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
@@ -436,15 +220,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         resizable: true,
         sortable: true,
         render: (member) => (
-          <span
+          <output
             className="status-badge"
             style={{ backgroundColor: getStatusColor(member.status) }}
             title={statusTooltips[member.status] || 'Member status'}
-            role="status"
             aria-label={`Status: ${member.status}`}
           >
             {member.status}
-          </span>
+          </output>
         ),
       },
       {
@@ -495,15 +278,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         sortable: true,
         defaultToggle: false, // Hidden by default
         render: (member) => (
-          <span
+          <output
             className="membership-badge"
             style={{ backgroundColor: getMembershipColor(member.membership_level) }}
             title={membershipTooltips[member.membership_level] || 'Membership level'}
-            role="status"
             aria-label={`Membership: ${member.membership_level}`}
           >
             {member.membership_level}
-          </span>
+          </output>
         ),
       },
       {
@@ -558,11 +340,6 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       },
     ],
   });
-
-  const _bulkActions = [
-    { text: 'Suspend Selected', icon: 'pause', click: () => handleBulkAction('suspend') },
-    { text: 'Delete Selected', icon: 'trash', click: () => handleBulkAction('delete') },
-  ];
 
   const getBulkActionConfirmation = () => {
     const count = selectedIds.length;

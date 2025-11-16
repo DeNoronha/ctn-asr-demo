@@ -2,16 +2,17 @@ import { Button, Modal, Tabs } from '@mantine/core';
 // MemberDetailDialog.tsx - Modal for member details and editing
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { useNotification } from '../contexts/NotificationContext';
-import { type LegalEntity, type LegalEntityContact, type Member, api } from '../services/api';
-import { getMembershipColor, getStatusColor } from '../utils/colors';
-import { safeFormatDate } from '../utils/safeArray';
+import { useMemberDetailData } from '../hooks/useMemberDetailData';
+import type { Member } from '../services/api';
 import type { MemberFormData } from '../utils/validation';
-import { CompanyDetails } from './CompanyDetails';
-import { CompanyForm } from './CompanyForm';
-import { ContactsManager } from './ContactsManager';
-import { EndpointManagement } from './EndpointManagement';
-import MemberForm from './MemberForm';
+import {
+  ActivityTab,
+  CompanyTab,
+  ContactsTab,
+  EndpointsTab,
+  OverviewTab,
+  TokensTab,
+} from './member/MemberDetailTabs';
 import './MemberDetailDialog.css';
 
 interface MemberDetailDialogProps {
@@ -31,136 +32,35 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
 
-  const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(null);
-  const [contacts, setContacts] = useState<LegalEntityContact[]>([]);
-  const [loading, setLoading] = useState(true);
-  const notification = useNotification();
+  const {
+    legalEntity,
+    contacts,
+    loading,
+    loadLegalEntityData,
+    handleContactCreate,
+    handleContactUpdate,
+    handleContactDelete,
+    handleLegalEntityUpdate,
+  } = useMemberDetailData({ legalEntityId: member.legal_entity_id });
 
   // Load legal entity and contacts from API
   useEffect(() => {
     loadLegalEntityData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [member.legal_entity_id]);
-
-  const loadLegalEntityData = async () => {
-    if (!member.legal_entity_id) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Load legal entity details
-      const entityData = await api.getLegalEntity(member.legal_entity_id);
-      setLegalEntity(entityData);
-
-      // Load contacts
-      const contactsData = await api.getContacts(member.legal_entity_id);
-      setContacts(contactsData);
-    } catch (error) {
-      console.error('Failed to load legal entity data:', error);
-      notification.showError('Failed to load company information');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [loadLegalEntityData]);
 
   const handleUpdate = async (data: MemberFormData) => {
     await onUpdate(data);
     setIsEditing(false);
   };
 
-  const handleUpdateCompany = async (data: LegalEntity) => {
-    if (!legalEntity?.legal_entity_id) {
-      notification.showError('No legal entity ID available');
-      return;
-    }
-
-    try {
-      const updated = await api.updateLegalEntity(legalEntity.legal_entity_id, data);
-      setLegalEntity(updated);
-      setIsEditingCompany(false);
-      notification.showSuccess('Company information updated successfully');
-    } catch (error) {
-      console.error('Failed to update company:', error);
-      notification.showError('Failed to update company information');
-    }
-  };
-
-  const handleContactCreate = async (
-    contact: Omit<LegalEntityContact, 'legal_entity_contact_id' | 'dt_created' | 'dt_modified'>
-  ): Promise<LegalEntityContact> => {
-    try {
-      const newContact = await api.createContact(contact);
-      setContacts((prev) => [...prev, newContact]);
-      notification.showSuccess('Contact created successfully');
-      return newContact;
-    } catch (error) {
-      console.error('Failed to create contact:', error);
-      notification.showError('Failed to create contact');
-      throw error;
-    }
-  };
-
-  const handleContactUpdate = async (
-    contactId: string,
-    data: Partial<LegalEntityContact>
-  ): Promise<LegalEntityContact> => {
-    try {
-      const updated = await api.updateContact(contactId, data);
-      setContacts((prev) =>
-        prev.map((c) => (c.legal_entity_contact_id === contactId ? updated : c))
-      );
-      notification.showSuccess('Contact updated successfully');
-      return updated;
-    } catch (error) {
-      console.error('Failed to update contact:', error);
-      notification.showError('Failed to update contact');
-      throw error;
-    }
-  };
-
-  const handleContactDelete = async (contactId: string): Promise<void> => {
-    try {
-      await api.deleteContact(contactId);
-      setContacts((prev) => prev.filter((c) => c.legal_entity_contact_id !== contactId));
-      notification.showSuccess('Contact deleted successfully');
-    } catch (error) {
-      console.error('Failed to delete contact:', error);
-      notification.showError('Failed to delete contact');
-      throw error;
-    }
+  const handleUpdateCompany = async (data: typeof legalEntity) => {
+    if (!data) return;
+    await handleLegalEntityUpdate(data);
+    setIsEditingCompany(false);
   };
 
   const handleIssueToken = async () => {
     await onIssueToken(member.org_id);
-  };
-
-  const getStatusBadge = (status: string) => {
-    return (
-      <span
-        className="detail-badge"
-        style={{ backgroundColor: getStatusColor(status), color: '#ffffff' }}
-      >
-        {status}
-      </span>
-    );
-  };
-
-  const getMembershipBadge = (level: string) => {
-    return (
-      <span
-        className="detail-badge"
-        style={{ backgroundColor: getMembershipColor(level), color: '#ffffff' }}
-      >
-        {level}
-      </span>
-    );
-  };
-
-  // CR-002: Use safe date formatting with null handling
-  const formatDate = (dateString: string | null | undefined) => {
-    return safeFormatDate(dateString);
   };
 
   return (
@@ -182,192 +82,48 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
         </Tabs.List>
 
         <Tabs.Panel value="overview" pt="md">
-          <div className="detail-content">
-            {!isEditing ? (
-              <div className="detail-view">
-                <div className="detail-section">
-                  <h3>Organization Information</h3>
-                  <div className="detail-grid">
-                    <div className="detail-field">
-                      <strong>Organization ID</strong>
-                      <span>{member.org_id}</span>
-                    </div>
-                    <div className="detail-field">
-                      <strong>Legal Name</strong>
-                      <span>{member.legal_name}</span>
-                    </div>
-                    <div className="detail-field">
-                      <strong>Domain</strong>
-                      <span>{member.domain}</span>
-                    </div>
-                    <div className="detail-field">
-                      <strong>Status</strong>
-                      {getStatusBadge(member.status)}
-                    </div>
-                    <div className="detail-field">
-                      <strong>Membership Level</strong>
-                      {getMembershipBadge(member.membership_level)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="detail-section">
-                  <h3>Identifiers</h3>
-                  <div className="detail-grid">
-                    <div className="detail-field">
-                      <strong>LEI</strong>
-                      <span>{member.lei || 'Not provided'}</span>
-                    </div>
-                    <div className="detail-field">
-                      <strong>KVK Number</strong>
-                      <span>{member.kvk || 'Not provided'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="detail-section">
-                  <h3>Timestamps</h3>
-                  <div className="detail-grid">
-                    <div className="detail-field">
-                      <strong>Created</strong>
-                      <span>{formatDate(member.created_at)}</span>
-                    </div>
-                    {member.updated_at && (
-                      <div className="detail-field">
-                        <strong>Last Updated</strong>
-                        <span>{formatDate(member.updated_at)}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="detail-actions">
-                  <Button color="blue" onClick={() => setIsEditing(true)}>
-                    Edit Member
-                  </Button>
-                  <Button
-                    color="green"
-                    onClick={handleIssueToken}
-                    disabled={member.status !== 'ACTIVE'}
-                  >
-                    Issue Token
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <MemberForm
-                initialData={{
-                  org_id: member.org_id,
-                  legal_name: member.legal_name,
-                  domain: member.domain,
-                  lei: member.lei || '',
-                  kvk: member.kvk || '',
-                }}
-                onSubmit={handleUpdate}
-                onCancel={() => setIsEditing(false)}
-              />
-            )}
-          </div>
+          <OverviewTab
+            member={member}
+            isEditing={isEditing}
+            onEdit={() => setIsEditing(true)}
+            onUpdate={handleUpdate}
+            onCancel={() => setIsEditing(false)}
+            onIssueToken={handleIssueToken}
+          />
         </Tabs.Panel>
 
         <Tabs.Panel value="company" pt="md">
-          <div className="detail-content">
-            {loading ? (
-              <div className="loading-state">Loading company information...</div>
-            ) : !legalEntity ? (
-              <div className="empty-state">No legal entity information available</div>
-            ) : !isEditingCompany ? (
-              <CompanyDetails company={legalEntity} onEdit={() => setIsEditingCompany(true)} />
-            ) : (
-              <CompanyForm
-                data={legalEntity}
-                onSave={handleUpdateCompany}
-                onCancel={() => setIsEditingCompany(false)}
-              />
-            )}
-          </div>
+          <CompanyTab
+            loading={loading}
+            legalEntity={legalEntity}
+            isEditingCompany={isEditingCompany}
+            onEdit={() => setIsEditingCompany(true)}
+            onSave={handleUpdateCompany}
+            onCancel={() => setIsEditingCompany(false)}
+          />
         </Tabs.Panel>
 
         <Tabs.Panel value="contacts" pt="md">
-          <div className="detail-content">
-            {loading ? (
-              <div className="loading-state">Loading contacts...</div>
-            ) : !legalEntity?.legal_entity_id ? (
-              <div className="empty-state">No legal entity ID available</div>
-            ) : (
-              <ContactsManager
-                legalEntityId={legalEntity.legal_entity_id}
-                contacts={contacts}
-                onContactCreate={handleContactCreate}
-                onContactUpdate={handleContactUpdate}
-                onContactDelete={handleContactDelete}
-              />
-            )}
-          </div>
+          <ContactsTab
+            loading={loading}
+            legalEntityId={legalEntity?.legal_entity_id}
+            contacts={contacts}
+            onContactCreate={handleContactCreate}
+            onContactUpdate={handleContactUpdate}
+            onContactDelete={handleContactDelete}
+          />
         </Tabs.Panel>
 
         <Tabs.Panel value="endpoints" pt="md">
-          <div className="detail-content">
-            <EndpointManagement legalEntityId={member.org_id} legalEntityName={member.legal_name} />
-          </div>
+          <EndpointsTab legalEntityId={member.org_id} legalEntityName={member.legal_name} />
         </Tabs.Panel>
 
         <Tabs.Panel value="activity" pt="md">
-          <div className="detail-content">
-            <div className="activity-timeline">
-              <div className="timeline-item">
-                <div className="timeline-marker" />
-                <div className="timeline-content">
-                  <h4>Member Registered</h4>
-                  <p>{formatDate(member.created_at)}</p>
-                  <span className="timeline-meta">Initial registration</span>
-                </div>
-              </div>
-              {member.updated_at && (
-                <div className="timeline-item">
-                  <div className="timeline-marker" />
-                  <div className="timeline-content">
-                    <h4>Last Updated</h4>
-                    <p>{formatDate(member.updated_at)}</p>
-                    <span className="timeline-meta">Profile information modified</span>
-                  </div>
-                </div>
-              )}
-              {member.status === 'ACTIVE' && (
-                <div className="timeline-item">
-                  <div className="timeline-marker active" />
-                  <div className="timeline-content">
-                    <h4>Current Status</h4>
-                    <p>Active Member</p>
-                    <span className="timeline-meta">Full access to services</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <ActivityTab member={member} />
         </Tabs.Panel>
 
         <Tabs.Panel value="tokens" pt="md">
-          <div className="detail-content">
-            <div className="tokens-section">
-              <h3>Token Management</h3>
-              <p>Issue and manage access tokens for this member.</p>
-              <div className="token-actions">
-                <Button
-                  color="blue"
-                  onClick={handleIssueToken}
-                  disabled={member.status !== 'ACTIVE'}
-                >
-                  Issue New Token
-                </Button>
-              </div>
-              {member.status !== 'ACTIVE' && (
-                <div className="warning-message">
-                  ⚠️ Tokens can only be issued for active members
-                </div>
-              )}
-            </div>
-          </div>
+          <TokensTab member={member} onIssueToken={handleIssueToken} />
         </Tabs.Panel>
       </Tabs>
 
