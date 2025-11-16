@@ -66,10 +66,7 @@ async function handler(
     };
   } catch (error) {
     context.error('Error updating contact:', error);
-    return {
-      status: 500,
-      body: JSON.stringify({ error: 'Failed to update contact' })
-    };
+    return handleError(error, context);
   }
 }
 

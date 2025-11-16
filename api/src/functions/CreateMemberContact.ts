@@ -131,10 +131,7 @@ async function handler(request: AuthenticatedRequest, context: InvocationContext
       details: { error: error instanceof Error ? error.message : 'Unknown error' }
     }, context);
 
-    return {
-      status: 500,
-      jsonBody: { error: 'Failed to create contact' }
-    };
+    return handleError(error, context);
   }
 }
 

@@ -130,10 +130,7 @@ async function handler(
     };
   } catch (error) {
     context.error('Error fetching audit logs:', error);
-    return {
-      status: 500,
-      jsonBody: { error: 'Failed to fetch audit logs' }
-    };
+    return handleError(error, context);
   }
 }
 

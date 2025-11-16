@@ -40,10 +40,7 @@ async function handler(
     };
   } catch (error) {
     context.error('Error deleting contact:', error);
-    return {
-      status: 500,
-      body: JSON.stringify({ error: 'Failed to delete contact' })
-    };
+    return handleError(error, context);
   }
 }
 

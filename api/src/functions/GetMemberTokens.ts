@@ -53,10 +53,7 @@ async function handler(
     };
   } catch (error) {
     context.error('Error fetching tokens:', error);
-    return {
-      status: 500,
-      body: JSON.stringify({ error: 'Failed to fetch tokens' })
-    };
+    return handleError(error, context);
   }
 }
 

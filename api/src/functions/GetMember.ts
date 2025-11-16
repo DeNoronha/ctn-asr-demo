@@ -40,10 +40,7 @@ async function handler(
     };
   } catch (error) {
     context.error('Error fetching member:', error);
-    return {
-      status: 500,
-      body: JSON.stringify({ error: 'Failed to fetch member' })
-    };
+    return handleError(error, context);
   }
 }
 

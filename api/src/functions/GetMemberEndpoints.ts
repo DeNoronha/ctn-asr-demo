@@ -81,10 +81,7 @@ async function handler(
     };
   } catch (error) {
     context.error('Error getting endpoints:', error);
-    return {
-      status: 500,
-      body: JSON.stringify({ error: 'Failed to get endpoints' })
-    };
+    return handleError(error, context);
   }
 }
 

@@ -341,5 +341,13 @@
       "associationAdmins": "Association Admins",
       "members": "Members"
     }
+  },
+  "auditLogs": {
+    "title": "Audit Logs",
+    "emptyState": {
+      "title": "No audit logs found",
+      "description": "System activity will be recorded here automatically. Audit logs track user actions, access events, and security-relevant operations.",
+      "refresh": "Refresh Logs"
+    }
   }
 }

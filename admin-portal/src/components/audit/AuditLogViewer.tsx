@@ -16,18 +16,20 @@ import {
 } from '@mantine/core';
 import { DataTable, type DataTableSortStatus, useDataTableColumns } from 'mantine-datatable';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { RoleGuard } from '../../auth/ProtectedRoute';
 import { UserRole } from '../../auth/authConfig';
 import { useNotification } from '../../contexts/NotificationContext';
 import { AuditAction, type AuditLog, auditLogService } from '../../services/auditLogService';
 import { formatDateTimeGB } from '../../utils/dateFormat';
 import { ErrorBoundary } from '../ErrorBoundary';
-import { Activity, Clock, Download, FileText, RefreshCw } from '../icons';
+import { Activity, Clock, Download, FileText, RefreshCw, Shield } from '../icons';
 import { defaultDataTableProps } from '../shared/DataTableConfig';
 import { PageHeader } from '../shared/PageHeader';
 import './AuditLogViewer.css';
 
 const AuditLogViewer: React.FC = () => {
+  const { t } = useTranslation();
   const notification = useNotification();
 
   // Data state
@@ -279,6 +281,27 @@ const AuditLogViewer: React.FC = () => {
               <Skeleton height={50} radius="md" />
               <Skeleton height={50} radius="md" />
             </Stack>
+          ) : sortedLogs.length === 0 && !loading ? (
+            <Paper p="xl" withBorder radius="md" style={{ textAlign: 'center' }}>
+              <Stack align="center" gap="md">
+                <Shield size={48} style={{ color: 'var(--mantine-color-gray-5)' }} />
+                <div>
+                  <Text size="lg" fw={600} mb="xs">
+                    {t('auditLogs.emptyState.title')}
+                  </Text>
+                  <Text size="sm" c="dimmed" mb="lg">
+                    {t('auditLogs.emptyState.description')}
+                  </Text>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={loadLogs}
+                  leftSection={<RefreshCw size={18} />}
+                >
+                  {t('auditLogs.emptyState.refresh')}
+                </Button>
+              </Stack>
+            </Paper>
           ) : (
             <DataTable
               {...defaultDataTableProps}

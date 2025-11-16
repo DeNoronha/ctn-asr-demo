@@ -130,10 +130,7 @@ async function handler(
       details: { error: error instanceof Error ? error.message : 'Unknown error' }
     }, context);
 
-    return {
-      status: 500,
-      jsonBody: { error: 'Failed to delete identifier' }
-    };
+    return handleError(error, context);
   }
 }
 

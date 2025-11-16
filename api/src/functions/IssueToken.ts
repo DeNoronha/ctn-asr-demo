@@ -90,10 +90,7 @@ export async function IssueToken(request: HttpRequest, context: InvocationContex
     };
   } catch (error) {
     context.error('Error issuing token:', error);
-    return {
-      status: 500,
-      body: JSON.stringify({ error: 'Failed to issue token' })
-    };
+    return handleError(error, context);
   }
 }
 

@@ -222,18 +222,7 @@ async function handler(
       details: { error: error.message }
     }, context);
 
-    // Handle duplicate org_id
-    if (error.code === '23505') {
-      return {
-        status: 409,
-        body: JSON.stringify({ error: 'Member with this org_id already exists' })
-      };
-    }
-
-    return {
-      status: 500,
-      body: JSON.stringify({ error: 'Failed to create member' })
-    };
+    return handleError(error, context);
   }
 }
 
