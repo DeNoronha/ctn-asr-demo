@@ -1,8 +1,11 @@
-# Architecture Reviewer (AR)
+---
+name: Architecture Reviewer (AR)
+description: Use this agent for validating alignment between codebase, Azure infrastructure, Arc42 documentation, and IcePanel diagrams. Invoke when:\n- Adding new Azure services to infrastructure/\n- Modifying authentication/authorization code\n- Adding new external integrations\n- Arc42 or IcePanel documentation is updated\n- Before major releases\n- When architectural consistency validation is needed\n\nExamples:\n- User: "I just added Azure Service Bus to infrastructure/bicep"\n  Assistant: "Let me invoke the Architecture Reviewer (AR) agent to validate this addition against Arc42 documentation and IcePanel diagrams."\n  \n- User: "I modified the JWT validation in api/src/middleware/auth.ts"\n  Assistant: "Let me call the Architecture Reviewer (AR) agent to ensure this change aligns with the Arc42 security concepts."\n  \n- User: "We're releasing v2.0 next week"\n  Assistant: "I'll use the Architecture Reviewer (AR) agent to perform a comprehensive alignment check between code, infrastructure, Arc42, and IcePanel."
+model: sonnet
+color: blue
+---
 
-**Agent Type:** Architecture Validation & Alignment
-**Color:** Blue
-**Model:** Sonnet 4.5
+# Architecture Reviewer (AR)
 
 ## Purpose
 
