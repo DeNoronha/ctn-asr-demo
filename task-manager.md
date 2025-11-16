@@ -15,8 +15,8 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 - **Database Expert (DE)** - Schema optimization, query performance, data integrity
 - **DevOps Guardian (DG)** - Pipeline reliability, deployment safety, monitoring
 
-**Total Tasks:** 59 (14 completed ✅, 45 remaining)
-**Critical:** 1 | **High:** 0 | **Medium:** 21 | **Low:** 23
+**Total Tasks:** 59 (17 completed ✅, 42 remaining)
+**Critical:** 1 | **High:** 0 | **Medium:** 18 | **Low:** 23
 
 ---
 
@@ -186,7 +186,7 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 
 ---
 
-## Medium Priority 🟡 (21 tasks - Complete within 1 month)
+## Medium Priority 🟡 (18 tasks - Complete within 1 month)
 
 ### Code Quality (Medium)
 
@@ -863,6 +863,57 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 - **User Experience:** Loading spinner on active button, all buttons disabled during operation
 - **Testing:** TypeScript compilation passed, pre-commit hook passed (7/7 checks)
 
+### TASK-CR-007: Extract Hardcoded Configuration to Constants ✅
+- **Completed:** November 16, 2025 (Batch 4)
+- **Commit:** `59c4a6a`
+- **Category:** Code Quality / Maintainability
+- **Impact:** Centralized configuration, improved maintainability
+- **Changes:**
+  - Created api/src/config/constants.ts with 43 configuration constants
+  - Organized into 7 categories: CORS (7), Rate Limits (17), HTTP Status (1), URLs (6), Methods (1)
+  - Replaced hardcoded values in 5 middleware files:
+    * endpointWrapper.ts: CORS origins, headers, rate limits, state-changing methods
+    * rateLimiter.ts: 15 rate limit configuration numbers, HTTP 429 status
+    * auth.ts: Azure AD JWKS and issuer URLs
+    * securityHeaders.ts: Azure AD URL in CSP header
+    * versioning.ts: API documentation URLs
+  - All constants use TypeScript "as const" for literal type inference
+  - Comprehensive JSDoc documentation for all constants
+- **Code Reduction:** ~34 hardcoded values replaced with constants
+- **Testing:** TypeScript compilation passed, pre-commit hook passed (7/7 checks)
+
+### TASK-DA-007: Audit Log Viewer - Missing Internationalization ✅
+- **Completed:** November 16, 2025 (Batch 4)
+- **Commit:** `59c4a6a`
+- **Category:** UX/UI / Internationalization
+- **Impact:** 100% i18n coverage for Audit Log Viewer, consistent multi-language experience
+- **Changes:**
+  - Added 15 translation keys to admin-portal/src/locales/en/translation.json
+  - Updated AuditLogViewer.tsx: replaced all hardcoded English text
+  - Translation categories: actions (2), columns (6), details (1), stats (4), notifications (3)
+  - Fixed React hook dependencies (added 't' to useCallback dependency arrays)
+  - Follows existing UserManagement i18n patterns
+  - Export success message supports interpolation: {{count}}
+- **Translation Coverage:** 100% of UI text now uses i18n keys
+- **Testing:** TypeScript compilation passed, pre-commit hook passed (7/7 checks)
+
+### TASK-SEC-004: Add SQL Wildcard Escaping Utility ✅
+- **Completed:** November 16, 2025 (Batch 4)
+- **Commit:** `59c4a6a`
+- **Category:** Security (MEDIUM)
+- **CVSS:** 4.3 (MEDIUM)
+- **Impact:** Prevents SQL wildcard injection attacks (CWE-89)
+- **Changes:**
+  - Created escapeSqlWildcards() utility in api/src/utils/database.ts
+  - Escapes PostgreSQL LIKE wildcards: % → \%, _ → \_, \ → \\
+  - Applied to GetAuditLogs.ts:44 (user_email ILIKE search)
+  - Created comprehensive unit tests: api/src/utils/database.test.ts (107 lines, 10+ test cases)
+  - Comprehensive codebase scan: only 1 user-facing ILIKE query found and fixed
+  - 42 lines of comprehensive JSDoc documentation
+- **Security:** Blocks complete data enumeration and pattern-based attacks
+- **Compliance:** OWASP A03:2021 (Injection)
+- **Testing:** TypeScript compilation passed, all unit tests passed, pre-commit hook passed (7/7 checks)
+
 ---
 
 ## Notes
@@ -874,8 +925,8 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 - Migration files follow sequential numbering (032, 033, 034, etc.)
 
 **Last Agent Review:**
-- Code Reviewer: November 16, 2025 (Batch 3: CR-005)
-- Security Analyst: November 16, 2025 (Batch 1: SEC-001)
-- Design Analyst: November 16, 2025 (Batch 3: DA-006, DA-008)
+- Code Reviewer: November 16, 2025 (Batch 4: CR-007)
+- Security Analyst: November 16, 2025 (Batch 4: SEC-004)
+- Design Analyst: November 16, 2025 (Batch 4: DA-007)
 - Database Expert: November 16, 2025 (Batch 2: DE-001, DE-002)
 - DevOps Guardian: November 16, 2025 (Batch 1: DG-PIPE-001)
