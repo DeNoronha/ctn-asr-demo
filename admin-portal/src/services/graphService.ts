@@ -152,19 +152,28 @@ function extractRoles(appRoleAssignments: any[], ctnServicePrincipalId: string):
 
   const roles: UserRole[] = [];
 
+  logger.log(`[extractRoles] Processing ${appRoleAssignments.length} app role assignments for CTN SP ID: ${ctnServicePrincipalId}`);
+
   for (const assignment of appRoleAssignments) {
+    logger.log(`[extractRoles] Assignment - resourceId: ${assignment.resourceId}, role: ${assignment.appRoleDisplayName || assignment.appRoleValue}`);
+
     // CRITICAL: Only include roles assigned for the CTN application
     // resourceId is the service principal Object ID of the app (not the client ID)
     if (assignment.resourceId !== ctnServicePrincipalId) {
+      logger.log(`[extractRoles] Skipping - resourceId mismatch (${assignment.resourceId} !== ${ctnServicePrincipalId})`);
       continue; // Skip roles from other applications
     }
 
     const roleName = assignment.appRoleDisplayName || assignment.appRoleValue;
     if (roleName && roleMap[roleName]) {
+      logger.log(`[extractRoles] ✅ Matched CTN role: ${roleName}`);
       roles.push(roleMap[roleName]);
+    } else {
+      logger.log(`[extractRoles] Unknown role name: ${roleName}`);
     }
   }
 
+  logger.log(`[extractRoles] Extracted ${roles.length} CTN roles`);
   return roles;
 }
 
