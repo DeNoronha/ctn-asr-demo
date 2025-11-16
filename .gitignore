@@ -114,3 +114,7 @@ docs/MANTINE_LLMS.txt
 api/keys/
 api/scripts/keys/
 api/tests/*.sh
+
+# Code quality reports (generated)
+complexity-report/
+**/complexity-report/

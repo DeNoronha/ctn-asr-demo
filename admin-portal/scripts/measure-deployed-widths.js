@@ -28,6 +28,8 @@ async function measureDeployedWidths() {
     console.log(`\n📏 Measuring: ${screenName}`);
     console.log(`   URL: ${url}`);
 
+    // SECURITY: URL is hardcoded baseUrl + hardcoded paths (no user input)
+    // nosemgrep: javascript.playwright.security.audit.playwright-goto-injection.playwright-goto-injection
     await page.goto(url);
     await page.waitForTimeout(3000); // Allow data to load
 

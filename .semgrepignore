@@ -1,0 +1,57 @@
+# .semgrepignore - Semgrep exclusions for CTN-ASR monorepo
+# Excludes generated code, dependencies, and third-party libraries
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+**/dist/
+**/build/
+.next/
+.vite/
+
+# Generated reports (third-party code)
+complexity-report/
+**/complexity-report/
+
+# Test artifacts
+test-results/
+playwright-report/
+coverage/
+e2e/
+**/test-results/
+**/playwright-report/
+**/coverage/
+
+# Debug artifacts
+**/debug/
+*.har
+diagnostic-*.png
+diagnostic-*.jpg
+
+# Lock files (contain hashes, not actual secrets)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Documentation
+docs/MANTINE_LLMS.txt
+docs/MANTINE_DATATABLE_REFERENCE.md
+
+# Git metadata
+.git/
+.github/
+
+# Auth state (test user only)
+playwright/.auth/
+**/playwright/.auth/
+*.auth.json
+
+# Extracted systems (no longer in this repo)
+booking-portal/
+orchestrator/
+docuflow/
+DocuFlow/

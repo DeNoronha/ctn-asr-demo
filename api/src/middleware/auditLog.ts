@@ -4,18 +4,11 @@
 // Logs all sensitive operations for security and compliance
 
 import { InvocationContext } from '@azure/functions';
-import { Pool } from 'pg';
 import { AuthenticatedRequest } from './auth';
+import { getPool } from '../utils/database';
 
-// Database connection pool
-const pool = new Pool({
-  host: process.env.POSTGRES_HOST,
-  port: parseInt(process.env.POSTGRES_PORT || '5432'),
-  database: process.env.POSTGRES_DATABASE,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  ssl: { rejectUnauthorized: false },
-});
+// Use shared database pool with proper SSL validation
+const pool = getPool();
 
 /**
  * Audit event types
