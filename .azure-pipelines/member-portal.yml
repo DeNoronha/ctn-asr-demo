@@ -128,6 +128,18 @@ steps:
     displayName: 'Trivy: Scan filesystem for vulnerabilities (HIGH/CRITICAL only)'
 
   # ========================================
+  # OWASP Dependency Check with NVD Database Caching
+  # Cache saves 3-5 minutes by reusing downloaded CVE database
+  # ========================================
+  - task: Cache@2
+    displayName: 'Cache OWASP NVD database'
+    inputs:
+      key: 'owasp-nvd | "$(Agent.OS)" | "v1"'
+      path: $(Pipeline.Workspace)/.owasp-dependency-check-data
+      restoreKeys: |
+        owasp-nvd | "$(Agent.OS)"
+
+  # ========================================
   # OWASP Dependency Check
   # Note: v6.3.0+ supports Node 20 (resolves Node 16 EOL warning)
   # Release: https://github.com/dependency-check/azuredevops/releases/tag/6.3.0
@@ -137,11 +149,12 @@ steps:
     continueOnError: true
     inputs:
       projectName: 'ASR-Member-Portal'
-      scanPath: '.'
+      scanPath: 'member-portal'  # Only scan member-portal directory, not entire monorepo
       format: 'HTML,JSON'
       failOnCVSS: '7'
       enableExperimental: true
       nvdApiKey: $(NVD-API-KEY)
+      dataDirectory: $(Pipeline.Workspace)/.owasp-dependency-check-data  # Use cached NVD data
 
   # ========================================
   # Verify API Deployment
