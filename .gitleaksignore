@@ -1,0 +1,112 @@
+# .gitleaksignore - Gitleaks Secret Scanning Exclusions
+# Excludes false positives and legacy paths from extracted systems
+
+# ========================================
+# Extracted Systems (no longer in this repo)
+# DocuFlow and Orchestrator were extracted Nov 11, 2025
+# ========================================
+booking-portal/**
+orchestrator/**
+docuflow/**
+DocuFlow/**
+
+# ========================================
+# Test & Debug Files
+# E2E test artifacts, network captures, mock data
+# ========================================
+**/e2e/debug/**
+**/e2e/.auth/**
+**/playwright/.auth/**
+**/*network-requests.json
+**/*trace.zip
+**/*-state.json
+**/test-results/**
+**/playwright-report/**
+
+# ========================================
+# Build Outputs & Dependencies
+# Generated files, not source code
+# ========================================
+**/dist/**
+**/build/**
+**/node_modules/**
+**/.next/**
+**/.vite/**
+**/coverage/**
+
+# ========================================
+# Configuration Files with Non-Secret IDs
+# Azure AD client IDs, tenant IDs (public info)
+# ========================================
+**/.env.example
+**/.env.template
+**/authConfig.ts
+**/msalConfig.ts
+
+# ========================================
+# Lock Files & Package Metadata
+# SRI hashes, dependency checksums (not secrets)
+# ========================================
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+
+# ========================================
+# Documentation & Examples
+# Code samples, API examples, documentation
+# ========================================
+**/docs/**/*.md
+**/examples/**
+**/*.example.*
+
+# ========================================
+# Git & CI/CD Metadata
+# Pipeline variables are in Azure DevOps, not in files
+# ========================================
+.git/**
+.github/**
+
+# ========================================
+# Credentials & Secrets (gitignored)
+# These files should never be committed, but exclude from history scan
+# ========================================
+.credentials
+.env
+.env.local
+.env.test
+.env.*.local
+local.settings.json
+api/local.settings.json
+zitadel-credentials.json
+.env.zitadel
+**/*.secret.yml
+api/keys/**
+api/scripts/keys/**
+
+# ========================================
+# Specific File Exclusions
+# Known false positives
+# ========================================
+
+# Playwright auth state (test user only, MFA excluded)
+playwright/.auth/user.json
+**/playwright/.auth/**
+*.auth.json
+user.json
+
+# Debug artifacts (may contain request/response data)
+**/debug/**
+console-logs.json
+network-requests.json
+debug-summary.txt
+*-dump.json
+*-trace.json
+*.har
+
+# Mantine documentation (UI component library reference)
+docs/MANTINE_LLMS.txt
+docs/MANTINE_DATATABLE_REFERENCE.md
+
+# E2E test reports (may contain test data)
+**/E2E_TEST_REPORT_*.md
+**/E2E_TEST_SUMMARY.md
