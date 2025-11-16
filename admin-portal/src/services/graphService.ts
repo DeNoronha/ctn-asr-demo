@@ -22,8 +22,24 @@ export interface User {
 
 /**
  * Microsoft Graph API scopes required for user management
+ *
+ * SECURITY: Least Privilege Principle Applied
+ * - User.Read.All: Read user profiles (required for listUsers)
+ * - User.ReadWrite.All: Create/update/delete users and send invitations (required for user management)
+ * - Application.Read.All: Read service principal metadata (required for getCtnServicePrincipalId)
+ * - AppRoleAssignment.ReadWrite.All: Query app role assignments (required for role-based filtering)
+ *
+ * REMOVED SCOPES (Security Hardening):
+ * - Directory.Read.All: Replaced with Application.Read.All (narrower scope, same capability)
+ *
+ * COMPLIANCE: GDPR Art. 25 (Data Protection by Design), OWASP A04:2021 (Insecure Design)
  */
-export const GRAPH_SCOPES = ['User.Read.All', 'User.ReadWrite.All', 'Directory.Read.All'];
+export const GRAPH_SCOPES = [
+  'User.Read.All',
+  'User.ReadWrite.All',
+  'Application.Read.All',
+  'AppRoleAssignment.ReadWrite.All'
+];
 
 /**
  * Request admin consent for Microsoft Graph API scopes

@@ -4,29 +4,105 @@
  */
 
 import {
+  ActionIcon,
   Badge,
   Button,
+  Collapse,
   Group,
+  MultiSelect,
   Paper,
+  Select,
   SimpleGrid,
   Skeleton,
   Stack,
   Text,
+  TextInput,
   ThemeIcon,
 } from '@mantine/core';
+import { DatePickerInput } from '@mantine/dates';
+import { useDebouncedValue } from '@mantine/hooks';
 import { DataTable, type DataTableSortStatus, useDataTableColumns } from 'mantine-datatable';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RoleGuard } from '../../auth/ProtectedRoute';
 import { UserRole } from '../../auth/authConfig';
 import { useNotification } from '../../contexts/NotificationContext';
-import { AuditAction, type AuditLog, auditLogService } from '../../services/auditLogService';
+import { AuditAction, type AuditLog, auditLogService, type AuditLogFilters } from '../../services/auditLogService';
 import { formatDateTimeGB } from '../../utils/dateFormat';
 import { ErrorBoundary } from '../ErrorBoundary';
-import { Activity, Clock, Download, FileText, RefreshCw, Shield } from '../icons';
+import { Activity, ChevronDown, ChevronUp, Clock, Download, FileText, RefreshCw, Shield, X } from '../icons';
 import { defaultDataTableProps } from '../shared/DataTableConfig';
 import { PageHeader } from '../shared/PageHeader';
 import './AuditLogViewer.css';
+
+// Event type options for filter (matching backend AuditEventType enum)
+const EVENT_TYPE_OPTIONS = [
+  { value: 'auth_success', label: 'Auth Success' },
+  { value: 'auth_failure', label: 'Auth Failure' },
+  { value: 'token_issued', label: 'Token Issued' },
+  { value: 'token_revoked', label: 'Token Revoked' },
+  { value: 'member_created', label: 'Member Created' },
+  { value: 'member_updated', label: 'Member Updated' },
+  { value: 'member_deleted', label: 'Member Deleted' },
+  { value: 'member_activated', label: 'Member Activated' },
+  { value: 'member_suspended', label: 'Member Suspended' },
+  { value: 'contact_created', label: 'Contact Created' },
+  { value: 'contact_updated', label: 'Contact Updated' },
+  { value: 'contact_deleted', label: 'Contact Deleted' },
+  { value: 'endpoint_created', label: 'Endpoint Created' },
+  { value: 'endpoint_updated', label: 'Endpoint Updated' },
+  { value: 'endpoint_deleted', label: 'Endpoint Deleted' },
+  { value: 'endpoint_token_issued', label: 'Endpoint Token Issued' },
+  { value: 'identifier_created', label: 'Identifier Created' },
+  { value: 'identifier_updated', label: 'Identifier Updated' },
+  { value: 'identifier_deleted', label: 'Identifier Deleted' },
+  { value: 'document_uploaded', label: 'Document Uploaded' },
+  { value: 'document_approved', label: 'Document Approved' },
+  { value: 'document_rejected', label: 'Document Rejected' },
+  { value: 'admin_approval', label: 'Admin Approval' },
+  { value: 'admin_rejection', label: 'Admin Rejection' },
+  { value: 'admin_review', label: 'Admin Review' },
+  { value: 'application_submitted', label: 'Application Submitted' },
+  { value: 'subscription_created', label: 'Subscription Created' },
+  { value: 'subscription_updated', label: 'Subscription Updated' },
+  { value: 'subscription_cancelled', label: 'Subscription Cancelled' },
+  { value: 'newsletter_created', label: 'Newsletter Created' },
+  { value: 'newsletter_sent', label: 'Newsletter Sent' },
+  { value: 'task_created', label: 'Task Created' },
+  { value: 'task_updated', label: 'Task Updated' },
+  { value: 'task_completed', label: 'Task Completed' },
+  { value: 'access_granted', label: 'Access Granted' },
+  { value: 'access_denied', label: 'Access Denied' },
+  { value: 'permission_violation', label: 'Permission Violation' },
+  { value: 'data_exported', label: 'Data Exported' },
+];
+
+// Resource type options (matching backend ALLOWED_RESOURCE_TYPES)
+const RESOURCE_TYPE_OPTIONS = [
+  { value: 'member', label: 'Member' },
+  { value: 'legal_entity', label: 'Legal Entity' },
+  { value: 'legal_entity_contact', label: 'Contact' },
+  { value: 'legal_entity_endpoint', label: 'Endpoint' },
+  { value: 'legal_entity_identifier', label: 'Identifier' },
+  { value: 'endpoint_authorization', label: 'Endpoint Authorization' },
+  { value: 'euid', label: 'EUID' },
+  { value: 'lei', label: 'LEI' },
+  { value: 'subscription', label: 'Subscription' },
+  { value: 'newsletter', label: 'Newsletter' },
+  { value: 'task', label: 'Task' },
+  { value: 'document', label: 'Document' },
+  { value: 'webhook', label: 'Webhook' },
+  { value: 'event', label: 'Event' },
+  { value: 'party', label: 'Party' },
+];
+
+// Severity options
+const SEVERITY_OPTIONS = [
+  { value: 'INFO', label: 'Info' },
+  { value: 'WARNING', label: 'Warning' },
+  { value: 'ERROR', label: 'Error' },
+  { value: 'CRITICAL', label: 'Critical' },
+];
 
 const AuditLogViewer: React.FC = () => {
   const { t } = useTranslation();
@@ -34,6 +110,7 @@ const AuditLogViewer: React.FC = () => {
 
   // Data state
   const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [totalLogs, setTotalLogs] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -47,48 +124,117 @@ const AuditLogViewer: React.FC = () => {
     direction: 'desc',
   });
 
+  // Filter state
+  const [filtersVisible, setFiltersVisible] = useState(false);
+  const [eventTypes, setEventTypes] = useState<string[]>([]);
+  const [userEmail, setUserEmail] = useState('');
+  const [debouncedUserEmail] = useDebouncedValue(userEmail, 500);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [resourceTypes, setResourceTypes] = useState<string[]>([]);
+  const [severity, setSeverity] = useState<string | null>(null);
+  const [result, setResult] = useState<string | null>(null);
+
+  // Build filter object from current filter state
+  const activeFilters = useMemo((): AuditLogFilters => {
+    const filters: AuditLogFilters = {
+      page,
+      limit: pageSize,
+    };
+
+    // Only add filters that have values
+    if (eventTypes.length > 0) {
+      // API only supports single event_type, but we'll apply client-side filtering for multiple
+      filters.event_type = eventTypes[0];
+    }
+    if (debouncedUserEmail.trim()) {
+      filters.user_email = debouncedUserEmail.trim();
+    }
+    if (startDate) {
+      filters.start_date = startDate.toISOString();
+    }
+    if (endDate) {
+      filters.end_date = endDate.toISOString();
+    }
+    if (resourceTypes.length > 0) {
+      filters.resource_type = resourceTypes[0];
+    }
+    if (severity) {
+      filters.severity = severity as 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
+    }
+    if (result) {
+      filters.result = result as 'success' | 'failure';
+    }
+
+    return filters;
+  }, [page, pageSize, eventTypes, debouncedUserEmail, startDate, endDate, resourceTypes, severity, result]);
+
+  // Count active filters for badge
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (eventTypes.length > 0) count++;
+    if (debouncedUserEmail.trim()) count++;
+    if (startDate) count++;
+    if (endDate) count++;
+    if (resourceTypes.length > 0) count++;
+    if (severity) count++;
+    if (result) count++;
+    return count;
+  }, [eventTypes, debouncedUserEmail, startDate, endDate, resourceTypes, severity, result]);
+
   const loadLogs = useCallback(async () => {
     setLoading(true);
     try {
-      // Load last 500 logs (more recent entries, better performance)
-      const allLogs = await auditLogService.getLogs(1, 500);
-      setLogs(allLogs);
+      const response = await auditLogService.fetchLogs(activeFilters);
+      const transformedLogs = response.data.map((log) => auditLogService.transformToFrontendFormat(log));
+
+      // Client-side filtering for multiple event types (API only supports one)
+      let filteredLogs = transformedLogs;
+      if (eventTypes.length > 1) {
+        filteredLogs = transformedLogs.filter((log) => eventTypes.includes(log.action));
+      }
+      if (resourceTypes.length > 1) {
+        filteredLogs = filteredLogs.filter((log) => resourceTypes.includes(log.targetType));
+      }
+
+      setLogs(filteredLogs);
+      setTotalLogs(response.pagination.totalItems);
     } catch (error) {
       console.error('Failed to load audit logs:', error);
       notification.showError(t('auditLogs.notifications.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [notification, t]);
+  }, [activeFilters, eventTypes, resourceTypes, notification, t]);
 
+  // Reload when filters change
   useEffect(() => {
     loadLogs();
   }, [loadLogs]);
 
-  // Apply sorting
-  const sortedLogs = useMemo(() => {
-    const sorted = [...logs];
-    if (sortStatus.columnAccessor === 'timestamp') {
-      sorted.sort((a, b) => {
-        const aTime = new Date(a.timestamp).getTime();
-        const bTime = new Date(b.timestamp).getTime();
-        return sortStatus.direction === 'asc' ? aTime - bTime : bTime - aTime;
-      });
-    }
-    return sorted;
-  }, [logs, sortStatus]);
-
-  // Calculate stats
+  // Calculate stats from loaded logs
   const todayCount = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return logs.filter((l) => l.timestamp >= today).length;
   }, [logs]);
 
+  // Clear all filters
+  const handleClearFilters = useCallback(() => {
+    setEventTypes([]);
+    setUserEmail('');
+    setStartDate(null);
+    setEndDate(null);
+    setResourceTypes([]);
+    setSeverity(null);
+    setResult(null);
+    setPage(1);
+  }, []);
+
   const handleExport = useCallback(async () => {
     setIsExporting(true);
     try {
-      const json = await auditLogService.exportLogs();
+      const json = await auditLogService.exportLogs(activeFilters);
       const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -98,14 +244,14 @@ const AuditLogViewer: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      notification.showSuccess(t('auditLogs.notifications.exportSuccess', { count: logs.length }));
+      notification.showSuccess(t('auditLogs.notifications.exportSuccess', { count: totalLogs }));
     } catch (error) {
       console.error('Failed to export logs:', error);
       notification.showError(t('auditLogs.notifications.exportFailed'));
     } finally {
       setIsExporting(false);
     }
-  }, [logs.length, notification, t]);
+  }, [activeFilters, totalLogs, notification, t]);
 
   // mantine-datatable column definitions
   const { effectiveColumns } = useDataTableColumns<AuditLog>({
@@ -230,6 +376,113 @@ const AuditLogViewer: React.FC = () => {
           </Group>
         </Group>
 
+        {/* Filter Section */}
+        <Paper withBorder p="md" radius="md">
+          <Group justify="space-between" mb={filtersVisible ? 'md' : 0}>
+            <Group>
+              <Button
+                variant="light"
+                onClick={() => setFiltersVisible(!filtersVisible)}
+                rightSection={filtersVisible ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              >
+                {filtersVisible ? t('auditLogs.actions.hideFilters') : t('auditLogs.actions.showFilters')}
+              </Button>
+              {activeFilterCount > 0 && (
+                <Badge color="blue" variant="filled" size="lg">
+                  {t('auditLogs.filters.activeFilters', { count: activeFilterCount })}
+                </Badge>
+              )}
+            </Group>
+            {activeFilterCount > 0 && (
+              <Button variant="subtle" color="red" onClick={handleClearFilters} leftSection={<X size={16} />}>
+                {t('auditLogs.actions.clearFilters')}
+              </Button>
+            )}
+          </Group>
+
+          <Collapse in={filtersVisible}>
+            <Stack gap="md">
+              <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
+                {/* Event Type Filter */}
+                <MultiSelect
+                  label={t('auditLogs.filters.eventType')}
+                  placeholder={t('auditLogs.filters.eventTypePlaceholder')}
+                  data={EVENT_TYPE_OPTIONS}
+                  value={eventTypes}
+                  onChange={setEventTypes}
+                  searchable
+                  clearable
+                  maxDropdownHeight={300}
+                />
+
+                {/* User Email Filter */}
+                <TextInput
+                  label={t('auditLogs.filters.userEmail')}
+                  placeholder={t('auditLogs.filters.userEmailPlaceholder')}
+                  value={userEmail}
+                  onChange={(e) => setUserEmail(e.currentTarget.value)}
+                  rightSection={userEmail && <ActionIcon size="sm" variant="subtle" onClick={() => setUserEmail('')}><X size={14} /></ActionIcon>}
+                />
+
+                {/* Resource Type Filter */}
+                <MultiSelect
+                  label={t('auditLogs.filters.resourceType')}
+                  placeholder={t('auditLogs.filters.resourceTypePlaceholder')}
+                  data={RESOURCE_TYPE_OPTIONS}
+                  value={resourceTypes}
+                  onChange={setResourceTypes}
+                  searchable
+                  clearable
+                  maxDropdownHeight={300}
+                />
+
+                {/* Start Date Filter */}
+                <DatePickerInput
+                  label={t('auditLogs.filters.startDate')}
+                  placeholder="Select start date"
+                  value={startDate}
+                  onChange={(value) => setStartDate(value ? new Date(value) : null)}
+                  clearable
+                  maxDate={endDate || undefined}
+                />
+
+                {/* End Date Filter */}
+                <DatePickerInput
+                  label={t('auditLogs.filters.endDate')}
+                  placeholder="Select end date"
+                  value={endDate}
+                  onChange={(value) => setEndDate(value ? new Date(value) : null)}
+                  clearable
+                  minDate={startDate || undefined}
+                />
+
+                {/* Severity Filter */}
+                <Select
+                  label={t('auditLogs.filters.severity')}
+                  placeholder={t('auditLogs.filters.severityPlaceholder')}
+                  data={SEVERITY_OPTIONS}
+                  value={severity}
+                  onChange={setSeverity}
+                  clearable
+                />
+
+                {/* Result Filter */}
+                <Select
+                  label={t('auditLogs.filters.result')}
+                  placeholder={t('auditLogs.filters.resultPlaceholder')}
+                  data={[
+                    { value: 'success', label: t('auditLogs.filters.success') },
+                    { value: 'failure', label: t('auditLogs.filters.failure') },
+                  ]}
+                  value={result}
+                  onChange={setResult}
+                  clearable
+                />
+              </SimpleGrid>
+            </Stack>
+          </Collapse>
+        </Paper>
+
         {/* Stats Cards - Mantine Paper Components */}
         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
           <Paper withBorder p="md" radius="md">
@@ -239,7 +492,7 @@ const AuditLogViewer: React.FC = () => {
                   {t('auditLogs.stats.totalLogs')}
                 </Text>
                 <Text fw={700} size="xl" component="p" aria-live="polite">
-                  {logs.length}
+                  {totalLogs}
                 </Text>
               </div>
               <ThemeIcon color="blue" variant="light" size={38} radius="md" aria-hidden="true">
@@ -281,7 +534,7 @@ const AuditLogViewer: React.FC = () => {
               <Skeleton height={50} radius="md" />
               <Skeleton height={50} radius="md" />
             </Stack>
-          ) : sortedLogs.length === 0 && !loading ? (
+          ) : logs.length === 0 && !loading ? (
             <Paper p="xl" withBorder radius="md" style={{ textAlign: 'center' }}>
               <Stack align="center" gap="md">
                 <Shield size={48} style={{ color: 'var(--mantine-color-gray-5)' }} />
@@ -305,17 +558,15 @@ const AuditLogViewer: React.FC = () => {
           ) : (
             <DataTable
               {...defaultDataTableProps}
-              records={sortedLogs.slice((page - 1) * pageSize, page * pageSize)}
+              records={logs}
               columns={effectiveColumns}
               storeColumnsKey="audit-log-grid"
-              totalRecords={sortedLogs.length}
+              totalRecords={totalLogs}
               page={page}
               onPageChange={setPage}
               recordsPerPage={pageSize}
               onRecordsPerPageChange={setPageSize}
               recordsPerPageOptions={[10, 25, 50, 100]}
-              sortStatus={sortStatus}
-              onSortStatusChange={setSortStatus}
               fetching={loading}
               withTableBorder
               withColumnBorders

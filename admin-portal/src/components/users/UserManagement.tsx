@@ -466,10 +466,13 @@ const UserManagement: React.FC = () => {
                   <Text size="sm">User.Read.All - Read all user profiles</Text>
                 </li>
                 <li>
-                  <Text size="sm">User.ReadWrite.All - Read and write all user profiles</Text>
+                  <Text size="sm">User.ReadWrite.All - Create, update, and delete users</Text>
                 </li>
                 <li>
-                  <Text size="sm">Directory.Read.All - Read directory data</Text>
+                  <Text size="sm">Application.Read.All - Read service principal metadata</Text>
+                </li>
+                <li>
+                  <Text size="sm">AppRoleAssignment.ReadWrite.All - Manage app role assignments</Text>
                 </li>
               </ul>
               <Button

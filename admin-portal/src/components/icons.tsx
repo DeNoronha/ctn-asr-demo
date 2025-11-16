@@ -129,3 +129,10 @@ export const Moon: React.FC<IconProps> = (props) => <Icon {...props} icon="🌙"
 export const MapPin: React.FC<IconProps> = (props) => (
   <Icon {...props} icon="📍" label="Location" />
 );
+export const ChevronUp: React.FC<IconProps> = (props) => (
+  <Icon {...props} icon="▲" label="Collapse" />
+);
+export const ChevronDown: React.FC<IconProps> = (props) => (
+  <Icon {...props} icon="▼" label="Expand" />
+);
+export const X: React.FC<IconProps> = (props) => <Icon {...props} icon="✕" label="Close" />;

@@ -282,5 +282,65 @@
     "notFound": "Die angeforderte Ressource wurde nicht gefunden.",
     "validationError": "Bitte korrigieren Sie die Fehler im Formular.",
     "unknownError": "Ein unbekannter Fehler ist aufgetreten."
+  },
+  "auditLogs": {
+    "title": "Audit-Protokolle",
+    "actions": {
+      "refresh": "Aktualisieren",
+      "exportLogs": "Protokolle exportieren",
+      "clearFilters": "Filter löschen",
+      "applyFilters": "Filter anwenden",
+      "showFilters": "Filter anzeigen",
+      "hideFilters": "Filter ausblenden"
+    },
+    "filters": {
+      "title": "Protokolle filtern",
+      "eventType": "Ereignistyp",
+      "eventTypePlaceholder": "Ereignistypen auswählen...",
+      "userEmail": "Benutzer-E-Mail",
+      "userEmailPlaceholder": "Nach E-Mail suchen...",
+      "dateRange": "Datumsbereich",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum",
+      "resourceType": "Ressourcentyp",
+      "resourceTypePlaceholder": "Ressourcentypen auswählen...",
+      "severity": "Schweregrad",
+      "severityPlaceholder": "Schweregrad auswählen...",
+      "result": "Ergebnis",
+      "resultPlaceholder": "Ergebnis auswählen...",
+      "activeFilters": "{{count}} aktiver Filter",
+      "activeFilters_plural": "{{count}} aktive Filter",
+      "noFiltersActive": "Keine aktiven Filter",
+      "allResults": "Alle Ergebnisse",
+      "success": "Erfolg",
+      "failure": "Fehler"
+    },
+    "columns": {
+      "timestamp": "Zeitstempel",
+      "action": "Aktion",
+      "user": "Benutzer",
+      "role": "Rolle",
+      "details": "Details",
+      "targetType": "Zieltyp"
+    },
+    "details": {
+      "targetLabel": "Ziel:"
+    },
+    "stats": {
+      "totalLogs": "Gesamtprotokolle",
+      "totalLogsDescription": "Alle Audit-Einträge",
+      "todaysActivity": "Heutige Aktivität",
+      "todaysActivityDescription": "Protokolle der letzten 24 Stunden"
+    },
+    "notifications": {
+      "loadFailed": "Audit-Protokolle konnten nicht geladen werden",
+      "exportSuccess": "{{count}} Audit-Protokolle erfolgreich exportiert",
+      "exportFailed": "Audit-Protokolle konnten nicht exportiert werden"
+    },
+    "emptyState": {
+      "title": "Keine Audit-Protokolle gefunden",
+      "description": "Systemaktivitäten werden hier automatisch aufgezeichnet. Audit-Protokolle verfolgen Benutzeraktionen, Zugriffsereignisse und sicherheitsrelevante Vorgänge.",
+      "refresh": "Protokolle aktualisieren"
+    }
   }
 }

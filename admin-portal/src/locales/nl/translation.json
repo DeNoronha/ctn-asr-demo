@@ -282,5 +282,65 @@
     "notFound": "De gevraagde resource is niet gevonden.",
     "validationError": "Corrigeer de fouten in het formulier.",
     "unknownError": "Er is een onbekende fout opgetreden."
+  },
+  "auditLogs": {
+    "title": "Auditlogs",
+    "actions": {
+      "refresh": "Vernieuwen",
+      "exportLogs": "Logs exporteren",
+      "clearFilters": "Filters wissen",
+      "applyFilters": "Filters toepassen",
+      "showFilters": "Filters tonen",
+      "hideFilters": "Filters verbergen"
+    },
+    "filters": {
+      "title": "Logs filteren",
+      "eventType": "Gebeurtenistype",
+      "eventTypePlaceholder": "Selecteer gebeurtenistypen...",
+      "userEmail": "Gebruikers-e-mail",
+      "userEmailPlaceholder": "Zoeken op e-mail...",
+      "dateRange": "Datumbereik",
+      "startDate": "Startdatum",
+      "endDate": "Einddatum",
+      "resourceType": "Brontype",
+      "resourceTypePlaceholder": "Selecteer brontypes...",
+      "severity": "Ernst",
+      "severityPlaceholder": "Selecteer ernst...",
+      "result": "Resultaat",
+      "resultPlaceholder": "Selecteer resultaat...",
+      "activeFilters": "{{count}} actief filter",
+      "activeFilters_plural": "{{count}} actieve filters",
+      "noFiltersActive": "Geen actieve filters",
+      "allResults": "Alle resultaten",
+      "success": "Succes",
+      "failure": "Mislukking"
+    },
+    "columns": {
+      "timestamp": "Tijdstempel",
+      "action": "Actie",
+      "user": "Gebruiker",
+      "role": "Rol",
+      "details": "Details",
+      "targetType": "Doeltype"
+    },
+    "details": {
+      "targetLabel": "Doel:"
+    },
+    "stats": {
+      "totalLogs": "Totaal logs",
+      "totalLogsDescription": "Alle auditgegevens",
+      "todaysActivity": "Activiteit vandaag",
+      "todaysActivityDescription": "Logs van afgelopen 24 uur"
+    },
+    "notifications": {
+      "loadFailed": "Kon auditlogs niet laden",
+      "exportSuccess": "{{count}} auditlogs succesvol geëxporteerd",
+      "exportFailed": "Kon auditlogs niet exporteren"
+    },
+    "emptyState": {
+      "title": "Geen auditlogs gevonden",
+      "description": "Systeemactiviteit wordt hier automatisch vastgelegd. Auditlogs registreren gebruikersacties, toegangsgebeurtenissen en beveiligingsrelevante bewerkingen.",
+      "refresh": "Logs vernieuwen"
+    }
   }
 }

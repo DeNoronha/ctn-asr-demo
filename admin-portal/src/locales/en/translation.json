@@ -346,7 +346,33 @@
     "title": "Audit Logs",
     "actions": {
       "refresh": "Refresh",
-      "exportLogs": "Export Logs"
+      "exportLogs": "Export Logs",
+      "clearFilters": "Clear Filters",
+      "applyFilters": "Apply Filters",
+      "showFilters": "Show Filters",
+      "hideFilters": "Hide Filters"
+    },
+    "filters": {
+      "title": "Filter Logs",
+      "eventType": "Event Type",
+      "eventTypePlaceholder": "Select event types...",
+      "userEmail": "User Email",
+      "userEmailPlaceholder": "Search by email...",
+      "dateRange": "Date Range",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "resourceType": "Resource Type",
+      "resourceTypePlaceholder": "Select resource types...",
+      "severity": "Severity",
+      "severityPlaceholder": "Select severity...",
+      "result": "Result",
+      "resultPlaceholder": "Select result...",
+      "activeFilters": "{{count}} active filter",
+      "activeFilters_plural": "{{count}} active filters",
+      "noFiltersActive": "No filters active",
+      "allResults": "All Results",
+      "success": "Success",
+      "failure": "Failure"
     },
     "columns": {
       "timestamp": "Timestamp",
