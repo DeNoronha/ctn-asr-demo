@@ -117,6 +117,32 @@ steps:
       npm --version
     displayName: 'Display Node and NPM versions'
 
+  # ========================================
+  # Cache: Root node_modules
+  # Saves ~2-3 minutes on cache hit
+  # ========================================
+  - task: Cache@2
+    displayName: 'Cache root node_modules'
+    inputs:
+      key: 'npm | "$(Agent.OS)" | package-lock.json'
+      restoreKeys: |
+        npm | "$(Agent.OS)"
+      path: node_modules
+      cacheHitVar: ROOT_NODE_MODULES_CACHE_RESTORED
+
+  # ========================================
+  # Cache: Admin Portal node_modules
+  # Saves ~1 minute on cache hit
+  # ========================================
+  - task: Cache@2
+    displayName: 'Cache admin-portal node_modules'
+    inputs:
+      key: 'npm-admin | "$(Agent.OS)" | admin-portal/package.json | package-lock.json'
+      restoreKeys: |
+        npm-admin | "$(Agent.OS)"
+      path: admin-portal/node_modules
+      cacheHitVar: ADMIN_NODE_MODULES_CACHE_RESTORED
+
   - script: |
       npm ci --legacy-peer-deps
       # Verify workspace symlinks are correct
@@ -319,6 +345,19 @@ steps:
       chmod +x scripts/generate-version.sh
       ./scripts/generate-version.sh admin-portal/public
     displayName: 'Generate version.json with build metadata'
+
+  # ========================================
+  # Cache: Vite build cache
+  # Saves ~2 minutes on cache hit by reusing compiled modules
+  # ========================================
+  - task: Cache@2
+    displayName: 'Cache Vite build cache'
+    inputs:
+      key: 'vite-admin | "$(Agent.OS)" | admin-portal/package.json | package-lock.json'
+      restoreKeys: |
+        vite-admin | "$(Agent.OS)"
+      path: admin-portal/node_modules/.vite
+      cacheHitVar: VITE_CACHE_RESTORED
 
   - script: |
       npm run build -w admin-portal

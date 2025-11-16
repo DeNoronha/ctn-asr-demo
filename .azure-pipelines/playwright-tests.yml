@@ -48,6 +48,32 @@ stages:
             inputs:
               versionSpec: $(nodeVersion)
 
+          # ========================================
+          # Cache: Root node_modules
+          # Saves ~2-3 minutes on cache hit
+          # ========================================
+          - task: Cache@2
+            displayName: 'Cache root node_modules'
+            inputs:
+              key: 'npm | "$(Agent.OS)" | package-lock.json'
+              restoreKeys: |
+                npm | "$(Agent.OS)"
+              path: node_modules
+              cacheHitVar: ROOT_NODE_MODULES_CACHE_RESTORED
+
+          # ========================================
+          # Cache: Playwright browsers
+          # Saves ~1-2 minutes on cache hit
+          # ========================================
+          - task: Cache@2
+            displayName: 'Cache Playwright browsers'
+            inputs:
+              key: 'playwright | "$(Agent.OS)" | package-lock.json'
+              restoreKeys: |
+                playwright | "$(Agent.OS)"
+              path: ~/.cache/ms-playwright
+              cacheHitVar: PLAYWRIGHT_BROWSERS_CACHE_RESTORED
+
           - script: |
               npm ci --legacy-peer-deps
             displayName: 'Install dependencies'

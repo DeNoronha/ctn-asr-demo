@@ -49,6 +49,32 @@ stages:
               npm --version
             displayName: 'Display Node and NPM versions'
 
+          # ========================================
+          # Cache: Root node_modules
+          # Saves ~2-3 minutes on cache hit
+          # ========================================
+          - task: Cache@2
+            displayName: 'Cache root node_modules'
+            inputs:
+              key: 'npm | "$(Agent.OS)" | package-lock.json'
+              restoreKeys: |
+                npm | "$(Agent.OS)"
+              path: node_modules
+              cacheHitVar: ROOT_NODE_MODULES_CACHE_RESTORED
+
+          # ========================================
+          # Cache: API node_modules
+          # Saves ~3 minutes on cache hit (50+ dependencies)
+          # ========================================
+          - task: Cache@2
+            displayName: 'Cache API node_modules'
+            inputs:
+              key: 'npm-api | "$(Agent.OS)" | api/package.json | api/package-lock.json'
+              restoreKeys: |
+                npm-api | "$(Agent.OS)"
+              path: api/node_modules
+              cacheHitVar: API_NODE_MODULES_CACHE_RESTORED
+
           # Install dependencies at root level (monorepo)
           - script: |
               npm ci --legacy-peer-deps
