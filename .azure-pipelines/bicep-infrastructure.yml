@@ -52,6 +52,74 @@ stages:
                 az bicep build --file main.bicep
                 echo "✅ Bicep syntax validation passed"
 
+          # ========================================
+          # Checkov - IaC Security Scanning
+          # Scans Bicep files for misconfigurations
+          # ========================================
+          - script: |
+              echo "☁️ Installing Checkov..."
+              pip3 install checkov
+              checkov --version
+            displayName: 'Install Checkov'
+
+          - script: |
+              echo "☁️ Scanning Bicep files for security misconfigurations..."
+              checkov --framework bicep \
+                --directory infrastructure/bicep \
+                --output cli \
+                --output json \
+                --output-file-path $(Build.ArtifactStagingDirectory)/checkov-results \
+                --soft-fail || true
+
+              echo ""
+              echo "📊 Checkov Summary:"
+              echo "Results saved to: $(Build.ArtifactStagingDirectory)/checkov-results"
+            displayName: 'Checkov: IaC security scan'
+            continueOnError: true
+
+          # ========================================
+          # Trivy - IaC Configuration Scanning
+          # Alternative IaC scanner for Bicep
+          # ========================================
+          - script: |
+              echo "🔍 Installing Trivy security scanner..."
+              sudo apt-get update -qq
+              sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+              wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+              echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+              sudo apt-get update -qq
+              sudo apt-get install -y trivy
+              trivy --version
+            displayName: 'Install Trivy'
+
+          - script: |
+              echo "🔍 Trivy: Scanning IaC configurations..."
+              trivy config --exit-code 0 --severity HIGH,CRITICAL infrastructure/bicep/
+            displayName: 'Trivy: IaC configuration scan'
+            continueOnError: true
+
+          # ========================================
+          # Gitleaks - Secret Scanning (Git History)
+          # Scans entire git history for leaked secrets
+          # ========================================
+          - script: |
+              echo "🔐 Installing Gitleaks..."
+              wget -q https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_linux_x64.tar.gz
+              tar -xzf gitleaks_8.18.0_linux_x64.tar.gz
+              sudo mv gitleaks /usr/local/bin/
+              gitleaks version
+            displayName: 'Install Gitleaks'
+
+          - script: |
+              echo "🔐 Scanning for secrets in git history..."
+              gitleaks detect \
+                --source=. \
+                --report-path=gitleaks-report.json \
+                --exit-code=1 \
+                --verbose
+            displayName: 'Gitleaks: Secret scanning (git history)'
+            continueOnError: false
+
           - task: AzureCLI@2
             displayName: 'Bicep What-If Analysis (Dev)'
             inputs:

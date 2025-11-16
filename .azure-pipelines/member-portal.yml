@@ -152,6 +152,74 @@ steps:
       dataDirectory: $(Pipeline.Workspace)/.owasp-dependency-check-data  # Use cached NVD data
 
   # ========================================
+  # Enhanced Trivy - Secret Scanning
+  # ========================================
+  - script: |
+      echo "🔐 Trivy: Scanning for secrets in code..."
+      trivy fs --scanners secret --exit-code 1 --severity HIGH,CRITICAL .
+    displayName: 'Trivy: Secret scanning'
+    continueOnError: false
+
+  # ========================================
+  # Semgrep - SAST (Static Application Security Testing)
+  # Detects: SQL injection, XSS, auth bugs, crypto issues
+  # ========================================
+  - script: |
+      echo "🔍 Installing Semgrep..."
+      pip3 install semgrep
+      semgrep --version
+    displayName: 'Install Semgrep'
+
+  - script: |
+      echo "🔍 Running Semgrep security analysis..."
+      semgrep scan --config=auto \
+        --severity=ERROR \
+        --severity=WARNING \
+        --exclude='node_modules' \
+        --exclude='dist' \
+        --exclude='*.test.ts' \
+        --exclude='*.spec.ts' \
+        --exclude='e2e' \
+        --json \
+        --output=semgrep-results.json \
+        member-portal/ || true
+
+      echo ""
+      echo "📊 Semgrep Results Summary:"
+      semgrep scan --config=auto \
+        --severity=ERROR \
+        --exclude='node_modules' \
+        --exclude='dist' \
+        --exclude='*.test.ts' \
+        --exclude='*.spec.ts' \
+        --exclude='e2e' \
+        member-portal/
+    displayName: 'Semgrep: SAST security scan'
+    continueOnError: true
+
+  # ========================================
+  # Gitleaks - Secret Scanning (Git History)
+  # Scans entire git history for leaked secrets
+  # ========================================
+  - script: |
+      echo "🔐 Installing Gitleaks..."
+      wget -q https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_linux_x64.tar.gz
+      tar -xzf gitleaks_8.18.0_linux_x64.tar.gz
+      sudo mv gitleaks /usr/local/bin/
+      gitleaks version
+    displayName: 'Install Gitleaks'
+
+  - script: |
+      echo "🔐 Scanning for secrets in git history..."
+      gitleaks detect \
+        --source=. \
+        --report-path=gitleaks-report.json \
+        --exit-code=1 \
+        --verbose
+    displayName: 'Gitleaks: Secret scanning (git history)'
+    continueOnError: false
+
+  # ========================================
   # Verify API Deployment
   # Member portal depends on ASR API - verify it's deployed and healthy
   # ========================================
