@@ -1,0 +1,247 @@
+import { Button, Group, Modal, Select, Stack, TextInput } from '@mantine/core';
+import type React from 'react';
+import { helpContent } from '../../config/helpContent';
+import { COUNTRY_IDENTIFIER_MAP, IDENTIFIER_VALIDATION } from '../../hooks/useIdentifiers';
+import type { LegalEntityIdentifier } from '../../services/apiV2';
+import { getDescribedById, getValidationProps } from '../../utils/aria';
+import { TEXT_COLORS, getStatusColor } from '../../utils/colors';
+import { ConfirmDialog } from '../ConfirmDialog';
+import { ConditionalField } from '../forms/ConditionalField';
+import { HelpTooltip } from '../help/HelpTooltip';
+import { AlertTriangle } from '../icons';
+
+const VALIDATION_STATUSES = ['PENDING', 'VALIDATED', 'FAILED', 'EXPIRED'];
+
+interface IdentifierDialogProps {
+  isOpen: boolean;
+  editingIdentifier: LegalEntityIdentifier | null;
+  formData: Partial<LegalEntityIdentifier>;
+  setFormData: (data: Partial<LegalEntityIdentifier>) => void;
+  availableIdentifierTypes: string[];
+  validationError: string;
+  isValidIdentifier: boolean;
+  onSave: () => Promise<void>;
+  onCancel: () => void;
+  onCountryCodeChange: (code: string) => void;
+  onIdentifierTypeChange: (type: string) => void;
+  onIdentifierValueChange: (value: string) => void;
+}
+
+export const IdentifierDialog: React.FC<IdentifierDialogProps> = ({
+  isOpen,
+  editingIdentifier,
+  formData,
+  setFormData,
+  availableIdentifierTypes,
+  validationError,
+  isValidIdentifier,
+  onSave,
+  onCancel,
+  onCountryCodeChange,
+  onIdentifierTypeChange,
+  onIdentifierValueChange,
+}) => {
+  return (
+    <Modal
+      opened={isOpen}
+      onClose={onCancel}
+      title={editingIdentifier ? 'Edit Identifier' : 'Add Identifier'}
+      size="lg"
+    >
+      <div className="identifier-form">
+        <div className="form-field">
+          <TextInput
+            label={
+              <>
+                Country Code *
+                <HelpTooltip
+                  content={helpContent.identifierCountry}
+                  dataTestId="country-code-help"
+                />
+              </>
+            }
+            value={formData.country_code || ''}
+            onChange={(e) => onCountryCodeChange(e.target.value)}
+            placeholder="e.g., NL, DE, BE, FR, GB"
+            maxLength={2}
+          />
+          <span className="field-hint">
+            Enter country code first to see applicable identifier types
+          </span>
+        </div>
+
+        <div className="form-field">
+          <Select
+            label={
+              <>
+                Identifier Type *
+                <HelpTooltip
+                  content={helpContent.identifierType}
+                  dataTestId="identifier-type-help"
+                />
+              </>
+            }
+            data={availableIdentifierTypes}
+            value={formData.identifier_type}
+            onChange={(value) => onIdentifierTypeChange(value || '')}
+            disabled={!formData.country_code || availableIdentifierTypes.length === 0}
+            placeholder={formData.country_code ? 'Select type...' : 'Enter country code first'}
+          />
+          {!formData.country_code ? (
+            <span
+              className="field-hint field-hint-warning"
+              style={{ color: TEXT_COLORS.error, fontWeight: 500 }}
+            >
+              ⚠️ Please enter country code first to see applicable types
+            </span>
+          ) : availableIdentifierTypes.length === 0 ? (
+            <span
+              className="field-hint field-hint-warning"
+              style={{ color: TEXT_COLORS.error, fontWeight: 500 }}
+            >
+              ⚠️ No identifier types available for country code "{formData.country_code}"
+            </span>
+          ) : (
+            <span
+              className="field-hint"
+              style={{ color: getStatusColor('ACTIVE'), fontWeight: 500 }}
+            >
+              ✓ Available types for {formData.country_code.toUpperCase()}:{' '}
+              {availableIdentifierTypes.join(', ')}
+            </span>
+          )}
+        </div>
+
+        <div className="form-field">
+          <TextInput
+            label={
+              <>
+                Identifier Value *
+                <HelpTooltip
+                  content={helpContent.identifierValue}
+                  dataTestId="identifier-value-help"
+                />
+              </>
+            }
+            id="identifier_value"
+            value={formData.identifier_value || ''}
+            onChange={(e) => onIdentifierValueChange(e.target.value)}
+            placeholder="Enter identifier value"
+            className={
+              validationError
+                ? 'input-error'
+                : isValidIdentifier && formData.identifier_value
+                  ? 'input-success'
+                  : ''
+            }
+            {...getValidationProps('identifier_value', validationError || undefined)}
+          />
+          {formData.identifier_type && IDENTIFIER_VALIDATION[formData.identifier_type] && (
+            <span
+              id={getDescribedById('identifier_value', 'hint')}
+              className="field-hint validation-hint"
+            >
+              Format: {IDENTIFIER_VALIDATION[formData.identifier_type].description} (e.g.,{' '}
+              {IDENTIFIER_VALIDATION[formData.identifier_type].example})
+            </span>
+          )}
+          {validationError && (
+            <span id={getDescribedById('identifier_value', 'error')} className="field-error">
+              {validationError}
+            </span>
+          )}
+          {isValidIdentifier && formData.identifier_value && formData.identifier_type && (
+            <span className="field-success">✓ Valid format</span>
+          )}
+        </div>
+
+        <ConditionalField show={!!formData.identifier_type}>
+          <div className="form-field">
+            <TextInput
+              label="Registry Name"
+              value={formData.registry_name || ''}
+              onChange={(e) => setFormData({ ...formData, registry_name: e.target.value })}
+              placeholder="Auto-populated based on identifier type"
+            />
+            <span className="field-hint">Auto-populated when identifier type is selected</span>
+          </div>
+
+          <div className="form-field">
+            <TextInput
+              label="Registry URL"
+              value={formData.registry_url || ''}
+              onChange={(e) => setFormData({ ...formData, registry_url: e.target.value })}
+              placeholder="Auto-populated based on identifier type"
+            />
+            <span className="field-hint">Auto-populated when identifier type is selected</span>
+          </div>
+        </ConditionalField>
+
+        <ConditionalField show={!!formData.identifier_value && !!formData.identifier_type}>
+          <div className="form-field">
+            <Select
+              label="Validation Status"
+              data={VALIDATION_STATUSES}
+              value={formData.validation_status}
+              onChange={(value) =>
+                setFormData({
+                  ...formData,
+                  validation_status: value as LegalEntityIdentifier['validation_status'],
+                })
+              }
+            />
+          </div>
+
+          <div className="form-field">
+            <TextInput
+              label="Verification Notes"
+              value={formData.verification_notes || ''}
+              onChange={(e) => setFormData({ ...formData, verification_notes: e.target.value })}
+              placeholder="Any notes about verification"
+            />
+          </div>
+        </ConditionalField>
+      </div>
+
+      <Group mt="xl" justify="flex-end">
+        <Button onClick={onCancel} variant="default">
+          Cancel
+        </Button>
+        <Button
+          color="blue"
+          onClick={onSave}
+          disabled={!isValidIdentifier || !formData.identifier_type || !formData.identifier_value}
+        >
+          {editingIdentifier ? 'Update' : 'Add'}
+        </Button>
+      </Group>
+    </Modal>
+  );
+};
+
+interface DeleteConfirmDialogProps {
+  isOpen: boolean;
+  identifier: LegalEntityIdentifier | null;
+  onConfirm: () => Promise<void>;
+  onCancel: () => void;
+}
+
+export const DeleteConfirmDialog: React.FC<DeleteConfirmDialogProps> = ({
+  isOpen,
+  identifier,
+  onConfirm,
+  onCancel,
+}) => {
+  return (
+    <ConfirmDialog
+      isOpen={isOpen}
+      title="Delete Identifier"
+      message={`Are you sure you want to delete the ${identifier?.identifier_type} identifier "${identifier?.identifier_value}"? This action cannot be undone.`}
+      confirmLabel="Delete"
+      confirmTheme="error"
+      icon={<AlertTriangle size={24} />}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    />
+  );
+};
