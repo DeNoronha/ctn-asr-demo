@@ -165,15 +165,15 @@ export async function listUsers(): Promise<User[]> {
         const appRoleResponse = await client.api(`/users/${graphUser.id}/appRoleAssignments`).get();
         const roles = extractRoles(appRoleResponse.value);
 
-        // Include user even if they don't have explicit app roles
-        // Default to Member role if no roles assigned
-        const finalRoles = roles.length > 0 ? roles : [UserRole.MEMBER];
-
-        users.push(mapGraphUser(graphUser, finalRoles));
+        // Only include users who have explicit CTN app role assignments
+        if (roles.length > 0) {
+          users.push(mapGraphUser(graphUser, roles));
+        } else {
+          logger.log(`Skipping user ${graphUser.userPrincipalName} - no CTN app roles assigned`);
+        }
       } catch (error) {
         logger.warn(`Failed to get roles for user ${graphUser.id}:`, error);
-        // Include user with default Member role if role fetch fails
-        users.push(mapGraphUser(graphUser, [UserRole.MEMBER]));
+        // Skip user if role fetch fails
       }
     }
 
