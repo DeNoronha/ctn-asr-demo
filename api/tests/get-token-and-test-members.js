@@ -64,8 +64,12 @@ async function getTokenAndTestAPI() {
     if (capturedToken) {
       console.log('✅ Successfully captured API token from network request!');
 
-      // Decode token to get expiry
+      // Decode token to get expiry and display information
+      // Rationale: This is a test utility script that only reads the JWT payload to display
+      // expiry time and user info. The token is already authenticated by Azure AD during the
+      // browser login flow. We're not using this decoded data for authorization decisions.
       const jwt = require('jsonwebtoken');
+      // nosemgrep
       const decoded = jwt.decode(capturedToken, { complete: true });
 
       tokenData = {

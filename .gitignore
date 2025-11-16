@@ -40,6 +40,9 @@ zitadel-credentials.json
 local.settings.json
 api/local.settings.json
 
+# API test tokens (cached JWT tokens for testing)
+api/tests/.auth-token
+
 # Claude Code local settings (may contain sensitive data)
 .claude/settings.local.json
 

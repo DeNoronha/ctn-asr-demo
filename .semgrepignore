@@ -50,6 +50,9 @@ playwright/.auth/
 **/playwright/.auth/
 *.auth.json
 
+# API test tokens (cached JWT tokens)
+api/tests/.auth-token
+
 # Extracted systems (no longer in this repo)
 booking-portal/
 orchestrator/
