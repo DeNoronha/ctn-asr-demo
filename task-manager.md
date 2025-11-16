@@ -737,6 +737,20 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 - **Testing:** TypeScript compilation passed, pre-commit hook passed (7/7 checks)
 - **Deployment Note:** Azure Function App must have environment variables configured
 
+### TASK-DA-002: User Management - Hardcoded English Text (i18n Violations) ✅
+- **Completed:** November 16, 2025
+- **Commit:** `9c1ca79`
+- **Category:** UX/UI / Internationalization
+- **Impact:** Eliminated English/translated mix for Dutch/German users
+- **Changes:**
+  - Added comprehensive userManagement section to en/translation.json (59 lines)
+  - Updated InviteUserDialog.tsx: 11 translation replacements
+  - Updated EditUserDialog.tsx: 10 translation replacements
+  - Updated UserManagement.tsx: 4 translation replacements
+  - Translation keys: modal titles, labels, role descriptions, buttons, empty state
+- **Translation Coverage:** 100% of hardcoded English strings in User Management
+- **Testing:** TypeScript compilation passed, JSON syntax valid, pre-commit hook passed (7/7 checks)
+
 ---
 
 ## Notes
