@@ -56,6 +56,7 @@ export const IdentifiersSection: React.FC<IdentifiersSectionProps> = ({
         <LoadingState loading={loading} minHeight={300}>
           {legalEntity ? (
             <IdentifiersManager
+              // biome-ignore lint/style/noNonNullAssertion: member.legal_entity_id cannot be null when legalEntity exists
               legalEntityId={member.legal_entity_id!}
               identifiers={identifiers}
               onIdentifierCreate={onIdentifierCreate}
@@ -122,6 +123,7 @@ export const ContactsSection: React.FC<ContactsSectionProps> = ({
         <LoadingState loading={loading} minHeight={300}>
           {legalEntity ? (
             <ContactsManager
+              // biome-ignore lint/style/noNonNullAssertion: legalEntity null-check performed in ternary guard above
               legalEntityId={legalEntity.legal_entity_id!}
               contacts={contacts}
               onContactCreate={onContactCreate}
@@ -195,6 +197,7 @@ export const APIAccessSection: React.FC<APIAccessSectionProps> = ({ member, lega
       <div className="tab-content">
         {legalEntity ? (
           <APIAccessManager
+            // biome-ignore lint/style/noNonNullAssertion: legalEntity null-check performed in ternary guard above
             legalEntityId={legalEntity.legal_entity_id!}
             legalEntityName={legalEntity.primary_legal_name || member.legal_name}
           />
@@ -230,6 +233,7 @@ export const DocumentVerificationSection: React.FC<DocumentVerificationSectionPr
       <div className="tab-content">
         {legalEntity ? (
           <KvkDocumentUpload
+            // biome-ignore lint/style/noNonNullAssertion: legalEntity null-check performed in ternary guard above
             legalEntityId={legalEntity.legal_entity_id!}
             onVerificationComplete={onVerificationComplete}
           />
@@ -260,7 +264,10 @@ export const AuthenticationTierSection: React.FC<AuthenticationTierSectionProps>
     <Tabs.Panel value="authentication-tier" pt="md">
       <div className="tab-content">
         {legalEntity ? (
-          <TierManagement legalEntityId={legalEntity.legal_entity_id!} />
+          <TierManagement
+            // biome-ignore lint/style/noNonNullAssertion: legalEntity null-check performed in ternary guard above
+            legalEntityId={legalEntity.legal_entity_id!}
+          />
         ) : (
           (() => {
             const es = getEmptyState('generic', 'noData');
@@ -286,7 +293,10 @@ export const KvkRegistrySection: React.FC<KvkRegistrySectionProps> = ({ legalEnt
     <Tabs.Panel value="kvk-registry" pt="md">
       <div className="tab-content">
         {legalEntity ? (
-          <KvkRegistryDetails legalEntityId={legalEntity.legal_entity_id!} />
+          <KvkRegistryDetails
+            // biome-ignore lint/style/noNonNullAssertion: legalEntity null-check performed in ternary guard above
+            legalEntityId={legalEntity.legal_entity_id!}
+          />
         ) : (
           (() => {
             const es = getEmptyState('generic', 'noData');

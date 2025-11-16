@@ -277,6 +277,7 @@ const ReviewTasksComponent: React.FC = () => {
         },
       },
       {
+        // biome-ignore lint/suspicious/noExplicitAny: mantine-datatable requires any for custom accessors not in base type
         accessor: 'doc_verification' as any,
         title: 'Doc Verification',
         width: 160,
@@ -296,6 +297,7 @@ const ReviewTasksComponent: React.FC = () => {
         render: (record) => <div>{formatDate(record.document_uploaded_at)}</div>,
       },
       {
+        // biome-ignore lint/suspicious/noExplicitAny: mantine-datatable requires any for custom accessors not in base type
         accessor: 'actions' as any,
         title: 'Actions',
         width: 100,

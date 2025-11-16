@@ -123,6 +123,7 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
     if (!legalEntity) return;
 
     try {
+      // biome-ignore lint/style/noNonNullAssertion: legalEntity null-check performed above
       const updated = await api.updateLegalEntity(legalEntity.legal_entity_id!, data);
       setLegalEntity(updated);
       notification.showSuccess('Company information updated successfully');
@@ -288,7 +289,7 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
     try {
       await apiV2.getKvkRegistryData(legalEntityId);
       setHasKvkRegistryData(true);
-    } catch (error) {
+    } catch (_error) {
       setHasKvkRegistryData(false);
     }
   };
