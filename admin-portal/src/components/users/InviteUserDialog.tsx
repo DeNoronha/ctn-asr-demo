@@ -5,7 +5,7 @@
 
 import { Button, Group, Modal, Select, Text, TextInput } from '@mantine/core';
 import type React from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { UserRole } from '../../auth/authConfig';
 import { UserPlus } from '../icons';
 import './UserManagement.css';
@@ -16,6 +16,7 @@ interface InviteUserDialogProps {
 }
 
 const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ onClose, onInvite }) => {
+  const emailInputRef = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState<UserRole>(UserRole.ASSOCIATION_ADMIN);
@@ -51,8 +52,9 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ onClose, onInvite }
   };
 
   return (
-    <Modal opened onClose={onClose} title="Invite New User" size="md">
+    <Modal opened onClose={onClose} title="Invite New User" size="md" trapFocus>
       <TextInput
+        ref={emailInputRef}
         label="Email Address"
         type="email"
         value={email}
@@ -62,6 +64,7 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ onClose, onInvite }
         description="User will receive an invitation email"
         required
         mb="md"
+        data-autofocus
       />
 
       <TextInput

@@ -5,7 +5,7 @@
 
 import { Button, Checkbox, Group, Modal, Select, Text, TextInput } from '@mantine/core';
 import type React from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { UserRole } from '../../auth/authConfig';
 import { Save } from '../icons';
 import './UserManagement.css';
@@ -26,6 +26,7 @@ interface EditUserDialogProps {
 }
 
 const EditUserDialog: React.FC<EditUserDialogProps> = ({ user, onClose, onUpdate }) => {
+  const roleSelectRef = useRef<HTMLInputElement>(null);
   const [role, setRole] = useState<UserRole>(user.primaryRole);
   const [enabled, setEnabled] = useState(user.enabled);
 
@@ -44,7 +45,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ user, onClose, onUpdate
   };
 
   return (
-    <Modal opened onClose={onClose} title={`Edit User: ${user.name}`} size="md">
+    <Modal opened onClose={onClose} title={`Edit User: ${user.name}`} size="md" trapFocus>
       <TextInput
         label="Email"
         type="email"
@@ -63,6 +64,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ user, onClose, onUpdate
       />
 
       <Select
+        ref={roleSelectRef}
         label="Role"
         value={role}
         onChange={(value) => setRole((value as UserRole) || UserRole.ASSOCIATION_ADMIN)}
@@ -72,6 +74,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ user, onClose, onUpdate
           { value: UserRole.MEMBER, label: 'Member' },
         ]}
         mb="xs"
+        data-autofocus
       />
       <Text size="sm" c="dimmed" mb="md">
         {roleDescriptions[role]}
