@@ -178,61 +178,82 @@ function extractRoles(appRoleAssignments: any[], ctnServicePrincipalId: string):
 }
 
 /**
- * List all users in the directory (excluding service principals and system accounts)
- * Users without explicit app role assignments are assigned a default Member role
+ * List all users assigned to the CTN application
+ * Queries the service principal's appRoleAssignedTo endpoint directly
+ * This is the correct approach - gets ONLY CTN-authorized users
  */
 export async function listUsers(): Promise<User[]> {
   try {
-    logger.log('Fetching users from Microsoft Graph...');
+    logger.log('Fetching CTN application users from Microsoft Graph...');
     const client = await getGraphClient();
 
-    // Get the CTN app's service principal ID for filtering app role assignments
+    // Get the CTN app's service principal ID
     const ctnSpId = await getCtnServicePrincipalId(client);
+    logger.log(`Querying users assigned to CTN service principal: ${ctnSpId}`);
 
-    const response = await client
-      .api('/users')
-      .select([
-        'id',
-        'displayName',
-        'userPrincipalName',
-        'mail',
-        'accountEnabled',
-        'createdDateTime',
-        'signInActivity', // Requires AuditLog.Read.All delegated permission
-      ])
-      .top(100)
+    // CORRECT APPROACH: Query users assigned to THIS service principal
+    // This returns ONLY users who have app role assignments to the CTN app
+    const assignmentsResponse = await client
+      .api(`/servicePrincipals/${ctnSpId}/appRoleAssignedTo`)
+      .select(['principalId', 'principalDisplayName', 'principalType', 'appRoleId'])
       .get();
 
-    const users: User[] = [];
+    logger.log(`Found ${assignmentsResponse.value.length} app role assignments for CTN app`);
 
-    for (const graphUser of response.value) {
-      // Skip service principals and system accounts
-      const isServicePrincipal = graphUser.userType === 'Guest' && !graphUser.mail;
-      const isSystemAccount = graphUser.userPrincipalName?.endsWith('#EXT#@');
+    // Get unique user IDs (principalType === 'User')
+    const userIds = new Set<string>();
+    const rolesByUserId = new Map<string, string[]>();
 
-      if (isServicePrincipal || isSystemAccount) {
-        logger.log(`Skipping system account: ${graphUser.userPrincipalName}`);
-        continue;
-      }
+    for (const assignment of assignmentsResponse.value) {
+      if (assignment.principalType === 'User') {
+        userIds.add(assignment.principalId);
 
-      // Get app role assignments for this user
-      try {
-        const appRoleResponse = await client.api(`/users/${graphUser.id}/appRoleAssignments`).get();
-        const roles = extractRoles(appRoleResponse.value, ctnSpId);
-
-        // Only include users who have explicit CTN app role assignments
-        if (roles.length > 0) {
-          users.push(mapGraphUser(graphUser, roles));
-        } else {
-          logger.log(`Skipping user ${graphUser.userPrincipalName} - no CTN app roles assigned`);
+        // Map appRoleId to role name - we'll fetch full details from user object
+        if (!rolesByUserId.has(assignment.principalId)) {
+          rolesByUserId.set(assignment.principalId, []);
         }
-      } catch (error) {
-        logger.warn(`Failed to get roles for user ${graphUser.id}:`, error);
-        // Skip user if role fetch fails
       }
     }
 
-    logger.log(`Fetched ${users.length} users from Microsoft Graph (excluding service principals)`);
+    logger.log(`Found ${userIds.size} unique users assigned to CTN app`);
+
+    const users: User[] = [];
+
+    // Fetch full user details for each assigned user
+    for (const userId of userIds) {
+      try {
+        const graphUser = await client
+          .api(`/users/${userId}`)
+          .select([
+            'id',
+            'displayName',
+            'userPrincipalName',
+            'mail',
+            'accountEnabled',
+            'createdDateTime',
+            'signInActivity',
+          ])
+          .get();
+
+        // Get this user's app role assignments to determine their CTN roles
+        const userRoleAssignments = await client
+          .api(`/users/${userId}/appRoleAssignments`)
+          .get();
+
+        const roles = extractRoles(userRoleAssignments.value, ctnSpId);
+
+        if (roles.length > 0) {
+          users.push(mapGraphUser(graphUser, roles));
+          logger.log(`✅ Added user: ${graphUser.userPrincipalName} with roles: ${roles.join(', ')}`);
+        } else {
+          logger.warn(`⚠️  User ${graphUser.userPrincipalName} has assignment but no recognized roles`);
+        }
+      } catch (error) {
+        logger.warn(`Failed to fetch user ${userId}:`, error);
+      }
+    }
+
+    logger.log(`Fetched ${users.length} CTN-authorized users from Microsoft Graph`);
     return users;
   } catch (error: any) {
     logger.error('Failed to list users:', error);
