@@ -17,9 +17,22 @@ import {
 } from '../utils/logger';
 import { TIMEOUTS } from '../config/constants';
 
-// Azure AD configuration
-const AZURE_AD_TENANT_ID = process.env.AZURE_AD_TENANT_ID || '598664e7-725c-4daa-bd1f-89c4ada717ff';
-const AZURE_AD_CLIENT_ID = process.env.AZURE_AD_CLIENT_ID || 'd3037c11-a541-4f21-8862-8079137a0cde';
+// Azure AD configuration - REQUIRED environment variables
+const AZURE_AD_TENANT_ID = process.env.AZURE_AD_TENANT_ID;
+const AZURE_AD_CLIENT_ID = process.env.AZURE_AD_CLIENT_ID;
+
+// Validate Azure AD configuration at startup
+if (!AZURE_AD_TENANT_ID || !AZURE_AD_CLIENT_ID) {
+  const missingVars: string[] = [];
+  if (!AZURE_AD_TENANT_ID) missingVars.push('AZURE_AD_TENANT_ID');
+  if (!AZURE_AD_CLIENT_ID) missingVars.push('AZURE_AD_CLIENT_ID');
+
+  throw new Error(
+    `CRITICAL: Azure AD credentials must be configured. Missing environment variables: ${missingVars.join(', ')}. ` +
+    `Set these variables in Azure Function App Configuration or local.settings.json for local development.`
+  );
+}
+
 const JWKS_URI = `https://login.microsoftonline.com/${AZURE_AD_TENANT_ID}/discovery/v2.0/keys`;
 
 // JWKS client for retrieving Azure AD public keys
