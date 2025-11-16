@@ -76,6 +76,10 @@ ctn-asr-monorepo/
   (triggered by API OR admin-portal/* changes)
 ```
 
+**Additional Pipelines:**
+- `bicep-infrastructure.yml` - Infrastructure as Code deployments (Azure Bicep)
+- `playwright-tests.yml` - E2E test execution pipeline
+
 **Path Filters:**
 - Changes to `api/*` → Triggers ASR API + Admin + Member pipelines
 - Changes to `admin-portal/*` → ONLY Admin portal pipeline
@@ -84,7 +88,8 @@ ctn-asr-monorepo/
 ### API Architecture (Azure Functions)
 
 **Entry Points:** API has multiple entry files controlling which functions are deployed:
-- `index.ts` - Full production set (~70 functions)
+- `index.ts` - Full production set (~60 functions)
+- `production-index.ts` - Curated production subset with critical functions only
 - `essential-index.ts` - Minimal set for core portals (demo mode)
 - `test-index.ts` - Test environment
 - `minimal-index.ts` - Minimal HTTP triggers only
@@ -105,12 +110,46 @@ Audit Log → Response
 4. `MemberUser` - Self-service access
 5. `MemberReadOnly` - Read-only access
 
-**Key Files:**
+### M2M Authentication (Keycloak)
+
+**Dual Authentication Support:**
+The system supports TWO authentication modes for different client types:
+- **Azure AD (MSAL)** - Human users accessing Admin/Member portals
+- **Keycloak (Cloud IAM)** - Machine-to-Machine (M2M) clients from external systems
+
+**M2M Endpoints:**
+Functions supporting M2M authentication use `authenticateDual()` middleware that accepts both Azure AD and Keycloak JWTs:
+
+```typescript
+// api/src/middleware/keycloak-auth.ts - Keycloak JWT validation & dual auth
+import { authenticateDual } from '../middleware/keycloak-auth';
+
+// M2M-enabled functions:
+- ManageBookings: Requires Booking.Read or Booking.Write scopes
+- GetETAUpdates: Requires ETA.Read scope
+- GetContainerStatus: Requires Container.Read scope
+```
+
+**Key M2M Files:**
+- `api/src/middleware/keycloak-auth.ts` - Keycloak JWT validation & dual authentication middleware
+- `api/src/functions/ManageBookings.ts` - M2M booking operations (GET/POST/PUT)
+- `api/src/functions/GetETAUpdates.ts` - Shipping ETA information retrieval
+- `api/src/functions/GetContainerStatus.ts` - Container tracking queries
+- Database migration 026 - Renamed Zitadel tables to generic M2M (originally implemented for Zitadel, migrated to Keycloak)
+
+**Authentication Flow:**
+```
+External System → Keycloak Token → API validates JWT (JWKS endpoint) →
+Scope Check (Booking.Read, etc.) → Business Logic → Response
+```
+
+**API Key Files:**
 - `api/src/index.ts` - Function registration
 - `api/src/middleware/endpointWrapper.ts` - Unified middleware decorator
 - `api/src/middleware/auth.ts` - JWT validation (Azure AD JWKS)
 - `api/src/middleware/rbac.ts` - Permission enforcement
-- `api/src/utils/database.ts` - PostgreSQL pool (5-20 connections, SSL required)
+- `api/src/utils/database.ts` - PostgreSQL 15 pool (5-20 connections, SSL required)
+- `api/src/utils/queryPerformance.ts` - Database query performance monitoring
 
 ### Database Schema
 
@@ -135,7 +174,10 @@ Audit Log → Response
 - React 18.3.1 + TypeScript 5.9.3
 - Mantine v8.3.6 (complete UI library)
 - Vite 7.1.10 (build tool)
-- Azure MSAL for authentication (@azure/msal-browser, @azure/msal-react)
+- Azure MSAL for authentication:
+  - Admin Portal: @azure/msal-browser v4.24.1, @azure/msal-react v3.0.20
+  - Member Portal: @azure/msal-browser v3.7.1, @azure/msal-react v2.0.22
+  - **NOTE:** Version difference intentional (admin portal uses newer MSAL v4)
 - i18next for internationalization
 - Playwright for E2E testing
 - Shared `@ctn/api-client` package for API calls
@@ -144,6 +186,12 @@ Audit Log → Response
 - `react-vendor`, `mantine-core`, `mantine-datatable`, `mantine-forms`, `auth`, `i18n`, `icons`
 - Minification: Terser
 - Target: ES2020
+
+**Code Quality:**
+- Linter/Formatter: Biome v1.9.4 (unified tooling replacing ESLint + Prettier)
+- Fast, single-tool solution for both linting and formatting
+- Configuration: `biome.json` in each portal root
+- Integration: Pre-commit hooks and CI/CD pipeline checks
 
 **Authentication Flow:**
 ```
@@ -247,7 +295,7 @@ npm run security:aikido:scan  # Requires env vars
 ### Database
 
 ```bash
-# Connect to PostgreSQL
+# Connect to PostgreSQL 15
 psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com \
       port=5432 dbname=asr_dev user=asradmin sslmode=require"
 
@@ -494,9 +542,9 @@ git push --force-with-lease origin main
 
 ## Technology Stack
 
-- **Frontend:** React 18 + TypeScript 5.9 + Mantine v8 + Vite 7
-- **Backend:** Azure Functions v4 (Node.js 20 + TypeScript)
-- **Database:** PostgreSQL 14 (Azure Flexible Server)
+- **Frontend:** React 18.3.1 + TypeScript 5.9.3 + Mantine v8.3.6 + Vite 7.1.10
+- **Backend:** Azure Functions v4 (Node.js 20.19.5 + TypeScript 5.9.3)
+- **Database:** PostgreSQL 15 (Azure Flexible Server)
 - **Auth:** Azure AD (MSAL), RBAC with JWT (RS256)
 - **Testing:** Playwright (E2E), Vitest (unit tests)
 - **CI/CD:** Azure DevOps Pipelines
