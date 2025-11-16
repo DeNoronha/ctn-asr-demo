@@ -1,19 +1,61 @@
 # .gitleaksignore - Gitleaks Secret Scanning Exclusions
 # Excludes false positives and legacy paths from extracted systems
+# Combined configuration: November 16, 2025
 
-# ========================================
+# ============================================================================
 # Extracted Systems (no longer in this repo)
 # DocuFlow and Orchestrator were extracted Nov 11, 2025
-# ========================================
+# New repositories:
+# - https://dev.azure.com/ctn-demo/DocuFlow/_git/DocuFlow
+# - https://dev.azure.com/ctn-demo/Orchestrator%20Portal/_git/Orchestrator%20Portal
+# ============================================================================
+
+# Path-based exclusions
 booking-portal/**
 orchestrator/**
 docuflow/**
 DocuFlow/**
+orchestrator-portal/**
+web/orchestrator/**
+web/docuflow/**
 
-# ========================================
+# Azure Static Web App tokens for removed systems
+*AZURE-STATIC-WEB-APPS-API-TOKEN-DOCUFLOW*
+*AZURE-STATIC-WEB-APPS-API-TOKEN-ORCHESTRATOR*
+
+# Azure AD client configurations for removed systems
+*REACT_APP_DOCUFLOW*
+*REACT_APP_ORCHESTRATOR*
+*VITE_DOCUFLOW*
+*VITE_ORCHESTRATOR*
+*docuflow-portal*
+*orchestrator-portal*
+
+# Database and API endpoints for removed systems
+*docuflow-api*
+*orchestrator-api*
+*func-ctn-demo-docuflow*
+*func-ctn-demo-orchestrator*
+*psql-ctn-demo-docuflow*
+*psql-ctn-demo-orchestrator*
+
+# Key Vault secrets for removed systems
+*kv-ctn-demo-docuflow*
+*kv-ctn-demo-orchestrator*
+
+# Old pipeline variables for removed systems
+*ctn-docuflow-variables*
+*ctn-orchestrator-variables*
+
+# Old monorepo environment files
+web/.env
+portal/.env
+orchestrator-portal/.env
+
+# ============================================================================
 # Test & Debug Files
 # E2E test artifacts, network captures, mock data
-# ========================================
+# ============================================================================
 **/e2e/debug/**
 **/e2e/.auth/**
 **/playwright/.auth/**
@@ -23,10 +65,28 @@ DocuFlow/**
 **/test-results/**
 **/playwright-report/**
 
-# ========================================
+# Playwright auth state (test user only, MFA excluded)
+playwright/.auth/user.json
+*.auth.json
+user.json
+
+# Debug artifacts (may contain request/response data)
+**/debug/**
+console-logs.json
+network-requests.json
+debug-summary.txt
+*-dump.json
+*-trace.json
+*.har
+
+# E2E test reports (may contain test data)
+**/E2E_TEST_REPORT_*.md
+**/E2E_TEST_SUMMARY.md
+
+# ============================================================================
 # Build Outputs & Dependencies
 # Generated files, not source code
-# ========================================
+# ============================================================================
 **/dist/**
 **/build/**
 **/node_modules/**
@@ -34,42 +94,46 @@ DocuFlow/**
 **/.vite/**
 **/coverage/**
 
-# ========================================
+# ============================================================================
 # Configuration Files with Non-Secret IDs
 # Azure AD client IDs, tenant IDs (public info)
-# ========================================
+# ============================================================================
 **/.env.example
 **/.env.template
 **/authConfig.ts
 **/msalConfig.ts
 
-# ========================================
+# ============================================================================
 # Lock Files & Package Metadata
 # SRI hashes, dependency checksums (not secrets)
-# ========================================
+# ============================================================================
 **/package-lock.json
 **/yarn.lock
 **/pnpm-lock.yaml
 
-# ========================================
+# ============================================================================
 # Documentation & Examples
 # Code samples, API examples, documentation
-# ========================================
+# ============================================================================
 **/docs/**/*.md
 **/examples/**
 **/*.example.*
 
-# ========================================
+# Mantine documentation (UI component library reference)
+docs/MANTINE_LLMS.txt
+docs/MANTINE_DATATABLE_REFERENCE.md
+
+# ============================================================================
 # Git & CI/CD Metadata
 # Pipeline variables are in Azure DevOps, not in files
-# ========================================
+# ============================================================================
 .git/**
 .github/**
 
-# ========================================
-# Credentials & Secrets (gitignored)
-# These files should never be committed, but exclude from history scan
-# ========================================
+# ============================================================================
+# Credentials & Secrets (gitignored, but exclude from history scan)
+# These files should never be committed
+# ============================================================================
 .credentials
 .env
 .env.local
@@ -83,30 +147,18 @@ zitadel-credentials.json
 api/keys/**
 api/scripts/keys/**
 
-# ========================================
-# Specific File Exclusions
-# Known false positives
-# ========================================
+# ============================================================================
+# Test and development secrets (safe to ignore - not production)
+# ============================================================================
 
-# Playwright auth state (test user only, MFA excluded)
-playwright/.auth/user.json
-**/playwright/.auth/**
-*.auth.json
-user.json
+# Test user credentials in documentation (documented in CLAUDE.md)
+*test-e2@denoronha.consulting*
+*Madu5952*
 
-# Debug artifacts (may contain request/response data)
-**/debug/**
-console-logs.json
-network-requests.json
-debug-summary.txt
-*-dump.json
-*-trace.json
-*.har
+# Development database connection strings (non-production)
+*localhost:5432*
+*127.0.0.1:5432*
 
-# Mantine documentation (UI component library reference)
-docs/MANTINE_LLMS.txt
-docs/MANTINE_DATATABLE_REFERENCE.md
-
-# E2E test reports (may contain test data)
-**/E2E_TEST_REPORT_*.md
-**/E2E_TEST_SUMMARY.md
+# Local development API keys (not production)
+*local-api-key*
+*dev-secret*

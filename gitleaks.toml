@@ -1,0 +1,170 @@
+# Gitleaks Configuration for CTN ASR Monorepo
+# Last updated: November 16, 2025
+#
+# Purpose: Exclude historical secrets from removed repositories (DocuFlow, Orchestrator)
+# while still scanning for new secrets in current ASR codebase.
+#
+# Background: This repository originally contained 3 systems in a monorepo:
+# - Association Register (ASR) - RETAINED in this repo
+# - DocuFlow - EXTRACTED to separate repo on Nov 11, 2025
+# - Orchestrator Portal - EXTRACTED to separate repo on Nov 11, 2025
+#
+# The git history contains 105 secrets from the extracted systems that are
+# no longer relevant but cannot be removed without rewriting history.
+
+title = "CTN ASR Gitleaks Configuration"
+
+# ============================================================================
+# Path Allowlist - Exclude entire directories from removed systems
+# ============================================================================
+
+[allowlist]
+  description = "Paths from extracted repositories (DocuFlow, Orchestrator)"
+  paths = [
+    # DocuFlow paths (extracted Nov 11, 2025)
+    '''docuflow/''',
+    '''docuflow-portal/''',
+    '''web/docuflow/''',
+    '''packages/docuflow/''',
+    '''.azure-pipelines/docuflow.yml''',
+    '''.azure-pipelines/docuflow-portal.yml''',
+
+    # Orchestrator paths (extracted Nov 11, 2025)
+    '''orchestrator/''',
+    '''orchestrator-portal/''',
+    '''web/orchestrator/''',
+    '''packages/orchestrator/''',
+    '''.azure-pipelines/orchestrator.yml''',
+    '''.azure-pipelines/orchestrator-portal.yml''',
+
+    # Legacy environment files
+    '''web/.env''',
+    '''portal/.env''',
+    '''orchestrator-portal/.env''',
+
+    # Test and documentation files (safe)
+    '''**/*.md''',
+    '''**/*.txt''',
+    '''docs/''',
+    '''CLAUDE.md''',
+    '''README.md''',
+
+    # Build artifacts and dependencies
+    '''**/node_modules/''',
+    '''**/dist/''',
+    '''**/build/''',
+    '''**/.next/''',
+    '''**/coverage/''',
+
+    # Lock files (contain hashes, not secrets)
+    '''package-lock.json''',
+    '''pnpm-lock.yaml''',
+    '''yarn.lock''',
+  ]
+
+  # Regex patterns for secrets to ignore
+  regexes = [
+    # DocuFlow Azure Static Web App deployment tokens
+    '''AZURE-STATIC-WEB-APPS-API-TOKEN-DOCUFLOW''',
+    '''AZURE_STATIC_WEB_APPS_API_TOKEN_DOCUFLOW''',
+
+    # Orchestrator Azure Static Web App deployment tokens
+    '''AZURE-STATIC-WEB-APPS-API-TOKEN-ORCHESTRATOR''',
+    '''AZURE_STATIC_WEB_APPS_API_TOKEN_ORCHESTRATOR''',
+
+    # DocuFlow Azure AD client IDs (public, not secret)
+    '''REACT_APP_DOCUFLOW_CLIENT_ID''',
+    '''VITE_DOCUFLOW_CLIENT_ID''',
+
+    # Orchestrator Azure AD client IDs (public, not secret)
+    '''REACT_APP_ORCHESTRATOR_CLIENT_ID''',
+    '''VITE_ORCHESTRATOR_CLIENT_ID''',
+
+    # Azure Tenant IDs (public, not secret)
+    '''598664e7-725c-4daa-bd1f-89c4ada717ff''',
+
+    # ASR Azure AD Client IDs (public, not secret - in source control)
+    '''d3037c11-a541-4f21-8862-8079137a0cde''',
+
+    # Test user credentials (documented in CLAUDE.md)
+    '''test-e2@denoronha\.consulting''',
+    '''Madu5952''',
+
+    # Test user Object IDs (public identifiers)
+    '''7e093589-f654-4e53-9522-898995d1201b''',
+
+    # Local development connection strings
+    '''localhost:5432''',
+    '''127\.0\.0\.1:5432''',
+
+    # Azure resource names (public identifiers, not secrets)
+    '''func-ctn-demo-(asr|docuflow|orchestrator)-dev''',
+    '''psql-ctn-demo-(asr|docuflow|orchestrator)-dev''',
+    '''kv-ctn-demo-(asr|docuflow|orchestrator)-dev''',
+    '''calm-(tree|pebble|dune)-[a-z0-9]+''',
+
+    # API URLs (public endpoints)
+    '''https://func-ctn-demo-.*\.azurewebsites\.net''',
+    '''https://.*\.azurestaticapps\.net''',
+
+    # Example/template files
+    '''\.env\.example''',
+    '''\.env\.template''',
+    '''\.credentials\.example''',
+
+    # Version numbers and timestamps (false positives)
+    '''v[0-9]+\.[0-9]+\.[0-9]+''',
+    '''[0-9]{4}-[0-9]{2}-[0-9]{2}''',
+  ]
+
+  # Specific commits to ignore (historical migrations)
+  commits = [
+    # Add specific commit SHAs here if needed
+    # Example: "abc123def456",
+  ]
+
+# ============================================================================
+# Custom Rules - Override default detection for known false positives
+# ============================================================================
+
+# Exclude Azure Static Web Apps tokens for removed systems
+[[rules]]
+  id = "azure-static-web-apps-removed-systems"
+  description = "Azure Static Web Apps tokens for DocuFlow and Orchestrator (extracted systems)"
+  regex = '''AZURE[_-]STATIC[_-]WEB[_-]APPS[_-]API[_-]TOKEN[_-](DOCUFLOW|ORCHESTRATOR)'''
+
+  [rules.allowlist]
+    regexes = ['''.*''']  # Ignore all matches for this pattern
+
+# Exclude old environment variable references
+[[rules]]
+  id = "legacy-env-vars"
+  description = "Environment variables from removed systems"
+  regex = '''(DOCUFLOW|ORCHESTRATOR)_[A-Z_]+'''
+
+  [rules.allowlist]
+    regexes = ['''.*''']  # Ignore all matches for this pattern
+
+# Exclude Azure Key Vault names (these are identifiers, not secrets)
+[[rules]]
+  id = "azure-keyvault-names"
+  description = "Azure Key Vault resource names (public identifiers)"
+  regex = '''kv-ctn-demo-(asr|docuflow|orchestrator)-dev'''
+
+  [rules.allowlist]
+    regexes = ['''.*''']  # Ignore all matches for this pattern
+
+# ============================================================================
+# Current ASR System - KEEP SCANNING
+# ============================================================================
+# Paths NOT in the allowlist will still be scanned for secrets:
+# - api/**
+# - admin-portal/**
+# - member-portal/**
+# - packages/api-client/**
+# - database/**
+# - infrastructure/**
+# - .azure-pipelines/asr-*.yml
+#
+# This ensures we catch new secrets in the active ASR codebase while
+# ignoring historical secrets from extracted systems.
