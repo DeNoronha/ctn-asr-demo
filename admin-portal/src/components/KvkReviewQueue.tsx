@@ -3,6 +3,7 @@ import axios from 'axios';
 import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo } from 'react';
 import { msalInstance } from '../auth/AuthContext';
+import { getAccessToken } from '../utils/auth';
 import { formatDate } from '../utils/dateFormat';
 import { ErrorBoundary } from './ErrorBoundary';
 import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
@@ -33,24 +34,6 @@ const KvkReviewQueueComponent: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
-
-  // Helper function to get access token
-  async function getAccessToken(): Promise<string | null> {
-    try {
-      const accounts = msalInstance.getAllAccounts();
-      if (accounts.length > 0) {
-        const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
-        const response = await msalInstance.acquireTokenSilent({
-          scopes: [`api://${clientId}/access_as_user`],
-          account: accounts[0],
-        });
-        return response.accessToken;
-      }
-    } catch (error) {
-      console.error('Failed to acquire token:', error);
-    }
-    return null;
-  }
 
   // Create authenticated axios instance
   async function getAuthenticatedAxios() {

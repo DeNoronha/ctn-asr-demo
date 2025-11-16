@@ -1,32 +1,6 @@
 import { AsrApiClient } from '@ctn/api-client';
-import { msalInstance } from '../auth/AuthContext';
+import { getAccessToken } from '../utils/auth';
 import { logger } from '../utils/logger';
-
-/**
- * Get access token for API requests
- */
-async function getAccessToken(): Promise<string> {
-  const accounts = msalInstance.getAllAccounts();
-  if (accounts.length === 0) {
-    throw new Error('No authenticated user found');
-  }
-
-  try {
-    const response = await msalInstance.acquireTokenSilent({
-      account: accounts[0],
-      scopes: ['api://d3037c11-a541-4f21-8862-8079137a0cde/access_as_user'],
-    });
-
-    return response.accessToken;
-  } catch (error) {
-    // SEC-009: Sanitize error to prevent token leakage in logs
-    logger.error('Failed to acquire token', {
-      errorType: error instanceof Error ? error.name : 'Unknown',
-      message: error instanceof Error ? error.message : 'Token acquisition failed',
-    });
-    throw error;
-  }
-}
 
 /**
  * Global error handler for API client

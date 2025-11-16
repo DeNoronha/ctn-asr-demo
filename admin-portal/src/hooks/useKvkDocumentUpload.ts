@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { msalInstance } from '../auth/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
+import { getAccessToken } from '../utils/auth';
 import { logger } from '../utils/logger';
 
 interface KvkApiResponse {
@@ -45,24 +45,6 @@ export const useKvkDocumentUpload = ({
   const { getError } = useApiError();
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
-
-  // Helper function to get access token
-  async function getAccessToken(): Promise<string | null> {
-    try {
-      const accounts = msalInstance.getAllAccounts();
-      if (accounts.length > 0) {
-        const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
-        const response = await msalInstance.acquireTokenSilent({
-          scopes: [`api://${clientId}/access_as_user`],
-          account: accounts[0],
-        });
-        return response.accessToken;
-      }
-    } catch (error) {
-      logger.error('Failed to acquire token:', error);
-    }
-    return null;
-  }
 
   // Create authenticated axios instance
   async function getAuthenticatedAxios() {

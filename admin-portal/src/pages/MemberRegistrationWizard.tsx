@@ -29,11 +29,11 @@ const Hint: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, 
   </div>
 );
 import { useNavigate } from 'react-router-dom';
-import { msalInstance } from '../auth/AuthContext';
 import { StepperForm } from '../components/forms/StepperForm';
 import { HelpTooltip } from '../components/help/HelpTooltip';
 import { helpContent } from '../config/helpContent';
 import { useNotification } from '../contexts/NotificationContext';
+import { getAccessToken } from '../utils/auth';
 import { logger } from '../utils/logger';
 import {
   type MemberFormData,
@@ -51,24 +51,6 @@ export const MemberRegistrationWizard: React.FC = () => {
   const notification = useNotification();
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
-
-  async function getAccessToken(): Promise<string | null> {
-    try {
-      const accounts = msalInstance.getAllAccounts();
-      if (accounts.length > 0) {
-        const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
-        const response = await msalInstance.acquireTokenSilent({
-          scopes: [`api://${clientId}/access_as_user`],
-          account: accounts[0],
-        });
-        return response.accessToken;
-      }
-      return null;
-    } catch (error) {
-      logger.error('Failed to get access token:', error);
-      return null;
-    }
-  }
 
   const [formData, setFormData] = useState<MemberFormData>({
     org_id: 'org:',

@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { useCallback, useState } from 'react';
-import { msalInstance } from '../auth/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
 import type { LegalEntityIdentifier } from '../services/apiV2';
+import { getAccessToken } from '../utils/auth';
 import { logger } from '../utils/logger';
 import { sanitizeFormData } from '../utils/sanitize';
 import { identifierSuccessMessages } from '../utils/successMessages';
@@ -155,24 +155,6 @@ export const REGISTRY_INFO: Record<string, { name: string; url: string }> = {
     url: 'https://find-and-update.company-information.service.gov.uk/',
   },
 };
-
-// Helper function to get access token
-async function getAccessToken(): Promise<string | null> {
-  try {
-    const accounts = msalInstance.getAllAccounts();
-    if (accounts.length > 0) {
-      const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
-      const response = await msalInstance.acquireTokenSilent({
-        scopes: [`api://${clientId}/access_as_user`],
-        account: accounts[0],
-      });
-      return response.accessToken;
-    }
-  } catch (error) {
-    logger.error('Failed to acquire token:', error);
-  }
-  return null;
-}
 
 // Create authenticated axios instance
 async function getAuthenticatedAxios() {

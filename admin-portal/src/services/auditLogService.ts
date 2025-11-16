@@ -4,28 +4,10 @@
  */
 
 import axios from 'axios';
-import { msalInstance } from '../auth/AuthContext';
+import { getAccessToken } from '../utils/auth';
 import { logger } from '../utils/logger';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
-
-// Helper function to get access token
-async function getAccessToken(): Promise<string | null> {
-  try {
-    const accounts = msalInstance.getAllAccounts();
-    if (accounts.length > 0) {
-      const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
-      const response = await msalInstance.acquireTokenSilent({
-        scopes: [`api://${clientId}/access_as_user`],
-        account: accounts[0],
-      });
-      return response.accessToken;
-    }
-  } catch (error) {
-    logger.error('Failed to acquire token:', error);
-  }
-  return null;
-}
 
 export enum AuditAction {
   // User Management
@@ -136,9 +118,6 @@ class AuditLogService {
   async fetchLogs(filters?: AuditLogFilters): Promise<PaginatedAuditLogsResponse> {
     try {
       const token = await getAccessToken();
-      if (!token) {
-        throw new Error('Authentication required');
-      }
 
       // Build query parameters
       const params = new URLSearchParams();
@@ -269,11 +248,6 @@ class AuditLogService {
   }): Promise<void> {
     try {
       const token = await getAccessToken();
-      if (!token) {
-        logger.warn('[AUDIT] Cannot log audit entry - no access token');
-        return;
-      }
-
       logger.log('[AUDIT] Creating audit log entry:', params.action);
 
       await axios.post(`${API_BASE_URL}/audit-logs`, params, {

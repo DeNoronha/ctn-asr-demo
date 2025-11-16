@@ -44,6 +44,7 @@ const UserManagement: React.FC = () => {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [consentRequired, setConsentRequired] = useState(false);
   const [consentError, setConsentError] = useState<string | null>(null);
+  const [actionInProgress, setActionInProgress] = useState<string | null>(null);
 
   useEffect(() => {
     loadUsers();
@@ -170,6 +171,7 @@ const UserManagement: React.FC = () => {
   };
 
   const handleToggleUserStatus = async (userId: string, enabled: boolean) => {
+    setActionInProgress(userId);
     try {
       logger.log('Toggle user status:', userId, enabled);
 
@@ -194,6 +196,8 @@ const UserManagement: React.FC = () => {
     } catch (error) {
       logger.error('Failed to toggle user status:', error);
       throw error;
+    } finally {
+      setActionInProgress(null);
     }
   };
 
@@ -284,12 +288,16 @@ const UserManagement: React.FC = () => {
         toggleable: false,
         render: (record) => {
           const isCurrentUser = record.id === currentUser?.account.localAccountId;
+          const isActionInProgress = actionInProgress === record.id;
+          const isAnyActionInProgress = actionInProgress !== null;
+
           return (
             <Group gap={4} wrap="nowrap">
               <Tooltip label="Edit user">
                 <ActionIcon
                   variant="subtle"
                   color="gray"
+                  disabled={isAnyActionInProgress}
                   onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     handleEditUser(record);
@@ -304,6 +312,8 @@ const UserManagement: React.FC = () => {
                   <ActionIcon
                     variant="subtle"
                     color="red"
+                    loading={isActionInProgress}
+                    disabled={isAnyActionInProgress}
                     onClick={(e: React.MouseEvent) => {
                       e.stopPropagation();
                       handleToggleUserStatus(record.id, !record.enabled);
