@@ -245,7 +245,10 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
               <div className="card-body">
                 <div className="addresses-grid">
                   {registryData.addresses.map((address) => (
-                    <div key={`${address.type}-${address.postalCode}-${address.houseNumber}`} className="address-card">
+                    <div
+                      key={`${address.type}-${address.postalCode}-${address.houseNumber}`}
+                      className="address-card"
+                    >
                       <div className="address-type">{address.type}</div>
                       <div className="address-details">
                         <div>

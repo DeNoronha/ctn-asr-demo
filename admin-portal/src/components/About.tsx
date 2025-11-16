@@ -3,10 +3,32 @@
  * Displays build information for both admin portal and API
  */
 
-import { ActionIcon, Badge, Card, CopyButton, Group, Stack, Text, ThemeIcon, Tooltip, Code } from '@mantine/core';
+import {
+  ActionIcon,
+  Badge,
+  Card,
+  Code,
+  CopyButton,
+  Group,
+  Stack,
+  Text,
+  ThemeIcon,
+  Tooltip,
+} from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { AlertCircle, Calendar, CheckCircle, Clock, Copy, Check, GitBranch, Globe, Monitor, Package } from './icons';
+import {
+  AlertCircle,
+  Calendar,
+  Check,
+  CheckCircle,
+  Clock,
+  Copy,
+  GitBranch,
+  Globe,
+  Monitor,
+  Package,
+} from './icons';
 import { LoadingState } from './shared/LoadingState';
 import { PageHeader } from './shared/PageHeader';
 import { PartnerLogos } from './shared/PartnerLogos';
@@ -172,7 +194,7 @@ const About: React.FC = () => {
       staging: { color: 'yellow', label: 'Staging' },
       development: { color: 'blue', label: 'Development' },
       dev: { color: 'blue', label: 'Development' },
-      local: { color: 'gray', label: 'Local' }
+      local: { color: 'gray', label: 'Local' },
     };
 
     const config = badgeConfig[envLower];
@@ -229,7 +251,9 @@ const About: React.FC = () => {
                         <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
                           Version:
                         </Text>
-                        <Code color="blue" fw={600}>#{portalVersion.version}</Code>
+                        <Code color="blue" fw={600}>
+                          #{portalVersion.version}
+                        </Code>
                         <CopyButton value={portalVersion.version} timeout={2000}>
                           {({ copied, copy }) => (
                             <Tooltip label={copied ? 'Copied' : 'Copy version'} withArrow>
@@ -280,7 +304,10 @@ const About: React.FC = () => {
                         <Code>{portalVersion.commitSha}</Code>
                         <CopyButton value={portalVersion.commitShaFull} timeout={2000}>
                           {({ copied, copy }) => (
-                            <Tooltip label={copied ? 'Copied full commit SHA' : 'Copy full SHA'} withArrow>
+                            <Tooltip
+                              label={copied ? 'Copied full commit SHA' : 'Copy full SHA'}
+                              withArrow
+                            >
                               <ActionIcon
                                 color={copied ? 'teal' : 'gray'}
                                 variant="subtle"
@@ -332,7 +359,9 @@ const About: React.FC = () => {
                     <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 104 }}>
                       Status:
                     </Text>
-                    <Text size="sm" fw={600} c="green">Online</Text>
+                    <Text size="sm" fw={600} c="green">
+                      Online
+                    </Text>
                   </Group>
                   {isProductionBuild(apiVersion.buildNumber) && (
                     <>
@@ -340,7 +369,9 @@ const About: React.FC = () => {
                         <Text size="sm" fw={500} c="dimmed" style={{ minWidth: 120 }}>
                           Version:
                         </Text>
-                        <Code color="blue" fw={600}>#{apiVersion.version}</Code>
+                        <Code color="blue" fw={600}>
+                          #{apiVersion.version}
+                        </Code>
                         <CopyButton value={apiVersion.version} timeout={2000}>
                           {({ copied, copy }) => (
                             <Tooltip label={copied ? 'Copied' : 'Copy version'} withArrow>
@@ -391,7 +422,10 @@ const About: React.FC = () => {
                         <Code>{apiVersion.commitSha}</Code>
                         <CopyButton value={apiVersion.commitShaFull} timeout={2000}>
                           {({ copied, copy }) => (
-                            <Tooltip label={copied ? 'Copied full commit SHA' : 'Copy full SHA'} withArrow>
+                            <Tooltip
+                              label={copied ? 'Copied full commit SHA' : 'Copy full SHA'}
+                              withArrow
+                            >
                               <ActionIcon
                                 color={copied ? 'teal' : 'gray'}
                                 variant="subtle"
@@ -438,13 +472,22 @@ const About: React.FC = () => {
                     <Code style={{ fontSize: '0.8rem' }}>
                       {(() => {
                         try {
-                          return new URL(import.meta.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1').host;
+                          return new URL(
+                            import.meta.env.VITE_API_URL ||
+                              'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1'
+                          ).host;
                         } catch {
                           return 'func-ctn-demo-asr-dev.azurewebsites.net';
                         }
                       })()}
                     </Code>
-                    <CopyButton value={import.meta.env.VITE_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1'} timeout={2000}>
+                    <CopyButton
+                      value={
+                        import.meta.env.VITE_API_URL ||
+                        'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1'
+                      }
+                      timeout={2000}
+                    >
                       {({ copied, copy }) => (
                         <Tooltip label={copied ? 'Copied' : 'Copy full API URL'} withArrow>
                           <ActionIcon
@@ -467,7 +510,12 @@ const About: React.FC = () => {
                   </Group>
                 </Stack>
               ) : (
-                <Stack gap="md" p="md" style={{ background: '#fff3cd', borderRadius: '6px' }} mt="md">
+                <Stack
+                  gap="md"
+                  p="md"
+                  style={{ background: '#fff3cd', borderRadius: '6px' }}
+                  mt="md"
+                >
                   <Group gap="xs">
                     <AlertCircle size={20} style={{ color: '#856404' }} />
                     <Text size="sm" c="#856404" fw={500}>
@@ -475,7 +523,8 @@ const About: React.FC = () => {
                     </Text>
                   </Group>
                   <Text size="xs" c="#856404">
-                    The backend API may be offline or unreachable. Please contact support if this persists.
+                    The backend API may be offline or unreachable. Please contact support if this
+                    persists.
                   </Text>
                 </Stack>
               )}

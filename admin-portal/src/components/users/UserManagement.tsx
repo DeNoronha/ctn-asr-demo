@@ -74,7 +74,9 @@ const UserManagement: React.FC = () => {
       // Check if this is a consent error
       if (error?.message === 'CONSENT_REQUIRED') {
         setConsentRequired(true);
-        setConsentError('Administrator consent is required to access Microsoft Graph API for user management.');
+        setConsentError(
+          'Administrator consent is required to access Microsoft Graph API for user management.'
+        );
       } else {
         setConsentError('Failed to load users. Please try again or contact support.');
       }
@@ -339,9 +341,15 @@ const UserManagement: React.FC = () => {
                 Required permissions:
               </Text>
               <ul style={{ margin: '0', paddingLeft: '20px' }}>
-                <li><Text size="sm">User.Read.All - Read all user profiles</Text></li>
-                <li><Text size="sm">User.ReadWrite.All - Read and write all user profiles</Text></li>
-                <li><Text size="sm">Directory.Read.All - Read directory data</Text></li>
+                <li>
+                  <Text size="sm">User.Read.All - Read all user profiles</Text>
+                </li>
+                <li>
+                  <Text size="sm">User.ReadWrite.All - Read and write all user profiles</Text>
+                </li>
+                <li>
+                  <Text size="sm">Directory.Read.All - Read directory data</Text>
+                </li>
               </ul>
               <Button
                 color="blue"

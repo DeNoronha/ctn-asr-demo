@@ -414,9 +414,14 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({ legalEnt
       >
         {selectedClient && (
           <Stack gap="lg">
-            <Alert color="orange" icon={<AlertTriangle size={20} />} title="Important: Save this secret now!">
+            <Alert
+              color="orange"
+              icon={<AlertTriangle size={20} />}
+              title="Important: Save this secret now!"
+            >
               <Text size="sm">
-                This secret will only be shown once. Store it securely - you won't be able to retrieve it again.
+                This secret will only be shown once. Store it securely - you won't be able to
+                retrieve it again.
               </Text>
             </Alert>
 

@@ -116,7 +116,7 @@
 .version-number {
   font-family: "Courier New", monospace;
   font-weight: 600;
-  color: #0066B3; /* CTN primary blue - WCAG AA compliant (4.52:1 contrast) */
+  color: #0066b3; /* CTN primary blue - WCAG AA compliant (4.52:1 contrast) */
   font-size: 1.1rem;
 }
 

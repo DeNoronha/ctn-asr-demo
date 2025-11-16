@@ -276,16 +276,12 @@ class AuditLogService {
 
       logger.log('[AUDIT] Creating audit log entry:', params.action);
 
-      await axios.post(
-        `${API_BASE_URL}/audit-logs`,
-        params,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      await axios.post(`${API_BASE_URL}/audit-logs`, params, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
       logger.log('[AUDIT] Audit log entry created successfully');
     } catch (error) {

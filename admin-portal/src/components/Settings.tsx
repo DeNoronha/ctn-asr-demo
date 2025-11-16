@@ -211,7 +211,6 @@ const Settings: React.FC = () => {
           </Card>
         </Stack>
       </Paper>
-
     </Stack>
   );
 };

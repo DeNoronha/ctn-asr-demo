@@ -12,7 +12,7 @@
  * - Be authenticated via Azure Entra ID (cloud-based, not local files)
  */
 
-import { LogLevel, type Configuration, type PopupRequest } from '@azure/msal-browser';
+import { type Configuration, LogLevel, type PopupRequest } from '@azure/msal-browser';
 
 // Azure Entra ID Configuration
 export const msalConfig: Configuration = {
