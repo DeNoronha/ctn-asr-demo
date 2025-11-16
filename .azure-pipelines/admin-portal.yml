@@ -177,6 +177,15 @@ steps:
   # Note: v6.3.0+ supports Node 20 (resolves Node 16 EOL warning)
   # Release: https://github.com/dependency-check/azuredevops/releases/tag/6.3.0
   # ========================================
+  - script: |
+      echo "📦 Preparing monorepo workspace for OWASP scan..."
+      cd admin-portal
+      # Create symlink to root package-lock.json (monorepo structure)
+      ln -sf ../package-lock.json package-lock.json
+      echo "✅ package-lock.json symlink created"
+      ls -la | grep package-lock
+    displayName: 'Prepare workspace for OWASP scan'
+
   - task: dependency-check.dependencycheck.dependency-check-build-task.dependency-check-build-task@6
     displayName: 'OWASP Dependency Check'
     continueOnError: true
