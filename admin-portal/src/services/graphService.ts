@@ -191,6 +191,19 @@ export async function listUsers(): Promise<User[]> {
     const ctnSpId = await getCtnServicePrincipalId(client);
     logger.log(`Querying users assigned to CTN service principal: ${ctnSpId}`);
 
+    // Get the service principal's app roles to map appRoleId → role name
+    const servicePrincipal = await client
+      .api(`/servicePrincipals/${ctnSpId}`)
+      .select(['appRoles'])
+      .get();
+
+    const appRoleMap = new Map<string, string>();
+    for (const appRole of servicePrincipal.appRoles || []) {
+      appRoleMap.set(appRole.id, appRole.value); // Map GUID → role name (e.g., "SystemAdmin")
+    }
+
+    logger.log(`Loaded ${appRoleMap.size} app role definitions from service principal`);
+
     // CORRECT APPROACH: Query users assigned to THIS service principal
     // This returns ONLY users who have app role assignments to the CTN app
     const assignmentsResponse = await client
@@ -200,27 +213,33 @@ export async function listUsers(): Promise<User[]> {
 
     logger.log(`Found ${assignmentsResponse.value.length} app role assignments for CTN app`);
 
-    // Get unique user IDs (principalType === 'User')
-    const userIds = new Set<string>();
-    const rolesByUserId = new Map<string, string[]>();
+    // Build map of userId → assigned role names
+    const userRoleMap = new Map<string, Set<string>>();
 
     for (const assignment of assignmentsResponse.value) {
       if (assignment.principalType === 'User') {
-        userIds.add(assignment.principalId);
+        const roleName = appRoleMap.get(assignment.appRoleId);
 
-        // Map appRoleId to role name - we'll fetch full details from user object
-        if (!rolesByUserId.has(assignment.principalId)) {
-          rolesByUserId.set(assignment.principalId, []);
+        if (roleName) {
+          if (!userRoleMap.has(assignment.principalId)) {
+            userRoleMap.set(assignment.principalId, new Set());
+          }
+          userRoleMap.get(assignment.principalId)!.add(roleName);
         }
       }
     }
 
-    logger.log(`Found ${userIds.size} unique users assigned to CTN app`);
+    logger.log(`Found ${userRoleMap.size} unique users assigned to CTN app`);
 
     const users: User[] = [];
+    const roleMap: Record<string, UserRole> = {
+      SystemAdmin: UserRole.SYSTEM_ADMIN,
+      AssociationAdmin: UserRole.ASSOCIATION_ADMIN,
+      Member: UserRole.MEMBER,
+    };
 
     // Fetch full user details for each assigned user
-    for (const userId of userIds) {
+    for (const [userId, roleNames] of userRoleMap.entries()) {
       try {
         const graphUser = await client
           .api(`/users/${userId}`)
@@ -235,16 +254,17 @@ export async function listUsers(): Promise<User[]> {
           ])
           .get();
 
-        // Get this user's app role assignments to determine their CTN roles
-        const userRoleAssignments = await client
-          .api(`/users/${userId}/appRoleAssignments`)
-          .get();
-
-        const roles = extractRoles(userRoleAssignments.value, ctnSpId);
+        // Map role names to UserRole enum
+        const roles: UserRole[] = [];
+        for (const roleName of roleNames) {
+          if (roleMap[roleName]) {
+            roles.push(roleMap[roleName]);
+          }
+        }
 
         if (roles.length > 0) {
           users.push(mapGraphUser(graphUser, roles));
-          logger.log(`✅ Added user: ${graphUser.userPrincipalName} with roles: ${roles.join(', ')}`);
+          logger.log(`✅ Added user: ${graphUser.userPrincipalName} with roles: ${Array.from(roleNames).join(', ')}`);
         } else {
           logger.warn(`⚠️  User ${graphUser.userPrincipalName} has assignment but no recognized roles`);
         }
