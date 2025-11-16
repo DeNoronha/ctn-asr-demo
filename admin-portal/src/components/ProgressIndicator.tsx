@@ -28,6 +28,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
     variant === 'indeterminate' ? 'Loading in progress' : `${value} percent complete`;
 
   return (
+    // biome-ignore lint/a11y/useFocusableInteractive: Progress bars are status indicators and don't require focus - aria-live provides screen reader updates
     <div
       className="progress-indicator"
       role="progressbar"

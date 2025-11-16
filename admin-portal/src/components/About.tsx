@@ -59,39 +59,61 @@ interface APIVersionInfo extends VersionInfo {
   };
 }
 
+/**
+ * Platform Detection Utilities
+ * Extracted to reduce cognitive complexity
+ */
+const detectMacOS = (ua: string): string => {
+  const match = ua.match(/Mac OS X ([\d_]+)/);
+  if (match) {
+    const version = match[1].replace(/_/g, '.');
+    return `macOS ${version}`;
+  }
+  return 'macOS';
+};
+
+const WINDOWS_VERSION_MAP: Record<string, string> = {
+  '10.0': 'Windows 10/11',
+  '6.3': 'Windows 8.1',
+  '6.2': 'Windows 8',
+  '6.1': 'Windows 7',
+};
+
+const detectWindows = (ua: string): string => {
+  const match = ua.match(/Windows NT ([\d.]+)/);
+  if (match) {
+    return WINDOWS_VERSION_MAP[match[1]] || `Windows NT ${match[1]}`;
+  }
+  return 'Windows';
+};
+
+const detectMobilePlatform = (ua: string): string | null => {
+  if (ua.includes('Android')) return 'Android';
+  if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) return 'iOS';
+  return null;
+};
+
+const getReadablePlatform = (): string => {
+  const ua = navigator.userAgent;
+
+  // Desktop platforms
+  if (ua.includes('Mac OS X')) return detectMacOS(ua);
+  if (ua.includes('Windows NT')) return detectWindows(ua);
+  if (ua.includes('Linux')) return 'Linux';
+
+  // Mobile platforms
+  const mobilePlatform = detectMobilePlatform(ua);
+  if (mobilePlatform) return mobilePlatform;
+
+  // Fallback
+  return navigator.platform;
+};
+
 const About: React.FC = () => {
   const [portalVersion, setPortalVersion] = useState<VersionInfo | null>(null);
   const [apiVersion, setApiVersion] = useState<APIVersionInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const getReadablePlatform = () => {
-    const ua = navigator.userAgent;
-    if (ua.includes('Mac OS X')) {
-      const match = ua.match(/Mac OS X ([\d_]+)/);
-      if (match) {
-        const version = match[1].replace(/_/g, '.');
-        return `macOS ${version}`;
-      }
-      return 'macOS';
-    }
-    if (ua.includes('Windows NT')) {
-      const match = ua.match(/Windows NT ([\d.]+)/);
-      if (match) {
-        const versionMap: Record<string, string> = {
-          '10.0': 'Windows 10/11',
-          '6.3': 'Windows 8.1',
-          '6.2': 'Windows 8',
-          '6.1': 'Windows 7',
-        };
-        return versionMap[match[1]] || `Windows NT ${match[1]}`;
-      }
-      return 'Windows';
-    }
-    if (ua.includes('Linux')) return 'Linux';
-    if (ua.includes('Android')) return 'Android';
-    if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) return 'iOS';
-    return navigator.platform;
-  };
 
   const [systemInfo] = useState({
     browser: navigator.userAgent,

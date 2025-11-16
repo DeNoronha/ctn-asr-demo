@@ -111,21 +111,30 @@ export const EndpointsView: React.FC<ComponentProps> = ({
         title="Register New Endpoint"
         size="xl"
       >
-        <EndpointRegistrationWizard
-          legalEntityId={memberData.legalEntityId!}
-          apiBaseUrl={apiBaseUrl}
-          getAccessToken={getAccessToken}
-          onComplete={() => {
-            setShowDialog(false);
-            // Small delay to ensure API has finished processing
-            setTimeout(() => {
-              loadEndpoints();
-              onDataChange();
-            }, 500);
-            onNotification('Endpoint registered successfully!', 'success');
-          }}
-          onCancel={() => setShowDialog(false)}
-        />
+        {memberData.legalEntityId ? (
+          <EndpointRegistrationWizard
+            legalEntityId={memberData.legalEntityId}
+            apiBaseUrl={apiBaseUrl}
+            getAccessToken={getAccessToken}
+            onComplete={() => {
+              setShowDialog(false);
+              // Small delay to ensure API has finished processing
+              setTimeout(() => {
+                loadEndpoints();
+                onDataChange();
+              }, 500);
+              onNotification('Endpoint registered successfully!', 'success');
+            }}
+            onCancel={() => setShowDialog(false)}
+          />
+        ) : (
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            <p>Legal entity ID is required to register an endpoint.</p>
+            <Button onClick={() => setShowDialog(false)} style={{ marginTop: '10px' }}>
+              Close
+            </Button>
+          </div>
+        )}
       </Modal>
     </div>
   );

@@ -484,8 +484,23 @@ function AppContent(_props: AppContentProps) {
 
         {/* Registration Modal */}
         {showRegistration && (
-          <div className="registration-modal-overlay" onClick={handleRegistrationCancel}>
-            <div className="registration-modal-content" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="registration-modal-overlay"
+            onClick={handleRegistrationCancel}
+            onKeyDown={(e) => e.key === 'Escape' && handleRegistrationCancel()}
+            // biome-ignore lint/a11y/useSemanticElements: Overlay backdrop is not a button element
+            role="button"
+            tabIndex={0}
+            aria-label="Close registration modal"
+          >
+            <div
+              className="registration-modal-content"
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              // biome-ignore lint/a11y/useSemanticElements: Using Mantine Modal component pattern
+              role="dialog"
+              aria-modal="true"
+            >
               <RegistrationForm
                 onSubmit={handleRegistrationSubmit}
                 onCancel={handleRegistrationCancel}

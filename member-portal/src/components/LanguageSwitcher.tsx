@@ -46,14 +46,14 @@ const LanguageSwitcher: React.FC = () => {
   };
 
   return (
-    <div className="language-switcher" role="region" aria-label="Language selection">
+    <section className="language-switcher" aria-label="Language selection">
       <Select
         data={languageOptions}
         value={selectedLanguage}
         onChange={handleLanguageChange}
         style={DROPDOWN_STYLE}
       />
-    </div>
+    </section>
   );
 };
 

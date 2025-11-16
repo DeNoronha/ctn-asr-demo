@@ -146,6 +146,11 @@ export const KvKDocumentUpload: React.FC<KvKDocumentUploadProps> = ({
           onDragOver={handleDrag}
           onDrop={handleDrop}
           onClick={handleButtonClick}
+          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleButtonClick()}
+          // biome-ignore lint/a11y/useSemanticElements: Drag-and-drop zone is not a button element
+          role="button"
+          tabIndex={disabled ? -1 : 0}
+          aria-label="Upload KvK document - click or drag and drop"
         >
           <Upload size={48} />
           <h4>Drag and drop your KvK extract here</h4>

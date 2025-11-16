@@ -291,11 +291,13 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     if (legalEntityId) {
       fetchKvkVerification();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [legalEntityId, identifiers]); // Re-fetch when identifiers change
+    // Note: identifiers dependency removed as we only need to fetch once on mount or when legalEntityId changes
+    // getAuthenticatedAxios is a stable function reference and doesn't need to be in dependencies
+    // biome-ignore lint/correctness/useExhaustiveDependencies: getAuthenticatedAxios is stable, identifiers is not needed
+  }, [legalEntityId]);
 
   // Validate identifier value based on type
-  const validateIdentifierValue = (type: string | undefined, value: string): boolean => {
+  const validateIdentifierValue = useCallback((type: string | undefined, value: string): boolean => {
     if (!type || !value) {
       setValidationError('');
       setIsValidIdentifier(true);
@@ -324,7 +326,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     }
 
     return isValid;
-  };
+  }, []);
 
   const handleAdd = useCallback(() => {
     setEditingIdentifier(null);
@@ -352,7 +354,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     // Validate existing identifier
     validateIdentifierValue(identifier.identifier_type, identifier.identifier_value || '');
     setIsDialogOpen(true);
-  }, []);
+  }, [validateIdentifierValue]);
 
   // Handle country code change - filter identifier types
   const handleCountryCodeChange = useCallback(
@@ -395,7 +397,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         validateIdentifierValue(type, formData.identifier_value);
       }
     },
-    [formData]
+    [formData, validateIdentifierValue]
   );
 
   // Handle identifier value change with validation
@@ -410,7 +412,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         validateIdentifierValue(formData.identifier_type, value);
       }
     },
-    [formData]
+    [formData, validateIdentifierValue]
   );
 
   const handleDeleteClick = useCallback((identifier: LegalEntityIdentifier) => {
@@ -496,8 +498,8 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     handleError,
   ]);
 
-  const handleFetchLei = useCallback(async () => {
-    // Find a suitable identifier to use for LEI lookup (KVK, HRB, etc.)
+  // Helper function to validate LEI fetch preconditions
+  const validateLeiPreconditions = useCallback(() => {
     const suitableIdentifier = identifiers.find((id) =>
       ['KVK', 'HRB', 'HRA', 'KBO', 'SIREN', 'CRN'].includes(id.identifier_type)
     );
@@ -506,15 +508,46 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
       notification.showError(
         'No suitable identifier found for LEI lookup. Add a KVK, HRB, or similar identifier first.'
       );
-      return;
+      return null;
     }
 
-    // Check if LEI already exists
     const leiExists = identifiers.some((id) => id.identifier_type === 'LEI');
     if (leiExists) {
       notification.showInfo('LEI already exists for this entity');
-      return;
+      return null;
     }
+
+    return suitableIdentifier;
+  }, [identifiers, notification]);
+
+  // Helper function to handle LEI API response
+  const handleLeiResponse = useCallback(
+    async (result: {
+      lei: string | null;
+      legal_name: string | null;
+      status: 'found' | 'not_found' | 'already_exists' | 'error';
+      was_saved: boolean;
+      message?: string;
+    }, suitableIdentifier: LegalEntityIdentifier) => {
+      if (result.status === 'found' && result.was_saved) {
+        notification.showSuccess(`LEI ${result.lei} found and saved successfully!`);
+        await onRefresh();
+      } else if (result.status === 'found' && !result.was_saved) {
+        notification.showWarning(`LEI ${result.lei} found but not saved to database`);
+      } else if (result.status === 'not_found') {
+        notification.showWarning(
+          `No LEI found for ${suitableIdentifier.identifier_type} ${suitableIdentifier.identifier_value}`
+        );
+      } else if (result.status === 'already_exists') {
+        notification.showInfo(`LEI already exists: ${result.lei}`);
+      }
+    },
+    [notification, onRefresh]
+  );
+
+  const handleFetchLei = useCallback(async () => {
+    const suitableIdentifier = validateLeiPreconditions();
+    if (!suitableIdentifier) return;
 
     setFetchingLei(true);
     try {
@@ -532,27 +565,13 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         save_to_database: true,
       });
 
-      const result = response.data;
-
-      if (result.status === 'found' && result.was_saved) {
-        notification.showSuccess(`LEI ${result.lei} found and saved successfully!`);
-        // Refetch identifiers to show the new LEI
-        await onRefresh();
-      } else if (result.status === 'found' && !result.was_saved) {
-        notification.showWarning(`LEI ${result.lei} found but not saved to database`);
-      } else if (result.status === 'not_found') {
-        notification.showWarning(
-          `No LEI found for ${suitableIdentifier.identifier_type} ${suitableIdentifier.identifier_value}`
-        );
-      } else if (result.status === 'already_exists') {
-        notification.showInfo(`LEI already exists: ${result.lei}`);
-      }
+      await handleLeiResponse(response.data, suitableIdentifier);
     } catch (error: unknown) {
       handleError(error, 'fetching LEI from GLEIF API');
     } finally {
       setFetchingLei(false);
     }
-  }, [identifiers, legalEntityId, notification, onRefresh, handleError]);
+  }, [legalEntityId, validateLeiPreconditions, handleLeiResponse, handleError]);
 
   const handleCancel = useCallback(() => {
     setIsDialogOpen(false);
@@ -977,7 +996,12 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
                 label="Validation Status"
                 data={VALIDATION_STATUSES}
                 value={formData.validation_status}
-                onChange={(value) => setFormData({ ...formData, validation_status: value as any })}
+                onChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    validation_status: value as LegalEntityIdentifier['validation_status'],
+                  })
+                }
               />
             </div>
 

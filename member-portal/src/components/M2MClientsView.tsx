@@ -102,9 +102,11 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
       loadClients();
     } catch (error: unknown) {
       console.error('Error creating M2M client:', error);
-      const errorMessage = error && typeof error === 'object' && 'response' in error
-        ? ((error as {response?: {data?: {error?: string}}}).response?.data?.error || 'Failed to create M2M client')
-        : 'Failed to create M2M client';
+      const errorMessage =
+        error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { data?: { error?: string } } }).response?.data?.error ||
+            'Failed to create M2M client'
+          : 'Failed to create M2M client';
       onNotification(errorMessage, 'error');
     } finally {
       setLoading(false);
@@ -346,29 +348,21 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
             />
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+          <fieldset style={{ border: 'none', padding: 0, margin: '0 0 20px 0' }}>
+            <legend style={{ display: 'block', marginBottom: '8px', fontWeight: 500, padding: 0 }}>
               Assigned Scopes *
-            </div>
-            <div
-              style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}
-              role="group"
-              aria-label="Assigned Scopes"
-            >
+            </legend>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
               {AVAILABLE_SCOPES.map((scope) => (
-                <label
+                <Checkbox
                   key={scope.value}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                >
-                  <Checkbox
-                    checked={formData.scopes.includes(scope.value)}
-                    onChange={() => handleScopeToggle(scope.value)}
-                  />
-                  <span>{scope.label}</span>
-                </label>
+                  label={scope.label}
+                  checked={formData.scopes.includes(scope.value)}
+                  onChange={() => handleScopeToggle(scope.value)}
+                />
               ))}
             </div>
-          </div>
+          </fieldset>
         </div>
 
         <Group justify="flex-end" mt="md">

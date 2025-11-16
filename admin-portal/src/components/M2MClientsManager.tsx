@@ -282,7 +282,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({ legalEnt
         render: (record) => <div>{formatDate(record.dt_created)}</div>,
       },
       {
-        accessor: 'actions' as any,
+        accessor: 'actions',
         title: 'Actions',
         width: 200,
         toggleable: false,
@@ -376,6 +376,7 @@ const M2MClientsManagerComponent: React.FC<M2MClientsManagerProps> = ({ legalEnt
             <div style={{ marginBottom: '8px', fontWeight: 500 }}>Assigned Scopes *</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {AVAILABLE_SCOPES.map((scope) => (
+                // biome-ignore lint/a11y/noLabelWithoutControl: Label wraps Checkbox component which is valid HTML pattern
                 <label
                   key={scope.value}
                   style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
