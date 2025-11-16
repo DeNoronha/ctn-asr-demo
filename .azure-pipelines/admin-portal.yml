@@ -247,13 +247,15 @@ steps:
       VITE_REDIRECT_URI: https://calm-tree-03352ba03.1.azurestaticapps.net
       VITE_API_URL: https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
 
-  - task: AzureStaticWebApp@0
-    displayName: 'Deploy to Azure Static Web Apps'
+  # Deploy using SWA CLI instead of AzureStaticWebApp@0 task
+  # The Azure DevOps extension has deployment cancellation issues (November 2025)
+  # SWA CLI deployment works reliably
+  - script: |
+      npx @azure/static-web-apps-cli@latest deploy admin-portal/build \
+        --deployment-token $(AZURE-STATIC-WEB-APPS-API-TOKEN-ADMIN) \
+        --env production
+    displayName: 'Deploy to Azure Static Web Apps (SWA CLI)'
     condition: succeeded()
-    inputs:
-      app_location: 'admin-portal/build'
-      skip_app_build: true
-      azure_static_web_apps_api_token: $(AZURE-STATIC-WEB-APPS-API-TOKEN-ADMIN)
 
   # ========================================
   # Post-Deployment Verification

@@ -204,13 +204,15 @@ steps:
       VITE_AAD_AUTHORITY: https://login.microsoftonline.com/598664e7-725c-4daa-bd1f-89c4ada717ff
       VITE_AAD_REDIRECT_URI: https://calm-pebble-043b2db03.1.azurestaticapps.net
 
-  - task: AzureStaticWebApp@0
-    displayName: 'Deploy to Azure Static Web Apps'
+  # Deploy using SWA CLI instead of AzureStaticWebApp@0 task
+  # The Azure DevOps extension has deployment cancellation issues (November 2025)
+  # SWA CLI deployment works reliably
+  - script: |
+      npx @azure/static-web-apps-cli@latest deploy member-portal/build \
+        --deployment-token $(AZURE-STATIC-WEB-APPS-API-TOKEN-MEMBER) \
+        --env production
+    displayName: 'Deploy to Azure Static Web Apps (SWA CLI)'
     condition: succeeded()
-    inputs:
-      app_location: 'member-portal/build'
-      skip_app_build: true
-      azure_static_web_apps_api_token: $(AZURE-STATIC-WEB-APPS-API-TOKEN-MEMBER)
 
   # ========================================
   # Post-Deployment Verification
