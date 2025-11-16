@@ -31,5 +31,7 @@ module.exports = {
       isolatedModules: true
     }
   },
-  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts']
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
+  modulePathIgnorePatterns: [],
+  modulePaths: ['<rootDir>/../node_modules', '<rootDir>/node_modules']
 };

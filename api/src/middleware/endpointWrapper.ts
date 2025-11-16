@@ -4,7 +4,7 @@
 // Simplifies applying authentication and authorization to endpoints
 
 import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { authenticate, AuthenticatedRequest as AuthRequest, validateCsrf } from './auth';
+import { authenticate, AuthenticatedRequest as AuthRequest } from './auth';
 import { Permission, requirePermissions, requireRoles, UserRole } from './rbac';
 import { applySecurityHeaders } from './securityHeaders';
 import { enforceHttps, addHttpsSecurityHeaders } from './httpsEnforcement';
@@ -258,6 +258,7 @@ export function wrapEndpoint(
 
       // Apply authentication if required
       let authenticatedRequest: AuthenticatedRequest;
+      let csrfTokenToSet: string | undefined;
 
       if (requireAuth) {
         const authResult = await authenticate(request, context);
@@ -293,6 +294,7 @@ export function wrapEndpoint(
         }
 
         authenticatedRequest = authResult.request;
+        csrfTokenToSet = authResult.csrfToken; // Store CSRF token for response
       } else {
         // Create authenticated request from regular request for anonymous access
         // Bind methods to avoid accessing private Headers members
@@ -373,35 +375,88 @@ export function wrapEndpoint(
         }
       }
 
-      // SEC-004: CSRF protection for state-changing requests
-      // Minimal enforcement for current cross-domain architecture:
-      // - Require presence of custom X-CSRF-Token header on POST/PUT/PATCH/DELETE
-      // - This header cannot be set by cross-site forms, mitigating CSRF
-      // - When/if same-domain cookies are feasible, switch to validateCsrf()
+      // SEC-004: CSRF protection using double-submit cookie pattern
+      // Validates CSRF tokens for all state-changing requests (POST/PUT/PATCH/DELETE)
+      // Security properties:
+      // - Cryptographically secure random tokens (256 bits)
+      // - Cookie + Header must match (double-submit pattern)
+      // - Constant-time comparison prevents timing attacks
+      // - Token expiration enforced (30 minutes)
+      //
+      // This prevents CSRF attacks because:
+      // - Attacker cannot read cookie from different origin (SameSite=Strict)
+      // - Attacker cannot set custom headers on cross-origin requests
+      // - Tokens are cryptographically random and cannot be predicted
       if (requireAuth && STATE_CHANGING_METHODS.includes(request.method.toUpperCase() as any)) {
+        // Import CSRF validation utilities
+        const { validateCsrfTokens, extractCsrfCookie } = await import('../utils/csrf');
+
+        // Extract CSRF token from cookie
+        const cookieHeader = authenticatedRequest.headers.get('cookie');
+        const csrfCookie = extractCsrfCookie(cookieHeader);
+
+        // Extract CSRF token from header
         const csrfHeader = authenticatedRequest.headers.get('x-csrf-token');
-        if (!csrfHeader) {
+
+        // Validate double-submit pattern
+        const csrfValidation = validateCsrfTokens(
+          csrfCookie,
+          csrfHeader,
+          authenticatedRequest.userId,
+          context
+        );
+
+        if (!csrfValidation.valid) {
           const duration = Date.now() - startTime;
-          context.warn(`[${requestId}] CSRF header missing (${duration}ms)`);
+          context.warn(`[${requestId}] CSRF validation failed: ${csrfValidation.errorCode} (${duration}ms)`);
+
           if (enableCors) {
             const origin = safeGetHeader(request.headers, 'origin');
             const corsHeaders = getCorsHeaders(origin, allowedOrigins);
             return {
               status: 403,
               headers: { 'Content-Type': 'application/json', ...corsHeaders, 'X-Request-ID': requestId },
-              jsonBody: { error: 'forbidden', error_description: 'Missing X-CSRF-Token header' },
+              jsonBody: {
+                error: 'forbidden',
+                error_description: csrfValidation.error || 'CSRF validation failed',
+                error_code: csrfValidation.errorCode,
+              },
             };
           }
+
           return {
             status: 403,
             headers: { 'Content-Type': 'application/json', 'X-Request-ID': requestId },
-            jsonBody: { error: 'forbidden', error_description: 'Missing X-CSRF-Token header' },
+            jsonBody: {
+              error: 'forbidden',
+              error_description: csrfValidation.error || 'CSRF validation failed',
+              error_code: csrfValidation.errorCode,
+            },
           };
         }
+
+        // CSRF validation passed - log for audit
+        context.log(`[${requestId}] CSRF validation successful for ${authenticatedRequest.userEmail || authenticatedRequest.userId}`);
       }
 
       // Call the actual handler
       let response = await handler(authenticatedRequest, context);
+
+      // Set CSRF token cookie if this is an authenticated request (SEC-004)
+      // Token is generated on each successful authentication and set as cookie
+      // Frontend will read this cookie and include it in X-CSRF-Token header
+      if (csrfTokenToSet) {
+        const { formatCsrfCookie } = await import('../utils/csrf');
+        const csrfCookie = formatCsrfCookie(csrfTokenToSet);
+
+        // Add Set-Cookie header for CSRF token
+        response.headers = {
+          ...response.headers,
+          'Set-Cookie': csrfCookie,
+        };
+
+        context.log(`[${requestId}] CSRF token set for ${authenticatedRequest.userEmail || authenticatedRequest.userId}`);
+      }
 
       // Add CORS headers to response
       if (enableCors) {
