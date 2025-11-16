@@ -722,6 +722,21 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
   - Button triggers InviteUserDialog for immediate action
 - **Testing:** TypeScript compilation passed, pre-commit hook passed (7/7 checks)
 
+### TASK-SEC-001: Remove Hardcoded Azure AD Credentials ✅
+- **Completed:** November 16, 2025
+- **Commit:** `ed2800a`
+- **Category:** Security (CRITICAL)
+- **CVSS:** 7.5 (HIGH)
+- **Impact:** Eliminated environment misconfiguration risk and credential exposure
+- **Changes:**
+  - Removed hardcoded fallback values for AZURE_AD_TENANT_ID and AZURE_AD_CLIENT_ID
+  - Added startup validation that throws descriptive error if credentials missing
+  - Fail-fast behavior prevents misconfigured deployments
+  - Updated commit message with local.settings.json configuration instructions
+- **Compliance:** OWASP A07:2021, SOC 2 CC6.1
+- **Testing:** TypeScript compilation passed, pre-commit hook passed (7/7 checks)
+- **Deployment Note:** Azure Function App must have environment variables configured
+
 ---
 
 ## Notes
