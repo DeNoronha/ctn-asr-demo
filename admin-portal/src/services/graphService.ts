@@ -104,9 +104,46 @@ function mapGraphUser(graphUser: GraphUser, roles: UserRole[] = []): User {
 }
 
 /**
- * Extract roles from app role assignments
+ * Cache for CTN app service principal ID
+ * The resourceId in appRoleAssignments is the service principal Object ID, not the client ID
  */
-function extractRoles(appRoleAssignments: any[]): UserRole[] {
+let ctnServicePrincipalId: string | null = null;
+
+/**
+ * Get the service principal Object ID for the CTN application
+ */
+async function getCtnServicePrincipalId(client: Client): Promise<string> {
+  if (ctnServicePrincipalId) {
+    return ctnServicePrincipalId;
+  }
+
+  const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
+
+  try {
+    // Query for the service principal using the app's client ID
+    const response = await client
+      .api('/servicePrincipals')
+      .filter(`appId eq '${clientId}'`)
+      .select(['id', 'displayName'])
+      .get();
+
+    if (response.value && response.value.length > 0) {
+      ctnServicePrincipalId = response.value[0].id;
+      logger.log(`CTN service principal ID: ${ctnServicePrincipalId}`);
+      return ctnServicePrincipalId;
+    }
+
+    throw new Error('CTN application service principal not found');
+  } catch (error) {
+    logger.error('Failed to get CTN service principal ID:', error);
+    throw error;
+  }
+}
+
+/**
+ * Extract roles from app role assignments (filtered to CTN app only)
+ */
+function extractRoles(appRoleAssignments: any[], ctnServicePrincipalId: string): UserRole[] {
   const roleMap: Record<string, UserRole> = {
     SystemAdmin: UserRole.SYSTEM_ADMIN,
     AssociationAdmin: UserRole.ASSOCIATION_ADMIN,
@@ -116,6 +153,12 @@ function extractRoles(appRoleAssignments: any[]): UserRole[] {
   const roles: UserRole[] = [];
 
   for (const assignment of appRoleAssignments) {
+    // CRITICAL: Only include roles assigned for the CTN application
+    // resourceId is the service principal Object ID of the app (not the client ID)
+    if (assignment.resourceId !== ctnServicePrincipalId) {
+      continue; // Skip roles from other applications
+    }
+
     const roleName = assignment.appRoleDisplayName || assignment.appRoleValue;
     if (roleName && roleMap[roleName]) {
       roles.push(roleMap[roleName]);
@@ -133,6 +176,9 @@ export async function listUsers(): Promise<User[]> {
   try {
     logger.log('Fetching users from Microsoft Graph...');
     const client = await getGraphClient();
+
+    // Get the CTN app's service principal ID for filtering app role assignments
+    const ctnSpId = await getCtnServicePrincipalId(client);
 
     const response = await client
       .api('/users')
@@ -163,7 +209,7 @@ export async function listUsers(): Promise<User[]> {
       // Get app role assignments for this user
       try {
         const appRoleResponse = await client.api(`/users/${graphUser.id}/appRoleAssignments`).get();
-        const roles = extractRoles(appRoleResponse.value);
+        const roles = extractRoles(appRoleResponse.value, ctnSpId);
 
         // Only include users who have explicit CTN app role assignments
         if (roles.length > 0) {
