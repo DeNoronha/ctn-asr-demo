@@ -47,39 +47,8 @@ type TabType =
   | 'dns-verification'
   | 'support';
 
-interface MemberData {
-  organizationId: string;
-  legalName: string;
-  lei?: string;
-  kvk?: string;
-  domain: string;
-  status: string;
-  membershipLevel: string;
-  createdAt: string;
-  entityName?: string;
-  entityType?: string;
-  contactName?: string;
-  email?: string;
-  jobTitle?: string;
-}
-
-interface RegistrationFormData {
-  legalName: string;
-  kvkNumber: string;
-  lei?: string;
-  companyAddress: string;
-  postalCode: string;
-  city: string;
-  country: string;
-  contactName: string;
-  contactEmail: string;
-  contactPhone: string;
-  jobTitle: string;
-  membershipType: string;
-  termsAccepted: boolean;
-  gdprConsent: boolean;
-  kvkDocument: File;
-}
+// Import from types instead of duplicate definition
+import type { MemberData, RegistrationFormData } from './types';
 
 function AppContent(_props: AppContentProps) {
   const { instance: msal, accounts } = useMsal();

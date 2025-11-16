@@ -27,6 +27,7 @@ import {
   IconRocket,
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
+import type { Endpoint } from '../types';
 
 interface EndpointRegistrationWizardProps {
   legalEntityId: string;
@@ -44,6 +45,13 @@ interface EndpointData {
   endpoint_type: string;
 }
 
+interface TestResults {
+  success: boolean;
+  message?: string;
+  response_time_ms?: number;
+  test_result?: string;
+}
+
 export function EndpointRegistrationWizard({
   legalEntityId,
   apiBaseUrl,
@@ -56,9 +64,7 @@ export function EndpointRegistrationWizard({
   const [endpointId, setEndpointId] = useState<string | null>(null);
   const [verificationToken, setVerificationToken] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
-  const [testResults, setTestResults] = useState<{ success: boolean; message?: string } | null>(
-    null
-  );
+  const [testResults, setTestResults] = useState<TestResults | null>(null);
 
   // Initialize API client with retry logic and token management
   const apiClient = useMemo(
@@ -104,7 +110,10 @@ export function EndpointRegistrationWizard({
       setLoading(true);
       try {
         // Create endpoint using api-client with automatic retry and token management
-        const endpoint = await apiClient.endpoints.initiateRegistration(legalEntityId, form.values);
+        const endpoint = (await apiClient.endpoints.initiateRegistration(
+          legalEntityId,
+          form.values
+        )) as unknown as Endpoint;
         setEndpointId(endpoint.legal_entity_endpoint_id);
 
         // Automatically send verification email

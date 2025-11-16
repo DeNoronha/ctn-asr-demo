@@ -77,3 +77,21 @@ export interface ComponentProps {
   onNotification: (message: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
   onDataChange: () => void;
 }
+
+export interface RegistrationFormData {
+  legalName: string;
+  kvkNumber: string;
+  lei?: string;
+  companyAddress: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  jobTitle: string;
+  membershipType: string;
+  termsAccepted: boolean;
+  gdprConsent: boolean;
+  kvkDocument: File;
+}

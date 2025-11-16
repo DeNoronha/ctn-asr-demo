@@ -4,14 +4,9 @@
  */
 
 import type React from 'react';
+import type { MemberData } from '../types';
 import { M2MClientsView } from './M2MClientsView';
 import { TokensView } from './TokensView';
-
-interface MemberData {
-  legal_entity_id?: string;
-  legal_name?: string;
-  [key: string]: unknown;
-}
 
 interface APIAccessViewProps {
   getAccessToken: () => Promise<string>;
@@ -26,7 +21,7 @@ export const APIAccessView: React.FC<APIAccessViewProps> = ({
   memberData,
   onNotification,
 }) => {
-  if (!memberData?.legal_entity_id) {
+  if (!memberData?.legalEntityId) {
     return (
       <div style={{ padding: '40px 20px', textAlign: 'center' }}>
         <h3>API Access</h3>
@@ -60,7 +55,7 @@ export const APIAccessView: React.FC<APIAccessViewProps> = ({
         </div>
 
         <M2MClientsView
-          legalEntityId={memberData.legal_entity_id}
+          legalEntityId={memberData.legalEntityId || ''}
           legalEntityName={memberData.legalName}
           getAccessToken={getAccessToken}
           apiBaseUrl={apiBaseUrl}

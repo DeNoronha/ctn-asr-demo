@@ -7,32 +7,9 @@ import { Button, Checkbox, Select, Text, TextInput, Textarea } from '@mantine/co
 import { useForm } from '@mantine/form';
 import type React from 'react';
 import { useState } from 'react';
+import type { RegistrationFormData } from '../types';
 
 import { KvKDocumentUpload } from './KvKDocumentUpload';
-
-interface RegistrationFormData {
-  // Company Information
-  legalName: string;
-  kvkNumber: string;
-  lei?: string;
-  companyAddress: string;
-  postalCode: string;
-  city: string;
-  country: string;
-
-  // Contact Information
-  contactName: string;
-  contactEmail: string;
-  contactPhone: string;
-  jobTitle: string;
-
-  // Documents
-  kvkDocument?: File;
-
-  // Legal
-  termsAccepted: boolean;
-  gdprConsent: boolean;
-}
 
 interface RegistrationFormProps {
   onSubmit: (data: RegistrationFormData) => Promise<void>;
@@ -92,6 +69,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
       contactEmail: '',
       contactPhone: '',
       jobTitle: '',
+      membershipType: 'STANDARD',
       termsAccepted: false,
       gdprConsent: false,
     },
@@ -107,15 +85,21 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
       contactEmail: emailValidator,
       contactPhone: phoneValidator,
       jobTitle: requiredValidator,
+      membershipType: requiredValidator,
       termsAccepted: (value) => (value ? null : 'You must accept the terms'),
       gdprConsent: (value) => (value ? null : 'GDPR consent is required'),
     },
   });
 
   const handleSubmit = async (values: typeof form.values) => {
+    // kvkDocument is guaranteed to be non-null due to isStep3Valid() validation
+    if (!kvkDocument) {
+      throw new Error('KvK document is required');
+    }
+
     const formData: RegistrationFormData = {
       ...values,
-      kvkDocument: kvkDocument || undefined,
+      kvkDocument,
     };
 
     await onSubmit(formData);
