@@ -69,7 +69,7 @@ async function getTokenAndTestAPI() {
       // expiry time and user info. The token is already authenticated by Azure AD during the
       // browser login flow. We're not using this decoded data for authorization decisions.
       const jwt = require('jsonwebtoken');
-      // nosemgrep
+      // nosemgrep: javascript.jsonwebtoken.security.audit.jwt-decode-without-verify.jwt-decode-without-verify
       const decoded = jwt.decode(capturedToken, { complete: true });
 
       tokenData = {
