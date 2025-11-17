@@ -7,13 +7,8 @@ import { Client } from '@microsoft/microsoft-graph-client';
 import type { User as GraphUser } from '@microsoft/microsoft-graph-types';
 import { msalInstance } from '../auth/AuthContext';
 import { UserRole } from '../auth/authConfig';
+import { ConsentRequiredError, GraphApiError, GraphAuthError, logError } from '../types/errors';
 import { logger } from '../utils/logger';
-import {
-  ConsentRequiredError,
-  GraphApiError,
-  GraphAuthError,
-  logError,
-} from '../types/errors';
 
 export interface User {
   id: string;
@@ -44,7 +39,7 @@ export const GRAPH_SCOPES = [
   'User.Read.All',
   'User.ReadWrite.All',
   'Application.Read.All',
-  'AppRoleAssignment.ReadWrite.All'
+  'AppRoleAssignment.ReadWrite.All',
 ];
 
 /**
@@ -194,15 +189,21 @@ function extractRoles(appRoleAssignments: any[], ctnServicePrincipalId: string):
 
   const roles: UserRole[] = [];
 
-  logger.log(`[extractRoles] Processing ${appRoleAssignments.length} app role assignments for CTN SP ID: ${ctnServicePrincipalId}`);
+  logger.log(
+    `[extractRoles] Processing ${appRoleAssignments.length} app role assignments for CTN SP ID: ${ctnServicePrincipalId}`
+  );
 
   for (const assignment of appRoleAssignments) {
-    logger.log(`[extractRoles] Assignment - resourceId: ${assignment.resourceId}, role: ${assignment.appRoleDisplayName || assignment.appRoleValue}`);
+    logger.log(
+      `[extractRoles] Assignment - resourceId: ${assignment.resourceId}, role: ${assignment.appRoleDisplayName || assignment.appRoleValue}`
+    );
 
     // CRITICAL: Only include roles assigned for the CTN application
     // resourceId is the service principal Object ID of the app (not the client ID)
     if (assignment.resourceId !== ctnServicePrincipalId) {
-      logger.log(`[extractRoles] Skipping - resourceId mismatch (${assignment.resourceId} !== ${ctnServicePrincipalId})`);
+      logger.log(
+        `[extractRoles] Skipping - resourceId mismatch (${assignment.resourceId} !== ${ctnServicePrincipalId})`
+      );
       continue; // Skip roles from other applications
     }
 
@@ -280,39 +281,129 @@ export async function listUsers(): Promise<User[]> {
       Member: UserRole.MEMBER,
     };
 
-    // Fetch full user details for each assigned user
-    for (const [userId, roleNames] of [...userRoleMap]) {
-      try {
-        const graphUser = await client
-          .api(`/users/${userId}`)
-          .select([
-            'id',
-            'displayName',
-            'userPrincipalName',
-            'mail',
-            'accountEnabled',
-            'createdDateTime',
-            'signInActivity',
-          ])
-          .get();
+    // PERFORMANCE OPTIMIZATION: Use Graph API $batch endpoint to fetch users in parallel
+    // Instead of N sequential requests (~200ms each), we make batches of up to 20 requests (~300ms total)
+    // This eliminates the N+1 query pattern and significantly improves performance for large user sets
+    const userIds = [...userRoleMap.keys()];
+    const BATCH_SIZE = 20; // Microsoft Graph API batch limit
 
-        // Map role names to UserRole enum
-        const roles: UserRole[] = [];
-        for (const roleName of roleNames) {
-          if (roleMap[roleName]) {
-            roles.push(roleMap[roleName]);
+    for (let i = 0; i < userIds.length; i += BATCH_SIZE) {
+      const batchUserIds = userIds.slice(i, i + BATCH_SIZE);
+
+      try {
+        // Construct batch request payload
+        // Each request in the batch is an independent Graph API call
+        const batchRequests = batchUserIds.map((userId, index) => ({
+          id: `${index}`, // Sequential ID for matching responses
+          method: 'GET',
+          url: `/users/${userId}?$select=id,displayName,userPrincipalName,mail,accountEnabled,createdDateTime,signInActivity`,
+        }));
+
+        const batchPayload = {
+          requests: batchRequests,
+        };
+
+        logger.log(
+          `Fetching batch ${Math.floor(i / BATCH_SIZE) + 1} (${batchUserIds.length} users) via $batch endpoint...`
+        );
+
+        // Execute batch request
+        const batchResponse = await client.api('/$batch').post(batchPayload);
+
+        // Process batch responses
+        // Graph API returns responses in the same order as requests (matched by ID)
+        for (const response of batchResponse.responses || []) {
+          const requestIndex = Number.parseInt(response.id, 10);
+          const userId = batchUserIds[requestIndex];
+          const roleNames = userRoleMap.get(userId);
+
+          if (!roleNames) {
+            continue; // Should never happen, but defensive check
+          }
+
+          // Handle individual request failures within the batch
+          if (response.status >= 200 && response.status < 300) {
+            const graphUser = response.body;
+
+            // Map role names to UserRole enum
+            const roles: UserRole[] = [];
+            for (const roleName of roleNames) {
+              if (roleMap[roleName]) {
+                roles.push(roleMap[roleName]);
+              }
+            }
+
+            if (roles.length > 0) {
+              users.push(mapGraphUser(graphUser, roles));
+              logger.log(
+                `✅ Added user: ${graphUser.userPrincipalName} with roles: ${[...roleNames].join(', ')}`
+              );
+            } else {
+              logger.warn(
+                `⚠️  User ${graphUser.userPrincipalName} has assignment but no recognized roles`
+              );
+            }
+          } else {
+            // Log individual request failure but continue processing other users
+            logger.warn(
+              `Failed to fetch user ${userId} in batch (status ${response.status}):`,
+              response.body
+            );
+            logError(
+              new Error(
+                `Batch request failed for user ${userId}: ${JSON.stringify(response.body)}`
+              ),
+              `listUsers - batch fetch user ${userId}`
+            );
           }
         }
-
-        if (roles.length > 0) {
-          users.push(mapGraphUser(graphUser, roles));
-          logger.log(`✅ Added user: ${graphUser.userPrincipalName} with roles: ${[...roleNames].join(', ')}`);
-        } else {
-          logger.warn(`⚠️  User ${graphUser.userPrincipalName} has assignment but no recognized roles`);
-        }
       } catch (error) {
-        logger.warn(`Failed to fetch user ${userId}:`, error);
-        logError(error, `listUsers - fetch user ${userId}`);
+        // Handle batch request failure - log and skip this batch
+        logger.error(
+          `Failed to execute batch request for users ${i}-${i + batchUserIds.length}:`,
+          error
+        );
+        logError(error, 'listUsers - batch request');
+
+        // Fallback: Try to fetch users individually for this batch if batch fails
+        logger.warn('Falling back to individual requests for this batch...');
+        for (const userId of batchUserIds) {
+          const roleNames = userRoleMap.get(userId);
+          if (!roleNames) continue;
+
+          try {
+            const graphUser = await client
+              .api(`/users/${userId}`)
+              .select([
+                'id',
+                'displayName',
+                'userPrincipalName',
+                'mail',
+                'accountEnabled',
+                'createdDateTime',
+                'signInActivity',
+              ])
+              .get();
+
+            // Map role names to UserRole enum
+            const roles: UserRole[] = [];
+            for (const roleName of roleNames) {
+              if (roleMap[roleName]) {
+                roles.push(roleMap[roleName]);
+              }
+            }
+
+            if (roles.length > 0) {
+              users.push(mapGraphUser(graphUser, roles));
+              logger.log(
+                `✅ Added user (fallback): ${graphUser.userPrincipalName} with roles: ${[...roleNames].join(', ')}`
+              );
+            }
+          } catch (fallbackError) {
+            logger.warn(`Failed to fetch user ${userId} (fallback):`, fallbackError);
+            logError(fallbackError, `listUsers - fallback fetch user ${userId}`);
+          }
+        }
       }
     }
 

@@ -54,6 +54,7 @@ import './functions/ResolveParty';
 
 // Audit Logs
 import './functions/GetAuditLogs';
+import './functions/GetAuditLogPII'; // PII de-pseudonymization (SystemAdmin only)
 
 // Task Management
 import './functions/getTasks';

@@ -3,7 +3,8 @@ import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapp
 import { getPool, escapeSqlWildcards } from '../utils/database';
 import { getPaginationParams, createPaginatedResponse } from '../utils/pagination';
 import { handleError } from '../utils/errors';
-import { AuditEventType, AuditSeverity } from '../middleware/auditLog';
+import { AuditEventType, AuditSeverity, logAuditEvent } from '../middleware/auditLog';
+import { pseudonymizeEmail } from '../utils/pseudonymization';
 
 /**
  * Allowed values for query parameters (allow-lists)
@@ -230,9 +231,16 @@ async function handler(
     }
 
     if (userEmail) {
-      // Use ILIKE for case-insensitive partial matching with sanitized wildcards
-      conditions.push(`user_email ILIKE $${paramIndex++}`);
-      params.push(`%${escapeSqlWildcards(userEmail)}%`);
+      // Pseudonymize the search email to match against pseudonymized column
+      // Note: Partial matching not supported with pseudonymization (exact match only)
+      const pseudonymizedEmail = pseudonymizeEmail(userEmail);
+      if (pseudonymizedEmail) {
+        conditions.push(`user_email_pseudonym = $${paramIndex++}`);
+        params.push(pseudonymizedEmail);
+      } else {
+        // If pseudonymization fails (no secret configured), skip this filter
+        context.warn('Cannot filter by email - pseudonymization not configured');
+      }
     }
 
     if (resourceType) {
@@ -292,11 +300,11 @@ async function handler(
         severity,
         result,
         user_id,
-        user_email,
+        user_email_pseudonym,
         resource_type,
         resource_id,
         action,
-        ip_address,
+        ip_address_pseudonym,
         user_agent,
         request_path,
         request_method,
@@ -310,6 +318,25 @@ async function handler(
     `;
 
     const { rows } = await pool.query(dataQuery, [...params, limit, offset]);
+
+    // Log access to audit logs (audit trail for auditors)
+    await logAuditEvent(
+      {
+        event_type: AuditEventType.DATA_EXPORTED,
+        severity: AuditSeverity.INFO,
+        user_id: request.userId,
+        user_email: request.userEmail,
+        action: 'read',
+        resource_type: 'audit_log',
+        result: 'success',
+        details: {
+          filters: whereClause,
+          result_count: rows.length,
+          total_items: totalItems
+        }
+      },
+      context
+    );
 
     // Create paginated response
     const response = createPaginatedResponse(
