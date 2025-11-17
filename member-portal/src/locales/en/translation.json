@@ -271,5 +271,27 @@
     "notFound": "The requested resource was not found.",
     "validationError": "Please correct the errors in the form.",
     "unknownError": "An unknown error occurred."
+  },
+  "shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "description": "Use these keyboard shortcuts to navigate faster and perform actions more efficiently.",
+    "note": "Note: Shortcuts may vary based on your operating system. Cmd is used on macOS, Ctrl on Windows and Linux.",
+    "action": "Action",
+    "shortcut": "Shortcut",
+    "categoryNavigation": "Navigation",
+    "categorySearch": "Search & Filter",
+    "categoryActions": "Actions",
+    "categoryGeneral": "General",
+    "navigateDashboard": "Navigate to Dashboard",
+    "navigateProfile": "Navigate to Organization Profile",
+    "navigateContacts": "Navigate to Contacts",
+    "navigateIntegrations": "Navigate to System Integrations",
+    "navigateApiAccess": "Navigate to API Access",
+    "navigateDnsVerification": "Navigate to DNS Verification",
+    "navigateSupport": "Navigate to Support",
+    "search": "Focus Search",
+    "newMember": "Register as Member",
+    "help": "Show Keyboard Shortcuts",
+    "closeModal": "Close Modal/Dialog"
   }
 }

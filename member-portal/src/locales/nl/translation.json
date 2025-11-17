@@ -271,5 +271,27 @@
     "notFound": "De gevraagde resource is niet gevonden.",
     "validationError": "Corrigeer de fouten in het formulier.",
     "unknownError": "Er is een onbekende fout opgetreden."
+  },
+  "shortcuts": {
+    "title": "Sneltoetsen",
+    "description": "Gebruik deze sneltoetsen om sneller te navigeren en acties efficiënter uit te voeren.",
+    "note": "Opmerking: Sneltoetsen kunnen variëren op basis van uw besturingssysteem. Cmd wordt gebruikt op macOS, Ctrl op Windows en Linux.",
+    "action": "Actie",
+    "shortcut": "Sneltoets",
+    "categoryNavigation": "Navigatie",
+    "categorySearch": "Zoeken & Filteren",
+    "categoryActions": "Acties",
+    "categoryGeneral": "Algemeen",
+    "navigateDashboard": "Naar Dashboard navigeren",
+    "navigateProfile": "Naar Organisatieprofiel navigeren",
+    "navigateContacts": "Naar Contacten navigeren",
+    "navigateIntegrations": "Naar Systeemintegraties navigeren",
+    "navigateApiAccess": "Naar API-toegang navigeren",
+    "navigateDnsVerification": "Naar DNS-verificatie navigeren",
+    "navigateSupport": "Naar Ondersteuning navigeren",
+    "search": "Zoeken focussen",
+    "newMember": "Registreren als lid",
+    "help": "Sneltoetsen tonen",
+    "closeModal": "Modal/Dialoog sluiten"
   }
 }

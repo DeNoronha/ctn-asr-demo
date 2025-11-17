@@ -412,5 +412,29 @@
       "description": "Systemaktivitäten werden hier automatisch aufgezeichnet. Audit-Protokolle verfolgen Benutzeraktionen, Zugriffsereignisse und sicherheitsrelevante Vorgänge.",
       "refresh": "Protokolle aktualisieren"
     }
+  },
+  "shortcuts": {
+    "title": "Tastaturkürzel",
+    "description": "Verwenden Sie diese Tastaturkürzel, um schneller zu navigieren und Aktionen effizienter auszuführen.",
+    "note": "Hinweis: Tastaturkürzel können je nach Betriebssystem variieren. Cmd wird auf macOS verwendet, Ctrl auf Windows und Linux.",
+    "action": "Aktion",
+    "shortcut": "Tastaturkürzel",
+    "categoryNavigation": "Navigation",
+    "categorySearch": "Suche & Filter",
+    "categoryActions": "Aktionen",
+    "categoryGeneral": "Allgemein",
+    "navigateDashboard": "Zum Dashboard navigieren",
+    "navigateMembers": "Zu Mitgliedern navigieren",
+    "navigateAuditLogs": "Zu Audit-Protokollen navigieren",
+    "navigateUserManagement": "Zur Benutzerverwaltung navigieren",
+    "navigateHealth": "Zum Health Monitor navigieren",
+    "navigateEndpoints": "Zu Endpunkten navigieren",
+    "navigateTasks": "Zu Aufgaben navigieren",
+    "search": "Suche fokussieren",
+    "newUser": "Neuen Benutzer einladen",
+    "export": "Daten exportieren",
+    "filter": "Filter fokussieren",
+    "help": "Tastaturkürzel anzeigen",
+    "closeModal": "Modal/Dialog schließen"
   }
 }

@@ -271,5 +271,27 @@
     "notFound": "Die angeforderte Ressource wurde nicht gefunden.",
     "validationError": "Bitte korrigieren Sie die Fehler im Formular.",
     "unknownError": "Ein unbekannter Fehler ist aufgetreten."
+  },
+  "shortcuts": {
+    "title": "Tastaturkürzel",
+    "description": "Verwenden Sie diese Tastaturkürzel, um schneller zu navigieren und Aktionen effizienter auszuführen.",
+    "note": "Hinweis: Tastaturkürzel können je nach Betriebssystem variieren. Cmd wird auf macOS verwendet, Ctrl auf Windows und Linux.",
+    "action": "Aktion",
+    "shortcut": "Tastaturkürzel",
+    "categoryNavigation": "Navigation",
+    "categorySearch": "Suche & Filter",
+    "categoryActions": "Aktionen",
+    "categoryGeneral": "Allgemein",
+    "navigateDashboard": "Zum Dashboard navigieren",
+    "navigateProfile": "Zum Organisationsprofil navigieren",
+    "navigateContacts": "Zu Kontakten navigieren",
+    "navigateIntegrations": "Zu Systemintegrationen navigieren",
+    "navigateApiAccess": "Zum API-Zugriff navigieren",
+    "navigateDnsVerification": "Zur DNS-Verifizierung navigieren",
+    "navigateSupport": "Zum Support navigieren",
+    "search": "Suche fokussieren",
+    "newMember": "Als Mitglied registrieren",
+    "help": "Tastaturkürzel anzeigen",
+    "closeModal": "Modal/Dialog schließen"
   }
 }

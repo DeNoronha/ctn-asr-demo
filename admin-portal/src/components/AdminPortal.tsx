@@ -24,6 +24,7 @@ import { RoleGuard } from '../auth/ProtectedRoute';
 import { UserRole } from '../auth/authConfig';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAsync } from '../hooks/useAsync';
+import { useGlobalShortcuts } from '../hooks/useGlobalShortcuts';
 import { type Member, api } from '../services/api';
 import { logger } from '../utils/logger';
 import type { MemberFormData } from '../utils/validation';
@@ -43,6 +44,7 @@ import Settings from './Settings';
 import { SkipToContent } from './SkipToContent';
 import TasksGrid from './TasksGrid';
 import AuditLogViewer from './audit/AuditLogViewer';
+import { KeyboardShortcutsHelp } from './common/KeyboardShortcutsHelp';
 import { PageHeader } from './shared/PageHeader';
 import UserManagement from './users/UserManagement';
 import './AdminPortal.css';
@@ -60,6 +62,31 @@ const AdminPortal: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedView, setSelectedView] = useState<string>('dashboard');
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+
+  // Global keyboard shortcuts
+  const { helpModalOpened, setHelpModalOpened } = useGlobalShortcuts({
+    onNavigate: (route: string) => {
+      setSelectedView(route);
+      setSelectedMember(null);
+    },
+    onSearch: () => {
+      // Focus search input if available
+      const searchInput = document.querySelector<HTMLInputElement>(
+        'input[type="search"], input[placeholder*="Search"], input[placeholder*="search"]'
+      );
+      searchInput?.focus();
+    },
+    onNewUser: () => {
+      // Only allow on settings/user management view
+      if (selectedView === 'settings') {
+        // Trigger invite user dialog - implementation depends on UserManagement component
+        const addButton = document.querySelector<HTMLButtonElement>(
+          'button[aria-label*="Invite"], button[aria-label*="invite"], button[aria-label*="Add User"]'
+        );
+        addButton?.click();
+      }
+    },
+  });
 
   // Memoize useAsync options to prevent infinite re-renders
   const asyncOptions = useMemo(
@@ -258,6 +285,7 @@ const AdminPortal: React.FC = () => {
   return (
     <>
       <SkipToContent />
+      <KeyboardShortcutsHelp opened={helpModalOpened} onClose={() => setHelpModalOpened(false)} />
       <AppShell
         header={{ height: 60 }}
         navbar={{

@@ -32,7 +32,9 @@ import { EndpointsView } from './components/EndpointsView';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import { ProfileView } from './components/ProfileView';
 import { RegistrationForm } from './components/RegistrationForm';
+import { KeyboardShortcutsHelp } from './components/shared/KeyboardShortcutsHelp';
 import { Support } from './components/Support';
+import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 
 interface AppContentProps {
   instance: IPublicClientApplication;
@@ -58,6 +60,26 @@ function AppContent(_props: AppContentProps) {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [showRegistration, setShowRegistration] = useState(false);
   const [registrationLoading, setRegistrationLoading] = useState(false);
+
+  // Global keyboard shortcuts
+  const { helpModalOpened, setHelpModalOpened } = useGlobalShortcuts({
+    onNavigate: (route) => {
+      setActiveTab(route);
+    },
+    onSearch: () => {
+      // Focus search input if available
+      const searchInput = document.querySelector<HTMLInputElement>(
+        'input[type="search"], input[placeholder*="Search"], input[placeholder*="search"]'
+      );
+      searchInput?.focus();
+    },
+    onNewMember: () => {
+      // Show registration modal (only when logged out)
+      if (accounts.length === 0) {
+        setShowRegistration(true);
+      }
+    },
+  });
 
   useEffect(() => {
     if (accounts.length > 0) {
@@ -261,6 +283,7 @@ function AppContent(_props: AppContentProps) {
 
   return (
     <div className="App">
+      <KeyboardShortcutsHelp opened={helpModalOpened} onClose={() => setHelpModalOpened(false)} />
       <AuthenticatedTemplate>
         <header className="App-header">
           <div className="header-content">

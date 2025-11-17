@@ -412,5 +412,29 @@
       "description": "Systeemactiviteit wordt hier automatisch vastgelegd. Auditlogs registreren gebruikersacties, toegangsgebeurtenissen en beveiligingsrelevante bewerkingen.",
       "refresh": "Logs vernieuwen"
     }
+  },
+  "shortcuts": {
+    "title": "Sneltoetsen",
+    "description": "Gebruik deze sneltoetsen om sneller te navigeren en acties efficiënter uit te voeren.",
+    "note": "Opmerking: Sneltoetsen kunnen variëren op basis van uw besturingssysteem. Cmd wordt gebruikt op macOS, Ctrl op Windows en Linux.",
+    "action": "Actie",
+    "shortcut": "Sneltoets",
+    "categoryNavigation": "Navigatie",
+    "categorySearch": "Zoeken & Filteren",
+    "categoryActions": "Acties",
+    "categoryGeneral": "Algemeen",
+    "navigateDashboard": "Naar Dashboard navigeren",
+    "navigateMembers": "Naar Leden navigeren",
+    "navigateAuditLogs": "Naar Auditlogs navigeren",
+    "navigateUserManagement": "Naar Gebruikersbeheer navigeren",
+    "navigateHealth": "Naar Health Monitor navigeren",
+    "navigateEndpoints": "Naar Eindpunten navigeren",
+    "navigateTasks": "Naar Taken navigeren",
+    "search": "Zoeken focussen",
+    "newUser": "Nieuwe gebruiker uitnodigen",
+    "export": "Gegevens exporteren",
+    "filter": "Filter focussen",
+    "help": "Sneltoetsen tonen",
+    "closeModal": "Modal/Dialoog sluiten"
   }
 }
