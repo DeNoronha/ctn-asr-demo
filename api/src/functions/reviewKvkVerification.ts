@@ -2,6 +2,7 @@ import { app, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { getPool } from '../utils/database';
 import { handleError } from '../utils/errors';
+import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 
 async function handler(
   request: AuthenticatedRequest,
@@ -33,20 +34,23 @@ async function handler(
       [status, reviewedBy || 'ADMIN', notes || '', legalEntityId]
     );
 
-    // Log audit event
-    await pool.query(
-      `INSERT INTO audit_logs (event_type, actor_org_id, resource_type, resource_id, action, result, metadata)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [
-        'KVK_REVIEW',
-        reviewedBy || 'ADMIN',
-        'legal_entity',
-        legalEntityId,
-        'MANUAL_REVIEW',
-        status.toUpperCase(),
-        JSON.stringify({ notes })
-      ]
-    );
+    // Log audit event using standardized middleware
+    await logAuditEvent({
+      event_type: status === 'verified' ? AuditEventType.DOCUMENT_APPROVED : AuditEventType.DOCUMENT_REJECTED,
+      severity: AuditSeverity.INFO,
+      user_id: request.userId,
+      user_email: request.userEmail || reviewedBy || 'ADMIN',
+      resource_type: 'legal_entity',
+      resource_id: legalEntityId,
+      action: 'manual_review',
+      result: status === 'verified' ? 'success' : 'failure',
+      details: {
+        verification_type: 'kvk',
+        verification_status: status,
+        notes: notes || '',
+        reviewed_by: reviewedBy || request.userEmail || 'ADMIN'
+      }
+    }, context);
 
     return {
       status: 200,

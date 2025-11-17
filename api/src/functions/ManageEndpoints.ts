@@ -3,6 +3,7 @@ import { wrapEndpoint, memberEndpoint, AuthenticatedRequest } from '../middlewar
 import { Permission } from '../middleware/rbac';
 import { getPool } from '../utils/database';
 import { handleError } from '../utils/errors';
+import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 
 // =====================================================
 // Handler: Get Endpoints by Legal Entity
@@ -128,20 +129,22 @@ async function createEndpointHandler(
       ]
     );
 
-    // Log audit event
-    await pool.query(
-      `INSERT INTO audit_logs (event_type, actor_org_id, resource_type, resource_id, action, result, metadata)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [
-        'ENDPOINT_MANAGEMENT',
-        legalEntityId,
-        'legal_entity_endpoint',
-        result.rows[0].legal_entity_endpoint_id,
-        'CREATE',
-        'SUCCESS',
-        JSON.stringify({ endpoint_name: body.endpoint_name, created_by: request.userEmail })
-      ]
-    );
+    // Log audit event using standardized middleware
+    await logAuditEvent({
+      event_type: AuditEventType.ENDPOINT_CREATED,
+      severity: AuditSeverity.INFO,
+      user_id: request.userId,
+      user_email: request.userEmail,
+      resource_type: 'legal_entity_endpoint',
+      resource_id: result.rows[0].legal_entity_endpoint_id,
+      action: 'create',
+      result: 'success',
+      details: {
+        endpoint_name: body.endpoint_name,
+        legal_entity_id: legalEntityId,
+        created_by: request.userEmail
+      }
+    }, context);
 
     return {
       status: 201,

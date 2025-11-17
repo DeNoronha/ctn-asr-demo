@@ -7,6 +7,7 @@ import { getPool } from '../utils/database';
 import { getRequestId } from '../utils/requestId';
 import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { handleError } from '../utils/errors';
+import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 
 const pool = getPool(); // ✅ SECURITY FIX: Use shared pool with SSL validation
 
@@ -344,21 +345,25 @@ async function handler(
           context.log(`Stored KvK registry data for ${kvkData.kvkNumber}`);
         }
 
-        // Log audit event (non-critical - don't fail verification if audit logging fails)
+        // Log audit event using standardized middleware (non-critical - don't fail verification if audit logging fails)
         try {
-          await pool.query(
-            `INSERT INTO audit_logs (event_type, actor_org_id, resource_type, resource_id, action, result, metadata)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-            [
-              'KVK_VERIFICATION',
-              'SYSTEM',
-              'legal_entity',
-              legalEntityId,
-              'VERIFY',
-              newStatus.toUpperCase(),
-              JSON.stringify({ flags: validation.flags, message: validation.message })
-            ]
-          );
+          await logAuditEvent({
+            event_type: AuditEventType.DOCUMENT_UPLOADED,
+            severity: newStatus === 'verified' ? AuditSeverity.INFO : AuditSeverity.WARNING,
+            user_id: request.userId || 'SYSTEM',
+            user_email: request.userEmail || 'SYSTEM',
+            resource_type: 'legal_entity',
+            resource_id: legalEntityId,
+            action: 'kvk_verification',
+            result: newStatus === 'verified' ? 'success' : 'failure',
+            details: {
+              verification_status: newStatus,
+              kvk_number: extractedData.kvkNumber,
+              company_name: extractedData.companyName,
+              flags: allFlags,
+              validation_message: validation.message
+            }
+          }, context);
         } catch (auditError: any) {
           // Audit logging failed, but don't fail the verification
           context.warn('Failed to log audit event:', auditError.message);

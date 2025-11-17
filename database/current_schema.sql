@@ -73,26 +73,8 @@ COMMIT;
 
 -- END TABLE public.audit_log
 
--- BEGIN TABLE public.audit_logs
-DROP TABLE IF EXISTS public.audit_logs CASCADE;
-BEGIN;
-
-CREATE TABLE IF NOT EXISTS public.audit_logs (
-	id bigint DEFAULT nextval('audit_logs_id_seq'::regclass) NOT NULL,
-	event_time timestamp with time zone DEFAULT now(),
-	event_type character varying(50) NOT NULL,
-	actor_org_id character varying(100),
-	resource_type character varying(50),
-	resource_id character varying(255),
-	"action" character varying(50),
-	result character varying(20),
-	metadata jsonb,
-	PRIMARY KEY(id)
-);
-
-COMMIT;
-
--- END TABLE public.audit_logs
+-- NOTE: audit_logs (plural) table removed as duplicate - use audit_log (singular) instead
+-- See: database/migrations/033_fix_audit_logs_references.md
 
 -- BEGIN TABLE public.bdi_external_systems
 DROP TABLE IF EXISTS public.bdi_external_systems CASCADE;

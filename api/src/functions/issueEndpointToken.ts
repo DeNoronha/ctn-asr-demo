@@ -4,6 +4,7 @@ import * as crypto from 'crypto';
 import { memberEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
 import { getPool } from '../utils/database';
 import { handleError } from '../utils/errors';
+import { logAuditEvent, AuditEventType, AuditSeverity } from '../middleware/auditLog';
 
 async function handler(
   request: AuthenticatedRequest,
@@ -73,24 +74,25 @@ async function handler(
       ]
     );
 
-    // Log audit event
-    await pool.query(
-      `INSERT INTO audit_logs (event_type, actor_org_id, resource_type, resource_id, action, result, metadata)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [
-        'TOKEN_ISSUANCE',
-        endpoint.legal_entity_id,
-        'endpoint_authorization',
-        result.rows[0].endpoint_authorization_id,
-        'ISSUE',
-        'SUCCESS',
-        JSON.stringify({
-          endpoint_name: endpoint.endpoint_name,
-          company_name: endpoint.primary_legal_name,
-          issued_by: request.userEmail
-        })
-      ]
-    );
+    // Log audit event using standardized middleware
+    await logAuditEvent({
+      event_type: AuditEventType.ENDPOINT_TOKEN_ISSUED,
+      severity: AuditSeverity.INFO,
+      user_id: request.userId,
+      user_email: request.userEmail,
+      resource_type: 'endpoint_authorization',
+      resource_id: result.rows[0].endpoint_authorization_id,
+      action: 'issue',
+      result: 'success',
+      details: {
+        endpoint_id: endpointId,
+        endpoint_name: endpoint.endpoint_name,
+        legal_entity_id: endpoint.legal_entity_id,
+        company_name: endpoint.primary_legal_name,
+        expires_at: expiresAt.toISOString(),
+        issued_by: request.userEmail
+      }
+    }, context);
 
     return {
       status: 201,
