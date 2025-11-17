@@ -392,6 +392,29 @@ steps:
     displayName: 'Verify ASR API health (dependency check)'
 
   # ========================================
+  # Unit Tests (Vitest) - BLOCKING
+  # Run tests before build to catch failures early
+  # Publishes JUnit XML results to Azure DevOps Test Results tab
+  # ========================================
+  - script: |
+      echo "🧪 Running unit tests (Vitest)..."
+      npm run test:ci -w admin-portal
+    displayName: 'Run unit tests (Vitest)'
+    continueOnError: false
+    env:
+      CI: true
+
+  - task: PublishTestResults@2
+    displayName: 'Publish unit test results'
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: 'admin-portal/test-results-junit.xml'
+      testRunTitle: 'Admin Portal Unit Tests'
+      failTaskOnFailedTests: true
+      mergeTestResults: true
+
+  # ========================================
   # Build and Deployment Steps
   # Quality checks use continueOnError: true, so builds always run
   # Deployments require successful builds (condition: succeeded())

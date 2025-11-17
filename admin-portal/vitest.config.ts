@@ -22,5 +22,6 @@ export default defineConfig({
       include: ['src/components/**/*.{ts,tsx}'],
       exclude: ['src/components/**/*.test.{ts,tsx}', 'src/components/**/__tests__/**'],
     },
+    reporters: process.env.CI ? ['junit', 'verbose'] : ['verbose'],
   },
 });

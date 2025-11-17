@@ -354,6 +354,20 @@ steps:
     displayName: 'Verify ASR API health (dependency check)'
 
   # ========================================
+  # Unit Tests (Vitest) - PLACEHOLDER
+  # Member portal currently has no unit tests (only E2E tests)
+  # This step is a placeholder for future unit test integration
+  # ========================================
+  - script: |
+      echo "⏭️  Skipping unit tests - member-portal has no Vitest tests configured"
+      echo "   Member portal uses Playwright E2E tests only"
+      echo "   To add unit tests: configure vitest.config.ts and add test files"
+      echo ""
+      echo "✅ No unit tests to run (step passed)"
+    displayName: 'Unit tests (not configured - placeholder)'
+    continueOnError: false
+
+  # ========================================
   # Build and Deployment Steps
   # Quality checks use continueOnError: true, so builds always run
   # Deployments require successful builds (condition: succeeded())
