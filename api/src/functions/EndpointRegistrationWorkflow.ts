@@ -166,8 +166,6 @@ async function initiateRegistrationHandler(
 
     return { status: 201, jsonBody: result.rows[0] };
   } catch (error: any) {
-    context.error('Error initiating endpoint registration:', error);
-
     await logAuditEvent({
       event_type: AuditEventType.ENDPOINT_CREATED,
       severity: AuditSeverity.ERROR,
@@ -181,11 +179,11 @@ async function initiateRegistrationHandler(
       resource_type: 'legal_entity_endpoint',
       resource_id: legal_entity_id,
       action: 'create',
-      error_message: error.message,
-      details: { error: error.message }
+      error_message: error instanceof Error ? error.message : 'Unknown error',
+      details: { error: error instanceof Error ? error.message : 'Unknown error' }
     }, context);
 
-    return { status: 500, jsonBody: { error: 'Failed to initiate endpoint registration', details: error.message } };
+    return handleError(error, context);
   }
 }
 
@@ -314,8 +312,7 @@ async function sendVerificationEmailHandler(
       }
     };
   } catch (error: any) {
-    context.error('Error sending verification email:', error);
-    return { status: 500, jsonBody: { error: 'Failed to send verification email', details: error.message } };
+    return handleError(error, context);
   }
 }
 
@@ -472,8 +469,7 @@ async function verifyTokenHandler(
       }
     };
   } catch (error: any) {
-    context.error('Error verifying token:', error);
-    return { status: 500, jsonBody: { error: 'Failed to verify token', details: error.message } };
+    return handleError(error, context);
   }
 }
 
@@ -616,11 +612,11 @@ async function testEndpointHandler(
   } catch (error: any) {
     context.error('Error testing endpoint:', error);
 
-    // Store failed test result
+    // Store failed test result (sanitized error)
     const failedTestData = {
       success: false,
       tested_at: new Date().toISOString(),
-      error: error.message
+      error: 'Test failed' // Don't store error.message in database
     };
 
     await pool.query(
@@ -631,7 +627,7 @@ async function testEndpointHandler(
       [JSON.stringify(failedTestData), endpoint_id]
     );
 
-    return { status: 500, jsonBody: { error: 'Failed to test endpoint', details: error.message } };
+    return handleError(error, context);
   }
 }
 
@@ -765,8 +761,7 @@ async function activateEndpointHandler(
       }
     };
   } catch (error: any) {
-    context.error('Error activating endpoint:', error);
-    return { status: 500, jsonBody: { error: 'Failed to activate endpoint', details: error.message } };
+    return handleError(error, context);
   }
 }
 

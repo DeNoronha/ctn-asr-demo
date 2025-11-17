@@ -31,8 +31,7 @@ async function handler(
     };
 
   } catch (error: any) {
-    context.error('Error updating task:', error);
-
+    // Check for known business logic errors
     if (error.message === 'Task not found') {
       return {
         status: 404,
@@ -40,10 +39,7 @@ async function handler(
       };
     }
 
-    return {
-      status: 500,
-      jsonBody: { error: 'Failed to update task', message: error.message },
-    };
+    return handleError(error, context);
   }
 }
 

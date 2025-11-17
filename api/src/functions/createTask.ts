@@ -32,11 +32,7 @@ async function handler(
     };
 
   } catch (error: any) {
-    context.error('Error creating task:', error);
-    return {
-      status: 500,
-      jsonBody: { error: 'Failed to create task', message: error.message },
-    };
+    return handleError(error, context);
   }
 }
 

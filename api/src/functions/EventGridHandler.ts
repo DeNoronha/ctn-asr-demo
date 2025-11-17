@@ -217,11 +217,7 @@ export async function EventGridHandler(
     };
 
   } catch (error) {
-    context.error('Error processing events:', error);
-    return {
-      status: 500,
-      body: JSON.stringify({ error: error.message })
-    };
+    return handleError(error, context);
   }
 }
 

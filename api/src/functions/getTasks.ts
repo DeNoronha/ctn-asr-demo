@@ -37,11 +37,7 @@ async function handler(
     };
 
   } catch (error: any) {
-    context.error('Error fetching tasks:', error);
-    return {
-      status: 500,
-      jsonBody: { error: 'Failed to fetch tasks', message: error.message },
-    };
+    return handleError(error, context);
   }
 }
 

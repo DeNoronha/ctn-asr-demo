@@ -79,11 +79,7 @@ async function handler(
       jsonBody: data,
     };
   } catch (error: any) {
-    context.error('Error retrieving KvK registry data:', error);
-    return {
-      status: 500,
-      jsonBody: { error: 'Failed to retrieve KvK registry data', details: error.message },
-    };
+    return handleError(error, context);
   }
 }
 
