@@ -88,7 +88,7 @@ function validateQueryParameters(request: AuthenticatedRequest): ValidationError
   if (eventType && !ALLOWED_EVENT_TYPES.has(eventType as AuditEventType)) {
     errors.push({
       field: 'event_type',
-      message: `Invalid event_type: '${eventType}'. Must be one of: ${Array.from(ALLOWED_EVENT_TYPES).sort().join(', ')}`
+      message: `Invalid event_type: '${eventType}'. Must be one of: ${[...ALLOWED_EVENT_TYPES].sort().join(', ')}`
     });
   }
 
@@ -97,7 +97,7 @@ function validateQueryParameters(request: AuthenticatedRequest): ValidationError
   if (severity && !ALLOWED_SEVERITIES.has(severity.toUpperCase() as AuditSeverity)) {
     errors.push({
       field: 'severity',
-      message: `Invalid severity: '${severity}'. Must be one of: ${Array.from(ALLOWED_SEVERITIES).join(', ')}`
+      message: `Invalid severity: '${severity}'. Must be one of: ${[...ALLOWED_SEVERITIES].join(', ')}`
     });
   }
 
@@ -115,7 +115,7 @@ function validateQueryParameters(request: AuthenticatedRequest): ValidationError
   if (resourceType && !ALLOWED_RESOURCE_TYPES.has(resourceType)) {
     errors.push({
       field: 'resource_type',
-      message: `Invalid resource_type: '${resourceType}'. Must be one of: ${Array.from(ALLOWED_RESOURCE_TYPES).sort().join(', ')}`
+      message: `Invalid resource_type: '${resourceType}'. Must be one of: ${[...ALLOWED_RESOURCE_TYPES].sort().join(', ')}`
     });
   }
 
@@ -124,7 +124,7 @@ function validateQueryParameters(request: AuthenticatedRequest): ValidationError
   if (action && !ALLOWED_ACTIONS.has(action)) {
     errors.push({
       field: 'action',
-      message: `Invalid action: '${action}'. Must be one of: ${Array.from(ALLOWED_ACTIONS).sort().join(', ')}`
+      message: `Invalid action: '${action}'. Must be one of: ${[...ALLOWED_ACTIONS].sort().join(', ')}`
     });
   }
 
@@ -133,7 +133,7 @@ function validateQueryParameters(request: AuthenticatedRequest): ValidationError
   if (result && !ALLOWED_RESULTS.has(result)) {
     errors.push({
       field: 'result',
-      message: `Invalid result: '${result}'. Must be one of: ${Array.from(ALLOWED_RESULTS).join(', ')}`
+      message: `Invalid result: '${result}'. Must be one of: ${[...ALLOWED_RESULTS].join(', ')}`
     });
   }
 

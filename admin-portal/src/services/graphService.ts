@@ -262,7 +262,7 @@ export async function listUsers(): Promise<User[]> {
     };
 
     // Fetch full user details for each assigned user
-    for (const [userId, roleNames] of Array.from(userRoleMap.entries())) {
+    for (const [userId, roleNames] of [...userRoleMap]) {
       try {
         const graphUser = await client
           .api(`/users/${userId}`)
@@ -279,7 +279,7 @@ export async function listUsers(): Promise<User[]> {
 
         // Map role names to UserRole enum
         const roles: UserRole[] = [];
-        for (const roleName of Array.from(roleNames)) {
+        for (const roleName of roleNames) {
           if (roleMap[roleName]) {
             roles.push(roleMap[roleName]);
           }
@@ -287,7 +287,7 @@ export async function listUsers(): Promise<User[]> {
 
         if (roles.length > 0) {
           users.push(mapGraphUser(graphUser, roles));
-          logger.log(`✅ Added user: ${graphUser.userPrincipalName} with roles: ${Array.from(roleNames).join(', ')}`);
+          logger.log(`✅ Added user: ${graphUser.userPrincipalName} with roles: ${[...roleNames].join(', ')}`);
         } else {
           logger.warn(`⚠️  User ${graphUser.userPrincipalName} has assignment but no recognized roles`);
         }
