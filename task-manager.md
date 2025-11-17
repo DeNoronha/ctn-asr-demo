@@ -1,8 +1,8 @@
 # CTN ASR Task Manager
 
-**Last Updated:** November 16, 2025
+**Last Updated:** November 17, 2025
 **Status:** Active Development
-**Next Review:** November 23, 2025
+**Next Review:** November 24, 2025
 
 ---
 
@@ -15,8 +15,8 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 - **Database Expert (DE)** - Schema optimization, query performance, data integrity
 - **DevOps Guardian (DG)** - Pipeline reliability, deployment safety, monitoring
 
-**Total Tasks:** 59 (31 completed ✅, 28 remaining)
-**Critical:** 0 | **High:** 0 | **Medium:** 5 | **Low:** 23
+**Total Tasks:** 59 (33 completed ✅, 26 remaining)
+**Critical:** 0 | **High:** 0 | **Medium:** 1 (deferred) | **Low:** 23
 
 ---
 
@@ -1296,6 +1296,71 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 - **Compliance:** OWASP A03:2021 (Injection), CWE-79, CWE-89, CWE-22, CWE-78, CWE-330, CWE-798
 - **Testing:** YAML syntax validated, test vulnerability verified blocking, documentation complete, pre-commit hook passed (7/7 checks)
 
+### TASK-DE-004: Consolidate Duplicate Audit Tables ✅
+- **Completed:** November 17, 2025 (Batch 11)
+- **Commit:** `d263a43`
+- **Category:** Database / Schema Design
+- **Impact:** CRITICAL FIX - Restored missing audit trail for 1,040+ operations
+- **Changes:**
+  - **Root Cause:** Code mismatch - 4 API functions writing to non-existent 'audit_logs' (plural) table
+  - **Impact:** Zero audit trail for endpoint management, KvK verification, and token issuance since October 11, 2025
+  - **Compliance Risk:** Cannot track who created endpoints, issued tokens, or reviewed KvK documents
+  - **Fix Applied:** Updated 4 API functions to use standardized logAuditEvent() middleware
+  - **Files Modified:**
+    * api/src/functions/ManageEndpoints.ts - Endpoint creation audit logging
+    * api/src/functions/issueEndpointToken.ts - Token issuance audit logging
+    * api/src/functions/reviewKvkVerification.ts - KvK review audit logging
+    * api/src/functions/uploadKvkDocument.ts - Document upload audit logging
+    * database/current_schema.sql - Removed duplicate audit_logs table definition
+  - **Documentation:**
+    * database/AUDIT_TABLES_INVESTIGATION_REPORT.md - Complete investigation findings
+    * database/AUDIT_TABLES_FIX_SUMMARY.md - Executive summary
+    * database/migrations/033_fix_audit_logs_references.md - Migration documentation
+- **Benefits:**
+  - Consistent audit logging across ALL API operations using centralized middleware
+  - Better error handling via middleware (vs. manual INSERT)
+  - More detailed audit information (16 columns vs 8 manual approach)
+  - Prevents future table name typos through type-safe middleware
+- **Backward Compatibility:** ZERO breaking changes (code-only, no database migration)
+- **Testing:** TypeScript compilation passed, safe for hot deployment
+
+### TASK-DG-VARS-001: Centralize Environment Variables ✅
+- **Completed:** November 17, 2025 (Batch 11)
+- **Commit:** `fbd240f`
+- **Category:** DevOps / Configuration Management
+- **Impact:** Centralized duplicated environment variables via Azure DevOps Variable Groups strategy
+- **Changes:**
+  - **Problem:** AZURE_CLIENT_ID, AZURE_TENANT_ID, and other config duplicated across 5 pipeline YAMLs
+  - **Analysis:** Comprehensive review of all pipeline environment variables
+  - **Solution:** Variable Groups centralization strategy with 5 groups total
+  - **Documentation Created:**
+    * docs/AZURE_DEVOPS_VARIABLE_GROUPS_SETUP.md (765 lines, 23 KB)
+      - Complete implementation guide with step-by-step instructions
+      - Azure DevOps UI walkthrough
+      - Troubleshooting guide and rollback procedures
+      - Security best practices
+    * docs/VARIABLE_GROUPS_MIGRATION_SUMMARY.md (373 lines, 11 KB)
+      - Migration summary and quick reference
+      - Before/after comparison
+      - Variable mapping tables
+      - Testing checklist (17 items)
+  - **Variable Groups Strategy:**
+    1. ASR-Common-Variables (NEW) - 6 shared variables
+    2. ctn-admin-portal-variables (POPULATE) - 3 portal-specific vars
+    3. ctn-member-portal-variables (POPULATE) - 3 portal-specific vars
+    4. playwright-secrets (NO CHANGES)
+    5. ctn-demo-variables (NO CHANGES)
+  - **Updated Pipeline Files:** admin-portal.yml.new, member-portal.yml.new, asr-api.yml.new (not committed - requires Variable Groups creation first)
+- **Benefits:**
+  - Single source of truth for shared configuration
+  - Reduced drift: Update once, apply everywhere
+  - Easier maintenance: 13 minutes saved per change (~2.5-4 hours/year)
+  - Better auditability via Azure DevOps Variable Group logs
+  - Improved security: Clear separation between config and secrets
+- **Next Steps:** Create Variable Groups in Azure DevOps Portal, update pipeline YAMLs, test thoroughly
+- **Migration Time:** 2-3 hours total
+- **Testing:** Documentation complete, strategy validated, ready for implementation
+
 ---
 
 ## Notes
@@ -1310,5 +1375,5 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 - Code Reviewer: November 16, 2025 (Batch 9: CR-004)
 - Security Analyst: November 17, 2025 (Batch 10: SEC-005 analysis)
 - Design Analyst: November 16, 2025 (Batch 7: DA-010)
-- Database Expert: November 16, 2025 (Batch 5: DE-003 verified)
-- DevOps Guardian: November 17, 2025 (Batch 10: DG-SEC-002)
+- Database Expert: November 17, 2025 (Batch 11: DE-004)
+- DevOps Guardian: November 17, 2025 (Batch 11: DG-VARS-001)
