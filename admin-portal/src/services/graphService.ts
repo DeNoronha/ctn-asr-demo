@@ -8,6 +8,12 @@ import type { User as GraphUser } from '@microsoft/microsoft-graph-types';
 import { msalInstance } from '../auth/AuthContext';
 import { UserRole } from '../auth/authConfig';
 import { logger } from '../utils/logger';
+import {
+  ConsentRequiredError,
+  GraphApiError,
+  GraphAuthError,
+  logError,
+} from '../types/errors';
 
 export interface User {
   id: string;
@@ -55,7 +61,13 @@ export async function requestGraphConsent(): Promise<void> {
     logger.log('Graph API consent granted successfully');
   } catch (error) {
     logger.error('Failed to obtain Graph API consent:', error);
-    throw new Error('Failed to obtain consent for Microsoft Graph API');
+    logError(error, 'requestGraphConsent');
+    throw new GraphAuthError(
+      'Failed to obtain consent for Microsoft Graph API',
+      'CONSENT_REQUEST_FAILED',
+      403,
+      error
+    );
   }
 }
 
@@ -66,7 +78,7 @@ async function getGraphClient(): Promise<Client> {
   const accounts = msalInstance.getAllAccounts();
 
   if (accounts.length === 0) {
-    throw new Error('No authenticated accounts found');
+    throw new GraphAuthError('No authenticated accounts found', 'NO_ACCOUNTS', 401);
   }
 
   const _clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
@@ -82,24 +94,22 @@ async function getGraphClient(): Promise<Client> {
         done(null, tokenResponse.accessToken);
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     // Check if this is an interaction required error (consent needed)
     // AADSTS65001 = invalid_grant (no consent)
-    const isConsentError =
-      error?.errorCode === 'consent_required' ||
-      error?.errorCode === 'interaction_required' ||
-      error?.errorCode === 'invalid_grant' ||
-      error?.errorMessage?.includes('AADSTS65001');
-
-    if (isConsentError) {
+    if (ConsentRequiredError.isConsentError(error)) {
       logger.warn('Interaction required for Graph API access. User needs to grant consent.');
-      logger.warn('Error details:', error);
-      // Re-throw with a more specific error type
-      const consentError = new Error('CONSENT_REQUIRED');
-      (consentError as any).originalError = error;
-      throw consentError;
+      logError(error, 'getGraphClient - consent required');
+      throw new ConsentRequiredError(
+        'Administrator consent is required to access Microsoft Graph API',
+        GRAPH_SCOPES,
+        error
+      );
     }
-    throw error;
+
+    // Other authentication errors
+    logError(error, 'getGraphClient');
+    throw GraphApiError.fromMsalError(error);
   }
 }
 
@@ -138,7 +148,11 @@ async function getCtnServicePrincipalId(client: Client): Promise<string> {
   // Validate client ID is a valid UUID to prevent injection
   const uuidRegex = /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
   if (!clientId || !uuidRegex.test(clientId)) {
-    throw new Error('Invalid Azure client ID format - must be a valid UUID');
+    throw new GraphApiError(
+      'Invalid Azure client ID format - must be a valid UUID',
+      'INVALID_CLIENT_ID',
+      400
+    );
   }
 
   try {
@@ -156,9 +170,14 @@ async function getCtnServicePrincipalId(client: Client): Promise<string> {
       return spId;
     }
 
-    throw new Error('CTN application service principal not found');
+    throw new GraphApiError(
+      'CTN application service principal not found',
+      'SERVICE_PRINCIPAL_NOT_FOUND',
+      404
+    );
   } catch (error) {
     logger.error('Failed to get CTN service principal ID:', error);
+    logError(error, 'getCtnServicePrincipalId');
     throw error;
   }
 }
@@ -293,18 +312,26 @@ export async function listUsers(): Promise<User[]> {
         }
       } catch (error) {
         logger.warn(`Failed to fetch user ${userId}:`, error);
+        logError(error, `listUsers - fetch user ${userId}`);
       }
     }
 
     logger.log(`Fetched ${users.length} CTN-authorized users from Microsoft Graph`);
     return users;
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Failed to list users:', error);
-    // Preserve consent errors so the UI can handle them
-    if (error?.message === 'CONSENT_REQUIRED') {
+    logError(error, 'listUsers');
+    // Preserve typed errors (consent, auth, etc.)
+    if (error instanceof ConsentRequiredError || error instanceof GraphApiError) {
       throw error;
     }
-    throw new Error('Failed to fetch users from Microsoft Graph');
+    // Wrap unknown errors
+    throw new GraphApiError(
+      'Failed to fetch users from Microsoft Graph',
+      'LIST_USERS_FAILED',
+      500,
+      error
+    );
   }
 }
 
@@ -345,13 +372,20 @@ export async function inviteUser(
     logger.log('User invited successfully. Role assignment requires additional configuration.');
 
     return mapGraphUser(inviteResponse.invitedUser, roles);
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Failed to invite user:', error);
-    // Preserve consent errors so the UI can handle them
-    if (error?.message === 'CONSENT_REQUIRED') {
+    logError(error, 'inviteUser');
+    // Preserve typed errors (consent, auth, etc.)
+    if (error instanceof ConsentRequiredError || error instanceof GraphApiError) {
       throw error;
     }
-    throw new Error('Failed to invite user via Microsoft Graph');
+    // Wrap unknown errors
+    throw new GraphApiError(
+      'Failed to invite user via Microsoft Graph',
+      'INVITE_USER_FAILED',
+      500,
+      error
+    );
   }
 }
 
@@ -369,13 +403,20 @@ export async function updateUser(
     await client.api(`/users/${userId}`).patch(updates);
 
     logger.log('User updated successfully:', userId);
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Failed to update user:', error);
-    // Preserve consent errors so the UI can handle them
-    if (error?.message === 'CONSENT_REQUIRED') {
+    logError(error, 'updateUser');
+    // Preserve typed errors (consent, auth, etc.)
+    if (error instanceof ConsentRequiredError || error instanceof GraphApiError) {
       throw error;
     }
-    throw new Error('Failed to update user via Microsoft Graph');
+    // Wrap unknown errors
+    throw new GraphApiError(
+      'Failed to update user via Microsoft Graph',
+      'UPDATE_USER_FAILED',
+      500,
+      error
+    );
   }
 }
 
@@ -397,12 +438,19 @@ export async function deleteUser(userId: string): Promise<void> {
     await client.api(`/users/${userId}`).delete();
 
     logger.log('User deleted successfully:', userId);
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Failed to delete user:', error);
-    // Preserve consent errors so the UI can handle them
-    if (error?.message === 'CONSENT_REQUIRED') {
+    logError(error, 'deleteUser');
+    // Preserve typed errors (consent, auth, etc.)
+    if (error instanceof ConsentRequiredError || error instanceof GraphApiError) {
       throw error;
     }
-    throw new Error('Failed to delete user via Microsoft Graph');
+    // Wrap unknown errors
+    throw new GraphApiError(
+      'Failed to delete user via Microsoft Graph',
+      'DELETE_USER_FAILED',
+      500,
+      error
+    );
   }
 }

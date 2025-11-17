@@ -1,5 +1,6 @@
 import * as graphService from '../../services/graphService';
 import { logger } from '../../utils/logger';
+import { isConsentRequiredError, getErrorMessage, logError } from '../../types/errors';
 /**
  * User Management Page
  * System Admins can view and manage all users
@@ -75,17 +76,18 @@ const UserManagement: React.FC = () => {
 
       setUsers(mappedUsers);
       logger.log(`Loaded ${mappedUsers.length} users from Microsoft Graph`);
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error loading users:', error);
+      logError(error, 'UserManagement.loadUsers');
 
       // Check if this is a consent error
-      if (error?.message === 'CONSENT_REQUIRED') {
+      if (isConsentRequiredError(error)) {
         setConsentRequired(true);
         setConsentError(
           'Administrator consent is required to access Microsoft Graph API for user management.'
         );
       } else {
-        setConsentError('Failed to load users. Please try again or contact support.');
+        setConsentError(getErrorMessage(error, 'Failed to load users. Please try again or contact support.'));
       }
     } finally {
       setLoading(false);
@@ -339,15 +341,15 @@ const UserManagement: React.FC = () => {
         sortable: true,
         render: (record) => {
           const roleColors: Record<UserRole, string> = {
-            [UserRole.SYSTEM_ADMIN]: 'role-system-admin',
-            [UserRole.ASSOCIATION_ADMIN]: 'role-association-admin',
-            [UserRole.MEMBER]: 'role-member',
+            [UserRole.SYSTEM_ADMIN]: 'red',
+            [UserRole.ASSOCIATION_ADMIN]: 'yellow',
+            [UserRole.MEMBER]: 'blue',
           };
           const role = record.primaryRole;
           return (
-            <div>
-              <span className={`role-badge ${roleColors[role]}`}>{role}</span>
-            </div>
+            <Badge color={roleColors[role]} variant="light" size="sm">
+              {role}
+            </Badge>
           );
         },
       },
@@ -361,11 +363,9 @@ const UserManagement: React.FC = () => {
         render: (record) => {
           const enabled = record.enabled;
           return (
-            <div>
-              <span className={`status-badge status-${enabled ? 'active' : 'disabled'}`}>
-                {enabled ? 'Active' : 'Disabled'}
-              </span>
-            </div>
+            <Badge color={enabled ? 'green' : 'red'} variant="light" size="sm">
+              {enabled ? 'Active' : 'Disabled'}
+            </Badge>
           );
         },
       },
