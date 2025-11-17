@@ -15,8 +15,8 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 - **Database Expert (DE)** - Schema optimization, query performance, data integrity
 - **DevOps Guardian (DG)** - Pipeline reliability, deployment safety, monitoring
 
-**Total Tasks:** 59 (30 completed ✅, 29 remaining)
-**Critical:** 0 | **High:** 0 | **Medium:** 6 | **Low:** 23
+**Total Tasks:** 59 (31 completed ✅, 28 remaining)
+**Critical:** 0 | **High:** 0 | **Medium:** 5 | **Low:** 23
 
 ---
 
@@ -203,7 +203,10 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 - **Impact:** Increased XSS risk if user input rendered in styles
 - **Fix:** Generate SHA-256 hashes for Mantine inline styles, implement nonce-based CSP
 - **Compliance:** OWASP A03:2021
-- **Effort:** 8 hours
+- **Effort:** 8 hours (PLUS 11 hours refactoring prerequisite)
+- **Status:** ⚠️ ANALYSIS COMPLETE - Implementation deferred pending refactoring of 317 React inline styles
+- **Analysis:** Comprehensive security review completed (Batch 10), 3 analysis scripts created
+- **Blocking Issue:** 109 HIGH risk inline styles must be refactored before CSP can be safely hardened
 - **Assigned To:** TBD
 
 ### UI/UX (Medium)
@@ -327,16 +330,6 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 - **Impact:** Configuration drift, update errors
 - **Fix:** Use Azure DevOps Variable Groups, reference in pipelines
 - **Effort:** 4 hours
-- **Assigned To:** TBD
-
-### TASK-DG-SEC-002: Make Semgrep ERROR Findings Blocking
-- **Category:** DevOps / Security
-- **Severity:** Medium
-- **File:** `.azure-pipelines/asr-api.yml`
-- **Issue:** Semgrep continues on error (continueOnError: true)
-- **Impact:** Security vulnerabilities can be deployed
-- **Fix:** Block on ERROR severity, allow WARNING/INFO
-- **Effort:** 1 hour
 - **Assigned To:** TBD
 
 ---
@@ -1241,6 +1234,68 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
   - Fast-track approval process (<4 hours for urgent cases)
 - **Testing:** YAML syntax validated, zero vulnerabilities baseline confirmed, error guidance tested, pre-commit hook passed (7/7 checks)
 
+### TASK-DG-SEC-002: Make Semgrep ERROR Findings Blocking ✅
+- **Completed:** November 17, 2025 (Batch 10)
+- **Commits:** `f0c17be`, `ee4fb9d`, `5fcaa3b`
+- **Category:** DevOps / Security
+- **Impact:** Security vulnerabilities (ERROR severity) now blocked from production deployment
+- **Changes:**
+  - Modified .azure-pipelines/asr-api.yml (lines 140-274, ~135 lines added)
+    * Added JSON result generation: `--json --output=semgrep-results.json`
+    * Added validation step to parse JSON and count ERROR severity findings
+    * Block build if ERROR_COUNT > 0 (exit code 1)
+    * Display detailed findings with file/line numbers and fix guidance
+    * Added PublishBuildArtifacts task for semgrep-results.json (always published)
+  - Created .semgrep/ignore.yml (83 lines)
+    * Suppression framework with comprehensive governance template
+    * Security Team approval required for all suppressions
+    * Quarterly re-evaluation process documented
+    * Example suppressions for false positives, no fix available, package-level
+    * Currently: No active suppressions (clean baseline)
+  - Created docs/TASK-DG-SEC-002-SEMGREP-BLOCKING-IMPLEMENTATION.md (650+ lines)
+    * Comprehensive implementation documentation
+    * Security impact analysis (SQL injection, XSS, hardcoded secrets, etc.)
+    * Developer workflow and troubleshooting guide
+    * Before/after behavior comparison
+    * Common vulnerability fixes guide
+  - Created docs/SEMGREP_QUICK_REFERENCE.md (450+ lines)
+    * Developer quick reference guide
+    * Running Semgrep locally
+    * Common fixes for 6 vulnerability types
+    * Suppression process step-by-step
+    * FAQ and command reference
+- **Testing:**
+  - Created intentional SQL injection vulnerability (commit f0c17be)
+  - Verified build BLOCKS at validation step
+  - Removed test vulnerability (commit ee4fb9d)
+  - Verified build PASSES on clean code
+  - Published documentation (commit 5fcaa3b)
+- **Severity Thresholds:**
+  - ERROR (high-confidence vulnerabilities): **BLOCKS BUILD** ✅
+  - WARNING (potential issues): WARNING ONLY (non-blocking)
+  - INFO (best practices): INFORMATIONAL (non-blocking)
+  - Threshold: ERROR severity blocks deployment
+- **Vulnerabilities Now Blocked:**
+  - SQL Injection (CWE-89, OWASP A03:2021)
+  - Cross-Site Scripting (CWE-79, OWASP A03:2021)
+  - Hardcoded Secrets (CWE-798, OWASP A02:2021)
+  - Insecure Randomness (CWE-330, OWASP A02:2021)
+  - Command Injection (CWE-78, OWASP A03:2021)
+  - Path Traversal (CWE-22, OWASP A01:2021)
+- **Developer Experience:**
+  - Clear error messages showing vulnerability count and findings
+  - File/line number details for each ERROR
+  - Fix guidance for common vulnerability types
+  - Local testing instructions (pip install semgrep && semgrep scan)
+  - Suppression process documented
+- **Governance:**
+  - Security Team approval required for all CVE suppressions
+  - Risk acceptance documented in .semgrep/ignore.yml
+  - Quarterly re-evaluation of all suppressions
+  - Fast-track approval process for urgent cases
+- **Compliance:** OWASP A03:2021 (Injection), CWE-79, CWE-89, CWE-22, CWE-78, CWE-330, CWE-798
+- **Testing:** YAML syntax validated, test vulnerability verified blocking, documentation complete, pre-commit hook passed (7/7 checks)
+
 ---
 
 ## Notes
@@ -1253,7 +1308,7 @@ This document tracks all actionable tasks from comprehensive codebase reviews co
 
 **Last Agent Review:**
 - Code Reviewer: November 16, 2025 (Batch 9: CR-004)
-- Security Analyst: November 16, 2025 (Batch 8: SEC-002 CRITICAL)
+- Security Analyst: November 17, 2025 (Batch 10: SEC-005 analysis)
 - Design Analyst: November 16, 2025 (Batch 7: DA-010)
 - Database Expert: November 16, 2025 (Batch 5: DE-003 verified)
-- DevOps Guardian: November 16, 2025 (Batch 9: DG-SEC-001)
+- DevOps Guardian: November 17, 2025 (Batch 10: DG-SEC-002)
