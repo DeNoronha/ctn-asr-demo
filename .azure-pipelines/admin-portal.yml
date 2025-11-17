@@ -226,15 +226,61 @@ steps:
 
   - task: dependency-check.dependencycheck.dependency-check-build-task.dependency-check-build-task@6
     displayName: 'OWASP Dependency Check'
-    continueOnError: true
+    continueOnError: false  # BLOCKING: Fail build on HIGH/CRITICAL vulnerabilities (CVSS >= 7.0)
     inputs:
       projectName: 'ASR-Admin-Portal'
       scanPath: 'admin-portal'  # Only scan admin-portal directory, not entire monorepo
       format: 'HTML,JSON'
-      failOnCVSS: '7'
+      failOnCVSS: '7'  # Block on HIGH (7.0-8.9) and CRITICAL (9.0-10.0) vulnerabilities
+      suppressionPaths: '.owasp-suppressions.xml'  # CVE suppression file (requires approval)
       enableExperimental: true
       nvdApiKey: $(NVD-API-KEY)
       dataDirectory: $(Pipeline.Workspace)/.owasp-dependency-check-data  # Use cached NVD data
+
+  # Publish OWASP report artifacts (always, even on failure)
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish OWASP Dependency Report'
+    condition: always()
+    inputs:
+      PathtoPublish: 'dependency-check-report.html'
+      ArtifactName: 'OWASP-Admin-Portal-Report'
+      publishLocation: 'Container'
+
+  # Helpful error guidance if OWASP check fails
+  - script: |
+      echo ""
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      echo "🚫 OWASP Dependency Check FAILED - Vulnerable Dependencies Detected"
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      echo ""
+      echo "Your build was blocked due to HIGH or CRITICAL severity vulnerabilities"
+      echo "in npm dependencies (CVSS >= 7.0)."
+      echo ""
+      echo "📋 Steps to resolve:"
+      echo "  1. Download the OWASP report artifact from this build"
+      echo "  2. Run locally: cd admin-portal && npm audit"
+      echo "  3. Auto-fix if possible: npm audit fix"
+      echo "  4. For manual updates: npm update <package>@<version>"
+      echo "  5. If breaking changes: update imports and test thoroughly"
+      echo ""
+      echo "🛠️  Common fixes:"
+      echo "  - Update package.json with newer versions"
+      echo "  - Remove unused dependencies (npm uninstall <package>)"
+      echo "  - Use npm overrides in package.json for transitive deps"
+      echo "  - Check for security advisories: npm audit --json"
+      echo ""
+      echo "⚠️  If NO fix is available:"
+      echo "  1. Document risk in .owasp-suppressions.xml"
+      echo "  2. Get Security Team approval"
+      echo "  3. Implement compensating controls"
+      echo "  4. Add to risk register"
+      echo ""
+      echo "📚 Documentation:"
+      echo "  - Suppression file: .owasp-suppressions.xml (see examples)"
+      echo "  - OWASP guide: https://jeremylong.github.io/DependencyCheck/"
+      echo ""
+    displayName: 'OWASP Failure Guidance'
+    condition: failed()
 
   # ========================================
   # Enhanced Trivy - Secret Scanning

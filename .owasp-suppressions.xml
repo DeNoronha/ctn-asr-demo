@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!--
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    OWASP Dependency Check - CVE Suppression File
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    PURPOSE:
+    This file allows temporary suppression of specific CVE findings from OWASP
+    Dependency Check. Use ONLY when absolutely necessary and with proper
+    documentation.
+
+    WHEN TO USE SUPPRESSIONS:
+    1. No fix/patch is available from the vendor
+    2. Vulnerability doesn't apply to our specific usage pattern
+    3. False positive (verified by security team)
+    4. Risk has been formally accepted and documented in risk register
+
+    APPROVAL PROCESS:
+    - All suppressions MUST be reviewed and approved by Security Team
+    - Document the business justification and compensating controls
+    - Set review dates to re-evaluate suppressions quarterly
+    - Never suppress CRITICAL vulnerabilities without executive approval
+
+    DOCUMENTATION REQUIREMENTS:
+    Each suppression MUST include:
+    - <notes> explaining WHY it's safe to suppress
+    - Risk acceptance date and reviewer name
+    - Planned remediation date (if applicable)
+    - Reference to risk register entry or ticket number
+
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    EXAMPLES (Remove these before production use)
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    -->
+
+    <!--
+    Example 1: False Positive
+
+    <suppress>
+       <notes>
+          CVE-2023-12345: False positive - affects server-side usage only.
+          Our application uses this library client-side for UI rendering only,
+          not for server-side data processing.
+
+          Risk accepted: 2025-11-17
+          Reviewed by: Security Team (John Doe)
+          Risk register: RISK-2025-042
+          Re-evaluation date: 2026-02-17 (quarterly review)
+       </notes>
+       <cve>CVE-2023-12345</cve>
+    </suppress>
+    -->
+
+    <!--
+    Example 2: No Fix Available (with Compensating Controls)
+
+    <suppress>
+       <notes>
+          CVE-2024-67890: SQL injection vulnerability in legacy-db-connector v2.1.0
+          No patch available yet (vendor ETA: Q2 2026)
+
+          Compensating controls in place:
+          - Input validation using Joi schemas (all DB queries)
+          - Parameterized queries enforced via TypeScript types
+          - Database user has read-only permissions (least privilege)
+          - WAF rules blocking SQL injection patterns
+
+          Risk accepted: 2025-11-17
+          Reviewed by: Security Team (Jane Smith) + CTO approval
+          Risk register: RISK-2025-043
+          Planned remediation: Replace library in Q2 2026
+          Re-evaluation date: 2026-01-17 (monthly review)
+       </notes>
+       <cve>CVE-2024-67890</cve>
+    </suppress>
+    -->
+
+    <!--
+    Example 3: Suppressing by Package (affects multiple CVEs)
+
+    <suppress>
+       <notes>
+          Suppress all vulnerabilities in test-only dependency.
+          This package is only used in Playwright E2E tests, never in production.
+
+          Risk accepted: 2025-11-17
+          Reviewed by: DevOps Team (Alice Johnson)
+          Scope: Development/testing only
+       </notes>
+       <packageUrl regex="true">^pkg:npm/playwright\-test\-utils@.*$</packageUrl>
+    </suppress>
+    -->
+
+    <!--
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ACTIVE SUPPRESSIONS (Production)
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    Add production suppressions below this line.
+    Remember: Every suppression is a potential security risk.
+    Review and remove as soon as patches become available.
+
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    -->
+
+    <!-- No active suppressions at this time (2025-11-17) -->
+
+</suppressions>
