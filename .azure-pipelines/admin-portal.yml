@@ -448,14 +448,118 @@ steps:
       VITE_REDIRECT_URI: https://calm-tree-03352ba03.1.azurestaticapps.net
       VITE_API_URL: https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
 
-  # Deploy using SWA CLI instead of AzureStaticWebApp@0 task
-  # The Azure DevOps extension has deployment cancellation issues (November 2025)
-  # SWA CLI deployment works reliably
+  # ========================================
+  # Two-Stage Deployment: Staging → Smoke Tests → Production
+  # Prevents broken deployments from reaching users
+  # ========================================
+
+  # Stage 1: Deploy to Staging Environment
   - script: |
+      echo "Deploying to staging environment..."
+      npx @azure/static-web-apps-cli@latest deploy admin-portal/build \
+        --deployment-token $(AZURE-STATIC-WEB-APPS-API-TOKEN-ADMIN) \
+        --env staging
+    displayName: 'Deploy to Staging Environment'
+    condition: succeeded()
+
+  # Stage 2: Smoke Tests on Staging
+  - script: |
+      echo "Starting smoke tests on staging environment..."
+      STAGING_URL="https://calm-tree-03352ba03-staging.1.azurestaticapps.net"
+
+      # Wait for deployment propagation (CDN cache update)
+      echo "Waiting 30 seconds for deployment to propagate..."
+      sleep 30
+
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      echo "Running smoke tests on: $STAGING_URL"
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+      # Test 1: Homepage accessibility (with retries)
+      echo ""
+      echo "Test 1: Homepage accessibility"
+      MAX_ATTEMPTS=3
+      RETRY_DELAY=10
+      for i in $(seq 1 $MAX_ATTEMPTS); do
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -m 10 "$STAGING_URL")
+        if [ "$HTTP_CODE" = "200" ]; then
+          echo "✓ Homepage returned HTTP 200"
+          break
+        elif [ $i -eq $MAX_ATTEMPTS ]; then
+          echo "✗ Homepage test failed after $MAX_ATTEMPTS attempts (HTTP $HTTP_CODE)"
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "SMOKE TESTS FAILED - Deployment aborted"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "Production deployment will be SKIPPED."
+          echo "Staging URL for investigation: $STAGING_URL"
+          echo ""
+          exit 1
+        else
+          echo "  Attempt $i failed (HTTP $HTTP_CODE), retrying in ${RETRY_DELAY}s..."
+          sleep $RETRY_DELAY
+        fi
+      done
+
+      # Test 2: Response time validation
+      echo ""
+      echo "Test 2: Response time validation"
+      RESPONSE_TIME=$(curl -s -o /dev/null -w "%{time_total}" "$STAGING_URL")
+      RESPONSE_MS=$(echo "$RESPONSE_TIME * 1000" | bc | cut -d'.' -f1)
+      if [ "$RESPONSE_MS" -lt 2000 ]; then
+        echo "✓ Response time acceptable: ${RESPONSE_MS}ms (threshold: 2000ms)"
+      else
+        echo "✗ Response time too slow: ${RESPONSE_MS}ms (threshold: 2000ms)"
+        exit 1
+      fi
+
+      # Test 3: JavaScript bundle exists
+      echo ""
+      echo "Test 3: JavaScript bundle availability"
+      HTML_CONTENT=$(curl -s "$STAGING_URL")
+      if echo "$HTML_CONTENT" | grep -q "/assets/index.*\.js"; then
+        echo "✓ JavaScript bundle reference found in HTML"
+      else
+        echo "✗ JavaScript bundle not found in HTML"
+        exit 1
+      fi
+
+      # Test 4: CSS bundle exists
+      echo ""
+      echo "Test 4: CSS bundle availability"
+      if echo "$HTML_CONTENT" | grep -q "/assets/index.*\.css"; then
+        echo "✓ CSS bundle reference found in HTML"
+      else
+        echo "✗ CSS bundle not found in HTML"
+        exit 1
+      fi
+
+      # Test 5: No error pages
+      echo ""
+      echo "Test 5: Error page detection"
+      if echo "$HTML_CONTENT" | grep -iq "404\|500\|error occurred"; then
+        echo "✗ Error indicators found in HTML content"
+        exit 1
+      else
+        echo "✓ No error indicators detected"
+      fi
+
+      echo ""
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      echo "✓ All smoke tests passed - Safe to deploy to production"
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      echo ""
+    displayName: 'Run smoke tests on staging'
+    condition: succeeded()
+
+  # Stage 3: Deploy to Production (only if smoke tests pass)
+  - script: |
+      echo "Smoke tests passed - deploying to production..."
       npx @azure/static-web-apps-cli@latest deploy admin-portal/build \
         --deployment-token $(AZURE-STATIC-WEB-APPS-API-TOKEN-ADMIN) \
         --env production
-    displayName: 'Deploy to Azure Static Web Apps (SWA CLI)'
+    displayName: 'Deploy to Production (after smoke tests pass)'
     condition: succeeded()
 
   # ========================================
