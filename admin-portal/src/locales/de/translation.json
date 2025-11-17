@@ -283,6 +283,76 @@
     "validationError": "Bitte korrigieren Sie die Fehler im Formular.",
     "unknownError": "Ein unbekannter Fehler ist aufgetreten."
   },
+  "userManagement": {
+    "title": "Benutzerverwaltung",
+    "inviteUser": "Benutzer Einladen",
+    "editUser": "Benutzer Bearbeiten",
+    "inviteUserTitle": "Neuen Benutzer Einladen",
+    "editUserTitle": "Benutzer Bearbeiten: {{userName}}",
+    "emailLabel": "E-Mail-Adresse",
+    "emailPlaceholder": "benutzer@beispiel.de",
+    "emailDescription": "Benutzer erhält eine Einladungs-E-Mail",
+    "emailDisabledDescription": "E-Mail kann nicht geändert werden",
+    "nameLabel": "Vollständiger Name",
+    "namePlaceholder": "Max Mustermann",
+    "nameDisabledDescription": "Name wird in Azure Entra ID verwaltet",
+    "roleLabel": "Rolle",
+    "roles": {
+      "systemAdmin": "Systemadministrator",
+      "associationAdmin": "Verbandsadministrator",
+      "member": "Mitglied"
+    },
+    "roleDescriptions": {
+      "systemAdmin": "Voller Zugriff. Kann Verbandsadministratoren erstellen und verwalten.",
+      "associationAdmin": "Kann Verbandsdaten über das Admin-Portal verwalten.",
+      "member": "Eingeschränkter Zugriff über das Mitgliederportal zur Selbstverwaltung."
+    },
+    "accountEnabledLabel": "Konto Aktiviert",
+    "accountEnabledDescription": "Deaktivierte Benutzer können sich nicht anmelden",
+    "sendInvitation": "Einladung Senden",
+    "saveChanges": "Änderungen Speichern",
+    "emptyState": {
+      "title": "Keine Benutzer gefunden",
+      "description": "Beginnen Sie mit der Einladung von Benutzern für Ihre Organisation. Eingeladene Benutzer erhalten eine E-Mail mit Anweisungen zum Beitritt.",
+      "inviteFirstUser": "Ihren Ersten Benutzer Einladen"
+    },
+    "status": {
+      "active": "Aktiv",
+      "disabled": "Deaktiviert"
+    },
+    "tableColumns": {
+      "name": "Name",
+      "email": "E-Mail",
+      "role": "Rolle",
+      "status": "Status",
+      "lastLogin": "Letzte Anmeldung",
+      "created": "Erstellt",
+      "actions": "Aktionen"
+    },
+    "actions": {
+      "edit": "Benutzer bearbeiten",
+      "enable": "Benutzer aktivieren",
+      "disable": "Benutzer deaktivieren"
+    },
+    "stats": {
+      "totalUsers": "Gesamtbenutzer",
+      "systemAdmins": "Systemadministratoren",
+      "associationAdmins": "Verbandsadministratoren",
+      "members": "Mitglieder"
+    },
+    "confirmations": {
+      "disableUser": {
+        "title": "Benutzerkonto Deaktivieren",
+        "message": "Sind Sie sicher, dass Sie {{userName}} deaktivieren möchten? Der Benutzer kann sich nicht mehr in der Anwendung anmelden.",
+        "confirm": "Benutzer Deaktivieren"
+      },
+      "enableUser": {
+        "title": "Benutzerkonto Aktivieren",
+        "message": "Sind Sie sicher, dass Sie {{userName}} aktivieren möchten? Der Benutzer kann sich wieder in der Anwendung anmelden.",
+        "confirm": "Benutzer Aktivieren"
+      }
+    }
+  },
   "auditLogs": {
     "title": "Audit-Protokolle",
     "actions": {

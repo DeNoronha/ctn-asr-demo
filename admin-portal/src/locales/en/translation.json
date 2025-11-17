@@ -340,6 +340,18 @@
       "systemAdmins": "System Admins",
       "associationAdmins": "Association Admins",
       "members": "Members"
+    },
+    "confirmations": {
+      "disableUser": {
+        "title": "Disable User Account",
+        "message": "Are you sure you want to disable {{userName}}? They will no longer be able to sign in to the application.",
+        "confirm": "Disable User"
+      },
+      "enableUser": {
+        "title": "Enable User Account",
+        "message": "Are you sure you want to enable {{userName}}? They will be able to sign in to the application.",
+        "confirm": "Enable User"
+      }
     }
   },
   "auditLogs": {

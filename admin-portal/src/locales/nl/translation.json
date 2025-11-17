@@ -283,6 +283,76 @@
     "validationError": "Corrigeer de fouten in het formulier.",
     "unknownError": "Er is een onbekende fout opgetreden."
   },
+  "userManagement": {
+    "title": "Gebruikersbeheer",
+    "inviteUser": "Gebruiker Uitnodigen",
+    "editUser": "Gebruiker Bewerken",
+    "inviteUserTitle": "Nieuwe Gebruiker Uitnodigen",
+    "editUserTitle": "Gebruiker Bewerken: {{userName}}",
+    "emailLabel": "E-mailadres",
+    "emailPlaceholder": "gebruiker@voorbeeld.nl",
+    "emailDescription": "Gebruiker ontvangt een uitnodigingse-mail",
+    "emailDisabledDescription": "E-mail kan niet worden gewijzigd",
+    "nameLabel": "Volledige Naam",
+    "namePlaceholder": "Jan Jansen",
+    "nameDisabledDescription": "Naam wordt beheerd in Azure Entra ID",
+    "roleLabel": "Rol",
+    "roles": {
+      "systemAdmin": "Systeembeheerder",
+      "associationAdmin": "Associatiebeheerder",
+      "member": "Lid"
+    },
+    "roleDescriptions": {
+      "systemAdmin": "Volledige toegang. Kan Associatiebeheerders aanmaken en beheren.",
+      "associationAdmin": "Kan associatiegegevens beheren via het Admin Portaal.",
+      "member": "Beperkte toegang via Ledenportaal voor zelfbediening."
+    },
+    "accountEnabledLabel": "Account Ingeschakeld",
+    "accountEnabledDescription": "Uitgeschakelde gebruikers kunnen niet inloggen",
+    "sendInvitation": "Uitnodiging Versturen",
+    "saveChanges": "Wijzigingen Opslaan",
+    "emptyState": {
+      "title": "Geen gebruikers gevonden",
+      "description": "Begin met het uitnodigen van gebruikers voor uw organisatie. Uitgenodigde gebruikers ontvangen een e-mail met instructies om lid te worden.",
+      "inviteFirstUser": "Uw Eerste Gebruiker Uitnodigen"
+    },
+    "status": {
+      "active": "Actief",
+      "disabled": "Uitgeschakeld"
+    },
+    "tableColumns": {
+      "name": "Naam",
+      "email": "E-mail",
+      "role": "Rol",
+      "status": "Status",
+      "lastLogin": "Laatste Login",
+      "created": "Aangemaakt",
+      "actions": "Acties"
+    },
+    "actions": {
+      "edit": "Gebruiker bewerken",
+      "enable": "Gebruiker inschakelen",
+      "disable": "Gebruiker uitschakelen"
+    },
+    "stats": {
+      "totalUsers": "Totaal Gebruikers",
+      "systemAdmins": "Systeembeheerders",
+      "associationAdmins": "Associatiebeheerders",
+      "members": "Leden"
+    },
+    "confirmations": {
+      "disableUser": {
+        "title": "Gebruikersaccount Uitschakelen",
+        "message": "Weet u zeker dat u {{userName}} wilt uitschakelen? Deze gebruiker kan niet meer inloggen op de applicatie.",
+        "confirm": "Gebruiker Uitschakelen"
+      },
+      "enableUser": {
+        "title": "Gebruikersaccount Inschakelen",
+        "message": "Weet u zeker dat u {{userName}} wilt inschakelen? Deze gebruiker kan weer inloggen op de applicatie.",
+        "confirm": "Gebruiker Inschakelen"
+      }
+    }
+  },
   "auditLogs": {
     "title": "Auditlogs",
     "actions": {
