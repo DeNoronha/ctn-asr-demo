@@ -2,12 +2,33 @@
 // Rate Limiting Middleware
 // ========================================
 // Protects API endpoints from abuse and DoS attacks
+//
+// **Security Architecture:**
+// - Primary: Redis-based distributed rate limiting (sliding window)
+// - Fallback: In-memory rate limiting (per-instance, less accurate)
+// - Circuit breaker: Fail-closed when Redis unavailable (blocks requests)
+//
+// **Security Improvements (SEC-007):**
+// - FIXED: Fail-open vulnerability (CWE-755) - now fails closed
+// - ADDED: Circuit breaker pattern for Redis dependency
+// - ADDED: Distributed rate limiting across function instances
+// - ADDED: Application Insights monitoring for circuit breaker state
 
 import { HttpRequest, InvocationContext } from '@azure/functions';
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 import { AuthenticatedRequest } from './endpointWrapper';
 import { createLogger, logSecurityEvent } from '../utils/logger';
-import { RATE_LIMIT, HTTP_STATUS } from '../config/constants';
+import { RATE_LIMIT, HTTP_STATUS, CIRCUIT_BREAKER } from '../config/constants';
+import {
+  CircuitBreaker,
+  CircuitBreakerConfig,
+  DEFAULT_CIRCUIT_BREAKER_CONFIG,
+} from '../utils/circuitBreaker';
+import {
+  checkRateLimitRedis,
+  penalizeRedis,
+  isRedisReady,
+} from '../utils/redisClient';
 
 /**
  * Rate limiter configurations
@@ -47,6 +68,34 @@ const uploadRateLimiter = new RateLimiterMemory({
   duration: RATE_LIMIT.UPLOAD_DURATION,
   blockDuration: RATE_LIMIT.UPLOAD_BLOCK_DURATION,
 });
+
+/**
+ * Circuit breaker instances (per-context, created on-demand)
+ * Prevents creating circuit breakers during module initialization
+ */
+const circuitBreakers = new Map<string, CircuitBreaker>();
+
+/**
+ * Get or create circuit breaker for rate limiting
+ */
+function getCircuitBreaker(context: InvocationContext): CircuitBreaker {
+  const key = 'RateLimiter';
+
+  if (!circuitBreakers.has(key)) {
+    const config: CircuitBreakerConfig = {
+      ...DEFAULT_CIRCUIT_BREAKER_CONFIG,
+      errorThreshold: CIRCUIT_BREAKER.ERROR_THRESHOLD,
+      openDuration: CIRCUIT_BREAKER.OPEN_DURATION_MS,
+      halfOpenMaxRequests: CIRCUIT_BREAKER.HALF_OPEN_MAX_REQUESTS,
+      monitorWindow: CIRCUIT_BREAKER.MONITOR_WINDOW_MS,
+      name: 'RateLimiterCircuitBreaker',
+    };
+
+    circuitBreakers.set(key, new CircuitBreaker(config, context));
+  }
+
+  return circuitBreakers.get(key)!;
+}
 
 /**
  * Safely get header value to avoid "Cannot read private member" error
@@ -114,7 +163,50 @@ function getRateLimitKey(
 }
 
 /**
+ * Get rate limit configuration for a type
+ */
+function getRateLimitConfig(type: RateLimiterType): { limit: number; windowMs: number } {
+  switch (type) {
+    case RateLimiterType.AUTH:
+      return { limit: RATE_LIMIT.AUTH_POINTS, windowMs: RATE_LIMIT.AUTH_DURATION * 1000 };
+    case RateLimiterType.TOKEN:
+      return { limit: RATE_LIMIT.TOKEN_POINTS, windowMs: RATE_LIMIT.TOKEN_DURATION * 1000 };
+    case RateLimiterType.FAILED_AUTH:
+      return {
+        limit: RATE_LIMIT.FAILED_AUTH_POINTS,
+        windowMs: RATE_LIMIT.FAILED_AUTH_DURATION * 1000,
+      };
+    case RateLimiterType.UPLOAD:
+      return { limit: RATE_LIMIT.UPLOAD_POINTS, windowMs: RATE_LIMIT.UPLOAD_DURATION * 1000 };
+    case RateLimiterType.API:
+    default:
+      return { limit: RATE_LIMIT.API_POINTS, windowMs: RATE_LIMIT.API_DURATION * 1000 };
+  }
+}
+
+/**
  * Check rate limit for a request
+ *
+ * **Security Architecture (SEC-007 Fix):**
+ * 1. Try Redis-based distributed rate limiting (primary)
+ * 2. Circuit breaker wraps Redis calls
+ * 3. If circuit OPEN or Redis fails: FAIL CLOSED (503 Service Unavailable)
+ * 4. Fallback to in-memory rate limiting ONLY if Redis explicitly disabled
+ *
+ * **BEFORE (VULNERABLE):**
+ * ```
+ * catch (error) {
+ *   return { allowed: true }; // ❌ Fails open - allows unlimited requests
+ * }
+ * ```
+ *
+ * **AFTER (SECURE):**
+ * ```
+ * catch (error) {
+ *   return { allowed: false, response: 503 }; // ✅ Fails closed - blocks requests
+ * }
+ * ```
+ *
  * @param request HTTP request
  * @param context Invocation context
  * @param type Rate limiter type
@@ -130,22 +222,132 @@ export async function checkRateLimit(
   resetTime: Date;
   response?: any;
 }> {
-  const rateLimiter = getRateLimiter(type);
   const key = getRateLimitKey(request, context);
+  const logger = createLogger(context);
+  const correlationId = safeGetHeader(request.headers, 'x-correlation-id') || 'unknown';
+  const { limit, windowMs } = getRateLimitConfig(type);
+
+  // Prefer Redis for distributed rate limiting
+  const useRedis = process.env.REDIS_ENABLED !== 'false'; // Enabled by default
+
+  if (useRedis) {
+    const circuitBreaker = getCircuitBreaker(context);
+
+    try {
+      // Wrap Redis call in circuit breaker
+      const result = await circuitBreaker.execute(async () => {
+        return await checkRateLimitRedis(key, limit, windowMs, context);
+      });
+
+      if (!result.allowed) {
+        // Rate limit exceeded
+        const retryAfter = Math.ceil(windowMs / 1000);
+
+        logSecurityEvent(logger, 'Rate Limit Exceeded (Redis)', correlationId, {
+          key,
+          type,
+          limit: limit.toString(),
+          remaining: result.remaining.toString(),
+          resetTime: result.resetTime.toISOString(),
+          retryAfter: retryAfter.toString(),
+          ipAddress: safeGetHeader(request.headers, 'x-forwarded-for') || 'unknown',
+          userAgent: safeGetHeader(request.headers, 'user-agent') || 'unknown',
+          url: request.url,
+          method: request.method,
+        });
+
+        context.warn(`Rate limit exceeded (Redis) for ${key}, reset at ${result.resetTime.toISOString()}`);
+
+        return {
+          allowed: false,
+          remaining: 0,
+          resetTime: result.resetTime,
+          response: {
+            status: HTTP_STATUS.TOO_MANY_REQUESTS,
+            headers: {
+              'Content-Type': 'application/json',
+              'Retry-After': retryAfter.toString(),
+              'X-RateLimit-Limit': limit.toString(),
+              'X-RateLimit-Remaining': '0',
+              'X-RateLimit-Reset': result.resetTime.toISOString(),
+            },
+            body: JSON.stringify({
+              error: 'rate_limit_exceeded',
+              error_description: 'Too many requests. Please try again later.',
+              retry_after: retryAfter,
+              reset_time: result.resetTime.toISOString(),
+            }),
+          },
+        };
+      }
+
+      // Request allowed
+      logger.info('Rate Limit Check Passed (Redis)', {
+        key,
+        type,
+        limit: limit.toString(),
+        remaining: result.remaining.toString(),
+        resetTime: result.resetTime.toISOString(),
+      });
+
+      return {
+        allowed: true,
+        remaining: result.remaining,
+        resetTime: result.resetTime,
+      };
+    } catch (error) {
+      // Circuit breaker OPEN or Redis error
+      // **SECURITY FIX (SEC-007): FAIL CLOSED instead of FAIL OPEN**
+      logger.error('Rate limiter failed (circuit breaker OPEN or Redis error)', error, {
+        key,
+        type,
+        circuitBreakerState: circuitBreaker.getState(),
+        correlationId,
+      });
+
+      logSecurityEvent(logger, 'Rate Limiter Service Unavailable', correlationId, {
+        key,
+        type,
+        circuitBreakerState: circuitBreaker.getState(),
+        errorMessage: error instanceof Error ? error.message : String(error),
+        url: request.url,
+        method: request.method,
+      });
+
+      // FAIL CLOSED: Return 503 Service Unavailable
+      return {
+        allowed: false,
+        remaining: 0,
+        resetTime: new Date(Date.now() + 60000), // Try again in 60 seconds
+        response: {
+          status: HTTP_STATUS.SERVICE_UNAVAILABLE,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': '60',
+          },
+          body: JSON.stringify({
+            error: 'service_unavailable',
+            error_description:
+              'Rate limiting service is temporarily unavailable. Please try again later.',
+            retry_after: 60,
+          }),
+        },
+      };
+    }
+  }
+
+  // Fallback to in-memory rate limiting (if Redis explicitly disabled)
+  const rateLimiter = getRateLimiter(type);
 
   try {
     const result: RateLimiterRes = await rateLimiter.consume(key, 1);
 
-    context.log(`Rate limit check passed for ${key}: ${result.remainingPoints} remaining`);
-
-    // Log rate limit headers for monitoring
-    const logger = createLogger(context);
-    logger.info('Rate Limit Headers', {
+    logger.info('Rate Limit Check Passed (In-Memory)', {
       key,
       type,
-      'X-RateLimit-Limit': rateLimiter.points.toString(),
-      'X-RateLimit-Remaining': result.remainingPoints.toString(),
-      'X-RateLimit-Reset': new Date(Date.now() + result.msBeforeNext).toISOString(),
+      limit: rateLimiter.points.toString(),
+      remaining: result.remainingPoints.toString(),
+      resetTime: new Date(Date.now() + result.msBeforeNext).toISOString(),
     });
 
     return {
@@ -159,24 +361,20 @@ export async function checkRateLimit(
       const resetTime = new Date(Date.now() + rateLimitError.msBeforeNext);
       const retryAfter = Math.ceil(rateLimitError.msBeforeNext / 1000);
 
-      // Log rate limit exceeded to Application Insights with severity=warning
-      const logger = createLogger(context);
-      const correlationId = safeGetHeader(request.headers, 'x-correlation-id') || 'unknown';
-
-      logSecurityEvent(logger, 'Rate Limit Exceeded', correlationId, {
+      logSecurityEvent(logger, 'Rate Limit Exceeded (In-Memory)', correlationId, {
         key,
         type,
-        'X-RateLimit-Limit': rateLimiter.points.toString(),
-        'X-RateLimit-Remaining': '0',
-        'X-RateLimit-Reset': resetTime.toISOString(),
-        'Retry-After': retryAfter.toString(),
+        limit: rateLimiter.points.toString(),
+        remaining: '0',
+        resetTime: resetTime.toISOString(),
+        retryAfter: retryAfter.toString(),
         ipAddress: safeGetHeader(request.headers, 'x-forwarded-for') || 'unknown',
         userAgent: safeGetHeader(request.headers, 'user-agent') || 'unknown',
         url: request.url,
         method: request.method,
       });
 
-      context.warn(`Rate limit exceeded for ${key}, reset at ${resetTime.toISOString()}`);
+      context.warn(`Rate limit exceeded (In-Memory) for ${key}, reset at ${resetTime.toISOString()}`);
 
       return {
         allowed: false,
@@ -201,12 +399,26 @@ export async function checkRateLimit(
       };
     }
 
-    // Unknown error
-    context.error('Error checking rate limit:', error);
+    // Unknown error in in-memory rate limiter
+    // This should never happen, but fail closed for safety
+    logger.error('In-memory rate limiter error', error, { key, type, correlationId });
+
     return {
-      allowed: true, // Fail open to avoid blocking legitimate requests
-      remaining: -1,
-      resetTime: new Date(),
+      allowed: false,
+      remaining: 0,
+      resetTime: new Date(Date.now() + 60000),
+      response: {
+        status: HTTP_STATUS.SERVICE_UNAVAILABLE,
+        headers: {
+          'Content-Type': 'application/json',
+          'Retry-After': '60',
+        },
+        body: JSON.stringify({
+          error: 'service_unavailable',
+          error_description: 'Rate limiting service error. Please try again later.',
+          retry_after: 60,
+        }),
+      },
     };
   }
 }
@@ -261,6 +473,8 @@ export function addRateLimitHeaders(
 /**
  * Penalty for failed operations (e.g., failed auth attempts)
  * Consumes additional points to slow down attackers
+ *
+ * Uses Redis when available, falls back to in-memory
  */
 export async function penalizeFailedAttempt(
   request: HttpRequest | AuthenticatedRequest,
@@ -268,11 +482,40 @@ export async function penalizeFailedAttempt(
   points: number = RATE_LIMIT.PENALTY_POINTS
 ): Promise<void> {
   const key = getRateLimitKey(request, context);
+  const useRedis = process.env.REDIS_ENABLED !== 'false';
 
-  try {
-    await failedAuthRateLimiter.consume(key, points);
-    context.log(`Penalized ${key} with ${points} points for failed attempt`);
-  } catch (error) {
-    context.warn(`Failed attempt penalty exceeded for ${key}`);
+  if (useRedis) {
+    try {
+      const circuitBreaker = getCircuitBreaker(context);
+      await circuitBreaker.execute(async () => {
+        return await penalizeRedis(
+          key,
+          points,
+          RATE_LIMIT.FAILED_AUTH_DURATION * 1000,
+          context
+        );
+      });
+      context.log(`Penalized ${key} with ${points} points (Redis)`);
+    } catch (error) {
+      // Circuit breaker open or Redis error
+      // Continue execution (penalty is best-effort, not critical)
+      context.warn(`Failed to penalize ${key} via Redis, circuit may be open:`, error);
+
+      // Fallback to in-memory
+      try {
+        await failedAuthRateLimiter.consume(key, points);
+        context.log(`Penalized ${key} with ${points} points (In-Memory fallback)`);
+      } catch (fallbackError) {
+        context.warn(`In-memory penalty also failed for ${key}`);
+      }
+    }
+  } else {
+    // Use in-memory directly
+    try {
+      await failedAuthRateLimiter.consume(key, points);
+      context.log(`Penalized ${key} with ${points} points (In-Memory)`);
+    } catch (error) {
+      context.warn(`Failed attempt penalty exceeded for ${key}`);
+    }
   }
 }

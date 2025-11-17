@@ -164,6 +164,25 @@ export const RATE_LIMIT = {
 } as const;
 
 /**
+ * Circuit Breaker Configuration
+ * Prevents cascading failures when dependencies (Redis) are unavailable
+ * Implements fail-closed behavior to maintain security posture
+ */
+export const CIRCUIT_BREAKER = {
+  /** Number of consecutive failures before opening circuit */
+  ERROR_THRESHOLD: 5,
+
+  /** Duration to keep circuit open (milliseconds) - 60 seconds */
+  OPEN_DURATION_MS: 60000,
+
+  /** Maximum test requests allowed in half-open state */
+  HALF_OPEN_MAX_REQUESTS: 3,
+
+  /** Time window for tracking errors (milliseconds) - 5 minutes */
+  MONITOR_WINDOW_MS: 300000,
+} as const;
+
+/**
  * External URLs and Endpoints
  */
 export const URLS = {
