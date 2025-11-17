@@ -1,6 +1,6 @@
 import { Button } from '@mantine/core';
 import React, { useEffect } from 'react';
-import type { LegalEntityIdentifier } from '../services/apiV2';
+import type { LegalEntityIdentifier } from "../services/api";
 import { getEmptyState } from '../utils/emptyStates';
 import { EmptyState } from './EmptyState';
 import { FileCheck, Plus } from './icons';

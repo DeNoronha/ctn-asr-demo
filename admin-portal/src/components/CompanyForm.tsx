@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import type { LegalEntity } from '../services/api';
 import { apiV2 } from '../services/api';
-import type { LegalEntityIdentifier } from '../services/apiV2';
+import type { LegalEntityIdentifier } from "../services/api";
 import { sanitizeFormData } from '../utils/sanitize';
 import './CompanyForm.css';
 import { helpContent } from '../config/helpContent';

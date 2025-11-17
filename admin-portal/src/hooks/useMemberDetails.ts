@@ -19,7 +19,7 @@
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntity, type LegalEntityContact, api } from '../services/api';
-import { type LegalEntityEndpoint, type LegalEntityIdentifier, apiV2 } from '../services/apiV2';
+import { type LegalEntityEndpoint, type LegalEntityIdentifier, apiV2 } from "../services/api";
 import { logger } from '../utils/logger';
 
 interface UseMemberDetailsReturn {

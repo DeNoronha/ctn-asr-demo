@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import type { Application } from '../services/apiV2';
+import type { Application } from "../services/api";
 
 interface AdminTask {
   task_id: string;

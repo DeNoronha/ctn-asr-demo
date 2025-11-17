@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useCallback, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
-import type { LegalEntityIdentifier } from '../services/apiV2';
+import type { LegalEntityIdentifier } from "../services/api";
 import { getAccessToken } from '../utils/auth';
 import { logger } from '../utils/logger';
 import { sanitizeFormData } from '../utils/sanitize';

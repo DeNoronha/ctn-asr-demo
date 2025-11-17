@@ -2,7 +2,7 @@ import { Workbook } from 'exceljs';
 import { useCallback, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import type { Member } from '../services/api';
-import { apiV2 } from '../services/apiV2';
+import { apiV2 } from "../services/api";
 import { exportToCSV, exportToPDF } from '../utils/exportUtils';
 import { useApiError } from './useApiError';
 

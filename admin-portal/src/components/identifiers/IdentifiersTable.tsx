@@ -1,7 +1,7 @@
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
 import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import type React from 'react';
-import type { LegalEntityIdentifier } from '../../services/apiV2';
+import type { LegalEntityIdentifier } from "../../services/api";
 import { formatDate } from '../../utils/dateUtils';
 import { sanitizeGridCell } from '../../utils/sanitize';
 import { ErrorBoundary } from '../ErrorBoundary';

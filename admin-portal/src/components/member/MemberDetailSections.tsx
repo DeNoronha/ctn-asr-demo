@@ -7,7 +7,7 @@ import { Tabs } from '@mantine/core';
 import type React from 'react';
 import type { LegalEntity, LegalEntityContact, Member } from '../../services/api';
 import { api, apiV2 } from '../../services/api';
-import type { LegalEntityIdentifier } from '../../services/apiV2';
+import type { LegalEntityIdentifier } from "../../services/api";
 import { getEmptyState } from '../../utils/emptyStates';
 import { APIAccessManager } from '../APIAccessManager';
 import { ContactsManager } from '../ContactsManager';

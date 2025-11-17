@@ -11,7 +11,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
 import { useMemberDetails } from '../hooks/useMemberDetails';
 import { type Member, api } from '../services/api';
-import { apiV2 } from '../services/apiV2';
+import { apiV2 } from "../services/api";
 import { getMembershipColor, getStatusColor } from '../utils/colors';
 import { getEmptyState } from '../utils/emptyStates';
 import { logger } from '../utils/logger';

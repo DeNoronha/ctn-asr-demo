@@ -4,7 +4,7 @@ import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-da
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
-import { type LegalEntityIdentifier, type VerificationRecord, apiV2 } from '../services/apiV2';
+import { type LegalEntityIdentifier, type VerificationRecord, apiV2 } from "../services/api";
 import { getVerificationColor } from '../utils/colors';
 import { formatDateTime } from '../utils/dateUtils';
 import { EmptyState } from './EmptyState';

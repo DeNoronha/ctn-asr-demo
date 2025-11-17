@@ -12,7 +12,7 @@ import { Activity, AlertTriangle, CheckCircle, RefreshCw, XCircle } from './icon
 import { LoadingState } from './shared/LoadingState';
 import { PageHeader } from './shared/PageHeader';
 import './HealthDashboard.css';
-import { apiV2 } from '../services/apiV2';
+import { apiV2 } from "../services/api";
 
 interface HealthCheck {
   status: 'up' | 'down';

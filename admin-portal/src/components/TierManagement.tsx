@@ -7,7 +7,7 @@ import { Button, Select } from '@mantine/core';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
-import { apiV2 } from '../services/apiV2';
+import { apiV2 } from "../services/api";
 import { formatDate, formatDateTime } from '../utils/dateFormat';
 import { LoadingState } from './shared/LoadingState';
 

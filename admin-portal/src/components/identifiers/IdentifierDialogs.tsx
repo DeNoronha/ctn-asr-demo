@@ -2,7 +2,7 @@ import { Button, Group, Modal, Select, Stack, TextInput } from '@mantine/core';
 import type React from 'react';
 import { helpContent } from '../../config/helpContent';
 import { COUNTRY_IDENTIFIER_MAP, IDENTIFIER_VALIDATION } from '../../hooks/useIdentifiers';
-import type { LegalEntityIdentifier } from '../../services/apiV2';
+import type { LegalEntityIdentifier } from "../../services/api";
 import { getDescribedById, getValidationProps } from '../../utils/aria';
 import { TEXT_COLORS, getStatusColor } from '../../utils/colors';
 import { ConfirmDialog } from '../ConfirmDialog';

@@ -7,7 +7,7 @@ import { Card } from '@mantine/core';
 
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { apiV2 } from '../services/apiV2';
+import { apiV2 } from "../services/api";
 import {
   AlertCircle,
   Building2,

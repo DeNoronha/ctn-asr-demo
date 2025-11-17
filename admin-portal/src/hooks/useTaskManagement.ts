@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { apiV2 } from '../services/apiV2';
+import { apiV2 } from "../services/api";
 import { logger } from '../utils/logger';
 
 interface AdminTask {

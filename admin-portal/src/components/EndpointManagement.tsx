@@ -14,7 +14,7 @@ import React, { useEffect, useState } from 'react';
 
 import { helpContent } from '../config/helpContent';
 import { useNotification } from '../contexts/NotificationContext';
-import { type EndpointAuthorization, type LegalEntityEndpoint, apiV2 } from '../services/apiV2';
+import { type EndpointAuthorization, type LegalEntityEndpoint, apiV2 } from "../services/api";
 import { announceToScreenReader } from '../utils/aria';
 import { formatDateTime } from '../utils/dateFormat';
 import { getEmptyState } from '../utils/emptyStates';
