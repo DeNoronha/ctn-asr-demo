@@ -69,7 +69,7 @@ stages:
           - task: Cache@2
             displayName: 'Cache API node_modules'
             inputs:
-              key: 'npm-api | "$(Agent.OS)" | api/package.json | api/package-lock.json'
+              key: 'npm-api | "$(Agent.OS)" | api/package.json | package-lock.json'
               restoreKeys: |
                 npm-api | "$(Agent.OS)"
               path: api/node_modules
