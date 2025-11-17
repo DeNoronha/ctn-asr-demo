@@ -1,0 +1,63 @@
+# Semgrep Suppression File
+# ═══════════════════════════════════════════════════════════════
+# Use this file to suppress specific Semgrep rules
+#
+# GOVERNANCE REQUIREMENTS:
+# -------------------------
+# 1. Security Team approval REQUIRED for all suppressions
+# 2. Document justification in comments
+# 3. Quarterly re-evaluation of all suppressions
+# 4. Review suppressions during security audits
+#
+# WHEN TO USE:
+# -------------------------
+# ✅ False positive confirmed by Security Team
+# ✅ Rule doesn't apply to our specific context
+# ✅ Risk accepted and documented by stakeholders
+# ✅ Temporary suppression during migration/refactor
+#
+# WHEN NOT TO USE:
+# -------------------------
+# ❌ Actual vulnerabilities
+# ❌ Convenience (wanting to bypass security checks)
+# ❌ Time pressure (security cannot be rushed)
+# ❌ Lack of understanding (ask Security Team first)
+#
+# ═══════════════════════════════════════════════════════════════
+
+# SUPPRESSION TEMPLATE:
+# =====================
+# rules:
+#   - id: <rule-id>
+#     paths:
+#       exclude:
+#         - <path-to-file>
+#     note: "Justification. Reviewed YYYY-MM-DD by Security Team. Re-review: YYYY-MM-DD"
+#
+# EXAMPLE:
+# --------
+# rules:
+#   - id: typescript.lang.security.audit.sql-injection.pg-sql-injection
+#     paths:
+#       exclude:
+#         - api/src/functions/legacy/OldReportEndpoint.ts
+#     note: "False positive - uses parameterized queries via pg-promise. Reviewed 2025-11-17 by Security Team. Scheduled for refactor Q1 2026. Re-review: 2026-01-15"
+
+# ═══════════════════════════════════════════════════════════════
+# ACTIVE SUPPRESSIONS
+# ═══════════════════════════════════════════════════════════════
+
+# Currently no suppressions. Add suppression rules below when needed.
+
+rules: []
+
+# ═══════════════════════════════════════════════════════════════
+# SUPPRESSION HISTORY (for audit trail)
+# ═══════════════════════════════════════════════════════════════
+
+# Add removed suppressions here with resolution notes:
+#
+# [2025-11-17] Removed: typescript.lang.security.audit.xss.react-dangerously-set-inner-html
+#   - File: admin-portal/src/components/RichTextDisplay.tsx
+#   - Resolution: Replaced with DOMPurify sanitization
+#   - Commit: abc123def

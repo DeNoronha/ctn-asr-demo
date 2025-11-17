@@ -140,6 +140,7 @@ stages:
           # ========================================
           # Semgrep - SAST (Static Application Security Testing)
           # Detects: SQL injection, XSS, auth bugs, crypto issues
+          # Blocks build on ERROR severity, warns on WARNING/INFO
           # ========================================
           - script: |
               echo "🔍 Installing Semgrep..."
@@ -147,30 +148,130 @@ stages:
               semgrep --version
             displayName: 'Install Semgrep'
 
+          # Run full scan and generate JSON report
           - script: |
               echo "🔍 Running Semgrep security analysis..."
               semgrep scan --config=auto \
+                --config=.semgrep/ignore.yml \
                 --severity=ERROR \
                 --severity=WARNING \
                 --exclude='node_modules' \
                 --exclude='dist' \
                 --exclude='*.test.ts' \
                 --exclude='*.spec.ts' \
+                --exclude='e2e' \
                 --json \
                 --output=semgrep-results.json \
-                . || true
+                api/ || true
 
               echo ""
               echo "📊 Semgrep Results Summary:"
               semgrep scan --config=auto \
+                --config=.semgrep/ignore.yml \
                 --severity=ERROR \
+                --severity=WARNING \
                 --exclude='node_modules' \
                 --exclude='dist' \
                 --exclude='*.test.ts' \
                 --exclude='*.spec.ts' \
-                .
+                --exclude='e2e' \
+                api/ || true
             displayName: 'Semgrep: SAST security scan'
             continueOnError: true
+
+          # Parse results and block on ERROR severity
+          - script: |
+              if [ ! -f semgrep-results.json ]; then
+                echo "⚠️ Semgrep results file not found"
+                exit 0
+              fi
+
+              # Count findings by severity
+              ERROR_COUNT=$(jq '[.results[] | select(.extra.severity == "ERROR")] | length' semgrep-results.json)
+              WARNING_COUNT=$(jq '[.results[] | select(.extra.severity == "WARNING")] | length' semgrep-results.json)
+              INFO_COUNT=$(jq '[.results[] | select(.extra.severity == "INFO")] | length' semgrep-results.json)
+
+              echo ""
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "📊 Semgrep SAST Security Results"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "🔴 ERROR:   $ERROR_COUNT (blocking)"
+              echo "🟡 WARNING: $WARNING_COUNT (non-blocking)"
+              echo "🔵 INFO:    $INFO_COUNT (informational)"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+              # Block build on ERROR severity
+              if [ "$ERROR_COUNT" -gt 0 ]; then
+                echo ""
+                echo "🚫 BUILD BLOCKED - ERROR severity vulnerabilities detected"
+                echo ""
+                echo "Security vulnerabilities found:"
+                echo ""
+                jq -r '.results[] | select(.extra.severity == "ERROR") | "  🔴 \(.check_id)\n     File: \(.path):\(.start.line)\n     Message: \(.extra.message)\n"' semgrep-results.json
+                echo ""
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo "🛠️  How to Fix:"
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo "1. Download semgrep-results.json from build artifacts"
+                echo "2. Run locally: pip install semgrep && semgrep scan --config=auto api/"
+                echo "3. Review each finding and apply recommended fixes"
+                echo "4. Re-commit after fixes and re-run pipeline"
+                echo ""
+                echo "Common Semgrep ERROR findings and fixes:"
+                echo "  • SQL Injection → Use parameterized queries (pg-promise placeholders)"
+                echo "  • XSS → Sanitize user input, use DOMPurify for HTML"
+                echo "  • Hardcoded Secrets → Move to environment variables or Key Vault"
+                echo "  • Insecure Randomness → Use crypto.randomBytes() instead of Math.random()"
+                echo "  • Command Injection → Validate input, avoid shell execution"
+                echo "  • Path Traversal → Validate file paths, use path.resolve()"
+                echo ""
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo "🔧 False Positive?"
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo "If you believe this is a false positive:"
+                echo "1. Document in .semgrep/ignore.yml with clear justification"
+                echo "2. Get Security Team approval"
+                echo "3. Include approval reference in commit message"
+                echo ""
+                echo "Example suppression:"
+                echo "  rules:"
+                echo "    - id: typescript.lang.security.audit.sql-injection"
+                echo "      paths:"
+                echo "        exclude:"
+                echo "          - api/src/functions/YourFile.ts"
+                echo "      note: \"False positive - uses pg-promise parameterized queries.\""
+                echo "            \"Reviewed 2025-11-17 by Security Team.\""
+                echo ""
+                exit 1
+              fi
+
+              # Warn on WARNING severity
+              if [ "$WARNING_COUNT" -gt 0 ]; then
+                echo ""
+                echo "⚠️ WARNING: $WARNING_COUNT potential security issues detected"
+                echo ""
+                echo "Findings (non-blocking):"
+                echo ""
+                jq -r '.results[] | select(.extra.severity == "WARNING") | "  🟡 \(.check_id)\n     File: \(.path):\(.start.line)\n     Message: \(.extra.message)\n"' semgrep-results.json | head -20
+                echo ""
+                echo "Review semgrep-results.json artifact for full details"
+                echo ""
+              fi
+
+              echo ""
+              echo "✅ Semgrep SAST Check PASSED (no ERROR severity findings)"
+              echo ""
+            displayName: 'Validate Semgrep Results (BLOCKING on ERROR)'
+            condition: succeededOrFailed()
+
+          # Publish Semgrep results as artifact (always, even on failure)
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Semgrep Report'
+            condition: always()
+            inputs:
+              PathtoPublish: 'semgrep-results.json'
+              ArtifactName: 'Semgrep-Results'
+              publishLocation: 'Container'
 
           # ========================================
           # Gitleaks - Secret Scanning (Git History)
