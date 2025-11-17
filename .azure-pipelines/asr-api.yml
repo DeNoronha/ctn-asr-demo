@@ -486,7 +486,7 @@ stages:
               targetSlot: 'production'
               preserveVnet: true
 
-          # Step 5: Post-swap verification on production
+          # Step 5: Post-swap verification on production with automated rollback
           - script: |
               echo "⏳ Waiting 10 seconds for slot swap to complete..."
               sleep 10
@@ -494,47 +494,148 @@ stages:
               echo "🔍 Verifying PRODUCTION after slot swap..."
               PROD_URL="https://$(functionAppName).azurewebsites.net/api/health"
 
-              # Single health check (should be instant after swap)
-              HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL")
+              # Retry health check up to 5 times (50 seconds total)
+              MAX_RETRIES=5
+              RETRY_DELAY=10
+              SUCCESS=false
 
-              if [ "$HEALTH_STATUS" = "200" ]; then
-                echo "✅ Production health check PASSED (HTTP 200)"
+              for i in $(seq 1 $MAX_RETRIES); do
+                echo "Health check attempt $i of $MAX_RETRIES..."
+                HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL")
 
-                # Get and display production health details
-                echo ""
-                echo "Production Health Status:"
-                curl -s "$PROD_URL" | jq '.'
+                if [ "$HEALTH_STATUS" = "200" ]; then
+                  echo "✅ Production health check PASSED (HTTP 200)"
 
-                # Extract and log commit hash
-                GIT_COMMIT=$(git rev-parse --short HEAD)
-                echo ""
-                echo "📦 Production now running commit: $GIT_COMMIT"
-                echo "##vso[task.setvariable variable=ApiCommitHash;isOutput=true]$GIT_COMMIT"
+                  # Get and display production health details
+                  echo ""
+                  echo "Production Health Status:"
+                  curl -s "$PROD_URL" | jq '.'
 
+                  # Extract and log commit hash
+                  GIT_COMMIT=$(git rev-parse --short HEAD)
+                  echo ""
+                  echo "📦 Production now running commit: $GIT_COMMIT"
+                  echo "##vso[task.setvariable variable=ApiCommitHash;isOutput=true]$GIT_COMMIT"
+
+                  echo ""
+                  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                  echo "✅ DEPLOYMENT SUCCESSFUL"
+                  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                  echo "Production URL: https://$(functionAppName).azurewebsites.net"
+                  echo "Staging URL (old version): https://$(functionAppName)-staging.azurewebsites.net"
+                  echo ""
+                  echo "💡 Rollback available via: ./scripts/manage-deployment-slots.sh rollback"
+                  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                  echo ""
+
+                  SUCCESS=true
+                  break
+                fi
+
+                echo "⚠️  Health check returned HTTP $HEALTH_STATUS, retrying in ${RETRY_DELAY}s..."
+                sleep $RETRY_DELAY
+              done
+
+              if [ "$SUCCESS" = "false" ]; then
                 echo ""
                 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo "✅ DEPLOYMENT SUCCESSFUL"
+                echo "❌ Production health check FAILED after $MAX_RETRIES attempts"
                 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo "Production URL: https://$(functionAppName).azurewebsites.net"
-                echo "Staging URL (old version): https://$(functionAppName)-staging.azurewebsites.net"
-                echo ""
-                echo "💡 Rollback available via: ./scripts/manage-deployment-slots.sh rollback"
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo ""
-
-                exit 0
-              else
-                echo "❌ Production health check FAILED (HTTP $HEALTH_STATUS)"
                 echo "   URL: $PROD_URL"
+                echo "   Last status: $HEALTH_STATUS"
                 echo ""
-                echo "⚠️  DEPLOYMENT COMPLETED BUT HEALTH CHECK FAILED"
-                echo "⚠️  Consider immediate rollback:"
-                echo "     ./scripts/manage-deployment-slots.sh rollback"
+                echo "🚨 TRIGGERING AUTOMATIC ROLLBACK"
                 echo ""
                 exit 1
               fi
             displayName: 'Post-Swap Production Verification'
             name: VerifyDeployment
+
+          # Step 6: Automated Rollback on health check failure
+          - task: AzureAppServiceManage@0
+            displayName: '🚨 ROLLBACK: Swap Back to Previous Version'
+            condition: failed()
+            inputs:
+              azureSubscription: $(azureSubscription)
+              action: 'Swap Slots'
+              webAppName: $(functionAppName)
+              resourceGroupName: 'rg-ctn-demo-asr-dev'
+              sourceSlot: 'staging'
+              targetSlot: 'production'
+              preserveVnet: true
+
+          # Step 7: Verify rollback success
+          - script: |
+              echo "⏳ Waiting 10 seconds for rollback swap to complete..."
+              sleep 10
+
+              echo "🔍 Verifying PRODUCTION after rollback..."
+              PROD_URL="https://$(functionAppName).azurewebsites.net/api/health"
+
+              HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL")
+
+              if [ "$HEALTH_STATUS" = "200" ]; then
+                echo ""
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo "✅ ROLLBACK SUCCESSFUL"
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo "Production restored to previous working version"
+                echo "Health check: PASSED (HTTP 200)"
+                echo ""
+                curl -s "$PROD_URL" | jq '.'
+                echo ""
+                echo "⚠️  New version remains in STAGING slot for investigation"
+                echo "   Staging URL: https://$(functionAppName)-staging.azurewebsites.net"
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo ""
+              else
+                echo ""
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo "❌ CRITICAL: Rollback verification FAILED"
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo "Health check: FAILED (HTTP $HEALTH_STATUS)"
+                echo "Manual intervention required immediately"
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo ""
+              fi
+            displayName: 'Verify Rollback Success'
+            condition: failed()
+
+          # Step 8: Send rollback notification
+          - script: |
+              echo ""
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "🚨 ROLLBACK NOTIFICATION"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo ""
+              echo "Component: ASR API (Azure Functions)"
+              echo "Reason: Production health checks failed after deployment"
+              echo "Action: Automatic rollback executed"
+              echo "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+              echo ""
+              echo "Build: $(Build.BuildNumber)"
+              echo "Commit: $(git rev-parse --short HEAD)"
+              echo "Build URL: $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
+              echo ""
+              echo "Production has been restored to the previous working version."
+              echo "Failed deployment remains in staging slot for investigation."
+              echo ""
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo ""
+
+              # TODO: Integrate with Teams webhook when available
+              # TEAMS_WEBHOOK_URL can be added to Azure DevOps variable group
+              # if [ -n "$TEAMS_WEBHOOK_URL" ]; then
+              #   curl -X POST "$TEAMS_WEBHOOK_URL" \
+              #     -H "Content-Type: application/json" \
+              #     -d '{
+              #       "title": "🚨 ROLLBACK: API Deployment Failed",
+              #       "text": "Production health checks failed. Automatic rollback executed.",
+              #       "timestamp": "'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'"
+              #     }'
+              # fi
+            displayName: 'Send Rollback Notification'
+            condition: failed()
 
           # List deployed functions
           - script: |
