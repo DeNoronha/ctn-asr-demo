@@ -237,6 +237,15 @@ steps:
       nvdApiKey: $(NVD-API-KEY)
       dataDirectory: $(Pipeline.Workspace)/.owasp-dependency-check-data  # Use cached NVD data
 
+  # Ensure OWASP report exists (create empty if not)
+  - script: |
+      if [ ! -f dependency-check-report.html ]; then
+        echo "⚠️ dependency-check-report.html not found, creating empty report"
+        echo '<html><body><h1>OWASP Dependency Check</h1><p>Report not generated (scan may have failed)</p></body></html>' > dependency-check-report.html
+      fi
+    displayName: 'Ensure OWASP report file exists'
+    condition: always()
+
   # Publish OWASP report artifacts (always, even on failure)
   - task: PublishBuildArtifacts@1
     displayName: 'Publish OWASP Dependency Report'
