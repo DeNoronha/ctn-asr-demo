@@ -264,6 +264,15 @@ stages:
             displayName: 'Validate Semgrep Results (BLOCKING on ERROR)'
             condition: succeededOrFailed()
 
+          # Ensure Semgrep results file exists (create empty if not)
+          - script: |
+              if [ ! -f semgrep-results.json ]; then
+                echo "⚠️ semgrep-results.json not found, creating empty results"
+                echo '{"results":[],"errors":[],"paths":{"scanned":[]}}' > semgrep-results.json
+              fi
+            displayName: 'Ensure Semgrep results file exists'
+            condition: always()
+
           # Publish Semgrep results as artifact (always, even on failure)
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Semgrep Report'
