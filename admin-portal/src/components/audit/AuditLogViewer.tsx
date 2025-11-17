@@ -9,6 +9,7 @@ import {
   Button,
   Collapse,
   Group,
+  Menu,
   MultiSelect,
   Paper,
   Select,
@@ -29,8 +30,9 @@ import { UserRole } from '../../auth/authConfig';
 import { useNotification } from '../../contexts/NotificationContext';
 import { AuditAction, type AuditLog, auditLogService, type AuditLogFilters } from '../../services/auditLogService';
 import { formatDateTimeGB } from '../../utils/dateFormat';
+import { exportAuditLogsAsCSV, exportAuditLogsAsExcel, exportAuditLogsAsJSON } from '../../utils/export';
 import { ErrorBoundary } from '../ErrorBoundary';
-import { Activity, ChevronDown, ChevronUp, Clock, Download, FileText, RefreshCw, Shield, X } from '../icons';
+import { Activity, ChevronDown, ChevronUp, Clock, Download, FileSpreadsheet, FileJson, FileText, RefreshCw, Shield, X } from '../icons';
 import { defaultDataTableProps } from '../shared/DataTableConfig';
 import { PageHeader } from '../shared/PageHeader';
 import './AuditLogViewer.css';
@@ -231,27 +233,56 @@ const AuditLogViewer: React.FC = () => {
     setPage(1);
   }, []);
 
-  const handleExport = useCallback(async () => {
+  const handleExportCSV = useCallback(() => {
     setIsExporting(true);
     try {
-      const json = await auditLogService.exportLogs(activeFilters);
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `audit-logs-${new Date().toISOString()}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      notification.showSuccess(t('auditLogs.notifications.exportSuccess', { count: totalLogs }));
+      if (logs.length === 0) {
+        notification.showError(t('auditLogs.export.noData'));
+        return;
+      }
+      exportAuditLogsAsCSV(logs);
+      notification.showSuccess(t('auditLogs.export.success'));
     } catch (error) {
-      console.error('Failed to export logs:', error);
+      console.error('Failed to export CSV:', error);
       notification.showError(t('auditLogs.notifications.exportFailed'));
     } finally {
       setIsExporting(false);
     }
-  }, [activeFilters, totalLogs, notification, t]);
+  }, [logs, notification, t]);
+
+  const handleExportExcel = useCallback(() => {
+    setIsExporting(true);
+    try {
+      if (logs.length === 0) {
+        notification.showError(t('auditLogs.export.noData'));
+        return;
+      }
+      exportAuditLogsAsExcel(logs);
+      notification.showSuccess(t('auditLogs.export.success'));
+    } catch (error) {
+      console.error('Failed to export Excel:', error);
+      notification.showError(t('auditLogs.notifications.exportFailed'));
+    } finally {
+      setIsExporting(false);
+    }
+  }, [logs, notification, t]);
+
+  const handleExportJSON = useCallback(() => {
+    setIsExporting(true);
+    try {
+      if (logs.length === 0) {
+        notification.showError(t('auditLogs.export.noData'));
+        return;
+      }
+      exportAuditLogsAsJSON(logs);
+      notification.showSuccess(t('auditLogs.export.success'));
+    } catch (error) {
+      console.error('Failed to export JSON:', error);
+      notification.showError(t('auditLogs.notifications.exportFailed'));
+    } finally {
+      setIsExporting(false);
+    }
+  }, [logs, notification, t]);
 
   // mantine-datatable column definitions
   const { effectiveColumns } = useDataTableColumns<AuditLog>({
@@ -369,10 +400,38 @@ const AuditLogViewer: React.FC = () => {
               <RefreshCw size={18} style={{ marginRight: 8 }} />
               {t('auditLogs.actions.refresh')}
             </Button>
-            <Button color="blue" onClick={handleExport} loading={isExporting}>
-              <Download size={18} style={{ marginRight: 8 }} />
-              {t('auditLogs.actions.exportLogs')}
-            </Button>
+            <Menu shadow="md" width={200} position="bottom-end">
+              <Menu.Target>
+                <Button color="blue" loading={isExporting}>
+                  <Download size={18} style={{ marginRight: 8 }} />
+                  {t('auditLogs.actions.exportLogs')}
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Label>{t('auditLogs.export.selectFormat')}</Menu.Label>
+                <Menu.Item
+                  leftSection={<FileText size={16} />}
+                  onClick={handleExportCSV}
+                  disabled={isExporting || logs.length === 0}
+                >
+                  {t('auditLogs.export.csv')}
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<FileSpreadsheet size={16} />}
+                  onClick={handleExportExcel}
+                  disabled={isExporting || logs.length === 0}
+                >
+                  {t('auditLogs.export.excel')}
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<FileJson size={16} />}
+                  onClick={handleExportJSON}
+                  disabled={isExporting || logs.length === 0}
+                >
+                  {t('auditLogs.export.json')}
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
           </Group>
         </Group>
 

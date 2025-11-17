@@ -364,6 +364,14 @@
       "showFilters": "Show Filters",
       "hideFilters": "Hide Filters"
     },
+    "export": {
+      "selectFormat": "Select Export Format",
+      "csv": "Export as CSV",
+      "excel": "Export as Excel",
+      "json": "Export as JSON",
+      "success": "Audit logs exported successfully",
+      "noData": "No audit logs to export"
+    },
     "filters": {
       "title": "Filter Logs",
       "eventType": "Event Type",

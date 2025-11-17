@@ -136,3 +136,9 @@ export const ChevronDown: React.FC<IconProps> = (props) => (
   <Icon {...props} icon="▼" label="Expand" />
 );
 export const X: React.FC<IconProps> = (props) => <Icon {...props} icon="✕" label="Close" />;
+export const FileSpreadsheet: React.FC<IconProps> = (props) => (
+  <Icon {...props} icon="📊" label="Spreadsheet" />
+);
+export const FileJson: React.FC<IconProps> = (props) => (
+  <Icon {...props} icon="📋" label="JSON File" />
+);
