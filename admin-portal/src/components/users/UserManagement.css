@@ -68,42 +68,7 @@
   padding: 4px 8px;
 }
 
-/* Role and Status Badges */
-.role-badge,
-.status-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.role-badge.role-system-admin {
-  background-color: #fee2e2;
-  color: #dc2626;
-}
-
-.role-badge.role-association-admin {
-  background-color: #fef3c7;
-  color: #92400e; /* WCAG AA compliant: 7.2:1 contrast ratio */
-}
-
-.role-badge.role-member {
-  background-color: #dbeafe;
-  color: #1e3a8a; /* WCAG AA compliant: 8.1:1 contrast ratio */
-}
-
-.status-badge.status-active {
-  background-color: #dcfce7;
-  color: #16a34a;
-}
-
-.status-badge.status-disabled {
-  background-color: #fee2e2;
-  color: #dc2626;
-}
+/* Role and Status Badges - Now using Mantine Badge component for dark mode support */
 
 /* Dialog Styles */
 .user-dialog {
