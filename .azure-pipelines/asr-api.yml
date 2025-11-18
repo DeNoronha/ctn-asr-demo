@@ -355,11 +355,10 @@ stages:
                 cd api
                 echo "🚀 Deploying to PRODUCTION: $(functionAppName)"
 
-                # Deploy using func CLI with remote build
-                # This handles everything: packaging, dependencies, and deployment
+                # Deploy using func CLI with local build
+                # Note: remote build not supported for function apps created before Aug 2019
                 func azure functionapp publish $(functionAppName) \
-                  --typescript \
-                  --build remote \
+                  --build local \
                   --verbose
 
                 echo "✅ Production deployment completed"
