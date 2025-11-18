@@ -14,7 +14,7 @@ async function handler(
 
 app.http('AuditLogsList', {
   methods: ['GET'],
-  route: 'v1/audit-logs',
+  route: 'v1/admin/audit-log-list',
   authLevel: 'anonymous',
   handler
 });
