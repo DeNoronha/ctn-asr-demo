@@ -4,10 +4,24 @@ import { getPool, escapeSqlWildcards } from '../utils/database';
 import { getPaginationParams, createPaginatedResponse } from '../utils/pagination';
 import { handleError } from '../utils/errors';
 import { AuditEventType, AuditSeverity, logAuditEvent } from '../middleware/auditLog';
-import { pseudonymizeEmail } from '../utils/pseudonymization';
 
 // Startup logging to confirm function registration
 console.log('[GetAuditLogs] Function module loaded successfully');
+
+// Lazy-load pseudonymization to avoid circular import issues
+let pseudonymizeEmailFn: ((email: string) => string | null) | null = null;
+async function getPseudonymizeEmail() {
+  if (!pseudonymizeEmailFn) {
+    try {
+      const mod = await import('../utils/pseudonymization');
+      pseudonymizeEmailFn = mod.pseudonymizeEmail;
+    } catch (error) {
+      console.error('[GetAuditLogs] Failed to load pseudonymization module:', error);
+      pseudonymizeEmailFn = () => null;
+    }
+  }
+  return pseudonymizeEmailFn;
+}
 
 /**
  * Allowed values for query parameters (allow-lists)
@@ -236,6 +250,7 @@ async function handler(
     if (userEmail) {
       // Pseudonymize the search email to match against pseudonymized column
       // Note: Partial matching not supported with pseudonymization (exact match only)
+      const pseudonymizeEmail = await getPseudonymizeEmail();
       const pseudonymizedEmail = pseudonymizeEmail(userEmail);
       if (pseudonymizedEmail) {
         conditions.push(`user_email_pseudonym = $${paramIndex++}`);
