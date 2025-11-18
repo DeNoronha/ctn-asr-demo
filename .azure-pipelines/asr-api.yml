@@ -356,16 +356,15 @@ stages:
               # Azure Functions expects the entry point relative to package.json main
               cp -r dist/* .deploy/
               cp package.json .deploy/
-              cp package-lock.json .deploy/
               cp host.json .deploy/
 
               # Update package.json main to point to index.js (not dist/index.js)
               cd .deploy
               sed -i 's|"main": "dist/index.js"|"main": "index.js"|' package.json
 
-              # Install production dependencies
+              # Install production dependencies (using npm install since no package-lock in api/)
               echo "📦 Installing production dependencies..."
-              npm ci --omit=dev || { echo "npm ci failed"; exit 1; }
+              npm install --omit=dev || { echo "npm install failed"; exit 1; }
 
               # Create zip from deployment directory
               zip -r ../deploy.zip . -q
