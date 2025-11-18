@@ -103,10 +103,11 @@ export class TaskService {
     let query = `
       SELECT
         t.*,
-        le.legal_name as related_entity_name,
-        le.org_id as related_entity_org_id
+        le.primary_legal_name as related_entity_name,
+        m.org_id as related_entity_org_id
       FROM admin_tasks t
       LEFT JOIN legal_entity le ON t.related_entity_id = le.legal_entity_id
+      LEFT JOIN members m ON le.legal_entity_id = m.legal_entity_id
       WHERE 1=1
     `;
     const params: any[] = [];
@@ -173,11 +174,13 @@ export class TaskService {
     const result = await this.pool.query(
       `SELECT
         t.*,
-        le.legal_name as related_entity_name,
-        le.org_id as related_entity_org_id,
-        le.primary_contact_email as related_entity_email
+        le.primary_legal_name as related_entity_name,
+        m.org_id as related_entity_org_id,
+        c.email as related_entity_email
       FROM admin_tasks t
       LEFT JOIN legal_entity le ON t.related_entity_id = le.legal_entity_id
+      LEFT JOIN members m ON le.legal_entity_id = m.legal_entity_id
+      LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id AND c.is_primary = true
       WHERE t.task_id = $1`,
       [taskId]
     );
