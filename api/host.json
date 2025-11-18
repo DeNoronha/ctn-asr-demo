@@ -44,7 +44,9 @@
       "http://localhost:3000",
       "http://localhost:3001",
       "https://calm-tree-03352ba03.1.azurestaticapps.net",
-      "https://calm-pebble-043b2db03.1.azurestaticapps.net"
+      "https://calm-pebble-043b2db03.1.azurestaticapps.net",
+      "https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net",
+      "https://portal-ctn-dev-fdb5cpeagdendtck.z02.azurefd.net"
     ],
     "supportCredentials": true
   },

@@ -370,6 +370,37 @@ stages:
 
                 echo "✅ Production deployment completed"
 
+          # Configure CORS settings
+          - task: AzureCLI@2
+            displayName: 'Configure CORS settings'
+            inputs:
+              azureSubscription: $(azureSubscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "🌐 Configuring CORS for Function App..."
+
+                # Add all allowed origins
+                az functionapp cors add \
+                  --name $(functionAppName) \
+                  --resource-group rg-ctn-demo-asr-dev \
+                  --allowed-origins \
+                    "http://localhost:3000" \
+                    "http://localhost:3001" \
+                    "https://calm-tree-03352ba03.1.azurestaticapps.net" \
+                    "https://calm-pebble-043b2db03.1.azurestaticapps.net" \
+                    "https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net" \
+                    "https://portal-ctn-dev-fdb5cpeagdendtck.z02.azurefd.net" \
+                  2>&1 | grep -v "already exists" || true
+
+                # Enable credentials support
+                az functionapp cors credentials \
+                  --name $(functionAppName) \
+                  --resource-group rg-ctn-demo-asr-dev \
+                  --enable
+
+                echo "✅ CORS configured with supportCredentials: true"
+
           # Health check on production (non-blocking, for informational purposes)
           - script: |
               echo "⏳ Waiting 90 seconds for Azure Functions to initialize..."
