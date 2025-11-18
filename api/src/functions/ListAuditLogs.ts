@@ -1,16 +1,15 @@
-import { app, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { adminEndpoint, AuthenticatedRequest } from '../middleware/endpointWrapper';
+import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 
 // Startup logging
 console.log('[ListAuditLogs] Module loading...');
 
 /**
- * Handler for retrieving audit logs - minimal test version
+ * Handler for retrieving audit logs - absolute minimal test version
  * Route: GET /api/v1/audit-logs
- * Auth: Admin only
+ * No auth - just testing route
  */
 async function handler(
-  request: AuthenticatedRequest,
+  request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
   context.log('ListAuditLogs function triggered');
@@ -20,14 +19,8 @@ async function handler(
     status: 200,
     headers: { 'Content-Type': 'application/json' },
     jsonBody: {
-      data: [],
-      pagination: {
-        page: 1,
-        limit: 20,
-        totalItems: 0,
-        totalPages: 0
-      },
-      message: 'Audit logs endpoint working - minimal test version'
+      message: 'Audit logs endpoint working',
+      test: true
     }
   };
 }
@@ -35,10 +28,10 @@ async function handler(
 console.log('[ListAuditLogs] Registering function...');
 
 app.http('ListAuditLogs', {
-  methods: ['GET', 'OPTIONS'],
+  methods: ['GET'],
   route: 'v1/audit-logs',
   authLevel: 'anonymous',
-  handler: adminEndpoint(handler)
+  handler: handler
 });
 
 console.log('[ListAuditLogs] Function registered successfully');
