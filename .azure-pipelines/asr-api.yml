@@ -335,7 +335,7 @@ stages:
           # TODO: Create staging slot for blue/green deployment
           # ========================================
 
-          # Deploy directly to production
+          # Deploy directly to production using Azure CLI (not func CLI)
           - task: AzureCLI@2
             displayName: 'Deploy API to Production'
             inputs:
@@ -345,12 +345,20 @@ stages:
               inlineScript: |
                 cd api
                 echo "🚀 Deploying to PRODUCTION: $(functionAppName)"
-                echo "   NOTE: Direct deployment (no staging slot available)"
+                echo "   NOTE: Using Azure CLI deployment (bypassing func CLI storage issue)"
 
-                # Deploy to production using func CLI
-                func azure functionapp publish $(functionAppName) \
-                  --typescript \
-                  --build local
+                # Create deployment package
+                echo "📦 Creating deployment package..."
+                cd dist
+                zip -r ../deploy.zip . -q
+                cd ..
+
+                # Deploy using Azure CLI
+                echo "🚀 Deploying package to Azure..."
+                az functionapp deployment source config-zip \
+                  --resource-group rg-ctn-demo-asr-dev \
+                  --name $(functionAppName) \
+                  --src deploy.zip
 
                 echo "✅ Production deployment completed"
 
