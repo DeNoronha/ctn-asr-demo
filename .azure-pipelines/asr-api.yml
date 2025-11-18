@@ -330,54 +330,54 @@ stages:
             displayName: 'Install Azure Functions Core Tools'
 
           # ========================================
-          # Blue/Green Deployment using Deployment Slots
-          # Deploy to staging first, run tests, then swap to production
+          # Direct Production Deployment
+          # NOTE: Staging slot deployment disabled (no slot configured)
+          # TODO: Create staging slot for blue/green deployment
           # ========================================
 
-          # Step 1: Deploy to staging slot (not production)
+          # Deploy directly to production
           - task: AzureCLI@2
-            displayName: 'Deploy API to Staging Slot'
+            displayName: 'Deploy API to Production'
             inputs:
               azureSubscription: $(azureSubscription)
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
                 cd api
-                echo "🚀 Deploying to STAGING slot: $(functionAppName)/staging"
-                echo "   Production remains unchanged during testing"
+                echo "🚀 Deploying to PRODUCTION: $(functionAppName)"
+                echo "   NOTE: Direct deployment (no staging slot available)"
 
-                # Deploy to staging slot using func CLI
+                # Deploy to production using func CLI
                 func azure functionapp publish $(functionAppName) \
-                  --slot staging \
                   --typescript \
                   --build local
 
-                echo "✅ Staging deployment completed"
+                echo "✅ Production deployment completed"
 
-          # Step 2: Health check on staging slot
+          # Health check on production
           - script: |
-              echo "⏳ Waiting 30 seconds for staging slot to warm up..."
+              echo "⏳ Waiting 30 seconds for production to warm up..."
               sleep 30
 
-              echo "🔍 Running health check on STAGING slot..."
-              STAGING_URL="https://$(functionAppName)-staging.azurewebsites.net/api/health"
+              echo "🔍 Running health check on PRODUCTION..."
+              PROD_URL="https://$(functionAppName).azurewebsites.net/api/health"
               MAX_RETRIES=5
               RETRY_DELAY=10
 
               # Retry health check up to 5 times
               for i in $(seq 1 $MAX_RETRIES); do
                 echo "Health check attempt $i of $MAX_RETRIES..."
-                HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$STAGING_URL")
+                HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL")
 
                 if [ "$HEALTH_STATUS" = "200" ]; then
-                  echo "✅ Staging health check passed (HTTP 200)"
+                  echo "✅ Production health check passed (HTTP 200)"
 
                   # Get and display health details
-                  curl -s "$STAGING_URL" | jq '.'
+                  curl -s "$PROD_URL" | jq '.'
 
                   # Extract commit hash
                   GIT_COMMIT=$(git rev-parse --short HEAD)
-                  echo "📦 Staging commit: $GIT_COMMIT"
+                  echo "📦 Production commit: $GIT_COMMIT"
 
                   exit 0
                 fi
@@ -386,256 +386,28 @@ stages:
                 sleep $RETRY_DELAY
               done
 
-              echo "❌ Staging health check failed after $MAX_RETRIES attempts"
-              echo "   URL: $STAGING_URL"
+              echo "❌ Production health check failed after $MAX_RETRIES attempts"
+              echo "   URL: $PROD_URL"
               echo "   Last status: $HEALTH_STATUS"
-              echo "   Production remains unchanged (deployment aborted)"
               exit 1
-            displayName: 'Health Check - Staging Slot'
+            displayName: 'Health Check - Production'
 
-          # Step 3: Smoke tests on staging slot
-          - task: AzureCLI@2
-            displayName: 'Smoke Tests - Staging Slot'
-            inputs:
-              azureSubscription: $(azureSubscription)
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                echo "🧪 Running smoke tests on staging slot..."
-                STAGING_BASE_URL="https://$(functionAppName)-staging.azurewebsites.net/api"
-
-                # Test 1: Health endpoint (unauthenticated)
-                echo ""
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo "Test 1: Health endpoint (unauthenticated)"
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$STAGING_BASE_URL/health")
-                if [ "$HEALTH_STATUS" != "200" ]; then
-                  echo "❌ Health endpoint failed (HTTP $HEALTH_STATUS)"
-                  exit 1
-                fi
-                echo "✅ Health endpoint: PASSED (HTTP $HEALTH_STATUS)"
-
-                # Test 2: List functions endpoint
-                echo ""
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo "Test 2: Functions list endpoint"
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-                # Try to get access token for authenticated tests
-                # Note: This may fail in pipeline, so we'll make it non-blocking
-                TOKEN=$(az account get-access-token \
-                  --resource https://management.azure.com/ \
-                  --query accessToken -o tsv 2>/dev/null || echo "")
-
-                if [ -n "$TOKEN" ]; then
-                  echo "✅ Access token acquired for authenticated tests"
-
-                  # Test authenticated endpoint (example)
-                  # Note: Adjust URL based on actual API endpoints
-                  echo ""
-                  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                  echo "Test 3: Authenticated endpoint check"
-                  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                  echo "Note: Skipping authenticated tests in pipeline (requires app-specific token)"
-                  echo "✅ Authentication mechanism: Available"
-                else
-                  echo "⚠️  No access token (authenticated tests skipped)"
-                  echo "   This is normal in pipeline context"
-                fi
-
-                # Test 3: Verify no 500 errors in recent logs
-                echo ""
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo "Test 4: Function app error check"
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-                # Check if function app is in running state
-                APP_STATE=$(az functionapp show \
-                  --name $(functionAppName) \
-                  --resource-group rg-ctn-demo-asr-dev \
-                  --slot staging \
-                  --query "state" \
-                  --output tsv)
-
-                if [ "$APP_STATE" = "Running" ]; then
-                  echo "✅ Function app state: Running"
-                else
-                  echo "❌ Function app state: $APP_STATE (expected: Running)"
-                  exit 1
-                fi
-
-                echo ""
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo "✅ All smoke tests PASSED"
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo ""
-                echo "Staging slot is ready for production promotion"
-                echo ""
-
-          # Step 4: Swap staging to production (blue/green cutover)
-          - task: AzureAppServiceManage@0
-            displayName: 'Swap Staging → Production (Zero Downtime)'
-            condition: succeeded()
-            inputs:
-              azureSubscription: $(azureSubscription)
-              action: 'Swap Slots'
-              webAppName: $(functionAppName)
-              resourceGroupName: 'rg-ctn-demo-asr-dev'
-              sourceSlot: 'staging'
-              targetSlot: 'production'
-              preserveVnet: true
-
-          # Step 5: Post-swap verification on production with automated rollback
-          - script: |
-              echo "⏳ Waiting 10 seconds for slot swap to complete..."
-              sleep 10
-
-              echo "🔍 Verifying PRODUCTION after slot swap..."
-              PROD_URL="https://$(functionAppName).azurewebsites.net/api/health"
-
-              # Retry health check up to 5 times (50 seconds total)
-              MAX_RETRIES=5
-              RETRY_DELAY=10
-              SUCCESS=false
-
-              for i in $(seq 1 $MAX_RETRIES); do
-                echo "Health check attempt $i of $MAX_RETRIES..."
-                HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL")
-
-                if [ "$HEALTH_STATUS" = "200" ]; then
-                  echo "✅ Production health check PASSED (HTTP 200)"
-
-                  # Get and display production health details
-                  echo ""
-                  echo "Production Health Status:"
-                  curl -s "$PROD_URL" | jq '.'
-
-                  # Extract and log commit hash
-                  GIT_COMMIT=$(git rev-parse --short HEAD)
-                  echo ""
-                  echo "📦 Production now running commit: $GIT_COMMIT"
-                  echo "##vso[task.setvariable variable=ApiCommitHash;isOutput=true]$GIT_COMMIT"
-
-                  echo ""
-                  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                  echo "✅ DEPLOYMENT SUCCESSFUL"
-                  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                  echo "Production URL: https://$(functionAppName).azurewebsites.net"
-                  echo "Staging URL (old version): https://$(functionAppName)-staging.azurewebsites.net"
-                  echo ""
-                  echo "💡 Rollback available via: ./scripts/manage-deployment-slots.sh rollback"
-                  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                  echo ""
-
-                  SUCCESS=true
-                  break
-                fi
-
-                echo "⚠️  Health check returned HTTP $HEALTH_STATUS, retrying in ${RETRY_DELAY}s..."
-                sleep $RETRY_DELAY
-              done
-
-              if [ "$SUCCESS" = "false" ]; then
-                echo ""
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo "❌ Production health check FAILED after $MAX_RETRIES attempts"
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo "   URL: $PROD_URL"
-                echo "   Last status: $HEALTH_STATUS"
-                echo ""
-                echo "🚨 TRIGGERING AUTOMATIC ROLLBACK"
-                echo ""
-                exit 1
-              fi
-            displayName: 'Post-Swap Production Verification'
-            name: VerifyDeployment
-
-          # Step 6: Automated Rollback on health check failure
-          - task: AzureAppServiceManage@0
-            displayName: '🚨 ROLLBACK: Swap Back to Previous Version'
-            condition: failed()
-            inputs:
-              azureSubscription: $(azureSubscription)
-              action: 'Swap Slots'
-              webAppName: $(functionAppName)
-              resourceGroupName: 'rg-ctn-demo-asr-dev'
-              sourceSlot: 'staging'
-              targetSlot: 'production'
-              preserveVnet: true
-
-          # Step 7: Verify rollback success
-          - script: |
-              echo "⏳ Waiting 10 seconds for rollback swap to complete..."
-              sleep 10
-
-              echo "🔍 Verifying PRODUCTION after rollback..."
-              PROD_URL="https://$(functionAppName).azurewebsites.net/api/health"
-
-              HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL")
-
-              if [ "$HEALTH_STATUS" = "200" ]; then
-                echo ""
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo "✅ ROLLBACK SUCCESSFUL"
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo "Production restored to previous working version"
-                echo "Health check: PASSED (HTTP 200)"
-                echo ""
-                curl -s "$PROD_URL" | jq '.'
-                echo ""
-                echo "⚠️  New version remains in STAGING slot for investigation"
-                echo "   Staging URL: https://$(functionAppName)-staging.azurewebsites.net"
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo ""
-              else
-                echo ""
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo "❌ CRITICAL: Rollback verification FAILED"
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo "Health check: FAILED (HTTP $HEALTH_STATUS)"
-                echo "Manual intervention required immediately"
-                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                echo ""
-              fi
-            displayName: 'Verify Rollback Success'
-            condition: failed()
-
-          # Step 8: Send rollback notification
+          # Deployment complete - display summary
           - script: |
               echo ""
               echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-              echo "🚨 ROLLBACK NOTIFICATION"
+              echo "✅ API DEPLOYMENT SUCCESSFUL"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "Production URL: https://$(functionAppName).azurewebsites.net"
+              echo "API Version: 1.0.2"
+              GIT_COMMIT=$(git rev-parse --short HEAD)
+              echo "Git Commit: $GIT_COMMIT"
+              echo ""
+              echo "📝 Note: Direct production deployment (no staging slot)"
+              echo "   To enable blue/green deployment, create staging slot in Azure"
               echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
               echo ""
-              echo "Component: ASR API (Azure Functions)"
-              echo "Reason: Production health checks failed after deployment"
-              echo "Action: Automatic rollback executed"
-              echo "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-              echo ""
-              echo "Build: $(Build.BuildNumber)"
-              echo "Commit: $(git rev-parse --short HEAD)"
-              echo "Build URL: $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
-              echo ""
-              echo "Production has been restored to the previous working version."
-              echo "Failed deployment remains in staging slot for investigation."
-              echo ""
-              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-              echo ""
-
-              # TODO: Integrate with Teams webhook when available
-              # TEAMS_WEBHOOK_URL can be added to Azure DevOps variable group
-              # if [ -n "$TEAMS_WEBHOOK_URL" ]; then
-              #   curl -X POST "$TEAMS_WEBHOOK_URL" \
-              #     -H "Content-Type: application/json" \
-              #     -d '{
-              #       "title": "🚨 ROLLBACK: API Deployment Failed",
-              #       "text": "Production health checks failed. Automatic rollback executed.",
-              #       "timestamp": "'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'"
-              #     }'
-              # fi
-            displayName: 'Send Rollback Notification'
-            condition: failed()
+            displayName: 'Deployment Summary'
 
           # List deployed functions
           - script: |
