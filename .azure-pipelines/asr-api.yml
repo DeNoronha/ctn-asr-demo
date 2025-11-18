@@ -344,7 +344,7 @@ stages:
           # TODO: Create staging slot for blue/green deployment
           # ========================================
 
-          # Deploy directly to production using Azure CLI (not func CLI)
+          # Deploy using Azure Functions Core Tools
           - task: AzureCLI@2
             displayName: 'Deploy API to Production'
             inputs:
@@ -355,42 +355,12 @@ stages:
                 cd api
                 echo "🚀 Deploying to PRODUCTION: $(functionAppName)"
 
-                # Create deployment package with all required files
-                echo "📦 Creating deployment package..."
-
-                # Create temporary deployment directory
-                mkdir -p .deploy
-
-                # Copy compiled code
-                cp -r dist .deploy/
-
-                # Copy configuration files
-                cp package.json .deploy/
-                cp host.json .deploy/
-
-                # Install production dependencies
-                echo "📦 Installing production dependencies..."
-                cd .deploy
-                npm ci --production --silent
-
-                # Create zip from deployment directory
-                zip -r ../deploy.zip . -q
-                cd ..
-
-                # Clean up
-                rm -rf .deploy
-
-                echo "📦 Deployment package created: $(du -h deploy.zip | cut -f1)"
-
-                # Deploy using Azure CLI (using 'deploy' instead of 'deployment source config-zip')
-                # Note: 'az functionapp deploy' handles Key Vault references correctly
-                echo "🚀 Deploying package to Azure..."
-                az functionapp deploy \
-                  --resource-group rg-ctn-demo-asr-dev \
-                  --name $(functionAppName) \
-                  --src-path deploy.zip \
-                  --type zip \
-                  --async false
+                # Deploy using func CLI with remote build
+                # This handles everything: packaging, dependencies, and deployment
+                func azure functionapp publish $(functionAppName) \
+                  --typescript \
+                  --build remote \
+                  --verbose
 
                 echo "✅ Production deployment completed"
 
