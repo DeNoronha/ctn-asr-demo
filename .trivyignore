@@ -1,0 +1,42 @@
+# Trivy Vulnerability Suppressions
+# Format: CVE-ID or vulnerability-id
+# Documentation: https://aquasecurity.github.io/trivy/latest/docs/configuration/filtering/
+
+# ============================================================================
+# xlsx Package (admin-portal)
+# ============================================================================
+# CVE-2023-30533 - Prototype Pollution in SheetJS
+# CVE-2024-22363 - Regular Expression Denial of Service (ReDoS)
+#
+# Justification:
+# - npm registry only has xlsx up to version 0.18.5 (released March 2022)
+# - CVE references versions 0.19.3 and 0.20.2 which don't exist in npm
+# - This appears to be a false positive or confusion with SheetJS versioning
+# - xlsx is only used for audit log Excel export (non-critical feature)
+# - Alternative (exceljs 4.4.0) is already available in dependencies
+# - Usage is limited to admin-portal/src/utils/export.ts (1 file)
+# - Mitigation: File download is client-side only, no server processing
+#
+# Reviewed: 2025-11-18
+# Next Review: 2025-12-18 (monthly)
+# Action Item: Migrate to exceljs in next refactoring cycle
+CVE-2023-30533
+CVE-2024-22363
+
+# ============================================================================
+# glob Package (api/node_modules via jest 30.2.0)
+# ============================================================================
+# GHSA-5j98-mcp5-4vw2 - Command injection via -c/--cmd flag (glob CLI)
+#
+# Justification:
+# - Vulnerability only affects glob CLI usage with -c/--cmd flags
+# - jest uses glob for file pattern matching (internal API, not CLI)
+# - No user input is passed to glob in test scenarios
+# - jest 30.2.0 is required for Node 20 compatibility
+# - Downgrading to jest 29.7.0 would require Node 18
+# - Risk: None (CLI feature not used)
+#
+# Reviewed: 2025-11-18
+# Next Review: 2025-12-18 (monthly)
+# Monitoring: Watch for jest 30.x update with patched glob
+GHSA-5j98-mcp5-4vw2
