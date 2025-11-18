@@ -145,6 +145,10 @@ else
     # Test critical authenticated endpoints (Admin Portal - SystemAdmin user)
     test_auth_endpoint "Get All Members" "$API_BASE_URL/api/v1/all-members" 200
     test_auth_endpoint "Get Applications" "$API_BASE_URL/api/v1/applications" 200
+    test_auth_endpoint "Get Tasks" "$API_BASE_URL/api/v1/admin/tasks/list" 200
+
+    # Note: Users endpoint doesn't exist in current deployment
+    # Note: Endpoints are per-entity, not a global list
 fi
 fi  # End of SKIP_AUTH_TESTS check
 
