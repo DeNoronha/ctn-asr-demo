@@ -353,20 +353,41 @@ stages:
               inlineScript: |
                 cd api
                 echo "🚀 Deploying to PRODUCTION: $(functionAppName)"
-                echo "   NOTE: Using Azure CLI deployment (bypassing func CLI storage issue)"
 
-                # Create deployment package
+                # Create deployment package with all required files
                 echo "📦 Creating deployment package..."
-                cd dist
+
+                # Create temporary deployment directory
+                mkdir -p .deploy
+
+                # Copy compiled code
+                cp -r dist .deploy/
+
+                # Copy configuration files
+                cp package.json .deploy/
+                cp host.json .deploy/
+
+                # Install production dependencies
+                echo "📦 Installing production dependencies..."
+                cd .deploy
+                npm ci --production --silent
+
+                # Create zip from deployment directory
                 zip -r ../deploy.zip . -q
                 cd ..
+
+                # Clean up
+                rm -rf .deploy
+
+                echo "📦 Deployment package created: $(du -h deploy.zip | cut -f1)"
 
                 # Deploy using Azure CLI
                 echo "🚀 Deploying package to Azure..."
                 az functionapp deployment source config-zip \
                   --resource-group rg-ctn-demo-asr-dev \
                   --name $(functionAppName) \
-                  --src deploy.zip
+                  --src deploy.zip \
+                  --timeout 300
 
                 echo "✅ Production deployment completed"
 
