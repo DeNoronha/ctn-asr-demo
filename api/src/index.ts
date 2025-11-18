@@ -65,7 +65,7 @@ import './functions/ManageM2MClients';
 import './functions/ResolveParty';
 
 // Audit Logs
-import './functions/GetAuditLogs';
+import './functions/ListAuditLogs';
 import './functions/GetAuditLogPII'; // PII de-pseudonymization (SystemAdmin only)
 import './functions/CreateAuditLog';
 

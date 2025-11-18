@@ -96,13 +96,13 @@ async function handler(
   }
 }
 
-console.log('[GetAuditLogs] Registering function...');
+console.log('[ListAuditLogs] Registering function...');
 
-app.http('GetAuditLogs', {
+app.http('ListAuditLogs', {
   methods: ['GET', 'OPTIONS'],
   route: 'v1/audit-logs',
   authLevel: 'anonymous',
   handler: adminEndpoint(handler)
 });
 
-console.log('[GetAuditLogs] Function registered successfully');
+console.log('[ListAuditLogs] Function registered successfully');
