@@ -356,6 +356,7 @@ stages:
               # Azure Functions expects the entry point relative to package.json main
               cp -r dist/* .deploy/
               cp package.json .deploy/
+              cp package-lock.json .deploy/
               cp host.json .deploy/
 
               # Update package.json main to point to index.js (not dist/index.js)
