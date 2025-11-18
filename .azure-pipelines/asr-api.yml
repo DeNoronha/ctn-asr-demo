@@ -370,17 +370,25 @@ stages:
               echo "📦 Deployment package created: $(du -h deploy.zip | cut -f1)"
             displayName: 'Create deployment package'
 
-          # Deploy using AzureFunctionApp task (handles Key Vault references)
-          - task: AzureFunctionApp@2
+          # Deploy using Azure CLI with zipDeploy
+          - task: AzureCLI@2
             displayName: 'Deploy API to Production'
             inputs:
               azureSubscription: $(azureSubscription)
-              appType: functionApp
-              appName: $(functionAppName)
-              package: api/deploy.zip
-              deploymentMethod: zipDeploy
-              runtimeStack: NODE|20
-              enableOryxBuild: false
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                cd api
+                echo "🚀 Deploying to $(functionAppName)..."
+
+                # Deploy using webapp deployment (works with remote build disabled)
+                az webapp deployment source config-zip \
+                  --resource-group rg-ctn-demo-asr-dev \
+                  --name $(functionAppName) \
+                  --src deploy.zip \
+                  --timeout 300
+
+                echo "✅ Deployment completed"
 
           # Configure CORS settings
           - task: AzureCLI@2
