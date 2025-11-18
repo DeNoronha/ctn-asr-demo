@@ -380,6 +380,7 @@ stages:
               package: api/deploy.zip
               deploymentMethod: zipDeploy
               runtimeStack: NODE|20
+              enableOryxBuild: false
 
           # Configure CORS settings
           - task: AzureCLI@2
