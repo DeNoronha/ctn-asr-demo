@@ -1,6 +1,6 @@
 {
   "name": "ctn-asr-api",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "CTN Association Register API",
   "main": "dist/index.js",
   "scripts": {

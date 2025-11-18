@@ -1,6 +1,6 @@
 {
   "name": "admin-portal",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "dependencies": {
     "@azure/msal-browser": "^4.24.1",
