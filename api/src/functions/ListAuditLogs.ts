@@ -29,7 +29,7 @@ console.log('[ListAuditLogs] Registering function...');
 
 app.http('ListAuditLogs', {
   methods: ['GET'],
-  route: 'v1/audit-logs',
+  route: 'v1/list-audit-logs',
   authLevel: 'anonymous',
   handler: handler
 });
