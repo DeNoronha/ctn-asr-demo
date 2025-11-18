@@ -6,6 +6,9 @@ import { handleError } from '../utils/errors';
 import { AuditEventType, AuditSeverity, logAuditEvent } from '../middleware/auditLog';
 import { pseudonymizeEmail } from '../utils/pseudonymization';
 
+// Startup logging to confirm function registration
+console.log('[GetAuditLogs] Function module loaded successfully');
+
 /**
  * Allowed values for query parameters (allow-lists)
  */
