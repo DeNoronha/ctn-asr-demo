@@ -351,13 +351,19 @@ stages:
 
               # Create deployment directory with all required files
               mkdir -p .deploy
-              cp -r dist .deploy/
+
+              # Copy dist CONTENTS to root (not the dist folder itself)
+              # Azure Functions expects the entry point relative to package.json main
+              cp -r dist/* .deploy/
               cp package.json .deploy/
               cp host.json .deploy/
 
+              # Update package.json main to point to index.js (not dist/index.js)
+              cd .deploy
+              sed -i 's|"main": "dist/index.js"|"main": "index.js"|' package.json
+
               # Install production dependencies
               echo "📦 Installing production dependencies..."
-              cd .deploy
               npm ci --production --silent
 
               # Create zip from deployment directory
