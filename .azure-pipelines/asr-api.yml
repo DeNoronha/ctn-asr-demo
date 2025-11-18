@@ -344,25 +344,42 @@ stages:
           # TODO: Create staging slot for blue/green deployment
           # ========================================
 
-          # Deploy using Azure Functions Core Tools
-          - task: AzureCLI@2
+          # Create deployment package
+          - script: |
+              cd api
+              echo "📦 Creating deployment package..."
+
+              # Create deployment directory with all required files
+              mkdir -p .deploy
+              cp -r dist .deploy/
+              cp package.json .deploy/
+              cp host.json .deploy/
+
+              # Install production dependencies
+              echo "📦 Installing production dependencies..."
+              cd .deploy
+              npm ci --production --silent
+
+              # Create zip from deployment directory
+              zip -r ../deploy.zip . -q
+              cd ..
+
+              # Clean up
+              rm -rf .deploy
+
+              echo "📦 Deployment package created: $(du -h deploy.zip | cut -f1)"
+            displayName: 'Create deployment package'
+
+          # Deploy using AzureFunctionApp task (handles Key Vault references)
+          - task: AzureFunctionApp@2
             displayName: 'Deploy API to Production'
             inputs:
               azureSubscription: $(azureSubscription)
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                cd api
-                echo "🚀 Deploying to PRODUCTION: $(functionAppName)"
-
-                # Deploy using func CLI with local build
-                # Note: remote build not supported for function apps created before Aug 2019
-                func azure functionapp publish $(functionAppName) \
-                  --javascript \
-                  --build local \
-                  --verbose
-
-                echo "✅ Production deployment completed"
+              appType: functionApp
+              appName: $(functionAppName)
+              package: api/deploy.zip
+              deploymentMethod: zipDeploy
+              runtimeStack: NODE|20
 
           # Configure CORS settings
           - task: AzureCLI@2
