@@ -350,7 +350,7 @@ stages:
                 func azure functionapp publish $(functionAppName) \
                   --slot staging \
                   --typescript \
-                  --build remote
+                  --build local
 
                 echo "✅ Staging deployment completed"
 
