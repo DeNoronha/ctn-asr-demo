@@ -358,6 +358,7 @@ stages:
                 # Deploy using func CLI with local build
                 # Note: remote build not supported for function apps created before Aug 2019
                 func azure functionapp publish $(functionAppName) \
+                  --javascript \
                   --build local \
                   --verbose
 
