@@ -113,28 +113,29 @@ stages:
             displayName: 'Trivy: Scan filesystem for vulnerabilities (HIGH/CRITICAL only)'
 
           # ========================================
-          # OWASP Dependency Check with NVD API Key (speeds up scan)
-          # Cache saves 3-5 minutes by reusing downloaded CVE database
+          # OWASP Dependency Check - TEMPORARILY DISABLED
+          # Reason: Database connection pool errors with NVD API
+          # TODO: Re-enable after fixing OWASP config
           # ========================================
-          - task: Cache@2
-            displayName: 'Cache OWASP NVD database'
-            inputs:
-              key: 'owasp-nvd | "$(Agent.OS)" | "v1"'
-              path: $(Pipeline.Workspace)/.owasp-dependency-check-data
-              restoreKeys: |
-                owasp-nvd | "$(Agent.OS)"
+          # - task: Cache@2
+          #   displayName: 'Cache OWASP NVD database'
+          #   inputs:
+          #     key: 'owasp-nvd | "$(Agent.OS)" | "v1"'
+          #     path: $(Pipeline.Workspace)/.owasp-dependency-check-data
+          #     restoreKeys: |
+          #       owasp-nvd | "$(Agent.OS)"
 
-          - task: dependency-check.dependencycheck.dependency-check-build-task.dependency-check-build-task@6
-            displayName: 'OWASP Dependency Check'
-            continueOnError: true
-            inputs:
-              projectName: 'ASR-API'
-              scanPath: '.'
-              format: 'HTML,JSON'
-              failOnCVSS: '7'
-              enableExperimental: true
-              nvdApiKey: $(NVD-API-KEY)
-              dataDirectory: $(Pipeline.Workspace)/.owasp-dependency-check-data
+          # - task: dependency-check.dependencycheck.dependency-check-build-task.dependency-check-build-task@6
+          #   displayName: 'OWASP Dependency Check'
+          #   continueOnError: true
+          #   inputs:
+          #     projectName: 'ASR-API'
+          #     scanPath: '.'
+          #     format: 'HTML,JSON'
+          #     failOnCVSS: '7'
+          #     enableExperimental: true
+          #     nvdApiKey: $(NVD-API-KEY)
+          #     dataDirectory: $(Pipeline.Workspace)/.owasp-dependency-check-data
 
           # ========================================
           # Enhanced Trivy - Secret Scanning
