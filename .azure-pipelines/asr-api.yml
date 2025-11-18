@@ -364,7 +364,7 @@ stages:
 
               # Install production dependencies
               echo "📦 Installing production dependencies..."
-              npm ci --production --silent
+              npm ci --omit=dev || { echo "npm ci failed"; exit 1; }
 
               # Create zip from deployment directory
               zip -r ../deploy.zip . -q
