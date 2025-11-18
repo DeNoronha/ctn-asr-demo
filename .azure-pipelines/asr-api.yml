@@ -468,6 +468,66 @@ stages:
             displayName: 'Health Check - Production (NON-BLOCKING)'
             continueOnError: true
 
+          # Post-deployment smoke tests (BLOCKING)
+          - script: |
+              echo "🔥 Running post-deployment smoke tests..."
+              echo ""
+
+              API_BASE_URL="https://$(functionAppName).azurewebsites.net"
+              ADMIN_PORTAL_URL="https://calm-tree-03352ba03.1.azurestaticapps.net"
+              MEMBER_PORTAL_URL="https://calm-pebble-043b2db03.1.azurestaticapps.net"
+
+              PASSED=0
+              FAILED=0
+
+              test_endpoint() {
+                local name="$1"
+                local url="$2"
+                local expected="${3:-200}"
+
+                http_code=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "$url" 2>/dev/null || echo "000")
+
+                if [ "$http_code" == "$expected" ]; then
+                  echo "✅ [PASS] $name - HTTP $http_code"
+                  ((PASSED++))
+                else
+                  echo "❌ [FAIL] $name - Expected $expected, got $http_code"
+                  ((FAILED++))
+                fi
+              }
+
+              echo "Testing API Endpoints..."
+              echo "------------------------"
+              test_endpoint "API Health" "$API_BASE_URL/api/health" 200
+              test_endpoint "API Version" "$API_BASE_URL/api/v1/version" 200
+              test_endpoint "API Root" "$API_BASE_URL/" 200
+
+              echo ""
+              echo "Testing Portal Connectivity..."
+              echo "------------------------------"
+              test_endpoint "Admin Portal" "$ADMIN_PORTAL_URL" 200
+              test_endpoint "Member Portal" "$MEMBER_PORTAL_URL" 200
+
+              echo ""
+              echo "=============================================="
+              echo "  Results: $PASSED passed, $FAILED failed"
+              echo "=============================================="
+
+              if [ $FAILED -gt 0 ]; then
+                echo ""
+                echo "❌ SMOKE TESTS FAILED!"
+                echo "   Deployment may have issues. Check:"
+                echo "   1. Azure Portal: Function App logs"
+                echo "   2. Application Insights: Exceptions"
+                echo "   3. Redis connectivity: Check REDIS_* settings"
+                exit 1
+              else
+                echo ""
+                echo "✅ ALL SMOKE TESTS PASSED!"
+                exit 0
+              fi
+            displayName: 'Post-Deployment Smoke Tests (BLOCKING)'
+
           # Deployment complete - display summary
           - script: |
               echo ""
