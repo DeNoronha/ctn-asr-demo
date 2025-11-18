@@ -382,13 +382,15 @@ stages:
 
                 echo "📦 Deployment package created: $(du -h deploy.zip | cut -f1)"
 
-                # Deploy using Azure CLI
+                # Deploy using Azure CLI (using 'deploy' instead of 'deployment source config-zip')
+                # Note: 'az functionapp deploy' handles Key Vault references correctly
                 echo "🚀 Deploying package to Azure..."
-                az functionapp deployment source config-zip \
+                az functionapp deploy \
                   --resource-group rg-ctn-demo-asr-dev \
                   --name $(functionAppName) \
-                  --src deploy.zip \
-                  --timeout 300
+                  --src-path deploy.zip \
+                  --type zip \
+                  --async false
 
                 echo "✅ Production deployment completed"
 
