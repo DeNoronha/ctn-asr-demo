@@ -1,0 +1,118 @@
+# ==============================================
+# CTN ASR API Test Pipeline
+# Runs comprehensive API tests after deployment
+# ==============================================
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - api/**
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: ctn-asr-variables  # Contains E2E_TEST_USER_PASSWORD
+  - name: nodeVersion
+    value: '20.x'
+  - name: API_BASE_URL
+    value: 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1'
+  - name: AZURE_AD_TENANT_ID
+    value: '598664e7-725c-4daa-bd1f-89c4ada717ff'
+  - name: AZURE_AD_CLIENT_ID
+    value: 'd3037c11-a541-4f21-8862-8079137a0cde'
+
+stages:
+  - stage: APITests
+    displayName: 'Run API Tests'
+    jobs:
+      - job: RunTests
+        displayName: 'Execute API Test Suite'
+        steps:
+          - task: NodeTool@0
+            displayName: 'Install Node.js'
+            inputs:
+              versionSpec: '$(nodeVersion)'
+
+          - script: |
+              echo "Installing dependencies..."
+              cd api
+              npm install
+            displayName: 'Install Dependencies'
+
+          - script: |
+              echo "Running API Tests (CI Mode)..."
+              cd api
+              npm run test:api:ci
+            displayName: 'Run API Tests'
+            env:
+              E2E_TEST_USER_PASSWORD: $(E2E-TEST-USER-PASSWORD)
+              API_BASE_URL: $(API_BASE_URL)
+              AZURE_AD_TENANT_ID: $(AZURE_AD_TENANT_ID)
+              AZURE_AD_CLIENT_ID: $(AZURE_AD_CLIENT_ID)
+              CI: 'true'
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Test Results'
+            condition: always()
+            inputs:
+              PathtoPublish: 'api/tests/results'
+              ArtifactName: 'api-test-results'
+              publishLocation: 'Container'
+
+          - script: |
+              echo "============================================"
+              echo "  API Test Results Summary"
+              echo "============================================"
+              # Find and display the latest test result
+              LATEST_RESULT=$(ls -t api/tests/results/*.json 2>/dev/null | head -1)
+              if [ -n "$LATEST_RESULT" ]; then
+                echo "Test Results:"
+                cat "$LATEST_RESULT" | jq -r '"Total: \(.total)", "Passed: \(.passed)", "Failed: \(.failed)", "Skipped: \(.skipped)", "Duration: \(.duration)ms"'
+
+                # Show failed tests if any
+                FAILED=$(cat "$LATEST_RESULT" | jq -r '.failed')
+                if [ "$FAILED" -gt 0 ]; then
+                  echo ""
+                  echo "Failed Tests:"
+                  cat "$LATEST_RESULT" | jq -r '.failedTests[] | "  - \(.name): \(.error)"'
+                fi
+              else
+                echo "No test results found"
+              fi
+              echo "============================================"
+            displayName: 'Display Test Summary'
+            condition: always()
+
+# ==============================================
+# Integration with ASR API Pipeline
+# ==============================================
+# To integrate with the main ASR API pipeline,
+# add the following after the deployment stage:
+#
+# - stage: PostDeploymentTests
+#   displayName: 'Post-Deployment API Tests'
+#   dependsOn: Deploy
+#   condition: succeeded()
+#   jobs:
+#     - job: APITests
+#       displayName: 'Run API Test Suite'
+#       steps:
+#         - task: NodeTool@0
+#           inputs:
+#             versionSpec: '20.x'
+#         - script: |
+#             cd api
+#             npm install
+#             npm run test:api:ci
+#           env:
+#             E2E_TEST_USER_PASSWORD: $(E2E-TEST-USER-PASSWORD)
+#         - task: PublishBuildArtifacts@1
+#           condition: always()
+#           inputs:
+#             PathtoPublish: 'api/tests/results'
+#             ArtifactName: 'api-test-results'
+# ==============================================

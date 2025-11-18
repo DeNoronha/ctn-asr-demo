@@ -572,3 +572,113 @@ Comprehensive test reports are generated in `api/tests/`:
 ---
 
 **Remember:** These are the **FIRST** tests to run after deployment. If these fail, the API has fundamental issues that need to be fixed before proceeding with UI testing or user acceptance testing.
+
+---
+
+## Node.js API Test Suite (November 2025)
+
+A comprehensive, automated Node.js test suite for all admin portal API operations.
+
+### Overview
+
+This test suite provides:
+- **Automated test execution** via npm scripts
+- **CI/CD integration** with Azure DevOps pipelines
+- **Non-blocking mode** for continuous deployment
+- **JSON result output** for reporting
+
+### Quick Start
+
+```bash
+# 1. Set credentials
+export E2E_TEST_USER_PASSWORD=Madu5952
+
+# 2. Run tests
+npm run test:api
+
+# 3. For CI/CD (non-blocking)
+npm run test:api:ci
+```
+
+### Test Categories
+
+| Category | Tests | Description |
+|----------|-------|-------------|
+| **Members** | 10 | Create, read, update status, validation |
+| **Legal Entities** | 6 | Get, update, UUID validation |
+| **Identifiers** | 15 | KVK, LEI, EORI, DUNS CRUD operations |
+| **Contacts** | 12 | Primary, Billing, Technical, Admin contacts |
+| **KvK Integration** | 4 | Registry data, verification status |
+| **Endpoints** | 10 | REST API, webhook management |
+| **Audit Logs** | 15 | Filtering, pagination, validation |
+
+**Total: ~72 tests**
+
+### Files
+
+```
+api/tests/
+├── run-api-tests.js      # Main test runner
+├── test-config.js        # Configuration
+├── test-utils.js         # Helper functions
+├── tests/
+│   ├── members.test.js
+│   ├── legal-entities.test.js
+│   ├── identifiers.test.js
+│   ├── contacts.test.js
+│   ├── kvk.test.js
+│   ├── endpoints.test.js
+│   └── audit.test.js
+└── results/              # JSON output
+```
+
+### Sample Output
+
+```
+============================================
+  CTN ASR API Test Suite
+============================================
+  API: https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
+  Mode: Standard
+============================================
+
+Acquiring access token...
+[PASS] Access token acquired
+
+--- Member Operations ---
+  [PASS] Members - Get all members (234ms)
+  [PASS] Members - Create member (456ms)
+  [PASS] Members - Update member status to ACTIVE (123ms)
+  ...
+
+============================================
+  API Test Results Summary
+============================================
+
+Total:   72
+Passed:  70
+Failed:  2
+Skipped: 0
+Duration: 45.23s
+
+--- Failed Tests ---
+[X] KvK - Get KvK registry data
+    Error: Expected status 200, got 404
+
+============================================
+```
+
+### CI/CD Integration
+
+Results are saved as JSON artifacts for pipeline analysis. See `.azure-pipelines/api-tests.yml` for configuration.
+
+### Extending
+
+Add new tests by creating a file in `tests/` directory and importing in `run-api-tests.js`:
+
+```javascript
+const { runNewTests } = require('./tests/new-feature.test');
+
+// In main():
+await runNewTests(token, legalEntityId);
+```

@@ -11,7 +11,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:verbose": "jest --verbose"
+    "test:verbose": "jest --verbose",
+    "test:api": "node tests/run-api-tests.js",
+    "test:api:ci": "node tests/run-api-tests.js --ci"
   },
   "dependencies": {
     "@azure/ai-form-recognizer": "^5.1.0",
