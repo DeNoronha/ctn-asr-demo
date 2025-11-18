@@ -113,20 +113,21 @@ stages:
             displayName: 'Trivy: Scan filesystem for vulnerabilities (HIGH/CRITICAL only)'
 
           # ========================================
-          # OWASP Dependency Check
-          # Note: v6.3.0+ supports Node 20 (resolves Node 16 EOL warning)
-          # Release: https://github.com/dependency-check/azuredevops/releases/tag/6.3.0
+          # OWASP Dependency Check - TEMPORARILY DISABLED
+          # Reason: Very slow (3-5 min) even with NVD API key
+          # Trivy already covers vulnerability scanning
+          # Re-enable after initial deployment is working
           # ========================================
-          - task: dependency-check.dependencycheck.dependency-check-build-task.dependency-check-build-task@6
-            displayName: 'OWASP Dependency Check'
-            continueOnError: true
-            inputs:
-              projectName: 'ASR-API'
-              scanPath: '.'
-              format: 'HTML,JSON'
-              failOnCVSS: '7'
-              enableExperimental: true
-              nvdApiKey: $(NVD-API-KEY)
+          # - task: dependency-check.dependencycheck.dependency-check-build-task.dependency-check-build-task@6
+          #   displayName: 'OWASP Dependency Check'
+          #   continueOnError: true
+          #   inputs:
+          #     projectName: 'ASR-API'
+          #     scanPath: '.'
+          #     format: 'HTML,JSON'
+          #     failOnCVSS: '7'
+          #     enableExperimental: true
+          #     nvdApiKey: $(NVD-API-KEY)
 
           # ========================================
           # Enhanced Trivy - Secret Scanning
