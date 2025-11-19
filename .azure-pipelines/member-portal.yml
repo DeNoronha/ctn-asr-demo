@@ -406,7 +406,7 @@ steps:
       # API Configuration
       VITE_API_CLIENT_ID: d3037c11-a541-4f21-8862-8079137a0cde
       VITE_API_URL: https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1
-      VITE_API_BASE_URL: https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api
+      VITE_API_BASE_URL: https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1
       # Legacy variables (for backward compatibility)
       VITE_AAD_CLIENT_ID: d3037c11-a541-4f21-8862-8079137a0cde
       VITE_AAD_AUTHORITY: https://login.microsoftonline.com/598664e7-725c-4daa-bd1f-89c4ada717ff
