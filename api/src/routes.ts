@@ -112,6 +112,73 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
+// Alias for /v1/members - used by admin portal
+router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { page = '1', page_size = '50', search, status } = req.query;
+    const limit = page_size; // all-members uses page_size param
+
+    // Use the members_view which properly joins legal_entity with legal_entity_number
+    let query = `
+      SELECT org_id, legal_name, kvk, lei, domain, status, membership_level,
+             created_at, metadata
+      FROM members_view
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    if (search) {
+      query += ` AND (legal_name ILIKE $${paramIndex} OR kvk ILIKE $${paramIndex})`;
+      params.push(`%${search}%`);
+      paramIndex++;
+    }
+
+    if (status) {
+      query += ` AND status = $${paramIndex}`;
+      params.push(status);
+      paramIndex++;
+    }
+
+    query += ` ORDER BY legal_name ASC`;
+
+    const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
+    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(parseInt(limit as string), offset);
+
+    const { rows } = await pool.query(query, params);
+
+    // Get total count
+    let countQuery = `SELECT COUNT(*) FROM members_view WHERE 1=1`;
+    const countParams: any[] = [];
+    let countParamIndex = 1;
+    if (search) {
+      countQuery += ` AND (legal_name ILIKE $${countParamIndex} OR kvk ILIKE $${countParamIndex})`;
+      countParams.push(`%${search}%`);
+      countParamIndex++;
+    }
+    if (status) {
+      countQuery += ` AND status = $${countParamIndex}`;
+      countParams.push(status);
+    }
+    const { rows: countRows } = await pool.query(countQuery, countParams);
+
+    res.json({
+      data: rows,
+      pagination: {
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        total: parseInt(countRows[0].count),
+        totalPages: Math.ceil(parseInt(countRows[0].count) / parseInt(limit as string))
+      }
+    });
+  } catch (error: any) {
+    console.error('Error fetching members:', error);
+    res.status(500).json({ error: 'Failed to fetch members' });
+  }
+});
+
 router.get('/v1/members/:id', requireAuth, async (req: Request, res: Response) => {
   try {
     const pool = getPool();
