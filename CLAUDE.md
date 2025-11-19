@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Last Updated:** November 16, 2025
+**Last Updated:** November 19, 2025
 
 ---
 
@@ -476,11 +476,12 @@ git push --force-with-lease origin main
 19. **API 404s after portal deployment success** → API deployment may silently fail even if pipeline shows green
 20. **Package.json workspace renames** → MUST regenerate `package-lock.json` after updating root workspaces array
 21. **Mixed commits break path filters** → Running multiple Claude sessions concurrently triggers ALL pipelines
+22. **Blue/Green deployment with staging slot** → Pipeline deploys to staging first, verifies health, then swaps to production. NEVER deploy directly to production slot. Manual deployment: `az webapp deployment source config-zip --slot staging` then `az functionapp deployment slot swap --slot staging --target-slot production`
 
 ### Cascading Failures
 
-22. **Wrap each API call in separate try-catch** → One failing resource shouldn't block others (defensive programming)
-23. **Graceful degradation** → Set fallback states ([], null) on error instead of cascading failures
+23. **Wrap each API call in separate try-catch** → One failing resource shouldn't block others (defensive programming)
+24. **Graceful degradation** → Set fallback states ([], null) on error instead of cascading failures
 
 ---
 
@@ -533,6 +534,7 @@ git push --force-with-lease origin main
 | Members not showing | Test API health: `curl https://func-ctn-demo-asr-dev.azurewebsites.net/api/health` |
 | E2E tests failing | Verify auth state in `playwright/.auth/user.json` |
 | Pipeline path filters not working | Ensure no mixed commits from concurrent sessions |
+| 404s after successful deployment | Deploy to staging slot first, then swap to production |
 
 **Credentials:** Check `.credentials` file (gitignored) before searching Azure Portal.
 
