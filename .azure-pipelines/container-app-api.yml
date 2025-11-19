@@ -35,27 +35,28 @@ stages:
       - job: BuildAndPush
         displayName: 'Build and Push Docker Image'
         steps:
-          - task: Docker@2
-            displayName: 'Build Docker image'
+          - task: AzureCLI@2
+            displayName: 'Build and Push Docker image'
             inputs:
-              containerRegistry: '$(containerRegistry)'
-              repository: '$(imageRepository)'
-              command: 'build'
-              Dockerfile: '$(dockerfilePath)'
-              buildContext: '$(Build.SourcesDirectory)/api'
-              tags: |
-                $(tag)
-                latest
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                # Login to ACR
+                az acr login --name $(containerRegistry)
 
-          - task: Docker@2
-            displayName: 'Push Docker image'
-            inputs:
-              containerRegistry: '$(containerRegistry)'
-              repository: '$(imageRepository)'
-              command: 'push'
-              tags: |
-                $(tag)
-                latest
+                # Build the image
+                docker build \
+                  -t $(containerRegistry).azurecr.io/$(imageRepository):$(tag) \
+                  -t $(containerRegistry).azurecr.io/$(imageRepository):latest \
+                  -f $(dockerfilePath) \
+                  $(Build.SourcesDirectory)/api
+
+                # Push the images
+                docker push $(containerRegistry).azurecr.io/$(imageRepository):$(tag)
+                docker push $(containerRegistry).azurecr.io/$(imageRepository):latest
+
+                echo "Image pushed: $(containerRegistry).azurecr.io/$(imageRepository):$(tag)"
 
   - stage: Deploy
     displayName: 'Deploy to Container Apps'
