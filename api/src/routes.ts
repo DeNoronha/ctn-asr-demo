@@ -464,3 +464,1475 @@ router.get('/v1/member', requireAuth, async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch member' });
   }
 });
+
+// ============================================================================
+// LEGAL ENTITIES
+// ============================================================================
+router.get('/v1/legal-entities', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { page = '1', limit = '50', search, status } = req.query;
+
+    let query = `
+      SELECT legal_entity_id, party_id, primary_legal_name, domain, status,
+             membership_level, address_line1, address_line2, postal_code, city,
+             province, country_code, entity_legal_form, registered_at,
+             dt_created, dt_modified
+      FROM legal_entity
+      WHERE is_deleted = false
+    `;
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    if (search) {
+      query += ` AND (primary_legal_name ILIKE $${paramIndex} OR domain ILIKE $${paramIndex})`;
+      params.push(`%${search}%`);
+      paramIndex++;
+    }
+
+    if (status) {
+      query += ` AND status = $${paramIndex}`;
+      params.push(status);
+      paramIndex++;
+    }
+
+    query += ` ORDER BY primary_legal_name ASC`;
+
+    const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
+    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(parseInt(limit as string), offset);
+
+    const { rows } = await pool.query(query, params);
+
+    // Get total count
+    let countQuery = `SELECT COUNT(*) FROM legal_entity WHERE is_deleted = false`;
+    const countParams: any[] = [];
+    let countParamIndex = 1;
+    if (search) {
+      countQuery += ` AND (primary_legal_name ILIKE $${countParamIndex} OR domain ILIKE $${countParamIndex})`;
+      countParams.push(`%${search}%`);
+      countParamIndex++;
+    }
+    if (status) {
+      countQuery += ` AND status = $${countParamIndex}`;
+      countParams.push(status);
+    }
+    const { rows: countRows } = await pool.query(countQuery, countParams);
+
+    res.json({
+      data: rows,
+      pagination: {
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        total: parseInt(countRows[0].count),
+        totalPages: Math.ceil(parseInt(countRows[0].count) / parseInt(limit as string))
+      }
+    });
+  } catch (error: any) {
+    console.error('Error fetching legal entities:', error);
+    res.status(500).json({ error: 'Failed to fetch legal entities' });
+  }
+});
+
+router.get('/v1/legal-entities/:legalentityid', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT legal_entity_id, party_id, primary_legal_name, domain, status,
+             membership_level, address_line1, address_line2, postal_code, city,
+             province, country_code, entity_legal_form, registered_at,
+             dt_created, dt_modified
+      FROM legal_entity
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Legal entity not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error fetching legal entity:', error);
+    res.status(500).json({ error: 'Failed to fetch legal entity' });
+  }
+});
+
+router.post('/v1/legal-entities', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const legalEntityId = randomUUID();
+    const partyId = randomUUID();
+
+    const {
+      primary_legal_name, domain, status = 'PENDING', membership_level = 'BASIC',
+      address_line1, address_line2, postal_code, city, province, country_code,
+      entity_legal_form, registered_at
+    } = req.body;
+
+    if (!primary_legal_name) {
+      return res.status(400).json({ error: 'primary_legal_name is required' });
+    }
+
+    // Create party_reference first
+    await pool.query(`
+      INSERT INTO party_reference (party_id, party_type, dt_created)
+      VALUES ($1, 'LEGAL_ENTITY', NOW())
+    `, [partyId]);
+
+    // Create legal entity
+    const { rows } = await pool.query(`
+      INSERT INTO legal_entity (
+        legal_entity_id, party_id, primary_legal_name, domain, status, membership_level,
+        address_line1, address_line2, postal_code, city, province, country_code,
+        entity_legal_form, registered_at, dt_created, dt_modified
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW())
+      RETURNING *
+    `, [
+      legalEntityId, partyId, primary_legal_name, domain, status, membership_level,
+      address_line1, address_line2, postal_code, city, province, country_code,
+      entity_legal_form, registered_at
+    ]);
+
+    res.status(201).json(rows[0]);
+  } catch (error: any) {
+    console.error('Error creating legal entity:', error);
+    res.status(500).json({ error: 'Failed to create legal entity' });
+  }
+});
+
+router.put('/v1/legal-entities/:legalentityid', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    const {
+      primary_legal_name, domain, status, membership_level,
+      address_line1, address_line2, postal_code, city, province, country_code,
+      entity_legal_form, registered_at
+    } = req.body;
+
+    const { rows } = await pool.query(`
+      UPDATE legal_entity SET
+        primary_legal_name = COALESCE($1, primary_legal_name),
+        domain = COALESCE($2, domain),
+        status = COALESCE($3, status),
+        membership_level = COALESCE($4, membership_level),
+        address_line1 = COALESCE($5, address_line1),
+        address_line2 = COALESCE($6, address_line2),
+        postal_code = COALESCE($7, postal_code),
+        city = COALESCE($8, city),
+        province = COALESCE($9, province),
+        country_code = COALESCE($10, country_code),
+        entity_legal_form = COALESCE($11, entity_legal_form),
+        registered_at = COALESCE($12, registered_at),
+        dt_modified = NOW()
+      WHERE legal_entity_id = $13 AND is_deleted = false
+      RETURNING *
+    `, [
+      primary_legal_name, domain, status, membership_level,
+      address_line1, address_line2, postal_code, city, province, country_code,
+      entity_legal_form, registered_at, legalentityid
+    ]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Legal entity not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error updating legal entity:', error);
+    res.status(500).json({ error: 'Failed to update legal entity' });
+  }
+});
+
+router.delete('/v1/legal-entities/:legalentityid', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    // Soft delete
+    const { rowCount } = await pool.query(`
+      UPDATE legal_entity SET is_deleted = true, dt_modified = NOW()
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Legal entity not found' });
+    }
+
+    res.status(204).send();
+  } catch (error: any) {
+    console.error('Error deleting legal entity:', error);
+    res.status(500).json({ error: 'Failed to delete legal entity' });
+  }
+});
+
+// ============================================================================
+// CONTACTS
+// ============================================================================
+router.get('/v1/legal-entities/:legalentityid/contacts', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT contact_id, legal_entity_id, contact_type, contact_name, email,
+             phone, job_title, is_primary, dt_created, dt_modified
+      FROM legal_entity_contact
+      WHERE legal_entity_id = $1 AND is_deleted = false
+      ORDER BY is_primary DESC, contact_name ASC
+    `, [legalentityid]);
+
+    res.json({ data: rows });
+  } catch (error: any) {
+    console.error('Error fetching contacts:', error);
+    res.status(500).json({ error: 'Failed to fetch contacts' });
+  }
+});
+
+router.post('/v1/legal-entities/:legalentityid/contacts', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+    const contactId = randomUUID();
+
+    const { contact_type, contact_name, email, phone, job_title, is_primary } = req.body;
+
+    if (!contact_name || !email) {
+      return res.status(400).json({ error: 'contact_name and email are required' });
+    }
+
+    const { rows } = await pool.query(`
+      INSERT INTO legal_entity_contact (
+        contact_id, legal_entity_id, contact_type, contact_name, email,
+        phone, job_title, is_primary, dt_created, dt_modified
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+      RETURNING *
+    `, [contactId, legalentityid, contact_type || 'PRIMARY', contact_name, email, phone, job_title, is_primary || false]);
+
+    res.status(201).json(rows[0]);
+  } catch (error: any) {
+    console.error('Error creating contact:', error);
+    res.status(500).json({ error: 'Failed to create contact' });
+  }
+});
+
+router.put('/v1/legal-entities/:legalentityid/contacts/:contactId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { contactId } = req.params;
+
+    const { contact_type, contact_name, email, phone, job_title, is_primary } = req.body;
+
+    const { rows } = await pool.query(`
+      UPDATE legal_entity_contact SET
+        contact_type = COALESCE($1, contact_type),
+        contact_name = COALESCE($2, contact_name),
+        email = COALESCE($3, email),
+        phone = COALESCE($4, phone),
+        job_title = COALESCE($5, job_title),
+        is_primary = COALESCE($6, is_primary),
+        dt_modified = NOW()
+      WHERE contact_id = $7 AND is_deleted = false
+      RETURNING *
+    `, [contact_type, contact_name, email, phone, job_title, is_primary, contactId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Contact not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error updating contact:', error);
+    res.status(500).json({ error: 'Failed to update contact' });
+  }
+});
+
+router.delete('/v1/legal-entities/:legalentityid/contacts/:contactId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { contactId } = req.params;
+
+    const { rowCount } = await pool.query(`
+      UPDATE legal_entity_contact SET is_deleted = true, dt_modified = NOW()
+      WHERE contact_id = $1 AND is_deleted = false
+    `, [contactId]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Contact not found' });
+    }
+
+    res.status(204).send();
+  } catch (error: any) {
+    console.error('Error deleting contact:', error);
+    res.status(500).json({ error: 'Failed to delete contact' });
+  }
+});
+
+// Legacy contact endpoints (used by admin portal)
+router.post('/v1/contacts', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const contactId = randomUUID();
+
+    const { legal_entity_id, contact_type, contact_name, email, phone, job_title, is_primary } = req.body;
+
+    if (!legal_entity_id || !contact_name || !email) {
+      return res.status(400).json({ error: 'legal_entity_id, contact_name and email are required' });
+    }
+
+    const { rows } = await pool.query(`
+      INSERT INTO legal_entity_contact (
+        contact_id, legal_entity_id, contact_type, contact_name, email,
+        phone, job_title, is_primary, dt_created, dt_modified
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+      RETURNING *
+    `, [contactId, legal_entity_id, contact_type || 'PRIMARY', contact_name, email, phone, job_title, is_primary || false]);
+
+    res.status(201).json(rows[0]);
+  } catch (error: any) {
+    console.error('Error creating contact:', error);
+    res.status(500).json({ error: 'Failed to create contact' });
+  }
+});
+
+router.put('/v1/contacts/:contactId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { contactId } = req.params;
+
+    const { contact_type, contact_name, email, phone, job_title, is_primary } = req.body;
+
+    const { rows } = await pool.query(`
+      UPDATE legal_entity_contact SET
+        contact_type = COALESCE($1, contact_type),
+        contact_name = COALESCE($2, contact_name),
+        email = COALESCE($3, email),
+        phone = COALESCE($4, phone),
+        job_title = COALESCE($5, job_title),
+        is_primary = COALESCE($6, is_primary),
+        dt_modified = NOW()
+      WHERE contact_id = $7 AND is_deleted = false
+      RETURNING *
+    `, [contact_type, contact_name, email, phone, job_title, is_primary, contactId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Contact not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error updating contact:', error);
+    res.status(500).json({ error: 'Failed to update contact' });
+  }
+});
+
+router.delete('/v1/contacts/:contactId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { contactId } = req.params;
+
+    const { rowCount } = await pool.query(`
+      UPDATE legal_entity_contact SET is_deleted = true, dt_modified = NOW()
+      WHERE contact_id = $1 AND is_deleted = false
+    `, [contactId]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Contact not found' });
+    }
+
+    res.status(204).send();
+  } catch (error: any) {
+    console.error('Error deleting contact:', error);
+    res.status(500).json({ error: 'Failed to delete contact' });
+  }
+});
+
+// ============================================================================
+// IDENTIFIERS
+// ============================================================================
+router.get('/v1/legal-entities/:legalentityid/identifiers', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT identifier_id, legal_entity_id, identifier_type, identifier_value,
+             issuing_authority, issued_at, expires_at, verification_status,
+             dt_created, dt_modified
+      FROM legal_entity_number
+      WHERE legal_entity_id = $1 AND is_deleted = false
+      ORDER BY identifier_type ASC
+    `, [legalentityid]);
+
+    res.json({ data: rows });
+  } catch (error: any) {
+    console.error('Error fetching identifiers:', error);
+    res.status(500).json({ error: 'Failed to fetch identifiers' });
+  }
+});
+
+// Alias for /entities/{id}/identifiers (used by admin portal)
+router.get('/v1/entities/:legalentityid/identifiers', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT identifier_id, legal_entity_id, identifier_type, identifier_value,
+             issuing_authority, issued_at, expires_at, verification_status,
+             dt_created, dt_modified
+      FROM legal_entity_number
+      WHERE legal_entity_id = $1 AND is_deleted = false
+      ORDER BY identifier_type ASC
+    `, [legalentityid]);
+
+    res.json({ data: rows });
+  } catch (error: any) {
+    console.error('Error fetching identifiers:', error);
+    res.status(500).json({ error: 'Failed to fetch identifiers' });
+  }
+});
+
+router.post('/v1/legal-entities/:legalentityid/identifiers', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+    const identifierId = randomUUID();
+
+    const { identifier_type, identifier_value, issuing_authority, issued_at, expires_at, verification_status } = req.body;
+
+    if (!identifier_type || !identifier_value) {
+      return res.status(400).json({ error: 'identifier_type and identifier_value are required' });
+    }
+
+    const { rows } = await pool.query(`
+      INSERT INTO legal_entity_number (
+        identifier_id, legal_entity_id, identifier_type, identifier_value,
+        issuing_authority, issued_at, expires_at, verification_status,
+        dt_created, dt_modified
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+      RETURNING *
+    `, [identifierId, legalentityid, identifier_type, identifier_value, issuing_authority, issued_at, expires_at, verification_status || 'PENDING']);
+
+    res.status(201).json(rows[0]);
+  } catch (error: any) {
+    console.error('Error creating identifier:', error);
+    res.status(500).json({ error: 'Failed to create identifier' });
+  }
+});
+
+// Alias for POST /entities/{id}/identifiers
+router.post('/v1/entities/:legalentityid/identifiers', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+    const identifierId = randomUUID();
+
+    const { identifier_type, identifier_value, issuing_authority, issued_at, expires_at, verification_status } = req.body;
+
+    if (!identifier_type || !identifier_value) {
+      return res.status(400).json({ error: 'identifier_type and identifier_value are required' });
+    }
+
+    const { rows } = await pool.query(`
+      INSERT INTO legal_entity_number (
+        identifier_id, legal_entity_id, identifier_type, identifier_value,
+        issuing_authority, issued_at, expires_at, verification_status,
+        dt_created, dt_modified
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+      RETURNING *
+    `, [identifierId, legalentityid, identifier_type, identifier_value, issuing_authority, issued_at, expires_at, verification_status || 'PENDING']);
+
+    res.status(201).json(rows[0]);
+  } catch (error: any) {
+    console.error('Error creating identifier:', error);
+    res.status(500).json({ error: 'Failed to create identifier' });
+  }
+});
+
+router.put('/v1/identifiers/:identifierId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { identifierId } = req.params;
+
+    const { identifier_type, identifier_value, issuing_authority, issued_at, expires_at, verification_status } = req.body;
+
+    const { rows } = await pool.query(`
+      UPDATE legal_entity_number SET
+        identifier_type = COALESCE($1, identifier_type),
+        identifier_value = COALESCE($2, identifier_value),
+        issuing_authority = COALESCE($3, issuing_authority),
+        issued_at = COALESCE($4, issued_at),
+        expires_at = COALESCE($5, expires_at),
+        verification_status = COALESCE($6, verification_status),
+        dt_modified = NOW()
+      WHERE identifier_id = $7 AND is_deleted = false
+      RETURNING *
+    `, [identifier_type, identifier_value, issuing_authority, issued_at, expires_at, verification_status, identifierId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Identifier not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error updating identifier:', error);
+    res.status(500).json({ error: 'Failed to update identifier' });
+  }
+});
+
+router.delete('/v1/identifiers/:identifierId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { identifierId } = req.params;
+
+    const { rowCount } = await pool.query(`
+      UPDATE legal_entity_number SET is_deleted = true, dt_modified = NOW()
+      WHERE identifier_id = $1 AND is_deleted = false
+    `, [identifierId]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Identifier not found' });
+    }
+
+    res.status(204).send();
+  } catch (error: any) {
+    console.error('Error deleting identifier:', error);
+    res.status(500).json({ error: 'Failed to delete identifier' });
+  }
+});
+
+// ============================================================================
+// ENDPOINTS
+// ============================================================================
+router.get('/v1/legal-entities/:legalentityid/endpoints', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT endpoint_id, legal_entity_id, endpoint_type, endpoint_url,
+             endpoint_name, is_active, protocol, authentication_type,
+             dt_created, dt_modified
+      FROM legal_entity_endpoint
+      WHERE legal_entity_id = $1 AND is_deleted = false
+      ORDER BY endpoint_name ASC
+    `, [legalentityid]);
+
+    res.json({ data: rows });
+  } catch (error: any) {
+    console.error('Error fetching endpoints:', error);
+    res.status(500).json({ error: 'Failed to fetch endpoints' });
+  }
+});
+
+router.post('/v1/legal-entities/:legalentityid/endpoints', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+    const endpointId = randomUUID();
+
+    const { endpoint_type, endpoint_url, endpoint_name, is_active, protocol, authentication_type } = req.body;
+
+    if (!endpoint_url || !endpoint_name) {
+      return res.status(400).json({ error: 'endpoint_url and endpoint_name are required' });
+    }
+
+    const { rows } = await pool.query(`
+      INSERT INTO legal_entity_endpoint (
+        endpoint_id, legal_entity_id, endpoint_type, endpoint_url,
+        endpoint_name, is_active, protocol, authentication_type,
+        dt_created, dt_modified
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+      RETURNING *
+    `, [endpointId, legalentityid, endpoint_type || 'API', endpoint_url, endpoint_name, is_active !== false, protocol || 'HTTPS', authentication_type || 'BEARER']);
+
+    res.status(201).json(rows[0]);
+  } catch (error: any) {
+    console.error('Error creating endpoint:', error);
+    res.status(500).json({ error: 'Failed to create endpoint' });
+  }
+});
+
+router.put('/v1/endpoints/:endpointId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { endpointId } = req.params;
+
+    const { endpoint_type, endpoint_url, endpoint_name, is_active, protocol, authentication_type } = req.body;
+
+    const { rows } = await pool.query(`
+      UPDATE legal_entity_endpoint SET
+        endpoint_type = COALESCE($1, endpoint_type),
+        endpoint_url = COALESCE($2, endpoint_url),
+        endpoint_name = COALESCE($3, endpoint_name),
+        is_active = COALESCE($4, is_active),
+        protocol = COALESCE($5, protocol),
+        authentication_type = COALESCE($6, authentication_type),
+        dt_modified = NOW()
+      WHERE endpoint_id = $7 AND is_deleted = false
+      RETURNING *
+    `, [endpoint_type, endpoint_url, endpoint_name, is_active, protocol, authentication_type, endpointId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Endpoint not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error updating endpoint:', error);
+    res.status(500).json({ error: 'Failed to update endpoint' });
+  }
+});
+
+router.delete('/v1/endpoints/:endpointId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { endpointId } = req.params;
+
+    const { rowCount } = await pool.query(`
+      UPDATE legal_entity_endpoint SET is_deleted = true, dt_modified = NOW()
+      WHERE endpoint_id = $1 AND is_deleted = false
+    `, [endpointId]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Endpoint not found' });
+    }
+
+    res.status(204).send();
+  } catch (error: any) {
+    console.error('Error deleting endpoint:', error);
+    res.status(500).json({ error: 'Failed to delete endpoint' });
+  }
+});
+
+// ============================================================================
+// APPLICATIONS - APPROVE/REJECT
+// ============================================================================
+router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { id } = req.params;
+
+    const { rows } = await pool.query(`
+      UPDATE applications SET status = 'approved', reviewed_at = NOW(), dt_modified = NOW()
+      WHERE application_id = $1
+      RETURNING *
+    `, [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error approving application:', error);
+    res.status(500).json({ error: 'Failed to approve application' });
+  }
+});
+
+router.post('/v1/applications/:id/reject', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    const { rows } = await pool.query(`
+      UPDATE applications SET status = 'rejected', rejection_reason = $1, reviewed_at = NOW(), dt_modified = NOW()
+      WHERE application_id = $2
+      RETURNING *
+    `, [reason, id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error rejecting application:', error);
+    res.status(500).json({ error: 'Failed to reject application' });
+  }
+});
+
+// ============================================================================
+// MEMBER PORTAL - SELF SERVICE
+// ============================================================================
+router.get('/v1/member-contacts', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const userEmail = (req as any).userEmail;
+
+    if (!userEmail) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get member's legal_entity_id using email
+    let memberResult = await pool.query(`
+      SELECT DISTINCT le.legal_entity_id
+      FROM legal_entity le
+      INNER JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
+      WHERE c.email = $1 AND c.is_active = true
+      LIMIT 1
+    `, [userEmail]);
+
+    // If not found, try by domain
+    if (memberResult.rows.length === 0) {
+      const emailDomain = userEmail.split('@')[1];
+      memberResult = await pool.query(`
+        SELECT m.legal_entity_id
+        FROM v_members_full m
+        WHERE m.domain = $1
+        LIMIT 1
+      `, [emailDomain]);
+    }
+
+    if (memberResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Member not found' });
+    }
+
+    const { legal_entity_id } = memberResult.rows[0];
+
+    // Get all contacts for this member's legal entity
+    const result = await pool.query(`
+      SELECT
+        legal_entity_contact_id,
+        legal_entity_id,
+        contact_type,
+        full_name,
+        first_name,
+        last_name,
+        email,
+        phone,
+        mobile,
+        job_title,
+        department,
+        preferred_language,
+        preferred_contact_method,
+        is_primary,
+        is_active,
+        dt_created,
+        dt_modified
+      FROM legal_entity_contact
+      WHERE legal_entity_id = $1
+      ORDER BY is_primary DESC, full_name ASC
+    `, [legal_entity_id]);
+
+    res.json({ contacts: result.rows });
+  } catch (error: any) {
+    console.error('Error fetching member contacts:', error);
+    res.status(500).json({ error: 'Failed to fetch member contacts' });
+  }
+});
+
+router.get('/v1/member-endpoints', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const userEmail = (req as any).userEmail;
+
+    if (!userEmail) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get member's legal_entity_id using email
+    let memberResult = await pool.query(`
+      SELECT DISTINCT le.legal_entity_id
+      FROM legal_entity le
+      INNER JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
+      WHERE c.email = $1 AND c.is_active = true
+      LIMIT 1
+    `, [userEmail]);
+
+    // If not found, try by domain
+    if (memberResult.rows.length === 0) {
+      const emailDomain = userEmail.split('@')[1];
+      memberResult = await pool.query(`
+        SELECT m.legal_entity_id
+        FROM v_members_full m
+        WHERE m.domain = $1
+        LIMIT 1
+      `, [emailDomain]);
+    }
+
+    if (memberResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Member not found' });
+    }
+
+    const { legal_entity_id } = memberResult.rows[0];
+
+    // Get all endpoints for this member's legal entity
+    const result = await pool.query(`
+      SELECT
+        legal_entity_endpoint_id,
+        legal_entity_id,
+        endpoint_name,
+        endpoint_url,
+        endpoint_description,
+        data_category,
+        endpoint_type,
+        authentication_method,
+        last_connection_test,
+        last_connection_status,
+        is_active,
+        activation_date,
+        deactivation_date,
+        dt_created,
+        dt_modified
+      FROM legal_entity_endpoint
+      WHERE legal_entity_id = $1
+        AND is_deleted = false
+      ORDER BY dt_created DESC
+    `, [legal_entity_id]);
+
+    res.json({ endpoints: result.rows });
+  } catch (error: any) {
+    console.error('Error fetching member endpoints:', error);
+    res.status(500).json({ error: 'Failed to fetch member endpoints' });
+  }
+});
+
+// ============================================================================
+// TIER MANAGEMENT
+// ============================================================================
+router.get('/v1/entities/:legalentityid/tier', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT
+        authentication_tier as tier,
+        authentication_method as method,
+        tier_verified_at as "verifiedAt",
+        tier_reverification_due as "reverificationDue",
+        eherkenning_level as "eherkenningLevel"
+      FROM legal_entity
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Legal entity not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error fetching tier info:', error);
+    res.status(500).json({ error: 'Failed to fetch tier information' });
+  }
+});
+
+router.put('/v1/entities/:legalentityid/tier', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+    const { tier, method, dnsVerifiedDomain, eherkenningIdentifier, eherkenningLevel } = req.body;
+
+    if (!tier || !method) {
+      return res.status(400).json({ error: 'tier and method are required' });
+    }
+
+    const { rowCount } = await pool.query(`
+      UPDATE legal_entity
+      SET
+        authentication_tier = $1,
+        authentication_method = $2,
+        dns_verified_domain = $3,
+        dns_verified_at = $4,
+        eherkenning_identifier = $5,
+        eherkenning_level = $6,
+        tier_verified_at = NOW(),
+        dt_modified = NOW()
+      WHERE legal_entity_id = $7 AND is_deleted = false
+    `, [tier, method, dnsVerifiedDomain, dnsVerifiedDomain ? new Date() : null, eherkenningIdentifier, eherkenningLevel, legalentityid]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Legal entity not found' });
+    }
+
+    res.json({ message: 'Tier updated successfully' });
+  } catch (error: any) {
+    console.error('Error updating tier:', error);
+    res.status(500).json({ error: 'Failed to update tier' });
+  }
+});
+
+// ============================================================================
+// DNS VERIFICATION
+// ============================================================================
+router.post('/v1/entities/:legalentityid/dns/token', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+    const { domain } = req.body;
+
+    if (!domain) {
+      return res.status(400).json({ error: 'domain is required' });
+    }
+
+    // Validate domain format
+    const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
+    if (!domainRegex.test(domain)) {
+      return res.status(400).json({ error: 'Invalid domain format' });
+    }
+
+    // Generate token
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const tokenId = crypto.randomUUID();
+    const recordName = `_ctn-verify.${domain}`;
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+    // Store in database
+    await pool.query(`
+      INSERT INTO dns_verification_tokens (token_id, legal_entity_id, domain, token, record_name, expires_at, status)
+      VALUES ($1, $2, $3, $4, $5, $6, 'pending')
+    `, [tokenId, legalentityid, domain, token, recordName, expiresAt]);
+
+    res.json({
+      tokenId,
+      domain,
+      token,
+      recordName,
+      expiresAt,
+      instructions: {
+        recordType: 'TXT',
+        recordName,
+        recordValue: token,
+        ttl: 3600
+      }
+    });
+  } catch (error: any) {
+    console.error('Error generating DNS token:', error);
+    res.status(500).json({ error: 'Failed to generate DNS token' });
+  }
+});
+
+router.post('/v1/dns/verify/:tokenid', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { tokenid } = req.params;
+
+    // Get token from database
+    const { rows } = await pool.query(`
+      SELECT token_id, legal_entity_id, domain, token, record_name, expires_at, status
+      FROM dns_verification_tokens
+      WHERE token_id = $1
+    `, [tokenid]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Token not found' });
+    }
+
+    const tokenData = rows[0];
+
+    if (tokenData.status === 'verified') {
+      return res.json({ verified: true, details: 'Already verified' });
+    }
+
+    if (new Date(tokenData.expires_at) < new Date()) {
+      await pool.query(`UPDATE dns_verification_tokens SET status = 'expired' WHERE token_id = $1`, [tokenid]);
+      return res.json({ verified: false, details: 'Token expired' });
+    }
+
+    // DNS verification would happen here - for now return stub
+    res.json({
+      verified: false,
+      details: 'DNS verification not fully implemented in Express version',
+      resolverResults: []
+    });
+  } catch (error: any) {
+    console.error('Error verifying DNS token:', error);
+    res.status(500).json({ error: 'Failed to verify DNS token' });
+  }
+});
+
+router.get('/v1/entities/:legalentityid/dns/tokens', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT token_id as "tokenId", domain, token, record_name as "recordName", expires_at as "expiresAt", status
+      FROM dns_verification_tokens
+      WHERE legal_entity_id = $1 AND status = 'pending'
+      ORDER BY dt_created DESC
+    `, [legalentityid]);
+
+    res.json({ tokens: rows });
+  } catch (error: any) {
+    console.error('Error fetching pending DNS tokens:', error);
+    res.status(500).json({ error: 'Failed to fetch pending DNS tokens' });
+  }
+});
+
+router.get('/v1/tiers/requirements', async (req: Request, res: Response) => {
+  try {
+    // Return tier requirements (public endpoint)
+    res.json({
+      requirements: {
+        tier1: {
+          name: 'Basic',
+          methods: ['email'],
+          description: 'Email verification only'
+        },
+        tier2: {
+          name: 'Standard',
+          methods: ['dns', 'kvk'],
+          description: 'DNS or KvK verification'
+        },
+        tier3: {
+          name: 'Enhanced',
+          methods: ['eherkenning'],
+          description: 'eHerkenning EH3 or higher'
+        }
+      }
+    });
+  } catch (error: any) {
+    console.error('Error fetching tier requirements:', error);
+    res.status(500).json({ error: 'Failed to fetch tier requirements' });
+  }
+});
+
+// ============================================================================
+// AUTHORIZATION LOG
+// ============================================================================
+router.get('/v1/authorization-log', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const legalEntityId = req.query.legalEntityId as string;
+    const limit = parseInt(req.query.limit as string || '100');
+    const offset = parseInt(req.query.offset as string || '0');
+
+    let sql = `
+      SELECT
+        log_id,
+        legal_entity_id,
+        user_identifier,
+        requested_resource,
+        requested_action,
+        required_tier,
+        user_tier,
+        authorization_result,
+        denial_reason,
+        request_ip_address,
+        created_at
+      FROM authorization_log
+    `;
+
+    const params: (string | number)[] = [];
+    if (legalEntityId) {
+      sql += ' WHERE legal_entity_id = $1';
+      params.push(legalEntityId);
+    }
+
+    sql += ` ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(limit, offset);
+
+    const result = await pool.query(sql, params);
+
+    res.json({
+      data: result.rows,
+      pagination: { limit, offset, total: result.rowCount }
+    });
+  } catch (error: any) {
+    console.error('Error fetching authorization log:', error);
+    res.status(500).json({ error: 'Failed to fetch authorization log' });
+  }
+});
+
+// ============================================================================
+// M2M CLIENTS
+// ============================================================================
+router.get('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legal_entity_id } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT
+        client_id,
+        legal_entity_id,
+        client_name,
+        scopes,
+        is_active,
+        dt_created,
+        dt_modified
+      FROM m2m_clients
+      WHERE legal_entity_id = $1 AND is_active = true
+      ORDER BY dt_created DESC
+    `, [legal_entity_id]);
+
+    res.json({ clients: rows });
+  } catch (error: any) {
+    console.error('Error listing M2M clients:', error);
+    res.status(500).json({ error: 'Failed to list M2M clients' });
+  }
+});
+
+router.post('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legal_entity_id } = req.params;
+    const { clientName, scopes } = req.body;
+
+    if (!clientName) {
+      return res.status(400).json({ error: 'clientName is required' });
+    }
+
+    const crypto = require('crypto');
+    const clientId = crypto.randomUUID();
+
+    const { rows } = await pool.query(`
+      INSERT INTO m2m_clients (client_id, legal_entity_id, client_name, scopes, is_active)
+      VALUES ($1, $2, $3, $4, true)
+      RETURNING *
+    `, [clientId, legal_entity_id, clientName, scopes || []]);
+
+    res.status(201).json(rows[0]);
+  } catch (error: any) {
+    console.error('Error creating M2M client:', error);
+    res.status(500).json({ error: 'Failed to create M2M client' });
+  }
+});
+
+router.post('/v1/m2m-clients/:client_id/generate-secret', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { client_id } = req.params;
+
+    // Generate a new secret
+    const crypto = require('crypto');
+    const secret = crypto.randomBytes(32).toString('base64');
+    const secretHash = crypto.createHash('sha256').update(secret).digest('hex');
+
+    const { rowCount } = await pool.query(`
+      UPDATE m2m_clients SET client_secret_hash = $1, dt_modified = NOW()
+      WHERE client_id = $2 AND is_active = true
+    `, [secretHash, client_id]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'M2M client not found' });
+    }
+
+    // Return the secret (only time it's visible)
+    res.json({ clientSecret: secret, message: 'Store this secret securely - it cannot be retrieved again' });
+  } catch (error: any) {
+    console.error('Error generating M2M secret:', error);
+    res.status(500).json({ error: 'Failed to generate M2M secret' });
+  }
+});
+
+router.patch('/v1/m2m-clients/:client_id/scopes', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { client_id } = req.params;
+    const { scopes } = req.body;
+
+    if (!Array.isArray(scopes)) {
+      return res.status(400).json({ error: 'scopes must be an array' });
+    }
+
+    const { rows, rowCount } = await pool.query(`
+      UPDATE m2m_clients SET scopes = $1, dt_modified = NOW()
+      WHERE client_id = $2 AND is_active = true
+      RETURNING *
+    `, [scopes, client_id]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'M2M client not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error updating M2M scopes:', error);
+    res.status(500).json({ error: 'Failed to update M2M scopes' });
+  }
+});
+
+router.delete('/v1/m2m-clients/:client_id', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { client_id } = req.params;
+
+    const { rowCount } = await pool.query(`
+      UPDATE m2m_clients SET is_active = false, dt_modified = NOW()
+      WHERE client_id = $1 AND is_active = true
+    `, [client_id]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'M2M client not found' });
+    }
+
+    res.status(204).send();
+  } catch (error: any) {
+    console.error('Error deactivating M2M client:', error);
+    res.status(500).json({ error: 'Failed to deactivate M2M client' });
+  }
+});
+
+// ============================================================================
+// ADMIN TASKS
+// ============================================================================
+router.get('/v1/admin/tasks/list', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const status = req.query.status as string;
+    const priority = req.query.priority as string;
+    const taskType = req.query.task_type as string;
+    const assignedTo = req.query.assigned_to as string;
+    const includeOverdue = req.query.include_overdue === 'true';
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+
+    let sql = `
+      SELECT *
+      FROM admin_tasks
+      WHERE 1=1
+    `;
+    const params: (string | number)[] = [];
+
+    if (status) {
+      params.push(status);
+      sql += ` AND status = $${params.length}`;
+    }
+    if (priority) {
+      params.push(priority);
+      sql += ` AND priority = $${params.length}`;
+    }
+    if (taskType) {
+      params.push(taskType);
+      sql += ` AND task_type = $${params.length}`;
+    }
+    if (assignedTo) {
+      params.push(assignedTo);
+      sql += ` AND assigned_to = $${params.length}`;
+    }
+    if (includeOverdue) {
+      sql += ` AND due_date < NOW() AND status != 'completed'`;
+    }
+
+    params.push(limit);
+    sql += ` ORDER BY priority DESC, due_date ASC LIMIT $${params.length}`;
+
+    const { rows } = await pool.query(sql, params);
+
+    res.json(rows);
+  } catch (error: any) {
+    console.error('Error fetching admin tasks:', error);
+    res.status(500).json({ error: 'Failed to fetch admin tasks' });
+  }
+});
+
+router.put('/v1/admin/tasks/:taskId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { taskId } = req.params;
+    const updates = req.body;
+
+    // Build dynamic update query
+    const fields: string[] = [];
+    const values: any[] = [];
+    let paramCount = 0;
+
+    if (updates.status !== undefined) {
+      paramCount++;
+      fields.push(`status = $${paramCount}`);
+      values.push(updates.status);
+    }
+    if (updates.priority !== undefined) {
+      paramCount++;
+      fields.push(`priority = $${paramCount}`);
+      values.push(updates.priority);
+    }
+    if (updates.assigned_to !== undefined) {
+      paramCount++;
+      fields.push(`assigned_to = $${paramCount}`);
+      values.push(updates.assigned_to);
+    }
+    if (updates.due_date !== undefined) {
+      paramCount++;
+      fields.push(`due_date = $${paramCount}`);
+      values.push(updates.due_date);
+    }
+    if (updates.notes !== undefined) {
+      paramCount++;
+      fields.push(`notes = $${paramCount}`);
+      values.push(updates.notes);
+    }
+
+    if (fields.length === 0) {
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    paramCount++;
+    fields.push(`dt_modified = NOW()`);
+    values.push(taskId);
+
+    const sql = `UPDATE admin_tasks SET ${fields.join(', ')} WHERE task_id = $${paramCount} RETURNING *`;
+
+    const { rows, rowCount } = await pool.query(sql, values);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error updating admin task:', error);
+    res.status(500).json({ error: 'Failed to update admin task' });
+  }
+});
+
+// ============================================================================
+// AUDIT LOGS
+// ============================================================================
+router.get('/v1/audit-logs', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const limit = parseInt(req.query.limit as string || '100');
+    const offset = parseInt(req.query.offset as string || '0');
+    const entityId = req.query.entityId as string;
+    const action = req.query.action as string;
+
+    let sql = `
+      SELECT *
+      FROM audit_log
+      WHERE 1=1
+    `;
+    const params: (string | number)[] = [];
+
+    if (entityId) {
+      params.push(entityId);
+      sql += ` AND entity_id = $${params.length}`;
+    }
+    if (action) {
+      params.push(action);
+      sql += ` AND action = $${params.length}`;
+    }
+
+    sql += ` ORDER BY dt_created DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(limit, offset);
+
+    const { rows } = await pool.query(sql, params);
+
+    res.json({ data: rows, pagination: { limit, offset } });
+  } catch (error: any) {
+    console.error('Error fetching audit logs:', error);
+    res.status(500).json({ error: 'Failed to fetch audit logs' });
+  }
+});
+
+router.post('/v1/audit-logs', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { entityId, entityType, action, details, userId } = req.body;
+
+    const { rows } = await pool.query(`
+      INSERT INTO audit_log (entity_id, entity_type, action, details, user_id)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `, [entityId, entityType, action, JSON.stringify(details), userId]);
+
+    res.status(201).json(rows[0]);
+  } catch (error: any) {
+    console.error('Error creating audit log:', error);
+    res.status(500).json({ error: 'Failed to create audit log' });
+  }
+});
+
+// ============================================================================
+// KVK VERIFICATION
+// ============================================================================
+router.get('/v1/kvk-verification/flagged', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+
+    const { rows } = await pool.query(`
+      SELECT
+        le.legal_entity_id,
+        le.legal_name,
+        le.kvk_number,
+        le.kvk_verification_status,
+        le.kvk_last_checked,
+        le.dt_created
+      FROM legal_entity le
+      WHERE le.kvk_verification_status = 'flagged'
+        AND le.is_deleted = false
+      ORDER BY le.dt_created DESC
+    `);
+
+    res.json({ entities: rows });
+  } catch (error: any) {
+    console.error('Error fetching flagged entities:', error);
+    res.status(500).json({ error: 'Failed to fetch flagged entities' });
+  }
+});
+
+router.post('/v1/kvk-verification/:legalentityid/review', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+    const { status, notes } = req.body;
+
+    if (!status || !['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'status must be approved or rejected' });
+    }
+
+    const { rowCount } = await pool.query(`
+      UPDATE legal_entity
+      SET
+        kvk_verification_status = $1,
+        kvk_review_notes = $2,
+        kvk_reviewed_at = NOW(),
+        dt_modified = NOW()
+      WHERE legal_entity_id = $3 AND is_deleted = false
+    `, [status, notes, legalentityid]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Legal entity not found' });
+    }
+
+    res.json({ message: `KvK verification ${status}` });
+  } catch (error: any) {
+    console.error('Error reviewing KvK verification:', error);
+    res.status(500).json({ error: 'Failed to review KvK verification' });
+  }
+});
+
+// ============================================================================
+// MEMBER STATUS
+// ============================================================================
+router.put('/v1/members/:memberId/status', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { memberId } = req.params;
+    const { status, reason } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ error: 'status is required' });
+    }
+
+    const { rows, rowCount } = await pool.query(`
+      UPDATE members
+      SET status = $1, status_reason = $2, dt_modified = NOW()
+      WHERE org_id = $3
+      RETURNING *
+    `, [status, reason, memberId]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Member not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error updating member status:', error);
+    res.status(500).json({ error: 'Failed to update member status' });
+  }
+});
