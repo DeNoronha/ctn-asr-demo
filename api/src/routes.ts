@@ -52,30 +52,29 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
     const pool = getPool();
     const { page = '1', limit = '50', search, status } = req.query;
 
+    // Use the members_view which properly joins legal_entity with legal_entity_number
     let query = `
-      SELECT m.org_id, m.legal_name, m.kvk, m.lei, m.status, m.membership_type,
-             le.legal_entity_id, le.party_reference_id,
-             m.dt_created, m.dt_modified
-      FROM members m
-      LEFT JOIN legal_entity le ON le.legal_entity_id = m.org_id
-      WHERE m.is_deleted = false
+      SELECT org_id, legal_name, kvk, lei, domain, status, membership_level,
+             created_at, metadata
+      FROM members_view
+      WHERE 1=1
     `;
     const params: any[] = [];
     let paramIndex = 1;
 
     if (search) {
-      query += ` AND (m.legal_name ILIKE $${paramIndex} OR m.kvk ILIKE $${paramIndex})`;
+      query += ` AND (legal_name ILIKE $${paramIndex} OR kvk ILIKE $${paramIndex})`;
       params.push(`%${search}%`);
       paramIndex++;
     }
 
     if (status) {
-      query += ` AND m.status = $${paramIndex}`;
+      query += ` AND status = $${paramIndex}`;
       params.push(status);
       paramIndex++;
     }
 
-    query += ` ORDER BY m.legal_name ASC`;
+    query += ` ORDER BY legal_name ASC`;
 
     const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
     query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
@@ -84,11 +83,17 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
     const { rows } = await pool.query(query, params);
 
     // Get total count
-    let countQuery = `SELECT COUNT(*) FROM members m WHERE m.is_deleted = false`;
+    let countQuery = `SELECT COUNT(*) FROM members_view WHERE 1=1`;
     const countParams: any[] = [];
+    let countParamIndex = 1;
     if (search) {
-      countQuery += ` AND (m.legal_name ILIKE $1 OR m.kvk ILIKE $1)`;
+      countQuery += ` AND (legal_name ILIKE $${countParamIndex} OR kvk ILIKE $${countParamIndex})`;
       countParams.push(`%${search}%`);
+      countParamIndex++;
+    }
+    if (status) {
+      countQuery += ` AND status = $${countParamIndex}`;
+      countParams.push(status);
     }
     const { rows: countRows } = await pool.query(countQuery, countParams);
 
@@ -112,11 +117,15 @@ router.get('/v1/members/:id', requireAuth, async (req: Request, res: Response) =
     const pool = getPool();
     const { id } = req.params;
 
+    // Use legal_entity_full view for complete member details
     const { rows } = await pool.query(`
-      SELECT m.*, le.legal_entity_id, le.party_reference_id
-      FROM members m
-      LEFT JOIN legal_entity le ON le.legal_entity_id = m.org_id
-      WHERE m.org_id = $1 AND m.is_deleted = false
+      SELECT legal_entity_id as org_id, primary_legal_name as legal_name,
+             domain, status, membership_level, party_id,
+             address_line1, address_line2, postal_code, city, province, country_code,
+             entity_legal_form, registered_at, dt_created, dt_modified,
+             identifiers, contacts, endpoints, metadata
+      FROM legal_entity_full
+      WHERE legal_entity_id = $1
     `, [id]);
 
     if (rows.length === 0) {
@@ -175,11 +184,22 @@ router.get('/v1/audit-logs', requireAuth, async (req: Request, res: Response) =>
 
     const { rows } = await pool.query(`
       SELECT * FROM audit_log
-      ORDER BY timestamp DESC
+      ORDER BY dt_created DESC
       LIMIT $1 OFFSET $2
     `, [parseInt(limit as string), offset]);
 
-    res.json({ data: rows });
+    // Get total count
+    const { rows: countRows } = await pool.query('SELECT COUNT(*) FROM audit_log');
+
+    res.json({
+      data: rows,
+      pagination: {
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        total: parseInt(countRows[0].count),
+        totalPages: Math.ceil(parseInt(countRows[0].count) / parseInt(limit as string))
+      }
+    });
   } catch (error: any) {
     console.error('Error fetching audit logs:', error);
     res.status(500).json({ error: 'Failed to fetch audit logs' });
@@ -192,21 +212,44 @@ router.get('/v1/audit-logs', requireAuth, async (req: Request, res: Response) =>
 router.get('/v1/tasks', requireAuth, async (req: Request, res: Response) => {
   try {
     const pool = getPool();
-    const { status } = req.query;
+    const { status, page = '1', limit = '50' } = req.query;
 
-    let query = `SELECT * FROM tasks WHERE 1=1`;
+    let query = `SELECT * FROM admin_tasks WHERE 1=1`;
     const params: any[] = [];
+    let paramIndex = 1;
 
     if (status) {
-      query += ` AND status = $1`;
+      query += ` AND status = $${paramIndex}`;
       params.push(status);
+      paramIndex++;
     }
 
     query += ` ORDER BY created_at DESC`;
 
+    const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
+    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(parseInt(limit as string), offset);
+
     const { rows } = await pool.query(query, params);
 
-    res.json({ data: rows });
+    // Get total count
+    let countQuery = `SELECT COUNT(*) FROM admin_tasks WHERE 1=1`;
+    const countParams: any[] = [];
+    if (status) {
+      countQuery += ` AND status = $1`;
+      countParams.push(status);
+    }
+    const { rows: countRows } = await pool.query(countQuery, countParams);
+
+    res.json({
+      data: rows,
+      pagination: {
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        total: parseInt(countRows[0].count),
+        totalPages: Math.ceil(parseInt(countRows[0].count) / parseInt(limit as string))
+      }
+    });
   } catch (error: any) {
     console.error('Error fetching tasks:', error);
     res.status(500).json({ error: 'Failed to fetch tasks' });
