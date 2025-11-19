@@ -37,7 +37,7 @@ git status
 
 ```
 ctn-asr-monorepo/
-├── api/                    # Azure Functions backend (Node.js 20)
+├── api/                    # Container Apps backend (Node.js 20 + Express)
 ├── admin-portal/           # Admin UI (React 18 + Mantine v8)
 ├── member-portal/          # Member UI (React 18 + Mantine v8)
 ├── database/               # PostgreSQL schema & migrations
@@ -59,11 +59,11 @@ ctn-asr-monorepo/
 
 ```
 ┌──────────────────────────────────────┐
-│  1. ASR API Pipeline (Central)       │
-│  .azure-pipelines/asr-api.yml        │
+│  1. Container Apps API Pipeline      │
+│  .azure-pipelines/container-app-api.yml│
 └─────────┬────────────────────────────┘
           │ Triggers on: api/* changes
-          │ Deploys to: func-ctn-demo-asr-dev
+          │ Deploys to: ca-ctn-asr-api-dev (Container Apps)
           │
   ┌───────┴────────┐
   ↓                ↓
@@ -79,28 +79,33 @@ ctn-asr-monorepo/
 **Additional Pipelines:**
 - `bicep-infrastructure.yml` - Infrastructure as Code deployments (Azure Bicep)
 - `playwright-tests.yml` - E2E test execution pipeline
+- `container-app.bicep` - Container Apps infrastructure definition
 
 **Path Filters:**
 - Changes to `api/*` → Triggers ASR API + Admin + Member pipelines
 - Changes to `admin-portal/*` → ONLY Admin portal pipeline
 - Changes to `member-portal/*` → ONLY Member portal pipeline
 
-### API Architecture (Azure Functions)
+### API Architecture (Container Apps)
 
-**Entry Points:** API has multiple entry files controlling which functions are deployed:
-- `index.ts` - Full production set (~60 functions)
-- `production-index.ts` - Curated production subset with critical functions only
-- `essential-index.ts` - Minimal set for core portals (demo mode)
-- `test-index.ts` - Test environment
-- `minimal-index.ts` - Minimal HTTP triggers only
+**As of November 19, 2025:** API migrated from Azure Functions to Azure Container Apps for improved reliability.
 
-**Functions must be explicitly imported** in the entry file to register with Azure Functions runtime.
+**Key Files:**
+- `api/src/server.ts` - Express server entry point
+- `api/src/routes.ts` - API route definitions
+- `api/Dockerfile` - Multi-stage Docker build
+- `infrastructure/container-app.bicep` - Container Apps infrastructure
+
+**Container Configuration:**
+- Runtime: Node.js 20 + Express.js
+- Port: 8080
+- Scale: 0-10 replicas (auto-scale on HTTP requests)
+- Health probes: Liveness and Readiness on `/api/health`
 
 **Middleware Chain:**
 ```
-Request → HTTPS Enforcement → JWT Auth (JWKS) → RBAC Check →
-Rate Limit → Content-Type Validation → Business Logic →
-Audit Log → Response
+Request → CORS → JSON Parsing → Request Logging → Auth Check →
+Business Logic → Response
 ```
 
 **RBAC Model (5 roles):**
@@ -514,9 +519,10 @@ git push --force-with-lease origin main
 - **Orchestrator:** https://blue-dune-0353f1303.1.azurestaticapps.net
 
 ### Backend
-- **API:** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
+- **API (Container Apps):** https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api
 - **Database:** psql-ctn-demo-asr-dev.postgres.database.azure.com
 - **Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
+- **Container Registry:** crctnasrdev.azurecr.io
 
 **Note:** Front Door may show DeploymentStatus: NotStarted. Use Direct URLs if Front Door returns 404.
 
@@ -526,13 +532,14 @@ git push --force-with-lease origin main
 
 | Issue | Check |
 |-------|-------|
-| API 404 | Verify function imported in `index.ts` or `essential-index.ts` |
+| API 404 | Check Container App revision status: `az containerapp revision list` |
 | Auth errors | Scope must be `api://{client-id}/.default` |
 | DB connection | Check `.credentials` file first |
 | "Old version" | Run `git log -1`, compare to Azure DevOps build time |
-| Members not showing | Test API health: `curl https://func-ctn-demo-asr-dev.azurewebsites.net/api/health` |
+| Members not showing | Test API health: `curl https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health` |
 | E2E tests failing | Verify auth state in `playwright/.auth/user.json` |
 | Pipeline path filters not working | Ensure no mixed commits from concurrent sessions |
+| Container App not starting | Check logs: `az containerapp logs show --type console` |
 | 404s after successful deployment | Verify function imported in index.ts, re-run pipeline if needed |
 
 **Credentials:** Check `.credentials` file (gitignored) before searching Azure Portal.
@@ -544,10 +551,11 @@ git push --force-with-lease origin main
 ## Technology Stack
 
 - **Frontend:** React 18.3.1 + TypeScript 5.9.3 + Mantine v8.3.6 + Vite 7.1.10
-- **Backend:** Azure Functions v4 (Node.js 20.19.5 + TypeScript 5.9.3)
+- **Backend:** Azure Container Apps (Node.js 20 + Express.js + TypeScript 5.9.3)
 - **Database:** PostgreSQL 15 (Azure Flexible Server)
 - **Auth:** Azure AD (MSAL), RBAC with JWT (RS256)
 - **Testing:** Playwright (E2E), Vitest (unit tests)
 - **CI/CD:** Azure DevOps Pipelines
+- **Containerization:** Docker, Azure Container Registry
 - **Security:** Aikido scanning, Content Security Policy, rate limiting
 - **Monitoring:** Application Insights
