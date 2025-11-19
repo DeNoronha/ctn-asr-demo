@@ -6,13 +6,13 @@ import { getAuthenticatedAxios } from './client';
 
 export async function getAdminTasks(): Promise<{ tasks: any[] }> {
   const axiosInstance = await getAuthenticatedAxios();
-  const response = await axiosInstance.get<{ tasks: any[] }>('/admin/tasks');
+  const response = await axiosInstance.get<{ tasks: any[] }>('/admin/tasks/list');
   return response.data;
 }
 
 export async function getKvkReviewTasks(): Promise<any[]> {
   const axiosInstance = await getAuthenticatedAxios();
-  const response = await axiosInstance.get<any[]>('/admin/kvk-verification/flagged-entities');
+  const response = await axiosInstance.get<any[]>('/kvk-verification/flagged');
   return response.data;
 }
 
