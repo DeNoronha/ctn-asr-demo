@@ -338,14 +338,6 @@ stages:
               func --version
             displayName: 'Install Azure Functions Core Tools'
 
-          # ========================================
-          # Blue/Green Deployment with Staging Slot
-          # 1. Deploy to staging slot
-          # 2. Verify staging health
-          # 3. Swap staging to production
-          # 4. Verify production health
-          # ========================================
-
           # Create deployment package
           - script: |
               cd api
@@ -378,9 +370,7 @@ stages:
               echo "📦 Deployment package created: $(du -h deploy.zip | cut -f1)"
             displayName: 'Create deployment package'
 
-          # Deploy directly to production
-          # NOTE: Blue/green deployment disabled - staging slot not responding after deployment
-          # TODO: Investigate Linux Consumption plan staging slot cold start issues
+          # Deploy to production
           - task: AzureCLI@2
             displayName: 'Deploy API to Production'
             inputs:
@@ -541,9 +531,6 @@ stages:
               echo "API Version: 1.0.2"
               GIT_COMMIT=$(git rev-parse --short HEAD)
               echo "Git Commit: $GIT_COMMIT"
-              echo ""
-              echo "📝 Note: Direct production deployment"
-              echo "   TODO: Fix staging slot cold start for blue/green deployment"
               echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
               echo ""
             displayName: 'Deployment Summary'
