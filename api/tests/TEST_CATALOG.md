@@ -1,7 +1,7 @@
 # CTN ASR API Test Catalog
 
-**Generated:** November 18, 2025
-**Total Tests:** 72
+**Generated:** November 19, 2025
+**Total Tests:** 145 (API) + 280 (E2E) = ~425 Total
 
 ---
 
@@ -16,6 +16,10 @@
 | KvK Integration | 5 | API | Admin |
 | Endpoints | 12 | API | Admin |
 | Audit Logs | 15 | API | Admin |
+| **Member Profile** | **10** | **API** | **Member** |
+| **Member Contacts** | **16** | **API** | **Member** |
+| **Member Endpoints** | **15** | **API** | **Member** |
+| **Member Authorization** | **30** | **API** | **Member** |
 
 ---
 
@@ -141,6 +145,137 @@
 | 13 | Get audit logs - invalid date format | Filter with malformed date | 400 Bad Request | API | Admin |
 | 14 | Get audit logs - invalid date range | Filter where end_date < start_date | 400 Bad Request | API | Admin |
 | 15 | Get audit logs with multiple filters | Filter by resource_type + action + result | 200 OK with filtered results | API | Admin |
+
+---
+
+## Member Profile (10 tests) - Member Portal
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 1 | Get authenticated member | Retrieve own profile via GET /member | 200 OK with legalEntityId, legalName | API | Member |
+| 2 | Get member - no auth token | Request without authentication | 401 Unauthorized | API | Member |
+| 3 | Get member - invalid token | Request with invalid/malformed token | 401 Unauthorized | API | Member |
+| 4 | Profile contains required fields | Verify organizationId, legalName, status, legalEntityId | All fields present | API | Member |
+| 5 | Profile includes registry identifiers | Verify identifierType, identifierValue in array | Array with proper structure | API | Member |
+| 6 | Update profile - address fields | Update address_line1, postal_code, city, country_code | 200 OK with success message | API | Member |
+| 7 | Update profile - domain | Update domain field | 200 OK | API | Member |
+| 8 | Update profile - metadata | Update metadata object | 200 OK | API | Member |
+| 9 | Update profile - empty body | Send empty update request | 200 OK (no changes) | API | Member |
+| 10 | Update profile - no auth | Update without authentication | 401 Unauthorized | API | Member |
+
+---
+
+## Member Contacts (16 tests) - Member Portal
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 1 | Get own contacts | Retrieve contacts via GET /member-contacts | 200 OK with contacts array | API | Member |
+| 2 | Get contacts - no auth | Request without authentication | 401 Unauthorized | API | Member |
+| 3 | Get contacts - invalid token | Request with invalid token | 401 Unauthorized | API | Member |
+| 4 | Verify contact data structure | Check legal_entity_contact_id, legal_entity_id, email | Required fields present | API | Member |
+| 5 | Create TECHNICAL contact | POST /member/contacts with TECHNICAL type | 201 Created with contactId | API | Member |
+| 6 | Create BILLING contact | POST /member/contacts with BILLING type | 201 Created with contactId | API | Member |
+| 7 | Create ADMIN contact | POST /member/contacts with ADMIN type | 201 Created with contactId | API | Member |
+| 8 | Create contact - missing full_name | Create without full_name | 400 Bad Request | API | Member |
+| 9 | Create contact - missing email | Create without email | 400 or 500 (not-null constraint) | API | Member |
+| 10 | Create contact - no auth | Create without authentication | 401 Unauthorized | API | Member |
+| 11 | Verify created contacts in list | Check created contacts appear in GET | Contacts found in list | API | Member |
+| 12 | Update own contact | PUT /member/contacts/{id} with new data | 200 OK with success message | API | Member |
+| 13 | Update contact - change email | Update email address | 200 OK | API | Member |
+| 14 | Update contact - invalid UUID | Update with malformed UUID | 400 Bad Request | API | Member |
+| 15 | Update contact - not found (IDOR) | Update non-existent/other entity contact | 403 or 404 | API | Member |
+| 16 | Contacts sorted by primary status | Primary contacts listed first | Proper ordering | API | Member |
+
+---
+
+## Member Endpoints (15 tests) - Member Portal
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 1 | Get own endpoints | Retrieve endpoints via GET /member-endpoints | 200 OK with endpoints array | API | Member |
+| 2 | Get endpoints - no auth | Request without authentication | 401 Unauthorized | API | Member |
+| 3 | Get endpoints - invalid token | Request with invalid token | 401 Unauthorized | API | Member |
+| 4 | Verify endpoint data structure | Check endpoint_id, legal_entity_id, name, url | Required fields present | API | Member |
+| 5 | Create REST API endpoint | POST /member/endpoints with REST_API type | 201 Created with endpointId | API | Member |
+| 6 | Create webhook endpoint | POST /member/endpoints with WEBHOOK type | 201 Created with endpointId | API | Member |
+| 7 | Create GraphQL endpoint | POST /member/endpoints with GRAPHQL type | 201 Created with endpointId | API | Member |
+| 8 | Create endpoint - missing name | Create without endpoint_name | 400 or 500 | API | Member |
+| 9 | Create endpoint - missing URL | Create without endpoint_url | 400 or 500 | API | Member |
+| 10 | Create endpoint - no auth | Create without authentication | 401 Unauthorized | API | Member |
+| 11 | Verify created endpoints in list | Check created endpoints appear in GET | Endpoints found in list | API | Member |
+| 12 | Get own tokens | Retrieve tokens via GET /member/tokens | 200 OK with tokens array | API | Member |
+| 13 | Get tokens - no auth | Request without authentication | 401 Unauthorized | API | Member |
+| 14 | All endpoints belong to same entity | IDOR check - all endpoints same legal_entity_id | No cross-entity data | API | Member |
+| 15 | Only active endpoints returned | Verify is_deleted=false filter | No deleted endpoints | API | Member |
+
+---
+
+## Member Authorization (30 tests) - Member Portal
+
+### Authentication Tests
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 1 | Get profile requires auth | GET /member without token | 401 Unauthorized | API | Member |
+| 2 | Update profile requires auth | PUT /member/profile without token | 401 Unauthorized | API | Member |
+| 3 | Get contacts requires auth | GET /member-contacts without token | 401 Unauthorized | API | Member |
+| 4 | Create contact requires auth | POST /member/contacts without token | 401 Unauthorized | API | Member |
+| 5 | Get endpoints requires auth | GET /member-endpoints without token | 401 Unauthorized | API | Member |
+| 6 | Create endpoint requires auth | POST /member/endpoints without token | 401 Unauthorized | API | Member |
+| 7 | Get tokens requires auth | GET /member/tokens without token | 401 Unauthorized | API | Member |
+| 8 | Invalid token format rejected | Request with invalid JWT | 401 Unauthorized | API | Member |
+| 9 | Malformed JWT rejected | Request with malformed JWT | 401 Unauthorized | API | Member |
+
+### IDOR Protection Tests
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 10 | Cannot update other entity contact | PUT with fake contact UUID | 403 or 404 | API | Member |
+| 11 | Contacts scoped to own entity | Verify all contacts same legal_entity_id | No cross-entity data | API | Member |
+| 12 | Endpoints scoped to own entity | Verify all endpoints same legal_entity_id | No cross-entity data | API | Member |
+| 13 | Cannot list all members | GET /members with member token | Filtered or 403 | API | Member |
+
+### Admin-Only Restrictions
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 14 | Cannot access audit logs | GET /audit-logs with member token | 403 or filtered | API | Member |
+| 15 | Cannot create member | POST /members with member token | 403 | API | Member |
+| 16 | Cannot get applications | GET /applications with member token | 403 or filtered | API | Member |
+| 17 | Cannot get arbitrary legal entity | GET /legal-entities/{fakeId} | 403 or 404 | API | Member |
+| 18 | Cannot update arbitrary legal entity | PUT /legal-entities/{fakeId} | 403 or 404 | API | Member |
+| 19 | Cannot delete arbitrary contact | DELETE /contacts/{fakeId} | 403 or 404 | API | Member |
+| 20 | Cannot delete arbitrary identifier | DELETE /identifiers/{fakeId} | 403 or 404 | API | Member |
+
+### Input Validation Tests
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 21 | Invalid UUID rejected - contacts | PUT /member/contacts/not-a-uuid | 400 Bad Request | API | Member |
+| 22 | SQL injection in UUID rejected | PUT with SQL injection in UUID | 400 or 404 | API | Member |
+| 23 | XSS in profile data sanitized | PUT with XSS payload | 200 OK (sanitized) | API | Member |
+
+### Permission Boundary Tests
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 24 | Cannot self-escalate to admin | PUT /member/profile with role=SystemAdmin | 200 or 400 (field ignored) | API | Member |
+| 25 | Cannot approve applications | POST /applications/{id}/approve | 403 or 404 | API | Member |
+| 26 | Cannot update member status | PUT /members/{id}/status | 403 or 404 | API | Member |
+
+### Cross-Entity Prevention Tests
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 27 | Cannot specify other entity for contact | POST with different legal_entity_id | 201 (own entity) or 400/403 | API | Member |
+| 28 | Cannot specify other entity for endpoint | POST with different legal_entity_id | 201 (own entity) or 400/403 | API | Member |
+
+### Abuse Prevention Tests
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 29 | Multiple rapid requests handled | 5 concurrent GET /member requests | All 200 OK | API | Member |
+| 30 | Rate limiting enforced (if configured) | Excessive requests | 429 or all OK | API | Member |
 
 ---
 
@@ -481,24 +616,208 @@ FAILED:
 
 ---
 
-## Member Portal - Basic Authentication (4 tests)
+## Member Portal - Authentication (11 tests)
 
-**File:** `member-portal/e2e/basic-authentication.spec.ts`
+**File:** `member-portal/e2e/member-portal/authentication.spec.ts`
 
 | # | Test Name | Description | Expected Result | Type | Portal |
 |---|-----------|-------------|-----------------|------|--------|
-| 1 | Load with authenticated state | Navigate to / | Not redirected to Azure AD, CTN branding | E2E | Member |
-| 2 | Display user information | Check for Sign Out button | Sign Out visible | E2E | Member |
-| 3 | Navigate to different pages | Click nav links | Navigation works | E2E | Member |
-| 4 | No critical console errors | Monitor console | <10 critical errors | E2E | Member |
+| 1 | Load with authenticated state | Navigate to / | Not redirected to Azure AD | E2E | Member |
+| 2 | Display CTN branding | Check for branding elements | CTN visible | E2E | Member |
+| 3 | Bearer token in API requests | Monitor network requests | Authorization header present | E2E | Member |
+| 4 | Session persistence on reload | Reload page | Session maintained | E2E | Member |
+| 5 | MSAL tokens in sessionStorage | Check storage | Token keys present | E2E | Member |
+| 6 | Access token not exposed in URL | Check URL | No token in URL | E2E | Member |
+| 7 | Refresh token not in localStorage | Check storage | No refresh token exposed | E2E | Member |
+| 8 | Sign out button visible | Check UI | Sign out available | E2E | Member |
+| 9 | No critical console errors | Monitor console | <10 critical errors | E2E | Member |
+| 10 | API requests authenticated | Check network | All requests have auth | E2E | Member |
+| 11 | User info accessible | Check profile data | User data loaded | E2E | Member |
 
 ---
 
-## Member Portal - Error Handling (varies)
+## Member Portal - Dashboard (19 tests)
 
-**File:** `member-portal/e2e/member-portal-errors.spec.ts`
+**File:** `member-portal/e2e/member-portal/dashboard.spec.ts`
 
-Tests for error handling, security headers, and edge cases specific to the Member Portal.
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 1 | Display dashboard on load | Navigate to / | Dashboard visible | E2E | Member |
+| 2 | Organization name visible | Check header | Org name displayed | E2E | Member |
+| 3 | Status badge visible | Check status indicator | Status badge present | E2E | Member |
+| 4 | Membership tier display | Check tier info | Tier displayed | E2E | Member |
+| 5 | Stats cards - contacts count | Check contacts stat | Count displayed | E2E | Member |
+| 6 | Stats cards - endpoints count | Check endpoints stat | Count displayed | E2E | Member |
+| 7 | Stats cards - tokens count | Check tokens stat | Count displayed | E2E | Member |
+| 8 | Registry identifiers section | Check identifiers | Identifiers visible | E2E | Member |
+| 9 | Recent activity section | Check activity | Activity list visible | E2E | Member |
+| 10 | Navigation sidebar visible | Check sidebar | Nav items present | E2E | Member |
+| 11 | Quick actions available | Check action buttons | Actions clickable | E2E | Member |
+| 12-19 | Tab navigation, data refresh, etc. | Various dashboard features | Features work correctly | E2E | Member |
+
+---
+
+## Member Portal - Profile Management (19 tests)
+
+**File:** `member-portal/e2e/member-portal/profile.spec.ts`
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 1 | Display organization details | View profile section | Details visible | E2E | Member |
+| 2 | Edit button opens modal | Click Edit | Modal opens | E2E | Member |
+| 3 | Form pre-populated | Open edit modal | Existing values shown | E2E | Member |
+| 4 | Update address fields | Edit address | Changes saved | E2E | Member |
+| 5 | Cancel closes modal | Click Cancel | Modal closes, no changes | E2E | Member |
+| 6 | Validation - required fields | Submit empty | Errors shown | E2E | Member |
+| 7 | Success notification | Save changes | Toast shown | E2E | Member |
+| 8 | Country code dropdown | Check dropdown | Country codes available | E2E | Member |
+| 9 | Registry identifiers display | Check identifiers | KVK/LEI visible | E2E | Member |
+| 10-19 | Form validation, field limits, etc. | Various profile features | Features work correctly | E2E | Member |
+
+---
+
+## Member Portal - Contacts Management (22 tests)
+
+**File:** `member-portal/e2e/member-portal/contacts.spec.ts`
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 1 | Display contacts table | Navigate to contacts | Table visible | E2E | Member |
+| 2 | Table columns | Check headers | Name, Type, Email, Phone, Primary | E2E | Member |
+| 3 | Add contact button | Check UI | Button visible | E2E | Member |
+| 4 | Add contact modal | Click Add | Modal opens | E2E | Member |
+| 5 | Contact type dropdown | Check options | PRIMARY, TECHNICAL, BILLING, ADMIN | E2E | Member |
+| 6 | Create TECHNICAL contact | Fill form and save | Contact created | E2E | Member |
+| 7 | Create BILLING contact | Fill form and save | Contact created | E2E | Member |
+| 8 | Edit contact | Click edit row | Edit modal opens | E2E | Member |
+| 9 | Delete with confirmation | Click delete | Confirm dialog shown | E2E | Member |
+| 10 | Validation - email format | Enter invalid email | Error shown | E2E | Member |
+| 11 | Validation - phone format | Enter invalid phone | Error shown | E2E | Member |
+| 12 | Empty state | No contacts | Empty message shown | E2E | Member |
+| 13 | Primary contact badge | Check indicator | Badge visible | E2E | Member |
+| 14-22 | Preferred contact method, sorting, etc. | Various features | Features work correctly | E2E | Member |
+
+---
+
+## Member Portal - Endpoints Management (16 tests)
+
+**File:** `member-portal/e2e/member-portal/endpoints.spec.ts`
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 1 | Display endpoints table | Navigate to endpoints | Table visible | E2E | Member |
+| 2 | Register endpoint button | Check UI | Button visible | E2E | Member |
+| 3 | Registration wizard | Click Register | Wizard opens | E2E | Member |
+| 4 | Endpoint type selection | Check options | REST_API, WEBHOOK, GRAPHQL | E2E | Member |
+| 5 | Auth method selection | Check options | BEARER_TOKEN, API_KEY, HMAC | E2E | Member |
+| 6 | Create REST API endpoint | Complete wizard | Endpoint created | E2E | Member |
+| 7 | Create webhook endpoint | Complete wizard | Endpoint created | E2E | Member |
+| 8 | Status badges | Check indicators | Active/Inactive badges | E2E | Member |
+| 9 | Connection status | Check indicator | Connected/Disconnected | E2E | Member |
+| 10 | Edit endpoint | Click edit | Edit form opens | E2E | Member |
+| 11 | Deactivate endpoint | Toggle status | Status changed | E2E | Member |
+| 12-16 | URL validation, empty state, etc. | Various features | Features work correctly | E2E | Member |
+
+---
+
+## Member Portal - API Access (17 tests)
+
+**File:** `member-portal/e2e/member-portal/api-access.spec.ts`
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 1 | Display API access page | Navigate to API | Page visible | E2E | Member |
+| 2 | M2M clients section | Check section | Clients listed | E2E | Member |
+| 3 | Legacy tokens section | Check section | Tokens listed | E2E | Member |
+| 4 | OAuth 2.0 configuration | Check info | Client ID, scopes displayed | E2E | Member |
+| 5 | Create new client | Click Create | Form opens | E2E | Member |
+| 6 | Token status badges | Check indicators | Active/Expired badges | E2E | Member |
+| 7 | Copy client ID | Click copy | Copied to clipboard | E2E | Member |
+| 8 | Scope-based permissions | Check scopes | Permissions displayed | E2E | Member |
+| 9-17 | Token management, revocation, etc. | Various features | Features work correctly | E2E | Member |
+
+---
+
+## Member Portal - DNS Verification (21 tests)
+
+**File:** `member-portal/e2e/member-portal/dns-verification.spec.ts`
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 1 | Display DNS verification page | Navigate to DNS | Page visible | E2E | Member |
+| 2 | Token generation form | Check form | Domain input, generate button | E2E | Member |
+| 3 | Generate verification token | Enter domain | Token generated | E2E | Member |
+| 4 | TXT record instructions | Check display | DNS record shown | E2E | Member |
+| 5 | Copy verification token | Click copy | Copied to clipboard | E2E | Member |
+| 6 | Domain validation | Enter invalid | Error shown | E2E | Member |
+| 7 | Verification status | Check status | Pending/Verified badge | E2E | Member |
+| 8-21 | Multiple domains, expiration, etc. | Various features | Features work correctly | E2E | Member |
+
+---
+
+## Member Portal - Support & Resources (21 tests)
+
+**File:** `member-portal/e2e/member-portal/support.spec.ts`
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 1 | Display support page | Navigate to support | Page visible | E2E | Member |
+| 2 | Contact support info | Check section | Email, phone visible | E2E | Member |
+| 3 | Documentation links | Check links | Docs links work | E2E | Member |
+| 4 | System status indicator | Check status | Status badge visible | E2E | Member |
+| 5 | FAQ section | Check FAQs | Questions visible | E2E | Member |
+| 6-21 | FAQ expansion, links, etc. | Various features | Features work correctly | E2E | Member |
+
+---
+
+## Member Portal - Accessibility (19 tests)
+
+**File:** `member-portal/e2e/member-portal/accessibility.spec.ts`
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 1 | Landmark regions | Check main, header, nav, footer | Landmarks present | E2E | Member |
+| 2 | Focus indicators visible | Tab through page | Focus rings visible | E2E | Member |
+| 3 | Images have alt text | Check img elements | Alt attributes present | E2E | Member |
+| 4 | Form inputs have labels | Check inputs | Labels associated | E2E | Member |
+| 5 | Heading hierarchy | Check h1-h6 | Proper structure | E2E | Member |
+| 6 | Keyboard navigation | Tab through UI | All interactive reachable | E2E | Member |
+| 7 | Escape closes modals | Open modal, press Esc | Modal closes | E2E | Member |
+| 8 | Language attribute | Check html lang | Lang present | E2E | Member |
+| 9-19 | ARIA labels, contrast, etc. | WCAG 2.1 AA checks | Compliance verified | E2E | Member |
+
+---
+
+## Member Portal - Error Handling (16 tests)
+
+**File:** `member-portal/e2e/member-portal/error-handling.spec.ts`
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 1 | No JavaScript errors | Monitor console | No critical errors | E2E | Member |
+| 2 | API 500 error display | Intercept with 500 | Error message shown | E2E | Member |
+| 3 | API 404 error handling | Intercept with 404 | Graceful handling | E2E | Member |
+| 4 | Form validation errors | Submit invalid | Field errors shown | E2E | Member |
+| 5 | Empty states | No data | Empty message shown | E2E | Member |
+| 6 | Network timeout | Slow response | Timeout handling | E2E | Member |
+| 7-16 | Unhandled rejections, etc. | Various error cases | Proper handling | E2E | Member |
+
+---
+
+## Member Portal - Responsive Design (25 tests)
+
+**File:** `member-portal/e2e/member-portal/responsive.spec.ts`
+
+| # | Test Name | Description | Expected Result | Type | Portal |
+|---|-----------|-------------|-----------------|------|--------|
+| 1 | Mobile 375px - layout | iPhone SE viewport | Content fits, no overflow | E2E | Member |
+| 2 | Mobile 375px - navigation | Check nav | Hamburger menu | E2E | Member |
+| 3 | Mobile 375px - touch targets | Check buttons | Min 44px | E2E | Member |
+| 4 | Mobile 414px - layout | iPhone Plus viewport | Content fits | E2E | Member |
+| 5 | Tablet 768px - layout | iPad viewport | Responsive grid | E2E | Member |
+| 6 | Tablet 768px - sidebar | Check nav | Collapsed or visible | E2E | Member |
+| 7 | Desktop 1920px - layout | Full HD | Full width utilized | E2E | Member |
+| 8-25 | Modal behavior, font sizes, etc. | Various viewports | Proper responsiveness | E2E | Member |
 
 ---
 

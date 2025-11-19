@@ -34,6 +34,12 @@ const { runKvkTests } = require('./tests/kvk.test');
 const { runEndpointTests, cleanupEndpoints } = require('./tests/endpoints.test');
 const { runAuditTests } = require('./tests/audit.test');
 
+// Import member portal test modules
+const {
+  runAllMemberPortalTests,
+  cleanupAllMemberPortalTests
+} = require('./tests/member-portal');
+
 /**
  * Main test runner
  */
@@ -115,11 +121,15 @@ async function main() {
     // 7. Audit tests
     await runAuditTests(token);
 
+    // 8. Member Portal tests (self-service operations)
+    await runAllMemberPortalTests(token);
+
     // Cleanup test data
     console.log('\n============================================');
     console.log('  Cleanup');
     console.log('============================================');
 
+    await cleanupAllMemberPortalTests(token);
     await cleanupContacts(token);
     await cleanupIdentifiers(token);
     await cleanupEndpoints(token);

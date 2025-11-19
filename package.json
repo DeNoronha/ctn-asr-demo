@@ -17,6 +17,7 @@
   "devDependencies": {
     "@playwright/test": "^1.56.1",
     "@rollup/plugin-terser": "^0.4.4",
-    "exit-x": "^0.2.2"
+    "exit-x": "^0.2.2",
+    "xlsx": "^0.18.5"
   }
 }

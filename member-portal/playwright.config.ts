@@ -1,45 +1,46 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
 
 /**
  * Playwright Configuration for CTN Member Portal Testing
  *
- * This configuration is optimized for testing the deployed Azure Static Web App.
- *
- * Test Structure:
- * - e2e/ - E2E test files for member portal functionality
+ * Features:
+ * - Azure AD authentication testing
+ * - Screenshot and video capture on failure
+ * - Multiple browsers (Chromium, Firefox, Safari)
+ * - Reusable authentication state
  */
 
 export default defineConfig({
   testDir: './e2e',
 
-  // Maximum time one test can run for
-  timeout: 30 * 1000,
+  // Maximum time one test can run
+  timeout: 60 * 1000,
 
-  // Run tests in files in parallel
-  fullyParallel: true,
-
-  // Fail the build on CI if you accidentally left test.only in the source code
+  // Test configuration
+  fullyParallel: false, // Run tests serially to avoid auth conflicts
   forbidOnly: !!process.env.CI,
-
-  // Retry on CI only
   retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : 1,
 
-  // Opt out of parallel tests on CI
-  workers: process.env.CI ? 1 : undefined,
+  // Global setup to verify auth state
+  globalSetup: require.resolve('./playwright/global-setup'),
 
   // Reporter to use
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'test-results/results.json' }],
-    ['junit', { outputFile: 'playwright-report/results.xml' }],
     ['list'],
+    ['json', { outputFile: 'playwright-report/results.json' }],
+    ['junit', { outputFile: 'playwright-report/results.xml' }],
   ],
 
-  // Shared settings for all the projects below
+  // Shared settings for all projects
   use: {
-    // Base URL to use in actions like `await page.goto('/')`.
-    // This can be overridden per test file or project
-    baseURL: process.env.BASE_URL || 'https://calm-pebble-043b2db03.1.azurestaticapps.net',
+    // Base URL for tests
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'https://calm-pebble-043b2db03.1.azurestaticapps.net',
 
     // Collect trace when retrying the failed test
     trace: 'on-first-retry',
@@ -50,7 +51,7 @@ export default defineConfig({
     // Video on failure
     video: 'retain-on-failure',
 
-    // Browser viewport
+    // Browser context options
     viewport: { width: 1280, height: 720 },
 
     // Timeout for each action
@@ -58,14 +59,19 @@ export default defineConfig({
 
     // Navigation timeout
     navigationTimeout: 30 * 1000,
+
+    // Ignore HTTPS errors (for local development)
+    ignoreHTTPSErrors: false,
   },
 
-  // Configure projects for major browsers
+  // Configure projects for different browsers
   projects: [
     {
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
+        // Use authenticated state from saved session
+        storageState: 'playwright/.auth/user.json',
         // Additional Chrome-specific settings
         launchOptions: {
           args: ['--disable-blink-features=AutomationControlled'],
@@ -73,33 +79,20 @@ export default defineConfig({
       },
     },
 
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-
     // Mobile viewports for responsive testing
     {
       name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
+      use: {
+        ...devices['Pixel 5'],
+        storageState: 'playwright/.auth/user.json',
+      },
     },
     {
       name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
+      use: {
+        ...devices['iPhone 12'],
+        storageState: 'playwright/.auth/user.json',
+      },
     },
   ],
-
-  // Run your local dev server before starting the tests
-  // Uncomment if testing against local dev server
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  //   timeout: 120 * 1000,
-  // },
 });

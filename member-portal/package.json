@@ -47,7 +47,9 @@
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:auth": "playwright test auth.setup.ts --project=chromium"
   },
   "browserslist": {
     "production": [">0.2%", "not dead", "not op_mini all"],
@@ -56,6 +58,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@playwright/test": "^1.56.0",
+    "dotenv": "^16.4.5",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/node": "^20.19.21",
     "@types/react": "^19.2.2",
