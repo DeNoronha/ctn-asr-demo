@@ -146,6 +146,7 @@ else
     test_auth_endpoint "Get All Members" "$API_BASE_URL/api/v1/all-members" 200
     test_auth_endpoint "Get Applications" "$API_BASE_URL/api/v1/applications" 200
     test_auth_endpoint "Get Tasks" "$API_BASE_URL/api/v1/admin/tasks/list" 200
+    test_auth_endpoint "Get Audit Logs" "$API_BASE_URL/api/v1/audit-logs" 200
 
     # Note: Users endpoint doesn't exist in current deployment
     # Note: Endpoints are per-entity, not a global list
