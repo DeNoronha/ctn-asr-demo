@@ -122,7 +122,7 @@ steps:
   - script: |
       cd member-portal
       echo "🔍 Running TypeScript compilation check..."
-      npx tsc --noEmit --pretty
+      npm run typecheck
     displayName: 'TypeScript compilation check (fast-fail)'
     continueOnError: false
 
