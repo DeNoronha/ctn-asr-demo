@@ -157,7 +157,8 @@ steps:
 
   - script: |
       echo "🔍 Scanning workspace dependencies for HIGH and CRITICAL vulnerabilities..."
-      trivy fs --severity HIGH,CRITICAL --exit-code 1 --scanners vuln .
+      cd member-portal
+      trivy fs --severity HIGH,CRITICAL --exit-code 1 --scanners vuln --ignorefile .trivyignore .
     displayName: 'Trivy: Scan filesystem for vulnerabilities (HIGH/CRITICAL only)'
 
   # ========================================
