@@ -15,8 +15,8 @@ interface KvKDocumentUploadProps {
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ACCEPTED_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
-const ACCEPTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg'];
+const ACCEPTED_TYPES = ['application/pdf'];
+const ACCEPTED_EXTENSIONS = ['.pdf'];
 
 export const KvKDocumentUpload: React.FC<KvKDocumentUploadProps> = ({
   onFileSelect,
@@ -55,17 +55,7 @@ export const KvKDocumentUpload: React.FC<KvKDocumentUploadProps> = ({
     setError(null);
     setSelectedFile(file);
     onFileSelect(file);
-
-    // Generate preview for images
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setPreview(null);
-    }
+    setPreview(null); // PDF files don't have image preview
   };
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
@@ -155,17 +145,13 @@ export const KvKDocumentUpload: React.FC<KvKDocumentUploadProps> = ({
           <Upload size={48} />
           <h4>Drag and drop your KvK extract here</h4>
           <p>or click to browse</p>
-          <p className="file-types">Accepted: PDF, PNG, JPG (max 10MB)</p>
+          <p className="file-types">Accepted: PDF (max 10MB)</p>
         </div>
       ) : (
         <div className="file-preview">
           <div className="file-info">
             <div className="file-icon">
-              {selectedFile.type === 'application/pdf' ? (
-                <FileText size={32} />
-              ) : (
-                preview && <img src={preview} alt="Document preview" className="image-preview" />
-              )}
+              <FileText size={32} />
             </div>
             <div className="file-details">
               <div className="file-name">{selectedFile.name}</div>

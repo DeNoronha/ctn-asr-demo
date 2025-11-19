@@ -436,12 +436,13 @@ async function handler(
         verificationFlags = [...verificationFlags, ...kvkValidation.flags];
 
         // Determine verification status
+        // Note: Database CHECK constraint allows: 'pending', 'verified', 'failed', 'manual_review'
         if (verificationFlags.filter(f => f.includes('entered_')).length > 0) {
-          verificationStatus = 'flagged';
+          verificationStatus = 'manual_review';
         } else if (kvkValidation.isValid) {
           verificationStatus = 'verified';
         } else if (kvkValidation.flags.length > 0) {
-          verificationStatus = 'flagged';
+          verificationStatus = 'manual_review';
         } else {
           verificationStatus = 'failed';
         }
@@ -580,7 +581,7 @@ async function handler(
     let verificationMessage = '';
     if (verificationStatus === 'verified') {
       verificationMessage = 'Your KvK document has been verified successfully.';
-    } else if (verificationStatus === 'flagged') {
+    } else if (verificationStatus === 'manual_review') {
       verificationMessage = 'Your KvK document has been uploaded. Our team will review it for verification.';
     } else {
       verificationMessage = 'Your KvK document has been uploaded. Our team will review it manually.';

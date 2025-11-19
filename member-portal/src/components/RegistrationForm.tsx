@@ -299,7 +299,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               </Text>
               <Text size="sm" c="dimmed" mb="md">
                 Upload your official KvK extract. We'll verify your company details automatically.
-                Accepted formats: PDF, PNG, JPG (max 10MB)
+                Accepted format: PDF (max 10MB)
               </Text>
               <KvKDocumentUpload onFileSelect={setKvkDocument} disabled={loading} />
             </div>
