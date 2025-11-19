@@ -1,0 +1,4 @@
+# Trivy vulnerability ignore file
+# These vulnerabilities are accepted risks with no available fixes
+
+# Currently no exceptions needed

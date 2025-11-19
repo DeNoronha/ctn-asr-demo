@@ -1,0 +1,9 @@
+# Trivy vulnerability ignore file
+# These vulnerabilities are accepted risks with no available fixes
+
+# xlsx (SheetJS) - used for Excel export only, not processing untrusted files
+# GHSA-4r6h-8v6p-xvw6 - Prototype Pollution in sheetJS
+# GHSA-5pgg-2g8v-p9x9 - SheetJS Regular Expression Denial of Service (ReDoS)
+# Risk accepted: Client-side Excel export only, no untrusted input
+GHSA-4r6h-8v6p-xvw6
+GHSA-5pgg-2g8v-p4x9
