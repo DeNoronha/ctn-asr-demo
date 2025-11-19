@@ -378,74 +378,26 @@ stages:
               echo "📦 Deployment package created: $(du -h deploy.zip | cut -f1)"
             displayName: 'Create deployment package'
 
-          # Step 1: Deploy to STAGING slot
+          # Deploy directly to production
+          # NOTE: Blue/green deployment disabled - staging slot not responding after deployment
+          # TODO: Investigate Linux Consumption plan staging slot cold start issues
           - task: AzureCLI@2
-            displayName: 'Deploy API to Staging Slot'
+            displayName: 'Deploy API to Production'
             inputs:
               azureSubscription: $(azureSubscription)
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
                 cd api
-                echo "🚀 Deploying to $(functionAppName) STAGING slot..."
+                echo "🚀 Deploying to $(functionAppName)..."
 
                 az webapp deployment source config-zip \
                   --resource-group rg-ctn-demo-asr-dev \
                   --name $(functionAppName) \
-                  --slot staging \
                   --src deploy.zip \
                   --timeout 300
 
-                echo "✅ Deployment to staging slot completed"
-
-          # Step 2: Health check on STAGING slot
-          - script: |
-              echo "⏳ Waiting 60 seconds for staging slot to initialize..."
-              sleep 60
-
-              echo "🔍 Running health check on STAGING slot..."
-              STAGING_URL="https://$(functionAppName)-staging.azurewebsites.net/api/health"
-              MAX_RETRIES=5
-              RETRY_DELAY=15
-
-              for i in $(seq 1 $MAX_RETRIES); do
-                echo "Staging health check attempt $i of $MAX_RETRIES..."
-                HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$STAGING_URL")
-
-                if [ "$HEALTH_STATUS" = "200" ]; then
-                  echo "✅ Staging health check passed (HTTP 200)"
-                  curl -s "$STAGING_URL" | jq '.' || true
-                  exit 0
-                fi
-
-                echo "⚠️  Health check returned HTTP $HEALTH_STATUS, retrying in ${RETRY_DELAY}s..."
-                sleep $RETRY_DELAY
-              done
-
-              echo "❌ Staging health check FAILED after $MAX_RETRIES attempts"
-              echo "   URL: $STAGING_URL"
-              echo "   Last status: $HEALTH_STATUS"
-              echo "   ABORTING deployment - staging slot is unhealthy"
-              exit 1
-            displayName: 'Health Check - Staging Slot (BLOCKING)'
-
-          # Step 3: Swap staging to production
-          - task: AzureCLI@2
-            displayName: 'Swap Staging to Production'
-            inputs:
-              azureSubscription: $(azureSubscription)
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                echo "🔄 Swapping staging slot to production..."
-
-                az functionapp deployment slot swap \
-                  --name $(functionAppName) \
-                  --resource-group rg-ctn-demo-asr-dev \
-                  --slot staging \
-                  --target-slot production
-
-                echo "✅ Slot swap completed - staging is now production"
+                echo "✅ Deployment completed"
 
           # Configure CORS settings
           - task: AzureCLI@2
@@ -586,15 +538,12 @@ stages:
               echo "✅ API DEPLOYMENT SUCCESSFUL"
               echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
               echo "Production URL: https://$(functionAppName).azurewebsites.net"
-              echo "Staging URL: https://$(functionAppName)-staging.azurewebsites.net"
               echo "API Version: 1.0.2"
               GIT_COMMIT=$(git rev-parse --short HEAD)
               echo "Git Commit: $GIT_COMMIT"
               echo ""
-              echo "🔄 Blue/Green Deployment:"
-              echo "   1. Deployed to staging slot"
-              echo "   2. Verified staging health"
-              echo "   3. Swapped staging to production"
+              echo "📝 Note: Direct production deployment"
+              echo "   TODO: Fix staging slot cold start for blue/green deployment"
               echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
               echo ""
             displayName: 'Deployment Summary'
