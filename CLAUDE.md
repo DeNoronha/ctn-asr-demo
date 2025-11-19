@@ -59,7 +59,7 @@ ctn-asr-monorepo/
 
 ```
 ┌──────────────────────────────────────┐
-│  1. Container Apps API Pipeline      │
+│  1. Association-Register-Backend     │
 │  .azure-pipelines/container-app-api.yml│
 └─────────┬────────────────────────────┘
           │ Triggers on: api/* changes
