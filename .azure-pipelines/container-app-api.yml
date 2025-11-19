@@ -16,7 +16,7 @@ pool:
 
 variables:
   - name: azureSubscription
-    value: 'Azure subscription 1'
+    value: 'azure-ctn-demo'
   - name: containerRegistry
     value: 'crctnasrdev'
   - name: imageRepository
