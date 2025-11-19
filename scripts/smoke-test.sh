@@ -5,7 +5,8 @@
 # ==============================================
 
 # Configuration
-API_BASE_URL="${API_BASE_URL:-https://func-ctn-demo-asr-dev.azurewebsites.net}"
+# API migrated from Azure Functions to Container Apps (November 2025)
+API_BASE_URL="${API_BASE_URL:-https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io}"
 ADMIN_PORTAL_URL="${ADMIN_PORTAL_URL:-https://calm-tree-03352ba03.1.azurestaticapps.net}"
 MEMBER_PORTAL_URL="${MEMBER_PORTAL_URL:-https://calm-pebble-043b2db03.1.azurestaticapps.net}"
 TIMEOUT=10
@@ -143,13 +144,11 @@ else
     }
 
     # Test critical authenticated endpoints (Admin Portal - SystemAdmin user)
-    test_auth_endpoint "Get All Members" "$API_BASE_URL/api/v1/all-members" 200
+    # Updated endpoint paths for Container Apps migration (November 2025)
+    test_auth_endpoint "Get All Members" "$API_BASE_URL/api/v1/members" 200
     test_auth_endpoint "Get Applications" "$API_BASE_URL/api/v1/applications" 200
-    test_auth_endpoint "Get Tasks" "$API_BASE_URL/api/v1/admin/tasks/list" 200
+    test_auth_endpoint "Get Tasks" "$API_BASE_URL/api/v1/tasks" 200
     test_auth_endpoint "Get Audit Logs" "$API_BASE_URL/api/v1/audit-logs" 200
-
-    # Note: Users endpoint doesn't exist in current deployment
-    # Note: Endpoints are per-entity, not a global list
 fi
 fi  # End of SKIP_AUTH_TESTS check
 
