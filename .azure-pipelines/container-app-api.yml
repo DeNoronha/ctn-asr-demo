@@ -61,72 +61,68 @@ stages:
     displayName: 'Deploy to Container Apps'
     dependsOn: Build
     jobs:
-      - deployment: DeployContainerApp
+      - job: DeployContainerApp
         displayName: 'Deploy Container App'
-        environment: 'dev'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - checkout: self
+        steps:
+          - checkout: self
 
-                - task: AzureCLI@2
-                  displayName: 'Deploy Container App'
-                  inputs:
-                    azureSubscription: '$(azureSubscription)'
-                    scriptType: 'bash'
-                    scriptLocation: 'inlineScript'
-                    inlineScript: |
-                      # Deploy Bicep template
-                      az deployment group create \
-                        --resource-group $(resourceGroup) \
-                        --template-file infrastructure/container-app.bicep \
-                        --parameters \
-                          environmentName=dev \
-                          containerImage=$(containerRegistry).azurecr.io/$(imageRepository):$(tag)
+          - task: AzureCLI@2
+            displayName: 'Deploy Container App'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                # Deploy Bicep template
+                az deployment group create \
+                  --resource-group $(resourceGroup) \
+                  --template-file infrastructure/container-app.bicep \
+                  --parameters \
+                    environmentName=dev \
+                    containerImage=$(containerRegistry).azurecr.io/$(imageRepository):$(tag)
 
-                      # Get the Container App URL
-                      CONTAINER_APP_URL=$(az containerapp show \
-                        --name ca-ctn-asr-api-dev \
-                        --resource-group $(resourceGroup) \
-                        --query properties.configuration.ingress.fqdn \
-                        --output tsv)
+                # Get the Container App URL
+                CONTAINER_APP_URL=$(az containerapp show \
+                  --name ca-ctn-asr-api-dev \
+                  --resource-group $(resourceGroup) \
+                  --query properties.configuration.ingress.fqdn \
+                  --output tsv)
 
-                      echo "Container App deployed to: https://$CONTAINER_APP_URL"
+                echo "Container App deployed to: https://$CONTAINER_APP_URL"
 
-                - task: AzureCLI@2
-                  displayName: 'Health Check'
-                  inputs:
-                    azureSubscription: '$(azureSubscription)'
-                    scriptType: 'bash'
-                    scriptLocation: 'inlineScript'
-                    inlineScript: |
-                      # Wait for deployment to stabilize
-                      sleep 30
+          - task: AzureCLI@2
+            displayName: 'Health Check'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                # Wait for deployment to stabilize
+                sleep 30
 
-                      # Get Container App URL
-                      CONTAINER_APP_URL=$(az containerapp show \
-                        --name ca-ctn-asr-api-dev \
-                        --resource-group $(resourceGroup) \
-                        --query properties.configuration.ingress.fqdn \
-                        --output tsv)
+                # Get Container App URL
+                CONTAINER_APP_URL=$(az containerapp show \
+                  --name ca-ctn-asr-api-dev \
+                  --resource-group $(resourceGroup) \
+                  --query properties.configuration.ingress.fqdn \
+                  --output tsv)
 
-                      # Health check
-                      echo "Checking health at https://$CONTAINER_APP_URL/api/health"
+                # Health check
+                echo "Checking health at https://$CONTAINER_APP_URL/api/health"
 
-                      for i in 1 2 3 4 5; do
-                        HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://$CONTAINER_APP_URL/api/health")
-                        if [ "$HEALTH_STATUS" = "200" ]; then
-                          echo "Health check passed!"
-                          curl -s "https://$CONTAINER_APP_URL/api/health" | jq .
-                          exit 0
-                        fi
-                        echo "Attempt $i: HTTP $HEALTH_STATUS - waiting..."
-                        sleep 10
-                      done
+                for i in 1 2 3 4 5; do
+                  HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://$CONTAINER_APP_URL/api/health")
+                  if [ "$HEALTH_STATUS" = "200" ]; then
+                    echo "Health check passed!"
+                    curl -s "https://$CONTAINER_APP_URL/api/health" | jq .
+                    exit 0
+                  fi
+                  echo "Attempt $i: HTTP $HEALTH_STATUS - waiting..."
+                  sleep 10
+                done
 
-                      echo "Health check failed after 5 attempts"
-                      exit 1
+                echo "Health check failed after 5 attempts"
+                exit 1
 
   - stage: Test
     displayName: 'API Tests'
