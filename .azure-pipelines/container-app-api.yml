@@ -15,7 +15,6 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: ctn-asr-dev
   - name: azureSubscription
     value: 'Azure subscription 1'
   - name: containerRegistry
