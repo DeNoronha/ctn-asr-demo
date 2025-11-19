@@ -15,7 +15,7 @@ dotenv.config();
  */
 
 export default defineConfig({
-  testDir: './e2e',
+  testDir: '../tests/member-portal/e2e',
 
   // Maximum time one test can run
   timeout: 60 * 1000,
@@ -31,10 +31,10 @@ export default defineConfig({
 
   // Reporter to use
   reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
+    ['html', { outputFolder: '../tests/results/playwright/member-portal' }],
     ['list'],
-    ['json', { outputFile: 'playwright-report/results.json' }],
-    ['junit', { outputFile: 'playwright-report/results.xml' }],
+    ['json', { outputFile: '../tests/results/playwright/member-portal/results.json' }],
+    ['junit', { outputFile: '../tests/results/playwright/member-portal/results.xml' }],
   ],
 
   // Shared settings for all projects

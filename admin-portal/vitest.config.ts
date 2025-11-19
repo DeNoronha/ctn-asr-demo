@@ -14,13 +14,15 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./src/setupTests.ts'],
+    include: ['../tests/admin-portal/unit/**/*.test.{ts,tsx}'],
+    setupFiles: ['../tests/admin-portal/unit/setupTests.ts'],
     css: true,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      reportsDirectory: '../tests/results/vitest/admin-portal',
       include: ['src/components/**/*.{ts,tsx}'],
-      exclude: ['src/components/**/*.test.{ts,tsx}', 'src/components/**/__tests__/**'],
+      exclude: ['src/components/**/*.test.{ts,tsx}'],
     },
     reporters: process.env.CI ? ['junit', 'verbose'] : ['verbose'],
   },

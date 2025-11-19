@@ -16,8 +16,12 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:verbose": "jest --verbose",
-    "test:api": "node tests/run-api-tests.js",
-    "test:api:ci": "node tests/run-api-tests.js --ci"
+    "test:api": "node ../tests/api/integration/run-api-tests.js",
+    "test:api:ci": "node ../tests/api/integration/run-api-tests.js --ci",
+    "test:deploy": "node ../tests/api/deployment/run-all.js",
+    "test:deploy:quick": "node ../tests/api/deployment/run-all.js --quick",
+    "test:deploy:health": "node ../tests/api/deployment/health.test.js",
+    "test:deploy:security": "node ../tests/api/deployment/security.test.js"
   },
   "dependencies": {
     "@azure/ai-form-recognizer": "^5.1.0",

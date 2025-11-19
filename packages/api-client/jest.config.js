@@ -1,8 +1,8 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/tests'],
-  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
+  roots: ['<rootDir>/../../tests/packages/api-client'],
+  testMatch: ['**/?(*.)+(spec|test).ts'],
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
@@ -11,7 +11,7 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/index.ts',
   ],
-  coverageDirectory: 'coverage',
+  coverageDirectory: '../../tests/results/jest/api-client',
   coverageReporters: ['text', 'lcov', 'html'],
   moduleFileExtensions: ['ts', 'js', 'json'],
   verbose: true,

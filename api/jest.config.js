@@ -2,9 +2,8 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/src'],
+  roots: ['<rootDir>/../tests/api/unit'],
   testMatch: [
-    '**/__tests__/**/*.test.ts',
     '**/*.test.ts'
   ],
   transform: {
@@ -18,11 +17,10 @@ module.exports = {
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
-    '!src/**/__tests__/**',
     '!src/index.ts',
     '!src/essential-index.ts'
   ],
-  coverageDirectory: 'coverage',
+  coverageDirectory: '../tests/results/jest/api',
   coverageReporters: ['text', 'lcov', 'html'],
   moduleFileExtensions: ['ts', 'js', 'json'],
   testTimeout: 10000,
@@ -31,7 +29,7 @@ module.exports = {
       isolatedModules: true
     }
   },
-  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/../tests/api/unit/setup.ts'],
   modulePathIgnorePatterns: [],
   modulePaths: ['<rootDir>/../node_modules', '<rootDir>/node_modules']
 };
