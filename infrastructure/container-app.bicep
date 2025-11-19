@@ -145,6 +145,9 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
             { name: 'AZURE_AD_CLIENT_ID', value: 'd3037c11-a541-4f21-8862-8079137a0cde' }
             // JWT
             { name: 'JWT_SECRET', secretRef: 'jwt-secret' }
+            // Application Insights
+            { name: 'APPINSIGHTS_INSTRUMENTATIONKEY', value: '303479d6-d426-4dbb-8961-e629d054f740' }
+            { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: 'InstrumentationKey=303479d6-d426-4dbb-8961-e629d054f740;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/;LiveEndpoint=https://westeurope.livediagnostics.monitor.azure.com/' }
           ]
           probes: [
             {
