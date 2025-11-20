@@ -43,18 +43,9 @@ module coreInfrastructure './modules/core-infrastructure.bicep' = {
   }
 }
 
-// Deploy function app
-module functionApp './modules/function-app.bicep' = {
-  name: 'function-app-deployment'
-  scope: resourceGroup
-  params: {
-    environment: environment
-    location: location
-    resourcePrefix: resourcePrefix
-    tags: tags
-    storageAccountName: coreInfrastructure.outputs.storageAccountName
-  }
-}
+// NOTE: Function App module removed - migrated to Container Apps (November 19, 2025)
+// See: infrastructure/bicep/container-app.bicep for Container Apps deployment
+// Deployment handled by: .azure-pipelines/container-app-api.yml
 
 // Deploy static web apps
 module staticWebApps './modules/static-web-apps.bicep' = {
@@ -140,19 +131,21 @@ module messaging './modules/messaging.bicep' = {
 }
 
 // Deploy API Management
-module apiManagement './modules/api-management.bicep' = {
-  name: 'api-management-deployment'
-  scope: resourceGroup
-  params: {
-    environment: environment
-    location: location
-    resourcePrefix: resourcePrefix
-    tags: tags
-    backendApiUrl: 'https://${functionApp.outputs.functionAppHostName}/api'
-    publisherEmail: 'admin@ctn-network.org'
-    publisherName: 'CTN Network'
-  }
-}
+// NOTE: Commented out - API Management not currently used with Container Apps
+// If re-enabled, update backendApiUrl to Container Apps endpoint
+// module apiManagement './modules/api-management.bicep' = {
+//   name: 'api-management-deployment'
+//   scope: resourceGroup
+//   params: {
+//     environment: environment
+//     location: location
+//     resourcePrefix: resourcePrefix
+//     tags: tags
+//     backendApiUrl: 'https://ca-ctn-asr-api-${environment}.azurecontainerapps.io/api'
+//     publisherEmail: 'admin@ctn-network.org'
+//     publisherName: 'CTN Network'
+//   }
+// }
 
 // Optional: Deploy secrets to Key Vault (only when secrets are provided)
 @description('Enable Key Vault secrets deployment (set to true when providing secrets)')
@@ -187,27 +180,19 @@ module keyVaultSecrets './modules/key-vault-secrets.bicep' = if (enableSecretsDe
   ]
 }
 
-// Grant Function App access to Key Vault secrets
-resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup.id, functionApp.outputs.functionAppPrincipalId, 'Key Vault Secrets User')
-  scope: resourceGroup
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6') // Key Vault Secrets User
-    principalId: functionApp.outputs.functionAppPrincipalId
-    principalType: 'ServicePrincipal'
-  }
-}
+// NOTE: Key Vault access for Container Apps configured in container-app.bicep
+// Container Apps uses managed identity to access Key Vault secrets
 
 // Outputs
 output resourceGroupName string = resourceGroup.name
-output functionAppName string = functionApp.outputs.functionAppName
-output functionAppUrl string = 'https://${functionApp.outputs.functionAppHostName}'
+// NOTE: Container Apps outputs now in container-app.bicep
 output staticWebAppName string = staticWebApps.outputs.adminPortalName
 output memberPortalName string = staticWebApps.outputs.memberPortalName
 output databaseServerName string = database.outputs.serverName
 output keyVaultName string = coreInfrastructure.outputs.keyVaultName
-output apimGatewayUrl string = apiManagement.outputs.apimGatewayUrl
-output apimName string = apiManagement.outputs.apimName
+// NOTE: API Management commented out - see line 142
+// output apimGatewayUrl string = apiManagement.outputs.apimGatewayUrl
+// output apimName string = apiManagement.outputs.apimName
 output frontDoorId string = frontDoor.outputs.frontDoorId
 output frontDoorName string = frontDoor.outputs.frontDoorName
 output adminFrontDoorUrl string = frontDoor.outputs.adminEndpointUrl

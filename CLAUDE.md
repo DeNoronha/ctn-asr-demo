@@ -45,7 +45,12 @@ ctn-asr-monorepo/
 │   └── api-client/         # Shared TypeScript API client
 ├── shared/
 │   └── vite-config-base/   # Shared Vite config
-├── infrastructure/         # Azure Bicep IaC
+├── infrastructure/
+│   └── bicep/              # Azure Bicep IaC (unified location)
+│       ├── main.bicep      # Main infrastructure template
+│       ├── container-app.bicep  # Container Apps deployment
+│       ├── parameters.*.json    # Environment parameters
+│       └── modules/        # Bicep modules
 └── .azure-pipelines/       # CI/CD pipelines
 ```
 
@@ -78,8 +83,9 @@ ctn-asr-monorepo/
 
 **Additional Pipelines:**
 - `bicep-infrastructure.yml` - Infrastructure as Code deployments (Azure Bicep)
+  - Deploys: `infrastructure/bicep/main.bicep`
+  - Includes: Static Web Apps, Front Door, PostgreSQL, Key Vault
 - `playwright-tests.yml` - E2E test execution pipeline
-- `container-app.bicep` - Container Apps infrastructure definition
 
 **Path Filters:**
 - Changes to `api/*` → Triggers ASR API + Admin + Member pipelines
@@ -94,7 +100,8 @@ ctn-asr-monorepo/
 - `api/src/server.ts` - Express server entry point
 - `api/src/routes.ts` - API route definitions
 - `api/Dockerfile` - Multi-stage Docker build
-- `infrastructure/container-app.bicep` - Container Apps infrastructure
+- `infrastructure/bicep/container-app.bicep` - Container Apps infrastructure
+- `infrastructure/bicep/main.bicep` - Main infrastructure orchestration
 
 **Container Configuration:**
 - Runtime: Node.js 20 + Express.js
@@ -465,7 +472,7 @@ git push --force-with-lease origin main
 
 ### Container Apps & Express
 
-1. **Environment variables in Container Apps** → Defined in Bicep infrastructure and injected at runtime (see `infrastructure/container-app.bicep`)
+1. **Environment variables in Container Apps** → Defined in Bicep infrastructure and injected at runtime (see `infrastructure/bicep/container-app.bicep`)
 2. **Health probes required** → Liveness and readiness probes on `/api/health` ensure Container Apps traffic routing
 3. **Port 8080 is standard** → Express server listens on port 8080 (configurable via PORT env var)
 4. **Graceful shutdown implemented** → SIGTERM/SIGINT handlers close HTTP server → drain connections → close DB pool → exit (30s timeout)
