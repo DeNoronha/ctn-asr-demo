@@ -336,14 +336,14 @@ function AppContent(_props: AppContentProps) {
                 className={`tab-button ${activeTab === 'integrations' ? 'active' : ''}`}
                 onClick={() => setActiveTab('integrations')}
               >
-                Integration Endpoints
+                Inbound Endpoints
               </button>
               <button
                 type="button"
                 className={`tab-button ${activeTab === 'api-access' ? 'active' : ''}`}
                 onClick={() => setActiveTab('api-access')}
               >
-                API Access
+                Outbound Endpoints
               </button>
               <button
                 type="button"
