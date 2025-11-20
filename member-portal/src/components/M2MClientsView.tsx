@@ -3,7 +3,7 @@
  * Member-scoped M2M client management (members see only their own clients)
  */
 
-import { Button, Checkbox, Group, Modal, Select, TextInput, Textarea } from '@mantine/core';
+import { ActionIcon, Button, Checkbox, Group, Modal, Select, TextInput, Textarea, Tooltip } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -345,30 +345,37 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
               {
                 accessor: 'actions',
                 title: 'Actions',
-                width: 200,
+                width: 100,
                 render: (client) => (
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <Button
-                      size="sm"
-                      onClick={() => handleGenerateSecret(client)}
-                      disabled={loading || !client.is_active}
-                      title="Generate new secret"
-                    >
-                      <Key size={16} /> New Secret
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="subtle"
-                      onClick={() => {
-                        setSelectedClient(client);
-                        setShowDeleteDialog(true);
-                      }}
-                      disabled={loading}
-                      title="Deactivate client"
-                    >
-                      <Trash2 size={16} />
-                    </Button>
-                  </div>
+                  <Group gap={4} wrap="nowrap">
+                    <Tooltip label="Generate new secret">
+                      <ActionIcon
+                        variant="subtle"
+                        color="blue"
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          handleGenerateSecret(client);
+                        }}
+                        disabled={loading || !client.is_active}
+                      >
+                        <Key size={16} />
+                      </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label="Deactivate client">
+                      <ActionIcon
+                        variant="subtle"
+                        color="red"
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          setSelectedClient(client);
+                          setShowDeleteDialog(true);
+                        }}
+                        disabled={loading}
+                      >
+                        <Trash2 size={16} />
+                      </ActionIcon>
+                    </Tooltip>
+                  </Group>
                 ),
               },
             ]}
