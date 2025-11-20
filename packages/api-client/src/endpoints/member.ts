@@ -162,7 +162,60 @@ export class MemberEndpoint {
    * Generate secret for M2M client
    */
   async generateM2MClientSecret(clientId: string): Promise<any> {
-    const { data } = await this.axios.post(`/m2m-clients/${clientId}/generate-secret`, {});
+    const { data} = await this.axios.post(`/m2m-clients/${clientId}/generate-secret`, {});
     return data;
+  }
+
+  /**
+   * Get KvK verification status for a legal entity
+   */
+  async getKvkVerificationStatus(legalEntityId: string): Promise<any> {
+    const { data } = await this.axios.get(`/legal-entities/${legalEntityId}/kvk-verification`);
+    return data;
+  }
+
+  /**
+   * Upload KvK document for a legal entity
+   */
+  async uploadKvkDocument(legalEntityId: string, file: File): Promise<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await this.axios.post(`/legal-entities/${legalEntityId}/kvk-document`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  }
+
+  /**
+   * Get identifiers for a legal entity
+   */
+  async getIdentifiers(legalEntityId: string): Promise<any> {
+    const { data } = await this.axios.get(`/legal-entities/${legalEntityId}/identifiers`);
+    return data;
+  }
+
+  /**
+   * Create identifier for a legal entity
+   */
+  async createIdentifier(legalEntityId: string, identifier: any): Promise<any> {
+    const { data } = await this.axios.post(`/legal-entities/${legalEntityId}/identifiers`, identifier);
+    return data;
+  }
+
+  /**
+   * Update identifier
+   */
+  async updateIdentifier(legalEntityId: string, identifierId: string, updates: any): Promise<any> {
+    const { data } = await this.axios.put(`/legal-entities/${legalEntityId}/identifiers/${identifierId}`, updates);
+    return data;
+  }
+
+  /**
+   * Delete identifier
+   */
+  async deleteIdentifier(legalEntityId: string, identifierId: string): Promise<void> {
+    await this.axios.delete(`/legal-entities/${legalEntityId}/identifiers/${identifierId}`);
   }
 }

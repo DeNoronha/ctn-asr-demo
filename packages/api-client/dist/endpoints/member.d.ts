@@ -89,5 +89,29 @@ export declare class MemberEndpoint {
      * Generate secret for M2M client
      */
     generateM2MClientSecret(clientId: string): Promise<any>;
+    /**
+     * Get KvK verification status for a legal entity
+     */
+    getKvkVerificationStatus(legalEntityId: string): Promise<any>;
+    /**
+     * Upload KvK document for a legal entity
+     */
+    uploadKvkDocument(legalEntityId: string, file: File): Promise<any>;
+    /**
+     * Get identifiers for a legal entity
+     */
+    getIdentifiers(legalEntityId: string): Promise<any>;
+    /**
+     * Create identifier for a legal entity
+     */
+    createIdentifier(legalEntityId: string, identifier: any): Promise<any>;
+    /**
+     * Update identifier
+     */
+    updateIdentifier(legalEntityId: string, identifierId: string, updates: any): Promise<any>;
+    /**
+     * Delete identifier
+     */
+    deleteIdentifier(legalEntityId: string, identifierId: string): Promise<void>;
 }
 //# sourceMappingURL=member.d.ts.map

@@ -29,6 +29,8 @@ import { ContactsView } from './components/ContactsView';
 import { Dashboard } from './components/Dashboard';
 import { DnsVerificationView } from './components/DnsVerificationView';
 import { EndpointsView } from './components/EndpointsView';
+import { IdentifiersView } from './components/IdentifiersView';
+import { KvKDocumentView } from './components/KvKDocumentView';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import { ProfileView } from './components/ProfileView';
 import { RegistrationForm } from './components/RegistrationForm';
@@ -44,6 +46,8 @@ type TabType =
   | 'dashboard'
   | 'profile'
   | 'contacts'
+  | 'identifiers'
+  | 'kvk-document'
   | 'integrations'
   | 'api-access'
   | 'dns-verification'
@@ -268,6 +272,10 @@ function AppContent(_props: AppContentProps) {
         return <ProfileView {...commonProps} />;
       case 'contacts':
         return <ContactsView {...commonProps} />;
+      case 'identifiers':
+        return <IdentifiersView {...commonProps} />;
+      case 'kvk-document':
+        return <KvKDocumentView {...commonProps} />;
       case 'integrations':
         return <EndpointsView {...commonProps} />;
       case 'api-access':
@@ -330,6 +338,20 @@ function AppContent(_props: AppContentProps) {
                 onClick={() => setActiveTab('contacts')}
               >
                 Contacts
+              </button>
+              <button
+                type="button"
+                className={`tab-button ${activeTab === 'identifiers' ? 'active' : ''}`}
+                onClick={() => setActiveTab('identifiers')}
+              >
+                Legal Identifiers
+              </button>
+              <button
+                type="button"
+                className={`tab-button ${activeTab === 'kvk-document' ? 'active' : ''}`}
+                onClick={() => setActiveTab('kvk-document')}
+              >
+                KvK Document
               </button>
               <button
                 type="button"

@@ -144,4 +144,51 @@ export class MemberEndpoint {
         const { data } = await this.axios.post(`/m2m-clients/${clientId}/generate-secret`, {});
         return data;
     }
+    /**
+     * Get KvK verification status for a legal entity
+     */
+    async getKvkVerificationStatus(legalEntityId) {
+        const { data } = await this.axios.get(`/legal-entities/${legalEntityId}/kvk-verification`);
+        return data;
+    }
+    /**
+     * Upload KvK document for a legal entity
+     */
+    async uploadKvkDocument(legalEntityId, file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const { data } = await this.axios.post(`/legal-entities/${legalEntityId}/kvk-document`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return data;
+    }
+    /**
+     * Get identifiers for a legal entity
+     */
+    async getIdentifiers(legalEntityId) {
+        const { data } = await this.axios.get(`/legal-entities/${legalEntityId}/identifiers`);
+        return data;
+    }
+    /**
+     * Create identifier for a legal entity
+     */
+    async createIdentifier(legalEntityId, identifier) {
+        const { data } = await this.axios.post(`/legal-entities/${legalEntityId}/identifiers`, identifier);
+        return data;
+    }
+    /**
+     * Update identifier
+     */
+    async updateIdentifier(legalEntityId, identifierId, updates) {
+        const { data } = await this.axios.put(`/legal-entities/${legalEntityId}/identifiers/${identifierId}`, updates);
+        return data;
+    }
+    /**
+     * Delete identifier
+     */
+    async deleteIdentifier(legalEntityId, identifierId) {
+        await this.axios.delete(`/legal-entities/${legalEntityId}/identifiers/${identifierId}`);
+    }
 }
