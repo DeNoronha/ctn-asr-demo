@@ -38,7 +38,7 @@ const Settings: React.FC = () => {
         'Interactive API documentation with endpoint testing capabilities'
       ),
       icon: FileText,
-      url: 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/swagger/ui',
+      url: 'https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/docs',
       color: '#85ea2d',
     },
     {
