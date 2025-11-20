@@ -1,8 +1,10 @@
-import { Button, Modal } from '@mantine/core';
+import { ActionIcon, Badge, Button, Group, Modal, Tooltip } from '@mantine/core';
+import { DataTable } from 'mantine-datatable';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { apiClient } from '../services/apiClient';
 import type { ComponentProps, Contact } from '../types';
+import { Edit2, Plus, User } from './icons';
 import { LoadingState } from './shared/LoadingState';
 
 const contactTypes = ['PRIMARY', 'TECHNICAL', 'BILLING', 'SUPPORT', 'LEGAL', 'OTHER'];
@@ -121,56 +123,122 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
           <p className="page-subtitle">Manage your organization's contact persons</p>
         </div>
         <Button color="blue" onClick={handleAdd}>
-          Add Contact
+          <Plus size={16} /> Add Contact
         </Button>
       </div>
 
       <div className="card">
-        <LoadingState loading={loading} minHeight={300}>
+        <LoadingState loading={loading && contacts.length === 0} minHeight={300}>
           {contacts.length === 0 ? (
-            <div className="empty-state">
-              <h3>No Contacts</h3>
-              <p>Add your first contact to get started.</p>
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '60px 20px',
+                background: '#f9fafb',
+                borderRadius: '8px',
+              }}
+            >
+              <User size={48} style={{ color: '#9ca3af' }} />
+              <p style={{ fontSize: '1.125rem', fontWeight: 500, margin: '16px 0 8px 0' }}>
+                No contacts configured
+              </p>
+              <p style={{ color: '#6b7280', margin: 0 }}>
+                Add contact persons to manage communication with your organization
+              </p>
             </div>
           ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Full Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Job Title</th>
-                  <th>Type</th>
-                  <th>Primary</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {contacts.map((contact) => (
-                  <tr key={contact.legal_entity_contact_id}>
-                    <td>{contact.full_name}</td>
-                    <td>{contact.email}</td>
-                    <td>{contact.phone || '-'}</td>
-                    <td>{contact.job_title || '-'}</td>
-                    <td>{contact.contact_type}</td>
-                    <td>{contact.is_primary ? '✓' : ''}</td>
-                    <td>
-                      <span className={contact.is_active ? 'status-active' : 'status-inactive'}>
-                        {contact.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="table-actions">
-                        <Button size="sm" onClick={() => handleEdit(contact)}>
-                          Edit
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable
+              records={contacts}
+              columns={[
+                {
+                  accessor: 'full_name',
+                  title: 'Full Name',
+                  width: 200,
+                },
+                {
+                  accessor: 'email',
+                  title: 'Email',
+                  width: 220,
+                },
+                {
+                  accessor: 'phone',
+                  title: 'Phone',
+                  width: 140,
+                  render: (contact) => contact.phone || '-',
+                },
+                {
+                  accessor: 'job_title',
+                  title: 'Job Title',
+                  width: 180,
+                  render: (contact) => contact.job_title || '-',
+                },
+                {
+                  accessor: 'contact_type',
+                  title: 'Type',
+                  width: 120,
+                  render: (contact) => (
+                    <Badge
+                      color={
+                        contact.contact_type === 'PRIMARY'
+                          ? 'blue'
+                          : contact.contact_type === 'TECHNICAL'
+                            ? 'cyan'
+                            : contact.contact_type === 'BILLING'
+                              ? 'green'
+                              : 'gray'
+                      }
+                      variant="light"
+                    >
+                      {contact.contact_type}
+                    </Badge>
+                  ),
+                },
+                {
+                  accessor: 'is_primary',
+                  title: 'Primary',
+                  width: 80,
+                  render: (contact) =>
+                    contact.is_primary ? (
+                      <span style={{ color: '#2563eb', fontSize: '1.25rem' }}>✓</span>
+                    ) : (
+                      <span style={{ color: '#d1d5db' }}>-</span>
+                    ),
+                },
+                {
+                  accessor: 'is_active',
+                  title: 'Status',
+                  width: 100,
+                  render: (contact) => (
+                    <Badge color={contact.is_active ? 'green' : 'red'} variant="light">
+                      {contact.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  ),
+                },
+                {
+                  accessor: 'actions',
+                  title: 'Actions',
+                  width: 80,
+                  render: (contact) => (
+                    <Group gap={4} wrap="nowrap">
+                      <Tooltip label="Edit contact">
+                        <ActionIcon
+                          variant="subtle"
+                          color="blue"
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            handleEdit(contact);
+                          }}
+                        >
+                          <Edit2 size={16} />
+                        </ActionIcon>
+                      </Tooltip>
+                    </Group>
+                  ),
+                },
+              ]}
+              minHeight={400}
+              fetching={loading}
+            />
           )}
         </LoadingState>
       </div>
