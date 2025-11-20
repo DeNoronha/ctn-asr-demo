@@ -1575,7 +1575,42 @@ router.post('/v1/entities/:legalentityid/dns/token', requireAuth, async (req: Re
       return res.status(400).json({ error: 'Invalid domain format' });
     }
 
-    // Generate token
+    // Check if there's an existing pending token for this entity+domain
+    const existingToken = await pool.query(`
+      SELECT token_id, domain, token, record_name, expires_at, status
+      FROM dns_verification_tokens
+      WHERE legal_entity_id = $1 AND domain = $2 AND status = 'pending' AND expires_at > NOW()
+      ORDER BY dt_created DESC
+      LIMIT 1
+    `, [legalentityid, domain]);
+
+    // If valid token exists, return it instead of creating a new one
+    if (existingToken.rows.length > 0) {
+      const existing = existingToken.rows[0];
+      return res.json({
+        tokenId: existing.token_id,
+        domain: existing.domain,
+        token: existing.token,
+        recordName: existing.record_name,
+        expiresAt: existing.expires_at,
+        status: existing.status,
+        instructions: {
+          recordType: 'TXT',
+          recordName: existing.record_name,
+          recordValue: existing.token,
+          ttl: 3600
+        }
+      });
+    }
+
+    // Expire any old pending tokens for this entity+domain (handles edge cases)
+    await pool.query(`
+      UPDATE dns_verification_tokens
+      SET status = 'expired'
+      WHERE legal_entity_id = $1 AND domain = $2 AND status = 'pending'
+    `, [legalentityid, domain]);
+
+    // Generate new token
     const crypto = require('crypto');
     const token = crypto.randomBytes(32).toString('hex');
     const tokenId = crypto.randomUUID();
