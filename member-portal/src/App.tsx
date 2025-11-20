@@ -336,7 +336,7 @@ function AppContent(_props: AppContentProps) {
                 className={`tab-button ${activeTab === 'integrations' ? 'active' : ''}`}
                 onClick={() => setActiveTab('integrations')}
               >
-                System Integrations
+                Integration Endpoints
               </button>
               <button
                 type="button"
