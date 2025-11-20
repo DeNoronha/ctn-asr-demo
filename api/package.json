@@ -8,7 +8,6 @@
     "watch": "tsc --watch",
     "prestart": "npm run build",
     "start": "node dist/server.js",
-    "start:func": "func start",
     "start:dev": "npm run build && node dist/server.js",
     "docker:build": "docker build -t ctn-asr-api .",
     "docker:run": "docker run -p 8080:8080 --env-file .env ctn-asr-api",

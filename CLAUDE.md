@@ -123,23 +123,24 @@ The system supports TWO authentication modes for different client types:
 - **Keycloak (Cloud IAM)** - Machine-to-Machine (M2M) clients from external systems
 
 **M2M Endpoints:**
-Functions supporting M2M authentication use `authenticateDual()` middleware that accepts both Azure AD and Keycloak JWTs:
+Express routes supporting M2M authentication use `authenticateDual()` middleware that accepts both Azure AD and Keycloak JWTs:
 
 ```typescript
 // api/src/middleware/keycloak-auth.ts - Keycloak JWT validation & dual auth
 import { authenticateDual } from '../middleware/keycloak-auth';
 
-// M2M-enabled functions:
-- ManageBookings: Requires Booking.Read or Booking.Write scopes
-- GetETAUpdates: Requires ETA.Read scope
-- GetContainerStatus: Requires Container.Read scope
+// M2M-enabled routes (defined in api/src/routes.ts):
+- POST /api/v1/bookings: Requires Booking.Write scope
+- GET /api/v1/bookings: Requires Booking.Read scope
+- GET /api/v1/eta-updates: Requires ETA.Read scope
+- GET /api/v1/container-status: Requires Container.Read scope
 ```
 
 **Key M2M Files:**
 - `api/src/middleware/keycloak-auth.ts` - Keycloak JWT validation & dual authentication middleware
-- `api/src/functions/ManageBookings.ts` - M2M booking operations (GET/POST/PUT)
-- `api/src/functions/GetETAUpdates.ts` - Shipping ETA information retrieval
-- `api/src/functions/GetContainerStatus.ts` - Container tracking queries
+- `api/src/controllers/bookings.ts` - M2M booking operations (GET/POST/PUT)
+- `api/src/controllers/eta.ts` - Shipping ETA information retrieval
+- `api/src/controllers/container.ts` - Container tracking queries
 - Database migration 026 - Renamed Zitadel tables to generic M2M (originally implemented for Zitadel, migrated to Keycloak)
 
 **Authentication Flow:**
@@ -149,12 +150,13 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 ```
 
 **API Key Files:**
-- `api/src/index.ts` - Function registration
-- `api/src/middleware/endpointWrapper.ts` - Unified middleware decorator
+- `api/src/server.ts` - Express server initialization and middleware setup
+- `api/src/routes.ts` - Route definitions and controller registration
 - `api/src/middleware/auth.ts` - JWT validation (Azure AD JWKS)
 - `api/src/middleware/rbac.ts` - Permission enforcement
 - `api/src/utils/database.ts` - PostgreSQL 15 pool (5-20 connections, SSL required)
 - `api/src/utils/queryPerformance.ts` - Database query performance monitoring
+- `api/Dockerfile` - Multi-stage Docker build configuration
 
 ### Database Schema
 
@@ -228,7 +230,7 @@ export class AsrApiClient {
 
 // Usage in portals
 const client = new AsrApiClient({
-  baseURL: 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1',
+  baseURL: 'https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1',
   getAccessToken: async () => { /* MSAL token */ },
   retryAttempts: 3
 });
@@ -240,7 +242,7 @@ const client = new AsrApiClient({
 
 ## Development Commands
 
-### API
+### API (Container Apps)
 
 ```bash
 cd api
@@ -248,17 +250,32 @@ cd api
 # Build (compiles TypeScript + copies templates/openapi.json)
 npm run build
 
-# Local development (Azure Functions Core Tools)
-npm start  # Runs on http://localhost:7071
+# Local development (Express server)
+npm start  # Runs on http://localhost:8080
 
-# Watch mode
+# Watch mode (TypeScript compilation)
 npm run watch
 
-# Deploy to Azure
-func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote
+# Docker local testing
+npm run docker:build  # Build Docker image
+npm run docker:run    # Run container locally on port 8080
 
-# View logs (20-second timeout)
-func azure functionapp logstream func-ctn-demo-asr-dev --timeout 20
+# Deployment (via Azure DevOps Pipeline)
+# Push to main branch triggers: .azure-pipelines/container-app-api.yml
+# Pipeline builds Docker image → pushes to ACR → deploys to Container Apps
+
+# View logs (Azure CLI)
+az containerapp logs show \
+  --name ca-ctn-asr-api-dev \
+  --resource-group rg-ctn-demo-dev \
+  --type console \
+  --follow
+
+# Check Container App status
+az containerapp show \
+  --name ca-ctn-asr-api-dev \
+  --resource-group rg-ctn-demo-dev \
+  --query "properties.{status:provisioningState,health:runningStatus}"
 ```
 
 ### Admin Portal / Member Portal
@@ -443,49 +460,50 @@ git push --force-with-lease origin main
 
 ## Critical Patterns & Gotchas
 
-### Azure Functions
+### Container Apps & Express
 
-1. **Route params are lowercased** in Azure Functions v4 → Use `{legalentityid}` not `{legalEntityId}`
-2. **Functions must be imported** in `index.ts` or `essential-index.ts` to register
-3. **Remote build required** for production → `--build remote` flag (excludes node_modules from package)
-4. **Entry point determined by package.json `main` field** → Points to `dist/index.js` or `dist/essential-index.ts`
+1. **Environment variables in Container Apps** → Defined in Bicep infrastructure and injected at runtime (see `infrastructure/container-app.bicep`)
+2. **Health probes required** → Liveness and readiness probes on `/api/health` ensure Container Apps traffic routing
+3. **Port 8080 is standard** → Express server listens on port 8080 (configurable via PORT env var)
+4. **Graceful shutdown** → Handle SIGTERM for zero-downtime deployments during revision updates
+5. **Docker multi-stage builds** → Production image uses Node.js 20 Alpine, build stage compiles TypeScript
 
 ### Database
 
-5. **CHECK constraints prevent data corruption** → Enums (status, type) MUST have DB constraints, not just TypeScript
-6. **Soft delete pattern** → Always filter `WHERE is_deleted = false` in queries
-7. **Foreign key constraints** → Prevent orphaned references (add in migrations)
+6. **CHECK constraints prevent data corruption** → Enums (status, type) MUST have DB constraints, not just TypeScript
+7. **Soft delete pattern** → Always filter `WHERE is_deleted = false` in queries
+8. **Foreign key constraints** → Prevent orphaned references (add in migrations)
 
 ### Frontend
 
-8. **Paginated API responses** → Extract data: `response.data.data` (double `.data`)
-9. **Vite environment variables** → Use `process.env` directly, DON'T use `loadEnv()` for CI/CD
-10. **Mantine DataTable v8 pagination** → Manual slicing: `records={data.slice((page - 1) * pageSize, page * pageSize)}`
-11. **i18n HttpBackend + useSuspense = white page** → Set `useSuspense: false` when translations embedded in bundle
+9. **Paginated API responses** → Extract data: `response.data.data` (double `.data`)
+10. **Vite environment variables** → Use `process.env` directly, DON'T use `loadEnv()` for CI/CD
+11. **Mantine DataTable v8 pagination** → Manual slicing: `records={data.slice((page - 1) * pageSize, page * pageSize)}`
+12. **i18n HttpBackend + useSuspense = white page** → Set `useSuspense: false` when translations embedded in bundle
 
 ### Testing
 
-12. **Test API FIRST with curl, THEN UI** → Isolates backend vs frontend issues
-13. **E2E auth state** → Stored in `playwright/.auth/user.json`, reused across tests
-14. **Serial execution only** → No parallelization to avoid auth conflicts
+13. **Test API FIRST with curl, THEN UI** → Isolates backend vs frontend issues
+14. **E2E auth state** → Stored in `playwright/.auth/user.json`, reused across tests
+15. **Serial execution only** → No parallelization to avoid auth conflicts
 
 ### Security
 
-15. **IDOR prevention in multi-tenant** → Always verify party involvement before returning data, return 404 (not 403)
-16. **Gremlin injection** → Use parameterized queries, NEVER concatenate user input
-17. **Environment variable validation** → Validate at startup, fail fast with clear errors
+16. **IDOR prevention in multi-tenant** → Always verify party involvement before returning data, return 404 (not 403)
+17. **Gremlin injection** → Use parameterized queries, NEVER concatenate user input
+18. **Environment variable validation** → Validate at startup, fail fast with clear errors
 
 ### Deployment
 
-18. **"Old version" in production = deployment sync issue** → Run PRE-WORK CHECKLIST, compare git log to Azure build time
-19. **API 404s after portal deployment success** → API deployment may silently fail even if pipeline shows green
-20. **Package.json workspace renames** → MUST regenerate `package-lock.json` after updating root workspaces array
-21. **Mixed commits break path filters** → Running multiple Claude sessions concurrently triggers ALL pipelines
+19. **"Old version" in production = deployment sync issue** → Run PRE-WORK CHECKLIST, compare git log to Azure build time
+20. **Container App revision management** → Each deployment creates new revision, old revisions auto-deactivated after success
+21. **Package.json workspace renames** → MUST regenerate `package-lock.json` after updating root workspaces array
+22. **Mixed commits break path filters** → Running multiple Claude sessions concurrently triggers ALL pipelines
 
 ### Cascading Failures
 
-22. **Wrap each API call in separate try-catch** → One failing resource shouldn't block others (defensive programming)
-23. **Graceful degradation** → Set fallback states ([], null) on error instead of cascading failures
+23. **Wrap each API call in separate try-catch** → One failing resource shouldn't block others (defensive programming)
+24. **Graceful degradation** → Set fallback states ([], null) on error instead of cascading failures
 
 ---
 
@@ -540,7 +558,7 @@ git push --force-with-lease origin main
 | E2E tests failing | Verify auth state in `playwright/.auth/user.json` |
 | Pipeline path filters not working | Ensure no mixed commits from concurrent sessions |
 | Container App not starting | Check logs: `az containerapp logs show --type console` |
-| 404s after successful deployment | Verify function imported in index.ts, re-run pipeline if needed |
+| 404s after successful deployment | Check Container App revision status, verify route in routes.ts |
 
 **Credentials:** Check `.credentials` file (gitignored) before searching Azure Portal.
 

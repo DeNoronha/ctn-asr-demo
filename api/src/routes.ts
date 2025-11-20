@@ -19,17 +19,46 @@ const upload = multer({
 // Import utilities
 import { getPool } from './utils/database';
 import { withTransaction } from './utils/transaction';
+import { validateJwtToken, JwtPayload } from './middleware/auth';
 
-// Simple auth middleware for Express (will be enhanced later)
+// Express auth middleware using full JWT validation
 async function requireAuth(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized', message: 'Missing or invalid authorization header' });
   }
-  // For now, just pass through - full JWT validation to be added
-  // Store token for downstream use
-  (req as any).token = authHeader.substring(7);
-  next();
+
+  try {
+    const token = authHeader.substring(7);
+
+    // Create a minimal InvocationContext-like object for the validator
+    const context = {
+      invocationId: randomUUID(),
+      log: console.log,
+      warn: console.warn,
+      error: console.error,
+      trace: console.trace,
+      debug: console.debug,
+    } as any;
+
+    // Validate JWT token with signature verification
+    const payload: JwtPayload = await validateJwtToken(token, context);
+
+    // Attach user info to request
+    (req as any).user = payload;
+    (req as any).userId = payload.oid || payload.sub;
+    (req as any).userEmail = payload.email || payload.preferred_username || payload.upn;
+    (req as any).userRoles = payload.roles || [];
+    (req as any).isM2M = !payload.oid && (!!payload.azp || !!payload.appid);
+    (req as any).clientId = payload.azp || payload.appid;
+
+    next();
+  } catch (error: any) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: error.message || 'Invalid token'
+    });
+  }
 }
 
 // ============================================================================
