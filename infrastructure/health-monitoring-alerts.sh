@@ -8,21 +8,21 @@ set -e
 
 # Configuration
 RESOURCE_GROUP="rg-ctn-demo-asr-dev"
-FUNCTION_APP="func-ctn-demo-asr-dev"
+CONTAINER_APP="ca-ctn-asr-api-dev"
 APP_INSIGHTS="appi-ctn-demo-asr-dev"
 SUBSCRIPTION_ID=$(az account show --query id -o tsv)
 
 echo "=================================================="
 echo "Configuring Health Monitoring Alerts"
 echo "Resource Group: $RESOURCE_GROUP"
-echo "Function App: $FUNCTION_APP"
+echo "Container App: $CONTAINER_APP"
 echo "App Insights: $APP_INSIGHTS"
 echo "Subscription: $SUBSCRIPTION_ID"
 echo "=================================================="
 echo ""
 
 # Get resource IDs
-FUNCTION_APP_ID="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.Web/sites/$FUNCTION_APP"
+CONTAINER_APP_ID="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.App/containerApps/$CONTAINER_APP"
 APP_INSIGHTS_ID="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/microsoft.insights/components/$APP_INSIGHTS"
 
 # Alert 1: Health Endpoint Unhealthy (HTTP 503)
@@ -30,7 +30,7 @@ echo "Creating Alert: Health Endpoint Unhealthy..."
 az monitor metrics alert create \
   --name "ASR-Health-Endpoint-Unhealthy" \
   --resource-group "$RESOURCE_GROUP" \
-  --scopes "$FUNCTION_APP_ID" \
+  --scopes "$CONTAINER_APP_ID" \
   --condition "count Http5xx >= 5" \
   --window-size 5m \
   --evaluation-frequency 1m \
@@ -46,7 +46,7 @@ echo "Creating Alert: Health Check High Response Time..."
 az monitor metrics alert create \
   --name "ASR-Health-Check-Slow-Response" \
   --resource-group "$RESOURCE_GROUP" \
-  --scopes "$FUNCTION_APP_ID" \
+  --scopes "$CONTAINER_APP_ID" \
   --condition "avg HttpResponseTime > 5000" \
   --window-size 5m \
   --evaluation-frequency 1m \
@@ -62,7 +62,7 @@ echo "Creating Alert: High Request Rate..."
 az monitor metrics alert create \
   --name "ASR-High-Request-Rate" \
   --resource-group "$RESOURCE_GROUP" \
-  --scopes "$FUNCTION_APP_ID" \
+  --scopes "$CONTAINER_APP_ID" \
   --condition "count Requests > 1000" \
   --window-size 5m \
   --evaluation-frequency 1m \
@@ -78,7 +78,7 @@ echo "Creating Alert: Function Execution Failures..."
 az monitor metrics alert create \
   --name "ASR-Function-Execution-Failures" \
   --resource-group "$RESOURCE_GROUP" \
-  --scopes "$FUNCTION_APP_ID" \
+  --scopes "$CONTAINER_APP_ID" \
   --condition "count Http5xx > 10" \
   --window-size 5m \
   --evaluation-frequency 1m \
@@ -94,7 +94,7 @@ echo "Creating Alert: High Memory Usage..."
 az monitor metrics alert create \
   --name "ASR-High-Memory-Usage" \
   --resource-group "$RESOURCE_GROUP" \
-  --scopes "$FUNCTION_APP_ID" \
+  --scopes "$CONTAINER_APP_ID" \
   --condition "avg MemoryWorkingSet > 800000000" \
   --window-size 15m \
   --evaluation-frequency 5m \

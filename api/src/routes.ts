@@ -916,7 +916,30 @@ router.delete('/v1/legal-entities/:legalentityid/contacts/:contactId', requireAu
   }
 });
 
-// Legacy contact endpoints (used by admin portal)
+// Legacy contact endpoints (used by admin portal and tests)
+router.get('/v1/contacts/:contactId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { contactId } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT contact_id, legal_entity_id, contact_type, contact_name, email,
+             phone, job_title, is_primary, dt_created, dt_modified
+      FROM legal_entity_contact
+      WHERE contact_id = $1 AND is_deleted = false
+    `, [contactId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Contact not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error fetching contact:', error);
+    res.status(500).json({ error: 'Failed to fetch contact' });
+  }
+});
+
 router.post('/v1/contacts', requireAuth, async (req: Request, res: Response) => {
   try {
     const pool = getPool();
@@ -1098,6 +1121,30 @@ router.post('/v1/entities/:legalentityid/identifiers', requireAuth, async (req: 
   } catch (error: any) {
     console.error('Error creating identifier:', error);
     res.status(500).json({ error: 'Failed to create identifier' });
+  }
+});
+
+router.get('/v1/identifiers/:identifierId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { identifierId } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT identifier_id, legal_entity_id, identifier_type, identifier_value,
+             issuing_authority, issued_at, expires_at, verification_status,
+             dt_created, dt_modified
+      FROM legal_entity_number
+      WHERE identifier_id = $1 AND is_deleted = false
+    `, [identifierId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Identifier not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error fetching identifier:', error);
+    res.status(500).json({ error: 'Failed to fetch identifier' });
   }
 });
 

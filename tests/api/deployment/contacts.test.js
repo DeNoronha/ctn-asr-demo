@@ -73,11 +73,10 @@ async function main() {
       const payload = {
         legal_entity_id: entityId,
         contact_type: 'PRIMARY',
-        first_name: 'Test',
-        last_name: 'Contact',
-        email_address: `test.contact.${Date.now()}@example.com`,
-        phone_number: '+31612345678',
-        position_title: 'API Test Contact',
+        contact_name: 'Test Contact',
+        email: `test.contact.${Date.now()}@example.com`,
+        phone: '+31612345678',
+        job_title: 'API Test Contact',
       };
 
       const response = await apiRequest('/contacts', {
@@ -97,16 +96,14 @@ async function main() {
     await runner.test('Read contact by ID', async () => {
       const response = await apiRequest(`/contacts/${contactId}`, {}, token);
       assert(response.status === 200, `Expected 200, got ${response.status}`);
-      assert(response.body.first_name === 'Test', 'First name should match');
-      assert(response.body.last_name === 'Contact', 'Last name should match');
+      assert(response.body.contact_name === 'Test Contact', 'Contact name should match');
     });
 
     // Test 3: Update Contact
     await runner.test('Update contact', async () => {
       const payload = {
-        first_name: 'Updated',
-        last_name: 'Contact',
-        position_title: 'Updated Position',
+        contact_name: 'Updated Contact',
+        job_title: 'Updated Position',
       };
 
       const response = await apiRequest(`/contacts/${contactId}`, {
@@ -115,29 +112,32 @@ async function main() {
       }, token);
 
       assert(response.status === 200, `Expected 200, got ${response.status}`);
-      assert(response.body.first_name === 'Updated', 'First name should be updated');
+      assert(response.body.contact_name === 'Updated Contact', 'Contact name should be updated');
     });
 
     // Test 4: Verify Update
     await runner.test('Verify contact update', async () => {
       const response = await apiRequest(`/contacts/${contactId}`, {}, token);
       assert(response.status === 200, `Expected 200, got ${response.status}`);
-      assert(response.body.first_name === 'Updated', 'First name should be updated');
-      assert(response.body.position_title === 'Updated Position',
+      assert(response.body.contact_name === 'Updated Contact', 'Contact name should be updated');
+      assert(response.body.job_title === 'Updated Position',
         'Position should be updated');
     });
 
     // Test 5: List Contacts for Entity
     await runner.test('List contacts for legal entity', async () => {
-      const response = await apiRequest(`/entities/${entityId}/contacts`, {}, token);
+      const response = await apiRequest(`/legal-entities/${entityId}/contacts`, {}, token);
       assert(response.status === 200, `Expected 200, got ${response.status}`);
-      assert(Array.isArray(response.body), 'Response should be an array');
 
-      const found = response.body.find(c =>
+      // API returns {data: [...]}
+      const contacts = response.body.data || response.body;
+      assert(Array.isArray(contacts), 'Response should contain array of contacts');
+
+      const found = contacts.find(c =>
         (c.contact_id || c.id) === contactId
       );
       assert(found, 'Created contact should be in list');
-      console.log(`  Found ${response.body.length} contacts`);
+      console.log(`  Found ${contacts.length} contacts`);
     });
 
     // Test 6: Delete Contact

@@ -69,22 +69,24 @@ async function main() {
 
     // Test 1: List existing identifiers
     await runner.test('List identifiers for legal entity', async () => {
-      const response = await apiRequest(`/entities/${entityId}/identifiers`, {}, token);
+      const response = await apiRequest(`/legal-entities/${entityId}/identifiers`, {}, token);
       assert(response.status === 200, `Expected 200, got ${response.status}`);
-      assert(Array.isArray(response.body), 'Response should be an array');
-      console.log(`  Found ${response.body.length} existing identifiers`);
+
+      // API returns {data: [...]}
+      const identifiers = response.body.data || response.body;
+      assert(Array.isArray(identifiers), 'Response should contain array of identifiers');
+      console.log(`  Found ${identifiers.length} existing identifiers`);
     });
 
     // Test 2: Create Identifier
     await runner.test('Create new identifier', async () => {
       const payload = {
-        legal_entity_id: entityId,
         identifier_type: 'DUNS',
         identifier_value: `TEST${Date.now().toString().slice(-9)}`,
         verification_status: 'PENDING',
       };
 
-      const response = await apiRequest('/identifiers', {
+      const response = await apiRequest(`/legal-entities/${entityId}/identifiers`, {
         method: 'POST',
         body: payload,
       }, token);
