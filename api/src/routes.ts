@@ -1503,8 +1503,8 @@ router.get('/v1/entities/:legalentityid/tier', requireAuth, async (req: Request,
       SELECT
         authentication_tier as tier,
         authentication_method as method,
-        tier_verified_at as "verifiedAt",
-        tier_reverification_due as "reverificationDue",
+        dns_verified_at as "verifiedAt",
+        dns_reverification_due as "reverificationDue",
         eherkenning_level as "eherkenningLevel"
       FROM legal_entity
       WHERE legal_entity_id = $1 AND is_deleted = false
@@ -1540,7 +1540,6 @@ router.put('/v1/entities/:legalentityid/tier', requireAuth, async (req: Request,
         dns_verified_at = $4,
         eherkenning_identifier = $5,
         eherkenning_level = $6,
-        tier_verified_at = NOW(),
         dt_modified = NOW()
       WHERE legal_entity_id = $7 AND is_deleted = false
     `, [tier, method, dnsVerifiedDomain, dnsVerifiedDomain ? new Date() : null, eherkenningIdentifier, eherkenningLevel, legalentityid]);
@@ -1580,7 +1579,7 @@ router.post('/v1/entities/:legalentityid/dns/token', requireAuth, async (req: Re
       SELECT token_id, domain, token, record_name, expires_at, status
       FROM dns_verification_tokens
       WHERE legal_entity_id = $1 AND domain = $2 AND status = 'pending' AND expires_at > NOW()
-      ORDER BY dt_created DESC
+      ORDER BY created_at DESC
       LIMIT 1
     `, [legalentityid, domain]);
 
@@ -1691,7 +1690,7 @@ router.get('/v1/entities/:legalentityid/dns/tokens', requireAuth, async (req: Re
       SELECT token_id as "tokenId", domain, token, record_name as "recordName", expires_at as "expiresAt", status
       FROM dns_verification_tokens
       WHERE legal_entity_id = $1 AND status = 'pending'
-      ORDER BY dt_created DESC
+      ORDER BY created_at DESC
     `, [legalentityid]);
 
     res.json({ tokens: rows });
@@ -1786,15 +1785,16 @@ router.get('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, async
 
     const { rows } = await pool.query(`
       SELECT
-        client_id,
-        legal_entity_id,
-        client_name,
-        scopes,
-        is_active,
-        dt_created,
-        dt_modified
+        m2m_client_id as "clientId",
+        legal_entity_id as "legalEntityId",
+        client_name as "clientName",
+        azure_client_id as "azureClientId",
+        assigned_scopes as "scopes",
+        is_active as "isActive",
+        dt_created as "createdAt",
+        dt_modified as "modifiedAt"
       FROM m2m_clients
-      WHERE legal_entity_id = $1 AND is_active = true
+      WHERE legal_entity_id = $1 AND is_deleted = false
       ORDER BY dt_created DESC
     `, [legal_entity_id]);
 
@@ -1816,13 +1816,13 @@ router.post('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, asyn
     }
 
     const crypto = require('crypto');
-    const clientId = crypto.randomUUID();
+    const azureClientId = crypto.randomUUID();
 
     const { rows } = await pool.query(`
-      INSERT INTO m2m_clients (client_id, legal_entity_id, client_name, scopes, is_active)
+      INSERT INTO m2m_clients (legal_entity_id, client_name, azure_client_id, assigned_scopes, is_active)
       VALUES ($1, $2, $3, $4, true)
-      RETURNING *
-    `, [clientId, legal_entity_id, clientName, scopes || []]);
+      RETURNING m2m_client_id as "clientId", azure_client_id as "azureClientId", client_name as "clientName", assigned_scopes as "scopes"
+    `, [legal_entity_id, clientName, azureClientId, scopes || []]);
 
     res.status(201).json(rows[0]);
   } catch (error: any) {
@@ -1831,10 +1831,10 @@ router.post('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, asyn
   }
 });
 
-router.post('/v1/m2m-clients/:client_id/generate-secret', requireAuth, async (req: Request, res: Response) => {
+router.post('/v1/m2m-clients/:m2m_client_id/generate-secret', requireAuth, async (req: Request, res: Response) => {
   try {
     const pool = getPool();
-    const { client_id } = req.params;
+    const { m2m_client_id } = req.params;
 
     // Generate a new secret
     const crypto = require('crypto');
@@ -1843,8 +1843,8 @@ router.post('/v1/m2m-clients/:client_id/generate-secret', requireAuth, async (re
 
     const { rowCount } = await pool.query(`
       UPDATE m2m_clients SET client_secret_hash = $1, dt_modified = NOW()
-      WHERE client_id = $2 AND is_active = true
-    `, [secretHash, client_id]);
+      WHERE m2m_client_id = $2 AND is_deleted = false
+    `, [secretHash, m2m_client_id]);
 
     if (rowCount === 0) {
       return res.status(404).json({ error: 'M2M client not found' });
@@ -1858,10 +1858,10 @@ router.post('/v1/m2m-clients/:client_id/generate-secret', requireAuth, async (re
   }
 });
 
-router.patch('/v1/m2m-clients/:client_id/scopes', requireAuth, async (req: Request, res: Response) => {
+router.patch('/v1/m2m-clients/:m2m_client_id/scopes', requireAuth, async (req: Request, res: Response) => {
   try {
     const pool = getPool();
-    const { client_id } = req.params;
+    const { m2m_client_id } = req.params;
     const { scopes } = req.body;
 
     if (!Array.isArray(scopes)) {
@@ -1869,10 +1869,10 @@ router.patch('/v1/m2m-clients/:client_id/scopes', requireAuth, async (req: Reque
     }
 
     const { rows, rowCount } = await pool.query(`
-      UPDATE m2m_clients SET scopes = $1, dt_modified = NOW()
-      WHERE client_id = $2 AND is_active = true
-      RETURNING *
-    `, [scopes, client_id]);
+      UPDATE m2m_clients SET assigned_scopes = $1, dt_modified = NOW()
+      WHERE m2m_client_id = $2 AND is_deleted = false
+      RETURNING m2m_client_id as "clientId", assigned_scopes as "scopes", client_name as "clientName"
+    `, [scopes, m2m_client_id]);
 
     if (rowCount === 0) {
       return res.status(404).json({ error: 'M2M client not found' });
@@ -1885,15 +1885,15 @@ router.patch('/v1/m2m-clients/:client_id/scopes', requireAuth, async (req: Reque
   }
 });
 
-router.delete('/v1/m2m-clients/:client_id', requireAuth, async (req: Request, res: Response) => {
+router.delete('/v1/m2m-clients/:m2m_client_id', requireAuth, async (req: Request, res: Response) => {
   try {
     const pool = getPool();
-    const { client_id } = req.params;
+    const { m2m_client_id } = req.params;
 
     const { rowCount } = await pool.query(`
-      UPDATE m2m_clients SET is_active = false, dt_modified = NOW()
-      WHERE client_id = $1 AND is_active = true
-    `, [client_id]);
+      UPDATE m2m_clients SET is_deleted = true, dt_modified = NOW()
+      WHERE m2m_client_id = $1 AND is_deleted = false
+    `, [m2m_client_id]);
 
     if (rowCount === 0) {
       return res.status(404).json({ error: 'M2M client not found' });
