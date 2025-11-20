@@ -1671,13 +1671,15 @@ router.post('/v1/entities/:legalentityid/dns/token', requireAuth, async (req: Re
 router.post('/v1/dns/verify/:tokenid', requireAuth, async (req: Request, res: Response) => {
   try {
     const { tokenid } = req.params;
+    console.log(`[DNS Verification] Starting verification for token: ${tokenid}`);
 
     // Use the DNS verification service to perform actual DNS lookup
     const result = await dnsVerificationService.verifyToken(tokenid);
 
+    console.log('[DNS Verification] Result:', JSON.stringify(result, null, 2));
     res.json(result);
   } catch (error: any) {
-    console.error('Error verifying DNS token:', error);
+    console.error('[DNS Verification] Error verifying DNS token:', error);
     res.status(500).json({
       error: 'Failed to verify DNS token',
       details: error.message
