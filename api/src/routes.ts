@@ -623,11 +623,12 @@ router.get('/v1/member/tokens', requireAuth, async (req: Request, res: Response)
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Get member's legal entity ID from their email
+    // Get member ID from their email
     const memberResult = await pool.query(`
-      SELECT le.legal_entity_id
-      FROM legal_entity_contact c
-      JOIN legal_entity le ON c.legal_entity_id = le.legal_entity_id
+      SELECT m.id
+      FROM members m
+      LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
+      LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
       WHERE c.email = $1 AND c.is_active = true
       LIMIT 1
     `, [userEmail]);
@@ -636,7 +637,7 @@ router.get('/v1/member/tokens', requireAuth, async (req: Request, res: Response)
       return res.status(404).json({ error: 'Member not found' });
     }
 
-    const { legal_entity_id } = memberResult.rows[0];
+    const { id: memberId } = memberResult.rows[0];
 
     // Get all API tokens for this member
     const tokensResult = await pool.query(`
@@ -648,10 +649,10 @@ router.get('/v1/member/tokens', requireAuth, async (req: Request, res: Response)
         revoked,
         metadata
       FROM issued_tokens
-      WHERE legal_entity_id = $1
+      WHERE member_id = $1
       ORDER BY issued_at DESC
       LIMIT 50
-    `, [legal_entity_id]);
+    `, [memberId]);
 
     res.json({ tokens: tokensResult.rows });
   } catch (error: any) {
@@ -670,11 +671,12 @@ router.post('/v1/member/tokens', requireAuth, async (req: Request, res: Response
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Get member's legal entity ID
+    // Get member ID
     const memberResult = await pool.query(`
-      SELECT le.legal_entity_id
-      FROM legal_entity_contact c
-      JOIN legal_entity le ON c.legal_entity_id = le.legal_entity_id
+      SELECT m.id
+      FROM members m
+      LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
+      LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
       WHERE c.email = $1 AND c.is_active = true
       LIMIT 1
     `, [userEmail]);
@@ -683,7 +685,7 @@ router.post('/v1/member/tokens', requireAuth, async (req: Request, res: Response
       return res.status(404).json({ error: 'Member not found' });
     }
 
-    const { legal_entity_id } = memberResult.rows[0];
+    const { id: memberId } = memberResult.rows[0];
 
     // Generate new JWT token (simplified - in production use proper JWT library)
     const crypto = require('crypto');
@@ -696,12 +698,12 @@ router.post('/v1/member/tokens', requireAuth, async (req: Request, res: Response
       INSERT INTO issued_tokens (
         jti,
         token_type,
-        legal_entity_id,
+        member_id,
         issued_at,
         expires_at,
         metadata
       ) VALUES ($1, $2, $3, $4, $5, $6)
-    `, [jti, 'API', legal_entity_id, now, expiresAt, JSON.stringify({ description })]);
+    `, [jti, 'API', memberId, now, expiresAt, JSON.stringify({ description })]);
 
     res.status(201).json({
       jti,
@@ -726,11 +728,12 @@ router.delete('/v1/member/tokens/:tokenId', requireAuth, async (req: Request, re
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Get member's legal entity ID
+    // Get member ID
     const memberResult = await pool.query(`
-      SELECT le.legal_entity_id
-      FROM legal_entity_contact c
-      JOIN legal_entity le ON c.legal_entity_id = le.legal_entity_id
+      SELECT m.id
+      FROM members m
+      LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
+      LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
       WHERE c.email = $1 AND c.is_active = true
       LIMIT 1
     `, [userEmail]);
@@ -739,15 +742,15 @@ router.delete('/v1/member/tokens/:tokenId', requireAuth, async (req: Request, re
       return res.status(404).json({ error: 'Member not found' });
     }
 
-    const { legal_entity_id } = memberResult.rows[0];
+    const { id: memberId } = memberResult.rows[0];
 
     // Revoke the token (only if it belongs to this member)
     const result = await pool.query(`
       UPDATE issued_tokens
       SET revoked = true
-      WHERE jti = $1 AND legal_entity_id = $2
+      WHERE jti = $1 AND member_id = $2
       RETURNING jti
-    `, [tokenId, legal_entity_id]);
+    `, [tokenId, memberId]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Token not found or does not belong to you' });
