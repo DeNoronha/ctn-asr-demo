@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Last Updated:** November 19, 2025
+**Last Updated:** November 20, 2025
 
 ---
 
@@ -517,6 +517,14 @@ git push --force-with-lease origin main
 23. **Wrap each API call in separate try-catch** → One failing resource shouldn't block others (defensive programming)
 24. **Graceful degradation** → Set fallback states ([], null) on error instead of cascading failures
 
+### Infrastructure as Code
+
+25. **Log Analytics workspace is shared** → `log-ctn-demo` (consolidated Nov 20, 2025) - used by Application Insights AND Container Apps Environment
+26. **Alerts defined in Bicep** → `infrastructure/bicep/modules/container-app-alerts.bicep` contains 4 metric alerts for Container Apps monitoring
+27. **No App Service Plan needed** → Container Apps use managed environments (Microsoft.App/managedEnvironments), not App Service Plans
+28. **Bicep parameter files** → `parameters.dev.json` and `parameters.prod.json` for environment-specific configs
+29. **Pipeline auto-deploys Bicep** → Changes to `infrastructure/bicep/*` trigger `bicep-infrastructure.yml` pipeline
+
 ---
 
 ## Documentation Structure
@@ -548,13 +556,32 @@ git push --force-with-lease origin main
 - **Member:** https://calm-pebble-043b2db03.1.azurestaticapps.net
 - **Orchestrator:** https://blue-dune-0353f1303.1.azurestaticapps.net
 
-### Backend
+### Backend & Infrastructure
 - **API (Container Apps):** https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api
-- **Database:** psql-ctn-demo-asr-dev.postgres.database.azure.com
+- **Database:** psql-ctn-demo-asr-dev.postgres.database.azure.com (PostgreSQL 15)
 - **Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
 - **Container Registry:** crctnasrdev.azurecr.io
+- **Key Vault:** kv-ctn-demo-asr-dev
 
-**Note:** Front Door may show DeploymentStatus: NotStarted. Use Direct URLs if Front Door returns 404.
+### Monitoring & Logging
+- **Log Analytics Workspace:** `log-ctn-demo` (consolidated, Nov 20, 2025)
+  - 30-day retention, PerGB2018 pricing tier
+  - Shared by Application Insights and Container Apps Environment
+- **Application Insights:** appi-ctn-demo-asr-dev
+  - Instrumentation Key: 303479d6-d426-4dbb-8961-e629d054f740
+  - Connected to unified Log Analytics workspace
+
+### Active Alerts (Container Apps)
+| Alert | Severity | Metric | Threshold |
+|-------|----------|--------|-----------|
+| ASR-Container-App-5xx-Errors | 1 (Critical) | Requests (5xx) | > 10 in 5 min |
+| ASR-High-Request-Rate | 2 (Warning) | Requests (total) | > 1000 in 5 min |
+| ASR-High-Memory-Usage | 2 (Warning) | WorkingSetBytes | > 800MB for 15 min |
+| ASR-Slow-Response-Time | 2 (Warning) | ResponseTime | > 5s avg in 5 min |
+
+**Note:**
+- Front Door may show DeploymentStatus: NotStarted. Use Direct URLs if Front Door returns 404.
+- Alerts defined in `infrastructure/bicep/modules/container-app-alerts.bicep`
 
 ---
 
@@ -569,10 +596,27 @@ git push --force-with-lease origin main
 | Members not showing | Test API health: `curl https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health` |
 | E2E tests failing | Verify auth state in `playwright/.auth/user.json` |
 | Pipeline path filters not working | Ensure no mixed commits from concurrent sessions |
-| Container App not starting | Check logs: `az containerapp logs show --type console` |
+| Container App not starting | Check logs: `az containerapp logs show --type console --name ca-ctn-asr-api-dev` |
 | 404s after successful deployment | Check Container App revision status, verify route in routes.ts |
+| Alerts not firing | Verify alerts exist: `az monitor metrics alert list --resource-group rg-ctn-demo-asr-dev` |
+| Log Analytics queries failing | Use workspace: `log-ctn-demo` (consolidated Nov 20, 2025) |
 
 **Credentials:** Check `.credentials` file (gitignored) before searching Azure Portal.
+
+**Monitoring Commands:**
+```bash
+# View Container App logs
+az containerapp logs show --name ca-ctn-asr-api-dev --resource-group rg-ctn-demo-asr-dev --type console --follow
+
+# Check Container App health
+az containerapp show --name ca-ctn-asr-api-dev --resource-group rg-ctn-demo-asr-dev --query "{status:properties.runningStatus, health:properties.health}"
+
+# Query Log Analytics (requires workspace ID)
+az monitor log-analytics query --workspace log-ctn-demo --analytics-query "ContainerAppConsoleLogs_CL | take 100"
+
+# List active alerts
+az monitor metrics alert list --resource-group rg-ctn-demo-asr-dev --output table
+```
 
 **For complete lessons with examples, see `docs/LESSONS_LEARNED.md`**
 
