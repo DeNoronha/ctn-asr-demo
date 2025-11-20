@@ -824,11 +824,11 @@ router.get('/v1/legal-entities/:legalentityid/contacts', requireAuth, async (req
     const { legalentityid } = req.params;
 
     const { rows } = await pool.query(`
-      SELECT contact_id, legal_entity_id, contact_type, contact_name, email,
+      SELECT legal_entity_contact_id, legal_entity_id, contact_type, full_name, email,
              phone, job_title, is_primary, dt_created, dt_modified
       FROM legal_entity_contact
       WHERE legal_entity_id = $1 AND is_deleted = false
-      ORDER BY is_primary DESC, contact_name ASC
+      ORDER BY is_primary DESC, full_name ASC
     `, [legalentityid]);
 
     res.json({ data: rows });
@@ -844,20 +844,20 @@ router.post('/v1/legal-entities/:legalentityid/contacts', requireAuth, async (re
     const { legalentityid } = req.params;
     const contactId = randomUUID();
 
-    const { contact_type, contact_name, email, phone, job_title, is_primary } = req.body;
+    const { contact_type, full_name, email, phone, job_title, is_primary } = req.body;
 
-    if (!contact_name || !email) {
-      return res.status(400).json({ error: 'contact_name and email are required' });
+    if (!full_name || !email) {
+      return res.status(400).json({ error: 'full_name and email are required' });
     }
 
     const { rows } = await pool.query(`
       INSERT INTO legal_entity_contact (
-        contact_id, legal_entity_id, contact_type, contact_name, email,
+        legal_entity_contact_id, legal_entity_id, contact_type, full_name, email,
         phone, job_title, is_primary, dt_created, dt_modified
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
       RETURNING *
-    `, [contactId, legalentityid, contact_type || 'PRIMARY', contact_name, email, phone, job_title, is_primary || false]);
+    `, [contactId, legalentityid, contact_type || 'PRIMARY', full_name, email, phone, job_title, is_primary || false]);
 
     res.status(201).json(rows[0]);
   } catch (error: any) {
@@ -871,20 +871,20 @@ router.put('/v1/legal-entities/:legalentityid/contacts/:contactId', requireAuth,
     const pool = getPool();
     const { contactId } = req.params;
 
-    const { contact_type, contact_name, email, phone, job_title, is_primary } = req.body;
+    const { contact_type, full_name, email, phone, job_title, is_primary } = req.body;
 
     const { rows } = await pool.query(`
       UPDATE legal_entity_contact SET
         contact_type = COALESCE($1, contact_type),
-        contact_name = COALESCE($2, contact_name),
+        full_name = COALESCE($2, full_name),
         email = COALESCE($3, email),
         phone = COALESCE($4, phone),
         job_title = COALESCE($5, job_title),
         is_primary = COALESCE($6, is_primary),
         dt_modified = NOW()
-      WHERE contact_id = $7 AND is_deleted = false
+      WHERE legal_entity_contact_id = $7 AND is_deleted = false
       RETURNING *
-    `, [contact_type, contact_name, email, phone, job_title, is_primary, contactId]);
+    `, [contact_type, full_name, email, phone, job_title, is_primary, contactId]);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Contact not found' });
@@ -904,7 +904,7 @@ router.delete('/v1/legal-entities/:legalentityid/contacts/:contactId', requireAu
 
     const { rowCount } = await pool.query(`
       UPDATE legal_entity_contact SET is_deleted = true, dt_modified = NOW()
-      WHERE contact_id = $1 AND is_deleted = false
+      WHERE legal_entity_contact_id = $1 AND is_deleted = false
     `, [contactId]);
 
     if (rowCount === 0) {
@@ -925,10 +925,10 @@ router.get('/v1/contacts/:contactId', requireAuth, async (req: Request, res: Res
     const { contactId } = req.params;
 
     const { rows } = await pool.query(`
-      SELECT contact_id, legal_entity_id, contact_type, contact_name, email,
+      SELECT legal_entity_contact_id, legal_entity_id, contact_type, full_name, email,
              phone, job_title, is_primary, dt_created, dt_modified
       FROM legal_entity_contact
-      WHERE contact_id = $1 AND is_deleted = false
+      WHERE legal_entity_contact_id = $1 AND is_deleted = false
     `, [contactId]);
 
     if (rows.length === 0) {
@@ -947,20 +947,20 @@ router.post('/v1/contacts', requireAuth, async (req: Request, res: Response) => 
     const pool = getPool();
     const contactId = randomUUID();
 
-    const { legal_entity_id, contact_type, contact_name, email, phone, job_title, is_primary } = req.body;
+    const { legal_entity_id, contact_type, full_name, email, phone, job_title, is_primary } = req.body;
 
-    if (!legal_entity_id || !contact_name || !email) {
-      return res.status(400).json({ error: 'legal_entity_id, contact_name and email are required' });
+    if (!legal_entity_id || !full_name || !email) {
+      return res.status(400).json({ error: 'legal_entity_id, full_name and email are required' });
     }
 
     const { rows } = await pool.query(`
       INSERT INTO legal_entity_contact (
-        contact_id, legal_entity_id, contact_type, contact_name, email,
+        legal_entity_contact_id, legal_entity_id, contact_type, full_name, email,
         phone, job_title, is_primary, dt_created, dt_modified
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
       RETURNING *
-    `, [contactId, legal_entity_id, contact_type || 'PRIMARY', contact_name, email, phone, job_title, is_primary || false]);
+    `, [contactId, legal_entity_id, contact_type || 'PRIMARY', full_name, email, phone, job_title, is_primary || false]);
 
     res.status(201).json(rows[0]);
   } catch (error: any) {
@@ -974,20 +974,20 @@ router.put('/v1/contacts/:contactId', requireAuth, async (req: Request, res: Res
     const pool = getPool();
     const { contactId } = req.params;
 
-    const { contact_type, contact_name, email, phone, job_title, is_primary } = req.body;
+    const { contact_type, full_name, email, phone, job_title, is_primary } = req.body;
 
     const { rows } = await pool.query(`
       UPDATE legal_entity_contact SET
         contact_type = COALESCE($1, contact_type),
-        contact_name = COALESCE($2, contact_name),
+        full_name = COALESCE($2, full_name),
         email = COALESCE($3, email),
         phone = COALESCE($4, phone),
         job_title = COALESCE($5, job_title),
         is_primary = COALESCE($6, is_primary),
         dt_modified = NOW()
-      WHERE contact_id = $7 AND is_deleted = false
+      WHERE legal_entity_contact_id = $7 AND is_deleted = false
       RETURNING *
-    `, [contact_type, contact_name, email, phone, job_title, is_primary, contactId]);
+    `, [contact_type, full_name, email, phone, job_title, is_primary, contactId]);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Contact not found' });
@@ -1007,7 +1007,7 @@ router.delete('/v1/contacts/:contactId', requireAuth, async (req: Request, res: 
 
     const { rowCount } = await pool.query(`
       UPDATE legal_entity_contact SET is_deleted = true, dt_modified = NOW()
-      WHERE contact_id = $1 AND is_deleted = false
+      WHERE legal_entity_contact_id = $1 AND is_deleted = false
     `, [contactId]);
 
     if (rowCount === 0) {
@@ -1030,7 +1030,7 @@ router.get('/v1/legal-entities/:legalentityid/identifiers', requireAuth, async (
     const { legalentityid } = req.params;
 
     const { rows } = await pool.query(`
-      SELECT identifier_id, legal_entity_id, identifier_type, identifier_value,
+      SELECT legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
              issuing_authority, issued_at, expires_at, verification_status,
              dt_created, dt_modified
       FROM legal_entity_number
@@ -1052,7 +1052,7 @@ router.get('/v1/entities/:legalentityid/identifiers', requireAuth, async (req: R
     const { legalentityid } = req.params;
 
     const { rows } = await pool.query(`
-      SELECT identifier_id, legal_entity_id, identifier_type, identifier_value,
+      SELECT legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
              issuing_authority, issued_at, expires_at, verification_status,
              dt_created, dt_modified
       FROM legal_entity_number
@@ -1081,7 +1081,7 @@ router.post('/v1/legal-entities/:legalentityid/identifiers', requireAuth, async 
 
     const { rows } = await pool.query(`
       INSERT INTO legal_entity_number (
-        identifier_id, legal_entity_id, identifier_type, identifier_value,
+        legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
         issuing_authority, issued_at, expires_at, verification_status,
         dt_created, dt_modified
       )
@@ -1111,7 +1111,7 @@ router.post('/v1/entities/:legalentityid/identifiers', requireAuth, async (req: 
 
     const { rows } = await pool.query(`
       INSERT INTO legal_entity_number (
-        identifier_id, legal_entity_id, identifier_type, identifier_value,
+        legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
         issuing_authority, issued_at, expires_at, verification_status,
         dt_created, dt_modified
       )
@@ -1132,11 +1132,11 @@ router.get('/v1/identifiers/:identifierId', requireAuth, async (req: Request, re
     const { identifierId } = req.params;
 
     const { rows } = await pool.query(`
-      SELECT identifier_id, legal_entity_id, identifier_type, identifier_value,
+      SELECT legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
              issuing_authority, issued_at, expires_at, verification_status,
              dt_created, dt_modified
       FROM legal_entity_number
-      WHERE identifier_id = $1 AND is_deleted = false
+      WHERE legal_entity_reference_id = $1 AND is_deleted = false
     `, [identifierId]);
 
     if (rows.length === 0) {
@@ -1166,7 +1166,7 @@ router.put('/v1/identifiers/:identifierId', requireAuth, async (req: Request, re
         expires_at = COALESCE($5, expires_at),
         verification_status = COALESCE($6, verification_status),
         dt_modified = NOW()
-      WHERE identifier_id = $7 AND is_deleted = false
+      WHERE legal_entity_reference_id = $7 AND is_deleted = false
       RETURNING *
     `, [identifier_type, identifier_value, issuing_authority, issued_at, expires_at, verification_status, identifierId]);
 
@@ -1188,7 +1188,7 @@ router.delete('/v1/identifiers/:identifierId', requireAuth, async (req: Request,
 
     const { rowCount } = await pool.query(`
       UPDATE legal_entity_number SET is_deleted = true, dt_modified = NOW()
-      WHERE identifier_id = $1 AND is_deleted = false
+      WHERE legal_entity_reference_id = $1 AND is_deleted = false
     `, [identifierId]);
 
     if (rowCount === 0) {
@@ -1211,7 +1211,7 @@ router.get('/v1/legal-entities/:legalentityid/endpoints', requireAuth, async (re
     const { legalentityid } = req.params;
 
     const { rows } = await pool.query(`
-      SELECT endpoint_id, legal_entity_id, endpoint_type, endpoint_url,
+      SELECT legal_entity_endpoint_id, legal_entity_id, endpoint_type, endpoint_url,
              endpoint_name, is_active, protocol, authentication_type,
              dt_created, dt_modified
       FROM legal_entity_endpoint
@@ -1240,7 +1240,7 @@ router.post('/v1/legal-entities/:legalentityid/endpoints', requireAuth, async (r
 
     const { rows } = await pool.query(`
       INSERT INTO legal_entity_endpoint (
-        endpoint_id, legal_entity_id, endpoint_type, endpoint_url,
+        legal_entity_endpoint_id, legal_entity_id, endpoint_type, endpoint_url,
         endpoint_name, is_active, protocol, authentication_type,
         dt_created, dt_modified
       )
@@ -1271,7 +1271,7 @@ router.put('/v1/endpoints/:endpointId', requireAuth, async (req: Request, res: R
         protocol = COALESCE($5, protocol),
         authentication_type = COALESCE($6, authentication_type),
         dt_modified = NOW()
-      WHERE endpoint_id = $7 AND is_deleted = false
+      WHERE legal_entity_endpoint_id = $7 AND is_deleted = false
       RETURNING *
     `, [endpoint_type, endpoint_url, endpoint_name, is_active, protocol, authentication_type, endpointId]);
 
@@ -1293,7 +1293,7 @@ router.delete('/v1/endpoints/:endpointId', requireAuth, async (req: Request, res
 
     const { rowCount } = await pool.query(`
       UPDATE legal_entity_endpoint SET is_deleted = true, dt_modified = NOW()
-      WHERE endpoint_id = $1 AND is_deleted = false
+      WHERE legal_entity_endpoint_id = $1 AND is_deleted = false
     `, [endpointId]);
 
     if (rowCount === 0) {
