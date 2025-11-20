@@ -10,9 +10,12 @@ async function getAccessToken(): Promise<string> {
     throw new Error('No authenticated user found');
   }
 
+  const apiClientId = import.meta.env.VITE_API_CLIENT_ID;
+  if (!apiClientId) {
+    throw new Error('VITE_API_CLIENT_ID environment variable is required');
+  }
+
   try {
-    const apiClientId =
-      import.meta.env.VITE_API_CLIENT_ID || 'd3037c11-a541-4f21-8862-8079137a0cde';
     const response = await msalInstance.acquireTokenSilent({
       account: accounts[0],
       scopes: [`api://${apiClientId}/access_as_user`],
@@ -42,10 +45,18 @@ function handleApiError(error: Error): void {
 }
 
 /**
+ * Validate required environment variables
+ */
+const apiUrl = import.meta.env.VITE_API_URL;
+if (!apiUrl) {
+  throw new Error('VITE_API_URL environment variable is required');
+}
+
+/**
  * Shared API client instance for member portal
  */
 export const apiClient = new AsrApiClient({
-  baseURL: import.meta.env.VITE_API_URL || 'https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1',
+  baseURL: apiUrl,
   timeout: 30000,
   retryAttempts: 3,
   getAccessToken,

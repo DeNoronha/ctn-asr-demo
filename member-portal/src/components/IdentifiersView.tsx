@@ -60,6 +60,7 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
 }) => {
   const [identifiers, setIdentifiers] = useState<Identifier[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [editingIdentifier, setEditingIdentifier] = useState<Identifier | null>(null);
@@ -147,6 +148,7 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
   const handleDeleteConfirm = async () => {
     if (!identifierToDelete || !memberData.legalEntityId) return;
 
+    setDeleting(true);
     try {
       await apiClient.member.deleteIdentifier(
         memberData.legalEntityId,
@@ -156,8 +158,12 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
       setShowDeleteDialog(false);
       loadIdentifiers();
       onDataChange();
-    } catch (_error) {
-      onNotification('Failed to delete identifier', 'error');
+    } catch (error) {
+      console.error('Delete identifier error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete identifier';
+      onNotification(errorMessage, 'error');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -350,8 +356,10 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
           ?
         </p>
         <div className="form-actions">
-          <Button onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
-          <Button color="red" onClick={handleDeleteConfirm}>
+          <Button onClick={() => setShowDeleteDialog(false)} disabled={deleting}>
+            Cancel
+          </Button>
+          <Button color="red" onClick={handleDeleteConfirm} loading={deleting}>
             Delete
           </Button>
         </div>

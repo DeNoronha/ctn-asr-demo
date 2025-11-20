@@ -85,33 +85,27 @@ function AppContent(_props: AppContentProps) {
     },
   });
 
-  useEffect(() => {
-    if (accounts.length > 0) {
-      fetchMemberData();
-    }
-  }, [accounts]);
+  const showNotification = React.useCallback(
+    (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success') => {
+      const notificationConfig = {
+        success: { title: 'Success', color: 'green' },
+        error: { title: 'Error', color: 'red' },
+        warning: { title: 'Warning', color: 'yellow' },
+        info: { title: 'Info', color: 'blue' },
+      };
 
-  const showNotification = (
-    message: string,
-    type: 'success' | 'error' | 'warning' | 'info' = 'success'
-  ) => {
-    const notificationConfig = {
-      success: { title: 'Success', color: 'green' },
-      error: { title: 'Error', color: 'red' },
-      warning: { title: 'Warning', color: 'yellow' },
-      info: { title: 'Info', color: 'blue' },
-    };
+      const config = notificationConfig[type];
+      notifications.show({
+        title: config.title,
+        message,
+        color: config.color,
+        autoClose: 5000,
+      });
+    },
+    []
+  );
 
-    const config = notificationConfig[type];
-    notifications.show({
-      title: config.title,
-      message,
-      color: config.color,
-      autoClose: 5000,
-    });
-  };
-
-  const fetchMemberData = async () => {
+  const fetchMemberData = React.useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -143,7 +137,13 @@ function AppContent(_props: AppContentProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [accounts, msal, showNotification]);
+
+  useEffect(() => {
+    if (accounts.length > 0) {
+      fetchMemberData();
+    }
+  }, [accounts.length, fetchMemberData]);
 
   const getAccessToken = async (): Promise<string> => {
     const account = accounts[0];

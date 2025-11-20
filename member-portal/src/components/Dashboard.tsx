@@ -293,7 +293,6 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 };
