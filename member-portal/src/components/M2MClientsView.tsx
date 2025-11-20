@@ -3,13 +3,19 @@
  * Member-scoped M2M client management (members see only their own clients)
  */
 
-import { Button, Checkbox, Group, Modal, TextInput, Textarea } from '@mantine/core';
+import { Button, Checkbox, Group, Modal, Select, TextInput, Textarea } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { apiClient } from '../services/apiClient';
 import { AlertTriangle, Copy, Key, Plus, Trash2 } from './icons';
 import { LoadingState } from './shared/LoadingState';
+
+interface Endpoint {
+  legal_entity_endpoint_id: string;
+  endpoint_name: string;
+  endpoint_url: string;
+}
 
 interface M2MClient {
   m2m_client_id: string;
@@ -20,6 +26,9 @@ interface M2MClient {
   assigned_scopes: string[];
   is_active: boolean;
   dt_created: string;
+  legal_entity_endpoint_id?: string | null;
+  endpointName?: string | null;
+  endpointUrl?: string | null;
 }
 
 interface M2MClientsViewProps {
@@ -45,7 +54,9 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
   onNotification,
 }) => {
   const [clients, setClients] = useState<M2MClient[]>([]);
+  const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingEndpoints, setLoadingEndpoints] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showSecretDialog, setShowSecretDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -56,6 +67,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
     client_name: '',
     description: '',
     scopes: [] as string[],
+    legal_entity_endpoint_id: '' as string | null,
   });
   const [previewClientId, setPreviewClientId] = useState<string>('');
 
@@ -72,6 +84,28 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
       setPreviewClientId(uuid);
     }
   }, [showAddDialog, previewClientId]);
+
+  // Load endpoints when modal opens
+  useEffect(() => {
+    if (showAddDialog && endpoints.length === 0) {
+      loadEndpoints();
+    }
+  }, [showAddDialog, endpoints.length]);
+
+  const loadEndpoints = async () => {
+    setLoadingEndpoints(true);
+    try {
+      const data = await apiClient.member.getEndpoints();
+      const endpointsArray = Array.isArray(data?.endpoints) ? data.endpoints : [];
+      setEndpoints(endpointsArray);
+    } catch (error) {
+      console.error('Error loading endpoints:', error);
+      onNotification('Failed to load endpoints', 'error');
+      setEndpoints([]);
+    } finally {
+      setLoadingEndpoints(false);
+    }
+  };
 
   const loadClients = async () => {
     setLoading(true);
@@ -101,11 +135,12 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
         client_name: formData.client_name,
         description: formData.description,
         assigned_scopes: formData.scopes,
+        legal_entity_endpoint_id: formData.legal_entity_endpoint_id || null,
       });
 
       onNotification('M2M client created successfully', 'success');
       setShowAddDialog(false);
-      setFormData({ client_name: '', description: '', scopes: [] });
+      setFormData({ client_name: '', description: '', scopes: [], legal_entity_endpoint_id: '' });
 
       // Show secret dialog with the generated secret
       setSelectedClient(newClient.client);
@@ -240,7 +275,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
               {
                 accessor: 'assigned_scopes',
                 title: 'Scopes',
-                width: 300,
+                width: 250,
                 render: (client) => {
                   const scopes = Array.isArray(client.assigned_scopes) ? client.assigned_scopes : [];
                   return (
@@ -258,6 +293,26 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
                           {scope}
                         </span>
                       ))}
+                    </div>
+                  );
+                },
+              },
+              {
+                accessor: 'endpointName',
+                title: 'Linked Endpoint',
+                width: 200,
+                render: (client) => {
+                  if (!client.endpointName) {
+                    return (
+                      <span style={{ color: '#9ca3af', fontSize: '0.875rem', fontStyle: 'italic' }}>
+                        Not linked
+                      </span>
+                    );
+                  }
+                  return (
+                    <div style={{ fontSize: '0.875rem' }}>
+                      <div style={{ fontWeight: 500 }}>{client.endpointName}</div>
+                      <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>{client.endpointUrl}</div>
                     </div>
                   );
                 },
@@ -334,6 +389,33 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
         size="lg"
       >
         <div style={{ padding: '20px 0' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <label
+              htmlFor="endpoint_select"
+              style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}
+            >
+              Published Endpoint (Optional)
+            </label>
+            <Select
+              id="endpoint_select"
+              value={formData.legal_entity_endpoint_id}
+              onChange={(value) => setFormData({ ...formData, legal_entity_endpoint_id: value })}
+              data={endpoints.map((ep) => ({
+                value: ep.legal_entity_endpoint_id,
+                label: `${ep.endpoint_name} - ${ep.endpoint_url}`,
+              }))}
+              placeholder={loadingEndpoints ? 'Loading endpoints...' : 'Select an endpoint (optional)'}
+              searchable
+              clearable
+              disabled={loadingEndpoints}
+              nothingFoundMessage="No endpoints configured yet"
+              style={{ width: '100%' }}
+            />
+            <p style={{ fontSize: '0.75rem', color: '#666', margin: '4px 0 0 0' }}>
+              Link this credential to a specific endpoint. One endpoint can have multiple credentials.
+            </p>
+          </div>
+
           <div style={{ marginBottom: '20px' }}>
             <label
               htmlFor="preview_client_id"
