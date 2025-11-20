@@ -151,7 +151,7 @@ const About: React.FC = () => {
 
       // Load API version from /api/v1/version
       const apiResponse = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1'}/version`
+        `${import.meta.env.VITE_API_URL || 'https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1'}/version`
       );
       if (apiResponse.ok) {
         const apiData = await apiResponse.json();
@@ -496,17 +496,17 @@ const About: React.FC = () => {
                         try {
                           return new URL(
                             import.meta.env.VITE_API_URL ||
-                              'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1'
+                              'https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1'
                           ).host;
                         } catch {
-                          return 'func-ctn-demo-asr-dev.azurewebsites.net';
+                          return 'ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io';
                         }
                       })()}
                     </Code>
                     <CopyButton
                       value={
                         import.meta.env.VITE_API_URL ||
-                        'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1'
+                        'https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1'
                       }
                       timeout={2000}
                     >

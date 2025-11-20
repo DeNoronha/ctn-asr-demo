@@ -199,10 +199,10 @@ export const URLS = {
   API_DOCS: 'https://docs.ctn.cloud/api',
 
   /** Development API base (localhost) */
-  DEV_API_BASE: 'http://localhost:7071/api/v1',
+  DEV_API_BASE: 'http://localhost:8080/api/v1',
 
-  /** Production API base */
-  PROD_API_BASE: 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1',
+  /** Production API base (Container Apps) */
+  PROD_API_BASE: 'https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1',
 } as const;
 
 /**
