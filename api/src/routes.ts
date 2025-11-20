@@ -612,6 +612,155 @@ router.get('/v1/member', requireAuth, async (req: Request, res: Response) => {
 });
 
 // ============================================================================
+// MEMBER API TOKENS
+// ============================================================================
+router.get('/v1/member/tokens', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const userEmail = (req as any).userEmail;
+
+    if (!userEmail) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get member's legal entity ID from their email
+    const memberResult = await pool.query(`
+      SELECT le.legal_entity_id
+      FROM legal_entity_contact c
+      JOIN legal_entity le ON c.legal_entity_id = le.legal_entity_id
+      WHERE c.email = $1 AND c.is_active = true
+      LIMIT 1
+    `, [userEmail]);
+
+    if (memberResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Member not found' });
+    }
+
+    const { legal_entity_id } = memberResult.rows[0];
+
+    // Get all API tokens for this member
+    const tokensResult = await pool.query(`
+      SELECT
+        jti,
+        token_type,
+        issued_at,
+        expires_at,
+        revoked,
+        metadata
+      FROM issued_tokens
+      WHERE legal_entity_id = $1
+      ORDER BY issued_at DESC
+      LIMIT 50
+    `, [legal_entity_id]);
+
+    res.json({ tokens: tokensResult.rows });
+  } catch (error: any) {
+    console.error('Error fetching member tokens:', error);
+    res.status(500).json({ error: 'Failed to fetch tokens' });
+  }
+});
+
+router.post('/v1/member/tokens', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const userEmail = (req as any).userEmail;
+    const { description, expiresInDays = 365 } = req.body;
+
+    if (!userEmail) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get member's legal entity ID
+    const memberResult = await pool.query(`
+      SELECT le.legal_entity_id
+      FROM legal_entity_contact c
+      JOIN legal_entity le ON c.legal_entity_id = le.legal_entity_id
+      WHERE c.email = $1 AND c.is_active = true
+      LIMIT 1
+    `, [userEmail]);
+
+    if (memberResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Member not found' });
+    }
+
+    const { legal_entity_id } = memberResult.rows[0];
+
+    // Generate new JWT token (simplified - in production use proper JWT library)
+    const crypto = require('crypto');
+    const jti = `api-${crypto.randomUUID()}`;
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + expiresInDays * 24 * 60 * 60 * 1000);
+
+    // Store token in database
+    await pool.query(`
+      INSERT INTO issued_tokens (
+        jti,
+        token_type,
+        legal_entity_id,
+        issued_at,
+        expires_at,
+        metadata
+      ) VALUES ($1, $2, $3, $4, $5, $6)
+    `, [jti, 'API', legal_entity_id, now, expiresAt, JSON.stringify({ description })]);
+
+    res.status(201).json({
+      jti,
+      token_type: 'API',
+      issued_at: now,
+      expires_at: expiresAt,
+      description
+    });
+  } catch (error: any) {
+    console.error('Error creating member token:', error);
+    res.status(500).json({ error: 'Failed to create token' });
+  }
+});
+
+router.delete('/v1/member/tokens/:tokenId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const userEmail = (req as any).userEmail;
+    const { tokenId } = req.params;
+
+    if (!userEmail) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get member's legal entity ID
+    const memberResult = await pool.query(`
+      SELECT le.legal_entity_id
+      FROM legal_entity_contact c
+      JOIN legal_entity le ON c.legal_entity_id = le.legal_entity_id
+      WHERE c.email = $1 AND c.is_active = true
+      LIMIT 1
+    `, [userEmail]);
+
+    if (memberResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Member not found' });
+    }
+
+    const { legal_entity_id } = memberResult.rows[0];
+
+    // Revoke the token (only if it belongs to this member)
+    const result = await pool.query(`
+      UPDATE issued_tokens
+      SET revoked = true
+      WHERE jti = $1 AND legal_entity_id = $2
+      RETURNING jti
+    `, [tokenId, legal_entity_id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Token not found or does not belong to you' });
+    }
+
+    res.status(204).send();
+  } catch (error: any) {
+    console.error('Error revoking member token:', error);
+    res.status(500).json({ error: 'Failed to revoke token' });
+  }
+});
+
+// ============================================================================
 // LEGAL ENTITIES
 // ============================================================================
 router.get('/v1/legal-entities', requireAuth, async (req: Request, res: Response) => {
