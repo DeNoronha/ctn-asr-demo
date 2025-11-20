@@ -73,7 +73,7 @@ async function main() {
       const payload = {
         legal_entity_id: entityId,
         contact_type: 'PRIMARY',
-        contact_name: 'Test Contact',
+        full_name: 'Test Contact',
         email: `test.contact.${Date.now()}@example.com`,
         phone: '+31612345678',
         job_title: 'API Test Contact',
@@ -87,7 +87,7 @@ async function main() {
       assert([200, 201].includes(response.status),
         `Expected 200/201, got ${response.status}`);
 
-      contactId = response.body.contact_id || response.body.id;
+      contactId = response.body.legal_entity_contact_id || response.body.id;
       assert(contactId, 'Response should include contact ID');
       console.log(`  Created contact: ${contactId}`);
     });
@@ -96,13 +96,13 @@ async function main() {
     await runner.test('Read contact by ID', async () => {
       const response = await apiRequest(`/contacts/${contactId}`, {}, token);
       assert(response.status === 200, `Expected 200, got ${response.status}`);
-      assert(response.body.contact_name === 'Test Contact', 'Contact name should match');
+      assert(response.body.full_name === 'Test Contact', 'Contact name should match');
     });
 
     // Test 3: Update Contact
     await runner.test('Update contact', async () => {
       const payload = {
-        contact_name: 'Updated Contact',
+        full_name: 'Updated Contact',
         job_title: 'Updated Position',
       };
 
@@ -112,14 +112,14 @@ async function main() {
       }, token);
 
       assert(response.status === 200, `Expected 200, got ${response.status}`);
-      assert(response.body.contact_name === 'Updated Contact', 'Contact name should be updated');
+      assert(response.body.full_name === 'Updated Contact', 'Contact name should be updated');
     });
 
     // Test 4: Verify Update
     await runner.test('Verify contact update', async () => {
       const response = await apiRequest(`/contacts/${contactId}`, {}, token);
       assert(response.status === 200, `Expected 200, got ${response.status}`);
-      assert(response.body.contact_name === 'Updated Contact', 'Contact name should be updated');
+      assert(response.body.full_name === 'Updated Contact', 'Contact name should be updated');
       assert(response.body.job_title === 'Updated Position',
         'Position should be updated');
     });
@@ -134,7 +134,7 @@ async function main() {
       assert(Array.isArray(contacts), 'Response should contain array of contacts');
 
       const found = contacts.find(c =>
-        (c.contact_id || c.id) === contactId
+        (c.legal_entity_contact_id || c.id) === contactId
       );
       assert(found, 'Created contact should be in list');
       console.log(`  Found ${contacts.length} contacts`);

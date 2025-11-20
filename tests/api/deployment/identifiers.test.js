@@ -94,7 +94,7 @@ async function main() {
       assert([200, 201].includes(response.status),
         `Expected 200/201, got ${response.status}`);
 
-      identifierId = response.body.identifier_id || response.body.id;
+      identifierId = response.body.legal_entity_reference_id || response.body.id;
       assert(identifierId, 'Response should include identifier ID');
       console.log(`  Created identifier: ${identifierId}`);
     });
