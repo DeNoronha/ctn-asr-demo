@@ -26,6 +26,8 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
       setContacts(contactsData.contacts || []);
     } catch (error) {
       console.error('Error loading contacts:', error);
+      // Set empty array on error to allow dashboard to continue loading
+      setContacts([]);
     }
   };
 
@@ -35,6 +37,8 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
       setEndpoints(endpointsData.endpoints || []);
     } catch (error) {
       console.error('Error loading endpoints:', error);
+      // Set empty array on error to allow dashboard to continue loading
+      setEndpoints([]);
     }
   };
 
@@ -44,6 +48,8 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
       setTokens(tokensData.tokens || []);
     } catch (error) {
       console.error('Error loading tokens:', error);
+      // Set empty array on error to allow dashboard to continue loading
+      setTokens([]);
     }
   };
 
@@ -55,6 +61,8 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
       }
     } catch (error) {
       console.error('Error loading tier info:', error);
+      // Set null on error to hide tier card
+      setTierInfo(null);
     }
   };
 
@@ -62,9 +70,11 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
   const loadDashboardData = useCallback(async () => {
     setLoading(true);
     try {
-      await Promise.all([loadContacts(), loadEndpoints(), loadTokens(), loadTierInfo()]);
+      // Load all data in parallel, but don't let one failure break the entire dashboard
+      // Each function handles its own errors and sets fallback states
+      await Promise.allSettled([loadContacts(), loadEndpoints(), loadTokens(), loadTierInfo()]);
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
+      console.error('Unexpected error loading dashboard data:', error);
     } finally {
       setLoading(false);
     }

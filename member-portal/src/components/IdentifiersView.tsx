@@ -11,12 +11,19 @@ interface Identifier {
   legal_entity_reference_id: string;
   identifier_type: string;
   identifier_value: string;
+  country_code?: string;
   issuing_authority?: string;
   issued_at?: string;
   expires_at?: string;
   verification_status?: string;
   dt_created: string;
   dt_modified: string;
+}
+
+interface IdentifierFormData {
+  identifier_type: string;
+  identifier_value: string;
+  country_code?: string;
 }
 
 const IDENTIFIER_TYPES = [
@@ -66,7 +73,7 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
   const [editingIdentifier, setEditingIdentifier] = useState<Identifier | null>(null);
   const [identifierToDelete, setIdentifierToDelete] = useState<Identifier | null>(null);
 
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState<IdentifierFormData>({
     identifier_type: 'KVK',
     country_code: 'NL',
     identifier_value: '',
@@ -222,13 +229,13 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
                   accessor: 'country_code',
                   title: 'Country',
                   width: 100,
-                  render: (identifier: any) => identifier.country_code || '-',
+                  render: (identifier: Identifier) => identifier.country_code || '-',
                 },
                 {
                   accessor: 'verification_status',
                   title: 'Status',
                   width: 120,
-                  render: (identifier: any) => (
+                  render: (identifier: Identifier) => (
                     <Badge
                       color={
                         identifier.verification_status === 'VALIDATED'

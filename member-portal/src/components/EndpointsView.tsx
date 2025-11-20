@@ -151,14 +151,12 @@ export const EndpointsView: React.FC<ComponentProps> = ({
             legalEntityId={memberData.legalEntityId}
             apiBaseUrl={apiBaseUrl}
             getAccessToken={getAccessToken}
-            onComplete={() => {
+            onComplete={async () => {
               setShowDialog(false);
-              // Small delay to ensure API has finished processing
-              setTimeout(() => {
-                loadEndpoints();
-                onDataChange();
-              }, 500);
               onNotification('Endpoint registered successfully!', 'success');
+              // Reload data immediately - the wizard already waited for API confirmation
+              await loadEndpoints();
+              onDataChange();
             }}
             onCancel={() => setShowDialog(false)}
           />
