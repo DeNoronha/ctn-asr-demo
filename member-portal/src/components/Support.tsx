@@ -42,9 +42,18 @@ export const Support: React.FC = () => {
               </span>
             </li>
             <li>
-              <span style={{ color: '#999', cursor: 'not-allowed' }}>
-                API Documentation (Coming Soon)
-              </span>
+              <a
+                href="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/docs"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: 'var(--ctn-dark-blue)',
+                  textDecoration: 'none',
+                  fontWeight: 500
+                }}
+              >
+                API Documentation (Swagger) →
+              </a>
             </li>
             <li>
               <span style={{ color: '#999', cursor: 'not-allowed' }}>

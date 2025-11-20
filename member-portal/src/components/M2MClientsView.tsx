@@ -228,23 +228,26 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
                 accessor: 'assigned_scopes',
                 title: 'Scopes',
                 width: 300,
-                render: (client) => (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                    {client.assigned_scopes.map((scope: string) => (
-                      <span
-                        key={scope}
-                        style={{
-                          padding: '2px 8px',
-                          background: '#e3f2fd',
-                          borderRadius: '4px',
-                          fontSize: '0.75rem',
-                        }}
-                      >
-                        {scope}
-                      </span>
-                    ))}
-                  </div>
-                ),
+                render: (client) => {
+                  const scopes = Array.isArray(client.assigned_scopes) ? client.assigned_scopes : [];
+                  return (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                      {scopes.map((scope: string) => (
+                        <span
+                          key={scope}
+                          style={{
+                            padding: '2px 8px',
+                            background: '#e3f2fd',
+                            borderRadius: '4px',
+                            fontSize: '0.75rem',
+                          }}
+                        >
+                          {scope}
+                        </span>
+                      ))}
+                    </div>
+                  );
+                },
               },
               {
                 accessor: 'is_active',

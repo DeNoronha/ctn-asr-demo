@@ -5,9 +5,12 @@
 
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
 import { getPool } from './utils/database';
 import { initializeTelemetry } from './utils/telemetry';
 import { performStartupDiagnostics } from './utils/startup-diagnostics';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // Initialize simple logger for Container Apps
 interface Logger {
@@ -119,6 +122,41 @@ app.get('/api/health', async (req: Request, res: Response) => {
 
   res.status(statusCode).json(health);
 });
+
+// Swagger UI Documentation
+try {
+  const openapiPath = path.join(__dirname, 'openapi.json');
+  if (fs.existsSync(openapiPath)) {
+    const openapiDocument = JSON.parse(fs.readFileSync(openapiPath, 'utf8'));
+
+    // Serve Swagger UI at /api/docs
+    app.use('/api/docs', swaggerUi.serve);
+    app.get('/api/docs', swaggerUi.setup(openapiDocument, {
+      customSiteTitle: 'CTN ASR API Documentation',
+      customCss: '.swagger-ui .topbar { display: none }',
+      swaggerOptions: {
+        persistAuthorization: true,
+        displayRequestDuration: true,
+        filter: true,
+        tryItOutEnabled: true
+      }
+    }));
+
+    // Serve raw OpenAPI JSON
+    app.get('/api/openapi.json', (req, res) => {
+      res.json(openapiDocument);
+    });
+
+    logger.info('Swagger UI documentation enabled', {
+      path: '/api/docs',
+      openapiPath: '/api/openapi.json'
+    });
+  } else {
+    logger.warn('OpenAPI specification not found', { expectedPath: openapiPath });
+  }
+} catch (error) {
+  logger.error('Failed to load Swagger UI', error);
+}
 
 // Import and register all route handlers
 import { router } from './routes';

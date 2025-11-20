@@ -764,6 +764,114 @@ router.delete('/v1/member/tokens/:tokenId', requireAuth, async (req: Request, re
 });
 
 // ============================================================================
+// MEMBER CONTACTS
+// ============================================================================
+router.get('/v1/member/contacts', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const userEmail = (req as any).userEmail;
+
+    if (!userEmail) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get legal entity ID from user's email
+    const legalEntityResult = await pool.query(`
+      SELECT le.legal_entity_id
+      FROM legal_entity le
+      LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
+      WHERE c.email = $1 AND c.is_active = true
+      LIMIT 1
+    `, [userEmail]);
+
+    if (legalEntityResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Legal entity not found' });
+    }
+
+    const { legal_entity_id } = legalEntityResult.rows[0];
+
+    // Get all contacts for this legal entity
+    const { rows } = await pool.query(`
+      SELECT contact_id, contact_type, full_name, email, phone, mobile,
+             job_title, department, is_primary, is_active, preferred_contact_method,
+             dt_created, dt_modified
+      FROM legal_entity_contact
+      WHERE legal_entity_id = $1 AND is_deleted = false
+      ORDER BY is_primary DESC, full_name ASC
+    `, [legal_entity_id]);
+
+    res.json({ data: rows });
+  } catch (error: any) {
+    console.error('Error fetching member contacts:', error);
+    res.status(500).json({ error: 'Failed to fetch contacts' });
+  }
+});
+
+router.put('/v1/member/contacts/:contactId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const userEmail = (req as any).userEmail;
+    const { contactId } = req.params;
+    const { contact_type, full_name, email, phone, mobile, job_title, department, is_primary, preferred_contact_method } = req.body;
+
+    if (!userEmail) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get legal entity ID from user's email
+    const legalEntityResult = await pool.query(`
+      SELECT le.legal_entity_id
+      FROM legal_entity le
+      LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
+      WHERE c.email = $1 AND c.is_active = true
+      LIMIT 1
+    `, [userEmail]);
+
+    if (legalEntityResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Legal entity not found' });
+    }
+
+    const { legal_entity_id } = legalEntityResult.rows[0];
+
+    // Verify the contact belongs to this legal entity
+    const contactCheck = await pool.query(`
+      SELECT contact_id FROM legal_entity_contact
+      WHERE contact_id = $1 AND legal_entity_id = $2 AND is_deleted = false
+    `, [contactId, legal_entity_id]);
+
+    if (contactCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Contact not found or does not belong to your organization' });
+    }
+
+    // Update the contact
+    const { rowCount } = await pool.query(`
+      UPDATE legal_entity_contact
+      SET
+        contact_type = COALESCE($1, contact_type),
+        full_name = COALESCE($2, full_name),
+        email = COALESCE($3, email),
+        phone = COALESCE($4, phone),
+        mobile = COALESCE($5, mobile),
+        job_title = COALESCE($6, job_title),
+        department = COALESCE($7, department),
+        is_primary = COALESCE($8, is_primary),
+        preferred_contact_method = COALESCE($9, preferred_contact_method),
+        dt_modified = NOW()
+      WHERE contact_id = $10 AND legal_entity_id = $11 AND is_deleted = false
+    `, [contact_type, full_name, email, phone, mobile, job_title, department, is_primary, preferred_contact_method, contactId, legal_entity_id]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Contact not found' });
+    }
+
+    res.json({ message: 'Contact updated successfully' });
+  } catch (error: any) {
+    console.error('Error updating member contact:', error);
+    res.status(500).json({ error: 'Failed to update contact' });
+  }
+});
+
+// ============================================================================
 // LEGAL ENTITIES
 // ============================================================================
 router.get('/v1/legal-entities', requireAuth, async (req: Request, res: Response) => {
