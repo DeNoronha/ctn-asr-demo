@@ -792,7 +792,7 @@ router.get('/v1/member/contacts', requireAuth, async (req: Request, res: Respons
 
     // Get all contacts for this legal entity
     const { rows } = await pool.query(`
-      SELECT contact_id, contact_type, full_name, email, phone, mobile,
+      SELECT legal_entity_contact_id, contact_type, full_name, email, phone, mobile,
              job_title, department, is_primary, is_active, preferred_contact_method,
              dt_created, dt_modified
       FROM legal_entity_contact
@@ -835,8 +835,8 @@ router.put('/v1/member/contacts/:contactId', requireAuth, async (req: Request, r
 
     // Verify the contact belongs to this legal entity
     const contactCheck = await pool.query(`
-      SELECT contact_id FROM legal_entity_contact
-      WHERE contact_id = $1 AND legal_entity_id = $2 AND is_deleted = false
+      SELECT legal_entity_contact_id FROM legal_entity_contact
+      WHERE legal_entity_contact_id = $1 AND legal_entity_id = $2 AND is_deleted = false
     `, [contactId, legal_entity_id]);
 
     if (contactCheck.rows.length === 0) {
@@ -857,7 +857,7 @@ router.put('/v1/member/contacts/:contactId', requireAuth, async (req: Request, r
         is_primary = COALESCE($8, is_primary),
         preferred_contact_method = COALESCE($9, preferred_contact_method),
         dt_modified = NOW()
-      WHERE contact_id = $10 AND legal_entity_id = $11 AND is_deleted = false
+      WHERE legal_entity_contact_id = $10 AND legal_entity_id = $11 AND is_deleted = false
     `, [contact_type, full_name, email, phone, mobile, job_title, department, is_primary, preferred_contact_method, contactId, legal_entity_id]);
 
     if (rowCount === 0) {
