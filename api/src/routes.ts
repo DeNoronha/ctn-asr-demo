@@ -2089,7 +2089,7 @@ router.post('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, asyn
     const { rows } = await pool.query(`
       INSERT INTO m2m_clients (legal_entity_id, client_name, azure_client_id, description, assigned_scopes, is_active)
       VALUES ($1, $2, $3, $4, $5, true)
-      RETURNING m2m_client_id as "clientId", azure_client_id as "azureClientId", client_name as "clientName", assigned_scopes as "scopes"
+      RETURNING m2m_client_id, legal_entity_id, client_name, azure_client_id, description, assigned_scopes, is_active, dt_created
     `, [legal_entity_id, client_name, azureClientId, description || null, assigned_scopes || []]);
 
     const newClient = rows[0];
@@ -2098,7 +2098,7 @@ router.post('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, asyn
     await pool.query(`
       INSERT INTO m2m_client_secrets_audit (m2m_client_id, secret_generated_at)
       VALUES ($1, NOW())
-    `, [newClient.clientId]);
+    `, [newClient.m2m_client_id]);
 
     // Return client data with secret (only shown once - secret not stored in DB)
     res.status(201).json({
