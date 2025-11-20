@@ -44,15 +44,17 @@ async function request(url, options = {}) {
     const urlObj = new URL(url);
     const client = urlObj.protocol === 'https:' ? https : http;
 
+    // For FormData, don't set Content-Type (it's set by FormData with boundary)
+    const headers = options.useFormData
+      ? { ...options.headers }
+      : { 'Content-Type': 'application/json', ...options.headers };
+
     const requestOptions = {
       hostname: urlObj.hostname,
       port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
       path: urlObj.pathname + urlObj.search,
       method: options.method || 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers,
       timeout: options.timeout || config.api.timeout,
     };
 
@@ -86,13 +88,20 @@ async function request(url, options = {}) {
     });
 
     if (options.body) {
-      const bodyStr = typeof options.body === 'string'
-        ? options.body
-        : JSON.stringify(options.body);
-      req.write(bodyStr);
+      // Handle FormData (has pipe method)
+      if (options.useFormData && options.body.pipe) {
+        options.body.pipe(req);
+      } else {
+        // Handle JSON or string body
+        const bodyStr = typeof options.body === 'string'
+          ? options.body
+          : JSON.stringify(options.body);
+        req.write(bodyStr);
+        req.end();
+      }
+    } else {
+      req.end();
     }
-
-    req.end();
   });
 }
 
