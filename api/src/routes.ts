@@ -85,7 +85,7 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
 
     // Use the members_view which properly joins legal_entity with legal_entity_number
     let query = `
-      SELECT org_id, legal_name, kvk, lei, domain, status, membership_level,
+      SELECT org_id, org_id as legal_entity_id, legal_name, kvk, lei, domain, status, membership_level,
              created_at, metadata
       FROM members_view
       WHERE 1=1
@@ -152,7 +152,7 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
 
     // Use the members_view which properly joins legal_entity with legal_entity_number
     let query = `
-      SELECT org_id, legal_name, kvk, lei, domain, status, membership_level,
+      SELECT org_id, org_id as legal_entity_id, legal_name, kvk, lei, domain, status, membership_level,
              created_at, metadata
       FROM members_view
       WHERE 1=1
