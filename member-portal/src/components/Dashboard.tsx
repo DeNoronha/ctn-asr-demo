@@ -1,8 +1,9 @@
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
+import { Stack, Text } from '@mantine/core';
 import { apiClient } from '../services/apiClient';
 import type { ComponentProps, Contact, Endpoint, Token } from '../types';
-import { LoadingState } from './shared/LoadingState';
+import { DashboardSkeleton } from './shared/DashboardSkeleton';
 
 interface TierInfo {
   tier: number;
@@ -128,9 +129,12 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
     }
   };
 
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
+
   return (
-    <LoadingState loading={loading} minHeight={600}>
-      <div className="dashboard">
+    <div className="dashboard">
         <div className="page-header">
           <div>
             <h2>Dashboard</h2>
@@ -255,9 +259,9 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
             <div className="card-header">
               <h3>Recent Activity</h3>
             </div>
-            <div className="empty-state-small">
-              <p style={{ color: 'var(--ctn-text-light)' }}>No recent activity</p>
-            </div>
+            <Stack align="center" gap="xs" py="xl">
+              <Text c="dimmed" size="sm">No recent activity</Text>
+            </Stack>
           </div>
         </div>
 
@@ -290,6 +294,6 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
           </div>
         )}
       </div>
-    </LoadingState>
+    </div>
   );
 };

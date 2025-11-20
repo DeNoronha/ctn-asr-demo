@@ -1,4 +1,4 @@
-import { ActionIcon, Badge, Button, Group, Modal, Tooltip } from '@mantine/core';
+import { ActionIcon, Badge, Button, Group, Modal, Select, Stack, TextInput, Tooltip } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -57,10 +57,6 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
     setEditingContact(contact);
     setFormData(contact);
     setShowDialog(true);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -249,143 +245,99 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
         title={editingContact ? 'Edit Contact' : 'Add Contact'}
         size="lg"
       >
-        <form onSubmit={handleSubmit} className="simple-form">
-          <div className="form-field">
-            <label htmlFor="full_name">Full Name *</label>
-            <input
-              type="text"
-              id="full_name"
+        <form onSubmit={handleSubmit}>
+          <Stack gap="md">
+            <TextInput
+              label="Full Name"
               name="full_name"
               value={formData.full_name || ''}
-              onChange={handleChange}
+              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
               required
-              className="form-input"
+              withAsterisk
             />
-          </div>
-          <div className="form-row">
-            <div className="form-field">
-              <label htmlFor="first_name">First Name</label>
-              <input
-                type="text"
-                id="first_name"
+
+            <Group grow>
+              <TextInput
+                label="First Name"
                 name="first_name"
                 value={formData.first_name || ''}
-                onChange={handleChange}
-                className="form-input"
+                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
               />
-            </div>
-            <div className="form-field">
-              <label htmlFor="last_name">Last Name</label>
-              <input
-                type="text"
-                id="last_name"
+              <TextInput
+                label="Last Name"
                 name="last_name"
                 value={formData.last_name || ''}
-                onChange={handleChange}
-                className="form-input"
+                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
               />
-            </div>
-          </div>
-          <div className="form-field">
-            <label htmlFor="email">Email *</label>
-            <input
-              type="email"
-              id="email"
+            </Group>
+
+            <TextInput
+              label="Email"
               name="email"
+              type="email"
               value={formData.email || ''}
-              onChange={handleChange}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
-              className="form-input"
+              withAsterisk
             />
-          </div>
-          <div className="form-row">
-            <div className="form-field">
-              <label htmlFor="phone">Phone</label>
-              <input
-                type="tel"
-                id="phone"
+
+            <Group grow>
+              <TextInput
+                label="Phone"
                 name="phone"
-                value={formData.phone || ''}
-                onChange={handleChange}
-                className="form-input"
-              />
-            </div>
-            <div className="form-field">
-              <label htmlFor="mobile">Mobile</label>
-              <input
                 type="tel"
-                id="mobile"
-                name="mobile"
-                value={formData.mobile || ''}
-                onChange={handleChange}
-                className="form-input"
+                value={formData.phone || ''}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
-            </div>
-          </div>
-          <div className="form-field">
-            <label htmlFor="job_title">Job Title</label>
-            <input
-              type="text"
-              id="job_title"
+              <TextInput
+                label="Mobile"
+                name="mobile"
+                type="tel"
+                value={formData.mobile || ''}
+                onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+              />
+            </Group>
+
+            <TextInput
+              label="Job Title"
               name="job_title"
               value={formData.job_title || ''}
-              onChange={handleChange}
-              className="form-input"
+              onChange={(e) => setFormData({ ...formData, job_title: e.target.value })}
             />
-          </div>
-          <div className="form-field">
-            <label htmlFor="department">Department</label>
-            <input
-              type="text"
-              id="department"
+
+            <TextInput
+              label="Department"
               name="department"
               value={formData.department || ''}
-              onChange={handleChange}
-              className="form-input"
+              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
             />
-          </div>
-          <div className="form-row">
-            <div className="form-field">
-              <label htmlFor="contact_type">Contact Type</label>
-              <select
-                id="contact_type"
+
+            <Group grow>
+              <Select
+                label="Contact Type"
                 name="contact_type"
                 value={formData.contact_type || 'TECHNICAL'}
-                onChange={handleChange}
-                className="form-input"
-              >
-                {contactTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="form-field">
-              <label htmlFor="preferred_contact_method">Preferred Contact Method</label>
-              <select
-                id="preferred_contact_method"
+                onChange={(value) => setFormData({ ...formData, contact_type: value || 'TECHNICAL' })}
+                data={contactTypes}
+              />
+              <Select
+                label="Preferred Contact Method"
                 name="preferred_contact_method"
                 value={formData.preferred_contact_method || 'EMAIL'}
-                onChange={handleChange}
-                className="form-input"
-              >
-                {contactMethods.map((method) => (
-                  <option key={method} value={method}>
-                    {method}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="form-actions">
-            <Button type="button" onClick={() => setShowDialog(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" color="blue">
-              Save Contact
-            </Button>
-          </div>
+                onChange={(value) => setFormData({ ...formData, preferred_contact_method: value || 'EMAIL' })}
+                data={contactMethods}
+              />
+            </Group>
+
+            <Group justify="flex-end" mt="md">
+              <Button variant="default" onClick={() => setShowDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" color="blue">
+                Save Contact
+              </Button>
+            </Group>
+          </Stack>
         </form>
       </Modal>
     </div>

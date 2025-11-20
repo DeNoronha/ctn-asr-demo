@@ -1,4 +1,4 @@
-import { ActionIcon, Badge, Button, Group, Modal, Select, Tooltip } from '@mantine/core';
+import { ActionIcon, Badge, Button, Group, Modal, Select, Stack, TextInput, Tooltip } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -109,10 +109,6 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
   const handleDeleteClick = (identifier: Identifier) => {
     setIdentifierToDelete(identifier);
     setShowDeleteDialog(true);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -295,50 +291,47 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
         title={editingIdentifier ? 'Edit Identifier' : 'Add Identifier'}
         size="md"
       >
-        <form onSubmit={handleSubmit} className="simple-form">
-          <div className="form-field">
-            <label htmlFor="identifier_type">Type *</label>
+        <form onSubmit={handleSubmit}>
+          <Stack gap="md">
             <Select
-              id="identifier_type"
+              label="Type"
               name="identifier_type"
               value={formData.identifier_type}
               onChange={(value) => setFormData({ ...formData, identifier_type: value || 'KVK' })}
               data={IDENTIFIER_TYPES}
               required
+              withAsterisk
             />
-          </div>
-          <div className="form-field">
-            <label htmlFor="identifier_value">Value *</label>
-            <input
-              type="text"
-              id="identifier_value"
+
+            <TextInput
+              label="Value"
               name="identifier_value"
               value={formData.identifier_value || ''}
-              onChange={handleChange}
+              onChange={(e) => setFormData({ ...formData, identifier_value: e.target.value })}
               required
-              className="form-input"
+              withAsterisk
             />
-          </div>
-          <div className="form-field">
-            <label htmlFor="country_code">Country *</label>
+
             <Select
-              id="country_code"
+              label="Country"
               name="country_code"
               value={formData.country_code}
               onChange={(value) => setFormData({ ...formData, country_code: value || 'NL' })}
               data={COUNTRIES}
               required
+              withAsterisk
               searchable
             />
-          </div>
-          <div className="form-actions">
-            <Button type="button" onClick={() => setShowDialog(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" color="blue">
-              Save Identifier
-            </Button>
-          </div>
+
+            <Group justify="flex-end" mt="md">
+              <Button variant="default" onClick={() => setShowDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" color="blue">
+                Save Identifier
+              </Button>
+            </Group>
+          </Stack>
         </form>
       </Modal>
 

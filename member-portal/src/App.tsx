@@ -8,7 +8,7 @@ import {
 import React, { useEffect, useState } from 'react';
 
 // Mantine imports
-import { Button, MantineProvider, createTheme } from '@mantine/core';
+import { Button, MantineProvider, Stack, Tabs, Text, createTheme } from '@mantine/core';
 import { Notifications, notifications } from '@mantine/notifications';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
@@ -317,71 +317,19 @@ function AppContent(_props: AppContentProps) {
           </div>
 
           {memberData && (
-            <nav className="tab-navigation">
-              <button
-                type="button"
-                className={`tab-button ${activeTab === 'dashboard' ? 'active' : ''}`}
-                onClick={() => setActiveTab('dashboard')}
-              >
-                Dashboard
-              </button>
-              <button
-                type="button"
-                className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
-                onClick={() => setActiveTab('profile')}
-              >
-                Organization Profile
-              </button>
-              <button
-                type="button"
-                className={`tab-button ${activeTab === 'contacts' ? 'active' : ''}`}
-                onClick={() => setActiveTab('contacts')}
-              >
-                Contacts
-              </button>
-              <button
-                type="button"
-                className={`tab-button ${activeTab === 'identifiers' ? 'active' : ''}`}
-                onClick={() => setActiveTab('identifiers')}
-              >
-                Legal Identifiers
-              </button>
-              <button
-                type="button"
-                className={`tab-button ${activeTab === 'kvk-document' ? 'active' : ''}`}
-                onClick={() => setActiveTab('kvk-document')}
-              >
-                KvK Document
-              </button>
-              <button
-                type="button"
-                className={`tab-button ${activeTab === 'integrations' ? 'active' : ''}`}
-                onClick={() => setActiveTab('integrations')}
-              >
-                Published Endpoints
-              </button>
-              <button
-                type="button"
-                className={`tab-button ${activeTab === 'api-access' ? 'active' : ''}`}
-                onClick={() => setActiveTab('api-access')}
-              >
-                Access Credentials
-              </button>
-              <button
-                type="button"
-                className={`tab-button ${activeTab === 'dns-verification' ? 'active' : ''}`}
-                onClick={() => setActiveTab('dns-verification')}
-              >
-                DNS Verification
-              </button>
-              <button
-                type="button"
-                className={`tab-button ${activeTab === 'support' ? 'active' : ''}`}
-                onClick={() => setActiveTab('support')}
-              >
-                Support
-              </button>
-            </nav>
+            <Tabs value={activeTab} onChange={(value) => setActiveTab(value as TabType)} variant="pills" style={{ padding: '0 24px' }}>
+              <Tabs.List>
+                <Tabs.Tab value="dashboard">Dashboard</Tabs.Tab>
+                <Tabs.Tab value="profile">Organization Profile</Tabs.Tab>
+                <Tabs.Tab value="contacts">Contacts</Tabs.Tab>
+                <Tabs.Tab value="identifiers">Legal Identifiers</Tabs.Tab>
+                <Tabs.Tab value="kvk-document">KvK Document</Tabs.Tab>
+                <Tabs.Tab value="integrations">Published Endpoints</Tabs.Tab>
+                <Tabs.Tab value="api-access">Access Credentials</Tabs.Tab>
+                <Tabs.Tab value="dns-verification">DNS Verification</Tabs.Tab>
+                <Tabs.Tab value="support">Support</Tabs.Tab>
+              </Tabs.List>
+            </Tabs>
           )}
         </header>
       </AuthenticatedTemplate>
@@ -488,11 +436,11 @@ function AppContent(_props: AppContentProps) {
           )}
 
           {!loading && !memberData && !error && (
-            <div className="empty-state">
-              <h3>No Member Data</h3>
-              <p>We couldn't find any member information for your account.</p>
-              <p className="text-muted">Please contact support if you believe this is an error.</p>
-            </div>
+            <Stack align="center" gap="md" py="xl" style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+              <Text size="xl" fw={600}>No Member Data</Text>
+              <Text size="md">We couldn't find any member information for your account.</Text>
+              <Text size="sm" c="dimmed">Please contact support if you believe this is an error.</Text>
+            </Stack>
           )}
         </AuthenticatedTemplate>
 
