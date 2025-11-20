@@ -2051,17 +2051,21 @@ router.get('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, async
 
     const { rows } = await pool.query(`
       SELECT
-        m2m_client_id as "clientId",
-        legal_entity_id as "legalEntityId",
-        client_name as "clientName",
-        azure_client_id as "azureClientId",
-        assigned_scopes as "scopes",
-        is_active as "isActive",
-        dt_created as "createdAt",
-        dt_modified as "modifiedAt"
-      FROM m2m_clients
-      WHERE legal_entity_id = $1 AND is_deleted = false
-      ORDER BY dt_created DESC
+        m.m2m_client_id as "clientId",
+        m.legal_entity_id as "legalEntityId",
+        m.client_name as "clientName",
+        m.azure_client_id as "azureClientId",
+        m.assigned_scopes as "scopes",
+        m.is_active as "isActive",
+        m.dt_created as "createdAt",
+        m.dt_modified as "modifiedAt",
+        m.legal_entity_endpoint_id as "endpointId",
+        e.endpoint_url as "endpointUrl",
+        e.endpoint_name as "endpointName"
+      FROM m2m_clients m
+      LEFT JOIN legal_entity_endpoint e ON m.legal_entity_endpoint_id = e.legal_entity_endpoint_id
+      WHERE m.legal_entity_id = $1 AND m.is_deleted = false
+      ORDER BY m.dt_created DESC
     `, [legal_entity_id]);
 
     res.json({ clients: rows });
@@ -2075,10 +2079,26 @@ router.post('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, asyn
   try {
     const pool = getPool();
     const { legal_entity_id } = req.params;
-    const { client_name, description, assigned_scopes } = req.body;
+    const { client_name, description, assigned_scopes, legal_entity_endpoint_id } = req.body;
 
     if (!client_name) {
       return res.status(400).json({ error: 'client_name is required' });
+    }
+
+    // Validate that endpoint belongs to the legal entity (if provided)
+    if (legal_entity_endpoint_id) {
+      const endpointCheck = await pool.query(`
+        SELECT legal_entity_id FROM legal_entity_endpoint
+        WHERE legal_entity_endpoint_id = $1 AND is_deleted = false
+      `, [legal_entity_endpoint_id]);
+
+      if (endpointCheck.rows.length === 0) {
+        return res.status(404).json({ error: 'Endpoint not found' });
+      }
+
+      if (endpointCheck.rows[0].legal_entity_id !== legal_entity_id) {
+        return res.status(403).json({ error: 'Endpoint does not belong to this legal entity' });
+      }
     }
 
     const crypto = require('crypto');
@@ -2087,10 +2107,10 @@ router.post('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, asyn
 
     // Insert client (secrets are stored separately in m2m_client_secrets_audit or Key Vault)
     const { rows } = await pool.query(`
-      INSERT INTO m2m_clients (legal_entity_id, client_name, azure_client_id, description, assigned_scopes, is_active)
-      VALUES ($1, $2, $3, $4, $5, true)
-      RETURNING m2m_client_id, legal_entity_id, client_name, azure_client_id, description, assigned_scopes, is_active, dt_created
-    `, [legal_entity_id, client_name, azureClientId, description || null, assigned_scopes || []]);
+      INSERT INTO m2m_clients (legal_entity_id, client_name, azure_client_id, description, assigned_scopes, legal_entity_endpoint_id, is_active)
+      VALUES ($1, $2, $3, $4, $5, $6, true)
+      RETURNING m2m_client_id, legal_entity_id, client_name, azure_client_id, description, assigned_scopes, legal_entity_endpoint_id, is_active, dt_created
+    `, [legal_entity_id, client_name, azureClientId, description || null, assigned_scopes || [], legal_entity_endpoint_id || null]);
 
     const newClient = rows[0];
 
