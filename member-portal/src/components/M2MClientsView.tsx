@@ -67,10 +67,13 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
     setLoading(true);
     try {
       const data = await apiClient.member.getM2MClients(legalEntityId);
-      setClients(data);
+      // API returns { clients: [...] }, ensure we extract the array
+      const clientsArray = Array.isArray(data?.clients) ? data.clients : [];
+      setClients(clientsArray);
     } catch (error) {
       console.error('Error loading M2M clients:', error);
       onNotification('Failed to load M2M clients', 'error');
+      setClients([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
