@@ -699,8 +699,13 @@ router.get('/v1/legal-entities/:legalentityid', requireAuth, async (req: Request
 
     res.json(rows[0]);
   } catch (error: any) {
-    console.error('Error fetching legal entity:', error);
-    res.status(500).json({ error: 'Failed to fetch legal entity' });
+    console.error('Error fetching legal entity:', {
+      legalEntityId: req.params.legalentityid,
+      error: error.message,
+      stack: error.stack,
+      detail: error.detail || error.toString()
+    });
+    res.status(500).json({ error: 'Failed to fetch legal entity', detail: error.message });
   }
 });
 
@@ -833,8 +838,13 @@ router.get('/v1/legal-entities/:legalentityid/contacts', requireAuth, async (req
 
     res.json({ data: rows });
   } catch (error: any) {
-    console.error('Error fetching contacts:', error);
-    res.status(500).json({ error: 'Failed to fetch contacts' });
+    console.error('Error fetching contacts:', {
+      legalEntityId: req.params.legalentityid,
+      error: error.message,
+      stack: error.stack,
+      detail: error.detail || error.toString()
+    });
+    res.status(500).json({ error: 'Failed to fetch contacts', detail: error.message });
   }
 });
 
@@ -1040,8 +1050,13 @@ router.get('/v1/legal-entities/:legalentityid/identifiers', requireAuth, async (
 
     res.json({ data: rows });
   } catch (error: any) {
-    console.error('Error fetching identifiers:', error);
-    res.status(500).json({ error: 'Failed to fetch identifiers' });
+    console.error('Error fetching identifiers:', {
+      legalEntityId: req.params.legalentityid,
+      error: error.message,
+      stack: error.stack,
+      detail: error.detail || error.toString()
+    });
+    res.status(500).json({ error: 'Failed to fetch identifiers', detail: error.message });
   }
 });
 
@@ -1062,8 +1077,13 @@ router.get('/v1/entities/:legalentityid/identifiers', requireAuth, async (req: R
 
     res.json({ data: rows });
   } catch (error: any) {
-    console.error('Error fetching identifiers:', error);
-    res.status(500).json({ error: 'Failed to fetch identifiers' });
+    console.error('Error fetching identifiers (alias route):', {
+      legalEntityId: req.params.legalentityid,
+      error: error.message,
+      stack: error.stack,
+      detail: error.detail || error.toString()
+    });
+    res.status(500).json({ error: 'Failed to fetch identifiers', detail: error.message });
   }
 });
 
@@ -1221,8 +1241,13 @@ router.get('/v1/legal-entities/:legalentityid/endpoints', requireAuth, async (re
 
     res.json({ data: rows });
   } catch (error: any) {
-    console.error('Error fetching endpoints:', error);
-    res.status(500).json({ error: 'Failed to fetch endpoints' });
+    console.error('Error fetching endpoints:', {
+      legalEntityId: req.params.legalentityid,
+      error: error.message,
+      stack: error.stack,
+      detail: error.detail || error.toString()
+    });
+    res.status(500).json({ error: 'Failed to fetch endpoints', detail: error.message });
   }
 });
 
