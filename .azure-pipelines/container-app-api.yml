@@ -82,6 +82,14 @@ stages:
                     environmentName=dev \
                     containerImage=$(containerRegistry).azurecr.io/$(imageRepository):$(tag)
 
+                # Force new revision by updating the container image
+                # This ensures the latest image is pulled even if configuration hasn't changed
+                echo "Forcing Container App to pull latest image..."
+                az containerapp update \
+                  --name ca-ctn-asr-api-dev \
+                  --resource-group $(resourceGroup) \
+                  --image $(containerRegistry).azurecr.io/$(imageRepository):$(tag)
+
                 # Get the Container App URL
                 CONTAINER_APP_URL=$(az containerapp show \
                   --name ca-ctn-asr-api-dev \
