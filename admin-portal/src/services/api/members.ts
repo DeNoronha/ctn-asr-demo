@@ -22,9 +22,9 @@ export async function getMembers(
   };
 }
 
-export async function getMember(orgId: string): Promise<Member> {
+export async function getMember(legalEntityId: string): Promise<Member> {
   const axiosInstance = await getAuthenticatedAxios();
-  const response = await axiosInstance.get<Member>(`/members/${orgId}`);
+  const response = await axiosInstance.get<Member>(`/members/${legalEntityId}`);
   return response.data;
 }
 
@@ -35,7 +35,7 @@ export async function createMember(member: Partial<Member>): Promise<Member> {
 }
 
 export async function updateMemberStatus(
-  orgId: string,
+  legalEntityId: string,
   status: string,
   notes?: string
 ): Promise<{ message: string; oldStatus: string; newStatus: string }> {
@@ -44,6 +44,6 @@ export async function updateMemberStatus(
     message: string;
     oldStatus: string;
     newStatus: string;
-  }>(`/members/${orgId}/status`, { status, notes });
+  }>(`/members/${legalEntityId}/status`, { status, notes });
   return response.data;
 }

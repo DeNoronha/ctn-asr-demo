@@ -40,7 +40,7 @@ import {
   formatDomain,
   formatKVK,
   formatLEI,
-  formatOrgId,
+  formatLegalEntityId,
   validateMemberForm,
 } from '../utils/validation';
 import '../styles/progressive-forms.css';
@@ -53,7 +53,7 @@ export const MemberRegistrationWizard: React.FC = () => {
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
 
   const [formData, setFormData] = useState<MemberFormData>({
-    org_id: 'org:',
+    legal_entity_id: 'org:',
     legal_name: '',
     domain: '',
     lei: '',
@@ -68,8 +68,8 @@ export const MemberRegistrationWizard: React.FC = () => {
 
     // Apply formatting based on field
     switch (field) {
-      case 'org_id':
-        formattedValue = formatOrgId(value);
+      case 'legal_entity_id':
+        formattedValue = formatLegalEntityId(value);
         break;
       case 'domain':
         formattedValue = formatDomain(value);
@@ -105,7 +105,7 @@ export const MemberRegistrationWizard: React.FC = () => {
   };
 
   const validateStep1 = () => {
-    const requiredFields = ['org_id', 'legal_name', 'domain'];
+    const requiredFields = ['legal_entity_id', 'legal_name', 'domain'];
     const validation = validateMemberForm(formData);
 
     const stepErrors: Record<string, string> = {};
@@ -118,7 +118,7 @@ export const MemberRegistrationWizard: React.FC = () => {
     setErrors(stepErrors);
     setTouched((prev) => ({
       ...prev,
-      org_id: true,
+      legal_entity_id: true,
       legal_name: true,
       domain: true,
     }));
@@ -169,7 +169,7 @@ export const MemberRegistrationWizard: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          org_id: data.org_id,
+          legal_entity_id: data.legal_entity_id,
           legal_name: data.legal_name,
           domain: data.domain,
           lei: data.lei || undefined,
@@ -189,7 +189,7 @@ export const MemberRegistrationWizard: React.FC = () => {
       const result = await response.json();
       logger.log('Member created successfully:', result);
 
-      notification.showSuccess(`Member ${result.org_id} created successfully!`);
+      notification.showSuccess(`Member ${result.legal_entity_id} created successfully!`);
       navigate('/members');
     } catch (err: unknown) {
       logger.error('Failed to register member:', err);
@@ -212,18 +212,18 @@ export const MemberRegistrationWizard: React.FC = () => {
           <div className="form-field required">
             <Label>
               Organization ID
-              <HelpTooltip content={helpContent.orgId} dataTestId="org-id-help" />
+              <HelpTooltip content={helpContent.legalEntityId} dataTestId="org-id-help" />
             </Label>
             <TextInput
-              value={formData.org_id}
-              onChange={(e) => handleFieldChange('org_id', e.target.value || '')}
-              onBlur={() => handleBlur('org_id')}
+              value={formData.legal_entity_id}
+              onChange={(e) => handleFieldChange('legal_entity_id', e.target.value || '')}
+              onBlur={() => handleBlur('legal_entity_id')}
               placeholder="org:company-name"
               required
-              error={touched.org_id && errors.org_id}
-              className={touched.org_id && errors.org_id ? 'invalid' : ''}
+              error={touched.legal_entity_id && errors.legal_entity_id}
+              className={touched.legal_entity_id && errors.legal_entity_id ? 'invalid' : ''}
             />
-            {touched.org_id && errors.org_id && <FormError>{errors.org_id}</FormError>}
+            {touched.legal_entity_id && errors.legal_entity_id && <FormError>{errors.legal_entity_id}</FormError>}
             <Hint>Format: org:company-name (lowercase, letters, numbers, hyphens only)</Hint>
           </div>
 
@@ -328,7 +328,7 @@ export const MemberRegistrationWizard: React.FC = () => {
             <h3>Organization Details</h3>
             <dl className="summary-list">
               <dt>Organization ID:</dt>
-              <dd>{formData.org_id}</dd>
+              <dd>{formData.legal_entity_id}</dd>
 
               <dt>Legal Name:</dt>
               <dd>{formData.legal_name}</dd>

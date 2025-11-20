@@ -22,7 +22,7 @@ export const exportToPDF = (members: Member[], options: ExportOptions = {}) => {
     title = 'CTN Members Export',
     orientation = 'landscape',
     includeTimestamp = true,
-    columns = ['legal_name', 'org_id', 'domain', 'status', 'membership_level', 'lei', 'kvk'],
+    columns = ['legal_name', 'legal_entity_id', 'domain', 'status', 'membership_level', 'lei', 'kvk'],
   } = options;
 
   // Create PDF document
@@ -48,7 +48,7 @@ export const exportToPDF = (members: Member[], options: ExportOptions = {}) => {
   // Define column headers
   const columnHeaders: { [key: string]: string } = {
     legal_name: 'Legal Name',
-    org_id: 'Organization ID',
+    legal_entity_id: 'Legal Entity ID',
     domain: 'Domain',
     status: 'Status',
     membership_level: 'Membership',
@@ -163,7 +163,7 @@ export const exportMemberDetailToPDF = (member: Member) => {
   y += lineHeight + 2;
 
   addField('Legal Name:', member.legal_name);
-  addField('Organization ID:', member.org_id);
+  addField('Legal Entity ID:', member.legal_entity_id);
   addField('Domain:', member.domain);
   addField('Status:', member.status);
   addField('Membership Level:', member.membership_level);
@@ -247,7 +247,7 @@ export const formatBulkOperationSummary = (
 export const exportToCSV = (members: Member[], filename?: string) => {
   const headers = [
     'Legal Name',
-    'Organization ID',
+    'Legal Entity ID',
     'Domain',
     'Status',
     'Membership Level',
@@ -261,7 +261,7 @@ export const exportToCSV = (members: Member[], filename?: string) => {
     ...members.map((member) =>
       [
         `"${member.legal_name}"`,
-        member.org_id,
+        member.legal_entity_id,
         member.domain,
         member.status,
         member.membership_level,

@@ -80,7 +80,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
 
   const handleApproveMember = async () => {
     try {
-      await apiV2.updateMemberStatus(member.org_id, 'ACTIVE', 'Approved by admin');
+      await apiV2.updateMemberStatus(member.legal_entity_id, 'ACTIVE', 'Approved by admin');
       notification.showSuccess('Member activated successfully');
       // Reload page to show updated status
       window.location.reload();
@@ -167,8 +167,8 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
                       <h3>Member Information</h3>
                       <div className="info-grid">
                         <div className="info-field">
-                          <strong>Organization ID</strong>
-                          <span>{member.org_id}</span>
+                          <strong>Legal Entity ID</strong>
+                          <span>{member.legal_entity_id}</span>
                         </div>
                         <div className="info-field">
                           <strong>Domain</strong>
@@ -197,8 +197,8 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
                   <h3>Basic Information</h3>
                   <div className="info-grid">
                     <div className="info-field">
-                      <strong>Organization ID</strong>
-                      <span>{member.org_id}</span>
+                      <strong>Legal Entity ID</strong>
+                      <span>{member.legal_entity_id}</span>
                     </div>
                     <div className="info-field">
                       <strong>Legal Name</strong>

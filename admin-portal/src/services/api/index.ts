@@ -167,8 +167,8 @@ export const api = {
     return result.data;
   },
 
-  async getMember(orgId: string): Promise<Member> {
-    return apiV2.getMember(orgId);
+  async getMember(legalEntityId: string): Promise<Member> {
+    return apiV2.getMember(legalEntityId);
   },
 
   async createMember(member: Partial<Member>): Promise<Member> {

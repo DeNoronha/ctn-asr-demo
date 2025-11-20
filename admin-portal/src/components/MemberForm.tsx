@@ -9,7 +9,7 @@ import {
   KVKSection,
   LEISection,
   LegalNameSection,
-  OrgIdSection,
+  LegalEntityIdSection,
 } from './forms/MemberFormSections';
 import { ProgressiveSection } from './forms/ProgressiveSection';
 import './MemberForm.css';
@@ -42,7 +42,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onSubmit, onCancel, initialData
         <div className="form-section">
           <h3>Organization Details</h3>
 
-          <OrgIdSection
+          <LegalEntityIdSection
             formData={formData}
             errors={errors}
             touched={touched}

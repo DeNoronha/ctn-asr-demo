@@ -8,7 +8,7 @@ import {
   formatDomain,
   formatKVK,
   formatLEI,
-  formatOrgId,
+  formatLegalEntityId,
   validateMemberForm,
 } from '../utils/validation';
 
@@ -33,7 +33,7 @@ interface UseMemberFormReturn {
 }
 
 const DEFAULT_FORM_DATA: MemberFormData = {
-  org_id: 'org:',
+  legal_entity_id: 'org:',
   legal_name: '',
   domain: '',
   lei: '',
@@ -84,8 +84,8 @@ export const useMemberForm = ({
 
     // Apply formatting based on field
     switch (field) {
-      case 'org_id':
-        formattedValue = formatOrgId(value);
+      case 'legal_entity_id':
+        formattedValue = formatLegalEntityId(value);
         break;
       case 'domain':
         formattedValue = formatDomain(value);

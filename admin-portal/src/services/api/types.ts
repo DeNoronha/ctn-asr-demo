@@ -187,9 +187,9 @@ export interface LegalEntity {
   endpoints?: LegalEntityEndpoint[];
 }
 
-// Backward compatibility type
+// Member type from members_view
 export interface Member {
-  org_id: string;
+  legal_entity_id: string;
   legal_name: string;
   lei?: string;
   kvk?: string;
@@ -200,7 +200,6 @@ export interface Member {
   created_at: string;
   updated_at?: string;
   metadata?: Metadata;
-  legal_entity_id?: string;
   legal_entity?: LegalEntity;
 }
 

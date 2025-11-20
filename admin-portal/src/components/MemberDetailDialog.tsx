@@ -19,7 +19,7 @@ interface MemberDetailDialogProps {
   member: Member;
   onClose: () => void;
   onUpdate: (data: MemberFormData) => Promise<void>;
-  onIssueToken: (orgId: string) => Promise<void>;
+  onIssueToken: (legalEntityId: string) => Promise<void>;
 }
 
 const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
@@ -60,7 +60,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
   };
 
   const handleIssueToken = async () => {
-    await onIssueToken(member.org_id);
+    await onIssueToken(member.legal_entity_id);
   };
 
   return (
@@ -115,7 +115,7 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
         </Tabs.Panel>
 
         <Tabs.Panel value="endpoints" pt="md">
-          <EndpointsTab legalEntityId={member.org_id} legalEntityName={member.legal_name} />
+          <EndpointsTab legalEntityId={member.legal_entity_id} legalEntityName={member.legal_name} />
         </Tabs.Panel>
 
         <Tabs.Panel value="activity" pt="md">

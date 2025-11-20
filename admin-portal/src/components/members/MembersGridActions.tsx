@@ -39,7 +39,7 @@ export const MembersGridActions: React.FC<MembersGridActionsProps> = ({
     setIsBulkProcessing(true);
 
     try {
-      const selectedMembers = gridData.filter((m) => selectedIds.includes(m.org_id));
+      const selectedMembers = gridData.filter((m) => selectedIds.includes(m.legal_entity_id));
 
       switch (bulkAction) {
         case 'export-pdf': {

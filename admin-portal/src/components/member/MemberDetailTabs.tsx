@@ -61,7 +61,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       <div className="detail-content">
         <MemberForm
           initialData={{
-            org_id: member.org_id,
+            legal_entity_id: member.legal_entity_id,
             legal_name: member.legal_name,
             domain: member.domain,
             lei: member.lei || '',
@@ -82,7 +82,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <div className="detail-grid">
             <div className="detail-field">
               <strong>Organization ID</strong>
-              <span>{member.org_id}</span>
+              <span>{member.legal_entity_id}</span>
             </div>
             <div className="detail-field">
               <strong>Legal Name</strong>

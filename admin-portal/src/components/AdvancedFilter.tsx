@@ -34,7 +34,7 @@ interface AdvancedFilterProps {
 
 const fields = [
   { value: 'legal_name', label: 'Legal Name' },
-  { value: 'org_id', label: 'Organization ID' },
+  { value: 'legal_entity_id', label: 'Organization ID' },
   { value: 'domain', label: 'Domain' },
   { value: 'status', label: 'Status' },
   { value: 'membership_level', label: 'Membership Level' },

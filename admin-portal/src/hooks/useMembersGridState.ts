@@ -49,7 +49,7 @@ export const useMembersGridState = ({ members, totalMembers }: UseMembersGridSta
           member.lei?.toLowerCase().includes(query.toLowerCase()) ||
           member.euid?.toLowerCase().includes(query.toLowerCase()) ||
           member.kvk?.toLowerCase().includes(query.toLowerCase()) ||
-          member.org_id?.toLowerCase().includes(query.toLowerCase())
+          member.legal_entity_id?.toLowerCase().includes(query.toLowerCase())
       );
     }
 
@@ -90,7 +90,7 @@ export const useMembersGridState = ({ members, totalMembers }: UseMembersGridSta
   }, []);
 
   const handleSelectedRecordsChange = useCallback((records: Member[]) => {
-    setSelectedIds(records.map((r) => r.org_id));
+    setSelectedIds(records.map((r) => r.legal_entity_id));
   }, []);
 
   const clearSelection = useCallback(() => {

@@ -40,7 +40,7 @@ export function useBulkActions({
       setIsBulkProcessing(true);
 
       try {
-        const selectedMembers = gridData.filter((m) => selectedIds.includes(m.org_id));
+        const selectedMembers = gridData.filter((m) => selectedIds.includes(m.legal_entity_id));
 
         switch (action) {
           case 'export-pdf':
@@ -153,7 +153,7 @@ function createMembersWorkbook(members: Member[]): Workbook {
       lei: member.lei || '',
       euid: member.euid || '',
       kvk: member.kvk || '',
-      orgId: member.org_id,
+      legalEntityId: member.legal_entity_id,
       domain: member.domain || '',
       membership: member.membership_level || '',
     });
@@ -186,8 +186,8 @@ async function handleApproveAction(
   notification: ReturnType<typeof useNotification>,
   onRefresh?: () => Promise<void>
 ): Promise<void> {
-  const approvePromises = selectedIds.map((orgId) =>
-    apiV2.updateMemberStatus(orgId, 'ACTIVE', 'Bulk approved via admin portal')
+  const approvePromises = selectedIds.map((legalEntityId) =>
+    apiV2.updateMemberStatus(legalEntityId, 'ACTIVE', 'Bulk approved via admin portal')
   );
   await Promise.all(approvePromises);
 
@@ -207,8 +207,8 @@ async function handleSuspendAction(
   notification: ReturnType<typeof useNotification>,
   onRefresh?: () => Promise<void>
 ): Promise<void> {
-  const suspendPromises = selectedIds.map((orgId) =>
-    apiV2.updateMemberStatus(orgId, 'SUSPENDED', 'Bulk suspended via admin portal')
+  const suspendPromises = selectedIds.map((legalEntityId) =>
+    apiV2.updateMemberStatus(legalEntityId, 'SUSPENDED', 'Bulk suspended via admin portal')
   );
   await Promise.all(suspendPromises);
 
@@ -228,8 +228,8 @@ async function handleDeleteAction(
   notification: ReturnType<typeof useNotification>,
   onRefresh?: () => Promise<void>
 ): Promise<void> {
-  const deletePromises = selectedIds.map((orgId) =>
-    apiV2.updateMemberStatus(orgId, 'TERMINATED', 'Bulk deleted via admin portal')
+  const deletePromises = selectedIds.map((legalEntityId) =>
+    apiV2.updateMemberStatus(legalEntityId, 'TERMINATED', 'Bulk deleted via admin portal')
   );
   await Promise.all(deletePromises);
 

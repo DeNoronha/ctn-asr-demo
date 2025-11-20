@@ -122,7 +122,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           member.lei?.toLowerCase().includes(query.toLowerCase()) ||
           member.euid?.toLowerCase().includes(query.toLowerCase()) ||
           member.kvk?.toLowerCase().includes(query.toLowerCase()) ||
-          member.org_id?.toLowerCase().includes(query.toLowerCase())
+          member.legal_entity_id?.toLowerCase().includes(query.toLowerCase())
       );
     }
 
@@ -167,7 +167,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   );
 
   const handleSelectedRecordsChange = useCallback((records: Member[]) => {
-    setSelectedIds(records.map((r) => r.org_id));
+    setSelectedIds(records.map((r) => r.legal_entity_id));
   }, []);
 
   const handleDialogClose = useCallback(() => {
@@ -193,8 +193,8 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     key: 'members-grid',
     columns: [
       {
-        accessor: 'org_id',
-        title: getColumnTitle('org_id'),
+        accessor: 'legal_entity_id',
+        title: getColumnTitle('legal_entity_id'),
         width: 120,
         toggleable: false, // Cannot be hidden - always visible
         draggable: false, // Fixed as first column
@@ -478,14 +478,14 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             onRecordsPerPageChange={updatePageSize}
             sortStatus={sortStatus}
             onSortStatusChange={setSortStatus}
-            selectedRecords={sortedData.filter((m) => selectedIds.includes(m.org_id))}
+            selectedRecords={sortedData.filter((m) => selectedIds.includes(m.legal_entity_id))}
             onSelectedRecordsChange={handleSelectedRecordsChange}
             idAccessor="org_id"
             storeColumnsKey="members-grid"
             onRowClick={handleRowClick}
             rowStyle={() => ({ cursor: 'pointer' })}
             rowBackgroundColor={(member) =>
-              selectedIds.includes(member.org_id)
+              selectedIds.includes(member.legal_entity_id)
                 ? { light: '#e7f5ff', dark: '#1c2a35' }
                 : undefined
             }

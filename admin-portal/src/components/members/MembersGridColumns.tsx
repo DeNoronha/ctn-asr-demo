@@ -116,8 +116,8 @@ export const useMembersGridColumns = ({
       render: (member) => <div>{new Date(member.created_at).toLocaleDateString()}</div>,
     },
     {
-      accessor: 'org_id',
-      title: getColumnTitle('org_id'),
+      accessor: 'legal_entity_id',
+      title: getColumnTitle('legal_entity_id'),
       width: 180,
       toggleable: true,
       resizable: true,

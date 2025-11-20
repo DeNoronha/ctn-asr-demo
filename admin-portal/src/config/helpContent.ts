@@ -18,7 +18,7 @@ export const helpContent = {
   domain:
     "Your organization's email domain (e.g., example.com). Used for user authentication and email validation. All users must have email addresses within this domain.",
 
-  orgId:
+  legalEntityId:
     'Organization identifier in the format "org:company-name". This is auto-generated from your legal name and used as a unique key throughout the system.',
 
   authenticationTier:

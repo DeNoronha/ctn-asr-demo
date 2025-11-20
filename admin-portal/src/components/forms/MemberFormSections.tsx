@@ -69,7 +69,7 @@ interface FormSectionProps {
   onBlur: (field: keyof MemberFormData) => void;
 }
 
-export const OrgIdSection: React.FC<FormSectionProps> = ({
+export const LegalEntityIdSection: React.FC<FormSectionProps> = ({
   formData,
   errors,
   touched,
@@ -78,22 +78,22 @@ export const OrgIdSection: React.FC<FormSectionProps> = ({
 }) => (
   <div className="form-field required">
     <Label>
-      Organization ID
-      <HelpTooltip content={helpContent.orgId} dataTestId="org-id-help" />
+      Legal Entity ID
+      <HelpTooltip content={helpContent.legalEntityId} dataTestId="legal-entity-id-help" />
     </Label>
     <TextInput
-      value={formData.org_id}
-      onChange={(e) => onFieldChange('org_id', e.target.value || '')}
-      onBlur={() => onBlur('org_id')}
+      value={formData.legal_entity_id}
+      onChange={(e) => onFieldChange('legal_entity_id', e.target.value || '')}
+      onBlur={() => onBlur('legal_entity_id')}
       placeholder="org:company-name"
       required
-      error={touched.org_id && errors.org_id}
-      className={touched.org_id && errors.org_id ? 'invalid' : ''}
-      aria-invalid={touched.org_id && Boolean(errors.org_id)}
-      aria-describedby={`org-id-hint${touched.org_id && errors.org_id ? ' org-id-error' : ''}`}
+      error={touched.legal_entity_id && errors.legal_entity_id}
+      className={touched.legal_entity_id && errors.legal_entity_id ? 'invalid' : ''}
+      aria-invalid={touched.legal_entity_id && Boolean(errors.legal_entity_id)}
+      aria-describedby={`legal-entity-id-hint${touched.legal_entity_id && errors.legal_entity_id ? ' legal-entity-id-error' : ''}`}
     />
-    {touched.org_id && errors.org_id && <FormError id="org-id-error">{errors.org_id}</FormError>}
-    <Hint id="org-id-hint">
+    {touched.legal_entity_id && errors.legal_entity_id && <FormError id="legal-entity-id-error">{errors.legal_entity_id}</FormError>}
+    <Hint id="legal-entity-id-hint">
       Format: org:company-name (lowercase, letters, numbers, hyphens only)
     </Hint>
   </div>

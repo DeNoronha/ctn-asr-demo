@@ -6,7 +6,7 @@ export interface ValidationResult {
 }
 
 export interface MemberFormData {
-  org_id: string;
+  legal_entity_id: string;
   legal_name: string;
   domain: string;
   lei?: string;
@@ -18,15 +18,15 @@ export interface MemberFormData {
 export const validateMemberForm = (data: MemberFormData): ValidationResult => {
   const errors: Record<string, string> = {};
 
-  // Organization ID validation
-  if (!data.org_id.trim()) {
-    errors.org_id = 'Organization ID is required';
-  } else if (!data.org_id.startsWith('org:')) {
-    errors.org_id = 'Organization ID must start with "org:"';
-  } else if (data.org_id.length < 5) {
-    errors.org_id = 'Organization ID is too short';
-  } else if (!/^org:[a-z0-9-]+$/.test(data.org_id)) {
-    errors.org_id = 'Organization ID can only contain lowercase letters, numbers, and hyphens';
+  // Legal Entity ID validation
+  if (!data.legal_entity_id.trim()) {
+    errors.legal_entity_id = 'Legal Entity ID is required';
+  } else if (!data.legal_entity_id.startsWith('org:')) {
+    errors.legal_entity_id = 'Legal Entity ID must start with "org:"';
+  } else if (data.legal_entity_id.length < 5) {
+    errors.legal_entity_id = 'Legal Entity ID is too short';
+  } else if (!/^org:[a-z0-9-]+$/.test(data.legal_entity_id)) {
+    errors.legal_entity_id = 'Legal Entity ID can only contain lowercase letters, numbers, and hyphens';
   }
 
   // Legal name validation
@@ -65,7 +65,7 @@ export const validateMemberForm = (data: MemberFormData): ValidationResult => {
   };
 };
 
-export const formatOrgId = (value: string): string => {
+export const formatLegalEntityId = (value: string): string => {
   let formatted = value.toLowerCase().trim();
   if (!formatted.startsWith('org:')) {
     formatted = `org:${formatted}`;
