@@ -124,3 +124,4 @@ api/tests/*.sh
 # Code quality reports (generated)
 complexity-report/
 **/complexity-report/
+# Force rebuild
