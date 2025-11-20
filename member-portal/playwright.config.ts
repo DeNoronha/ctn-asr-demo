@@ -40,6 +40,9 @@ export default defineConfig({
   // Shared settings for all projects
   use: {
     // Base URL for tests
+    // Local: http://localhost:3001
+    // Deployed: https://calm-pebble-043b2db03.1.azurestaticapps.net (Static Web App direct)
+    // Front Door: https://portal-ctn-dev-fdb5cpeagdendtck.z02.azurefd.net
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'https://calm-pebble-043b2db03.1.azurestaticapps.net',
 
     // Collect trace when retrying the failed test

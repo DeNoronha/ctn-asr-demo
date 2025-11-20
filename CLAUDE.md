@@ -101,6 +101,8 @@ ctn-asr-monorepo/
 - Port: 8080
 - Scale: 0-10 replicas (auto-scale on HTTP requests)
 - Health probes: Liveness and Readiness on `/api/health`
+- Graceful shutdown: SIGTERM/SIGINT handlers with 30s timeout
+- Structured logging: JSON format for Application Insights integration
 
 **Middleware Chain:**
 ```
@@ -150,13 +152,14 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 ```
 
 **API Key Files:**
-- `api/src/server.ts` - Express server initialization and middleware setup
+- `api/src/server.ts` - Express server initialization, middleware setup, graceful shutdown
 - `api/src/routes.ts` - Route definitions and controller registration
 - `api/src/middleware/auth.ts` - JWT validation (Azure AD JWKS)
 - `api/src/middleware/rbac.ts` - Permission enforcement
 - `api/src/utils/database.ts` - PostgreSQL 15 pool (5-20 connections, SSL required)
 - `api/src/utils/queryPerformance.ts` - Database query performance monitoring
 - `api/Dockerfile` - Multi-stage Docker build configuration
+- `api/.dockerignore` - Docker build optimization (excludes node_modules, tests, docs)
 
 ### Database Schema
 
@@ -465,8 +468,10 @@ git push --force-with-lease origin main
 1. **Environment variables in Container Apps** → Defined in Bicep infrastructure and injected at runtime (see `infrastructure/container-app.bicep`)
 2. **Health probes required** → Liveness and readiness probes on `/api/health` ensure Container Apps traffic routing
 3. **Port 8080 is standard** → Express server listens on port 8080 (configurable via PORT env var)
-4. **Graceful shutdown** → Handle SIGTERM for zero-downtime deployments during revision updates
+4. **Graceful shutdown implemented** → SIGTERM/SIGINT handlers close HTTP server → drain connections → close DB pool → exit (30s timeout)
 5. **Docker multi-stage builds** → Production image uses Node.js 20 Alpine, build stage compiles TypeScript
+6. **Structured JSON logging** → All logs output as JSON for Application Insights parsing and querying
+7. **.dockerignore is critical** → Excludes node_modules, tests, and docs from Docker context (faster builds, smaller images)
 
 ### Database
 

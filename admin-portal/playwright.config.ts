@@ -40,6 +40,9 @@ export default defineConfig({
   // Shared settings for all projects
   use: {
     // Base URL for tests
+    // Local: http://localhost:3000
+    // Deployed: https://calm-tree-03352ba03.1.azurestaticapps.net (Static Web App direct)
+    // Front Door: https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'https://calm-tree-03352ba03.1.azurestaticapps.net',
 
     // Collect trace when retrying the failed test
