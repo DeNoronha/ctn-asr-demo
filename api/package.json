@@ -20,8 +20,11 @@
     "test:api:ci": "node ../tests/api/integration/run-api-tests.js --ci",
     "test:deploy": "node ../tests/api/deployment/run-all.js",
     "test:deploy:quick": "node ../tests/api/deployment/run-all.js --quick",
+    "test:deploy:smoke": "node ../tests/api/deployment/smoke.test.js",
     "test:deploy:health": "node ../tests/api/deployment/health.test.js",
-    "test:deploy:security": "node ../tests/api/deployment/security.test.js"
+    "test:deploy:security": "node ../tests/api/deployment/security.test.js",
+    "test:deploy:workflows": "node ../tests/api/deployment/workflows.test.js",
+    "test:deploy:m2m": "node ../tests/api/deployment/m2m.test.js"
   },
   "dependencies": {
     "@azure/ai-form-recognizer": "^5.1.0",

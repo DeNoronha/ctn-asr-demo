@@ -25,20 +25,35 @@ const tests = {
     description: 'Health & core endpoints',
     order: 1,
   },
+  smoke: {
+    file: 'smoke.test.js',
+    description: 'Comprehensive smoke tests',
+    order: 2,
+  },
   contacts: {
     file: 'contacts.test.js',
     description: 'Contact CRUD operations',
-    order: 2,
+    order: 3,
   },
   identifiers: {
     file: 'identifiers.test.js',
     description: 'Identifier CRUD operations',
-    order: 3,
+    order: 4,
   },
   security: {
     file: 'security.test.js',
     description: 'Security controls (IDOR, auth, validation)',
-    order: 4,
+    order: 5,
+  },
+  workflows: {
+    file: 'workflows.test.js',
+    description: 'Member registration & approval workflows',
+    order: 6,
+  },
+  m2m: {
+    file: 'm2m.test.js',
+    description: 'M2M/Keycloak authentication',
+    order: 7,
   },
 };
 
