@@ -23,6 +23,8 @@ import { getPool } from './utils/database';
 import { withTransaction } from './utils/transaction';
 import { validateJwtToken, JwtPayload } from './middleware/auth';
 import { dnsVerificationService } from './services/dnsVerificationService';
+import { cacheMiddleware, invalidateCacheForUser } from './middleware/cache';
+import { CacheTTL } from './utils/cache';
 
 // Express auth middleware using full JWT validation
 async function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -1130,6 +1132,10 @@ router.post('/v1/legal-entities/:legalentityid/contacts', requireAuth, async (re
       RETURNING *
     `, [contactId, legalentityid, contact_type || 'PRIMARY', full_name, email, phone, job_title, is_primary || false]);
 
+    // Invalidate contacts cache
+    invalidateCacheForUser(req, `/v1/legal-entities/${legalentityid}/contacts`);
+    invalidateCacheForUser(req, `/v1/member-contacts`);
+
     res.status(201).json(rows[0]);
   } catch (error: any) {
     console.error('Error creating contact:', error);
@@ -1161,6 +1167,11 @@ router.put('/v1/legal-entities/:legalentityid/contacts/:contactId', requireAuth,
       return res.status(404).json({ error: 'Contact not found' });
     }
 
+    // Invalidate contacts cache for this legal entity
+    const legalEntityId = rows[0].legal_entity_id;
+    invalidateCacheForUser(req, `/v1/legal-entities/${legalEntityId}/contacts`);
+    invalidateCacheForUser(req, `/v1/member-contacts`);
+
     res.json(rows[0]);
   } catch (error: any) {
     console.error('Error updating contact:', error);
@@ -1173,14 +1184,20 @@ router.delete('/v1/legal-entities/:legalentityid/contacts/:contactId', requireAu
     const pool = getPool();
     const { contactId } = req.params;
 
-    const { rowCount } = await pool.query(`
+    const { rows, rowCount } = await pool.query(`
       UPDATE legal_entity_contact SET is_deleted = true, dt_modified = NOW()
       WHERE legal_entity_contact_id = $1 AND is_deleted = false
+      RETURNING legal_entity_id
     `, [contactId]);
 
     if (rowCount === 0) {
       return res.status(404).json({ error: 'Contact not found' });
     }
+
+    // Invalidate contacts cache for this legal entity
+    const legalEntityId = rows[0].legal_entity_id;
+    invalidateCacheForUser(req, `/v1/legal-entities/${legalEntityId}/contacts`);
+    invalidateCacheForUser(req, `/v1/member-contacts`);
 
     res.status(204).send();
   } catch (error: any) {
@@ -1295,7 +1312,7 @@ router.delete('/v1/contacts/:contactId', requireAuth, async (req: Request, res: 
 // ============================================================================
 // IDENTIFIERS
 // ============================================================================
-router.get('/v1/legal-entities/:legalentityid/identifiers', requireAuth, async (req: Request, res: Response) => {
+router.get('/v1/legal-entities/:legalentityid/identifiers', requireAuth, cacheMiddleware(CacheTTL.IDENTIFIERS), async (req: Request, res: Response) => {
   try {
     const pool = getPool();
     const { legalentityid } = req.params;
@@ -1369,6 +1386,9 @@ router.post('/v1/legal-entities/:legalentityid/identifiers', requireAuth, async 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
       RETURNING *
     `, [identifierId, legalentityid, identifier_type, identifier_value, country_code, issuing_authority, issued_at, expires_at, verification_status || 'PENDING']);
+
+    // Invalidate identifiers cache
+    invalidateCacheForUser(req, `/v1/legal-entities/${legalentityid}/identifiers`);
 
     res.status(201).json(rows[0]);
   } catch (error: any) {
@@ -1455,6 +1475,10 @@ router.put('/v1/identifiers/:identifierId', requireAuth, async (req: Request, re
       return res.status(404).json({ error: 'Identifier not found' });
     }
 
+    // Invalidate identifiers cache for this legal entity
+    const legalEntityId = rows[0].legal_entity_id;
+    invalidateCacheForUser(req, `/v1/legal-entities/${legalEntityId}/identifiers`);
+
     res.json(rows[0]);
   } catch (error: any) {
     console.error('Error updating identifier:', error);
@@ -1467,14 +1491,19 @@ router.delete('/v1/identifiers/:identifierId', requireAuth, async (req: Request,
     const pool = getPool();
     const { identifierId } = req.params;
 
-    const { rowCount } = await pool.query(`
+    const { rows, rowCount } = await pool.query(`
       UPDATE legal_entity_number SET is_deleted = true, dt_modified = NOW()
       WHERE legal_entity_reference_id = $1 AND is_deleted = false
+      RETURNING legal_entity_id
     `, [identifierId]);
 
     if (rowCount === 0) {
       return res.status(404).json({ error: 'Identifier not found' });
     }
+
+    // Invalidate identifiers cache for this legal entity
+    const legalEntityId = rows[0].legal_entity_id;
+    invalidateCacheForUser(req, `/v1/legal-entities/${legalEntityId}/identifiers`);
 
     res.status(204).send();
   } catch (error: any) {
@@ -1534,6 +1563,10 @@ router.post('/v1/legal-entities/:legalentityid/endpoints', requireAuth, async (r
       RETURNING *
     `, [endpointId, legalentityid, endpoint_type || 'API', endpoint_url, endpoint_name, is_active !== false, protocol || 'HTTPS', authentication_type || 'BEARER']);
 
+    // Invalidate endpoints cache
+    invalidateCacheForUser(req, `/v1/legal-entities/${legalentityid}/endpoints`);
+    invalidateCacheForUser(req, `/v1/member-endpoints`);
+
     res.status(201).json(rows[0]);
   } catch (error: any) {
     console.error('Error creating endpoint:', error);
@@ -1565,6 +1598,11 @@ router.put('/v1/endpoints/:endpointId', requireAuth, async (req: Request, res: R
       return res.status(404).json({ error: 'Endpoint not found' });
     }
 
+    // Invalidate endpoints cache for this legal entity
+    const legalEntityId = rows[0].legal_entity_id;
+    invalidateCacheForUser(req, `/v1/legal-entities/${legalEntityId}/endpoints`);
+    invalidateCacheForUser(req, `/v1/member-endpoints`);
+
     res.json(rows[0]);
   } catch (error: any) {
     console.error('Error updating endpoint:', error);
@@ -1577,14 +1615,20 @@ router.delete('/v1/endpoints/:endpointId', requireAuth, async (req: Request, res
     const pool = getPool();
     const { endpointId } = req.params;
 
-    const { rowCount } = await pool.query(`
+    const { rows, rowCount } = await pool.query(`
       UPDATE legal_entity_endpoint SET is_deleted = true, dt_modified = NOW()
       WHERE legal_entity_endpoint_id = $1 AND is_deleted = false
+      RETURNING legal_entity_id
     `, [endpointId]);
 
     if (rowCount === 0) {
       return res.status(404).json({ error: 'Endpoint not found' });
     }
+
+    // Invalidate endpoints cache for this legal entity
+    const legalEntityId = rows[0].legal_entity_id;
+    invalidateCacheForUser(req, `/v1/legal-entities/${legalEntityId}/endpoints`);
+    invalidateCacheForUser(req, `/v1/member-endpoints`);
 
     res.status(204).send();
   } catch (error: any) {
@@ -1644,7 +1688,7 @@ router.post('/v1/applications/:id/reject', requireAuth, async (req: Request, res
 // ============================================================================
 // MEMBER PORTAL - SELF SERVICE
 // ============================================================================
-router.get('/v1/member-contacts', requireAuth, async (req: Request, res: Response) => {
+router.get('/v1/member-contacts', requireAuth, cacheMiddleware(CacheTTL.CONTACTS), async (req: Request, res: Response) => {
   try {
     const pool = getPool();
     const userEmail = (req as any).userEmail;
@@ -1711,7 +1755,7 @@ router.get('/v1/member-contacts', requireAuth, async (req: Request, res: Respons
   }
 });
 
-router.get('/v1/member-endpoints', requireAuth, async (req: Request, res: Response) => {
+router.get('/v1/member-endpoints', requireAuth, cacheMiddleware(CacheTTL.ENDPOINTS), async (req: Request, res: Response) => {
   try {
     const pool = getPool();
     const userEmail = (req as any).userEmail;
@@ -2044,7 +2088,7 @@ router.get('/v1/authorization-log', requireAuth, async (req: Request, res: Respo
 // ============================================================================
 // M2M CLIENTS
 // ============================================================================
-router.get('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, async (req: Request, res: Response) => {
+router.get('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, cacheMiddleware(CacheTTL.M2M_CLIENTS), async (req: Request, res: Response) => {
   try {
     const pool = getPool();
     const { legal_entity_id } = req.params;
@@ -2120,6 +2164,9 @@ router.post('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, asyn
       VALUES ($1, NOW())
     `, [newClient.m2m_client_id]);
 
+    // Invalidate M2M clients cache
+    invalidateCacheForUser(req, `/v1/legal-entities/${legal_entity_id}/m2m-clients`);
+
     // Return client data with secret (only shown once - secret not stored in DB)
     res.status(201).json({
       client: newClient,
@@ -2171,12 +2218,16 @@ router.patch('/v1/m2m-clients/:m2m_client_id/scopes', requireAuth, async (req: R
     const { rows, rowCount } = await pool.query(`
       UPDATE m2m_clients SET assigned_scopes = $1, dt_modified = NOW()
       WHERE m2m_client_id = $2 AND is_deleted = false
-      RETURNING m2m_client_id as "clientId", assigned_scopes as "scopes", client_name as "clientName"
+      RETURNING m2m_client_id as "clientId", assigned_scopes as "scopes", client_name as "clientName", legal_entity_id
     `, [scopes, m2m_client_id]);
 
     if (rowCount === 0) {
       return res.status(404).json({ error: 'M2M client not found' });
     }
+
+    // Invalidate M2M clients cache
+    const legalEntityId = rows[0].legal_entity_id;
+    invalidateCacheForUser(req, `/v1/legal-entities/${legalEntityId}/m2m-clients`);
 
     res.json(rows[0]);
   } catch (error: any) {
@@ -2190,14 +2241,19 @@ router.delete('/v1/m2m-clients/:m2m_client_id', requireAuth, async (req: Request
     const pool = getPool();
     const { m2m_client_id } = req.params;
 
-    const { rowCount } = await pool.query(`
+    const { rows, rowCount } = await pool.query(`
       UPDATE m2m_clients SET is_deleted = true, dt_modified = NOW()
       WHERE m2m_client_id = $1 AND is_deleted = false
+      RETURNING legal_entity_id
     `, [m2m_client_id]);
 
     if (rowCount === 0) {
       return res.status(404).json({ error: 'M2M client not found' });
     }
+
+    // Invalidate M2M clients cache
+    const legalEntityId = rows[0].legal_entity_id;
+    invalidateCacheForUser(req, `/v1/legal-entities/${legalEntityId}/m2m-clients`);
 
     res.status(204).send();
   } catch (error: any) {
