@@ -1,0 +1,1 @@
+../../../admin-portal/playwright/global-setup.ts
