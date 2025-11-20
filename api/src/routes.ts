@@ -1,6 +1,8 @@
 /**
  * Express Routes - Minimal Implementation
  * Imports existing function handlers and exposes them as Express routes
+ *
+ * Last Updated: 2025-11-20 - Added GET routes for contacts and identifiers
  */
 
 import { Router, Request, Response, NextFunction } from 'express';
