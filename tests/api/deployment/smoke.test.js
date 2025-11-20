@@ -78,21 +78,24 @@ async function main() {
     });
 
     await runner.test('Get contacts for entity', async () => {
-      const response = await apiRequest(`/entities/${legalEntityId}/contacts`, {}, token);
+      const response = await apiRequest(`/legal-entities/${legalEntityId}/contacts`, {}, token);
       assert(response.status === 200, `Get contacts failed: ${response.status}`);
-      console.log(`  Count: ${response.body.length || 0}`);
+      const contacts = response.body.data || response.body || [];
+      console.log(`  Count: ${contacts.length || 0}`);
     });
 
     await runner.test('Get identifiers for entity', async () => {
-      const response = await apiRequest(`/entities/${legalEntityId}/identifiers`, {}, token);
+      const response = await apiRequest(`/legal-entities/${legalEntityId}/identifiers`, {}, token);
       assert(response.status === 200, `Get identifiers failed: ${response.status}`);
-      console.log(`  Count: ${response.body.length || 0}`);
+      const identifiers = response.body.data || response.body || [];
+      console.log(`  Count: ${identifiers.length || 0}`);
     });
 
     await runner.test('Get endpoints for entity', async () => {
-      const response = await apiRequest(`/entities/${legalEntityId}/endpoints`, {}, token);
+      const response = await apiRequest(`/legal-entities/${legalEntityId}/endpoints`, {}, token);
       assert(response.status === 200, `Get endpoints failed: ${response.status}`);
-      console.log(`  Count: ${response.body.length || 0}`);
+      const endpoints = response.body.data || response.body || [];
+      console.log(`  Count: ${endpoints.length || 0}`);
     });
   } else {
     runner.skip('Get legal entity', 'No members available');
