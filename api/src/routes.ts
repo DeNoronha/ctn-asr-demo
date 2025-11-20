@@ -2075,22 +2075,27 @@ router.post('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, asyn
   try {
     const pool = getPool();
     const { legal_entity_id } = req.params;
-    const { clientName, scopes } = req.body;
+    const { client_name, description, assigned_scopes } = req.body;
 
-    if (!clientName) {
-      return res.status(400).json({ error: 'clientName is required' });
+    if (!client_name) {
+      return res.status(400).json({ error: 'client_name is required' });
     }
 
     const crypto = require('crypto');
     const azureClientId = crypto.randomUUID();
+    const clientSecret = crypto.randomBytes(32).toString('base64');
 
     const { rows } = await pool.query(`
-      INSERT INTO m2m_clients (legal_entity_id, client_name, azure_client_id, assigned_scopes, is_active)
-      VALUES ($1, $2, $3, $4, true)
+      INSERT INTO m2m_clients (legal_entity_id, client_name, azure_client_id, client_secret, description, assigned_scopes, is_active)
+      VALUES ($1, $2, $3, $4, $5, $6, true)
       RETURNING m2m_client_id as "clientId", azure_client_id as "azureClientId", client_name as "clientName", assigned_scopes as "scopes"
-    `, [legal_entity_id, clientName, azureClientId, scopes || []]);
+    `, [legal_entity_id, client_name, azureClientId, clientSecret, description || null, assigned_scopes || []]);
 
-    res.status(201).json(rows[0]);
+    // Return client data with secret (only shown once)
+    res.status(201).json({
+      client: rows[0],
+      client_secret: clientSecret
+    });
   } catch (error: any) {
     console.error('Error creating M2M client:', error);
     res.status(500).json({ error: 'Failed to create M2M client' });
