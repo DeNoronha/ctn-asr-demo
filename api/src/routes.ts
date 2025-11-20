@@ -1592,6 +1592,7 @@ router.post('/v1/entities/:legalentityid/dns/token', requireAuth, async (req: Re
       token,
       recordName,
       expiresAt,
+      status: 'pending',
       instructions: {
         recordType: 'TXT',
         recordName,
