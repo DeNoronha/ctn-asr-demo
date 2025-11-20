@@ -1302,7 +1302,7 @@ router.get('/v1/legal-entities/:legalentityid/identifiers', requireAuth, async (
 
     const { rows } = await pool.query(`
       SELECT legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
-             issuing_authority, issued_at, expires_at, verification_status,
+             country_code, issuing_authority, issued_at, expires_at, verification_status,
              dt_created, dt_modified
       FROM legal_entity_number
       WHERE legal_entity_id = $1 AND is_deleted = false
@@ -1354,7 +1354,7 @@ router.post('/v1/legal-entities/:legalentityid/identifiers', requireAuth, async 
     const { legalentityid } = req.params;
     const identifierId = randomUUID();
 
-    const { identifier_type, identifier_value, issuing_authority, issued_at, expires_at, verification_status } = req.body;
+    const { identifier_type, identifier_value, country_code, issuing_authority, issued_at, expires_at, verification_status } = req.body;
 
     if (!identifier_type || !identifier_value) {
       return res.status(400).json({ error: 'identifier_type and identifier_value are required' });
@@ -1363,12 +1363,12 @@ router.post('/v1/legal-entities/:legalentityid/identifiers', requireAuth, async 
     const { rows } = await pool.query(`
       INSERT INTO legal_entity_number (
         legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
-        issuing_authority, issued_at, expires_at, verification_status,
+        country_code, issuing_authority, issued_at, expires_at, verification_status,
         dt_created, dt_modified
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
       RETURNING *
-    `, [identifierId, legalentityid, identifier_type, identifier_value, issuing_authority, issued_at, expires_at, verification_status || 'PENDING']);
+    `, [identifierId, legalentityid, identifier_type, identifier_value, country_code, issuing_authority, issued_at, expires_at, verification_status || 'PENDING']);
 
     res.status(201).json(rows[0]);
   } catch (error: any) {

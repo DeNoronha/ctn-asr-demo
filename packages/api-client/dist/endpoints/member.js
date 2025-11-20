@@ -169,7 +169,7 @@ export class MemberEndpoint {
      */
     async getIdentifiers(legalEntityId) {
         const { data } = await this.axios.get(`/legal-entities/${legalEntityId}/identifiers`);
-        return data;
+        return data.data || data; // Unwrap { data: rows } or return direct array
     }
     /**
      * Create identifier for a legal entity

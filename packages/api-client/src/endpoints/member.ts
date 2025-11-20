@@ -193,7 +193,7 @@ export class MemberEndpoint {
    */
   async getIdentifiers(legalEntityId: string): Promise<any> {
     const { data } = await this.axios.get(`/legal-entities/${legalEntityId}/identifiers`);
-    return data;
+    return (data as any).data || data; // Unwrap { data: rows } or return direct array
   }
 
   /**

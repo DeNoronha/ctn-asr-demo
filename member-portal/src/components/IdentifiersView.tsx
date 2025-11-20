@@ -11,8 +11,10 @@ interface Identifier {
   legal_entity_reference_id: string;
   identifier_type: string;
   identifier_value: string;
-  issuing_country: string;
-  is_verified: boolean;
+  issuing_authority?: string;
+  issued_at?: string;
+  expires_at?: string;
+  verification_status?: string;
   dt_created: string;
   dt_modified: string;
 }
@@ -63,9 +65,9 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
   const [editingIdentifier, setEditingIdentifier] = useState<Identifier | null>(null);
   const [identifierToDelete, setIdentifierToDelete] = useState<Identifier | null>(null);
 
-  const [formData, setFormData] = useState<Partial<Identifier>>({
+  const [formData, setFormData] = useState<any>({
     identifier_type: 'KVK',
-    issuing_country: 'NL',
+    country_code: 'NL',
     identifier_value: '',
   });
 
@@ -92,7 +94,7 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
     setEditingIdentifier(null);
     setFormData({
       identifier_type: 'KVK',
-      issuing_country: 'NL',
+      country_code: 'NL',
       identifier_value: '',
     });
     setShowDialog(true);
@@ -125,7 +127,7 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
           {
             identifier_type: formData.identifier_type,
             identifier_value: formData.identifier_value,
-            issuing_country: formData.issuing_country,
+            country_code: formData.country_code,
           }
         );
         onNotification('Identifier updated successfully', 'success');
@@ -133,7 +135,7 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
         await apiClient.member.createIdentifier(memberData.legalEntityId, {
           identifier_type: formData.identifier_type,
           identifier_value: formData.identifier_value,
-          issuing_country: formData.issuing_country,
+          country_code: formData.country_code,
         });
         onNotification('Identifier created successfully', 'success');
       }
@@ -215,17 +217,27 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
                   render: (identifier) => <strong>{identifier.identifier_value}</strong>,
                 },
                 {
-                  accessor: 'issuing_country',
+                  accessor: 'country_code',
                   title: 'Country',
                   width: 100,
+                  render: (identifier: any) => identifier.country_code || '-',
                 },
                 {
-                  accessor: 'is_verified',
-                  title: 'Verified',
-                  width: 100,
-                  render: (identifier) => (
-                    <Badge color={identifier.is_verified ? 'green' : 'gray'} variant="light">
-                      {identifier.is_verified ? 'Yes' : 'No'}
+                  accessor: 'verification_status',
+                  title: 'Status',
+                  width: 120,
+                  render: (identifier: any) => (
+                    <Badge
+                      color={
+                        identifier.verification_status === 'VALIDATED'
+                          ? 'green'
+                          : identifier.verification_status === 'PENDING'
+                            ? 'yellow'
+                            : 'gray'
+                      }
+                      variant="light"
+                    >
+                      {identifier.verification_status || 'PENDING'}
                     </Badge>
                   ),
                 },
@@ -308,12 +320,12 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
             />
           </div>
           <div className="form-field">
-            <label htmlFor="issuing_country">Country *</label>
+            <label htmlFor="country_code">Country *</label>
             <Select
-              id="issuing_country"
-              name="issuing_country"
-              value={formData.issuing_country}
-              onChange={(value) => setFormData({ ...formData, issuing_country: value || 'NL' })}
+              id="country_code"
+              name="country_code"
+              value={formData.country_code}
+              onChange={(value) => setFormData({ ...formData, country_code: value || 'NL' })}
               data={COUNTRIES}
               required
               searchable
