@@ -18,10 +18,10 @@ param tags object
 // Variables
 var storageAccountName = replace('st${resourcePrefix}${environment}', '-', '')
 var kvkStorageAccountName = replace('st${resourcePrefix}${environment}${uniqueString(resourceGroup().id)}', '-', '')
-var appServicePlanName = 'asp-${resourcePrefix}-${environment}'
 var appInsightsName = 'ai-${resourcePrefix}-${environment}'
 var keyVaultName = replace('kv-${resourcePrefix}-${environment}', '-', '')
-var logAnalyticsName = 'log-${resourcePrefix}-${environment}'
+// Consolidated Log Analytics workspace (renamed from log-ctn-demo-asr-dev to log-ctn-demo on Nov 20, 2025)
+var logAnalyticsName = 'log-ctn-demo'
 
 // Storage Account for documents and blobs
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
@@ -197,20 +197,9 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
 }
 
-// App Service Plan for Function App
-resource appServicePlan 'Microsoft.Web/serverfarms@2023-01-01' = {
-  name: appServicePlanName
-  location: location
-  tags: tags
-  sku: {
-    name: environment == 'prod' ? 'P1v3' : 'B1'
-    tier: environment == 'prod' ? 'PremiumV3' : 'Basic'
-  }
-  kind: 'linux'
-  properties: {
-    reserved: true // Required for Linux
-  }
-}
+// NOTE: App Service Plan removed - migrated to Container Apps (November 20, 2025)
+// Container Apps use their own managed environment (Microsoft.App/managedEnvironments)
+// See: infrastructure/bicep/container-app.bicep
 
 // Outputs
 output storageAccountName string = storageAccount.name
@@ -219,9 +208,10 @@ output storageAccountKey string = storageAccount.listKeys().keys[0].value
 output kvkStorageAccountName string = kvkStorageAccount.name
 output kvkStorageAccountId string = kvkStorageAccount.id
 output kvkStorageAccountKey string = kvkStorageAccount.listKeys().keys[0].value
-output appServicePlanId string = appServicePlan.id
 output appInsightsInstrumentationKey string = appInsights.properties.InstrumentationKey
 output appInsightsConnectionString string = appInsights.properties.ConnectionString
 output keyVaultName string = keyVault.name
 output keyVaultId string = keyVault.id
 output logAnalyticsId string = logAnalytics.id
+output logAnalyticsName string = logAnalytics.name
+output logAnalyticsCustomerId string = logAnalytics.properties.customerId

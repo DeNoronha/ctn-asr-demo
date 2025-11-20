@@ -13,22 +13,17 @@ param containerImage string
 @description('Key Vault name for secrets')
 param keyVaultName string = 'kv-ctn-demo-asr-${environmentName}'
 
+@description('Log Analytics workspace name (shared across services)')
+param logAnalyticsWorkspaceName string = 'log-ctn-demo'
+
 // Variables
 var containerAppName = 'ca-ctn-asr-api-${environmentName}'
 var containerAppEnvName = 'cae-ctn-asr-${environmentName}'
 var containerRegistryName = 'crctnasrdev'
-var logAnalyticsName = 'log-ctn-asr-${environmentName}'
 
-// Log Analytics Workspace
-resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: logAnalyticsName
-  location: location
-  properties: {
-    sku: {
-      name: 'PerGB2018'
-    }
-    retentionInDays: 30
-  }
+// Reference existing Log Analytics Workspace (shared with Application Insights)
+resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+  name: logAnalyticsWorkspaceName
 }
 
 // Container Apps Environment
@@ -210,7 +205,22 @@ resource acrRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' 
   }
 }
 
+// Deploy monitoring alerts
+module containerAppAlerts './modules/container-app-alerts.bicep' = {
+  name: 'container-app-alerts-deployment'
+  params: {
+    environment: environmentName
+    resourcePrefix: 'ctn-asr'
+    tags: {
+      Environment: environmentName
+      Component: 'Monitoring'
+    }
+    containerAppId: containerApp.id
+  }
+}
+
 // Outputs
 output containerAppUrl string = 'https://${containerApp.properties.configuration.ingress.fqdn}'
 output containerAppName string = containerApp.name
 output containerAppId string = containerApp.id
+output alertsDeployed bool = true
