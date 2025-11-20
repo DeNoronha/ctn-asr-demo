@@ -25,9 +25,9 @@ set -eo pipefail  # Exit on error, exit on pipe failure
 # ========================================
 
 # API Configuration
-API_BASE_URL="${API_BASE_URL:-https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1}"
-API_HEALTH_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/health"
-API_VERSION_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/version"
+API_BASE_URL="${API_BASE_URL:-https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1}"
+API_HEALTH_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health"
+API_VERSION_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/version"
 
 # Azure AD Configuration
 TENANT_ID="598664e7-725c-4daa-bd1f-89c4ada717ff"
@@ -519,7 +519,7 @@ test_medium_priority_endpoints() {
 
   local diagnostic_response=$(curl -s -w "\n%{http_code}" \
     -H "Authorization: Bearer $AUTH_TOKEN" \
-    "https://func-ctn-demo-asr-dev.azurewebsites.net/api/diagnostic")
+    "https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/diagnostic")
   local http_code=$(echo "$diagnostic_response" | tail -1)
   local body=$(echo "$diagnostic_response" | head -n -1)
 

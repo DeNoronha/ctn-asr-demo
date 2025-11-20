@@ -3,7 +3,7 @@
 # Debug script for endpoints not showing issue
 # Run this AFTER logging into the member portal
 
-API_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 
 echo "==================================="
 echo "Debugging Endpoints Visibility Issue"

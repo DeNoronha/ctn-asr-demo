@@ -20,7 +20,7 @@ import { AuthEndpoint } from './endpoints/auth';
  * @example
  * ```typescript
  * const client = new AsrApiClient({
- *   baseURL: 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1',
+ *   baseURL: 'https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1',
  *   getAccessToken: async () => {
  *     const response = await msalInstance.acquireTokenSilent({...});
  *     return response.accessToken;

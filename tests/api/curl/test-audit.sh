@@ -9,6 +9,6 @@ TOKEN=$(curl -s -X POST \
     -d "grant_type=password" | jq -r '.access_token')
 
 echo "Testing audit-logs endpoint:"
-curl -s "https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1/audit-logs" \
+curl -s "https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1/audit-logs" \
     -H "Authorization: Bearer $TOKEN" \
     -w "\nHTTP Status: %{http_code}\n"

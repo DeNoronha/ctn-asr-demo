@@ -16,7 +16,7 @@
 
 set -e  # Exit on first error
 
-API_BASE_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_BASE_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'

@@ -29,7 +29,7 @@ NC='\033[0m' # No Color
 # Configuration
 TENANT_ID="598664e7-725c-4daa-bd1f-89c4ada717ff"
 API_APP_ID="d3037c11-a541-4f21-8862-8079137a0cde"
-API_BASE_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_BASE_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 
 # Test counters
 TOTAL_TESTS=0

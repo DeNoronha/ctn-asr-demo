@@ -10,7 +10,7 @@
 
 set -e
 
-API_BASE_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_BASE_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "============================================"
@@ -27,7 +27,7 @@ echo ""
 
 # Check if API is reachable
 echo "Checking API availability..."
-HEALTH_CHECK=$(curl -s -w "%{http_code}" -o /dev/null "https://func-ctn-demo-asr-dev.azurewebsites.net/api/health")
+HEALTH_CHECK=$(curl -s -w "%{http_code}" -o /dev/null "https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health")
 if [ "$HEALTH_CHECK" = "200" ]; then
   echo "✓ API is reachable"
 else

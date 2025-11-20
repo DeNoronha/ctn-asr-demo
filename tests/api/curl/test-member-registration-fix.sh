@@ -7,7 +7,7 @@
 set -e
 
 # Configuration
-API_BASE="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_BASE="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 ENDPOINT="${API_BASE}/register-member"
 PDF_FILE="/Users/ramondenoronha/Dev/DIL/DEV-CTN-ASR/tests/KvK-DNC-95944192.pdf"
 

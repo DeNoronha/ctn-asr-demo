@@ -5,7 +5,7 @@
 # =============================================================================
 # Tests API endpoints after migration from Azure Functions to Container Apps
 #
-# Old URL: https://func-ctn-demo-asr-dev.azurewebsites.net/api
+# Old URL: https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api
 # New URL: https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api
 # =============================================================================
 
@@ -13,7 +13,7 @@ set -e
 
 # Configuration
 NEW_BASE_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api"
-OLD_BASE_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api"
+OLD_BASE_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api"
 
 # Colors for output
 RED='\033[0;31m'

@@ -9,7 +9,7 @@
 
 set -e
 
-API_BASE="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_BASE="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 TOKEN=$(cat /tmp/asr-api-token.txt)
 
 if [ -z "$TOKEN" ]; then

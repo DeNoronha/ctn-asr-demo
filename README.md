@@ -14,7 +14,7 @@ Full-stack application for managing CTN member organizations, endpoints, tokens,
 ```bash
 # API
 cd api
-func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote
+# Container Apps deployment via pipeline: .azure-pipelines/container-app-api.yml --typescript --build remote
 
 # Frontend
 cd web
@@ -37,7 +37,7 @@ mv .env.local.backup .env.local
 - **Member Portal:** https://calm-pebble-043b2db03.1.azurestaticapps.net
 
 ### Backend & Infrastructure
-- **API:** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
+- **API:** https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1
 - **Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
 - **Resource Group:** rg-ctn-demo-asr-dev
 - **Database:** psql-ctn-demo-asr-dev.postgres.database.azure.com
@@ -56,7 +56,7 @@ mv .env.local.backup .env.local
 
 ```bash
 # View API logs
-func azure functionapp logstream func-ctn-demo-asr-dev
+az containerapp logs show --name ca-ctn-asr-api-dev --resource-group rg-ctn-demo-asr-dev --type console --follow
 
 # Apply database migration
 psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com port=5432 \

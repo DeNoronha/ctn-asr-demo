@@ -16,8 +16,8 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
-API_BASE_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
-HEALTH_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/health"
+API_BASE_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
+HEALTH_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health"
 
 # Test results tracking
 TESTS_RUN=0

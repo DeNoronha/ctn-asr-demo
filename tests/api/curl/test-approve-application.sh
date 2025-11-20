@@ -5,7 +5,7 @@
 
 set -e
 
-API_BASE="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_BASE="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 APPLICATION_ID="8eb19470-2dec-46e6-a32b-83643e1998db"
 
 # Azure AD credentials for test user (SystemAdmin)

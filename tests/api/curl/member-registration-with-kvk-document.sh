@@ -24,7 +24,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 # Configuration
-API_BASE_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_BASE_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 TIMESTAMP=$(date +%s)
 TEST_EMAIL="test-member-${TIMESTAMP}@example.com"
 TEST_KVK=$(printf "%08d" $(echo $TIMESTAMP | tail -c 8 | sed 's/^0*//'))  # Generate 8-digit KvK number

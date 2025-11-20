@@ -16,7 +16,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-API_BASE="https://func-ctn-demo-asr-dev.azurewebsites.net/api"
+API_BASE="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api"
 TOKEN_FILE="/tmp/asr-api-token.txt"
 REPORT_FILE="/Users/ramondenoronha/Dev/DIL/ASR-full/api/tests/COMPREHENSIVE_TEST_REPORT_$(date +%Y-%m-%d_%H-%M-%S).md"
 
@@ -562,7 +562,7 @@ cat >> "$REPORT_FILE" <<EOF
 
 ## Test Environment
 
-- **API:** https://func-ctn-demo-asr-dev.azurewebsites.net/api
+- **API:** https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api
 - **Database:** psql-ctn-demo-asr-dev.postgres.database.azure.com
 - **Test User Object ID:** 7e093589-f654-4e53-9522-898995d1201b
 - **Role:** SystemAdmin

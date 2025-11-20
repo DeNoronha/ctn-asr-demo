@@ -10,7 +10,7 @@
 
 set -e
 
-API_BASE_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_BASE_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 TOKEN=$(cat /tmp/asr-api-token.txt)
 ENDPOINT_ID=$(cat /tmp/asr-test-endpoint-id.txt)
 

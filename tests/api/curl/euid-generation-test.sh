@@ -15,7 +15,7 @@
 #   ./euid-generation-test.sh [API_BASE_URL] [AUTH_TOKEN]
 #
 # Example:
-#   ./euid-generation-test.sh https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1 eyJ0eXAi...
+#   ./euid-generation-test.sh https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1 eyJ0eXAi...
 # ======================================================
 
 set -e

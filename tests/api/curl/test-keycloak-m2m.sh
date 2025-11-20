@@ -32,7 +32,7 @@ log_step() {
 # Configuration
 KEYCLOAK_ISSUER="${KEYCLOAK_ISSUER:-https://lemur-8.cloud-iam.com/auth}"
 KEYCLOAK_REALM="${KEYCLOAK_REALM:-ctn-test}"
-API_BASE_URL="${API_BASE_URL:-https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1}"
+API_BASE_URL="${API_BASE_URL:-https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1}"
 
 # Client credentials (from arguments or environment)
 CLIENT_ID="${1:-${KEYCLOAK_CLIENT_ID}}"

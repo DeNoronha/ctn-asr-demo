@@ -3,7 +3,7 @@
 # Created: 2025-10-25
 # Purpose: Test all admin portal API endpoints to identify 404 issues
 
-API_BASE="https://func-ctn-demo-asr-dev.azurewebsites.net/api"
+API_BASE="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api"
 
 echo "=========================================="
 echo "API DEPLOYMENT STATUS CHECK"

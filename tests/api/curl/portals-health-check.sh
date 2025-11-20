@@ -143,8 +143,8 @@ test_portal "Orchestrator Portal - NotFound Page" "https://ambitious-sky-098ea8e
 echo "=========================================="
 echo "4. API HEALTH CHECKS"
 echo "=========================================="
-test_api_endpoint "API - Base URL" "https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
-test_api_endpoint "API - Health Check" "https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1/health"
+test_api_endpoint "API - Base URL" "https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
+test_api_endpoint "API - Health Check" "https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1/health"
 
 # Summary
 echo "=========================================="

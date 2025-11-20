@@ -30,7 +30,7 @@ NC='\033[0m'
 # Configuration
 RESOURCE_GROUP="rg-ctn-demo-asr-dev"
 FUNCTION_APP="func-ctn-demo-asr-dev"
-API_BASE_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api"
+API_BASE_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api"
 ADMIN_PORTAL_URL="https://calm-tree-03352ba03.1.azurestaticapps.net"
 MEMBER_PORTAL_URL="https://calm-pebble-043b2db03.1.azurestaticapps.net"
 SKIP_DESTRUCTIVE=false

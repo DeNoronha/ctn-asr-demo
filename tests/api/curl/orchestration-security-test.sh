@@ -40,7 +40,7 @@ FAILED_TESTS=()
 SKIPPED_TESTS=()
 
 # API Configuration
-API_BASE="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_BASE="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 # AUTH_TOKEN should be set as environment variable
 AUTH_TOKEN=${AUTH_TOKEN}
 

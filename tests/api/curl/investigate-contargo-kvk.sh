@@ -14,7 +14,7 @@
 set -e  # Exit on first error
 
 # Configuration
-API_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 AUTH_TOKEN="${AUTH_TOKEN:-}"
 EXPECTED_KVK="95944192"
 

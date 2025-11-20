@@ -13,7 +13,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-API_BASE="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_BASE="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 TOKEN=$(cat /tmp/asr-api-token.txt)
 
 echo "============================================"

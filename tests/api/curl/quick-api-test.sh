@@ -19,8 +19,8 @@
 set -eo pipefail
 
 # API Configuration
-API_BASE_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
-API_HEALTH_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/health"
+API_BASE_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
+API_HEALTH_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health"
 
 # Colors
 RED='\033[0;31m'

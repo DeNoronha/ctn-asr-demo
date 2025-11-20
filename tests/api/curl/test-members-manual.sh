@@ -9,7 +9,7 @@ echo "CTN ASR - Test /api/v1/all-members"
 echo "========================================="
 echo ""
 
-API_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1/all-members?page=1&page_size=10"
+API_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1/all-members?page=1&page_size=10"
 
 # Check if token provided as argument
 if [ -n "$1" ]; then

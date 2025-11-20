@@ -361,7 +361,7 @@ steps:
   # ========================================
   # - script: |
   #     echo "🔍 Verifying ASR API is deployed and healthy..."
-  #     HEALTH_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/health"
+  #     HEALTH_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health"
   #     HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL")
   #
   #     if [ "$HEALTH_STATUS" != "200" ]; then

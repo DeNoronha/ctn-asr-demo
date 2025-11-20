@@ -6,7 +6,7 @@
 // Load environment variables or use defaults
 const config = {
   // API Base URL
-  apiBaseUrl: process.env.API_BASE_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1',
+  apiBaseUrl: process.env.API_BASE_URL || 'https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1',
 
   // Azure AD Authentication
   auth: {

@@ -16,7 +16,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-API_BASE="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_BASE="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 
 echo ""
 echo "======================================"
@@ -26,7 +26,7 @@ echo ""
 
 # Test 1: Health check
 echo -e "${YELLOW}Test 1: API Health Check${NC}"
-HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://func-ctn-demo-asr-dev.azurewebsites.net/api/health)
+HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health)
 if [ "$HEALTH_STATUS" = "200" ]; then
     echo -e "${GREEN}✓ API is healthy (HTTP $HEALTH_STATUS)${NC}"
 else

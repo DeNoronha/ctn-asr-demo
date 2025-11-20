@@ -184,19 +184,6 @@ export interface PartyInfo {
     legal_entity_id: string;
     member_name: string;
 }
-export interface Orchestration {
-    id: string;
-    orchestration_type: string;
-    status: string;
-    created_at: string;
-    updated_at?: string;
-    party_id: string;
-    details?: Record<string, unknown>;
-}
-export interface CreateOrchestrationRequest {
-    orchestration_type: string;
-    details?: Record<string, unknown>;
-}
 export interface ApiClientConfig {
     baseURL: string;
     timeout?: number;

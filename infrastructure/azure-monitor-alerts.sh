@@ -1,21 +1,21 @@
 #!/bin/bash
-# Azure Monitor Alerts Configuration for Function App Resilience
+# Azure Monitor Alerts Configuration for Container Apps Resilience
 # Creates comprehensive alerts for health monitoring
 
 set -e
 
 RESOURCE_GROUP="rg-ctn-demo-asr-dev"
-FUNCTION_APP_NAME="func-ctn-demo-asr-dev"
+CONTAINER_APP_NAME="ca-ctn-asr-api-dev"
 ACTION_GROUP_NAME="ag-ctn-demo-asr-critical"
 LOCATION="westeurope"
 
-# Get Function App resource ID
-FUNCTION_APP_ID=$(az functionapp show \
-  --name "$FUNCTION_APP_NAME" \
+# Get Container App resource ID
+CONTAINER_APP_ID=$(az containerapp show \
+  --name "$CONTAINER_APP_NAME" \
   --resource-group "$RESOURCE_GROUP" \
   --query "id" -o tsv)
 
-echo "✅ Function App ID: $FUNCTION_APP_ID"
+echo "✅ Container App ID: $CONTAINER_APP_ID"
 
 # Create Action Group for email/SMS notifications
 echo "📧 Creating Action Group for notifications..."
@@ -35,24 +35,24 @@ echo "✅ Action Group ID: $ACTION_GROUP_ID"
 # Alert 1: High Error Rate (>5% of requests failing)
 echo "🚨 Creating alert: High Error Rate..."
 az monitor metrics alert create \
-  --name "Function App - High Error Rate" \
+  --name "Container App - High Error Rate" \
   --resource-group "$RESOURCE_GROUP" \
-  --scopes "$FUNCTION_APP_ID" \
+  --scopes "$CONTAINER_APP_ID" \
   --condition "avg Http5xx > 5" \
-  --description "Function App is experiencing high error rate (>5 HTTP 5xx errors/min)" \
+  --description "Container App is experiencing high error rate (>5 HTTP 5xx errors/min)" \
   --evaluation-frequency 1m \
   --window-size 5m \
   --severity 1 \
   --action "$ACTION_GROUP_ID" 2>/dev/null || echo "⚠️  Alert already exists"
 
-# Alert 2: Function App Down (no successful requests)
-echo "🚨 Creating alert: Function App Down..."
+# Alert 2: Container App Down (no successful requests)
+echo "🚨 Creating alert: Container App Down..."
 az monitor metrics alert create \
-  --name "Function App - No Successful Requests" \
+  --name "Container App - No Successful Requests" \
   --resource-group "$RESOURCE_GROUP" \
-  --scopes "$FUNCTION_APP_ID" \
+  --scopes "$CONTAINER_APP_ID" \
   --condition "total Http2xx == 0" \
-  --description "Function App has no successful HTTP requests in the last 5 minutes" \
+  --description "Container App has no successful HTTP requests in the last 5 minutes" \
   --evaluation-frequency 1m \
   --window-size 5m \
   --severity 0 \
@@ -61,11 +61,11 @@ az monitor metrics alert create \
 # Alert 3: High Response Time (>5 seconds average)
 echo "🚨 Creating alert: High Response Time..."
 az monitor metrics alert create \
-  --name "Function App - High Response Time" \
+  --name "Container App - High Response Time" \
   --resource-group "$RESOURCE_GROUP" \
-  --scopes "$FUNCTION_APP_ID" \
+  --scopes "$CONTAINER_APP_ID" \
   --condition "avg HttpResponseTime > 5000" \
-  --description "Function App response time is >5 seconds" \
+  --description "Container App response time is >5 seconds" \
   --evaluation-frequency 1m \
   --window-size 5m \
   --severity 2 \
@@ -74,11 +74,11 @@ az monitor metrics alert create \
 # Alert 4: Memory Usage Critical (>90%)
 echo "🚨 Creating alert: High Memory Usage..."
 az monitor metrics alert create \
-  --name "Function App - High Memory Usage" \
+  --name "Container App - High Memory Usage" \
   --resource-group "$RESOURCE_GROUP" \
-  --scopes "$FUNCTION_APP_ID" \
+  --scopes "$CONTAINER_APP_ID" \
   --condition "avg MemoryWorkingSet > 900000000" \
-  --description "Function App memory usage >900MB (critical threshold)" \
+  --description "Container App memory usage >900MB (critical threshold)" \
   --evaluation-frequency 5m \
   --window-size 15m \
   --severity 2 \
@@ -87,9 +87,9 @@ az monitor metrics alert create \
 # Alert 5: Function Execution Failures
 echo "🚨 Creating alert: Function Execution Failures..."
 az monitor metrics alert create \
-  --name "Function App - Execution Failures" \
+  --name "Container App - Execution Failures" \
   --resource-group "$RESOURCE_GROUP" \
-  --scopes "$FUNCTION_APP_ID" \
+  --scopes "$CONTAINER_APP_ID" \
   --condition "total FunctionExecutionCount == 0 AND total Http2xx == 0" \
   --description "No function executions detected - possible startup failure" \
   --evaluation-frequency 5m \

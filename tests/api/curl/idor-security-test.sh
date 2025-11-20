@@ -33,7 +33,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-API_BASE_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_BASE_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 TENANT_ID="598664e7-725c-4daa-bd1f-89c4ada717ff"
 CLIENT_ID="d3037c11-a541-4f21-8862-8079137a0cde"
 SCOPE="api://d3037c11-a541-4f21-8862-8079137a0cde/.default"

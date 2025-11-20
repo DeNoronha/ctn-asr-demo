@@ -5,7 +5,7 @@
 
 set -e
 
-API_BASE="https://func-ctn-demo-asr-dev.azurewebsites.net/api"
+API_BASE="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api"
 PDF_PATH="/Users/ramondenoronha/Dev/DIL/DEV-CTN-ASR/tests/KvK-DNC-95944192.pdf"
 TIMESTAMP=$(date +%s)
 

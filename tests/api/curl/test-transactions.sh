@@ -5,7 +5,7 @@
 set -e
 
 # Configuration - authentication must be provided via environment variables
-API_URL="${API_URL:-https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1}"
+API_URL="${API_URL:-https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1}"
 # Note: No secrets stored in this file - JWT passed via AZURE_TOKEN env var
 JWT_BEARER="${AZURE_TOKEN:-}"
 

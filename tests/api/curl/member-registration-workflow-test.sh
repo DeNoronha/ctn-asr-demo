@@ -17,7 +17,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration
-API_BASE_URL="https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1"
+API_BASE_URL="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1"
 KVK_DOCUMENT_PATH="/Users/ramondenoronha/Desktop/KvK-DNC-95944192.pdf"
 TEST_EMAIL="test-member-$(date +%s)@example.com"
 TEST_KVK="95944192"

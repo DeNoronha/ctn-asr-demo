@@ -12,10 +12,10 @@ echo "Testing audit-logs routes:"
 echo ""
 
 echo -n "/api/v1/audit-logs: "
-curl -s -o /dev/null -w "%{http_code}\n" "https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1/audit-logs" -H "Authorization: Bearer $TOKEN"
+curl -s -o /dev/null -w "%{http_code}\n" "https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1/audit-logs" -H "Authorization: Bearer $TOKEN"
 
 echo -n "/api/audit-logs: "
-curl -s -o /dev/null -w "%{http_code}\n" "https://func-ctn-demo-asr-dev.azurewebsites.net/api/audit-logs" -H "Authorization: Bearer $TOKEN"
+curl -s -o /dev/null -w "%{http_code}\n" "https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/audit-logs" -H "Authorization: Bearer $TOKEN"
 
 echo -n "/api/v1/admin/audit-logs: "
-curl -s -o /dev/null -w "%{http_code}\n" "https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1/admin/audit-logs" -H "Authorization: Bearer $TOKEN"
+curl -s -o /dev/null -w "%{http_code}\n" "https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1/admin/audit-logs" -H "Authorization: Bearer $TOKEN"

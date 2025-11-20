@@ -29,7 +29,7 @@ RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
     "description": "Testing POST endpoint after assigned_by migration",
     "priority": "medium"
   }' \
-  https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1/admin/tasks)
+  https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1/admin/tasks)
 
 HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
 BODY=$(echo "$RESPONSE" | head -n-1)
@@ -50,7 +50,7 @@ echo ""
 echo "2. GET /v1/admin/tasks/list (List Tasks)"
 RESPONSE2=$(curl -s -w "\n%{http_code}" \
   -H "Authorization: Bearer $TOKEN" \
-  https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1/admin/tasks/list)
+  https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1/admin/tasks/list)
 
 HTTP_CODE2=$(echo "$RESPONSE2" | tail -n1)
 BODY2=$(echo "$RESPONSE2" | head -n-1)
@@ -78,7 +78,7 @@ if [ -n "$TASK_ID" ]; then
       "status": "in_progress",
       "priority": "high"
     }' \
-    https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1/admin/tasks/$TASK_ID)
+    https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1/admin/tasks/$TASK_ID)
 
   HTTP_CODE3=$(echo "$RESPONSE3" | tail -n1)
   BODY3=$(echo "$RESPONSE3" | head -n-1)

@@ -7,7 +7,6 @@ import { ContactsEndpoint } from './endpoints/contacts';
 import { IdentifiersEndpoint } from './endpoints/identifiers';
 import { EndpointsEndpoint } from './endpoints/endpoints';
 import { AuditLogsEndpoint } from './endpoints/audit';
-import { OrchestrationsEndpoint } from './endpoints/orchestrations';
 import { AuthEndpoint } from './endpoints/auth';
 /**
  * CTN Association Register API Client
@@ -18,7 +17,7 @@ import { AuthEndpoint } from './endpoints/auth';
  * @example
  * ```typescript
  * const client = new AsrApiClient({
- *   baseURL: 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1',
+ *   baseURL: 'https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1',
  *   getAccessToken: async () => {
  *     const response = await msalInstance.acquireTokenSilent({...});
  *     return response.accessToken;
@@ -45,7 +44,6 @@ export declare class AsrApiClient {
     identifiers: IdentifiersEndpoint;
     endpoints: EndpointsEndpoint;
     auditLogs: AuditLogsEndpoint;
-    orchestrations: OrchestrationsEndpoint;
     auth: AuthEndpoint;
     constructor(config: ApiClientConfig);
     /**
