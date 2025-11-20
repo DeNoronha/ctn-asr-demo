@@ -22,6 +22,7 @@ const upload = multer({
 import { getPool } from './utils/database';
 import { withTransaction } from './utils/transaction';
 import { validateJwtToken, JwtPayload } from './middleware/auth';
+import { dnsVerificationService } from './services/dnsVerificationService';
 
 // Express auth middleware using full JWT validation
 async function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -1669,40 +1670,18 @@ router.post('/v1/entities/:legalentityid/dns/token', requireAuth, async (req: Re
 
 router.post('/v1/dns/verify/:tokenid', requireAuth, async (req: Request, res: Response) => {
   try {
-    const pool = getPool();
     const { tokenid } = req.params;
 
-    // Get token from database
-    const { rows } = await pool.query(`
-      SELECT token_id, legal_entity_id, domain, token, record_name, expires_at, status
-      FROM dns_verification_tokens
-      WHERE token_id = $1
-    `, [tokenid]);
+    // Use the DNS verification service to perform actual DNS lookup
+    const result = await dnsVerificationService.verifyToken(tokenid);
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Token not found' });
-    }
-
-    const tokenData = rows[0];
-
-    if (tokenData.status === 'verified') {
-      return res.json({ verified: true, details: 'Already verified' });
-    }
-
-    if (new Date(tokenData.expires_at) < new Date()) {
-      await pool.query(`UPDATE dns_verification_tokens SET status = 'expired' WHERE token_id = $1`, [tokenid]);
-      return res.json({ verified: false, details: 'Token expired' });
-    }
-
-    // DNS verification would happen here - for now return stub
-    res.json({
-      verified: false,
-      details: 'DNS verification not fully implemented in Express version',
-      resolverResults: []
-    });
+    res.json(result);
   } catch (error: any) {
     console.error('Error verifying DNS token:', error);
-    res.status(500).json({ error: 'Failed to verify DNS token' });
+    res.status(500).json({
+      error: 'Failed to verify DNS token',
+      details: error.message
+    });
   }
 });
 
