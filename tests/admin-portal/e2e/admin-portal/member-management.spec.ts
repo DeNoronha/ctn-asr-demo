@@ -16,7 +16,7 @@ import { expect, test } from '../../playwright/fixtures';
  */
 
 const _API_BASE_URL =
-  process.env.PLAYWRIGHT_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net';
+  process.env.PLAYWRIGHT_API_URL || 'https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io';
 
 test.describe('Member Management - View Members List', () => {
   test.beforeEach(async ({ page }) => {

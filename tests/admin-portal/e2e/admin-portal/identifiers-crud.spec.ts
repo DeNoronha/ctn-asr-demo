@@ -27,13 +27,13 @@ import { expect, test } from '@playwright/test';
  * - ✅ No "Cannot read private member" errors
  *
  * Test Data:
- * - Production API: https://func-ctn-demo-asr-dev.azurewebsites.net
+ * - Production API: https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io
  * - Test Entity ID: fbc4bcdc-a9f9-4621-a153-c5deb6c49519
  * - Test KvK Number: 95944192
  */
 
 const API_BASE_URL =
-  process.env.PLAYWRIGHT_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net';
+  process.env.PLAYWRIGHT_API_URL || 'https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io';
 const TEST_ENTITY_ID = 'fbc4bcdc-a9f9-4621-a153-c5deb6c49519';
 
 // Test identifier types matching the API validation
@@ -319,7 +319,7 @@ test.describe('Bug Fix Documentation', () => {
     console.log('');
     console.log('DEPLOYMENT:');
     console.log('─────────────────────────────────────────────────────────');
-    console.log('API: func-ctn-demo-asr-dev.azurewebsites.net');
+    console.log('API: ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io');
     console.log('Status: ✅ DEPLOYED');
     console.log('Verified: ✅ PRODUCTION TESTS PASSING');
     console.log('');

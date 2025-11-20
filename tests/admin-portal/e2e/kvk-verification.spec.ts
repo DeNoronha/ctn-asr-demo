@@ -12,7 +12,7 @@ import { expect, test } from '../playwright/fixtures';
  */
 
 const API_BASE_URL =
-  process.env.PLAYWRIGHT_API_URL || 'https://func-ctn-demo-asr-dev.azurewebsites.net';
+  process.env.PLAYWRIGHT_API_URL || 'https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io';
 const TEST_LEGAL_ENTITY_ID = 'fbc4bcdc-a9f9-4621-a153-c5deb6c49519'; // Contargo GmbH & Co. KG
 
 test.describe('KvK Verification - API Endpoints', () => {

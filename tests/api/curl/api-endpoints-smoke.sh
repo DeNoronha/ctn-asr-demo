@@ -24,7 +24,7 @@ TESTS_FAILED=0
 FAILED_TESTS=()
 
 # API Base URL
-API_BASE="https://func-ctn-demo-asr-dev.azurewebsites.net"
+API_BASE="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io"
 
 # Function to test API endpoint
 test_api() {

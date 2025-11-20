@@ -128,7 +128,7 @@ test.describe('Critical E2E Flows - Realistic', () => {
 
     // Force a health check via browser console
     await page.evaluate(() => {
-      const apiBase = 'https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1';
+      const apiBase = 'https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1';
       fetch(`${apiBase}/health`, {
         method: 'GET',
         headers: {
