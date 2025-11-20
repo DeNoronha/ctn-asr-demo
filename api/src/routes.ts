@@ -2085,15 +2085,24 @@ router.post('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, asyn
     const azureClientId = crypto.randomUUID();
     const clientSecret = crypto.randomBytes(32).toString('base64');
 
+    // Insert client (secrets are stored separately in m2m_client_secrets_audit or Key Vault)
     const { rows } = await pool.query(`
-      INSERT INTO m2m_clients (legal_entity_id, client_name, azure_client_id, client_secret, description, assigned_scopes, is_active)
-      VALUES ($1, $2, $3, $4, $5, $6, true)
+      INSERT INTO m2m_clients (legal_entity_id, client_name, azure_client_id, description, assigned_scopes, is_active)
+      VALUES ($1, $2, $3, $4, $5, true)
       RETURNING m2m_client_id as "clientId", azure_client_id as "azureClientId", client_name as "clientName", assigned_scopes as "scopes"
-    `, [legal_entity_id, client_name, azureClientId, clientSecret, description || null, assigned_scopes || []]);
+    `, [legal_entity_id, client_name, azureClientId, description || null, assigned_scopes || []]);
 
-    // Return client data with secret (only shown once)
+    const newClient = rows[0];
+
+    // Record secret generation in audit table
+    await pool.query(`
+      INSERT INTO m2m_client_secrets_audit (m2m_client_id, secret_generated_at)
+      VALUES ($1, NOW())
+    `, [newClient.clientId]);
+
+    // Return client data with secret (only shown once - secret not stored in DB)
     res.status(201).json({
-      client: rows[0],
+      client: newClient,
       client_secret: clientSecret
     });
   } catch (error: any) {
