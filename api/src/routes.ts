@@ -2051,15 +2051,15 @@ router.get('/v1/legal-entities/:legal_entity_id/m2m-clients', requireAuth, async
 
     const { rows } = await pool.query(`
       SELECT
-        m.m2m_client_id as "clientId",
-        m.legal_entity_id as "legalEntityId",
-        m.client_name as "clientName",
-        m.azure_client_id as "azureClientId",
-        m.assigned_scopes as "scopes",
-        m.is_active as "isActive",
-        m.dt_created as "createdAt",
-        m.dt_modified as "modifiedAt",
-        m.legal_entity_endpoint_id as "endpointId",
+        m.m2m_client_id,
+        m.legal_entity_id,
+        m.client_name,
+        m.azure_client_id,
+        m.assigned_scopes,
+        m.is_active,
+        m.dt_created,
+        m.dt_modified,
+        m.legal_entity_endpoint_id,
         e.endpoint_url as "endpointUrl",
         e.endpoint_name as "endpointName"
       FROM m2m_clients m
