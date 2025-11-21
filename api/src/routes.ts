@@ -1513,6 +1513,118 @@ router.delete('/v1/identifiers/:identifierId', requireAuth, async (req: Request,
 });
 
 // ============================================================================
+// IDENTIFIER VERIFICATION HISTORY
+// ============================================================================
+router.get('/v1/legal-entities/:legalentityid/verifications', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT
+        verification_id,
+        legal_entity_id,
+        identifier_id,
+        identifier_type,
+        identifier_value,
+        verification_method,
+        verification_status,
+        document_blob_url,
+        document_filename,
+        document_mime_type,
+        extracted_data,
+        verified_by,
+        verified_at,
+        verification_notes,
+        created_at,
+        updated_at
+      FROM identifier_verification_history
+      WHERE legal_entity_id = $1
+      ORDER BY created_at DESC
+    `, [legalentityid]);
+
+    res.json({ data: rows });
+  } catch (error: any) {
+    console.error('Error fetching verification history:', {
+      legalEntityId: req.params.legalentityid,
+      error: error.message,
+      stack: error.stack,
+      detail: error.detail || error.toString()
+    });
+    res.status(500).json({ error: 'Failed to fetch verification history', detail: error.message });
+  }
+});
+
+// ============================================================================
+// KVK REGISTRY DATA
+// ============================================================================
+router.get('/v1/legal-entities/:legalentityid/kvk-registry', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    // Get the KvK identifier for this legal entity
+    const { rows: identifiers } = await pool.query(`
+      SELECT legal_entity_reference_id, identifier_value
+      FROM legal_entity_number
+      WHERE legal_entity_id = $1 AND identifier_type = 'KVK' AND is_deleted = false
+      LIMIT 1
+    `, [legalentityid]);
+
+    if (identifiers.length === 0) {
+      return res.status(404).json({ error: 'No KvK identifier found for this legal entity' });
+    }
+
+    const kvkNumber = identifiers[0].identifier_value;
+    const identifierId = identifiers[0].legal_entity_reference_id;
+
+    // Get the most recent verification with extracted KvK API data
+    const { rows } = await pool.query(`
+      SELECT
+        verification_id,
+        extracted_data,
+        verification_status,
+        verification_method,
+        verified_at,
+        created_at
+      FROM identifier_verification_history
+      WHERE legal_entity_id = $1
+        AND identifier_id = $2
+        AND identifier_type = 'KVK'
+        AND extracted_data IS NOT NULL
+      ORDER BY created_at DESC
+      LIMIT 1
+    `, [legalentityid, identifierId]);
+
+    if (rows.length === 0) {
+      return res.json({
+        kvkNumber,
+        hasData: false,
+        message: 'No KvK registry data available. Upload a KvK document or trigger verification.'
+      });
+    }
+
+    res.json({
+      kvkNumber,
+      hasData: true,
+      data: rows[0].extracted_data,
+      verificationStatus: rows[0].verification_status,
+      verificationMethod: rows[0].verification_method,
+      verifiedAt: rows[0].verified_at,
+      fetchedAt: rows[0].created_at
+    });
+  } catch (error: any) {
+    console.error('Error fetching KvK registry data:', {
+      legalEntityId: req.params.legalentityid,
+      error: error.message,
+      stack: error.stack,
+      detail: error.detail || error.toString()
+    });
+    res.status(500).json({ error: 'Failed to fetch KvK registry data', detail: error.message });
+  }
+});
+
+// ============================================================================
 // ENDPOINTS
 // ============================================================================
 router.get('/v1/legal-entities/:legalentityid/endpoints', requireAuth, async (req: Request, res: Response) => {
