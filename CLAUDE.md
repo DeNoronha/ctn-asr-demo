@@ -174,6 +174,12 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 - `api/Dockerfile` - Multi-stage Docker build configuration
 - `api/.dockerignore` - Docker build optimization (excludes node_modules, tests, docs)
 
+**Archived Legacy Code (Nov 21, 2025):**
+- `api/src/functions-legacy-archive/` - Contains 70+ Azure Functions files from pre-Container Apps era
+- **Status:** NO LONGER REFERENCED - All functionality migrated to Express routes
+- **Reason:** Migration to Container Apps completed Nov 19, 2025
+- See: `api/src/functions-legacy-archive/README.md` for migration details
+
 ### Database Schema
 
 **🚨 CRITICAL: ALWAYS CHECK SCHEMA FIRST**
@@ -184,7 +190,7 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 3. **Review relationships** - Understand FK constraints and cascading behaviors
 4. **Verify views** - Use existing views like `v_members_full`, `legal_entity_full`
 
-**Complete Table List (32 tables):**
+**Complete Table List (30 active tables + 2 archived):**
 
 **Core Entity Model:**
 - `party_reference` - Root entity (UUID primary key)
@@ -230,9 +236,9 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 - `audit_log_pii_mapping` - Encrypted PII mapping for GDPR compliance
 - `audit_log_pii_access` - Access log for PII de-anonymization
 
-**Backup Tables:**
-- `legal_entity_backup_20251113` - Pre-migration backup
-- `members_backup_20251113` - Pre-migration backup
+**Archived Tables (Removed Nov 21, 2025 - Migration 032):**
+- ~~`legal_entity_backup_20251113`~~ - Pre-migration backup (dropped after verification)
+- ~~`members_backup_20251113`~~ - Pre-migration backup (dropped after verification)
 
 **Database Views (7 views):**
 - `v_members_full` - Complete member data with identifiers
