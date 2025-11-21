@@ -127,19 +127,19 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
                   accessor: 'phone',
                   title: 'Phone',
                   width: 140,
-                  render: (contact) => contact.phone || '-',
+                  render: (contact: Contact) => contact.phone || '-',
                 },
                 {
                   accessor: 'job_title',
                   title: 'Job Title',
                   width: 180,
-                  render: (contact) => contact.job_title || '-',
+                  render: (contact: Contact) => contact.job_title || '-',
                 },
                 {
                   accessor: 'contact_type',
                   title: 'Type',
                   width: 120,
-                  render: (contact) => (
+                  render: (contact: Contact) => (
                     <Badge
                       color={
                         contact.contact_type === 'PRIMARY'
@@ -160,7 +160,7 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
                   accessor: 'is_primary',
                   title: 'Primary',
                   width: 80,
-                  render: (contact) =>
+                  render: (contact: Contact) =>
                     contact.is_primary ? (
                       <span style={{ color: '#2563eb', fontSize: '1.25rem' }}>✓</span>
                     ) : (
@@ -171,7 +171,7 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
                   accessor: 'is_active',
                   title: 'Status',
                   width: 100,
-                  render: (contact) => (
+                  render: (contact: Contact) => (
                     <Badge color={contact.is_active ? 'green' : 'red'} variant="light">
                       {contact.is_active ? 'Active' : 'Inactive'}
                     </Badge>
@@ -181,7 +181,7 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
                   accessor: 'actions',
                   title: 'Actions',
                   width: 80,
-                  render: (contact) => (
+                  render: (contact: Contact) => (
                     <Group gap={4} wrap="nowrap">
                       <Tooltip label="Edit contact">
                         <ActionIcon

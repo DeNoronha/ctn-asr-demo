@@ -46,13 +46,13 @@ export const EndpointsView: React.FC<ComponentProps> = ({
         accessor: 'endpoint_name',
         title: 'Name',
         width: 200,
-        render: (endpoint) => <strong>{endpoint.endpoint_name}</strong>,
+        render: (endpoint: Endpoint) => <strong>{endpoint.endpoint_name}</strong>,
       },
       {
         accessor: 'endpoint_url',
         title: 'URL',
         width: 300,
-        render: (endpoint) => (
+        render: (endpoint: Endpoint) => (
           <span style={{ fontSize: '0.85rem' }}>{endpoint.endpoint_url}</span>
         ),
       },
@@ -65,19 +65,19 @@ export const EndpointsView: React.FC<ComponentProps> = ({
         accessor: 'data_category',
         title: 'Category',
         width: 140,
-        render: (endpoint) => endpoint.data_category || '-',
+        render: (endpoint: Endpoint) => endpoint.data_category || '-',
       },
       {
         accessor: 'authentication_method',
         title: 'Auth Method',
         width: 140,
-        render: (endpoint) => endpoint.authentication_method || '-',
+        render: (endpoint: Endpoint) => endpoint.authentication_method || '-',
       },
       {
         accessor: 'last_connection_status',
         title: 'Last Test',
         width: 120,
-        render: (endpoint) =>
+        render: (endpoint: Endpoint) =>
           endpoint.last_connection_status ? (
             <Badge
               color={endpoint.last_connection_status === 'SUCCESS' ? 'green' : 'red'}
@@ -93,7 +93,7 @@ export const EndpointsView: React.FC<ComponentProps> = ({
         accessor: 'is_active',
         title: 'Status',
         width: 100,
-        render: (endpoint) => (
+        render: (endpoint: Endpoint) => (
           <Badge color={endpoint.is_active ? 'green' : 'red'} variant="light">
             {endpoint.is_active ? 'Active' : 'Inactive'}
           </Badge>

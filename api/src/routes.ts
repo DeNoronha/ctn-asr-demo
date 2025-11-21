@@ -2434,6 +2434,38 @@ router.post('/v1/audit-logs', requireAuth, async (req: Request, res: Response) =
 // ============================================================================
 // KVK VERIFICATION
 // ============================================================================
+
+// Get KvK verification status for a specific legal entity
+router.get('/v1/legal-entities/:legalEntityId/kvk-verification', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalEntityId } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT
+        legal_entity_id,
+        kvk_number,
+        kvk_verification_status,
+        kvk_review_notes,
+        kvk_reviewed_at,
+        kvk_last_checked,
+        dt_created,
+        dt_modified
+      FROM legal_entity
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalEntityId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Legal entity not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error fetching KvK verification status:', error);
+    res.status(500).json({ error: 'Failed to fetch KvK verification status' });
+  }
+});
+
 router.get('/v1/kvk-verification/flagged', requireAuth, async (req: Request, res: Response) => {
   try {
     const pool = getPool();

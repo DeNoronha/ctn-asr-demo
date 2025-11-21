@@ -180,7 +180,7 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
         accessor: 'identifier_type',
         title: 'Type',
         width: 120,
-        render: (identifier) => (
+        render: (identifier: Identifier) => (
           <Badge color="blue" variant="light">
             {identifier.identifier_type}
           </Badge>
@@ -190,7 +190,7 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
         accessor: 'identifier_value',
         title: 'Value',
         width: 200,
-        render: (identifier) => <strong>{identifier.identifier_value}</strong>,
+        render: (identifier: Identifier) => <strong>{identifier.identifier_value}</strong>,
       },
       {
         accessor: 'country_code',
@@ -221,13 +221,13 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
         accessor: 'dt_created',
         title: 'Created',
         width: 140,
-        render: (identifier) => new Date(identifier.dt_created).toLocaleDateString(),
+        render: (identifier: Identifier) => new Date(identifier.dt_created).toLocaleDateString(),
       },
       {
         accessor: 'actions',
         title: 'Actions',
         width: 100,
-        render: (identifier) => (
+        render: (identifier: Identifier) => (
           <Group gap={4} wrap="nowrap">
             <Tooltip label="Edit identifier">
               <ActionIcon
