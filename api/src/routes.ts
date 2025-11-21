@@ -1966,6 +1966,29 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
         VALUES ($1, $2, 'KVK', $3, 'NL', 'PENDING', NOW(), NOW())
       `, [identifierId, legalEntityId, application.kvk_number]);
 
+      // 5a. Create verification history record if KvK document was uploaded
+      if (application.kvk_document_url) {
+        const verificationId = randomUUID();
+        await client.query(`
+          INSERT INTO identifier_verification_history (
+            verification_id, legal_entity_id, identifier_id,
+            identifier_type, identifier_value, verification_method,
+            verification_status, document_blob_url, document_filename,
+            document_mime_type, verified_by, verified_at,
+            created_at, updated_at
+          )
+          VALUES ($1, $2, $3, 'KVK', $4, 'APPLICATION_UPLOAD', $5, $6, $7, 'application/pdf', 'system', NOW(), NOW(), NOW())
+        `, [
+          verificationId,
+          legalEntityId,
+          identifierId,
+          application.kvk_number,
+          application.kvk_verification_status || 'PENDING',
+          application.kvk_document_url,
+          application.kvk_document_filename || 'kvk-document.pdf'
+        ]);
+      }
+
       // 6. Create LEI identifier if provided
       if (application.lei) {
         const leiId = randomUUID();
