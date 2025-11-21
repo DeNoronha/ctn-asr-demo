@@ -86,9 +86,9 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
     const pool = getPool();
     const { page = '1', limit = '50', search, status } = req.query;
 
-    // Use the v_members_full view which includes all identifier types (euid, eori, duns, etc.)
+    // Use the v_members_full view which includes all identifier types (euri, duns, etc.)
     let query = `
-      SELECT legal_entity_id, legal_name, kvk, lei, euid, eori, duns, domain, status, membership_level,
+      SELECT legal_entity_id, legal_name, kvk, lei, euri, duns, domain, status, membership_level,
              created_at, member_metadata, legal_entity_metadata, contact_count, endpoint_count
       FROM v_members_full
       WHERE 1=1
@@ -153,9 +153,9 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
     const { page = '1', page_size = '50', search, status } = req.query;
     const limit = page_size; // all-members uses page_size param
 
-    // Use the v_members_full view which includes all identifier types (euid, eori, duns, etc.)
+    // Use the v_members_full view which includes all identifier types (euri, duns, etc.)
     let query = `
-      SELECT legal_entity_id, legal_name, kvk, lei, euid, eori, duns, domain, status, membership_level,
+      SELECT legal_entity_id, legal_name, kvk, lei, euri, duns, domain, status, membership_level,
              created_at, member_metadata, legal_entity_metadata, contact_count, endpoint_count
       FROM v_members_full
       WHERE 1=1
