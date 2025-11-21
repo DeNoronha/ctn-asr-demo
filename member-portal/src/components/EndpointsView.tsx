@@ -1,7 +1,7 @@
 import { Badge, Button, Modal } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { apiClient } from '../services/apiClient';
 import type { ComponentProps, Endpoint } from '../types';
 import { EndpointRegistrationWizard } from './EndpointRegistrationWizard';
@@ -27,7 +27,6 @@ export const EndpointsView: React.FC<ComponentProps> = ({
     setLoading(true);
     try {
       const data = await apiClient.member.getEndpoints();
-      console.log('Endpoints loaded:', data);
       setEndpoints(data.endpoints || []);
     } catch (error) {
       console.error('Error loading endpoints:', error);
@@ -40,6 +39,69 @@ export const EndpointsView: React.FC<ComponentProps> = ({
   const handleAdd = () => {
     setShowDialog(true);
   };
+
+  const columns = useMemo(
+    () => [
+      {
+        accessor: 'endpoint_name',
+        title: 'Name',
+        width: 200,
+        render: (endpoint) => <strong>{endpoint.endpoint_name}</strong>,
+      },
+      {
+        accessor: 'endpoint_url',
+        title: 'URL',
+        width: 300,
+        render: (endpoint) => (
+          <span style={{ fontSize: '0.85rem' }}>{endpoint.endpoint_url}</span>
+        ),
+      },
+      {
+        accessor: 'endpoint_type',
+        title: 'Type',
+        width: 120,
+      },
+      {
+        accessor: 'data_category',
+        title: 'Category',
+        width: 140,
+        render: (endpoint) => endpoint.data_category || '-',
+      },
+      {
+        accessor: 'authentication_method',
+        title: 'Auth Method',
+        width: 140,
+        render: (endpoint) => endpoint.authentication_method || '-',
+      },
+      {
+        accessor: 'last_connection_status',
+        title: 'Last Test',
+        width: 120,
+        render: (endpoint) =>
+          endpoint.last_connection_status ? (
+            <Badge
+              color={endpoint.last_connection_status === 'SUCCESS' ? 'green' : 'red'}
+              variant="light"
+            >
+              {endpoint.last_connection_status}
+            </Badge>
+          ) : (
+            <span style={{ color: '#9ca3af' }}>-</span>
+          ),
+      },
+      {
+        accessor: 'is_active',
+        title: 'Status',
+        width: 100,
+        render: (endpoint) => (
+          <Badge color={endpoint.is_active ? 'green' : 'red'} variant="light">
+            {endpoint.is_active ? 'Active' : 'Inactive'}
+          </Badge>
+        ),
+      },
+    ],
+    []
+  );
 
   return (
     <div className="endpoints-view">
@@ -74,65 +136,7 @@ export const EndpointsView: React.FC<ComponentProps> = ({
           ) : (
             <DataTable
               records={endpoints}
-              columns={[
-                {
-                  accessor: 'endpoint_name',
-                  title: 'Name',
-                  width: 200,
-                  render: (endpoint) => <strong>{endpoint.endpoint_name}</strong>,
-                },
-                {
-                  accessor: 'endpoint_url',
-                  title: 'URL',
-                  width: 300,
-                  render: (endpoint) => (
-                    <span style={{ fontSize: '0.85rem' }}>{endpoint.endpoint_url}</span>
-                  ),
-                },
-                {
-                  accessor: 'endpoint_type',
-                  title: 'Type',
-                  width: 120,
-                },
-                {
-                  accessor: 'data_category',
-                  title: 'Category',
-                  width: 140,
-                  render: (endpoint) => endpoint.data_category || '-',
-                },
-                {
-                  accessor: 'authentication_method',
-                  title: 'Auth Method',
-                  width: 140,
-                  render: (endpoint) => endpoint.authentication_method || '-',
-                },
-                {
-                  accessor: 'last_connection_status',
-                  title: 'Last Test',
-                  width: 120,
-                  render: (endpoint) =>
-                    endpoint.last_connection_status ? (
-                      <Badge
-                        color={endpoint.last_connection_status === 'SUCCESS' ? 'green' : 'red'}
-                        variant="light"
-                      >
-                        {endpoint.last_connection_status}
-                      </Badge>
-                    ) : (
-                      <span style={{ color: '#9ca3af' }}>-</span>
-                    ),
-                },
-                {
-                  accessor: 'is_active',
-                  title: 'Status',
-                  width: 100,
-                  render: (endpoint) => (
-                    <Badge color={endpoint.is_active ? 'green' : 'red'} variant="light">
-                      {endpoint.is_active ? 'Active' : 'Inactive'}
-                    </Badge>
-                  ),
-                },
-              ]}
+              columns={columns}
               minHeight={400}
               fetching={loading}
             />

@@ -1,7 +1,7 @@
 import { ActionIcon, Badge, Button, Group, Modal, Select, Stack, TextInput, Tooltip } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { apiClient } from '../services/apiClient';
 import type { ComponentProps, Contact } from '../types';
 import { Edit2, Plus, User } from './icons';
@@ -111,41 +111,8 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
     }
   };
 
-  return (
-    <div className="contacts-view">
-      <div className="page-header">
-        <div>
-          <h2>Contacts</h2>
-          <p className="page-subtitle">Manage your organization's contact persons</p>
-        </div>
-        <Button color="blue" onClick={handleAdd}>
-          <Plus size={16} /> Add Contact
-        </Button>
-      </div>
-
-      <div className="card">
-        <LoadingState loading={loading && contacts.length === 0} minHeight={300}>
-          {contacts.length === 0 ? (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: '60px 20px',
-                background: '#f9fafb',
-                borderRadius: '8px',
-              }}
-            >
-              <User size={48} style={{ color: '#9ca3af' }} />
-              <p style={{ fontSize: '1.125rem', fontWeight: 500, margin: '16px 0 8px 0' }}>
-                No contacts configured
-              </p>
-              <p style={{ color: '#6b7280', margin: 0 }}>
-                Add contact persons to manage communication with your organization
-              </p>
-            </div>
-          ) : (
-            <DataTable
-              records={contacts}
-              columns={[
+  const columns = useMemo(
+    () => [
                 {
                   accessor: 'full_name',
                   title: 'Full Name',
@@ -231,7 +198,45 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
                     </Group>
                   ),
                 },
-              ]}
+              ],
+    [handleEdit]
+  );
+
+  return (
+    <div className="contacts-view">
+      <div className="page-header">
+        <div>
+          <h2>Contacts</h2>
+          <p className="page-subtitle">Manage your organization's contact persons</p>
+        </div>
+        <Button color="blue" onClick={handleAdd}>
+          <Plus size={16} /> Add Contact
+        </Button>
+      </div>
+
+      <div className="card">
+        <LoadingState loading={loading && contacts.length === 0} minHeight={300}>
+          {contacts.length === 0 ? (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '60px 20px',
+                background: '#f9fafb',
+                borderRadius: '8px',
+              }}
+            >
+              <User size={48} style={{ color: '#9ca3af' }} />
+              <p style={{ fontSize: '1.125rem', fontWeight: 500, margin: '16px 0 8px 0' }}>
+                No contacts configured
+              </p>
+              <p style={{ color: '#6b7280', margin: 0 }}>
+                Add contact persons to manage communication with your organization
+              </p>
+            </div>
+          ) : (
+            <DataTable
+              records={contacts}
+              columns={columns}
               minHeight={400}
               fetching={loading}
             />

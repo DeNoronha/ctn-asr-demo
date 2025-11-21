@@ -1,7 +1,7 @@
 import { ActionIcon, Badge, Button, Group, Modal, Select, Stack, TextInput, Tooltip } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { apiClient } from '../services/apiClient';
 import type { ComponentProps } from '../types';
 import { Edit2, FileCheck, Plus, Trash2 } from './icons';
@@ -174,6 +174,92 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
     }
   };
 
+  const columns = useMemo(
+    () => [
+      {
+        accessor: 'identifier_type',
+        title: 'Type',
+        width: 120,
+        render: (identifier) => (
+          <Badge color="blue" variant="light">
+            {identifier.identifier_type}
+          </Badge>
+        ),
+      },
+      {
+        accessor: 'identifier_value',
+        title: 'Value',
+        width: 200,
+        render: (identifier) => <strong>{identifier.identifier_value}</strong>,
+      },
+      {
+        accessor: 'country_code',
+        title: 'Country',
+        width: 100,
+        render: (identifier: Identifier) => identifier.country_code || '-',
+      },
+      {
+        accessor: 'verification_status',
+        title: 'Status',
+        width: 120,
+        render: (identifier: Identifier) => (
+          <Badge
+            color={
+              identifier.verification_status === 'VALIDATED'
+                ? 'green'
+                : identifier.verification_status === 'PENDING'
+                  ? 'yellow'
+                  : 'gray'
+            }
+            variant="light"
+          >
+            {identifier.verification_status || 'PENDING'}
+          </Badge>
+        ),
+      },
+      {
+        accessor: 'dt_created',
+        title: 'Created',
+        width: 140,
+        render: (identifier) => new Date(identifier.dt_created).toLocaleDateString(),
+      },
+      {
+        accessor: 'actions',
+        title: 'Actions',
+        width: 100,
+        render: (identifier) => (
+          <Group gap={4} wrap="nowrap">
+            <Tooltip label="Edit identifier">
+              <ActionIcon
+                variant="subtle"
+                color="blue"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  handleEdit(identifier);
+                }}
+              >
+                <Edit2 size={16} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label="Delete identifier">
+              <ActionIcon
+                variant="subtle"
+                color="red"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  handleDeleteClick(identifier);
+                }}
+              >
+                <Trash2 size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        ),
+      },
+    ],
+    [handleEdit, handleDeleteClick]
+  );
+
   return (
     <div className="identifiers-view">
       <div className="page-header">
@@ -208,88 +294,7 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
           ) : (
             <DataTable
               records={identifiers}
-              columns={[
-                {
-                  accessor: 'identifier_type',
-                  title: 'Type',
-                  width: 120,
-                  render: (identifier) => (
-                    <Badge color="blue" variant="light">
-                      {identifier.identifier_type}
-                    </Badge>
-                  ),
-                },
-                {
-                  accessor: 'identifier_value',
-                  title: 'Value',
-                  width: 200,
-                  render: (identifier) => <strong>{identifier.identifier_value}</strong>,
-                },
-                {
-                  accessor: 'country_code',
-                  title: 'Country',
-                  width: 100,
-                  render: (identifier: Identifier) => identifier.country_code || '-',
-                },
-                {
-                  accessor: 'verification_status',
-                  title: 'Status',
-                  width: 120,
-                  render: (identifier: Identifier) => (
-                    <Badge
-                      color={
-                        identifier.verification_status === 'VALIDATED'
-                          ? 'green'
-                          : identifier.verification_status === 'PENDING'
-                            ? 'yellow'
-                            : 'gray'
-                      }
-                      variant="light"
-                    >
-                      {identifier.verification_status || 'PENDING'}
-                    </Badge>
-                  ),
-                },
-                {
-                  accessor: 'dt_created',
-                  title: 'Created',
-                  width: 140,
-                  render: (identifier) => new Date(identifier.dt_created).toLocaleDateString(),
-                },
-                {
-                  accessor: 'actions',
-                  title: 'Actions',
-                  width: 100,
-                  render: (identifier) => (
-                    <Group gap={4} wrap="nowrap">
-                      <Tooltip label="Edit identifier">
-                        <ActionIcon
-                          variant="subtle"
-                          color="blue"
-                          onClick={(e: React.MouseEvent) => {
-                            e.stopPropagation();
-                            handleEdit(identifier);
-                          }}
-                        >
-                          <Edit2 size={16} />
-                        </ActionIcon>
-                      </Tooltip>
-                      <Tooltip label="Delete identifier">
-                        <ActionIcon
-                          variant="subtle"
-                          color="red"
-                          onClick={(e: React.MouseEvent) => {
-                            e.stopPropagation();
-                            handleDeleteClick(identifier);
-                          }}
-                        >
-                          <Trash2 size={16} />
-                        </ActionIcon>
-                      </Tooltip>
-                    </Group>
-                  ),
-                },
-              ]}
+              columns={columns}
               minHeight={400}
               fetching={loading}
             />
