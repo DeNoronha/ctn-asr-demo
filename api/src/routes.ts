@@ -86,11 +86,11 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
     const pool = getPool();
     const { page = '1', limit = '50', search, status } = req.query;
 
-    // Use the members_view which properly joins legal_entity with legal_entity_number
+    // Use the v_members_full view which includes all identifier types (euri, duns, etc.)
     let query = `
-      SELECT legal_entity_id, legal_name, kvk, lei, domain, status, membership_level,
-             created_at, metadata
-      FROM members_view
+      SELECT legal_entity_id, legal_name, kvk, lei, euri, duns, domain, status, membership_level,
+             created_at, member_metadata, legal_entity_metadata, contact_count, endpoint_count
+      FROM v_members_full
       WHERE 1=1
     `;
     const params: any[] = [];
@@ -117,7 +117,7 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
     const { rows } = await pool.query(query, params);
 
     // Get total count
-    let countQuery = `SELECT COUNT(*) FROM members_view WHERE 1=1`;
+    let countQuery = `SELECT COUNT(*) FROM v_members_full WHERE 1=1`;
     const countParams: any[] = [];
     let countParamIndex = 1;
     if (search) {
@@ -153,11 +153,11 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
     const { page = '1', page_size = '50', search, status } = req.query;
     const limit = page_size; // all-members uses page_size param
 
-    // Use the members_view which properly joins legal_entity with legal_entity_number
+    // Use the v_members_full view which includes all identifier types (euri, duns, etc.)
     let query = `
-      SELECT legal_entity_id, legal_name, kvk, lei, domain, status, membership_level,
-             created_at, metadata
-      FROM members_view
+      SELECT legal_entity_id, legal_name, kvk, lei, euri, duns, domain, status, membership_level,
+             created_at, member_metadata, legal_entity_metadata, contact_count, endpoint_count
+      FROM v_members_full
       WHERE 1=1
     `;
     const params: any[] = [];
@@ -184,7 +184,7 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
     const { rows } = await pool.query(query, params);
 
     // Get total count
-    let countQuery = `SELECT COUNT(*) FROM members_view WHERE 1=1`;
+    let countQuery = `SELECT COUNT(*) FROM v_members_full WHERE 1=1`;
     const countParams: any[] = [];
     let countParamIndex = 1;
     if (search) {
@@ -422,10 +422,10 @@ router.post('/v1/register-member', upload.single('kvkDocument'), async (req, res
         INSERT INTO applications (
           application_id, applicant_email, applicant_name, applicant_job_title, applicant_phone,
           legal_name, kvk_number, lei, company_address, postal_code, city, country,
-          membership_type, terms_accepted, gdpr_consent, status, submitted_at,
+          membership_type, terms_accepted, gdpr_consent, status,
           kvk_document_url, kvk_verification_status, kvk_verification_notes, kvk_extracted_data
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW(), $17, $18, $19, $20)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
         RETURNING application_id, applicant_email, legal_name, kvk_number, membership_type, status, submitted_at, kvk_verification_status
       `, [
         applicationId,
@@ -1093,7 +1093,8 @@ router.get('/v1/legal-entities/:legalentityid/contacts', requireAuth, async (req
 
     const { rows } = await pool.query(`
       SELECT legal_entity_contact_id, legal_entity_id, contact_type, full_name, email,
-             phone, job_title, is_primary, dt_created, dt_modified
+             phone, mobile, job_title, department, preferred_language, preferred_contact_method,
+             is_primary, is_active, first_name, last_name, dt_created, dt_modified
       FROM legal_entity_contact
       WHERE legal_entity_id = $1 AND is_deleted = false
       ORDER BY is_primary DESC, full_name ASC
@@ -1319,7 +1320,9 @@ router.get('/v1/legal-entities/:legalentityid/identifiers', requireAuth, cacheMi
 
     const { rows } = await pool.query(`
       SELECT legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
-             country_code, issuing_authority, issued_at, expires_at, verification_status,
+             country_code, issued_by, validated_by, validation_status, validation_date,
+             registry_name, registry_url, issuing_authority, issued_at, expires_at,
+             verification_status, verification_document_url, verification_notes,
              dt_created, dt_modified
       FROM legal_entity_number
       WHERE legal_entity_id = $1 AND is_deleted = false
@@ -1346,7 +1349,9 @@ router.get('/v1/entities/:legalentityid/identifiers', requireAuth, async (req: R
 
     const { rows } = await pool.query(`
       SELECT legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
-             issuing_authority, issued_at, expires_at, verification_status,
+             country_code, issued_by, validated_by, validation_status, validation_date,
+             registry_name, registry_url, issuing_authority, issued_at, expires_at,
+             verification_status, verification_document_url, verification_notes,
              dt_created, dt_modified
       FROM legal_entity_number
       WHERE legal_entity_id = $1 AND is_deleted = false
@@ -2002,6 +2007,20 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
         `, [leiId, legalEntityId, application.lei]);
       }
 
+      // 6a. Create members record (required for Member Portal login)
+      const memberId = randomUUID();
+      await client.query(`
+        INSERT INTO members (
+          id, org_id, legal_entity_id, email, created_at, updated_at
+        )
+        VALUES ($1, $2, $3, $4, NOW(), NOW())
+      `, [
+        memberId,
+        legalEntityId.substring(0, 100), // org_id (varchar 100 limit)
+        legalEntityId,
+        application.applicant_email
+      ]);
+
       // 7. Update application status and link to created member
       await client.query(`
         UPDATE applications
@@ -2010,7 +2029,7 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
             dt_updated = NOW(),
             created_member_id = $2
         WHERE application_id = $1
-      `, [id, legalEntityId]);
+      `, [id, memberId]);
 
       // Return the created member details
       const memberResult = await client.query(`
@@ -2793,10 +2812,24 @@ router.post('/v1/audit-logs', requireAuth, async (req: Request, res: Response) =
     const { entityId, entityType, action, details, userId } = req.body;
 
     const { rows } = await pool.query(`
-      INSERT INTO audit_log (entity_id, entity_type, action, details, user_id)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO audit_log (
+        event_type, severity, result, user_id, resource_type, resource_id,
+        action, details, request_path, request_method
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
-    `, [entityId, entityType, action, JSON.stringify(details), userId]);
+    `, [
+      'USER_ACTION',           // event_type (required NOT NULL)
+      'INFO',                  // severity (required NOT NULL)
+      'SUCCESS',               // result (required NOT NULL)
+      userId,
+      entityType,              // resource_type (was entity_type)
+      entityId,                // resource_id (was entity_id)
+      action,
+      JSON.stringify(details),
+      req.path,                // request_path
+      req.method               // request_method
+    ]);
 
     res.status(201).json(rows[0]);
   } catch (error: any) {
