@@ -398,7 +398,7 @@ router.post('/v1/register-member', upload.single('kvkDocument'), async (req, res
     }
 
     const { rows: existingKvK } = await pool.query(
-      `SELECT org_id FROM members WHERE kvk = $1`,
+      `SELECT legal_entity_id FROM members_view WHERE kvk = $1`,
       [body.kvkNumber]
     );
     if (existingKvK.length > 0) {
