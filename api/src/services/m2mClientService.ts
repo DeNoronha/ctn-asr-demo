@@ -61,16 +61,19 @@ export async function listM2MClients(
   context: InvocationContext,
   pool: Pool
 ): Promise<HttpResponseInit> {
-  const legalEntityId = request.params.legal_entity_id;
+  const legalEntityIdParam = request.params.legal_entity_id;
 
   // Validate legal entity ID
-  const validation = validateLegalEntityId(legalEntityId);
+  const validation = validateLegalEntityId(legalEntityIdParam);
   if (!validation.isValid) {
     return {
       status: 400,
       jsonBody: { error: validation.error }
     };
   }
+
+  // After validation, legal EntityId is guaranteed to be a string
+  const legalEntityId = legalEntityIdParam!;
 
   try {
     const pagination = getPaginationParams(request);
@@ -104,9 +107,9 @@ export async function listM2MClients(
         ORDER BY c.dt_created DESC
       `;
 
-      const result = await executePaginatedQuery(pool, baseQuery, [legalEntityId!], pagination);
+      const result = await executePaginatedQuery(pool, baseQuery, [legalEntityId], pagination);
 
-      await logAccessGranted(request, context, legalEntityId!, {
+      await logAccessGranted(request, context, legalEntityId, {
         admin_access: true,
         count: result.pagination.totalItems
       });
@@ -118,10 +121,10 @@ export async function listM2MClients(
     }
 
     // Regular user: verify ownership
-    const ownershipCheck = await verifyLegalEntityOwnership(pool, legalEntityId!, request.userEmail);
+    const ownershipCheck = await verifyLegalEntityOwnership(pool, legalEntityId, request.userEmail);
 
     if (ownershipCheck.rows.length === 0) {
-      await logAccessDenied(request, context, legalEntityId!, 'read', 'ownership_check_failed');
+      await logAccessDenied(request, context, legalEntityId, 'read', 'ownership_check_failed');
 
       return {
         status: 404, // Return 404 to prevent information disclosure

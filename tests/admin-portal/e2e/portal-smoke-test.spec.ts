@@ -22,8 +22,11 @@ test.describe('Portal Smoke Tests', () => {
     // Check that the page title is correct
     await expect(page).toHaveTitle(/CTN Admin Portal/i);
 
-    // Wait for React to render - check for body content
-    await page.waitForTimeout(2000); // Give React time to render
+    // Wait for React to render by looking for specific elements
+    await page.waitForSelector('button, [role="main"], .mantine-Button-root', {
+      state: 'visible',
+      timeout: 10000
+    });
 
     // Verify the page is not just a white page by checking for visible content
     // The login page should be visible (we're not authenticated)
@@ -32,7 +35,6 @@ test.describe('Portal Smoke Tests', () => {
     expect(bodyText?.length).toBeGreaterThan(100); // Should have substantial content
 
     // Check for common UI elements that indicate the app rendered
-    // Look for either the login button or the main app container
     const hasLoginOrApp = await page.locator('button, [role="main"], .mantine-Button-root').count();
     expect(hasLoginOrApp).toBeGreaterThan(0);
 
@@ -43,9 +45,6 @@ test.describe('Portal Smoke Tests', () => {
         consoleErrors.push(msg.text());
       }
     });
-
-    // Wait a bit more to catch any delayed errors
-    await page.waitForTimeout(1000);
 
     // If there are console errors, log them but don't fail the test
     // (some errors like network failures are expected without auth)
@@ -61,8 +60,11 @@ test.describe('Portal Smoke Tests', () => {
     // Check that the page title is correct
     await expect(page).toHaveTitle(/CTN Member Portal/i);
 
-    // Wait for React to render - check for body content
-    await page.waitForTimeout(2000); // Give React time to render
+    // Wait for React to render by looking for specific elements
+    await page.waitForSelector('button, [role="main"], .mantine-Button-root', {
+      state: 'visible',
+      timeout: 10000
+    });
 
     // Verify the page is not just a white page by checking for visible content
     const bodyText = await page.locator('body').textContent();
@@ -81,9 +83,6 @@ test.describe('Portal Smoke Tests', () => {
       }
     });
 
-    // Wait a bit more to catch any delayed errors
-    await page.waitForTimeout(1000);
-
     // If there are console errors, log them but don't fail the test
     if (consoleErrors.length > 0) {
       console.log('Console errors detected:', consoleErrors);
@@ -95,14 +94,13 @@ test.describe('Portal Smoke Tests', () => {
 
     // Check if i18n is initialized by evaluating window object
     const i18nInitialized = await page.evaluate(() => {
-      // @ts-ignore - accessing window object
       return typeof window !== 'undefined';
     });
 
     expect(i18nInitialized).toBe(true);
 
-    // Verify translations are loaded (check for Dutch as default language)
-    await page.waitForTimeout(2000);
+    // Verify translations are loaded by waiting for content
+    await page.waitForSelector('body', { state: 'visible' });
 
     // The page should not have any Suspense loading indicators stuck
     const suspenseCount = await page.locator('[data-suspense]').count();
@@ -114,14 +112,13 @@ test.describe('Portal Smoke Tests', () => {
 
     // Check if i18n is initialized
     const i18nInitialized = await page.evaluate(() => {
-      // @ts-ignore - accessing window object
       return typeof window !== 'undefined';
     });
 
     expect(i18nInitialized).toBe(true);
 
-    // Verify translations are loaded
-    await page.waitForTimeout(2000);
+    // Verify translations are loaded by waiting for content
+    await page.waitForSelector('body', { state: 'visible' });
 
     // The page should not have any Suspense loading indicators stuck
     const suspenseCount = await page.locator('[data-suspense]').count();

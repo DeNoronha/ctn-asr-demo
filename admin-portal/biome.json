@@ -23,7 +23,7 @@
         "useTemplate": "warn"
       },
       "suspicious": {
-        "noExplicitAny": "warn",
+        "noExplicitAny": "error",
         "noDoubleEquals": "error"
       }
     }

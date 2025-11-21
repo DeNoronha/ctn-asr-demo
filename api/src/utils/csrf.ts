@@ -200,10 +200,12 @@ export function validateCsrfTokens(
   // Check 1: Cookie token must exist
   if (!cookieToken) {
     logger?.warn('CSRF validation failed: Missing cookie token');
-    logSecurityEvent(logger, 'CSRF Validation Failed - Missing Cookie', correlationId, {
-      reason: 'Cookie token not provided',
-      userId: userId || 'anonymous',
-    });
+    if (logger) {
+      logSecurityEvent(logger, 'CSRF Validation Failed - Missing Cookie', correlationId, {
+        reason: 'Cookie token not provided',
+        userId: userId || 'anonymous',
+      });
+    }
 
     return {
       valid: false,
@@ -215,10 +217,12 @@ export function validateCsrfTokens(
   // Check 2: Header token must exist
   if (!headerToken) {
     logger?.warn('CSRF validation failed: Missing header token');
-    logSecurityEvent(logger, 'CSRF Validation Failed - Missing Header', correlationId, {
-      reason: 'Header token not provided',
-      userId: userId || 'anonymous',
-    });
+    if (logger) {
+      logSecurityEvent(logger, 'CSRF Validation Failed - Missing Header', correlationId, {
+        reason: 'Header token not provided',
+        userId: userId || 'anonymous',
+      });
+    }
 
     return {
       valid: false,
@@ -231,10 +235,12 @@ export function validateCsrfTokens(
   const hexRegex = /^[a-f0-9]{64}$/i;
   if (!hexRegex.test(cookieToken)) {
     logger?.warn('CSRF validation failed: Invalid cookie token format');
-    logSecurityEvent(logger, 'CSRF Validation Failed - Invalid Cookie Format', correlationId, {
-      reason: 'Cookie token format invalid',
-      userId: userId || 'anonymous',
-    });
+    if (logger) {
+      logSecurityEvent(logger, 'CSRF Validation Failed - Invalid Cookie Format', correlationId, {
+        reason: 'Cookie token format invalid',
+        userId: userId || 'anonymous',
+      });
+    }
 
     return {
       valid: false,
@@ -245,10 +251,12 @@ export function validateCsrfTokens(
 
   if (!hexRegex.test(headerToken)) {
     logger?.warn('CSRF validation failed: Invalid header token format');
-    logSecurityEvent(logger, 'CSRF Validation Failed - Invalid Header Format', correlationId, {
-      reason: 'Header token format invalid',
-      userId: userId || 'anonymous',
-    });
+    if (logger) {
+      logSecurityEvent(logger, 'CSRF Validation Failed - Invalid Header Format', correlationId, {
+        reason: 'Header token format invalid',
+        userId: userId || 'anonymous',
+      });
+    }
 
     return {
       valid: false,
@@ -260,10 +268,12 @@ export function validateCsrfTokens(
   // Check 4: Tokens must match (constant-time comparison)
   if (!constantTimeCompare(cookieToken, headerToken)) {
     logger?.warn('CSRF validation failed: Token mismatch');
-    logSecurityEvent(logger, 'CSRF Validation Failed - Token Mismatch', correlationId, {
-      reason: 'Cookie and header tokens do not match',
-      userId: userId || 'anonymous',
-    });
+    if (logger) {
+      logSecurityEvent(logger, 'CSRF Validation Failed - Token Mismatch', correlationId, {
+        reason: 'Cookie and header tokens do not match',
+        userId: userId || 'anonymous',
+      });
+    }
 
     return {
       valid: false,

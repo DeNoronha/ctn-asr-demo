@@ -66,14 +66,20 @@ export const useMemberForm = ({
   useEffect(() => {
     if (!initialData) {
       const draftKey = 'memberFormDraft';
-      const draft = localStorage.getItem(draftKey);
-      if (draft) {
-        try {
+      try {
+        const draft = localStorage.getItem(draftKey);
+        if (draft) {
           const parsedDraft = JSON.parse(draft);
           setFormData(parsedDraft);
           notification.showInfo('Draft restored from previous session');
-        } catch (e) {
-          console.error('Failed to load draft', e);
+        }
+      } catch (e) {
+        logger.warn('Failed to load draft', { error: e });
+        // Clear corrupted draft
+        try {
+          localStorage.removeItem(draftKey);
+        } catch {
+          // localStorage unavailable (private browsing mode)
         }
       }
     }

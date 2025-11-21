@@ -48,9 +48,9 @@ function headersToPlainObject(headers: any): any {
       }
     },
     forEach: () => {},
-    entries: () => [],
-    keys: () => [],
-    values: () => [],
+    entries: (): IterableIterator<[string, string]> => [][Symbol.iterator]() as IterableIterator<[string, string]>,
+    keys: (): IterableIterator<string> => [][Symbol.iterator]() as IterableIterator<string>,
+    values: (): IterableIterator<string> => [][Symbol.iterator]() as IterableIterator<string>,
   };
 }
 

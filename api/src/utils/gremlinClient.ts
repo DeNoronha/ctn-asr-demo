@@ -5,8 +5,8 @@
 
 import gremlin from 'gremlin';
 
-const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
-const Graph = gremlin.structure.Graph;
+const DriverRemoteConnection = (gremlin as any).driver.DriverRemoteConnection;
+const Graph = (gremlin as any).structure.Graph;
 
 // Environment variables with validation
 const endpoint = process.env.COSMOS_ORCHESTRATION_ENDPOINT;
@@ -29,19 +29,19 @@ if (!endpoint.startsWith('https://')) {
 const gremlinEndpoint = endpoint.replace('https://', 'wss://').replace(':443/', '') + `:443/gremlin`;
 
 // Authentication
-const authenticator = new gremlin.driver.auth.PlainTextSaslAuthenticator(
+const authenticator = new (gremlin as any).driver.auth.PlainTextSaslAuthenticator(
   `/dbs/${database}/colls/${collection}`,
   primaryKey
 );
 
 // Create connection
-let connection: gremlin.driver.DriverRemoteConnection | null = null;
-let graph: gremlin.structure.Graph | null = null;
+let connection: any = null;
+let graph: any = null;
 
 /**
  * Get or create Gremlin connection
  */
-export function getConnection(): gremlin.driver.DriverRemoteConnection {
+export function getConnection(): any {
   if (!connection) {
     connection = new DriverRemoteConnection(
       gremlinEndpoint,

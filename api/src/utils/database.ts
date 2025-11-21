@@ -37,28 +37,34 @@ export function getPool(): Pool {
     });
 
     // Connection pool metrics logging
-    pool.on('connect', (client) => {
-      console.log('[DB Pool] Client connected', {
-        totalCount: pool.totalCount,
-        idleCount: pool.idleCount,
-        waitingCount: pool.waitingCount
-      });
+    pool.on('connect', () => {
+      if (pool) {
+        console.log('[DB Pool] Client connected', {
+          totalCount: pool.totalCount,
+          idleCount: pool.idleCount,
+          waitingCount: pool.waitingCount
+        });
+      }
     });
 
-    pool.on('acquire', (client) => {
-      console.log('[DB Pool] Client acquired from pool', {
-        totalCount: pool.totalCount,
-        idleCount: pool.idleCount,
-        waitingCount: pool.waitingCount
-      });
+    pool.on('acquire', () => {
+      if (pool) {
+        console.log('[DB Pool] Client acquired from pool', {
+          totalCount: pool.totalCount,
+          idleCount: pool.idleCount,
+          waitingCount: pool.waitingCount
+        });
+      }
     });
 
-    pool.on('remove', (client) => {
-      console.log('[DB Pool] Client removed from pool', {
-        totalCount: pool.totalCount,
-        idleCount: pool.idleCount,
-        waitingCount: pool.waitingCount
-      });
+    pool.on('remove', () => {
+      if (pool) {
+        console.log('[DB Pool] Client removed from pool', {
+          totalCount: pool.totalCount,
+          idleCount: pool.idleCount,
+          waitingCount: pool.waitingCount
+        });
+      }
     });
 
     console.log('✅ Database connection pool initialized with SSL validation enabled');
