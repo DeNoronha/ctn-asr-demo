@@ -1645,7 +1645,7 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
     const { id } = req.params;
 
     const { rows } = await pool.query(`
-      UPDATE applications SET status = 'approved', reviewed_at = NOW(), dt_modified = NOW()
+      UPDATE applications SET status = 'approved', reviewed_at = NOW(), dt_updated = NOW()
       WHERE application_id = $1
       RETURNING *
     `, [id]);
@@ -1668,7 +1668,7 @@ router.post('/v1/applications/:id/reject', requireAuth, async (req: Request, res
     const { reason } = req.body;
 
     const { rows } = await pool.query(`
-      UPDATE applications SET status = 'rejected', rejection_reason = $1, reviewed_at = NOW(), dt_modified = NOW()
+      UPDATE applications SET status = 'rejected', rejection_reason = $1, reviewed_at = NOW(), dt_updated = NOW()
       WHERE application_id = $2
       RETURNING *
     `, [reason, id]);
