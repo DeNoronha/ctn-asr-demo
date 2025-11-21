@@ -2441,28 +2441,40 @@ router.get('/v1/legal-entities/:legalEntityId/kvk-verification', requireAuth, as
     const pool = getPool();
     const { legalEntityId } = req.params;
 
+    // Query legal_entity_number table for KvK identifier
     const { rows } = await pool.query(`
       SELECT
+        legal_entity_reference_id,
         legal_entity_id,
-        kvk_number,
+        identifier_type,
+        identifier_value,
+        country_code,
+        verification_status,
+        verification_notes,
+        validation_status,
+        validation_date,
+        verified_by,
+        verification_document_url,
+        issued_at,
+        expires_at,
         dt_created,
         dt_modified
-      FROM legal_entity
-      WHERE legal_entity_id = $1 AND is_deleted = false
+      FROM legal_entity_number
+      WHERE legal_entity_id = $1
+        AND identifier_type = 'KVK'
+        AND is_deleted = false
+      ORDER BY dt_created DESC
+      LIMIT 1
     `, [legalEntityId]);
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'Legal entity not found' });
+      return res.status(404).json({
+        error: 'KvK identifier not found for this legal entity',
+        legal_entity_id: legalEntityId
+      });
     }
 
-    // Return basic info - kvk_verification columns don't exist yet in schema
-    res.json({
-      ...rows[0],
-      kvk_verification_status: 'pending',
-      kvk_review_notes: null,
-      kvk_reviewed_at: null,
-      kvk_last_checked: null
-    });
+    res.json(rows[0]);
   } catch (error: any) {
     console.error('Error fetching KvK verification status:', error);
     res.status(500).json({ error: 'Failed to fetch KvK verification status' });
