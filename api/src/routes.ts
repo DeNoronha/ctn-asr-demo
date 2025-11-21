@@ -1640,24 +1640,119 @@ router.delete('/v1/endpoints/:endpointId', requireAuth, async (req: Request, res
 // APPLICATIONS - APPROVE/REJECT
 // ============================================================================
 router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, res: Response) => {
+  const pool = getPool();
+  const client = await pool.connect();
+
   try {
-    const pool = getPool();
+    await client.query('BEGIN');
     const { id } = req.params;
 
-    const { rows } = await pool.query(`
-      UPDATE applications SET status = 'approved', reviewed_at = NOW(), dt_updated = NOW()
-      WHERE application_id = $1
-      RETURNING *
-    `, [id]);
+      // 1. Get application details
+      const appResult = await client.query(`
+        SELECT * FROM applications WHERE application_id = $1
+      `, [id]);
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Application not found' });
-    }
+      if (appResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Application not found' });
+      }
 
-    res.json(rows[0]);
+      const application = appResult.rows[0];
+
+      // 2. Create party_reference
+      const partyId = randomUUID();
+      await client.query(`
+        INSERT INTO party_reference (party_id, party_type, dt_created)
+        VALUES ($1, 'LEGAL_ENTITY', NOW())
+      `, [partyId]);
+
+      // 3. Create legal_entity
+      const legalEntityId = randomUUID();
+      await client.query(`
+        INSERT INTO legal_entity (
+          legal_entity_id, party_id, primary_legal_name,
+          legal_address, postal_code, city, country_code,
+          kvk_document_url, kvk_verification_status,
+          status, membership_tier, dt_created, dt_modified
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'ACTIVE', $10, NOW(), NOW())
+      `, [
+        legalEntityId, partyId, application.legal_name,
+        application.company_address, application.postal_code,
+        application.city, application.country || 'NL',
+        application.kvk_document_url, application.kvk_verification_status || 'pending',
+        application.membership_type || 'basic'
+      ]);
+
+      // 4. Create primary contact
+      const contactId = randomUUID();
+      await client.query(`
+        INSERT INTO legal_entity_contact (
+          legal_entity_contact_id, legal_entity_id, contact_type,
+          contact_name, job_title, email, phone, is_primary,
+          dt_created, dt_modified
+        )
+        VALUES ($1, $2, 'PRIMARY', $3, $4, $5, $6, true, NOW(), NOW())
+      `, [
+        contactId, legalEntityId, application.applicant_name,
+        application.applicant_job_title, application.applicant_email,
+        application.applicant_phone
+      ]);
+
+      // 5. Create KvK identifier
+      const identifierId = randomUUID();
+      await client.query(`
+        INSERT INTO legal_entity_number (
+          legal_entity_number_id, legal_entity_id, legal_entity_reference_id,
+          identifier_type, identifier_value, country_code,
+          verification_status, dt_created, dt_modified
+        )
+        VALUES ($1, $2, $2, 'KVK', $3, 'NL', 'PENDING', NOW(), NOW())
+      `, [identifierId, legalEntityId, application.kvk_number]);
+
+      // 6. Create LEI identifier if provided
+      if (application.lei) {
+        const leiId = randomUUID();
+        await client.query(`
+          INSERT INTO legal_entity_number (
+            legal_entity_number_id, legal_entity_id, legal_entity_reference_id,
+            identifier_type, identifier_value,
+            verification_status, dt_created, dt_modified
+          )
+          VALUES ($1, $2, $2, 'LEI', $3, 'PENDING', NOW(), NOW())
+        `, [leiId, legalEntityId, application.lei]);
+      }
+
+      // 7. Update application status and link to created member
+      await client.query(`
+        UPDATE applications
+        SET status = 'approved',
+            reviewed_at = NOW(),
+            dt_updated = NOW(),
+            created_member_id = $2
+        WHERE application_id = $1
+      `, [id, legalEntityId]);
+
+      // Return the created member details
+      const memberResult = await client.query(`
+        SELECT le.*, pr.party_type
+        FROM legal_entity le
+        JOIN party_reference pr ON le.party_id = pr.party_id
+        WHERE le.legal_entity_id = $1
+      `, [legalEntityId]);
+
+    await client.query('COMMIT');
+
+    res.json({
+      message: 'Application approved and member created successfully',
+      member: memberResult.rows[0],
+      legalEntityId: legalEntityId
+    });
   } catch (error: any) {
+    await client.query('ROLLBACK');
     console.error('Error approving application:', error);
-    res.status(500).json({ error: 'Failed to approve application' });
+    res.status(500).json({ error: 'Failed to approve application', detail: error.message });
+  } finally {
+    client.release();
   }
 });
 
