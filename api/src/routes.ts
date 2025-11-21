@@ -1536,14 +1536,36 @@ router.get('/v1/legal-entities/:legalentityid/verifications', requireAuth, async
         verified_by,
         verified_at,
         verification_notes,
-        created_at,
+        created_at as uploaded_at,
         updated_at
       FROM identifier_verification_history
       WHERE legal_entity_id = $1
       ORDER BY created_at DESC
     `, [legalentityid]);
 
-    res.json({ data: rows });
+    // Generate SAS URLs for blob documents
+    const { BlobStorageService } = await import('./services/blobStorageService');
+    const blobService = new BlobStorageService();
+
+    const verificationsWithSas = await Promise.all(
+      rows.map(async (row) => {
+        let documentUrl = null;
+        if (row.document_blob_url) {
+          try {
+            documentUrl = await blobService.getDocumentSasUrl(row.document_blob_url, 60);
+          } catch (error) {
+            console.error('Failed to generate SAS URL for document:', row.document_blob_url, error);
+          }
+        }
+        return {
+          ...row,
+          document_url: documentUrl,
+          document_blob_url: undefined // Remove internal blob URL from response
+        };
+      })
+    );
+
+    res.json({ verifications: verificationsWithSas });
   } catch (error: any) {
     console.error('Error fetching verification history:', {
       legalEntityId: req.params.legalentityid,
