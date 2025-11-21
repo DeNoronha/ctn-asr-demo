@@ -1,0 +1,1 @@
+../tests/api/curl/smoke-test.sh
