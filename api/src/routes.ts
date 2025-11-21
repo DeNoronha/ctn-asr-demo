@@ -2445,10 +2445,6 @@ router.get('/v1/legal-entities/:legalEntityId/kvk-verification', requireAuth, as
       SELECT
         legal_entity_id,
         kvk_number,
-        kvk_verification_status,
-        kvk_review_notes,
-        kvk_reviewed_at,
-        kvk_last_checked,
         dt_created,
         dt_modified
       FROM legal_entity
@@ -2459,7 +2455,14 @@ router.get('/v1/legal-entities/:legalEntityId/kvk-verification', requireAuth, as
       return res.status(404).json({ error: 'Legal entity not found' });
     }
 
-    res.json(rows[0]);
+    // Return basic info - kvk_verification columns don't exist yet in schema
+    res.json({
+      ...rows[0],
+      kvk_verification_status: 'pending',
+      kvk_review_notes: null,
+      kvk_reviewed_at: null,
+      kvk_last_checked: null
+    });
   } catch (error: any) {
     console.error('Error fetching KvK verification status:', error);
     res.status(500).json({ error: 'Failed to fetch KvK verification status' });
