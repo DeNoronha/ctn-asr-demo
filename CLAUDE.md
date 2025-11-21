@@ -21,11 +21,17 @@ git log -1 --format="%ar - %s"
 # 3. VERIFY CLEAN STATUS
 git status
 
-# 4. RUN VERIFICATION SCRIPT (optional)
+# 4. READ DATABASE SCHEMA (before any DB work)
+# Open: database/asr_dev.sql
+# Check: Existing tables, fields, views, constraints
+
+# 5. RUN VERIFICATION SCRIPT (optional)
 ./scripts/quick-check.sh  # Automated checks
 ```
 
-**Why this matters:** 90% of "bugs" are actually deployment sync issues. Checking deployment status BEFORE debugging saves hours.
+**Why this matters:**
+- 90% of "bugs" are actually deployment sync issues. Checking deployment status BEFORE debugging saves hours.
+- Reading the schema FIRST prevents creating duplicate tables/fields and ensures proper data modeling.
 
 ---
 
@@ -170,20 +176,87 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 
 ### Database Schema
 
-**Core Tables:**
+**🚨 CRITICAL: ALWAYS CHECK SCHEMA FIRST**
+
+**Before creating new features or debugging:**
+1. **Read `database/asr_dev.sql`** - This is the authoritative source of truth (exported Nov 21, 2025)
+2. **Check existing tables** - Avoid creating duplicate tables or fields
+3. **Review relationships** - Understand FK constraints and cascading behaviors
+4. **Verify views** - Use existing views like `v_members_full`, `legal_entity_full`
+
+**Complete Table List (32 tables):**
+
+**Core Entity Model:**
 - `party_reference` - Root entity (UUID primary key)
 - `legal_entity` - Organizations/companies (FK to party_reference)
 - `legal_entity_contact` - Contact persons (PRIMARY, BILLING, TECHNICAL, ADMIN)
 - `legal_entity_number` - Identifiers (KvK, LEI, EURI, DUNS)
 - `legal_entity_endpoint` - M2M communication endpoints
+- `members` - Member accounts (links to legal_entity + Azure AD)
 
-**Conventions:**
-- All tables have `dt_created`, `dt_modified` timestamps
+**Application & Onboarding:**
+- `applications` - Member registration applications
+- `admin_tasks` - Admin task management (assignments, status tracking)
+
+**Authentication & Authorization:**
+- `m2m_clients` - Azure AD service principals for M2M auth
+- `m2m_client_secrets_audit` - Secret generation/revocation audit trail
+- `ctn_m2m_credentials` - Keycloak M2M credentials (service accounts)
+- `ctn_m2m_secret_audit` - Keycloak secret audit trail
+- `endpoint_authorization` - BVAD token authorization for endpoints
+- `bvad_issued_tokens` - Business Validation & Authorization Descriptor tokens
+- `oauth_clients` - OAuth 2.0 client registrations
+- `issued_tokens` - Generic token tracking
+- `authorization_log` - Three-tier authorization decision logs
+
+**Identity Verification:**
+- `kvk_registry_data` - KvK API response cache and validation
+- `identifier_verification_history` - Document verification workflow
+- `dns_verification_tokens` - Domain ownership verification
+- `company_registries` - Global registry metadata (KvK, Companies House, etc.)
+- `vetting_records` - Member vetting status tracking
+
+**Business Data Interchange (BDI):**
+- `bdi_orchestrations` - Multi-party orchestration records
+- `bdi_orchestration_participants` - Participant roles in orchestrations
+- `bdi_external_systems` - External system registrations
+- `bvod_validation_log` - Business Validation on Demand token validation logs
+
+**Audit & Compliance:**
+- `audit_log` - System-wide audit trail (with PII pseudonymization)
+- `audit_log_pii_mapping` - Encrypted PII mapping for GDPR compliance
+- `audit_log_pii_access` - Access log for PII de-anonymization
+
+**Backup Tables:**
+- `legal_entity_backup_20251113` - Pre-migration backup
+- `members_backup_20251113` - Pre-migration backup
+
+**Database Views (7 views):**
+- `v_members_full` - Complete member data with identifiers
+- `v_members_list` - Simplified member list
+- `members_view` - Legacy view (prefer v_members_full)
+- `legal_entity_full` - Complete entity with contacts, endpoints, identifiers
+- `company_identifiers_with_registry` - Identifiers joined with registry metadata
+- `v_m2m_clients_active` - Active M2M clients with secret counts
+- `v_m2m_credentials_active` - Active Keycloak credentials
+- `v_audit_log_summary` - Pseudonymized audit log summary
+
+**Schema Conventions:**
+- All tables have `dt_created`, `dt_modified` timestamps (or `created_at`, `updated_at`)
 - **Soft deletes:** `is_deleted = false` in WHERE clauses (preserves audit trail)
 - UUIDs for all primary keys
 - CHECK constraints for enums (e.g., `status IN ('PENDING', 'ACTIVE', 'SUSPENDED')`)
+- Foreign keys with appropriate CASCADE/RESTRICT behaviors
 
+**Schema File Location:** `database/asr_dev.sql` (1,350 lines, last updated Nov 21, 2025)
 **Migrations:** Located in `database/migrations/XXX_description.sql` (sequential numbering)
+
+**Common Pitfalls to Avoid:**
+1. ❌ Creating new tables without checking `asr_dev.sql` first
+2. ❌ Adding duplicate fields (e.g., `authentication_tier` already exists in `legal_entity`)
+3. ❌ Ignoring existing views (e.g., use `v_members_full` instead of complex joins)
+4. ❌ Breaking foreign key constraints when modifying data
+5. ❌ Forgetting soft delete filters (`WHERE is_deleted = false`)
 
 ### Frontend Architecture
 
@@ -592,6 +665,9 @@ git push --force-with-lease origin main
 | API 404 | Check Container App revision status: `az containerapp revision list` |
 | Auth errors | Scope must be `api://{client-id}/.default` |
 | DB connection | Check `.credentials` file first |
+| DB schema questions | Read `database/asr_dev.sql` (authoritative source) |
+| Missing table/field | Check `database/asr_dev.sql` - table likely exists with different name |
+| Data modeling questions | Review views: `v_members_full`, `legal_entity_full`, etc. |
 | "Old version" | Run `git log -1`, compare to Azure DevOps build time |
 | Members not showing | Test API health: `curl https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health` |
 | E2E tests failing | Verify auth state in `playwright/.auth/user.json` |

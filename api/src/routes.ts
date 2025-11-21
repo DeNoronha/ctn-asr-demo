@@ -1837,6 +1837,43 @@ router.delete('/v1/endpoints/:endpointId', requireAuth, async (req: Request, res
 // ============================================================================
 // APPLICATIONS - APPROVE/REJECT
 // ============================================================================
+
+// Helper function to convert country names to ISO 3166-1 alpha-2 codes
+function getCountryCode(countryNameOrCode: string | null | undefined): string {
+  if (!countryNameOrCode) return 'NL';
+
+  const normalized = countryNameOrCode.trim().toUpperCase();
+
+  // If it's already a 2-character code, return it
+  if (normalized.length === 2) return normalized;
+
+  // Country name to ISO code mapping
+  const countryMap: Record<string, string> = {
+    'NETHERLANDS': 'NL',
+    'NEDERLAND': 'NL',
+    'GERMANY': 'DE',
+    'BELGIUM': 'BE',
+    'BELGIE': 'BE',
+    'BELGIQUE': 'BE',
+    'FRANCE': 'FR',
+    'UNITED KINGDOM': 'GB',
+    'UK': 'GB',
+    'SPAIN': 'ES',
+    'ITALY': 'IT',
+    'PORTUGAL': 'PT',
+    'POLAND': 'PL',
+    'SWEDEN': 'SE',
+    'DENMARK': 'DK',
+    'NORWAY': 'NO',
+    'FINLAND': 'FI',
+    'AUSTRIA': 'AT',
+    'SWITZERLAND': 'CH',
+    'LUXEMBOURG': 'LU',
+  };
+
+  return countryMap[normalized] || 'NL'; // Default to NL if not found
+}
+
 router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, res: Response) => {
   const pool = getPool();
   const client = await pool.connect();
@@ -1876,7 +1913,7 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
       `, [
         legalEntityId, partyId, application.legal_name,
         application.company_address, application.postal_code,
-        application.city, application.country || 'NL',
+        application.city, getCountryCode(application.country),
         application.kvk_document_url, application.kvk_verification_status || 'pending',
         application.membership_type || 'BASIC'
       ]);
