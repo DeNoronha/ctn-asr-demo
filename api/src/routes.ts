@@ -1522,7 +1522,7 @@ router.get('/v1/legal-entities/:legalentityid/endpoints', requireAuth, async (re
 
     const { rows } = await pool.query(`
       SELECT legal_entity_endpoint_id, legal_entity_id, endpoint_type, endpoint_url,
-             endpoint_name, is_active, protocol, authentication_type,
+             endpoint_name, is_active, authentication_method,
              dt_created, dt_modified
       FROM legal_entity_endpoint
       WHERE legal_entity_id = $1 AND is_deleted = false
@@ -1547,7 +1547,7 @@ router.post('/v1/legal-entities/:legalentityid/endpoints', requireAuth, async (r
     const { legalentityid } = req.params;
     const endpointId = randomUUID();
 
-    const { endpoint_type, endpoint_url, endpoint_name, is_active, protocol, authentication_type } = req.body;
+    const { endpoint_type, endpoint_url, endpoint_name, is_active, authentication_method } = req.body;
 
     if (!endpoint_url || !endpoint_name) {
       return res.status(400).json({ error: 'endpoint_url and endpoint_name are required' });
@@ -1556,12 +1556,12 @@ router.post('/v1/legal-entities/:legalentityid/endpoints', requireAuth, async (r
     const { rows } = await pool.query(`
       INSERT INTO legal_entity_endpoint (
         legal_entity_endpoint_id, legal_entity_id, endpoint_type, endpoint_url,
-        endpoint_name, is_active, protocol, authentication_type,
+        endpoint_name, is_active, authentication_method,
         dt_created, dt_modified
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
       RETURNING *
-    `, [endpointId, legalentityid, endpoint_type || 'API', endpoint_url, endpoint_name, is_active !== false, protocol || 'HTTPS', authentication_type || 'BEARER']);
+    `, [endpointId, legalentityid, endpoint_type || 'REST_API', endpoint_url, endpoint_name, is_active !== false, authentication_method]);
 
     // Invalidate endpoints cache
     invalidateCacheForUser(req, `/v1/legal-entities/${legalentityid}/endpoints`);
@@ -1579,7 +1579,7 @@ router.put('/v1/endpoints/:endpointId', requireAuth, async (req: Request, res: R
     const pool = getPool();
     const { endpointId } = req.params;
 
-    const { endpoint_type, endpoint_url, endpoint_name, is_active, protocol, authentication_type } = req.body;
+    const { endpoint_type, endpoint_url, endpoint_name, is_active, authentication_method } = req.body;
 
     const { rows } = await pool.query(`
       UPDATE legal_entity_endpoint SET
@@ -1587,12 +1587,11 @@ router.put('/v1/endpoints/:endpointId', requireAuth, async (req: Request, res: R
         endpoint_url = COALESCE($2, endpoint_url),
         endpoint_name = COALESCE($3, endpoint_name),
         is_active = COALESCE($4, is_active),
-        protocol = COALESCE($5, protocol),
-        authentication_type = COALESCE($6, authentication_type),
+        authentication_method = COALESCE($5, authentication_method),
         dt_modified = NOW()
-      WHERE legal_entity_endpoint_id = $7 AND is_deleted = false
+      WHERE legal_entity_endpoint_id = $6 AND is_deleted = false
       RETURNING *
-    `, [endpoint_type, endpoint_url, endpoint_name, is_active, protocol, authentication_type, endpointId]);
+    `, [endpoint_type, endpoint_url, endpoint_name, is_active, authentication_method, endpointId]);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Endpoint not found' });
@@ -2484,14 +2483,16 @@ router.get('/v1/kvk-verification/flagged', requireAuth, async (req: Request, res
     const { rows } = await pool.query(`
       SELECT
         le.legal_entity_id,
-        le.legal_name,
-        le.kvk_number,
+        le.primary_legal_name AS legal_name,
+        MAX(CASE WHEN len.identifier_type = 'KVK' THEN len.identifier_value ELSE NULL END) AS kvk_number,
         le.kvk_verification_status,
-        le.kvk_last_checked,
+        le.kvk_verified_at AS kvk_last_checked,
         le.dt_created
       FROM legal_entity le
+      LEFT JOIN legal_entity_number len ON le.legal_entity_id = len.legal_entity_id
       WHERE le.kvk_verification_status = 'flagged'
         AND le.is_deleted = false
+      GROUP BY le.legal_entity_id, le.primary_legal_name, le.kvk_verification_status, le.kvk_verified_at, le.dt_created
       ORDER BY le.dt_created DESC
     `);
 
