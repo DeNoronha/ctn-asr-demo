@@ -1656,12 +1656,12 @@ router.post('/v1/legal-entities/:legalentityid/kvk-document', requireAuth, uploa
 
     // Get KvK identifier for this legal entity
     const { rows: kvkRows } = await pool.query(`
-      SELECT identifier_id FROM legal_entity_number
+      SELECT legal_entity_reference_id FROM legal_entity_number
       WHERE legal_entity_id = $1 AND identifier_type = 'KVK' AND is_deleted = false
       LIMIT 1
     `, [legalentityid]);
 
-    const identifierId = kvkRows.length > 0 ? kvkRows[0].identifier_id : null;
+    const identifierId = kvkRows.length > 0 ? kvkRows[0].legal_entity_reference_id : null;
 
     // Create verification history record
     const verificationId = randomUUID();
