@@ -1682,7 +1682,7 @@ router.post('/v1/legal-entities/:legalentityid/kvk-document', requireAuth, uploa
       blobUrl,
       file.originalname,
       file.mimetype,
-      req.user?.name || req.user?.preferred_username || 'system'
+      (req as any).user?.name || (req as any).user?.preferred_username || 'system'
     ]);
 
     console.log('KvK document uploaded:', {
@@ -1690,7 +1690,7 @@ router.post('/v1/legal-entities/:legalentityid/kvk-document', requireAuth, uploa
       verificationId,
       filename: file.originalname,
       size: file.size,
-      uploadedBy: req.user?.name || req.user?.preferred_username
+      uploadedBy: (req as any).user?.name || (req as any).user?.preferred_username
     });
 
     res.status(201).json({
