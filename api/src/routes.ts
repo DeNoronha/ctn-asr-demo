@@ -2809,42 +2809,52 @@ router.post('/v1/audit-logs', requireAuth, async (req: Request, res: Response) =
 // KVK VERIFICATION
 // ============================================================================
 
-// Get KvK verification status for a specific legal entity
+// Get KvK verification status and document for a specific legal entity
 router.get('/v1/legal-entities/:legalEntityId/kvk-verification', requireAuth, async (req: Request, res: Response) => {
   try {
     const pool = getPool();
     const { legalEntityId } = req.params;
 
-    // Query legal_entity_number table for KvK identifier
+    // Query legal_entity table for KvK document and verification data
     const { rows } = await pool.query(`
       SELECT
-        legal_entity_reference_id,
-        legal_entity_id,
-        identifier_type,
-        identifier_value,
-        country_code,
-        verification_status,
-        issuing_authority,
-        issued_at,
-        expires_at,
-        dt_created,
-        dt_modified
-      FROM legal_entity_number
-      WHERE legal_entity_id = $1
-        AND identifier_type = 'KVK'
-        AND is_deleted = false
-      ORDER BY dt_created DESC
-      LIMIT 1
+        le.kvk_document_url,
+        le.kvk_verification_status,
+        le.kvk_verified_at,
+        le.kvk_verified_by,
+        le.kvk_verification_notes,
+        le.kvk_mismatch_flags,
+        len.identifier_value as kvk_number
+      FROM legal_entity le
+      LEFT JOIN legal_entity_number len
+        ON le.legal_entity_id = len.legal_entity_id
+        AND len.identifier_type = 'KVK'
+        AND len.is_deleted = false
+      WHERE le.legal_entity_id = $1
+        AND le.is_deleted = false
     `, [legalEntityId]);
 
     if (rows.length === 0) {
       return res.status(404).json({
-        error: 'KvK identifier not found for this legal entity',
+        error: 'Legal entity not found',
         legal_entity_id: legalEntityId
       });
     }
 
-    res.json(rows[0]);
+    const data = rows[0];
+
+    // Generate SAS URL for document if it exists
+    if (data.kvk_document_url) {
+      try {
+        const { BlobStorageService } = await import('./services/blobStorageService');
+        const blobService = new BlobStorageService();
+        data.kvk_document_url = await blobService.getDocumentSasUrl(data.kvk_document_url, 60);
+      } catch (error) {
+        console.error('Failed to generate SAS URL for KvK document:', error);
+      }
+    }
+
+    res.json(data);
   } catch (error: any) {
     console.error('Error fetching KvK verification status:', error);
     res.status(500).json({ error: 'Failed to fetch KvK verification status' });
