@@ -8,7 +8,7 @@ import {
 import React, { useEffect, useState } from 'react';
 
 // Mantine imports
-import { Button, MantineProvider, Stack, Tabs, Text, createTheme } from '@mantine/core';
+import { Button, Container, Group, MantineProvider, Paper, Stack, Tabs, Text, createTheme } from '@mantine/core';
 import { Notifications, notifications } from '@mantine/notifications';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
@@ -474,32 +474,35 @@ function AppContent(_props: AppContentProps) {
       </main>
 
       <AuthenticatedTemplate>
-        <footer className="App-footer">
-          <div className="footer-content">
-            <div className="footer-logos">
-              <img
-                src="/assets/logos/DIL.png"
-                alt="Data in Logistics"
-                className="partner-logo-img"
-              />
-              <img src="/assets/logos/contargo.png" alt="Contargo" className="partner-logo-img" />
-              <img
-                src="/assets/logos/Inland Terminals Group.png"
-                alt="Inland Terminals Group"
-                className="partner-logo-img"
-              />
-              <img
-                src="/assets/logos/VanBerkel.png"
-                alt="Van Berkel"
-                className="partner-logo-img"
-              />
-            </div>
-
-            <div className="footer-bottom">
-              <p>&copy; 2025 CTN Network. All rights reserved.</p>
-            </div>
-          </div>
-        </footer>
+        <Container size="xl" mt="xl">
+          <Paper withBorder p="md" radius="md" mt="xl">
+            <Group justify="space-between" wrap="wrap">
+              <Group>
+                <img src="/assets/logos/ctn.png" alt="CTN" style={{ height: 30 }} />
+                <Text size="sm" c="dimmed">
+                  © 2025 Connected Trade Network. All rights reserved.
+                </Text>
+              </Group>
+              <Group gap="xl">
+                <img
+                  src="/assets/logos/contargo.png"
+                  alt="Contargo"
+                  style={{ height: 30, opacity: 0.7 }}
+                />
+                <img
+                  src="/assets/logos/Inland Terminals Group.png"
+                  alt="Inland Terminals Group"
+                  style={{ height: 30, opacity: 0.7 }}
+                />
+                <img
+                  src="/assets/logos/VanBerkel.png"
+                  alt="Van Berkel"
+                  style={{ height: 30, opacity: 0.7 }}
+                />
+              </Group>
+            </Group>
+          </Paper>
+        </Container>
       </AuthenticatedTemplate>
     </div>
   );
