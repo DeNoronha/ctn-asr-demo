@@ -1624,6 +1624,92 @@ router.get('/v1/legal-entities/:legalentityid/kvk-registry', requireAuth, async 
   }
 });
 
+// POST /v1/legal-entities/:legalentityid/kvk-document - Upload KvK document (Member Portal)
+router.post('/v1/legal-entities/:legalentityid/kvk-document', requireAuth, upload.single('file'), async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: 'File is required' });
+    }
+
+    // Verify user has access to this legal entity
+    const { rows: entityRows } = await pool.query(`
+      SELECT legal_entity_id FROM legal_entity WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    if (entityRows.length === 0) {
+      return res.status(404).json({ error: 'Legal entity not found' });
+    }
+
+    // Upload document to blob storage
+    const { BlobStorageService } = await import('./services/blobStorageService');
+    const blobService = new BlobStorageService();
+    const blobUrl = await blobService.uploadDocument(
+      legalentityid,
+      file.originalname || 'kvk-document.pdf',
+      file.buffer,
+      file.mimetype
+    );
+
+    // Get KvK identifier for this legal entity
+    const { rows: kvkRows } = await pool.query(`
+      SELECT identifier_id FROM legal_entity_number
+      WHERE legal_entity_id = $1 AND identifier_type = 'KVK' AND is_deleted = false
+      LIMIT 1
+    `, [legalentityid]);
+
+    const identifierId = kvkRows.length > 0 ? kvkRows[0].identifier_id : null;
+
+    // Create verification history record
+    const verificationId = randomUUID();
+    const { rows: verificationRows } = await pool.query(`
+      INSERT INTO identifier_verification_history (
+        verification_id, legal_entity_id, identifier_id,
+        identifier_type, identifier_value, verification_method,
+        verification_status, document_blob_url, document_filename,
+        document_mime_type, verified_by, verified_at,
+        created_at, updated_at
+      )
+      VALUES ($1, $2, $3, 'KVK', '', 'MANUAL_UPLOAD', 'PENDING', $4, $5, $6, $7, NOW(), NOW(), NOW())
+      RETURNING verification_id, verification_status, created_at
+    `, [
+      verificationId,
+      legalentityid,
+      identifierId,
+      blobUrl,
+      file.originalname,
+      file.mimetype,
+      req.user?.name || req.user?.preferred_username || 'system'
+    ]);
+
+    console.log('KvK document uploaded:', {
+      legalEntityId: legalentityid,
+      verificationId,
+      filename: file.originalname,
+      size: file.size,
+      uploadedBy: req.user?.name || req.user?.preferred_username
+    });
+
+    res.status(201).json({
+      message: 'Document uploaded successfully',
+      verificationId: verificationRows[0].verification_id,
+      status: verificationRows[0].verification_status,
+      uploadedAt: verificationRows[0].created_at
+    });
+  } catch (error: any) {
+    console.error('Error uploading KvK document:', {
+      legalEntityId: req.params.legalentityid,
+      error: error.message,
+      stack: error.stack,
+      detail: error.detail || error.toString()
+    });
+    res.status(500).json({ error: 'Failed to upload document', detail: error.message });
+  }
+});
+
 // ============================================================================
 // ENDPOINTS
 // ============================================================================
@@ -1782,9 +1868,9 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
       await client.query(`
         INSERT INTO legal_entity (
           legal_entity_id, party_id, primary_legal_name,
-          legal_address, postal_code, city, country_code,
+          address_line1, postal_code, city, country_code,
           kvk_document_url, kvk_verification_status,
-          status, membership_tier, dt_created, dt_modified
+          status, membership_level, dt_created, dt_modified
         )
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'ACTIVE', $10, NOW(), NOW())
       `, [
@@ -1792,7 +1878,7 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
         application.company_address, application.postal_code,
         application.city, application.country || 'NL',
         application.kvk_document_url, application.kvk_verification_status || 'pending',
-        application.membership_type || 'basic'
+        application.membership_type || 'BASIC'
       ]);
 
       // 4. Create primary contact
