@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc && cp src/openapi.json dist/openapi.json && cp -r src/templates dist/templates",
+    "prebuild": "npm run test:schema-contracts",
     "watch": "tsc --watch",
     "prestart": "npm run build",
     "start": "node dist/server.js",
@@ -15,6 +16,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:verbose": "jest --verbose",
+    "test:schema-contracts": "node tests/integration/schema-contract-tests.js",
+    "test:schema-contracts:skip": "echo 'Skipping schema contract tests'",
     "test:api": "node ../tests/api/integration/run-api-tests.js",
     "test:api:ci": "node ../tests/api/integration/run-api-tests.js --ci",
     "test:deploy": "node ../tests/api/deployment/run-all.js",

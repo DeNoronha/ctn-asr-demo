@@ -29,8 +29,8 @@ export const IDENTIFIER_VALIDATION: Record<
   },
   EORI: {
     pattern: /^[A-Z]{2}[A-Z0-9]{1,15}$/,
-    example: 'NL123456789012',
-    description: 'Country code + up to 15 alphanumeric',
+    example: 'NL123456789',
+    description: 'Country code + up to 15 alphanumeric (e.g., NL123456789 for Netherlands, DE12345678912345 for Germany)',
   },
   VAT: {
     pattern: /^[A-Z]{2}[A-Z0-9]{2,13}$/,

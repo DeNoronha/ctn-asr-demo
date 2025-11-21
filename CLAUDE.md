@@ -190,7 +190,10 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 - `party_reference` - Root entity (UUID primary key)
 - `legal_entity` - Organizations/companies (FK to party_reference)
 - `legal_entity_contact` - Contact persons (PRIMARY, BILLING, TECHNICAL, ADMIN)
-- `legal_entity_number` - Identifiers (KvK, LEI, EURI, DUNS)
+- `legal_entity_number` - Identifiers (KvK, LEI, EUID, EORI, DUNS)
+  - **EUID**: European Unique Identifier (auto-generated from KvK, format: NL.KVK.12345678)
+  - **EORI**: Economic Operators Registration & Identification (customs/import-export, format: NL123456789)
+  - **Note**: EURI was removed (not a recognized identifier system)
 - `legal_entity_endpoint` - M2M communication endpoints
 - `members` - Member accounts (links to legal_entity + Azure AD)
 
@@ -615,6 +618,49 @@ git push --force-with-lease origin main
 - [Coding Standards](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/08-crosscutting/ctn-coding-standards.md)
 - [Security Hardening](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/08-crosscutting/ctn-security-hardening.md)
 - [Accessibility (WCAG)](https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/10-quality/ctn-accessibility-wcag-compliance.md)
+
+---
+
+## Identifier Types Reference
+
+The system supports multiple legal entity identifier types stored in the `legal_entity_number` table:
+
+### **EUID (European Unique Identifier)**
+- **Purpose:** Standardized company identification across EU business registers (BRIS system)
+- **Format:** `{Country}.{Registry}.{Number}` (e.g., `NL.KVK.12345678`, `DEK1101R.HRB116737`)
+- **Auto-generation:** ✅ Yes (from KvK via `/v1/entities/{id}/identifiers/generate-euid`)
+- **Service:** `api/src/services/euidService.ts`
+- **Validation:** Regex: `/^[A-Z]{2}\.[A-Z0-9.]{1,50}$/`
+- **Registry:** https://e-justice.europa.eu/489/EN/business_registers
+- **Who needs it:** All EU companies for cross-border transparency
+
+### **EORI (Economic Operators Registration and Identification)**
+- **Purpose:** Customs clearance for import/export operations in EU
+- **Format:** 2-letter country code + up to 15 alphanumeric characters
+  - Netherlands: `NL123456789` (9 digits)
+  - Germany: `DE12345678912345` (14 digits)
+  - Belgium: `BE0123456789` (VAT-based)
+- **Auto-generation:** ❌ No (manual entry, obtained from customs authorities)
+- **Validation:** Regex: `/^[A-Z]{2}[A-Z0-9]{1,15}$/`
+- **Registry:** https://ec.europa.eu/taxation_customs/dds2/eos/eori_validation.jsp
+- **Who needs it:** Companies doing import/export with non-EU countries, freight forwarders, customs brokers
+
+### **Other Supported Identifiers:**
+- **LEI** (Legal Entity Identifier): Global 20-character code for financial entities
+- **KVK** (Kamer van Koophandel): Dutch Chamber of Commerce number (8 digits)
+- **DUNS** (Dun & Bradstreet): Global business identifier (9 digits)
+- **VAT** (Value Added Tax): EU VAT registration numbers
+- **HRB/HRA** (Handelsregister): German commercial register numbers
+- **KBO** (Kruispuntbank van Ondernemingen): Belgian business register (10 digits)
+- **SIREN/SIRET**: French business identifiers
+- **CRN** (Company Registration Number): UK/GB companies
+
+### **Database Views:**
+- `v_members_full`: Returns `kvk`, `lei`, `euid`, `eori`, `duns` columns
+- `members_view`: Simplified version with same identifier columns
+
+### **Historical Note:**
+- **EURI** was removed in migration 031 (November 21, 2025) as it is not a recognized identifier system. The correct identifiers are EUID and EORI.
 
 ---
 
