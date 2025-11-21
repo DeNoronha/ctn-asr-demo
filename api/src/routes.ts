@@ -1923,7 +1923,7 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
       await client.query(`
         INSERT INTO legal_entity_contact (
           legal_entity_contact_id, legal_entity_id, contact_type,
-          contact_name, job_title, email, phone, is_primary,
+          full_name, job_title, email, phone, is_primary,
           dt_created, dt_modified
         )
         VALUES ($1, $2, 'PRIMARY', $3, $4, $5, $6, true, NOW(), NOW())
@@ -1937,11 +1937,11 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
       const identifierId = randomUUID();
       await client.query(`
         INSERT INTO legal_entity_number (
-          legal_entity_number_id, legal_entity_id, legal_entity_reference_id,
+          legal_entity_reference_id, legal_entity_id,
           identifier_type, identifier_value, country_code,
-          verification_status, dt_created, dt_modified
+          validation_status, dt_created, dt_modified
         )
-        VALUES ($1, $2, $2, 'KVK', $3, 'NL', 'PENDING', NOW(), NOW())
+        VALUES ($1, $2, 'KVK', $3, 'NL', 'PENDING', NOW(), NOW())
       `, [identifierId, legalEntityId, application.kvk_number]);
 
       // 6. Create LEI identifier if provided
@@ -1949,11 +1949,11 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
         const leiId = randomUUID();
         await client.query(`
           INSERT INTO legal_entity_number (
-            legal_entity_number_id, legal_entity_id, legal_entity_reference_id,
+            legal_entity_reference_id, legal_entity_id,
             identifier_type, identifier_value,
-            verification_status, dt_created, dt_modified
+            validation_status, dt_created, dt_modified
           )
-          VALUES ($1, $2, $2, 'LEI', $3, 'PENDING', NOW(), NOW())
+          VALUES ($1, $2, 'LEI', $3, 'PENDING', NOW(), NOW())
         `, [leiId, legalEntityId, application.lei]);
       }
 
