@@ -131,8 +131,11 @@ export class BlobStorageService {
         sharedKeyCredential
       ).toString();
 
-      // Construct base URL without query parameters
-      const baseUrl = blobUrl.split('?')[0];
+      // Construct base URL with properly encoded blob name
+      // The Azure SDK expects the blob name to be used as-is (already decoded)
+      // and will handle encoding in the URL construction
+      const encodedBlobName = blobName.split('/').map(part => encodeURIComponent(part)).join('/');
+      const baseUrl = `https://${this.accountName}.blob.core.windows.net/${this.containerName}/${encodedBlobName}`;
 
       // Return URL with SAS token
       return `${baseUrl}?${sasToken}`;
