@@ -2982,3 +2982,40 @@ router.put('/v1/members/:memberId/status', requireAuth, async (req: Request, res
     res.status(500).json({ error: 'Failed to update member status' });
   }
 });
+
+// Admin endpoint to fix missing member records
+router.post('/v1/admin/fix-missing-members', requireAuth, async (req: Request, res: Response) => {
+  const pool = getPool();
+
+  try {
+    // Insert missing member records for legal entities without members
+    const { rows } = await pool.query(`
+      INSERT INTO members (
+        id, org_id, legal_entity_id, email, created_at, updated_at
+      )
+      SELECT
+        gen_random_uuid() as id,
+        le.legal_entity_id as org_id,
+        le.legal_entity_id,
+        COALESCE(lec.email, 'noreply@example.com') as email,
+        le.dt_created as created_at,
+        NOW() as updated_at
+      FROM legal_entity le
+      LEFT JOIN members m ON le.legal_entity_id = m.legal_entity_id
+      LEFT JOIN legal_entity_contact lec ON le.legal_entity_id = lec.legal_entity_id AND lec.is_primary = true AND lec.is_deleted = false
+      WHERE m.id IS NULL
+        AND le.is_deleted = false
+        AND le.status IN ('ACTIVE', 'PENDING')
+      ON CONFLICT DO NOTHING
+      RETURNING legal_entity_id, email
+    `);
+
+    res.json({
+      message: `Created ${rows.length} missing member record(s)`,
+      created: rows
+    });
+  } catch (error: any) {
+    console.error('Error fixing missing members:', error);
+    res.status(500).json({ error: 'Failed to fix missing members' });
+  }
+});
