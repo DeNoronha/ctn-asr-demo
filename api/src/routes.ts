@@ -1651,6 +1651,199 @@ router.get('/v1/legal-entities/:legalentityid/kvk-registry', requireAuth, async 
   }
 });
 
+// Async function to process KvK document verification
+async function processKvKVerification(legalEntityId: string, blobUrl: string, verificationId: string): Promise<void> {
+  const pool = getPool();
+
+  try {
+    console.log('Starting KvK document verification:', { legalEntityId, verificationId });
+
+    // Generate SAS URL for Document Intelligence to access the blob
+    const { BlobStorageService } = await import('./services/blobStorageService');
+    const blobService = new BlobStorageService();
+    const sasUrl = await blobService.getDocumentSasUrl(blobUrl, 60); // 60 minute expiry
+
+    // Extract data from document using Document Intelligence
+    const { DocumentIntelligenceService } = await import('./services/documentIntelligenceService');
+    const docIntelService = new DocumentIntelligenceService();
+    const extractedData = await docIntelService.extractKvKData(sasUrl);
+
+    console.log('Extracted KvK data:', extractedData);
+
+    // Update legal_entity with extracted data
+    await pool.query(`
+      UPDATE legal_entity
+      SET kvk_extracted_company_name = $1,
+          kvk_extracted_number = $2,
+          entered_company_name = primary_legal_name,
+          dt_modified = NOW()
+      WHERE legal_entity_id = $3
+    `, [extractedData.companyName, extractedData.kvkNumber, legalEntityId]);
+
+    // Get entity and identifier data for comparison
+    const { rows: entityRows } = await pool.query(`
+      SELECT primary_legal_name FROM legal_entity WHERE legal_entity_id = $1
+    `, [legalEntityId]);
+
+    const { rows: identifierRows } = await pool.query(`
+      SELECT identifier_value FROM legal_entity_number
+      WHERE legal_entity_id = $1 AND identifier_type = 'KVK' AND is_deleted = false
+      LIMIT 1
+    `, [legalEntityId]);
+
+    const enteredCompanyName = entityRows[0]?.primary_legal_name;
+    const enteredKvkNumber = identifierRows[0]?.identifier_value;
+
+    // Compare extracted vs entered data
+    const comparisonFlags: string[] = [];
+
+    // Compare KvK numbers
+    if (enteredKvkNumber && extractedData.kvkNumber) {
+      const normalizedEntered = enteredKvkNumber.replace(/[\s-]/g, '');
+      const normalizedExtracted = extractedData.kvkNumber.replace(/[\s-]/g, '');
+      if (normalizedEntered !== normalizedExtracted) {
+        comparisonFlags.push('entered_kvk_mismatch');
+        console.warn(`KvK mismatch: entered=${enteredKvkNumber}, extracted=${extractedData.kvkNumber}`);
+      }
+    }
+
+    // Compare company names (fuzzy match)
+    if (enteredCompanyName && extractedData.companyName) {
+      const normalize = (name: string) => name.toLowerCase().trim().replace(/\s+/g, ' ').replace(/[.,\-]/g, '');
+      const normalizedEntered = normalize(enteredCompanyName);
+      const normalizedExtracted = normalize(extractedData.companyName);
+      const namesMatch = normalizedEntered === normalizedExtracted ||
+                        normalizedEntered.includes(normalizedExtracted) ||
+                        normalizedExtracted.includes(normalizedEntered);
+      if (!namesMatch) {
+        comparisonFlags.push('entered_name_mismatch');
+        console.warn(`Company name mismatch: entered="${enteredCompanyName}", extracted="${extractedData.companyName}"`);
+      }
+    }
+
+    // Validate against KvK API if we have a number
+    if (extractedData.kvkNumber) {
+      const { KvKService } = await import('./services/kvkService');
+      const kvkService = new KvKService();
+      const validation = await kvkService.validateCompany(
+        extractedData.kvkNumber,
+        extractedData.companyName || ''
+      );
+
+      console.log('KvK API validation result:', validation);
+
+      // Combine all flags
+      const allFlags = [...comparisonFlags, ...validation.flags];
+
+      // Determine verification status
+      let newStatus: string;
+      if (comparisonFlags.length > 0) {
+        newStatus = 'flagged'; // Entered data mismatches
+      } else if (validation.isValid) {
+        newStatus = 'verified';
+      } else if (validation.flags.length > 0) {
+        newStatus = 'flagged';
+      } else {
+        newStatus = 'failed';
+      }
+
+      // Update legal_entity with verification results
+      await pool.query(`
+        UPDATE legal_entity
+        SET kvk_verification_status = $1,
+            kvk_api_response = $2,
+            kvk_mismatch_flags = $3,
+            kvk_verified_at = NOW(),
+            dt_modified = NOW()
+        WHERE legal_entity_id = $4
+      `, [newStatus, JSON.stringify(validation.companyData), allFlags, legalEntityId]);
+
+      // Update verification history record
+      await pool.query(`
+        UPDATE identifier_verification_history
+        SET verification_status = $1,
+            extracted_data = $2,
+            verified_at = NOW(),
+            updated_at = NOW()
+        WHERE verification_id = $3
+      `, [newStatus, JSON.stringify({ companyName: extractedData.companyName, kvkNumber: extractedData.kvkNumber }), verificationId]);
+
+      // Store KvK registry data
+      if (validation.companyData) {
+        const kvkData = validation.companyData;
+        await pool.query(`
+          INSERT INTO kvk_registry_data (
+            legal_entity_id, kvk_number, company_name, legal_form,
+            trade_names, formal_registration_date, material_registration_date,
+            company_status, addresses, sbi_activities,
+            total_employees, raw_api_response, fetched_at,
+            last_verified_at, data_source, created_by
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW(), 'kvk_api', 'system')
+        `, [
+          legalEntityId,
+          kvkData.kvkNumber,
+          kvkData.statutoryName,
+          kvkData.legalForm,
+          JSON.stringify(kvkData.tradeNames),
+          kvkData.formalRegistrationDate,
+          kvkData.materialRegistrationDate,
+          kvkData.status || 'Active',
+          JSON.stringify(kvkData.addresses),
+          JSON.stringify(kvkData.sbiActivities),
+          kvkData.totalEmployees,
+          JSON.stringify(validation.companyData)
+        ]);
+
+        // Create EUID from KvK number (NL.KVK.{kvk_number})
+        const euid = `NL.KVK.${kvkData.kvkNumber}`;
+
+        // Check if EUID identifier already exists
+        const { rows: euidRows } = await pool.query(`
+          SELECT legal_entity_reference_id FROM legal_entity_number
+          WHERE legal_entity_id = $1 AND identifier_type = 'EUID' AND is_deleted = false
+        `, [legalEntityId]);
+
+        if (euidRows.length === 0) {
+          // Create EUID identifier
+          await pool.query(`
+            INSERT INTO legal_entity_number (
+              legal_entity_reference_id, legal_entity_id,
+              identifier_type, identifier_value, country_code,
+              validation_status, dt_created, dt_modified
+            )
+            VALUES ($1, $2, 'EUID', $3, 'NL', 'VERIFIED', NOW(), NOW())
+          `, [randomUUID(), legalEntityId, euid]);
+
+          console.log('Created EUID identifier:', euid);
+        }
+      }
+
+      console.log('KvK verification completed:', {
+        legalEntityId,
+        verificationId,
+        status: newStatus,
+        flags: allFlags
+      });
+    }
+  } catch (error: any) {
+    console.error('KvK verification processing error:', {
+      legalEntityId,
+      verificationId,
+      error: error.message,
+      stack: error.stack
+    });
+
+    // Update status to failed
+    await pool.query(`
+      UPDATE legal_entity
+      SET kvk_verification_status = 'failed',
+          kvk_mismatch_flags = ARRAY['processing_error'],
+          dt_modified = NOW()
+      WHERE legal_entity_id = $1
+    `, [legalEntityId]);
+  }
+}
+
 // POST /v1/legal-entities/:legalentityid/kvk-document - Upload KvK document (Member Portal)
 router.post('/v1/legal-entities/:legalentityid/kvk-document', requireAuth, upload.single('file'), async (req: Request, res: Response) => {
   try {
@@ -1720,8 +1913,13 @@ router.post('/v1/legal-entities/:legalentityid/kvk-document', requireAuth, uploa
       uploadedBy: (req as any).user?.name || (req as any).user?.preferred_username
     });
 
+    // Start async verification process (don't await - process in background)
+    processKvKVerification(legalentityid, blobUrl, verificationId).catch(error => {
+      console.error('Background KvK verification failed:', error);
+    });
+
     res.status(201).json({
-      message: 'Document uploaded successfully',
+      message: 'Document uploaded successfully. Verification in progress...',
       verificationId: verificationRows[0].verification_id,
       status: verificationRows[0].verification_status,
       uploadedAt: verificationRows[0].created_at
