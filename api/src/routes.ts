@@ -1904,10 +1904,10 @@ function getCountryCode(countryNameOrCode: string | null | undefined): string {
 router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, res: Response) => {
   const pool = getPool();
   const client = await pool.connect();
+  const { id } = req.params;
 
   try {
     await client.query('BEGIN');
-    const { id } = req.params;
 
       // 1. Get application details
       const appResult = await client.query(`
@@ -2016,7 +2016,7 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
         VALUES ($1, $2, $3, $4, NOW(), NOW())
       `, [
         memberId,
-        legalEntityId.substring(0, 100), // org_id (varchar 100 limit)
+        legalEntityId, // org_id (UUIDs are 36 chars, well under varchar(100) limit)
         legalEntityId,
         application.applicant_email
       ]);
@@ -2041,6 +2041,13 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
 
     await client.query('COMMIT');
 
+    console.log('Application approved successfully:', {
+      applicationId: id,
+      legalEntityId: legalEntityId,
+      memberId: memberId,
+      email: application.applicant_email
+    });
+
     res.json({
       message: 'Application approved and member created successfully',
       member: memberResult.rows[0],
@@ -2048,8 +2055,18 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
     });
   } catch (error: any) {
     await client.query('ROLLBACK');
-    console.error('Error approving application:', error);
-    res.status(500).json({ error: 'Failed to approve application', detail: error.message });
+    console.error('Error approving application:', {
+      applicationId: id,
+      error: error.message,
+      stack: error.stack,
+      code: error.code,
+      detail: error.detail
+    });
+    res.status(500).json({
+      error: 'Failed to approve application',
+      detail: error.message,
+      code: error.code
+    });
   } finally {
     client.release();
   }
