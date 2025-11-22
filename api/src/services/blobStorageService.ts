@@ -151,20 +151,30 @@ export class BlobStorageService {
 
   async downloadDocumentBuffer(blobUrl: string): Promise<Buffer> {
     try {
-      // Parse the blob URL to extract blob name
-      const url = new URL(blobUrl);
-      const pathname = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
+      // Parse the blob URL to extract blob name (without query parameters)
+      const baseUrl = blobUrl.split('?')[0]; // Remove SAS token if present
+      const url = new URL(baseUrl);
+
+      // The pathname is automatically decoded by the URL parser
+      let pathname = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
       const pathParts = pathname.split('/');
 
       if (pathParts.length < 2) {
         throw new Error(`Invalid blob URL format: ${blobUrl}`);
       }
 
+      // Join all parts after container name to form blob name
       const blobName = pathParts.slice(1).join('/');
+
+      console.log('Downloading blob:', {
+        originalUrl: baseUrl,
+        pathname,
+        blobName,
+        container: this.containerName
+      });
+
       const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
       const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-
-      console.log('Downloading blob:', { blobName, container: this.containerName });
 
       // Download blob content
       const downloadResponse = await blockBlobClient.download(0, undefined, {
