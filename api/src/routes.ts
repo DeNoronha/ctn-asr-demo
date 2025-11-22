@@ -1935,6 +1935,90 @@ router.post('/v1/legal-entities/:legalentityid/kvk-document', requireAuth, uploa
   }
 });
 
+// POST /v1/legal-entities/:legalentityid/kvk-document/verify - Manually trigger verification for existing document
+router.post('/v1/legal-entities/:legalentityid/kvk-document/verify', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    // Get the document URL for this legal entity
+    const { rows: entityRows } = await pool.query(`
+      SELECT kvk_document_url, kvk_verification_status
+      FROM legal_entity
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    if (entityRows.length === 0) {
+      return res.status(404).json({ error: 'Legal entity not found' });
+    }
+
+    const kvkDocumentUrl = entityRows[0].kvk_document_url;
+    const currentStatus = entityRows[0].kvk_verification_status;
+
+    if (!kvkDocumentUrl) {
+      return res.status(400).json({ error: 'No KvK document found for this entity' });
+    }
+
+    // Get or create verification history record
+    const { rows: verificationRows } = await pool.query(`
+      SELECT verification_id FROM identifier_verification_history
+      WHERE legal_entity_id = $1 AND identifier_type = 'KVK'
+      ORDER BY created_at DESC
+      LIMIT 1
+    `, [legalentityid]);
+
+    let verificationId: string;
+    if (verificationRows.length > 0) {
+      verificationId = verificationRows[0].verification_id;
+    } else {
+      // Create verification history record
+      verificationId = randomUUID();
+      await pool.query(`
+        INSERT INTO identifier_verification_history (
+          verification_id, legal_entity_id, identifier_id,
+          identifier_type, identifier_value, verification_method,
+          verification_status, document_blob_url,
+          created_at, updated_at
+        )
+        VALUES ($1, $2, NULL, 'KVK', '', 'MANUAL_TRIGGER', 'PENDING', $3, NOW(), NOW())
+      `, [verificationId, legalentityid, kvkDocumentUrl]);
+    }
+
+    // Reset status to pending
+    await pool.query(`
+      UPDATE legal_entity
+      SET kvk_verification_status = 'pending',
+          kvk_mismatch_flags = NULL,
+          dt_modified = NOW()
+      WHERE legal_entity_id = $1
+    `, [legalentityid]);
+
+    // Trigger verification process
+    processKvKVerification(legalentityid, kvkDocumentUrl, verificationId).catch(error => {
+      console.error('Manual KvK verification failed:', error);
+    });
+
+    console.log('Manual KvK verification triggered:', {
+      legalEntityId: legalentityid,
+      verificationId,
+      previousStatus: currentStatus
+    });
+
+    res.json({
+      message: 'KvK verification started',
+      verificationId,
+      status: 'pending'
+    });
+  } catch (error: any) {
+    console.error('Error triggering KvK verification:', {
+      legalEntityId: req.params.legalentityid,
+      error: error.message,
+      stack: error.stack
+    });
+    res.status(500).json({ error: 'Failed to trigger verification', detail: error.message });
+  }
+});
+
 // ============================================================================
 // ENDPOINTS
 // ============================================================================
