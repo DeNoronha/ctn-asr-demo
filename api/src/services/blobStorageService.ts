@@ -77,8 +77,34 @@ export class BlobStorageService {
     try {
       // Parse the blob URL to extract blob name
       const url = new URL(blobUrl);
-      const pathParts = url.pathname.split('/');
-      const blobName = pathParts.slice(2).join('/'); // Remove /container-name/
+
+      // Remove leading slash and split path
+      const pathname = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
+      const pathParts = pathname.split('/');
+
+      // Extract blob name: everything after container name
+      // Path format: container-name/blob/path/to/file.pdf
+      if (pathParts.length < 2) {
+        throw new Error(`Invalid blob URL format: ${blobUrl}`);
+      }
+
+      // First part is container name, rest is blob name
+      const containerFromUrl = pathParts[0];
+      const blobName = pathParts.slice(1).join('/');
+
+      console.log('SAS URL generation:', {
+        originalUrl: blobUrl,
+        pathname: url.pathname,
+        containerFromUrl,
+        expectedContainer: this.containerName,
+        blobName,
+        accountName: this.accountName
+      });
+
+      // Verify container name matches
+      if (containerFromUrl !== this.containerName) {
+        console.warn(`Container name mismatch: URL has '${containerFromUrl}', expected '${this.containerName}'`);
+      }
 
       // Create shared key credential
       const sharedKeyCredential = new StorageSharedKeyCredential(
@@ -105,10 +131,20 @@ export class BlobStorageService {
         sharedKeyCredential
       ).toString();
 
+      // Construct base URL without query parameters
+      const baseUrl = blobUrl.split('?')[0];
+
       // Return URL with SAS token
-      return `${blobUrl}?${sasToken}`;
+      return `${baseUrl}?${sasToken}`;
     } catch (error) {
       console.error('Error generating SAS URL:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          blobUrl
+        });
+      }
       throw new Error('Failed to generate secure document URL');
     }
   }
