@@ -1816,6 +1816,65 @@ async function processKvKVerification(legalEntityId: string, blobUrl: string, ve
 
           console.log('Created EUID identifier:', euid);
         }
+
+        // Fetch LEI from GLEIF API using KvK number
+        try {
+          console.log('Attempting to fetch LEI from GLEIF for KvK:', kvkData.kvkNumber);
+
+          const { fetchLeiForOrganization } = await import('./services/leiService');
+
+          // Create mock context for legacy service (uses Azure Functions context)
+          const mockContext = {
+            log: (...args: any[]) => console.log('[LEI Service]', ...args),
+            warn: (...args: any[]) => console.warn('[LEI Service]', ...args),
+            error: (...args: any[]) => console.error('[LEI Service]', ...args),
+          } as any;
+
+          const leiResult = await fetchLeiForOrganization(
+            kvkData.kvkNumber,
+            'NL',
+            'KVK',
+            mockContext
+          );
+
+          if (leiResult.status === 'found' && leiResult.lei) {
+            console.log('LEI found from GLEIF:', {
+              lei: leiResult.lei,
+              legalName: leiResult.legal_name,
+              registrationAuthority: leiResult.registration_authority
+            });
+
+            // Check if LEI identifier already exists
+            const { rows: leiRows } = await pool.query(`
+              SELECT legal_entity_reference_id FROM legal_entity_number
+              WHERE legal_entity_id = $1 AND identifier_type = 'LEI' AND is_deleted = false
+            `, [legalEntityId]);
+
+            if (leiRows.length === 0) {
+              // Create LEI identifier
+              await pool.query(`
+                INSERT INTO legal_entity_number (
+                  legal_entity_reference_id, legal_entity_id,
+                  identifier_type, identifier_value,
+                  validation_status, dt_created, dt_modified
+                )
+                VALUES ($1, $2, 'LEI', $3, 'VERIFIED', NOW(), NOW())
+              `, [randomUUID(), legalEntityId, leiResult.lei]);
+
+              console.log('Created LEI identifier:', leiResult.lei);
+            } else {
+              console.log('LEI identifier already exists, skipping creation');
+            }
+          } else {
+            console.log('No LEI found for KvK number:', kvkData.kvkNumber, 'Status:', leiResult.status);
+          }
+        } catch (leiError: any) {
+          console.warn('Failed to fetch LEI from GLEIF (non-fatal):', {
+            error: leiError.message,
+            kvkNumber: kvkData.kvkNumber
+          });
+          // Don't fail verification if LEI fetch fails - it's enrichment only
+        }
       }
 
       console.log('KvK verification completed:', {
