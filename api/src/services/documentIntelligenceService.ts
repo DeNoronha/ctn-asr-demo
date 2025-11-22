@@ -22,23 +22,41 @@ export class DocumentIntelligenceService {
     this.client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key));
   }
 
-  async extractKvKData(documentUrl: string): Promise<ExtractedKvKData> {
-    if (!documentUrl) {
-      throw new Error('Document URL is required');
+  async extractKvKData(documentInput: string | Buffer): Promise<ExtractedKvKData> {
+    if (!documentInput) {
+      throw new Error('Document URL or buffer is required');
     }
 
     try {
       // Use prebuilt-document model for general document analysis with timeout
       const analysisPromise = (async () => {
-        const poller = await this.client.beginAnalyzeDocumentFromUrl(
-          'prebuilt-document',
-          documentUrl,
-          {
-            onProgress: (state) => {
-              console.log(`Document analysis progress: ${state.status}`);
+        let poller;
+
+        if (Buffer.isBuffer(documentInput)) {
+          // Use buffer approach (more reliable for storage access)
+          console.log('Analyzing document from buffer (size:', documentInput.length, 'bytes)');
+          poller = await this.client.beginAnalyzeDocument(
+            'prebuilt-document',
+            documentInput,
+            {
+              onProgress: (state) => {
+                console.log(`Document analysis progress: ${state.status}`);
+              }
             }
-          }
-        );
+          );
+        } else {
+          // Fallback to URL approach
+          console.log('Analyzing document from URL');
+          poller = await this.client.beginAnalyzeDocumentFromUrl(
+            'prebuilt-document',
+            documentInput,
+            {
+              onProgress: (state) => {
+                console.log(`Document analysis progress: ${state.status}`);
+              }
+            }
+          );
+        }
 
         // Wait for analysis to complete
         return await poller.pollUntilDone();

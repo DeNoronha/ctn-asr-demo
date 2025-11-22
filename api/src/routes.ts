@@ -1658,15 +1658,15 @@ async function processKvKVerification(legalEntityId: string, blobUrl: string, ve
   try {
     console.log('Starting KvK document verification:', { legalEntityId, verificationId });
 
-    // Generate SAS URL for Document Intelligence to access the blob
+    // Download document buffer for Document Intelligence
     const { BlobStorageService } = await import('./services/blobStorageService');
     const blobService = new BlobStorageService();
-    const sasUrl = await blobService.getDocumentSasUrl(blobUrl, 60); // 60 minute expiry
+    const documentBuffer = await blobService.downloadDocumentBuffer(blobUrl);
 
-    // Extract data from document using Document Intelligence
+    // Extract data from document using Document Intelligence (using buffer, more reliable than SAS URL)
     const { DocumentIntelligenceService } = await import('./services/documentIntelligenceService');
     const docIntelService = new DocumentIntelligenceService();
-    const extractedData = await docIntelService.extractKvKData(sasUrl);
+    const extractedData = await docIntelService.extractKvKData(documentBuffer);
 
     console.log('Extracted KvK data:', extractedData);
 

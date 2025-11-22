@@ -148,4 +148,43 @@ export class BlobStorageService {
       throw new Error('Failed to generate secure document URL');
     }
   }
+
+  async downloadDocumentBuffer(blobUrl: string): Promise<Buffer> {
+    try {
+      // Parse the blob URL to extract blob name
+      const url = new URL(blobUrl);
+      const pathname = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
+      const pathParts = pathname.split('/');
+
+      if (pathParts.length < 2) {
+        throw new Error(`Invalid blob URL format: ${blobUrl}`);
+      }
+
+      const blobName = pathParts.slice(1).join('/');
+      const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
+      const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+      console.log('Downloading blob:', { blobName, container: this.containerName });
+
+      // Download blob content
+      const downloadResponse = await blockBlobClient.download(0, undefined, {
+        abortSignal: createTimeoutSignal(TIMEOUT_CONFIG.BLOB_STORAGE_MS)
+      });
+
+      if (!downloadResponse.readableStreamBody) {
+        throw new Error('No content in blob');
+      }
+
+      // Convert stream to buffer
+      const chunks: Buffer[] = [];
+      for await (const chunk of downloadResponse.readableStreamBody) {
+        chunks.push(Buffer.from(chunk));
+      }
+
+      return Buffer.concat(chunks);
+    } catch (error) {
+      console.error('Error downloading blob:', error);
+      throw new Error(`Failed to download document: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
 }
