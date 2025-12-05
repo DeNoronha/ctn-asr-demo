@@ -125,3 +125,4 @@ api/tests/*.sh
 complexity-report/
 **/complexity-report/
 # Force rebuild
+admin-portal/test-results-junit.xml
