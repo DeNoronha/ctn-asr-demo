@@ -43,7 +43,10 @@ export {
   deleteLegalEntity,
   listLegalEntities,
   getKvkRegistryData,
+  getPeppolRegistryData,
+  fetchPeppolData,
 } from './legalEntities';
+export type { PeppolRegistryResponse, PeppolFetchRequest, PeppolFetchResponse } from './legalEntities';
 
 // Export identifier operations
 export {

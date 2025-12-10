@@ -77,30 +77,35 @@ export const IDENTIFIER_VALIDATION: Record<
     example: 'AB123456',
     description: '8 alphanumeric characters',
   },
+  PEPPOL: {
+    pattern: /^[a-z0-9-]+::[0-9]{4}:[A-Za-z0-9]+$/,
+    example: 'iso6523-actorid-upis::0106:12345678',
+    description: 'Peppol Participant ID (scheme::identifier)',
+  },
 };
 
 // Mapping of country codes to applicable identifier types
 export const COUNTRY_IDENTIFIER_MAP: Record<string, string[]> = {
-  NL: ['KVK', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  DE: ['HRB', 'HRA', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  BE: ['KBO', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  FR: ['SIREN', 'SIRET', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  GB: ['CRN', 'EORI', 'VAT', 'LEI', 'DUNS'],
-  UK: ['CRN', 'EORI', 'VAT', 'LEI', 'DUNS'],
+  NL: ['KVK', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  DE: ['HRB', 'HRA', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  BE: ['KBO', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  FR: ['SIREN', 'SIRET', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  GB: ['CRN', 'EORI', 'VAT', 'LEI', 'DUNS', 'PEPPOL'],
+  UK: ['CRN', 'EORI', 'VAT', 'LEI', 'DUNS', 'PEPPOL'],
   US: ['DUNS', 'LEI'],
-  LU: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  AT: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  IT: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  ES: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  PT: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  DK: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  SE: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  NO: ['EORI', 'VAT', 'LEI', 'DUNS'],
+  LU: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  AT: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  IT: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  ES: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  PT: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  DK: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  SE: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  NO: ['EORI', 'VAT', 'LEI', 'DUNS', 'PEPPOL'],
   CH: ['EORI', 'VAT', 'LEI', 'DUNS'],
-  PL: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  PL: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
   CZ: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  IE: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  FI: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
+  IE: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  FI: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
   default: ['LEI', 'DUNS', 'EORI', 'VAT', 'OTHER'],
 };
 
@@ -153,6 +158,10 @@ export const REGISTRY_INFO: Record<string, { name: string; url: string }> = {
   CRN: {
     name: 'UK Companies House - Company Registration Number',
     url: 'https://find-and-update.company-information.service.gov.uk/',
+  },
+  PEPPOL: {
+    name: 'Peppol Directory',
+    url: 'https://directory.peppol.eu/',
   },
 };
 
@@ -466,6 +475,7 @@ export function useIdentifierVerification(
   const [kvkVerificationFlags, setKvkVerificationFlags] = useState<string[]>([]);
   const [hasKvkDocument, setHasKvkDocument] = useState(false);
   const [fetchingLei, setFetchingLei] = useState(false);
+  const [fetchingPeppol, setFetchingPeppol] = useState(false);
 
   const notification = useNotification();
   const { handleError } = useApiError();
@@ -543,11 +553,68 @@ export function useIdentifierVerification(
     }
   }, [legalEntityId, identifiers, notification, handleError, onRefresh]);
 
+  // Fetch Peppol participant from Peppol Directory
+  const handleFetchPeppol = useCallback(async () => {
+    // Find a suitable identifier for Peppol lookup (KVK, VAT, KBO, etc.)
+    const suitableIdentifier = identifiers.find((id) =>
+      ['KVK', 'VAT', 'KBO', 'SIREN', 'CRN'].includes(id.identifier_type)
+    );
+
+    if (!suitableIdentifier || !suitableIdentifier.country_code) {
+      notification.showError(
+        'No suitable identifier found for Peppol lookup. Add a KVK, VAT, or similar identifier first.'
+      );
+      return;
+    }
+
+    const peppolExists = identifiers.some((id) => id.identifier_type === 'PEPPOL');
+    if (peppolExists) {
+      notification.showInfo('Peppol participant ID already exists for this entity');
+      return;
+    }
+
+    setFetchingPeppol(true);
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api/v1';
+      const axiosInstance = await getAuthenticatedAxios();
+      const response = await axiosInstance.post<{
+        participant_id: string | null;
+        entity_name: string | null;
+        status: 'found' | 'not_found' | 'error';
+        was_saved: boolean;
+        message?: string;
+      }>(`${API_BASE_URL}/legal-entities/${legalEntityId}/peppol/fetch`, {
+        identifier_type: suitableIdentifier.identifier_type,
+        identifier_value: suitableIdentifier.identifier_value,
+        country_code: suitableIdentifier.country_code,
+        save_to_database: true,
+      });
+
+      const result = response.data;
+      if (result.status === 'found' && result.was_saved) {
+        notification.showSuccess(`Peppol participant ${result.participant_id} found and saved!`);
+        await onRefresh();
+      } else if (result.status === 'found' && !result.was_saved) {
+        notification.showWarning(`Peppol participant ${result.participant_id} found but not saved`);
+      } else if (result.status === 'not_found') {
+        notification.showWarning(
+          `No Peppol participant found for ${suitableIdentifier.identifier_type} ${suitableIdentifier.identifier_value}`
+        );
+      }
+    } catch (error: unknown) {
+      handleError(error, 'fetching Peppol participant from Peppol Directory');
+    } finally {
+      setFetchingPeppol(false);
+    }
+  }, [legalEntityId, identifiers, notification, handleError, onRefresh]);
+
   return {
     kvkVerificationFlags,
     hasKvkDocument,
     fetchingLei,
+    fetchingPeppol,
     fetchKvkVerification,
     handleFetchLei,
+    handleFetchPeppol,
   };
 }
