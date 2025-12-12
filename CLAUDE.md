@@ -188,7 +188,7 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 1. **Read `database/asr_dev.sql`** - This is the authoritative source of truth (exported Nov 21, 2025)
 2. **Check existing tables** - Avoid creating duplicate tables or fields
 3. **Review relationships** - Understand FK constraints and cascading behaviors
-4. **Verify views** - Use existing views like `v_members_full`, `legal_entity_full`
+4. **Verify views** - Use existing views like `vw_members_full`, `vw_legal_entity_full`
 
 **Complete Table List (17 active tables):**
 
@@ -239,15 +239,15 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 - ~~`legal_entity_backup_20251113`~~ - Dropped Nov 21, 2025 (migration 032)
 - ~~`members_backup_20251113`~~ - Dropped Nov 21, 2025 (migration 032)
 
-**Database Views (7 views):**
-- `v_members_full` - Complete member data with identifiers
-- `v_members_list` - Simplified member list
-- `members_view` - Legacy view (prefer v_members_full)
-- `legal_entity_full` - Complete entity with contacts, endpoints, identifiers
-- `v_identifiers_with_type` - Identifiers enriched with type metadata from lookup table
-- `v_m2m_clients_active` - Active M2M clients with secret counts
-- `v_m2m_credentials_active` - Active Keycloak credentials
-- `v_audit_log_summary` - Audit log summary view
+**Database Views (8 views - all use vw_ prefix):**
+- `vw_members_full` - Complete member data with identifiers
+- `vw_members_list` - Simplified member list
+- `vw_members` - Basic member view with key fields
+- `vw_legal_entity_full` - Complete entity with contacts, endpoints, identifiers
+- `vw_identifiers_with_type` - Identifiers enriched with type metadata from lookup table
+- `vw_m2m_clients_active` - Active M2M clients with secret counts
+- `vw_m2m_credentials_active` - Active Keycloak credentials
+- `vw_audit_log_summary` - Audit log summary view
 
 **Schema Conventions:**
 - All tables have `dt_created`, `dt_modified` timestamps (or `created_at`, `updated_at`)
@@ -262,7 +262,7 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 **Common Pitfalls to Avoid:**
 1. ❌ Creating new tables without checking `asr_dev.sql` first
 2. ❌ Adding duplicate fields (e.g., `authentication_tier` already exists in `legal_entity`)
-3. ❌ Ignoring existing views (e.g., use `v_members_full` instead of complex joins)
+3. ❌ Ignoring existing views (e.g., use `vw_members_full` instead of complex joins)
 4. ❌ Breaking foreign key constraints when modifying data
 5. ❌ Forgetting soft delete filters (`WHERE is_deleted = false`)
 
@@ -661,8 +661,8 @@ The system supports multiple legal entity identifier types stored in the `legal_
 - **CRN** (Company Registration Number): UK/GB companies
 
 ### **Database Views:**
-- `v_members_full`: Returns `kvk`, `lei`, `euid`, `eori`, `duns` columns
-- `members_view`: Simplified version with same identifier columns
+- `vw_members_full`: Returns `kvk`, `lei`, `euid`, `eori`, `duns` columns
+- `vw_members`: Simplified version with same identifier columns
 
 ### **Historical Note:**
 - **EURI** was removed in migration 031 (November 21, 2025) as it is not a recognized identifier system. The correct identifiers are EUID and EORI.
@@ -718,7 +718,7 @@ The system supports multiple legal entity identifier types stored in the `legal_
 | DB connection | Check `.credentials` file first |
 | DB schema questions | Read `database/asr_dev.sql` (authoritative source) |
 | Missing table/field | Check `database/asr_dev.sql` - table likely exists with different name |
-| Data modeling questions | Review views: `v_members_full`, `legal_entity_full`, etc. |
+| Data modeling questions | Review views: `vw_members_full`, `vw_legal_entity_full`, etc. |
 | "Old version" | Run `git log -1`, compare to Azure DevOps build time |
 | Members not showing | Test API health: `curl https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health` |
 | E2E tests failing | Verify auth state in `playwright/.auth/user.json` |

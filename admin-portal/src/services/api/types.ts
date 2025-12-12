@@ -168,7 +168,7 @@ export interface LegalEntity {
   endpoints?: LegalEntityEndpoint[];
 }
 
-// Member type from members_view
+// Member type from vw_members
 export interface Member {
   legal_entity_id: string;
   legal_name: string;

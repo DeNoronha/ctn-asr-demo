@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 0ApvlisKdY8oo5zLChBGMGeBTpVIFi32We4Nfc2jfEKth9UXxNV8xjM4bob9REl
+\restrict 866Ya8fnT27iIeqOL2oDJ71bXob5ePbshZCxdAKgcT8e3lfE1DzBtJZANJWO81R
 
 -- Dumped from database version 15.14
 -- Dumped by pg_dump version 15.15 (Homebrew)
@@ -1551,80 +1551,6 @@ COMMENT ON CONSTRAINT chk_validation_status_valid ON public.legal_entity_number 
 
 
 --
--- Name: party_reference; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.party_reference (
-    party_id uuid DEFAULT gen_random_uuid() NOT NULL,
-    dt_created timestamp with time zone DEFAULT now(),
-    dt_modified timestamp with time zone DEFAULT now(),
-    created_by character varying(100),
-    modified_by character varying(100),
-    is_deleted boolean DEFAULT false,
-    party_class character varying(255),
-    party_type character varying(255)
-);
-
-
---
--- Name: TABLE party_reference; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON TABLE public.party_reference IS 'Abstract party identity. Minimal metadata (party_class, party_type). Extended by legal_entity table (1:1 relationship enforced by uq_legal_entity_party_id_active).';
-
-
---
--- Name: COLUMN party_reference.party_class; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON COLUMN public.party_reference.party_class IS 'Party classification (e.g., ORGANIZATION, INDIVIDUAL)';
-
-
---
--- Name: COLUMN party_reference.party_type; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON COLUMN public.party_reference.party_type IS 'Party type within class (e.g., MEMBER, PARTNER, SUPPLIER)';
-
-
---
--- Name: legal_entity_full; Type: VIEW; Schema: public; Owner: -
---
-
-CREATE VIEW public.legal_entity_full AS
- SELECT le.legal_entity_id,
-    le.party_id,
-    pr.party_class,
-    pr.party_type,
-    le.primary_legal_name,
-    le.address_line1,
-    le.address_line2,
-    le.postal_code,
-    le.city,
-    le.province,
-    le.country_code,
-    le.entity_legal_form,
-    le.registered_at,
-    le.domain,
-    le.status,
-    le.membership_level,
-    le.dt_created,
-    le.dt_modified,
-    le.created_by,
-    le.modified_by,
-    COALESCE(json_agg(DISTINCT jsonb_build_object('type', len.identifier_type, 'value', len.identifier_value, 'country', len.country_code, 'status', len.validation_status)) FILTER (WHERE (len.legal_entity_reference_id IS NOT NULL)), '[]'::json) AS identifiers,
-    COALESCE(json_agg(DISTINCT jsonb_build_object('id', lec.legal_entity_contact_id, 'type', lec.contact_type, 'name', lec.full_name, 'email', lec.email, 'phone', lec.phone, 'is_primary', lec.is_primary)) FILTER (WHERE (lec.legal_entity_contact_id IS NOT NULL)), '[]'::json) AS contacts,
-    COALESCE(json_agg(DISTINCT jsonb_build_object('id', lee.legal_entity_endpoint_id, 'name', lee.endpoint_name, 'url', lee.endpoint_url, 'category', lee.data_category, 'is_active', lee.is_active)) FILTER (WHERE (lee.legal_entity_endpoint_id IS NOT NULL)), '[]'::json) AS endpoints
-   FROM ((((public.legal_entity le
-     JOIN public.party_reference pr ON ((le.party_id = pr.party_id)))
-     LEFT JOIN public.legal_entity_number len ON (((le.legal_entity_id = len.legal_entity_id) AND (len.is_deleted = false))))
-     LEFT JOIN public.legal_entity_contact lec ON (((le.legal_entity_id = lec.legal_entity_id) AND (lec.is_deleted = false))))
-     LEFT JOIN public.legal_entity_endpoint lee ON (((le.legal_entity_id = lee.legal_entity_id) AND (lee.is_deleted = false))))
-  WHERE (le.is_deleted = false)
-  GROUP BY le.legal_entity_id, le.party_id, pr.party_class, pr.party_type, le.primary_legal_name, le.address_line1, le.address_line2, le.postal_code, le.city, le.province, le.country_code, le.entity_legal_form, le.registered_at, le.domain, le.status, le.membership_level, le.dt_created, le.dt_modified, le.created_by, le.modified_by;
-
-
---
 -- Name: legal_entity_number_type; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1839,66 +1765,40 @@ COMMENT ON CONSTRAINT chk_members_org_id_format ON public.members IS 'Ensures or
 
 
 --
--- Name: members_view; Type: VIEW; Schema: public; Owner: -
+-- Name: party_reference; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE VIEW public.members_view AS
- SELECT le.legal_entity_id,
-    le.primary_legal_name AS legal_name,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'LEI'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS lei,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'KVK'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS kvk,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'RSIN'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS rsin,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'EUID'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS euid,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'EORI'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS eori,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'DUNS'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS duns,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'VAT'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS vat,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'VIES'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS vies,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'PEPPOL'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS peppol_id,
-    le.domain,
-    le.status,
-    le.membership_level,
-    le.dt_created AS created_at,
-    le.metadata
-   FROM (public.legal_entity le
-     LEFT JOIN public.legal_entity_number len ON ((le.legal_entity_id = len.legal_entity_id)))
-  WHERE (le.is_deleted = false)
-  GROUP BY le.legal_entity_id, le.primary_legal_name, le.domain, le.status, le.membership_level, le.dt_created, le.metadata;
+CREATE TABLE public.party_reference (
+    party_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    dt_created timestamp with time zone DEFAULT now(),
+    dt_modified timestamp with time zone DEFAULT now(),
+    created_by character varying(100),
+    modified_by character varying(100),
+    is_deleted boolean DEFAULT false,
+    party_class character varying(255),
+    party_type character varying(255)
+);
+
+
+--
+-- Name: TABLE party_reference; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.party_reference IS 'Abstract party identity. Minimal metadata (party_class, party_type). Extended by legal_entity table (1:1 relationship enforced by uq_legal_entity_party_id_active).';
+
+
+--
+-- Name: COLUMN party_reference.party_class; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.party_reference.party_class IS 'Party classification (e.g., ORGANIZATION, INDIVIDUAL)';
+
+
+--
+-- Name: COLUMN party_reference.party_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.party_reference.party_type IS 'Party type within class (e.g., MEMBER, PARTNER, SUPPLIER)';
 
 
 --
@@ -1930,249 +1830,6 @@ CREATE TABLE public.peppol_registry_data (
     modified_by character varying(255),
     is_deleted boolean DEFAULT false
 );
-
-
---
--- Name: v_audit_log_summary; Type: VIEW; Schema: public; Owner: -
---
-
-CREATE VIEW public.v_audit_log_summary AS
- SELECT audit_log.audit_log_id,
-    audit_log.event_type,
-    audit_log.severity,
-    audit_log.result,
-    audit_log.user_id,
-    COALESCE(audit_log.user_email_pseudonym, 'no-email'::character varying) AS user_identifier,
-    audit_log.resource_type,
-    audit_log.resource_id,
-    audit_log.action,
-    COALESCE(audit_log.ip_address_pseudonym, 'no-ip'::character varying) AS client_identifier,
-    "left"(audit_log.user_agent, 100) AS user_agent_summary,
-    audit_log.request_path,
-    audit_log.request_method,
-    audit_log.error_message,
-    audit_log.dt_created
-   FROM public.audit_log
-  ORDER BY audit_log.dt_created DESC;
-
-
---
--- Name: VIEW v_audit_log_summary; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON VIEW public.v_audit_log_summary IS 'Audit log summary view with pseudonymized PII. Safe for general admin access without exposing original email/IP addresses.';
-
-
---
--- Name: v_identifiers_with_type; Type: VIEW; Schema: public; Owner: -
---
-
-CREATE VIEW public.v_identifiers_with_type AS
- SELECT len.legal_entity_reference_id,
-    len.legal_entity_id,
-    len.identifier_type,
-    len.identifier_value,
-    len.country_code,
-    len.validation_status,
-    len.validation_date,
-    len.registry_name,
-    len.registry_url,
-    len.is_deleted,
-    lent.type_name,
-    lent.description AS type_description,
-    lent.country_scope,
-    lent.format_regex,
-    lent.format_example,
-    lent.registry_url AS type_registry_url,
-    lent.is_active AS type_is_active
-   FROM (public.legal_entity_number len
-     LEFT JOIN public.legal_entity_number_type lent ON (((len.identifier_type)::text = (lent.type_code)::text)))
-  WHERE ((len.is_deleted = false) OR (len.is_deleted IS NULL));
-
-
---
--- Name: VIEW v_identifiers_with_type; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON VIEW public.v_identifiers_with_type IS 'Identifiers enriched with type metadata from legal_entity_number_type lookup table';
-
-
---
--- Name: v_m2m_clients_active; Type: VIEW; Schema: public; Owner: -
---
-
-CREATE VIEW public.v_m2m_clients_active AS
- SELECT c.m2m_client_id,
-    c.legal_entity_id,
-    c.client_name,
-    c.azure_client_id,
-    c.azure_object_id,
-    c.description,
-    c.assigned_scopes,
-    c.is_active,
-    c.dt_created,
-    c.dt_modified,
-    ( SELECT count(*) AS count
-           FROM public.m2m_client_secrets_audit s
-          WHERE ((s.m2m_client_id = c.m2m_client_id) AND (s.is_revoked = false))) AS active_secrets_count,
-    ( SELECT max(s.secret_generated_at) AS max
-           FROM public.m2m_client_secrets_audit s
-          WHERE (s.m2m_client_id = c.m2m_client_id)) AS last_secret_generated_at,
-    le.primary_legal_name,
-    le.domain
-   FROM (public.m2m_clients c
-     LEFT JOIN public.legal_entity le ON ((c.legal_entity_id = le.legal_entity_id)))
-  WHERE ((c.is_deleted = false) AND (c.is_active = true));
-
-
---
--- Name: v_m2m_credentials_active; Type: VIEW; Schema: public; Owner: -
---
-
-CREATE VIEW public.v_m2m_credentials_active AS
- SELECT DISTINCT ON (c.credential_id) c.credential_id,
-    c.party_id,
-    c.m2m_client_id,
-    c.m2m_realm_id,
-    c.m2m_user_id,
-    c.service_account_name,
-    c.description,
-    c.auth_provider,
-    c.auth_issuer,
-    c.assigned_scopes,
-    c.allowed_endpoints,
-    c.is_active,
-    c.dt_created,
-    c.dt_modified,
-    c.last_used_at,
-    c.total_requests,
-    c.last_request_ip,
-    ( SELECT count(*) AS count
-           FROM public.ctn_m2m_secret_audit s
-          WHERE ((s.credential_id = c.credential_id) AND (s.is_revoked = false))) AS active_secrets_count,
-    ( SELECT max(s.secret_generated_at) AS max
-           FROM public.ctn_m2m_secret_audit s
-          WHERE (s.credential_id = c.credential_id)) AS last_secret_generated_at,
-    p.party_type,
-    le.primary_legal_name AS party_name
-   FROM ((public.ctn_m2m_credentials c
-     LEFT JOIN public.party_reference p ON ((c.party_id = p.party_id)))
-     LEFT JOIN public.legal_entity le ON (((c.party_id = le.party_id) AND (le.is_deleted = false))))
-  WHERE ((c.is_deleted = false) AND (c.is_active = true))
-  ORDER BY c.credential_id, le.dt_created DESC;
-
-
---
--- Name: VIEW v_m2m_credentials_active; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON VIEW public.v_m2m_credentials_active IS 'Active M2M credentials with party information. Uses DISTINCT ON to prevent duplicates from multiple legal_entity records per party. Updated 2025-11-13 (Migration 027).';
-
-
---
--- Name: v_members_full; Type: VIEW; Schema: public; Owner: -
---
-
-CREATE VIEW public.v_members_full AS
- SELECT m.id,
-    m.org_id,
-    m.legal_entity_id,
-    m.azure_ad_object_id,
-    m.email,
-    m.created_at,
-    m.updated_at,
-    m.metadata AS member_metadata,
-    le.primary_legal_name AS legal_name,
-    le.domain,
-    le.status,
-    le.membership_level,
-    le.authentication_tier,
-    le.authentication_method,
-    le.metadata AS legal_entity_metadata,
-    le.party_id,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'LEI'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS lei,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'KVK'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS kvk,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'RSIN'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS rsin,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'EUID'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS euid,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'EORI'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS eori,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'DUNS'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS duns,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'VAT'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS vat,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'VIES'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS vies,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'PEPPOL'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS peppol_id,
-    ( SELECT count(*) AS count
-           FROM public.legal_entity_contact lec
-          WHERE ((lec.legal_entity_id = m.legal_entity_id) AND (lec.is_deleted = false))) AS contact_count,
-    ( SELECT count(*) AS count
-           FROM public.legal_entity_endpoint lee
-          WHERE ((lee.legal_entity_id = m.legal_entity_id) AND (lee.is_deleted = false))) AS endpoint_count
-   FROM ((public.members m
-     LEFT JOIN public.legal_entity le ON (((m.legal_entity_id = le.legal_entity_id) AND (le.is_deleted = false))))
-     LEFT JOIN public.legal_entity_number len ON (((le.legal_entity_id = len.legal_entity_id) AND (len.is_deleted = false))))
-  GROUP BY m.id, m.org_id, m.legal_entity_id, m.azure_ad_object_id, m.email, m.created_at, m.updated_at, m.metadata, le.primary_legal_name, le.domain, le.status, le.membership_level, le.authentication_tier, le.authentication_method, le.metadata, le.party_id;
-
-
---
--- Name: v_members_list; Type: VIEW; Schema: public; Owner: -
---
-
-CREATE VIEW public.v_members_list AS
- SELECT m.id,
-    m.org_id,
-    m.legal_entity_id,
-    m.email,
-    m.created_at,
-    m.updated_at,
-    le.primary_legal_name AS legal_name,
-    le.domain,
-    le.status,
-    le.membership_level,
-    le.authentication_tier,
-    le.party_id
-   FROM (public.members m
-     LEFT JOIN public.legal_entity le ON (((m.legal_entity_id = le.legal_entity_id) AND (le.is_deleted = false))));
-
-
---
--- Name: VIEW v_members_list; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON VIEW public.v_members_list IS 'Lightweight view for member list pages. Excludes identifiers (no JOIN to legal_entity_number) for better performance.';
 
 
 --
@@ -2267,6 +1924,349 @@ COMMENT ON COLUMN public.vies_registry_data.trader_address IS 'Official company 
 --
 
 COMMENT ON COLUMN public.vies_registry_data.match_name IS 'VIES approximate matching: 1=match, 2=no match, 3=not processed';
+
+
+--
+-- Name: vw_audit_log_summary; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.vw_audit_log_summary AS
+ SELECT audit_log.audit_log_id,
+    audit_log.event_type,
+    audit_log.severity,
+    audit_log.result,
+    audit_log.user_id,
+    COALESCE(audit_log.user_email_pseudonym, 'no-email'::character varying) AS user_identifier,
+    audit_log.resource_type,
+    audit_log.resource_id,
+    audit_log.action,
+    COALESCE(audit_log.ip_address_pseudonym, 'no-ip'::character varying) AS client_identifier,
+    "left"(audit_log.user_agent, 100) AS user_agent_summary,
+    audit_log.request_path,
+    audit_log.request_method,
+    audit_log.error_message,
+    audit_log.dt_created
+   FROM public.audit_log
+  ORDER BY audit_log.dt_created DESC;
+
+
+--
+-- Name: VIEW vw_audit_log_summary; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON VIEW public.vw_audit_log_summary IS 'Audit log summary view with pseudonymized PII. Safe for general admin access without exposing original email/IP addresses.';
+
+
+--
+-- Name: vw_identifiers_with_type; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.vw_identifiers_with_type AS
+ SELECT len.legal_entity_reference_id,
+    len.legal_entity_id,
+    len.identifier_type,
+    len.identifier_value,
+    len.country_code,
+    len.validation_status,
+    len.validation_date,
+    len.registry_name,
+    len.registry_url,
+    len.is_deleted,
+    lent.type_name,
+    lent.description AS type_description,
+    lent.country_scope,
+    lent.format_regex,
+    lent.format_example,
+    lent.registry_url AS type_registry_url,
+    lent.is_active AS type_is_active
+   FROM (public.legal_entity_number len
+     LEFT JOIN public.legal_entity_number_type lent ON (((len.identifier_type)::text = (lent.type_code)::text)))
+  WHERE ((len.is_deleted = false) OR (len.is_deleted IS NULL));
+
+
+--
+-- Name: VIEW vw_identifiers_with_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON VIEW public.vw_identifiers_with_type IS 'Identifiers enriched with type metadata from legal_entity_number_type lookup table';
+
+
+--
+-- Name: vw_legal_entity_full; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.vw_legal_entity_full AS
+ SELECT le.legal_entity_id,
+    le.party_id,
+    pr.party_class,
+    pr.party_type,
+    le.primary_legal_name,
+    le.address_line1,
+    le.address_line2,
+    le.postal_code,
+    le.city,
+    le.province,
+    le.country_code,
+    le.entity_legal_form,
+    le.registered_at,
+    le.domain,
+    le.status,
+    le.membership_level,
+    le.dt_created,
+    le.dt_modified,
+    le.created_by,
+    le.modified_by,
+    COALESCE(json_agg(DISTINCT jsonb_build_object('type', len.identifier_type, 'value', len.identifier_value, 'country', len.country_code, 'status', len.validation_status)) FILTER (WHERE (len.legal_entity_reference_id IS NOT NULL)), '[]'::json) AS identifiers,
+    COALESCE(json_agg(DISTINCT jsonb_build_object('id', lec.legal_entity_contact_id, 'type', lec.contact_type, 'name', lec.full_name, 'email', lec.email, 'phone', lec.phone, 'is_primary', lec.is_primary)) FILTER (WHERE (lec.legal_entity_contact_id IS NOT NULL)), '[]'::json) AS contacts,
+    COALESCE(json_agg(DISTINCT jsonb_build_object('id', lee.legal_entity_endpoint_id, 'name', lee.endpoint_name, 'url', lee.endpoint_url, 'category', lee.data_category, 'is_active', lee.is_active)) FILTER (WHERE (lee.legal_entity_endpoint_id IS NOT NULL)), '[]'::json) AS endpoints
+   FROM ((((public.legal_entity le
+     JOIN public.party_reference pr ON ((le.party_id = pr.party_id)))
+     LEFT JOIN public.legal_entity_number len ON (((le.legal_entity_id = len.legal_entity_id) AND (len.is_deleted = false))))
+     LEFT JOIN public.legal_entity_contact lec ON (((le.legal_entity_id = lec.legal_entity_id) AND (lec.is_deleted = false))))
+     LEFT JOIN public.legal_entity_endpoint lee ON (((le.legal_entity_id = lee.legal_entity_id) AND (lee.is_deleted = false))))
+  WHERE (le.is_deleted = false)
+  GROUP BY le.legal_entity_id, le.party_id, pr.party_class, pr.party_type, le.primary_legal_name, le.address_line1, le.address_line2, le.postal_code, le.city, le.province, le.country_code, le.entity_legal_form, le.registered_at, le.domain, le.status, le.membership_level, le.dt_created, le.dt_modified, le.created_by, le.modified_by;
+
+
+--
+-- Name: vw_m2m_clients_active; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.vw_m2m_clients_active AS
+ SELECT c.m2m_client_id,
+    c.legal_entity_id,
+    c.client_name,
+    c.azure_client_id,
+    c.azure_object_id,
+    c.description,
+    c.assigned_scopes,
+    c.is_active,
+    c.dt_created,
+    c.dt_modified,
+    ( SELECT count(*) AS count
+           FROM public.m2m_client_secrets_audit s
+          WHERE ((s.m2m_client_id = c.m2m_client_id) AND (s.is_revoked = false))) AS active_secrets_count,
+    ( SELECT max(s.secret_generated_at) AS max
+           FROM public.m2m_client_secrets_audit s
+          WHERE (s.m2m_client_id = c.m2m_client_id)) AS last_secret_generated_at,
+    le.primary_legal_name,
+    le.domain
+   FROM (public.m2m_clients c
+     LEFT JOIN public.legal_entity le ON ((c.legal_entity_id = le.legal_entity_id)))
+  WHERE ((c.is_deleted = false) AND (c.is_active = true));
+
+
+--
+-- Name: vw_m2m_credentials_active; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.vw_m2m_credentials_active AS
+ SELECT DISTINCT ON (c.credential_id) c.credential_id,
+    c.party_id,
+    c.m2m_client_id,
+    c.m2m_realm_id,
+    c.m2m_user_id,
+    c.service_account_name,
+    c.description,
+    c.auth_provider,
+    c.auth_issuer,
+    c.assigned_scopes,
+    c.allowed_endpoints,
+    c.is_active,
+    c.dt_created,
+    c.dt_modified,
+    c.last_used_at,
+    c.total_requests,
+    c.last_request_ip,
+    ( SELECT count(*) AS count
+           FROM public.ctn_m2m_secret_audit s
+          WHERE ((s.credential_id = c.credential_id) AND (s.is_revoked = false))) AS active_secrets_count,
+    ( SELECT max(s.secret_generated_at) AS max
+           FROM public.ctn_m2m_secret_audit s
+          WHERE (s.credential_id = c.credential_id)) AS last_secret_generated_at,
+    p.party_type,
+    le.primary_legal_name AS party_name
+   FROM ((public.ctn_m2m_credentials c
+     LEFT JOIN public.party_reference p ON ((c.party_id = p.party_id)))
+     LEFT JOIN public.legal_entity le ON (((c.party_id = le.party_id) AND (le.is_deleted = false))))
+  WHERE ((c.is_deleted = false) AND (c.is_active = true))
+  ORDER BY c.credential_id, le.dt_created DESC;
+
+
+--
+-- Name: VIEW vw_m2m_credentials_active; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON VIEW public.vw_m2m_credentials_active IS 'Active M2M credentials with party information. Uses DISTINCT ON to prevent duplicates from multiple legal_entity records per party. Updated 2025-11-13 (Migration 027).';
+
+
+--
+-- Name: vw_members; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.vw_members AS
+ SELECT le.legal_entity_id,
+    le.primary_legal_name AS legal_name,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'LEI'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS lei,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'KVK'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS kvk,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'RSIN'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS rsin,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'EUID'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS euid,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'EORI'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS eori,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'DUNS'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS duns,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'VAT'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS vat,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'VIES'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS vies,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'PEPPOL'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS peppol_id,
+    le.domain,
+    le.status,
+    le.membership_level,
+    le.dt_created AS created_at,
+    le.metadata
+   FROM (public.legal_entity le
+     LEFT JOIN public.legal_entity_number len ON ((le.legal_entity_id = len.legal_entity_id)))
+  WHERE (le.is_deleted = false)
+  GROUP BY le.legal_entity_id, le.primary_legal_name, le.domain, le.status, le.membership_level, le.dt_created, le.metadata;
+
+
+--
+-- Name: vw_members_full; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.vw_members_full AS
+ SELECT m.id,
+    m.org_id,
+    m.legal_entity_id,
+    m.azure_ad_object_id,
+    m.email,
+    m.created_at,
+    m.updated_at,
+    m.metadata AS member_metadata,
+    le.primary_legal_name AS legal_name,
+    le.domain,
+    le.status,
+    le.membership_level,
+    le.authentication_tier,
+    le.authentication_method,
+    le.metadata AS legal_entity_metadata,
+    le.party_id,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'LEI'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS lei,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'KVK'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS kvk,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'RSIN'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS rsin,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'EUID'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS euid,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'EORI'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS eori,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'DUNS'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS duns,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'VAT'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS vat,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'VIES'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS vies,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'PEPPOL'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS peppol_id,
+    ( SELECT count(*) AS count
+           FROM public.legal_entity_contact lec
+          WHERE ((lec.legal_entity_id = m.legal_entity_id) AND (lec.is_deleted = false))) AS contact_count,
+    ( SELECT count(*) AS count
+           FROM public.legal_entity_endpoint lee
+          WHERE ((lee.legal_entity_id = m.legal_entity_id) AND (lee.is_deleted = false))) AS endpoint_count
+   FROM ((public.members m
+     LEFT JOIN public.legal_entity le ON (((m.legal_entity_id = le.legal_entity_id) AND (le.is_deleted = false))))
+     LEFT JOIN public.legal_entity_number len ON (((le.legal_entity_id = len.legal_entity_id) AND (len.is_deleted = false))))
+  GROUP BY m.id, m.org_id, m.legal_entity_id, m.azure_ad_object_id, m.email, m.created_at, m.updated_at, m.metadata, le.primary_legal_name, le.domain, le.status, le.membership_level, le.authentication_tier, le.authentication_method, le.metadata, le.party_id;
+
+
+--
+-- Name: vw_members_list; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.vw_members_list AS
+ SELECT m.id,
+    m.org_id,
+    m.legal_entity_id,
+    m.email,
+    m.created_at,
+    m.updated_at,
+    le.primary_legal_name AS legal_name,
+    le.domain,
+    le.status,
+    le.membership_level,
+    le.authentication_tier,
+    le.party_id
+   FROM (public.members m
+     LEFT JOIN public.legal_entity le ON (((m.legal_entity_id = le.legal_entity_id) AND (le.is_deleted = false))));
+
+
+--
+-- Name: VIEW vw_members_list; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON VIEW public.vw_members_list IS 'Lightweight view for member list pages. Excludes identifiers (no JOIN to legal_entity_number) for better performance.';
 
 
 --
@@ -3772,5 +3772,5 @@ ALTER TABLE ONLY public.vies_registry_data
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 0ApvlisKdY8oo5zLChBGMGeBTpVIFi32We4Nfc2jfEKth9UXxNV8xjM4bob9REl
+\unrestrict 866Ya8fnT27iIeqOL2oDJ71bXob5ePbshZCxdAKgcT8e3lfE1DzBtJZANJWO81R
 

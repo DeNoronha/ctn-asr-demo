@@ -86,11 +86,11 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
     const pool = getPool();
     const { page = '1', limit = '50', search, status } = req.query;
 
-    // Use the v_members_full view which includes all identifier types (euid, eori, duns, etc.)
+    // Use the vw_members_full view which includes all identifier types (euid, eori, duns, etc.)
     let query = `
       SELECT legal_entity_id, legal_name, kvk, lei, euid, eori, duns, domain, status, membership_level,
              created_at, member_metadata, legal_entity_metadata, contact_count, endpoint_count
-      FROM v_members_full
+      FROM vw_members_full
       WHERE 1=1
     `;
     const params: any[] = [];
@@ -117,7 +117,7 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
     const { rows } = await pool.query(query, params);
 
     // Get total count
-    let countQuery = `SELECT COUNT(*) FROM v_members_full WHERE 1=1`;
+    let countQuery = `SELECT COUNT(*) FROM vw_members_full WHERE 1=1`;
     const countParams: any[] = [];
     let countParamIndex = 1;
     if (search) {
@@ -153,11 +153,11 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
     const { page = '1', page_size = '50', search, status } = req.query;
     const limit = page_size; // all-members uses page_size param
 
-    // Use the v_members_full view which includes all identifier types (euid, eori, duns, etc.)
+    // Use the vw_members_full view which includes all identifier types (euid, eori, duns, etc.)
     let query = `
       SELECT legal_entity_id, legal_name, kvk, lei, euid, eori, duns, domain, status, membership_level,
              created_at, member_metadata, legal_entity_metadata, contact_count, endpoint_count
-      FROM v_members_full
+      FROM vw_members_full
       WHERE 1=1
     `;
     const params: any[] = [];
@@ -184,7 +184,7 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
     const { rows } = await pool.query(query, params);
 
     // Get total count
-    let countQuery = `SELECT COUNT(*) FROM v_members_full WHERE 1=1`;
+    let countQuery = `SELECT COUNT(*) FROM vw_members_full WHERE 1=1`;
     const countParams: any[] = [];
     let countParamIndex = 1;
     if (search) {
@@ -218,14 +218,14 @@ router.get('/v1/members/:id', requireAuth, async (req: Request, res: Response) =
     const pool = getPool();
     const { id } = req.params;
 
-    // Use legal_entity_full view for complete member details
+    // Use vw_legal_entity_full view for complete member details
     const { rows } = await pool.query(`
       SELECT legal_entity_id as org_id, primary_legal_name as legal_name,
              domain, status, membership_level, party_id,
              address_line1, address_line2, postal_code, city, province, country_code,
              entity_legal_form, registered_at, dt_created, dt_modified,
              identifiers, contacts, endpoints, metadata
-      FROM legal_entity_full
+      FROM vw_legal_entity_full
       WHERE legal_entity_id = $1
     `, [id]);
 
@@ -398,7 +398,7 @@ router.post('/v1/register-member', upload.single('kvkDocument'), async (req, res
     }
 
     const { rows: existingKvK } = await pool.query(
-      `SELECT legal_entity_id FROM members_view WHERE kvk = $1`,
+      `SELECT legal_entity_id FROM vw_members WHERE kvk = $1`,
       [body.kvkNumber]
     );
     if (existingKvK.length > 0) {
@@ -531,7 +531,7 @@ router.get('/v1/member', requireAuth, async (req: Request, res: Response) => {
           ) FILTER (WHERE len.identifier_type IS NOT NULL),
           '[]'::json
         ) as "registryIdentifiers"
-      FROM v_members_full m
+      FROM vw_members_full m
       LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
       LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
       LEFT JOIN legal_entity_number len ON le.legal_entity_id = len.legal_entity_id
@@ -583,7 +583,7 @@ router.get('/v1/member', requireAuth, async (req: Request, res: Response) => {
             ) FILTER (WHERE len.identifier_type IS NOT NULL),
             '[]'::json
           ) as "registryIdentifiers"
-        FROM v_members_full m
+        FROM vw_members_full m
         LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
         LEFT JOIN legal_entity_number len ON le.legal_entity_id = len.legal_entity_id
           AND (len.is_deleted = false OR len.is_deleted IS NULL)
@@ -3267,7 +3267,7 @@ router.get('/v1/member-contacts', requireAuth, cacheMiddleware(CacheTTL.CONTACTS
       const emailDomain = userEmail.split('@')[1];
       memberResult = await pool.query(`
         SELECT m.legal_entity_id
-        FROM v_members_full m
+        FROM vw_members_full m
         WHERE m.domain = $1
         LIMIT 1
       `, [emailDomain]);
@@ -3334,7 +3334,7 @@ router.get('/v1/member-endpoints', requireAuth, cacheMiddleware(CacheTTL.ENDPOIN
       const emailDomain = userEmail.split('@')[1];
       memberResult = await pool.query(`
         SELECT m.legal_entity_id
-        FROM v_members_full m
+        FROM vw_members_full m
         WHERE m.domain = $1
         LIMIT 1
       `, [emailDomain]);
