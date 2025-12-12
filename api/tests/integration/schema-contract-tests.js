@@ -83,8 +83,9 @@ class SchemaContractTests {
   async testDatabaseSchema() {
     this.log('\n--- Test Suite: Database Schema Validation ---', 'blue');
 
+    // Updated Dec 12, 2025 - members table dropped (migration 045)
+    // legal_entity is now the single source of truth for member organizations
     const requiredTables = [
-      'members',
       'legal_entity',
       'legal_entity_contact',
       'legal_entity_number',
@@ -93,13 +94,14 @@ class SchemaContractTests {
       'audit_log',
       'party_reference',
       'kvk_registry_data',
-      'identifier_verification_history'
+      'identifier_verification_history',
+      'issued_tokens'
     ];
 
+    // Updated Dec 12, 2025 - member views dropped, replaced by vw_legal_entities
     const requiredViews = [
-      'v_members_full',
-      'legal_entity_full',
-      'v_identifiers_with_type'  // Replaced company_identifiers_with_registry in migration 039
+      'vw_legal_entities',          // Replaces vw_members_full (migration 045)
+      'vw_identifiers_with_type'    // Renamed from v_identifiers_with_type (migration 043)
     ];
 
     // Check tables
@@ -178,33 +180,25 @@ class SchemaContractTests {
     this.log('\n--- Test Suite: INSERT Statement Validation ---', 'blue');
 
     // Test specific INSERT statements that caused issues
+    // Updated Dec 12, 2025 - members table dropped, legal_entity is source of truth
     const insertTests = [
       {
-        name: 'Member registration INSERT',
-        file: 'src/functions-legacy/RegisterMember.ts',
-        table: 'members',
-        expectedColumns: [
-          'id', 'org_id', 'legal_entity_id', 'azure_ad_object_id',
-          'email', 'created_at', 'updated_at', 'metadata'
-        ]
-      },
-      {
         name: 'Legal entity INSERT',
-        file: 'src/functions-legacy/RegisterMember.ts',
+        file: 'src/routes.ts',
         table: 'legal_entity',
         expectedColumns: [
           'legal_entity_id', 'party_id', 'primary_legal_name', 'entity_legal_form',
           'address_line1', 'city', 'postal_code', 'country_code', 'status',
-          'dt_created', 'dt_modified'
+          'membership_level', 'domain', 'dt_created', 'dt_modified'
         ]
       },
       {
         name: 'Identifier INSERT',
-        file: 'src/functions-legacy/CreateIdentifier.ts',
+        file: 'src/routes.ts',
         table: 'legal_entity_number',
         expectedColumns: [
           'legal_entity_reference_id', 'legal_entity_id', 'identifier_type',
-          'identifier_value', 'validation_status', 'verification_status',
+          'identifier_value', 'validation_status',
           'dt_created', 'dt_modified'
         ]
       },
@@ -216,6 +210,15 @@ class SchemaContractTests {
           'event_type', 'severity', 'result', 'user_id', 'user_email',
           'resource_type', 'resource_id', 'action', 'ip_address',
           'user_agent', 'request_path', 'request_method', 'details'
+        ]
+      },
+      {
+        name: 'Issued tokens INSERT',
+        file: 'src/routes.ts',
+        table: 'issued_tokens',
+        expectedColumns: [
+          'jti', 'token_type', 'legal_entity_id', 'issued_at', 'expires_at',
+          'revoked', 'metadata'
         ]
       }
     ];
@@ -261,18 +264,19 @@ class SchemaContractTests {
     this.log('\n--- Test Suite: API Response Contract Validation ---', 'blue');
 
     // Test critical API endpoints
+    // Updated Dec 12, 2025 - uses vw_legal_entities instead of v_members_full
     const endpointTests = [
       {
         name: 'GET /v1/members',
-        view: 'v_members_full',
+        view: 'vw_legal_entities',
         expectedFields: [
-          'legal_entity_id', 'legal_name', 'kvk', 'lei', 'euid', 'eori', 'duns',
-          'domain', 'status', 'membership_level', 'created_at'
+          'legal_entity_id', 'primary_legal_name', 'kvk', 'lei', 'euid', 'eori', 'duns',
+          'domain', 'status', 'membership_level', 'dt_created', 'contact_count', 'endpoint_count'
         ]
       },
       {
-        name: 'GET /v1/members/:id',
-        view: 'legal_entity_full',
+        name: 'GET /v1/legal-entities/:id',
+        table: 'legal_entity',
         expectedFields: [
           'legal_entity_id', 'primary_legal_name', 'domain', 'status',
           'membership_level', 'party_id', 'address_line1', 'city',
@@ -284,7 +288,7 @@ class SchemaContractTests {
         table: 'legal_entity_number',
         expectedFields: [
           'legal_entity_reference_id', 'legal_entity_id', 'identifier_type',
-          'identifier_value', 'validation_status', 'verification_status',
+          'identifier_value', 'validation_status',
           'country_code', 'dt_created'
         ]
       },
