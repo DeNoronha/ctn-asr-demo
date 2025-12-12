@@ -68,7 +68,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     hasKvkDocument,
     fetchingLei,
     fetchKvkVerification,
-    handleFetchLei,
+    handleEnrich,
   } = useIdentifierVerification(legalEntityId, identifiers, onRefresh);
 
   // Fetch KvK verification status on mount
@@ -86,9 +86,9 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
           <Button
             variant="outline"
             color="cyan"
-            onClick={handleFetchLei}
+            onClick={handleEnrich}
             disabled={fetchingLei || identifiers.length === 0}
-            title="Enrich identifiers from external registries (GLEIF, Peppol, VIES)"
+            title="Enrich from Peppol Directory and VIES (EU VAT validation)"
             aria-label={fetchingLei ? 'Enriching from registries...' : 'Enrich from registries'}
           >
             {fetchingLei ? 'Enriching...' : '>> Enrich'}

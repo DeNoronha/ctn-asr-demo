@@ -72,6 +72,8 @@ export interface LegalEntityIdentifier {
     | 'SIRET'
     | 'CRN'
     | 'PEPPOL'
+    | 'VIES'
+    | 'RSIN'
     | 'OTHER';
   identifier_value: string;
   country_code?: string;

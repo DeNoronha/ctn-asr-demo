@@ -484,7 +484,7 @@ export function useIdentifierManagement(
 }
 
 /**
- * Hook for LEI verification and KVK document verification
+ * Hook for identifier verification and enrichment from external registries
  */
 export function useIdentifierVerification(
   legalEntityId: string,
@@ -495,6 +495,7 @@ export function useIdentifierVerification(
   const [hasKvkDocument, setHasKvkDocument] = useState(false);
   const [fetchingLei, setFetchingLei] = useState(false);
   const [fetchingPeppol, setFetchingPeppol] = useState(false);
+  const [fetchingVies, setFetchingVies] = useState(false);
 
   const notification = useNotification();
   const { handleError } = useApiError();
@@ -627,13 +628,159 @@ export function useIdentifierVerification(
     }
   }, [legalEntityId, identifiers, notification, handleError, onRefresh]);
 
+  // Fetch VIES data for VAT validation
+  const handleFetchVies = useCallback(async (): Promise<boolean> => {
+    // Find a VAT identifier for VIES validation
+    const vatIdentifier = identifiers.find((id) =>
+      ['VAT'].includes(id.identifier_type)
+    );
+
+    if (!vatIdentifier || !vatIdentifier.country_code) {
+      // No VAT identifier available - skip silently (not an error)
+      return false;
+    }
+
+    const viesExists = identifiers.some((id) => id.identifier_type === 'VIES');
+    if (viesExists) {
+      return false; // Already exists, skip
+    }
+
+    setFetchingVies(true);
+    try {
+      const axiosInstance = await getAuthenticatedAxios();
+
+      // Extract VAT number without country prefix if present
+      let vatNumber = vatIdentifier.identifier_value;
+      if (vatNumber.startsWith(vatIdentifier.country_code)) {
+        vatNumber = vatNumber.substring(vatIdentifier.country_code.length);
+      }
+
+      const response = await axiosInstance.post<{
+        status: 'valid' | 'invalid' | 'error';
+        is_valid: boolean;
+        trader_name?: string;
+        trader_address?: string;
+        was_saved: boolean;
+        message: string;
+      }>(`/legal-entities/${legalEntityId}/vies/fetch`, {
+        country_code: vatIdentifier.country_code,
+        vat_number: vatNumber,
+        save_to_database: true,
+      });
+
+      const result = response.data;
+      if (result.status === 'valid' && result.was_saved) {
+        notification.showSuccess(`VIES validation successful - VAT number is valid`);
+        return true;
+      } else if (result.status === 'invalid') {
+        notification.showWarning(`VIES: VAT number ${vatIdentifier.identifier_value} is not valid`);
+      }
+      return false;
+    } catch (error: unknown) {
+      // Don't show error for VIES - it's optional
+      logger.debug('VIES validation failed:', error);
+      return false;
+    } finally {
+      setFetchingVies(false);
+    }
+  }, [legalEntityId, identifiers, notification]);
+
+  // Unified enrichment function that calls Peppol and VIES registries
+  // Note: LEI is automatically fetched during KvK document verification
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Unified enrichment requires checking multiple registries
+  const handleEnrich = useCallback(async () => {
+    const results: string[] = [];
+    let anySuccess = false;
+
+    // 1. Try Peppol enrichment (requires KVK, VAT, or similar identifier)
+    const peppolSuitableId = identifiers.find((id) =>
+      ['KVK', 'VAT', 'KBO', 'SIREN', 'CRN'].includes(id.identifier_type)
+    );
+    const peppolExists = identifiers.some((id) => id.identifier_type === 'PEPPOL');
+
+    if (peppolSuitableId && peppolSuitableId.country_code && !peppolExists) {
+      setFetchingPeppol(true);
+      try {
+        const axiosInstance = await getAuthenticatedAxios();
+        const response = await axiosInstance.post<{
+          participant_id: string | null;
+          entity_name: string | null;
+          status: 'found' | 'not_found' | 'error';
+          was_saved: boolean;
+          message?: string;
+        }>(`/legal-entities/${legalEntityId}/peppol/fetch`, {
+          identifier_type: peppolSuitableId.identifier_type,
+          identifier_value: peppolSuitableId.identifier_value,
+          country_code: peppolSuitableId.country_code,
+          save_to_database: true,
+        });
+
+        if (response.data.status === 'found' && response.data.was_saved) {
+          results.push(`Peppol: ${response.data.participant_id}`);
+          anySuccess = true;
+        }
+      } catch (error: unknown) {
+        logger.debug('Peppol enrichment failed:', error);
+      } finally {
+        setFetchingPeppol(false);
+      }
+    }
+
+    // 2. Try VIES validation (requires VAT identifier)
+    const vatIdentifier = identifiers.find((id) => id.identifier_type === 'VAT');
+    const viesExists = identifiers.some((id) => id.identifier_type === 'VIES');
+
+    if (vatIdentifier && vatIdentifier.country_code && !viesExists) {
+      setFetchingVies(true);
+      try {
+        const axiosInstance = await getAuthenticatedAxios();
+
+        let vatNumber = vatIdentifier.identifier_value;
+        if (vatNumber.startsWith(vatIdentifier.country_code)) {
+          vatNumber = vatNumber.substring(vatIdentifier.country_code.length);
+        }
+
+        const response = await axiosInstance.post<{
+          status: 'valid' | 'invalid' | 'error';
+          is_valid: boolean;
+          was_saved: boolean;
+          message: string;
+        }>(`/legal-entities/${legalEntityId}/vies/fetch`, {
+          country_code: vatIdentifier.country_code,
+          vat_number: vatNumber,
+          save_to_database: true,
+        });
+
+        if (response.data.status === 'valid' && response.data.was_saved) {
+          results.push('VIES validated');
+          anySuccess = true;
+        }
+      } catch (error: unknown) {
+        logger.debug('VIES enrichment failed:', error);
+      } finally {
+        setFetchingVies(false);
+      }
+    }
+
+    // Show summary notification
+    if (anySuccess) {
+      notification.showSuccess(`Enrichment complete: ${results.join(', ')}`);
+      await onRefresh();
+    } else {
+      notification.showInfo('No new data found. LEI is fetched during KvK verification. Peppol/VIES require KVK or VAT identifier.');
+    }
+  }, [legalEntityId, identifiers, notification, onRefresh]);
+
   return {
     kvkVerificationFlags,
     hasKvkDocument,
-    fetchingLei,
+    fetchingLei: fetchingLei || fetchingPeppol || fetchingVies, // Combined loading state
     fetchingPeppol,
+    fetchingVies,
     fetchKvkVerification,
     handleFetchLei,
     handleFetchPeppol,
+    handleFetchVies,
+    handleEnrich, // Unified enrichment function
   };
 }
