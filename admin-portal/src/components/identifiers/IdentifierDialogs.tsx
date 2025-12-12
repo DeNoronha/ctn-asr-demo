@@ -12,6 +12,26 @@ import { AlertTriangle } from '../icons';
 
 const VALIDATION_STATUSES = ['PENDING', 'VALIDATED', 'FAILED', 'EXPIRED'];
 
+// Western European countries for the country code dropdown
+const WESTERN_EUROPEAN_COUNTRIES = [
+  { value: 'NL', label: 'NL - Netherlands' },
+  { value: 'DE', label: 'DE - Germany' },
+  { value: 'BE', label: 'BE - Belgium' },
+  { value: 'FR', label: 'FR - France' },
+  { value: 'GB', label: 'GB - United Kingdom' },
+  { value: 'LU', label: 'LU - Luxembourg' },
+  { value: 'AT', label: 'AT - Austria' },
+  { value: 'CH', label: 'CH - Switzerland' },
+  { value: 'IE', label: 'IE - Ireland' },
+  { value: 'DK', label: 'DK - Denmark' },
+  { value: 'SE', label: 'SE - Sweden' },
+  { value: 'NO', label: 'NO - Norway' },
+  { value: 'FI', label: 'FI - Finland' },
+  { value: 'ES', label: 'ES - Spain' },
+  { value: 'PT', label: 'PT - Portugal' },
+  { value: 'IT', label: 'IT - Italy' },
+];
+
 interface IdentifierDialogProps {
   isOpen: boolean;
   editingIdentifier: LegalEntityIdentifier | null;
@@ -173,7 +193,7 @@ export const IdentifierDialog: React.FC<IdentifierDialogProps> = ({
     >
       <div className="identifier-form">
         <div className="form-field">
-          <TextInput
+          <Select
             label={
               <>
                 Country Code *
@@ -183,13 +203,15 @@ export const IdentifierDialog: React.FC<IdentifierDialogProps> = ({
                 />
               </>
             }
-            value={formData.country_code || ''}
-            onChange={(e) => onCountryCodeChange(e.target.value)}
-            placeholder="e.g., NL, DE, BE, FR, GB"
-            maxLength={2}
+            data={WESTERN_EUROPEAN_COUNTRIES}
+            value={formData.country_code || null}
+            onChange={(value) => onCountryCodeChange(value || '')}
+            placeholder="Select country..."
+            searchable
+            clearable
           />
           <span className="field-hint">
-            Enter country code first to see applicable identifier types
+            Select country to see applicable identifier types
           </span>
         </div>
 

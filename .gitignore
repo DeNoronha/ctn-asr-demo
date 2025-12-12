@@ -121,6 +121,9 @@ api/keys/
 api/scripts/keys/
 api/tests/*.sh
 
+# Onboarding scripts output data (contains API response data)
+scripts/onboarding-data/
+
 # Code quality reports (generated)
 complexity-report/
 **/complexity-report/

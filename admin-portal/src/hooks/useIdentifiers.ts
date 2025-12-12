@@ -77,6 +77,16 @@ export const IDENTIFIER_VALIDATION: Record<
     example: 'AB123456',
     description: '8 alphanumeric characters',
   },
+  RSIN: {
+    pattern: /^\d{9}$/,
+    example: '001671248',
+    description: '9 digits (Dutch legal entity ID with 11-proof check)',
+  },
+  VIES: {
+    pattern: /^[A-Z]{2}[A-Z0-9]{2,13}$/,
+    example: 'NL001671248B03',
+    description: 'VIES-validated VAT number (country code + VAT)',
+  },
   PEPPOL: {
     pattern: /^[a-z0-9-]+::[0-9]{4}:[A-Za-z0-9]+$/,
     example: 'iso6523-actorid-upis::0106:12345678',
@@ -85,27 +95,28 @@ export const IDENTIFIER_VALIDATION: Record<
 };
 
 // Mapping of country codes to applicable identifier types
+// VIES is available for all EU member states
 export const COUNTRY_IDENTIFIER_MAP: Record<string, string[]> = {
-  NL: ['KVK', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
-  DE: ['HRB', 'HRA', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
-  BE: ['KBO', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
-  FR: ['SIREN', 'SIRET', 'EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
-  GB: ['CRN', 'EORI', 'VAT', 'LEI', 'DUNS', 'PEPPOL'],
-  UK: ['CRN', 'EORI', 'VAT', 'LEI', 'DUNS', 'PEPPOL'],
+  NL: ['KVK', 'RSIN', 'EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  DE: ['HRB', 'HRA', 'EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  BE: ['KBO', 'EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  FR: ['SIREN', 'SIRET', 'EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  GB: ['CRN', 'EORI', 'VAT', 'LEI', 'DUNS', 'PEPPOL'], // UK no longer in EU, no VIES
+  UK: ['CRN', 'EORI', 'VAT', 'LEI', 'DUNS', 'PEPPOL'], // UK no longer in EU, no VIES
   US: ['DUNS', 'LEI'],
-  LU: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
-  AT: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
-  IT: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
-  ES: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
-  PT: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
-  DK: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
-  SE: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
-  NO: ['EORI', 'VAT', 'LEI', 'DUNS', 'PEPPOL'],
-  CH: ['EORI', 'VAT', 'LEI', 'DUNS'],
-  PL: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
-  CZ: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS'],
-  IE: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
-  FI: ['EORI', 'VAT', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  LU: ['EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  AT: ['EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  IT: ['EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  ES: ['EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  PT: ['EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  DK: ['EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  SE: ['EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  NO: ['EORI', 'VAT', 'LEI', 'DUNS', 'PEPPOL'], // Norway not in EU
+  CH: ['EORI', 'VAT', 'LEI', 'DUNS'], // Switzerland not in EU
+  PL: ['EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  CZ: ['EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS'],
+  IE: ['EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
+  FI: ['EORI', 'VAT', 'VIES', 'EUID', 'LEI', 'DUNS', 'PEPPOL'],
   default: ['LEI', 'DUNS', 'EORI', 'VAT', 'OTHER'],
 };
 
@@ -158,6 +169,14 @@ export const REGISTRY_INFO: Record<string, { name: string; url: string }> = {
   CRN: {
     name: 'UK Companies House - Company Registration Number',
     url: 'https://find-and-update.company-information.service.gov.uk/',
+  },
+  RSIN: {
+    name: 'Dutch Chamber of Commerce - RSIN',
+    url: 'https://www.kvk.nl/',
+  },
+  VIES: {
+    name: 'EU VAT Information Exchange System (VIES)',
+    url: 'https://ec.europa.eu/taxation_customs/vies/',
   },
   PEPPOL: {
     name: 'Peppol Directory',
