@@ -1062,24 +1062,79 @@ router.put('/v1/legal-entities/:legalentityid', requireAuth, async (req: Request
 });
 
 router.delete('/v1/legal-entities/:legalentityid', requireAuth, async (req: Request, res: Response) => {
-  try {
-    const pool = getPool();
-    const { legalentityid } = req.params;
+  const pool = getPool();
+  const client = await pool.connect();
+  const { legalentityid } = req.params;
 
-    // Soft delete
-    const { rowCount } = await pool.query(`
-      UPDATE legal_entity SET is_deleted = true, dt_modified = NOW()
+  try {
+    await client.query('BEGIN');
+
+    // 1. Check if legal entity exists
+    const { rows: existing } = await client.query(`
+      SELECT legal_entity_id FROM legal_entity
       WHERE legal_entity_id = $1 AND is_deleted = false
     `, [legalentityid]);
 
-    if (rowCount === 0) {
+    if (existing.length === 0) {
+      await client.query('ROLLBACK');
       return res.status(404).json({ error: 'Legal entity not found' });
     }
 
+    // 2. Cascade soft-delete all related records
+    // Note: Tables without is_deleted column are skipped (they use hard delete constraints)
+
+    // Soft-delete contacts
+    await client.query(`
+      UPDATE legal_entity_contact SET is_deleted = true, dt_modified = NOW()
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    // Soft-delete identifiers
+    await client.query(`
+      UPDATE legal_entity_number SET is_deleted = true, dt_modified = NOW()
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    // Soft-delete endpoints
+    await client.query(`
+      UPDATE legal_entity_endpoint SET is_deleted = true, dt_modified = NOW()
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    // Soft-delete KvK registry data
+    await client.query(`
+      UPDATE kvk_registry_data SET is_deleted = true, dt_modified = NOW()
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    // Soft-delete identifier verification history
+    await client.query(`
+      UPDATE identifier_verification_history SET is_deleted = true, dt_modified = NOW()
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    // Soft-delete member record (if exists)
+    await client.query(`
+      UPDATE members SET is_deleted = true, updated_at = NOW()
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    // 3. Soft-delete the legal entity itself
+    await client.query(`
+      UPDATE legal_entity SET is_deleted = true, dt_modified = NOW()
+      WHERE legal_entity_id = $1
+    `, [legalentityid]);
+
+    await client.query('COMMIT');
+
+    console.log(`Cascade soft-deleted legal entity and related records: ${legalentityid}`);
     res.status(204).send();
   } catch (error: any) {
+    await client.query('ROLLBACK');
     console.error('Error deleting legal entity:', error);
     res.status(500).json({ error: 'Failed to delete legal entity' });
+  } finally {
+    client.release();
   }
 });
 

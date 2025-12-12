@@ -27,6 +27,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useBulkActions } from '../hooks/useBulkActions';
 import { useGridState } from '../hooks/useGridState';
 import type { Member } from '../services/api';
+import { deleteLegalEntity } from '../services/api';
 import { getMembershipColor, getStatusColor } from '../utils/colors';
 import { sortMembers } from '../utils/memberSorting';
 import { sanitizeGridCell } from '../utils/sanitize';
@@ -66,6 +67,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [bulkAction, setBulkAction] = useState<string>('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [total, setTotal] = useState(totalMembers || members.length);
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<Member>>({
     columnAccessor: 'legal_name',
@@ -172,6 +176,36 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
   const handleDialogClose = useCallback(() => {
     setShowBulkDialog(false);
+  }, []);
+
+  const handleDeleteClick = useCallback((member: Member) => {
+    setMemberToDelete(member);
+    setShowDeleteDialog(true);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!memberToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteLegalEntity(memberToDelete.legal_entity_id);
+      notification.showSuccess(`Successfully deleted ${memberToDelete.legal_name}`);
+      setShowDeleteDialog(false);
+      setMemberToDelete(null);
+      if (onRefresh) {
+        await onRefresh();
+      }
+    } catch (error: unknown) {
+      console.error('Failed to delete member:', error);
+      notification.showError('Failed to delete member. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [memberToDelete, notification, onRefresh]);
+
+  const handleDeleteCancel = useCallback(() => {
+    setShowDeleteDialog(false);
+    setMemberToDelete(null);
   }, []);
 
   const statusTooltips: Record<string, string> = {
@@ -328,8 +362,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                 color="red"
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
-                  // TODO: Implement delete functionality
-                  notification.showWarning('Delete functionality requires confirmation');
+                  handleDeleteClick(member);
                 }}
               >
                 <IconTrash size={16} />
@@ -458,6 +491,39 @@ const MembersGrid: React.FC<MembersGridProps> = ({
           </Button>
           <Button color="blue" onClick={executeBulkAction} disabled={isBulkProcessing}>
             {isBulkProcessing ? 'Processing...' : 'Confirm'}
+          </Button>
+        </Group>
+      </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <Modal
+        opened={showDeleteDialog}
+        onClose={handleDeleteCancel}
+        title="Delete Member"
+        size="md"
+      >
+        <Stack gap="md" p="md">
+          <p style={{ fontSize: '16px' }}>
+            Are you sure you want to delete <strong>{memberToDelete?.legal_name}</strong>?
+          </p>
+          <p style={{ fontSize: '14px', color: '#666' }}>
+            This will also delete all associated records:
+          </p>
+          <ul style={{ fontSize: '14px', color: '#666', margin: '0 0 0 20px', padding: 0 }}>
+            <li>Contacts</li>
+            <li>Identifiers (KvK, LEI, EUID, etc.)</li>
+            <li>Endpoints</li>
+            <li>Registry data</li>
+            <li>Verification history</li>
+          </ul>
+          <Badge color="red" size="lg">This action cannot be undone!</Badge>
+        </Stack>
+        <Group mt="xl" justify="flex-end">
+          <Button onClick={handleDeleteCancel} variant="default" disabled={isDeleting}>
+            Cancel
+          </Button>
+          <Button color="red" onClick={handleDeleteConfirm} loading={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Delete Member'}
           </Button>
         </Group>
       </Modal>
