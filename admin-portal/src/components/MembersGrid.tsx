@@ -480,7 +480,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             onSortStatusChange={setSortStatus}
             selectedRecords={sortedData.filter((m) => selectedIds.includes(m.legal_entity_id))}
             onSelectedRecordsChange={handleSelectedRecordsChange}
-            idAccessor="org_id"
+            idAccessor="legal_entity_id"
             storeColumnsKey="members-grid"
             onRowClick={handleRowClick}
             rowStyle={() => ({ cursor: 'pointer' })}
