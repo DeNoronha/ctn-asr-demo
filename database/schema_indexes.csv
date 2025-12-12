@@ -1,111 +1,210 @@
-schemaname,tablename,indexname,create_statement
-public,admin_tasks,idx_admin_tasks_assigned,"CREATE INDEX idx_admin_tasks_assigned ON public.admin_tasks USING btree (assigned_to, status) WHERE (assigned_to IS NOT NULL);"
-public,admin_tasks,idx_admin_tasks_due,"CREATE INDEX idx_admin_tasks_due ON public.admin_tasks USING btree (due_date) WHERE ((status)::text = ANY ((ARRAY['pending'::character varying, 'in_progress'::character varying])::text[]));"
-public,admin_tasks,idx_admin_tasks_entity,CREATE INDEX idx_admin_tasks_entity ON public.admin_tasks USING btree (related_entity_id) WHERE (related_entity_id IS NOT NULL);
-public,admin_tasks,idx_admin_tasks_status,"CREATE INDEX idx_admin_tasks_status ON public.admin_tasks USING btree (status, priority, due_date);"
-public,admin_tasks,idx_admin_tasks_type,"CREATE INDEX idx_admin_tasks_type ON public.admin_tasks USING btree (task_type, status);"
-public,audit_log,idx_audit_log_dt_created,CREATE INDEX idx_audit_log_dt_created ON public.audit_log USING btree (dt_created DESC);
-public,audit_log,idx_audit_log_event_type,CREATE INDEX idx_audit_log_event_type ON public.audit_log USING btree (event_type);
-public,audit_log,idx_audit_log_failures,"CREATE INDEX idx_audit_log_failures ON public.audit_log USING btree (result, severity, dt_created DESC) WHERE ((result)::text = 'failure'::text);"
-public,audit_log,idx_audit_log_resource,"CREATE INDEX idx_audit_log_resource ON public.audit_log USING btree (resource_type, resource_id);"
-public,audit_log,idx_audit_log_result,CREATE INDEX idx_audit_log_result ON public.audit_log USING btree (result);
-public,audit_log,idx_audit_log_severity,CREATE INDEX idx_audit_log_severity ON public.audit_log USING btree (severity);
-public,audit_log,idx_audit_log_user_activity,"CREATE INDEX idx_audit_log_user_activity ON public.audit_log USING btree (user_id, dt_created DESC);"
-public,audit_log,idx_audit_log_user_email,CREATE INDEX idx_audit_log_user_email ON public.audit_log USING btree (user_email);
-public,audit_log,idx_audit_log_user_id,CREATE INDEX idx_audit_log_user_id ON public.audit_log USING btree (user_id);
-public,audit_logs,idx_audit_actor,CREATE INDEX idx_audit_actor ON public.audit_logs USING btree (actor_org_id);
-public,audit_logs,idx_audit_time,CREATE INDEX idx_audit_time ON public.audit_logs USING btree (event_time DESC);
-public,audit_logs,idx_audit_type,CREATE INDEX idx_audit_type ON public.audit_logs USING btree (event_type);
-public,bdi_external_systems,bdi_external_systems_keycloak_client_id_key,CREATE UNIQUE INDEX bdi_external_systems_keycloak_client_id_key ON public.bdi_external_systems USING btree (keycloak_client_id);
-public,bdi_external_systems,bdi_external_systems_system_domain_key,CREATE UNIQUE INDEX bdi_external_systems_system_domain_key ON public.bdi_external_systems USING btree (system_domain);
-public,bdi_external_systems,idx_bdi_systems_active,"CREATE INDEX idx_bdi_systems_active ON public.bdi_external_systems USING btree (is_active, is_approved) WHERE (is_deleted = false);"
-public,bdi_external_systems,idx_bdi_systems_client,CREATE INDEX idx_bdi_systems_client ON public.bdi_external_systems USING btree (keycloak_client_id);
-public,bdi_external_systems,idx_bdi_systems_domain,CREATE INDEX idx_bdi_systems_domain ON public.bdi_external_systems USING btree (system_domain);
-public,bdi_orchestration_participants,idx_participants_domain,CREATE INDEX idx_participants_domain ON public.bdi_orchestration_participants USING btree (participant_domain);
-public,bdi_orchestration_participants,idx_participants_entity,CREATE INDEX idx_participants_entity ON public.bdi_orchestration_participants USING btree (legal_entity_id);
-public,bdi_orchestration_participants,idx_participants_orchestration,CREATE INDEX idx_participants_orchestration ON public.bdi_orchestration_participants USING btree (orchestration_id);
-public,bdi_orchestration_participants,idx_participants_role,CREATE INDEX idx_participants_role ON public.bdi_orchestration_participants USING btree (participant_role);
-public,bdi_orchestration_participants,idx_participants_status,CREATE INDEX idx_participants_status ON public.bdi_orchestration_participants USING btree (participant_status) WHERE (is_deleted = false);
-public,bdi_orchestration_participants,uq_orchestration_participant,"CREATE UNIQUE INDEX uq_orchestration_participant ON public.bdi_orchestration_participants USING btree (orchestration_id, participant_domain, participant_role);"
-public,bdi_orchestrations,idx_orchestrations_business_keys,CREATE INDEX idx_orchestrations_business_keys ON public.bdi_orchestrations USING gin (business_keys);
-public,bdi_orchestrations,idx_orchestrations_created,CREATE INDEX idx_orchestrations_created ON public.bdi_orchestrations USING btree (dt_created DESC);
-public,bdi_orchestrations,idx_orchestrations_customer,CREATE INDEX idx_orchestrations_customer ON public.bdi_orchestrations USING btree (customer_domain);
-public,bdi_orchestrations,idx_orchestrations_orchestrator,CREATE INDEX idx_orchestrations_orchestrator ON public.bdi_orchestrations USING btree (orchestrator_domain);
-public,bdi_orchestrations,idx_orchestrations_order_ref,CREATE INDEX idx_orchestrations_order_ref ON public.bdi_orchestrations USING btree (internal_order_identifier);
-public,bdi_orchestrations,idx_orchestrations_status,CREATE INDEX idx_orchestrations_status ON public.bdi_orchestrations USING btree (status) WHERE (is_deleted = false);
-public,bvad_issued_tokens,bvad_issued_tokens_jti_key,CREATE UNIQUE INDEX bvad_issued_tokens_jti_key ON public.bvad_issued_tokens USING btree (jti);
-public,bvad_issued_tokens,idx_bvad_tokens_entity,CREATE INDEX idx_bvad_tokens_entity ON public.bvad_issued_tokens USING btree (legal_entity_id);
-public,bvad_issued_tokens,idx_bvad_tokens_expires,CREATE INDEX idx_bvad_tokens_expires ON public.bvad_issued_tokens USING btree (expires_at);
-public,bvad_issued_tokens,idx_bvad_tokens_issued,CREATE INDEX idx_bvad_tokens_issued ON public.bvad_issued_tokens USING btree (issued_at DESC);
-public,bvad_issued_tokens,idx_bvad_tokens_jti,CREATE INDEX idx_bvad_tokens_jti ON public.bvad_issued_tokens USING btree (jti);
-public,bvad_issued_tokens,idx_bvad_tokens_subject,CREATE INDEX idx_bvad_tokens_subject ON public.bvad_issued_tokens USING btree (subject);
-public,bvod_validation_log,idx_bvod_validation_jti,CREATE INDEX idx_bvod_validation_jti ON public.bvod_validation_log USING btree (bvod_jti);
-public,bvod_validation_log,idx_bvod_validation_member,CREATE INDEX idx_bvod_validation_member ON public.bvod_validation_log USING btree (member_domain_checked);
-public,bvod_validation_log,idx_bvod_validation_orchestration,CREATE INDEX idx_bvod_validation_orchestration ON public.bvod_validation_log USING btree (orchestration_id);
-public,bvod_validation_log,idx_bvod_validation_requested,CREATE INDEX idx_bvod_validation_requested ON public.bvod_validation_log USING btree (requested_at DESC);
-public,bvod_validation_log,idx_bvod_validation_requestor,CREATE INDEX idx_bvod_validation_requestor ON public.bvod_validation_log USING btree (requested_by);
-public,bvod_validation_log,idx_bvod_validation_result,CREATE INDEX idx_bvod_validation_result ON public.bvod_validation_log USING btree (validation_result);
-public,company_registries,company_registries_registry_code_key,CREATE UNIQUE INDEX company_registries_registry_code_key ON public.company_registries USING btree (registry_code);
-public,company_registries,idx_registries_active,CREATE INDEX idx_registries_active ON public.company_registries USING btree (is_active) WHERE (is_active = true);
-public,company_registries,idx_registries_country,CREATE INDEX idx_registries_country ON public.company_registries USING btree (country_code);
-public,company_registries,idx_registries_type,CREATE INDEX idx_registries_type ON public.company_registries USING btree (registry_type);
-public,endpoint_authorization,idx_endpoint_authorization_active,CREATE INDEX idx_endpoint_authorization_active ON public.endpoint_authorization USING btree (is_active) WHERE (is_active = true);
-public,endpoint_authorization,idx_endpoint_authorization_deleted,CREATE INDEX idx_endpoint_authorization_deleted ON public.endpoint_authorization USING btree (is_deleted) WHERE (is_deleted = false);
-public,endpoint_authorization,idx_endpoint_authorization_endpoint,CREATE INDEX idx_endpoint_authorization_endpoint ON public.endpoint_authorization USING btree (legal_entity_endpoint_id);
-public,endpoint_authorization,idx_endpoint_authorization_expires,CREATE INDEX idx_endpoint_authorization_expires ON public.endpoint_authorization USING btree (expires_at);
-public,invoices,idx_invoices_entity,CREATE INDEX idx_invoices_entity ON public.invoices USING btree (legal_entity_id);
-public,invoices,idx_invoices_number,CREATE INDEX idx_invoices_number ON public.invoices USING btree (invoice_number);
-public,invoices,idx_invoices_status,"CREATE INDEX idx_invoices_status ON public.invoices USING btree (status, due_date);"
-public,invoices,idx_invoices_subscription,CREATE INDEX idx_invoices_subscription ON public.invoices USING btree (subscription_id);
-public,invoices,invoices_invoice_number_key,CREATE UNIQUE INDEX invoices_invoice_number_key ON public.invoices USING btree (invoice_number);
-public,issued_tokens,idx_tokens_expiry,CREATE INDEX idx_tokens_expiry ON public.issued_tokens USING btree (expires_at);
-public,issued_tokens,idx_tokens_member,CREATE INDEX idx_tokens_member ON public.issued_tokens USING btree (member_id);
-public,issued_tokens,idx_tokens_type,CREATE INDEX idx_tokens_type ON public.issued_tokens USING btree (token_type);
-public,legal_entity,idx_legal_entity_created,CREATE INDEX idx_legal_entity_created ON public.legal_entity USING btree (dt_created);
-public,legal_entity,idx_legal_entity_deleted,CREATE INDEX idx_legal_entity_deleted ON public.legal_entity USING btree (is_deleted) WHERE (is_deleted = false);
-public,legal_entity,idx_legal_entity_kvk_verification,"CREATE INDEX idx_legal_entity_kvk_verification ON public.legal_entity USING btree (kvk_verification_status, kvk_verified_at);"
-public,legal_entity,idx_legal_entity_name,CREATE INDEX idx_legal_entity_name ON public.legal_entity USING btree (primary_legal_name);
-public,legal_entity,idx_legal_entity_party,CREATE INDEX idx_legal_entity_party ON public.legal_entity USING btree (party_id);
-public,legal_entity,idx_legal_entity_status,CREATE INDEX idx_legal_entity_status ON public.legal_entity USING btree (status);
-public,legal_entity_contact,idx_legal_entity_contact_active,CREATE INDEX idx_legal_entity_contact_active ON public.legal_entity_contact USING btree (is_active) WHERE (is_active = true);
-public,legal_entity_contact,idx_legal_entity_contact_deleted,CREATE INDEX idx_legal_entity_contact_deleted ON public.legal_entity_contact USING btree (is_deleted) WHERE (is_deleted = false);
-public,legal_entity_contact,idx_legal_entity_contact_email,CREATE INDEX idx_legal_entity_contact_email ON public.legal_entity_contact USING btree (email);
-public,legal_entity_contact,idx_legal_entity_contact_entity,CREATE INDEX idx_legal_entity_contact_entity ON public.legal_entity_contact USING btree (legal_entity_id);
-public,legal_entity_contact,idx_legal_entity_contact_primary,CREATE INDEX idx_legal_entity_contact_primary ON public.legal_entity_contact USING btree (is_primary) WHERE (is_primary = true);
-public,legal_entity_contact,idx_legal_entity_contact_type,CREATE INDEX idx_legal_entity_contact_type ON public.legal_entity_contact USING btree (contact_type);
-public,legal_entity_endpoint,idx_legal_entity_endpoint_active,CREATE INDEX idx_legal_entity_endpoint_active ON public.legal_entity_endpoint USING btree (is_active) WHERE (is_active = true);
-public,legal_entity_endpoint,idx_legal_entity_endpoint_category,CREATE INDEX idx_legal_entity_endpoint_category ON public.legal_entity_endpoint USING btree (data_category);
-public,legal_entity_endpoint,idx_legal_entity_endpoint_deleted,CREATE INDEX idx_legal_entity_endpoint_deleted ON public.legal_entity_endpoint USING btree (is_deleted) WHERE (is_deleted = false);
-public,legal_entity_endpoint,idx_legal_entity_endpoint_entity,CREATE INDEX idx_legal_entity_endpoint_entity ON public.legal_entity_endpoint USING btree (legal_entity_id);
-public,legal_entity_number,idx_legal_entity_number_country,CREATE INDEX idx_legal_entity_number_country ON public.legal_entity_number USING btree (country_code) WHERE (country_code IS NOT NULL);
-public,legal_entity_number,idx_legal_entity_number_deleted,CREATE INDEX idx_legal_entity_number_deleted ON public.legal_entity_number USING btree (is_deleted) WHERE (is_deleted = false);
-public,legal_entity_number,idx_legal_entity_number_entity,CREATE INDEX idx_legal_entity_number_entity ON public.legal_entity_number USING btree (legal_entity_id);
-public,legal_entity_number,idx_legal_entity_number_status,CREATE INDEX idx_legal_entity_number_status ON public.legal_entity_number USING btree (validation_status);
-public,legal_entity_number,idx_legal_entity_number_type,CREATE INDEX idx_legal_entity_number_type ON public.legal_entity_number USING btree (identifier_type);
-public,legal_entity_number,idx_legal_entity_number_type_country,"CREATE INDEX idx_legal_entity_number_type_country ON public.legal_entity_number USING btree (identifier_type, country_code) WHERE (country_code IS NOT NULL);"
-public,legal_entity_number,idx_legal_entity_number_value,CREATE INDEX idx_legal_entity_number_value ON public.legal_entity_number USING btree (identifier_value);
-public,legal_entity_number,uq_identifier,"CREATE UNIQUE INDEX uq_identifier ON public.legal_entity_number USING btree (legal_entity_id, identifier_type, identifier_value);"
-public,members,idx_members_azure_ad_oid,CREATE INDEX idx_members_azure_ad_oid ON public.members USING btree (azure_ad_object_id) WHERE (azure_ad_object_id IS NOT NULL);
-public,members,idx_members_azure_ad_oid_unique,CREATE UNIQUE INDEX idx_members_azure_ad_oid_unique ON public.members USING btree (azure_ad_object_id) WHERE (azure_ad_object_id IS NOT NULL);
-public,members,idx_members_domain,CREATE INDEX idx_members_domain ON public.members USING btree (domain);
-public,members,idx_members_email,CREATE INDEX idx_members_email ON public.members USING btree (email) WHERE (email IS NOT NULL);
-public,members,idx_members_lei,CREATE INDEX idx_members_lei ON public.members USING btree (lei) WHERE (lei IS NOT NULL);
-public,members,idx_members_org_id,CREATE INDEX idx_members_org_id ON public.members USING btree (org_id);
-public,members,idx_members_status,CREATE INDEX idx_members_status ON public.members USING btree (status);
-public,members,members_org_id_key,CREATE UNIQUE INDEX members_org_id_key ON public.members USING btree (org_id);
-public,newsletter_recipients,idx_newsletter_recipients_entity,CREATE INDEX idx_newsletter_recipients_entity ON public.newsletter_recipients USING btree (legal_entity_id);
-public,newsletter_recipients,idx_newsletter_recipients_newsletter,CREATE INDEX idx_newsletter_recipients_newsletter ON public.newsletter_recipients USING btree (newsletter_id);
-public,newsletter_recipients,idx_newsletter_recipients_status,"CREATE INDEX idx_newsletter_recipients_status ON public.newsletter_recipients USING btree (newsletter_id, status);"
-public,newsletters,idx_newsletters_created,CREATE INDEX idx_newsletters_created ON public.newsletters USING btree (created_at DESC);
-public,newsletters,idx_newsletters_sent,CREATE INDEX idx_newsletters_sent ON public.newsletters USING btree (sent_at DESC) WHERE (sent_at IS NOT NULL);
-public,newsletters,idx_newsletters_status,"CREATE INDEX idx_newsletters_status ON public.newsletters USING btree (status, scheduled_at);"
-public,oauth_clients,idx_oauth_member,CREATE INDEX idx_oauth_member ON public.oauth_clients USING btree (member_id);
-public,party_reference,idx_party_reference_created,CREATE INDEX idx_party_reference_created ON public.party_reference USING btree (dt_created);
-public,party_reference,idx_party_reference_deleted,CREATE INDEX idx_party_reference_deleted ON public.party_reference USING btree (is_deleted) WHERE (is_deleted = false);
-public,subscription_history,idx_subscription_history_event,"CREATE INDEX idx_subscription_history_event ON public.subscription_history USING btree (event_type, created_at DESC);"
-public,subscription_history,idx_subscription_history_subscription,"CREATE INDEX idx_subscription_history_subscription ON public.subscription_history USING btree (subscription_id, created_at DESC);"
-public,subscriptions,idx_subscriptions_billing,CREATE INDEX idx_subscriptions_billing ON public.subscriptions USING btree (next_billing_date) WHERE ((status)::text = 'active'::text);
-public,subscriptions,idx_subscriptions_entity,CREATE INDEX idx_subscriptions_entity ON public.subscriptions USING btree (legal_entity_id);
-public,subscriptions,idx_subscriptions_status,"CREATE INDEX idx_subscriptions_status ON public.subscriptions USING btree (status, next_billing_date);"
-public,vetting_records,idx_vetting_member,CREATE INDEX idx_vetting_member ON public.vetting_records USING btree (member_id);
-public,vetting_records,idx_vetting_status,CREATE INDEX idx_vetting_status ON public.vetting_records USING btree (status);
+schemaname,tablename,indexname,indexdef
+public,admin_tasks,admin_tasks_pkey,CREATE UNIQUE INDEX admin_tasks_pkey ON public.admin_tasks USING btree (task_id)
+public,admin_tasks,idx_admin_tasks_assigned_to,CREATE INDEX idx_admin_tasks_assigned_to ON public.admin_tasks USING btree (assigned_to)
+public,admin_tasks,idx_admin_tasks_assigned_to_email,CREATE INDEX idx_admin_tasks_assigned_to_email ON public.admin_tasks USING btree (assigned_to_email)
+public,admin_tasks,idx_admin_tasks_created_at,CREATE INDEX idx_admin_tasks_created_at ON public.admin_tasks USING btree (created_at)
+public,admin_tasks,idx_admin_tasks_created_by,CREATE INDEX idx_admin_tasks_created_by ON public.admin_tasks USING btree (created_by)
+public,admin_tasks,idx_admin_tasks_due_date,CREATE INDEX idx_admin_tasks_due_date ON public.admin_tasks USING btree (due_date)
+public,admin_tasks,idx_admin_tasks_related_entity,"CREATE INDEX idx_admin_tasks_related_entity ON public.admin_tasks USING btree (related_entity_type, related_entity_id)"
+public,admin_tasks,idx_admin_tasks_status,CREATE INDEX idx_admin_tasks_status ON public.admin_tasks USING btree (status)
+public,applications,applications_pkey,CREATE UNIQUE INDEX applications_pkey ON public.applications USING btree (application_id)
+public,applications,idx_applications_email,CREATE INDEX idx_applications_email ON public.applications USING btree (applicant_email)
+public,applications,idx_applications_kvk,CREATE INDEX idx_applications_kvk ON public.applications USING btree (kvk_number)
+public,applications,idx_applications_reviewed_by,CREATE INDEX idx_applications_reviewed_by ON public.applications USING btree (reviewed_by) WHERE (reviewed_by IS NOT NULL)
+public,applications,idx_applications_status,CREATE INDEX idx_applications_status ON public.applications USING btree (status)
+public,applications,idx_applications_status_submitted,"CREATE INDEX idx_applications_status_submitted ON public.applications USING btree (status, submitted_at DESC)"
+public,applications,idx_applications_submitted_at,CREATE INDEX idx_applications_submitted_at ON public.applications USING btree (submitted_at DESC)
+public,audit_log,audit_log_pkey,CREATE UNIQUE INDEX audit_log_pkey ON public.audit_log USING btree (audit_log_id)
+public,audit_log,idx_audit_log_dt_created,CREATE INDEX idx_audit_log_dt_created ON public.audit_log USING btree (dt_created DESC)
+public,audit_log,idx_audit_log_email_pseudonym,CREATE INDEX idx_audit_log_email_pseudonym ON public.audit_log USING btree (user_email_pseudonym) WHERE (user_email_pseudonym IS NOT NULL)
+public,audit_log,idx_audit_log_event_type,CREATE INDEX idx_audit_log_event_type ON public.audit_log USING btree (event_type)
+public,audit_log,idx_audit_log_failures,"CREATE INDEX idx_audit_log_failures ON public.audit_log USING btree (result, severity, dt_created DESC) WHERE ((result)::text = 'failure'::text)"
+public,audit_log,idx_audit_log_ip_pseudonym,CREATE INDEX idx_audit_log_ip_pseudonym ON public.audit_log USING btree (ip_address_pseudonym) WHERE (ip_address_pseudonym IS NOT NULL)
+public,audit_log,idx_audit_log_resource,"CREATE INDEX idx_audit_log_resource ON public.audit_log USING btree (resource_type, resource_id)"
+public,audit_log,idx_audit_log_result,CREATE INDEX idx_audit_log_result ON public.audit_log USING btree (result)
+public,audit_log,idx_audit_log_result_severity,"CREATE INDEX idx_audit_log_result_severity ON public.audit_log USING btree (result, severity, dt_created DESC) WHERE ((result)::text = 'failure'::text)"
+public,audit_log,idx_audit_log_severity,CREATE INDEX idx_audit_log_severity ON public.audit_log USING btree (severity)
+public,audit_log,idx_audit_log_user_activity,"CREATE INDEX idx_audit_log_user_activity ON public.audit_log USING btree (user_id, dt_created DESC)"
+public,audit_log,idx_audit_log_user_email,CREATE INDEX idx_audit_log_user_email ON public.audit_log USING btree (user_email)
+public,audit_log,idx_audit_log_user_id,CREATE INDEX idx_audit_log_user_id ON public.audit_log USING btree (user_id)
+public,audit_log,idx_audit_log_user_time,"CREATE INDEX idx_audit_log_user_time ON public.audit_log USING btree (user_id, dt_created DESC) WHERE (user_id IS NOT NULL)"
+public,audit_log_pii_access,audit_log_pii_access_pkey,CREATE UNIQUE INDEX audit_log_pii_access_pkey ON public.audit_log_pii_access USING btree (access_id)
+public,audit_log_pii_access,idx_pii_access_accessed_at,CREATE INDEX idx_pii_access_accessed_at ON public.audit_log_pii_access USING btree (accessed_at)
+public,audit_log_pii_access,idx_pii_access_accessed_by,CREATE INDEX idx_pii_access_accessed_by ON public.audit_log_pii_access USING btree (accessed_by)
+public,audit_log_pii_access,idx_pii_access_pseudonym,CREATE INDEX idx_pii_access_pseudonym ON public.audit_log_pii_access USING btree (pseudonym)
+public,audit_log_pii_mapping,audit_log_pii_mapping_pkey,CREATE UNIQUE INDEX audit_log_pii_mapping_pkey ON public.audit_log_pii_mapping USING btree (pseudonym)
+public,audit_log_pii_mapping,idx_pii_mapping_created_by,CREATE INDEX idx_pii_mapping_created_by ON public.audit_log_pii_mapping USING btree (created_by)
+public,audit_log_pii_mapping,idx_pii_mapping_dt_created,CREATE INDEX idx_pii_mapping_dt_created ON public.audit_log_pii_mapping USING btree (dt_created)
+public,authorization_log,authorization_log_pkey,CREATE UNIQUE INDEX authorization_log_pkey ON public.authorization_log USING btree (log_id)
+public,authorization_log,idx_auth_log_created,CREATE INDEX idx_auth_log_created ON public.authorization_log USING btree (created_at DESC)
+public,authorization_log,idx_auth_log_denied,"CREATE INDEX idx_auth_log_denied ON public.authorization_log USING btree (authorization_result, created_at DESC) WHERE ((authorization_result)::text = 'denied'::text)"
+public,authorization_log,idx_auth_log_legal_entity,CREATE INDEX idx_auth_log_legal_entity ON public.authorization_log USING btree (legal_entity_id)
+public,authorization_log,idx_auth_log_result,CREATE INDEX idx_auth_log_result ON public.authorization_log USING btree (authorization_result)
+public,authorization_log,idx_auth_log_user,"CREATE INDEX idx_auth_log_user ON public.authorization_log USING btree (user_identifier, created_at DESC)"
+public,bdi_external_systems,bdi_external_systems_keycloak_client_id_key,CREATE UNIQUE INDEX bdi_external_systems_keycloak_client_id_key ON public.bdi_external_systems USING btree (keycloak_client_id)
+public,bdi_external_systems,bdi_external_systems_pkey,CREATE UNIQUE INDEX bdi_external_systems_pkey ON public.bdi_external_systems USING btree (system_id)
+public,bdi_external_systems,bdi_external_systems_system_domain_key,CREATE UNIQUE INDEX bdi_external_systems_system_domain_key ON public.bdi_external_systems USING btree (system_domain)
+public,bdi_external_systems,idx_bdi_systems_active,"CREATE INDEX idx_bdi_systems_active ON public.bdi_external_systems USING btree (is_active, is_approved) WHERE (is_deleted = false)"
+public,bdi_external_systems,idx_bdi_systems_client,CREATE INDEX idx_bdi_systems_client ON public.bdi_external_systems USING btree (keycloak_client_id)
+public,bdi_external_systems,idx_bdi_systems_domain,CREATE INDEX idx_bdi_systems_domain ON public.bdi_external_systems USING btree (system_domain)
+public,bdi_orchestration_participants,bdi_orchestration_participants_pkey,CREATE UNIQUE INDEX bdi_orchestration_participants_pkey ON public.bdi_orchestration_participants USING btree (participant_id)
+public,bdi_orchestration_participants,idx_participants_domain,CREATE INDEX idx_participants_domain ON public.bdi_orchestration_participants USING btree (participant_domain)
+public,bdi_orchestration_participants,idx_participants_entity,CREATE INDEX idx_participants_entity ON public.bdi_orchestration_participants USING btree (legal_entity_id)
+public,bdi_orchestration_participants,idx_participants_orchestration,CREATE INDEX idx_participants_orchestration ON public.bdi_orchestration_participants USING btree (orchestration_id)
+public,bdi_orchestration_participants,idx_participants_role,CREATE INDEX idx_participants_role ON public.bdi_orchestration_participants USING btree (participant_role)
+public,bdi_orchestration_participants,idx_participants_status,CREATE INDEX idx_participants_status ON public.bdi_orchestration_participants USING btree (participant_status) WHERE (is_deleted = false)
+public,bdi_orchestration_participants,uq_orchestration_participant,"CREATE UNIQUE INDEX uq_orchestration_participant ON public.bdi_orchestration_participants USING btree (orchestration_id, participant_domain, participant_role)"
+public,bdi_orchestrations,bdi_orchestrations_pkey,CREATE UNIQUE INDEX bdi_orchestrations_pkey ON public.bdi_orchestrations USING btree (orchestration_id)
+public,bdi_orchestrations,idx_orchestrations_business_keys,CREATE INDEX idx_orchestrations_business_keys ON public.bdi_orchestrations USING gin (business_keys)
+public,bdi_orchestrations,idx_orchestrations_created,CREATE INDEX idx_orchestrations_created ON public.bdi_orchestrations USING btree (dt_created DESC)
+public,bdi_orchestrations,idx_orchestrations_customer,CREATE INDEX idx_orchestrations_customer ON public.bdi_orchestrations USING btree (customer_domain)
+public,bdi_orchestrations,idx_orchestrations_orchestrator,CREATE INDEX idx_orchestrations_orchestrator ON public.bdi_orchestrations USING btree (orchestrator_domain)
+public,bdi_orchestrations,idx_orchestrations_order_ref,CREATE INDEX idx_orchestrations_order_ref ON public.bdi_orchestrations USING btree (internal_order_identifier)
+public,bdi_orchestrations,idx_orchestrations_status,CREATE INDEX idx_orchestrations_status ON public.bdi_orchestrations USING btree (status) WHERE (is_deleted = false)
+public,bvad_issued_tokens,bvad_issued_tokens_jti_key,CREATE UNIQUE INDEX bvad_issued_tokens_jti_key ON public.bvad_issued_tokens USING btree (jti)
+public,bvad_issued_tokens,bvad_issued_tokens_pkey,CREATE UNIQUE INDEX bvad_issued_tokens_pkey ON public.bvad_issued_tokens USING btree (bvad_token_id)
+public,bvad_issued_tokens,idx_bvad_tokens_cleanup,CREATE INDEX idx_bvad_tokens_cleanup ON public.bvad_issued_tokens USING btree (expires_at) WHERE (expires_at IS NOT NULL)
+public,bvad_issued_tokens,idx_bvad_tokens_entity,CREATE INDEX idx_bvad_tokens_entity ON public.bvad_issued_tokens USING btree (legal_entity_id)
+public,bvad_issued_tokens,idx_bvad_tokens_expires,CREATE INDEX idx_bvad_tokens_expires ON public.bvad_issued_tokens USING btree (expires_at)
+public,bvad_issued_tokens,idx_bvad_tokens_issued,CREATE INDEX idx_bvad_tokens_issued ON public.bvad_issued_tokens USING btree (issued_at DESC)
+public,bvad_issued_tokens,idx_bvad_tokens_jti,CREATE INDEX idx_bvad_tokens_jti ON public.bvad_issued_tokens USING btree (jti)
+public,bvad_issued_tokens,idx_bvad_tokens_subject,CREATE INDEX idx_bvad_tokens_subject ON public.bvad_issued_tokens USING btree (subject)
+public,bvod_validation_log,bvod_validation_log_pkey,CREATE UNIQUE INDEX bvod_validation_log_pkey ON public.bvod_validation_log USING btree (validation_id)
+public,bvod_validation_log,idx_bvod_validation_jti,CREATE INDEX idx_bvod_validation_jti ON public.bvod_validation_log USING btree (bvod_jti)
+public,bvod_validation_log,idx_bvod_validation_member,CREATE INDEX idx_bvod_validation_member ON public.bvod_validation_log USING btree (member_domain_checked)
+public,bvod_validation_log,idx_bvod_validation_orchestration,CREATE INDEX idx_bvod_validation_orchestration ON public.bvod_validation_log USING btree (orchestration_id)
+public,bvod_validation_log,idx_bvod_validation_requested,CREATE INDEX idx_bvod_validation_requested ON public.bvod_validation_log USING btree (requested_at DESC)
+public,bvod_validation_log,idx_bvod_validation_requestor,CREATE INDEX idx_bvod_validation_requestor ON public.bvod_validation_log USING btree (requested_by)
+public,bvod_validation_log,idx_bvod_validation_result,CREATE INDEX idx_bvod_validation_result ON public.bvod_validation_log USING btree (validation_result)
+public,ctn_m2m_credentials,ctn_m2m_credentials_pkey,CREATE UNIQUE INDEX ctn_m2m_credentials_pkey ON public.ctn_m2m_credentials USING btree (credential_id)
+public,ctn_m2m_credentials,ctn_m2m_credentials_zitadel_client_id_key,CREATE UNIQUE INDEX ctn_m2m_credentials_zitadel_client_id_key ON public.ctn_m2m_credentials USING btree (m2m_client_id)
+public,ctn_m2m_credentials,idx_m2m_credentials_active,CREATE INDEX idx_m2m_credentials_active ON public.ctn_m2m_credentials USING btree (is_active) WHERE ((is_active = true) AND (is_deleted = false))
+public,ctn_m2m_credentials,idx_m2m_credentials_client_id,CREATE INDEX idx_m2m_credentials_client_id ON public.ctn_m2m_credentials USING btree (m2m_client_id) WHERE ((is_deleted = false) AND (is_active = true))
+public,ctn_m2m_credentials,idx_m2m_credentials_created,CREATE INDEX idx_m2m_credentials_created ON public.ctn_m2m_credentials USING btree (dt_created)
+public,ctn_m2m_credentials,idx_m2m_credentials_endpoints,CREATE INDEX idx_m2m_credentials_endpoints ON public.ctn_m2m_credentials USING gin (allowed_endpoints) WHERE (allowed_endpoints IS NOT NULL)
+public,ctn_m2m_credentials,idx_m2m_credentials_last_used,CREATE INDEX idx_m2m_credentials_last_used ON public.ctn_m2m_credentials USING btree (last_used_at) WHERE (last_used_at IS NOT NULL)
+public,ctn_m2m_credentials,idx_m2m_credentials_party,CREATE INDEX idx_m2m_credentials_party ON public.ctn_m2m_credentials USING btree (party_id) WHERE (is_deleted = false)
+public,ctn_m2m_credentials,idx_m2m_credentials_realm,CREATE INDEX idx_m2m_credentials_realm ON public.ctn_m2m_credentials USING btree (m2m_realm_id) WHERE (is_deleted = false)
+public,ctn_m2m_credentials,idx_m2m_credentials_scopes,CREATE INDEX idx_m2m_credentials_scopes ON public.ctn_m2m_credentials USING gin (assigned_scopes)
+public,ctn_m2m_secret_audit,ctn_zitadel_secret_audit_pkey,CREATE UNIQUE INDEX ctn_zitadel_secret_audit_pkey ON public.ctn_m2m_secret_audit USING btree (audit_id)
+public,ctn_m2m_secret_audit,idx_m2m_secrets_active,CREATE INDEX idx_m2m_secrets_active ON public.ctn_m2m_secret_audit USING btree (is_revoked) WHERE (is_revoked = false)
+public,ctn_m2m_secret_audit,idx_m2m_secrets_credential,CREATE INDEX idx_m2m_secrets_credential ON public.ctn_m2m_secret_audit USING btree (credential_id)
+public,ctn_m2m_secret_audit,idx_m2m_secrets_generated,CREATE INDEX idx_m2m_secrets_generated ON public.ctn_m2m_secret_audit USING btree (secret_generated_at)
+public,dns_verification_tokens,dns_verification_tokens_pkey,CREATE UNIQUE INDEX dns_verification_tokens_pkey ON public.dns_verification_tokens USING btree (token_id)
+public,dns_verification_tokens,idx_dns_tokens_cleanup,CREATE INDEX idx_dns_tokens_cleanup ON public.dns_verification_tokens USING btree (expires_at) WHERE ((status)::text = 'pending'::text)
+public,dns_verification_tokens,idx_dns_tokens_domain,CREATE INDEX idx_dns_tokens_domain ON public.dns_verification_tokens USING btree (domain)
+public,dns_verification_tokens,idx_dns_tokens_expires,CREATE INDEX idx_dns_tokens_expires ON public.dns_verification_tokens USING btree (expires_at) WHERE ((status)::text = 'pending'::text)
+public,dns_verification_tokens,idx_dns_tokens_legal_entity,CREATE INDEX idx_dns_tokens_legal_entity ON public.dns_verification_tokens USING btree (legal_entity_id)
+public,dns_verification_tokens,idx_dns_tokens_status,CREATE INDEX idx_dns_tokens_status ON public.dns_verification_tokens USING btree (status)
+public,dns_verification_tokens,uq_dns_token_active,"CREATE UNIQUE INDEX uq_dns_token_active ON public.dns_verification_tokens USING btree (legal_entity_id, domain) WHERE ((status)::text = 'pending'::text)"
+public,endpoint_authorization,endpoint_authorization_pkey,CREATE UNIQUE INDEX endpoint_authorization_pkey ON public.endpoint_authorization USING btree (endpoint_authorization_id)
+public,endpoint_authorization,idx_endpoint_authorization_active,CREATE INDEX idx_endpoint_authorization_active ON public.endpoint_authorization USING btree (is_active) WHERE (is_active = true)
+public,endpoint_authorization,idx_endpoint_authorization_deleted,CREATE INDEX idx_endpoint_authorization_deleted ON public.endpoint_authorization USING btree (is_deleted) WHERE (is_deleted = false)
+public,endpoint_authorization,idx_endpoint_authorization_endpoint,CREATE INDEX idx_endpoint_authorization_endpoint ON public.endpoint_authorization USING btree (legal_entity_endpoint_id)
+public,endpoint_authorization,idx_endpoint_authorization_expires,CREATE INDEX idx_endpoint_authorization_expires ON public.endpoint_authorization USING btree (expires_at)
+public,gleif_registry_data,gleif_registry_data_pkey,CREATE UNIQUE INDEX gleif_registry_data_pkey ON public.gleif_registry_data USING btree (registry_data_id)
+public,gleif_registry_data,idx_gleif_registry_fetched_at,"CREATE INDEX idx_gleif_registry_fetched_at ON public.gleif_registry_data USING btree (legal_entity_id, fetched_at DESC)"
+public,gleif_registry_data,idx_gleif_registry_legal_entity_id,CREATE INDEX idx_gleif_registry_legal_entity_id ON public.gleif_registry_data USING btree (legal_entity_id)
+public,gleif_registry_data,idx_gleif_registry_lei,CREATE INDEX idx_gleif_registry_lei ON public.gleif_registry_data USING btree (lei)
+public,identifier_verification_history,identifier_verification_history_pkey,CREATE UNIQUE INDEX identifier_verification_history_pkey ON public.identifier_verification_history USING btree (verification_id)
+public,identifier_verification_history,idx_verification_identifier,CREATE INDEX idx_verification_identifier ON public.identifier_verification_history USING btree (identifier_id)
+public,identifier_verification_history,idx_verification_legal_entity,CREATE INDEX idx_verification_legal_entity ON public.identifier_verification_history USING btree (legal_entity_id)
+public,identifier_verification_history,idx_verification_status,CREATE INDEX idx_verification_status ON public.identifier_verification_history USING btree (verification_status)
+public,identifier_verification_history,idx_verification_type,CREATE INDEX idx_verification_type ON public.identifier_verification_history USING btree (identifier_type)
+public,issued_tokens,idx_issued_tokens_cleanup,CREATE INDEX idx_issued_tokens_cleanup ON public.issued_tokens USING btree (expires_at) WHERE (expires_at IS NOT NULL)
+public,issued_tokens,idx_tokens_expiry,CREATE INDEX idx_tokens_expiry ON public.issued_tokens USING btree (expires_at)
+public,issued_tokens,idx_tokens_member,CREATE INDEX idx_tokens_member ON public.issued_tokens USING btree (member_id)
+public,issued_tokens,idx_tokens_type,CREATE INDEX idx_tokens_type ON public.issued_tokens USING btree (token_type)
+public,issued_tokens,issued_tokens_pkey,CREATE UNIQUE INDEX issued_tokens_pkey ON public.issued_tokens USING btree (jti)
+public,kvk_registry_data,idx_kvk_registry_fetched_at,CREATE INDEX idx_kvk_registry_fetched_at ON public.kvk_registry_data USING btree (fetched_at DESC)
+public,kvk_registry_data,idx_kvk_registry_kvk_number,CREATE INDEX idx_kvk_registry_kvk_number ON public.kvk_registry_data USING btree (kvk_number) WHERE (is_deleted = false)
+public,kvk_registry_data,idx_kvk_registry_legal_entity,CREATE INDEX idx_kvk_registry_legal_entity ON public.kvk_registry_data USING btree (legal_entity_id) WHERE (is_deleted = false)
+public,kvk_registry_data,idx_kvk_registry_rsin,CREATE INDEX idx_kvk_registry_rsin ON public.kvk_registry_data USING btree (rsin) WHERE ((is_deleted = false) AND (rsin IS NOT NULL))
+public,kvk_registry_data,kvk_registry_data_pkey,CREATE UNIQUE INDEX kvk_registry_data_pkey ON public.kvk_registry_data USING btree (registry_data_id)
+public,legal_entity,idx_legal_entity_auth_method,CREATE INDEX idx_legal_entity_auth_method ON public.legal_entity USING btree (authentication_method)
+public,legal_entity,idx_legal_entity_created,CREATE INDEX idx_legal_entity_created ON public.legal_entity USING btree (dt_created)
+public,legal_entity,idx_legal_entity_deleted,CREATE INDEX idx_legal_entity_deleted ON public.legal_entity USING btree (is_deleted) WHERE (is_deleted = false)
+public,legal_entity,idx_legal_entity_dns_reverification,CREATE INDEX idx_legal_entity_dns_reverification ON public.legal_entity USING btree (dns_reverification_due) WHERE ((dns_reverification_due IS NOT NULL) AND (authentication_tier = 2))
+public,legal_entity,idx_legal_entity_kvk_verification,"CREATE INDEX idx_legal_entity_kvk_verification ON public.legal_entity USING btree (kvk_verification_status, kvk_verified_at)"
+public,legal_entity,idx_legal_entity_name,CREATE INDEX idx_legal_entity_name ON public.legal_entity USING btree (primary_legal_name)
+public,legal_entity,idx_legal_entity_party,CREATE INDEX idx_legal_entity_party ON public.legal_entity USING btree (party_id)
+public,legal_entity,idx_legal_entity_party_id_lookup,CREATE INDEX idx_legal_entity_party_id_lookup ON public.legal_entity USING btree (party_id) WHERE (is_deleted = false)
+public,legal_entity,idx_legal_entity_party_ref,CREATE INDEX idx_legal_entity_party_ref ON public.legal_entity USING btree (party_id) WHERE (is_deleted = false)
+public,legal_entity,idx_legal_entity_status,CREATE INDEX idx_legal_entity_status ON public.legal_entity USING btree (status)
+public,legal_entity,idx_legal_entity_tier,CREATE INDEX idx_legal_entity_tier ON public.legal_entity USING btree (authentication_tier)
+public,legal_entity,idx_members_domain,CREATE INDEX idx_members_domain ON public.legal_entity USING btree (domain)
+public,legal_entity,idx_members_status,CREATE INDEX idx_members_status ON public.legal_entity USING btree (status)
+public,legal_entity,legal_entity_pkey,CREATE UNIQUE INDEX legal_entity_pkey ON public.legal_entity USING btree (legal_entity_id)
+public,legal_entity,uq_legal_entity_party_id_active,CREATE UNIQUE INDEX uq_legal_entity_party_id_active ON public.legal_entity USING btree (party_id) WHERE (is_deleted = false)
+public,legal_entity_contact,idx_legal_entity_contact_active,CREATE INDEX idx_legal_entity_contact_active ON public.legal_entity_contact USING btree (is_active) WHERE (is_active = true)
+public,legal_entity_contact,idx_legal_entity_contact_deleted,CREATE INDEX idx_legal_entity_contact_deleted ON public.legal_entity_contact USING btree (is_deleted) WHERE (is_deleted = false)
+public,legal_entity_contact,idx_legal_entity_contact_email,CREATE INDEX idx_legal_entity_contact_email ON public.legal_entity_contact USING btree (email)
+public,legal_entity_contact,idx_legal_entity_contact_entity,CREATE INDEX idx_legal_entity_contact_entity ON public.legal_entity_contact USING btree (legal_entity_id)
+public,legal_entity_contact,idx_legal_entity_contact_primary,CREATE INDEX idx_legal_entity_contact_primary ON public.legal_entity_contact USING btree (is_primary) WHERE (is_primary = true)
+public,legal_entity_contact,idx_legal_entity_contact_type,CREATE INDEX idx_legal_entity_contact_type ON public.legal_entity_contact USING btree (contact_type)
+public,legal_entity_contact,legal_entity_contact_pkey,CREATE UNIQUE INDEX legal_entity_contact_pkey ON public.legal_entity_contact USING btree (legal_entity_contact_id)
+public,legal_entity_endpoint,idx_endpoint_verification_expires,CREATE INDEX idx_endpoint_verification_expires ON public.legal_entity_endpoint USING btree (verification_expires_at) WHERE ((verification_expires_at IS NOT NULL) AND (is_deleted = false))
+public,legal_entity_endpoint,idx_endpoint_verification_status,CREATE INDEX idx_endpoint_verification_status ON public.legal_entity_endpoint USING btree (verification_status) WHERE (is_deleted = false)
+public,legal_entity_endpoint,idx_endpoint_verification_token,CREATE INDEX idx_endpoint_verification_token ON public.legal_entity_endpoint USING btree (verification_token) WHERE ((verification_token IS NOT NULL) AND (is_deleted = false))
+public,legal_entity_endpoint,idx_legal_entity_endpoint_active,CREATE INDEX idx_legal_entity_endpoint_active ON public.legal_entity_endpoint USING btree (is_active) WHERE (is_active = true)
+public,legal_entity_endpoint,idx_legal_entity_endpoint_category,CREATE INDEX idx_legal_entity_endpoint_category ON public.legal_entity_endpoint USING btree (data_category)
+public,legal_entity_endpoint,idx_legal_entity_endpoint_deleted,CREATE INDEX idx_legal_entity_endpoint_deleted ON public.legal_entity_endpoint USING btree (is_deleted) WHERE (is_deleted = false)
+public,legal_entity_endpoint,idx_legal_entity_endpoint_entity,CREATE INDEX idx_legal_entity_endpoint_entity ON public.legal_entity_endpoint USING btree (legal_entity_id)
+public,legal_entity_endpoint,legal_entity_endpoint_pkey,CREATE UNIQUE INDEX legal_entity_endpoint_pkey ON public.legal_entity_endpoint USING btree (legal_entity_endpoint_id)
+public,legal_entity_number,idx_legal_entity_euid,CREATE INDEX idx_legal_entity_euid ON public.legal_entity_number USING btree (identifier_value) WHERE (((identifier_type)::text = 'EUID'::text) AND (is_deleted = false))
+public,legal_entity_number,idx_legal_entity_kvk,CREATE INDEX idx_legal_entity_kvk ON public.legal_entity_number USING btree (identifier_value) WHERE (((identifier_type)::text = 'KVK'::text) AND (is_deleted = false))
+public,legal_entity_number,idx_legal_entity_lei,CREATE INDEX idx_legal_entity_lei ON public.legal_entity_number USING btree (identifier_value) WHERE (((identifier_type)::text = 'LEI'::text) AND (is_deleted = false))
+public,legal_entity_number,idx_legal_entity_number_country,CREATE INDEX idx_legal_entity_number_country ON public.legal_entity_number USING btree (country_code) WHERE (country_code IS NOT NULL)
+public,legal_entity_number,idx_legal_entity_number_deleted,CREATE INDEX idx_legal_entity_number_deleted ON public.legal_entity_number USING btree (is_deleted) WHERE (is_deleted = false)
+public,legal_entity_number,idx_legal_entity_number_entity,CREATE INDEX idx_legal_entity_number_entity ON public.legal_entity_number USING btree (legal_entity_id)
+public,legal_entity_number,idx_legal_entity_number_status,CREATE INDEX idx_legal_entity_number_status ON public.legal_entity_number USING btree (validation_status)
+public,legal_entity_number,idx_legal_entity_number_type,CREATE INDEX idx_legal_entity_number_type ON public.legal_entity_number USING btree (identifier_type)
+public,legal_entity_number,idx_legal_entity_number_type_country,"CREATE INDEX idx_legal_entity_number_type_country ON public.legal_entity_number USING btree (identifier_type, country_code) WHERE (country_code IS NOT NULL)"
+public,legal_entity_number,idx_legal_entity_number_value,CREATE INDEX idx_legal_entity_number_value ON public.legal_entity_number USING btree (identifier_value)
+public,legal_entity_number,idx_legal_entity_number_verification_status,CREATE INDEX idx_legal_entity_number_verification_status ON public.legal_entity_number USING btree (verification_status) WHERE (is_deleted = false)
+public,legal_entity_number,legal_entity_number_pkey,CREATE UNIQUE INDEX legal_entity_number_pkey ON public.legal_entity_number USING btree (legal_entity_reference_id)
+public,legal_entity_number,uq_identifier,"CREATE UNIQUE INDEX uq_identifier ON public.legal_entity_number USING btree (legal_entity_id, identifier_type, identifier_value)"
+public,legal_entity_number_type,idx_identifier_type_active,CREATE INDEX idx_identifier_type_active ON public.legal_entity_number_type USING btree (type_code) WHERE (is_active = true)
+public,legal_entity_number_type,legal_entity_number_type_pkey,CREATE UNIQUE INDEX legal_entity_number_type_pkey ON public.legal_entity_number_type USING btree (type_code)
+public,m2m_client_secrets_audit,idx_m2m_secrets_audit_active,CREATE INDEX idx_m2m_secrets_audit_active ON public.m2m_client_secrets_audit USING btree (is_revoked) WHERE (is_revoked = false)
+public,m2m_client_secrets_audit,idx_m2m_secrets_audit_client,CREATE INDEX idx_m2m_secrets_audit_client ON public.m2m_client_secrets_audit USING btree (m2m_client_id)
+public,m2m_client_secrets_audit,idx_m2m_secrets_audit_expires,CREATE INDEX idx_m2m_secrets_audit_expires ON public.m2m_client_secrets_audit USING btree (expires_at) WHERE (expires_at IS NOT NULL)
+public,m2m_client_secrets_audit,idx_m2m_secrets_audit_generated,CREATE INDEX idx_m2m_secrets_audit_generated ON public.m2m_client_secrets_audit USING btree (secret_generated_at)
+public,m2m_client_secrets_audit,m2m_client_secrets_audit_pkey,CREATE UNIQUE INDEX m2m_client_secrets_audit_pkey ON public.m2m_client_secrets_audit USING btree (audit_id)
+public,m2m_clients,idx_m2m_clients_active,CREATE INDEX idx_m2m_clients_active ON public.m2m_clients USING btree (is_active) WHERE ((is_active = true) AND (is_deleted = false))
+public,m2m_clients,idx_m2m_clients_azure_client_id,CREATE INDEX idx_m2m_clients_azure_client_id ON public.m2m_clients USING btree (azure_client_id) WHERE (is_deleted = false)
+public,m2m_clients,idx_m2m_clients_created,CREATE INDEX idx_m2m_clients_created ON public.m2m_clients USING btree (dt_created)
+public,m2m_clients,idx_m2m_clients_deleted,CREATE INDEX idx_m2m_clients_deleted ON public.m2m_clients USING btree (is_deleted) WHERE (is_deleted = false)
+public,m2m_clients,idx_m2m_clients_endpoint,CREATE INDEX idx_m2m_clients_endpoint ON public.m2m_clients USING btree (legal_entity_endpoint_id)
+public,m2m_clients,idx_m2m_clients_legal_entity,CREATE INDEX idx_m2m_clients_legal_entity ON public.m2m_clients USING btree (legal_entity_id) WHERE (is_deleted = false)
+public,m2m_clients,idx_m2m_clients_scopes,CREATE INDEX idx_m2m_clients_scopes ON public.m2m_clients USING gin (assigned_scopes)
+public,m2m_clients,m2m_clients_azure_client_id_key,CREATE UNIQUE INDEX m2m_clients_azure_client_id_key ON public.m2m_clients USING btree (azure_client_id)
+public,m2m_clients,m2m_clients_pkey,CREATE UNIQUE INDEX m2m_clients_pkey ON public.m2m_clients USING btree (m2m_client_id)
+public,members,idx_members_azure_ad_oid,CREATE INDEX idx_members_azure_ad_oid ON public.members USING btree (azure_ad_object_id) WHERE (azure_ad_object_id IS NOT NULL)
+public,members,idx_members_azure_ad_oid_unique,CREATE UNIQUE INDEX idx_members_azure_ad_oid_unique ON public.members USING btree (azure_ad_object_id) WHERE (azure_ad_object_id IS NOT NULL)
+public,members,idx_members_email,CREATE INDEX idx_members_email ON public.members USING btree (email) WHERE (email IS NOT NULL)
+public,members,idx_members_legal_entity_id_orphan_check,CREATE INDEX idx_members_legal_entity_id_orphan_check ON public.members USING btree (legal_entity_id) WHERE (legal_entity_id IS NOT NULL)
+public,members,idx_members_org_id,CREATE INDEX idx_members_org_id ON public.members USING btree (org_id)
+public,members,members_org_id_key,CREATE UNIQUE INDEX members_org_id_key ON public.members USING btree (org_id)
+public,members,members_pkey,CREATE UNIQUE INDEX members_pkey ON public.members USING btree (id)
+public,members,uq_members_legal_entity_id,CREATE UNIQUE INDEX uq_members_legal_entity_id ON public.members USING btree (legal_entity_id)
+public,oauth_clients,idx_oauth_member,CREATE INDEX idx_oauth_member ON public.oauth_clients USING btree (member_id)
+public,oauth_clients,oauth_clients_pkey,CREATE UNIQUE INDEX oauth_clients_pkey ON public.oauth_clients USING btree (client_id)
+public,party_reference,idx_party_reference_created,CREATE INDEX idx_party_reference_created ON public.party_reference USING btree (dt_created)
+public,party_reference,idx_party_reference_deleted,CREATE INDEX idx_party_reference_deleted ON public.party_reference USING btree (is_deleted) WHERE (is_deleted = false)
+public,party_reference,party_reference_pkey,CREATE UNIQUE INDEX party_reference_pkey ON public.party_reference USING btree (party_id)
+public,peppol_registry_data,idx_peppol_registry_fetched_at,CREATE INDEX idx_peppol_registry_fetched_at ON public.peppol_registry_data USING btree (fetched_at DESC)
+public,peppol_registry_data,idx_peppol_registry_legal_entity,CREATE INDEX idx_peppol_registry_legal_entity ON public.peppol_registry_data USING btree (legal_entity_id) WHERE (is_deleted = false)
+public,peppol_registry_data,idx_peppol_registry_participant,CREATE INDEX idx_peppol_registry_participant ON public.peppol_registry_data USING btree (participant_id) WHERE (is_deleted = false)
+public,peppol_registry_data,idx_peppol_registry_unique_active,CREATE UNIQUE INDEX idx_peppol_registry_unique_active ON public.peppol_registry_data USING btree (legal_entity_id) WHERE (is_deleted = false)
+public,peppol_registry_data,peppol_registry_data_pkey,CREATE UNIQUE INDEX peppol_registry_data_pkey ON public.peppol_registry_data USING btree (registry_data_id)
+public,vetting_records,idx_vetting_member,CREATE INDEX idx_vetting_member ON public.vetting_records USING btree (member_id)
+public,vetting_records,idx_vetting_status,CREATE INDEX idx_vetting_status ON public.vetting_records USING btree (status)
+public,vetting_records,vetting_records_pkey,CREATE UNIQUE INDEX vetting_records_pkey ON public.vetting_records USING btree (id)
+public,vies_registry_data,idx_vies_registry_fetched_at,CREATE INDEX idx_vies_registry_fetched_at ON public.vies_registry_data USING btree (fetched_at DESC)
+public,vies_registry_data,idx_vies_registry_full_vat,CREATE INDEX idx_vies_registry_full_vat ON public.vies_registry_data USING btree (full_vat_number) WHERE (is_deleted = false)
+public,vies_registry_data,idx_vies_registry_legal_entity,CREATE INDEX idx_vies_registry_legal_entity ON public.vies_registry_data USING btree (legal_entity_id) WHERE (is_deleted = false)
+public,vies_registry_data,idx_vies_registry_unique_active,CREATE UNIQUE INDEX idx_vies_registry_unique_active ON public.vies_registry_data USING btree (legal_entity_id) WHERE (is_deleted = false)
+public,vies_registry_data,idx_vies_registry_valid,CREATE INDEX idx_vies_registry_valid ON public.vies_registry_data USING btree (is_valid) WHERE (is_deleted = false)
+public,vies_registry_data,idx_vies_registry_vat,"CREATE INDEX idx_vies_registry_vat ON public.vies_registry_data USING btree (country_code, vat_number) WHERE (is_deleted = false)"
+public,vies_registry_data,vies_registry_data_pkey,CREATE UNIQUE INDEX vies_registry_data_pkey ON public.vies_registry_data USING btree (registry_data_id)
