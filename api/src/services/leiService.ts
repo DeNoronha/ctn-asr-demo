@@ -249,3 +249,192 @@ export function isValidLeiFormat(lei: string): boolean {
 export function getAuthoritiesForCountry(countryCode: string): string[] {
   return REGISTRATION_AUTHORITY_MAP[countryCode.toUpperCase()] || [];
 }
+
+/**
+ * Search LEI by company name in GLEIF database
+ *
+ * @param companyName - Company name to search (wildcards supported)
+ * @param countryCode - Optional two-letter country code to filter results
+ * @param context - Azure Functions invocation context for logging
+ * @returns Array of LEI records matching the search
+ */
+export async function searchLeiByCompanyName(
+  companyName: string,
+  countryCode: string | null,
+  context: InvocationContext
+): Promise<GLEIFLeiRecord[]> {
+  const url = `${GLEIF_API_BASE_URL}/lei-records`;
+
+  // Use fuzzy search with wildcards
+  const searchName = companyName.includes('*') ? companyName : `${companyName}*`;
+
+  context.log(`Searching GLEIF API by company name: ${searchName}${countryCode ? ` (country: ${countryCode})` : ''}`);
+
+  try {
+    const params: Record<string, string> = {
+      'filter[entity.legalName]': searchName,
+      'page[size]': '20',
+    };
+
+    // Add country filter if provided
+    if (countryCode) {
+      params['filter[entity.legalAddress.country]'] = countryCode.toUpperCase();
+    }
+
+    const response = await axios.get<GLEIFResponse>(url, {
+      params,
+      headers: {
+        'Accept': 'application/json',
+      },
+      timeout: 15000, // 15 second timeout for name searches
+    });
+
+    if (response.data.data && response.data.data.length > 0) {
+      context.log(`✓ Found ${response.data.data.length} LEI records for name search "${searchName}"`);
+      return response.data.data;
+    }
+
+    context.log(`✗ No LEI found for company name "${searchName}"`);
+    return [];
+
+  } catch (error: any) {
+    if (error.response) {
+      if (error.response.status === 404) {
+        context.log(`✗ No LEI found for company name "${searchName}" (404)`);
+        return [];
+      }
+      context.error(`GLEIF API error: ${error.response.status} ${error.message}`);
+    } else {
+      context.error(`Unexpected error searching GLEIF API:`, error);
+    }
+    throw error;
+  }
+}
+
+/**
+ * Retrieves LEI for an organization with fallback to company name search
+ *
+ * This function:
+ * 1. First tries registration authority lookup (exact match)
+ * 2. If not found and company name provided, falls back to name search
+ * 3. For name search, tries to find best match based on company name similarity
+ *
+ * @param registrationNumber - Organization's registration number (e.g., KvK, HRB)
+ * @param countryCode - Two-letter country code (e.g., 'NL', 'DE')
+ * @param identifierType - Type of identifier (e.g., 'KVK', 'HRB')
+ * @param companyName - Optional company name for fallback search
+ * @param context - Azure Functions invocation context for logging
+ * @returns LEI fetch result with status and data
+ */
+export async function fetchLeiForOrganizationWithNameFallback(
+  registrationNumber: string,
+  countryCode: string,
+  identifierType: string,
+  companyName: string | null,
+  context: InvocationContext
+): Promise<LeiFetchResult> {
+  // First try the standard registration number lookup
+  const registrationResult = await fetchLeiForOrganization(
+    registrationNumber,
+    countryCode,
+    identifierType,
+    context
+  );
+
+  // If found by registration number, return immediately
+  if (registrationResult.status === 'found') {
+    return registrationResult;
+  }
+
+  // If no company name provided for fallback, return the not_found result
+  if (!companyName) {
+    return registrationResult;
+  }
+
+  // Try name search as fallback
+  context.log(`Registration number lookup failed, trying company name search: "${companyName}"`);
+
+  try {
+    const nameResults = await searchLeiByCompanyName(companyName, countryCode, context);
+
+    if (nameResults.length === 0) {
+      return {
+        ...registrationResult,
+        message: `${registrationResult.message}. Name search for "${companyName}" also returned no results.`,
+      };
+    }
+
+    // If only one result, use it
+    if (nameResults.length === 1) {
+      const record = nameResults[0];
+      return {
+        lei: record.attributes.lei,
+        legal_name: record.attributes.entity.legalName.name,
+        registration_authority: record.attributes.entity.registrationAuthority?.id || null,
+        registration_number: record.attributes.entity.registeredAs || null,
+        country: record.attributes.entity.legalAddress.country,
+        status: 'found',
+        attempts: registrationResult.attempts + 1,
+        message: `LEI found via company name search (single match)`,
+        gleif_response: record,
+      };
+    }
+
+    // Multiple results - try to find exact or best match
+    const normalizedSearchName = companyName.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // Look for exact match first
+    const exactMatch = nameResults.find(record => {
+      const recordName = record.attributes.entity.legalName.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return recordName === normalizedSearchName;
+    });
+
+    if (exactMatch) {
+      return {
+        lei: exactMatch.attributes.lei,
+        legal_name: exactMatch.attributes.entity.legalName.name,
+        registration_authority: exactMatch.attributes.entity.registrationAuthority?.id || null,
+        registration_number: exactMatch.attributes.entity.registeredAs || null,
+        country: exactMatch.attributes.entity.legalAddress.country,
+        status: 'found',
+        attempts: registrationResult.attempts + 1,
+        message: `LEI found via company name search (exact match)`,
+        gleif_response: exactMatch,
+      };
+    }
+
+    // Look for starts-with match
+    const startsWithMatch = nameResults.find(record => {
+      const recordName = record.attributes.entity.legalName.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return recordName.startsWith(normalizedSearchName) || normalizedSearchName.startsWith(recordName);
+    });
+
+    if (startsWithMatch) {
+      return {
+        lei: startsWithMatch.attributes.lei,
+        legal_name: startsWithMatch.attributes.entity.legalName.name,
+        registration_authority: startsWithMatch.attributes.entity.registrationAuthority?.id || null,
+        registration_number: startsWithMatch.attributes.entity.registeredAs || null,
+        country: startsWithMatch.attributes.entity.legalAddress.country,
+        status: 'found',
+        attempts: registrationResult.attempts + 1,
+        message: `LEI found via company name search (partial match from ${nameResults.length} results)`,
+        gleif_response: startsWithMatch,
+      };
+    }
+
+    // No good match found - return not_found with info about multiple results
+    return {
+      ...registrationResult,
+      message: `${registrationResult.message}. Name search found ${nameResults.length} results but no exact match for "${companyName}".`,
+    };
+
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    context.warn(`Name search failed: ${errorMsg}`);
+    return {
+      ...registrationResult,
+      message: `${registrationResult.message}. Name search also failed: ${errorMsg}`,
+    };
+  }
+}

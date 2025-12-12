@@ -3135,6 +3135,17 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
   try {
     console.log('Starting enrichment for legal entity:', legalentityid);
 
+    // Get the legal entity's company name for LEI name search fallback
+    const { rows: legalEntityRows } = await pool.query(`
+      SELECT primary_legal_name, country_code
+      FROM legal_entity
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    const companyName = legalEntityRows[0]?.primary_legal_name || null;
+    const countryCode = legalEntityRows[0]?.country_code || 'NL';
+    console.log('Company name for LEI fallback search:', companyName);
+
     // Get existing identifiers to avoid duplicates
     const { rows: existingIdentifiers } = await pool.query(`
       SELECT identifier_type, identifier_value
@@ -3386,41 +3397,104 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
     }
 
     // =========================================================================
-    // 3. LEI - Fetch from GLEIF using KVK number
+    // 3. LEI - Fetch from GLEIF using KVK number, fallback to company name search
     // =========================================================================
-    if (!existingTypes.has('LEI') && kvkNumber) {
-      try {
-        const { fetchLeiForOrganization } = await import('./services/leiService');
+    if (!existingTypes.has('LEI')) {
+      // Can search by KVK (if Dutch) or by company name
+      if (kvkNumber || companyName) {
+        try {
+          const { fetchLeiForOrganizationWithNameFallback, fetchLeiForOrganization } = await import('./services/leiService');
 
-        // Create mock context for legacy service (uses Azure Functions context)
-        const mockContext = {
-          log: (...args: any[]) => console.log('[LEI Service]', ...args),
-          warn: (...args: any[]) => console.warn('[LEI Service]', ...args),
-          error: (...args: any[]) => console.error('[LEI Service]', ...args),
-        } as any;
+          // Create mock context for legacy service (uses Azure Functions context)
+          const mockContext = {
+            log: (...args: any[]) => console.log('[LEI Service]', ...args),
+            warn: (...args: any[]) => console.warn('[LEI Service]', ...args),
+            error: (...args: any[]) => console.error('[LEI Service]', ...args),
+          } as any;
 
-        const leiResult = await fetchLeiForOrganization(kvkNumber, 'NL', 'KVK', mockContext);
+          let leiResult;
 
-        if (leiResult.status === 'found' && leiResult.lei) {
-          await pool.query(`
-            INSERT INTO legal_entity_number (
-              legal_entity_reference_id, legal_entity_id,
-              identifier_type, identifier_value,
-              validation_status, registry_name, registry_url,
-              dt_created, dt_modified
-            )
-            VALUES ($1, $2, 'LEI', $3, 'VERIFIED', 'GLEIF', 'https://www.gleif.org/', NOW(), NOW())
-          `, [randomUUID(), legalentityid, leiResult.lei]);
+          if (kvkNumber) {
+            // Use KVK number with company name fallback
+            leiResult = await fetchLeiForOrganizationWithNameFallback(
+              kvkNumber,
+              countryCode,
+              'KVK',
+              companyName,
+              mockContext
+            );
+          } else if (companyName) {
+            // Only have company name - search by name directly
+            const { searchLeiByCompanyName } = await import('./services/leiService');
+            const nameResults = await searchLeiByCompanyName(companyName, countryCode, mockContext);
 
-          results.push({ identifier: 'LEI', status: 'added', value: leiResult.lei });
-        } else {
-          results.push({ identifier: 'LEI', status: 'not_available', message: 'No LEI found in GLEIF for this KVK' });
+            if (nameResults.length === 1) {
+              // Single match - use it
+              const record = nameResults[0];
+              leiResult = {
+                lei: record.attributes.lei,
+                legal_name: record.attributes.entity.legalName.name,
+                status: 'found' as const,
+                attempts: 1,
+                message: 'LEI found via company name search (single match)',
+              };
+            } else if (nameResults.length > 1) {
+              // Multiple matches - try exact match
+              const normalizedSearchName = companyName.toLowerCase().replace(/[^a-z0-9]/g, '');
+              const exactMatch = nameResults.find(record => {
+                const recordName = record.attributes.entity.legalName.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                return recordName === normalizedSearchName;
+              });
+
+              if (exactMatch) {
+                leiResult = {
+                  lei: exactMatch.attributes.lei,
+                  legal_name: exactMatch.attributes.entity.legalName.name,
+                  status: 'found' as const,
+                  attempts: 1,
+                  message: 'LEI found via company name search (exact match)',
+                };
+              } else {
+                leiResult = {
+                  lei: null,
+                  status: 'not_found' as const,
+                  attempts: 1,
+                  message: `Name search found ${nameResults.length} results but no exact match for "${companyName}"`,
+                };
+              }
+            } else {
+              leiResult = {
+                lei: null,
+                status: 'not_found' as const,
+                attempts: 1,
+                message: `No LEI found for company name "${companyName}"`,
+              };
+            }
+          }
+
+          if (leiResult?.status === 'found' && leiResult.lei) {
+            await pool.query(`
+              INSERT INTO legal_entity_number (
+                legal_entity_reference_id, legal_entity_id,
+                identifier_type, identifier_value,
+                validation_status, registry_name, registry_url,
+                dt_created, dt_modified
+              )
+              VALUES ($1, $2, 'LEI', $3, 'VERIFIED', 'GLEIF', 'https://www.gleif.org/', NOW(), NOW())
+            `, [randomUUID(), legalentityid, leiResult.lei]);
+
+            results.push({ identifier: 'LEI', status: 'added', value: leiResult.lei, message: leiResult.message });
+          } else {
+            results.push({ identifier: 'LEI', status: 'not_available', message: leiResult?.message || 'No LEI found in GLEIF' });
+          }
+        } catch (leiError: any) {
+          console.warn('LEI fetch failed:', leiError.message);
+          results.push({ identifier: 'LEI', status: 'error', message: leiError.message });
         }
-      } catch (leiError: any) {
-        console.warn('LEI fetch failed:', leiError.message);
-        results.push({ identifier: 'LEI', status: 'error', message: leiError.message });
+      } else {
+        results.push({ identifier: 'LEI', status: 'not_available', message: 'No KVK number or company name available for LEI search' });
       }
-    } else if (existingTypes.has('LEI')) {
+    } else {
       results.push({ identifier: 'LEI', status: 'exists', value: getExistingValue('LEI') });
     }
 
