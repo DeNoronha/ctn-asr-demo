@@ -88,7 +88,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
             color="cyan"
             onClick={handleEnrich}
             disabled={fetchingLei || identifiers.length === 0}
-            title="Enrich from Peppol Directory and VIES (EU VAT validation)"
+            title="Enrich from registries: RSIN (from KVK), VAT (via VIES), LEI (GLEIF), Peppol"
             aria-label={fetchingLei ? 'Enriching from registries...' : 'Enrich from registries'}
           >
             {fetchingLei ? 'Enriching...' : '>> Enrich'}

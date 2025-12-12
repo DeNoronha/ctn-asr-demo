@@ -3074,6 +3074,321 @@ router.get('/v1/vies/validate', requireAuth, async (req: Request, res: Response)
 });
 
 // ============================================================================
+// UNIFIED ENRICHMENT ENDPOINT
+// ============================================================================
+
+/**
+ * POST /v1/legal-entities/:legalentityid/enrich
+ *
+ * Comprehensive enrichment that fetches all possible identifiers:
+ * 1. From stored KVK data: RSIN, derive VAT
+ * 2. Fresh KVK API call if no stored data: get RSIN
+ * 3. VIES validation using derived VAT
+ * 4. LEI from GLEIF (if KVK available)
+ * 5. Peppol from directory (if suitable identifier available)
+ */
+router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req: Request, res: Response) => {
+  const pool = getPool();
+  const { legalentityid } = req.params;
+
+  const results: { identifier: string; status: 'added' | 'exists' | 'error' | 'not_available'; value?: string; message?: string }[] = [];
+
+  try {
+    console.log('Starting enrichment for legal entity:', legalentityid);
+
+    // Get existing identifiers to avoid duplicates
+    const { rows: existingIdentifiers } = await pool.query(`
+      SELECT identifier_type, identifier_value
+      FROM legal_entity_number
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    const existingTypes = new Set(existingIdentifiers.map(r => r.identifier_type));
+    const getExistingValue = (type: string) => existingIdentifiers.find(r => r.identifier_type === type)?.identifier_value;
+
+    // Get KVK number from existing identifiers
+    const kvkNumber = getExistingValue('KVK');
+
+    // =========================================================================
+    // 1. RSIN - Get from stored KVK registry data or fetch fresh from KVK API
+    // =========================================================================
+    let rsin: string | null = null;
+
+    if (!existingTypes.has('RSIN')) {
+      // First check kvk_registry_data table
+      const { rows: kvkRegistry } = await pool.query(`
+        SELECT rsin, raw_api_response
+        FROM kvk_registry_data
+        WHERE legal_entity_id = $1 AND is_deleted = false
+        ORDER BY fetched_at DESC
+        LIMIT 1
+      `, [legalentityid]);
+
+      if (kvkRegistry.length > 0 && kvkRegistry[0].rsin) {
+        rsin = kvkRegistry[0].rsin;
+        console.log('Found RSIN in kvk_registry_data:', rsin);
+      } else if (kvkRegistry.length > 0 && kvkRegistry[0].raw_api_response) {
+        // Try to extract from raw API response
+        const rawResponse = kvkRegistry[0].raw_api_response;
+        rsin = rawResponse?._embedded?.eigenaar?.rsin || rawResponse?._embedded?.hoofdvestiging?.rsin || null;
+        console.log('Extracted RSIN from raw_api_response:', rsin);
+
+        // Update the kvk_registry_data with the extracted RSIN
+        if (rsin) {
+          await pool.query(`
+            UPDATE kvk_registry_data
+            SET rsin = $1, dt_modified = NOW()
+            WHERE legal_entity_id = $2 AND is_deleted = false
+          `, [rsin, legalentityid]);
+        }
+      }
+
+      // If still no RSIN and we have KVK number, fetch fresh from KVK API
+      if (!rsin && kvkNumber) {
+        try {
+          console.log('Fetching fresh KVK data to get RSIN for:', kvkNumber);
+          const { KvKService } = await import('./services/kvkService');
+          const kvkService = new KvKService();
+          const kvkData = await kvkService.fetchCompanyProfile(kvkNumber, false);
+
+          if (kvkData?.rsin) {
+            rsin = kvkData.rsin;
+            console.log('Fetched RSIN from KVK API:', rsin);
+
+            // Update kvk_registry_data
+            await pool.query(`
+              UPDATE kvk_registry_data
+              SET rsin = $1, dt_modified = NOW()
+              WHERE legal_entity_id = $2 AND is_deleted = false
+            `, [rsin, legalentityid]);
+          }
+        } catch (kvkError: any) {
+          console.warn('Failed to fetch KVK data for RSIN:', kvkError.message);
+        }
+      }
+
+      // Create RSIN identifier if found
+      if (rsin) {
+        await pool.query(`
+          INSERT INTO legal_entity_number (
+            legal_entity_reference_id, legal_entity_id,
+            identifier_type, identifier_value, country_code,
+            validation_status, dt_created, dt_modified
+          )
+          VALUES ($1, $2, 'RSIN', $3, 'NL', 'VERIFIED', NOW(), NOW())
+        `, [randomUUID(), legalentityid, rsin]);
+
+        results.push({ identifier: 'RSIN', status: 'added', value: rsin });
+      } else if (kvkNumber) {
+        results.push({ identifier: 'RSIN', status: 'not_available', message: 'RSIN not found in KVK data' });
+      }
+    } else {
+      rsin = getExistingValue('RSIN') || null;
+      results.push({ identifier: 'RSIN', status: 'exists', value: rsin || undefined });
+    }
+
+    // =========================================================================
+    // 2. VAT - Derive from RSIN (Dutch VAT = NL + RSIN + B01)
+    // =========================================================================
+    if (!existingTypes.has('VAT') && rsin) {
+      // Dutch VAT format: NL + 9-digit RSIN + B01 (or B02, B03 for fiscal units)
+      const derivedVat = `NL${rsin}B01`;
+
+      // Validate via VIES before adding
+      try {
+        const { ViesService } = await import('./services/viesService');
+        const viesService = new ViesService();
+        const viesResult = await viesService.fetchAndValidate('NL', `${rsin}B01`);
+
+        if (viesResult.isValid && viesResult.companyData) {
+          // Add VAT identifier
+          await pool.query(`
+            INSERT INTO legal_entity_number (
+              legal_entity_reference_id, legal_entity_id,
+              identifier_type, identifier_value, country_code,
+              validation_status, registry_name, registry_url,
+              dt_created, dt_modified
+            )
+            VALUES ($1, $2, 'VAT', $3, 'NL', 'VERIFIED', 'VIES', 'https://ec.europa.eu/taxation_customs/vies/', NOW(), NOW())
+          `, [randomUUID(), legalentityid, derivedVat]);
+
+          // Also store VIES registry data
+          await pool.query(`
+            INSERT INTO vies_registry_data (
+              registry_data_id, legal_entity_id, country_code, vat_number, full_vat_number,
+              is_valid, user_error, request_date, request_identifier,
+              trader_name, trader_address, raw_api_response,
+              fetched_at, last_verified_at, data_source, created_by, dt_created, dt_modified
+            )
+            VALUES ($1, $2, 'NL', $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW(), 'vies_api', 'enrichment', NOW(), NOW())
+            ON CONFLICT ON CONSTRAINT idx_vies_registry_unique_active
+            DO UPDATE SET
+              is_valid = EXCLUDED.is_valid,
+              user_error = EXCLUDED.user_error,
+              request_date = EXCLUDED.request_date,
+              request_identifier = EXCLUDED.request_identifier,
+              trader_name = EXCLUDED.trader_name,
+              trader_address = EXCLUDED.trader_address,
+              raw_api_response = EXCLUDED.raw_api_response,
+              last_verified_at = NOW(),
+              dt_modified = NOW()
+          `, [
+            randomUUID(),
+            legalentityid,
+            `${rsin}B01`,
+            derivedVat,
+            viesResult.companyData.isValid,
+            viesResult.companyData.userError,
+            viesResult.companyData.requestDate,
+            viesResult.companyData.requestIdentifier,
+            viesResult.companyData.traderName,
+            viesResult.companyData.traderAddress,
+            JSON.stringify(viesResult.companyData.rawApiResponse)
+          ]);
+
+          results.push({ identifier: 'VAT', status: 'added', value: derivedVat, message: 'Validated via VIES' });
+        } else {
+          // Try B02 suffix (for companies in fiscal unity)
+          const viesResultB02 = await viesService.fetchAndValidate('NL', `${rsin}B02`);
+          if (viesResultB02.isValid && viesResultB02.companyData) {
+            const vatB02 = `NL${rsin}B02`;
+            await pool.query(`
+              INSERT INTO legal_entity_number (
+                legal_entity_reference_id, legal_entity_id,
+                identifier_type, identifier_value, country_code,
+                validation_status, registry_name, registry_url,
+                dt_created, dt_modified
+              )
+              VALUES ($1, $2, 'VAT', $3, 'NL', 'VERIFIED', 'VIES', 'https://ec.europa.eu/taxation_customs/vies/', NOW(), NOW())
+            `, [randomUUID(), legalentityid, vatB02]);
+
+            results.push({ identifier: 'VAT', status: 'added', value: vatB02, message: 'Validated via VIES (B02 fiscal unit)' });
+          } else {
+            results.push({ identifier: 'VAT', status: 'not_available', message: `VAT ${derivedVat} not valid in VIES` });
+          }
+        }
+      } catch (viesError: any) {
+        console.warn('VIES validation failed:', viesError.message);
+        results.push({ identifier: 'VAT', status: 'error', message: viesError.message });
+      }
+    } else if (existingTypes.has('VAT')) {
+      results.push({ identifier: 'VAT', status: 'exists', value: getExistingValue('VAT') });
+    } else if (!rsin) {
+      results.push({ identifier: 'VAT', status: 'not_available', message: 'Cannot derive VAT without RSIN' });
+    }
+
+    // =========================================================================
+    // 3. LEI - Fetch from GLEIF using KVK number
+    // =========================================================================
+    if (!existingTypes.has('LEI') && kvkNumber) {
+      try {
+        const { fetchLeiForOrganization } = await import('./services/leiService');
+
+        // Create mock context for legacy service (uses Azure Functions context)
+        const mockContext = {
+          log: (...args: any[]) => console.log('[LEI Service]', ...args),
+          warn: (...args: any[]) => console.warn('[LEI Service]', ...args),
+          error: (...args: any[]) => console.error('[LEI Service]', ...args),
+        } as any;
+
+        const leiResult = await fetchLeiForOrganization(kvkNumber, 'NL', 'KVK', mockContext);
+
+        if (leiResult.status === 'found' && leiResult.lei) {
+          await pool.query(`
+            INSERT INTO legal_entity_number (
+              legal_entity_reference_id, legal_entity_id,
+              identifier_type, identifier_value,
+              validation_status, registry_name, registry_url,
+              dt_created, dt_modified
+            )
+            VALUES ($1, $2, 'LEI', $3, 'VERIFIED', 'GLEIF', 'https://www.gleif.org/', NOW(), NOW())
+          `, [randomUUID(), legalentityid, leiResult.lei]);
+
+          results.push({ identifier: 'LEI', status: 'added', value: leiResult.lei });
+        } else {
+          results.push({ identifier: 'LEI', status: 'not_available', message: 'No LEI found in GLEIF for this KVK' });
+        }
+      } catch (leiError: any) {
+        console.warn('LEI fetch failed:', leiError.message);
+        results.push({ identifier: 'LEI', status: 'error', message: leiError.message });
+      }
+    } else if (existingTypes.has('LEI')) {
+      results.push({ identifier: 'LEI', status: 'exists', value: getExistingValue('LEI') });
+    }
+
+    // =========================================================================
+    // 4. Peppol - Fetch from Peppol Directory
+    // =========================================================================
+    if (!existingTypes.has('PEPPOL') && kvkNumber) {
+      try {
+        const { fetchPeppolByKvk } = await import('./services/peppolService');
+        const peppolResult = await fetchPeppolByKvk(kvkNumber);
+
+        if (peppolResult.status === 'found' && peppolResult.participant_id) {
+          await pool.query(`
+            INSERT INTO legal_entity_number (
+              legal_entity_reference_id, legal_entity_id,
+              identifier_type, identifier_value,
+              validation_status, registry_name, registry_url,
+              dt_created, dt_modified
+            )
+            VALUES ($1, $2, 'PEPPOL', $3, 'VERIFIED', 'Peppol Directory', 'https://directory.peppol.eu/', NOW(), NOW())
+          `, [randomUUID(), legalentityid, peppolResult.participant_id]);
+
+          results.push({ identifier: 'PEPPOL', status: 'added', value: peppolResult.participant_id });
+        } else {
+          results.push({ identifier: 'PEPPOL', status: 'not_available', message: 'No Peppol participant found' });
+        }
+      } catch (peppolError: any) {
+        console.warn('Peppol fetch failed:', peppolError.message);
+        results.push({ identifier: 'PEPPOL', status: 'error', message: peppolError.message });
+      }
+    } else if (existingTypes.has('PEPPOL')) {
+      results.push({ identifier: 'PEPPOL', status: 'exists', value: getExistingValue('PEPPOL') });
+    }
+
+    // =========================================================================
+    // Summary
+    // =========================================================================
+    const added = results.filter(r => r.status === 'added');
+    const exists = results.filter(r => r.status === 'exists');
+    const notAvailable = results.filter(r => r.status === 'not_available');
+    const errors = results.filter(r => r.status === 'error');
+
+    console.log('Enrichment completed:', {
+      legalEntityId: legalentityid,
+      added: added.map(r => r.identifier),
+      exists: exists.map(r => r.identifier),
+      notAvailable: notAvailable.map(r => r.identifier),
+      errors: errors.map(r => r.identifier)
+    });
+
+    res.json({
+      success: true,
+      added_count: added.length,
+      results,
+      summary: {
+        added: added.map(r => `${r.identifier}: ${r.value}`),
+        already_exists: exists.map(r => r.identifier),
+        not_available: notAvailable.map(r => `${r.identifier} (${r.message})`),
+        errors: errors.map(r => `${r.identifier}: ${r.message}`)
+      }
+    });
+  } catch (error: any) {
+    console.error('Enrichment error:', {
+      legalEntityId: legalentityid,
+      error: error.message,
+      stack: error.stack
+    });
+    res.status(500).json({
+      error: 'Enrichment failed',
+      detail: error.message,
+      partial_results: results
+    });
+  }
+});
+
+// ============================================================================
 // ENDPOINTS
 // ============================================================================
 router.get('/v1/legal-entities/:legalentityid/endpoints', requireAuth, async (req: Request, res: Response) => {
