@@ -3252,15 +3252,16 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
           `, [randomUUID(), legalentityid, derivedVat]);
 
           // Also store VIES registry data
+          // Use (legal_entity_id) WHERE is_deleted = false for partial unique index conflict
           await pool.query(`
             INSERT INTO vies_registry_data (
               registry_data_id, legal_entity_id, country_code, vat_number, full_vat_number,
               is_valid, user_error, request_date, request_identifier,
               trader_name, trader_address, raw_api_response,
-              fetched_at, last_verified_at, data_source, created_by, dt_created, dt_modified
+              fetched_at, last_verified_at, data_source, created_by, dt_created, dt_modified, is_deleted
             )
-            VALUES ($1, $2, 'NL', $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW(), 'vies_api', 'enrichment', NOW(), NOW())
-            ON CONFLICT ON CONSTRAINT idx_vies_registry_unique_active
+            VALUES ($1, $2, 'NL', $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW(), 'vies_api', 'enrichment', NOW(), NOW(), false)
+            ON CONFLICT (legal_entity_id) WHERE is_deleted = false
             DO UPDATE SET
               is_valid = EXCLUDED.is_valid,
               user_error = EXCLUDED.user_error,
