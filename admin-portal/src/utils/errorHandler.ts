@@ -32,9 +32,9 @@ export function getGenericErrorMessage(error: unknown, operation: string): strin
   // Extract status code if available
   const status = apiError.response?.status;
 
-  // For validation errors (400), allow specific error messages
-  if (status === 400) {
-    const specificMessage = apiError.response?.data?.error || apiError.response?.data?.message;
+  // For validation errors (400) and conflicts (409), allow specific error messages
+  if (status === 400 || status === 409) {
+    const specificMessage = apiError.response?.data?.message || apiError.response?.data?.error;
     if (specificMessage) {
       return specificMessage;
     }

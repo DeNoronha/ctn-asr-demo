@@ -1542,6 +1542,15 @@ router.put('/v1/identifiers/:identifierId', requireAuth, async (req: Request, re
     res.json(rows[0]);
   } catch (error: any) {
     console.error('Error updating identifier:', error);
+
+    // Handle unique constraint violation
+    if (error.code === '23505' && error.constraint === 'uq_identifier') {
+      return res.status(409).json({
+        error: 'Duplicate identifier',
+        message: 'An identifier with this type and value already exists for this legal entity'
+      });
+    }
+
     res.status(500).json({ error: 'Failed to update identifier' });
   }
 });
