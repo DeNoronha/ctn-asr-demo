@@ -32,7 +32,7 @@ export {
 export { getAuthenticatedAxios, getApiBaseUrl, getApiBaseUrlWithoutVersion } from './client';
 
 // Export member operations
-export { getMembers, getMember, createMember, updateMemberStatus } from './members';
+export { getMembers, createMember, updateMemberStatus } from './members';
 
 // Export legal entity operations
 export {
@@ -179,9 +179,7 @@ export const api = {
     return result.data;
   },
 
-  async getMember(legalEntityId: string): Promise<Member> {
-    return apiV2.getMember(legalEntityId);
-  },
+  // getMember removed (Dec 12, 2025) - endpoint dropped, was never used
 
   async createMember(member: Partial<Member>): Promise<Member> {
     return apiV2.createMember(member);

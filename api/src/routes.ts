@@ -213,32 +213,10 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
   }
 });
 
-router.get('/v1/members/:id', requireAuth, async (req: Request, res: Response) => {
-  try {
-    const pool = getPool();
-    const { id } = req.params;
-
-    // Use vw_legal_entity_full view for complete member details
-    const { rows } = await pool.query(`
-      SELECT legal_entity_id as org_id, primary_legal_name as legal_name,
-             domain, status, membership_level, party_id,
-             address_line1, address_line2, postal_code, city, province, country_code,
-             entity_legal_form, registered_at, dt_created, dt_modified,
-             identifiers, contacts, endpoints, metadata
-      FROM vw_legal_entity_full
-      WHERE legal_entity_id = $1
-    `, [id]);
-
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Member not found' });
-    }
-
-    res.json(rows[0]);
-  } catch (error: any) {
-    console.error('Error fetching member:', error);
-    res.status(500).json({ error: 'Failed to fetch member' });
-  }
-});
+// GET /v1/members/:id endpoint removed (Dec 12, 2025)
+// - Used vw_legal_entity_full view which was dropped
+// - getMember() function was never called from UI
+// - Admin portal fetches contacts, endpoints, identifiers separately
 
 // ============================================================================
 // APPLICATIONS

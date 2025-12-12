@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 866Ya8fnT27iIeqOL2oDJ71bXob5ePbshZCxdAKgcT8e3lfE1DzBtJZANJWO81R
+\restrict fvk5c7IpGU82LlUvXyvlqkKPQCqMZtP9mFbPMvXGiMDQghcmhxGrl6TmRbCv42A
 
 -- Dumped from database version 15.14
 -- Dumped by pg_dump version 15.15 (Homebrew)
@@ -1992,43 +1992,6 @@ COMMENT ON VIEW public.vw_identifiers_with_type IS 'Identifiers enriched with ty
 
 
 --
--- Name: vw_legal_entity_full; Type: VIEW; Schema: public; Owner: -
---
-
-CREATE VIEW public.vw_legal_entity_full AS
- SELECT le.legal_entity_id,
-    le.party_id,
-    pr.party_class,
-    pr.party_type,
-    le.primary_legal_name,
-    le.address_line1,
-    le.address_line2,
-    le.postal_code,
-    le.city,
-    le.province,
-    le.country_code,
-    le.entity_legal_form,
-    le.registered_at,
-    le.domain,
-    le.status,
-    le.membership_level,
-    le.dt_created,
-    le.dt_modified,
-    le.created_by,
-    le.modified_by,
-    COALESCE(json_agg(DISTINCT jsonb_build_object('type', len.identifier_type, 'value', len.identifier_value, 'country', len.country_code, 'status', len.validation_status)) FILTER (WHERE (len.legal_entity_reference_id IS NOT NULL)), '[]'::json) AS identifiers,
-    COALESCE(json_agg(DISTINCT jsonb_build_object('id', lec.legal_entity_contact_id, 'type', lec.contact_type, 'name', lec.full_name, 'email', lec.email, 'phone', lec.phone, 'is_primary', lec.is_primary)) FILTER (WHERE (lec.legal_entity_contact_id IS NOT NULL)), '[]'::json) AS contacts,
-    COALESCE(json_agg(DISTINCT jsonb_build_object('id', lee.legal_entity_endpoint_id, 'name', lee.endpoint_name, 'url', lee.endpoint_url, 'category', lee.data_category, 'is_active', lee.is_active)) FILTER (WHERE (lee.legal_entity_endpoint_id IS NOT NULL)), '[]'::json) AS endpoints
-   FROM ((((public.legal_entity le
-     JOIN public.party_reference pr ON ((le.party_id = pr.party_id)))
-     LEFT JOIN public.legal_entity_number len ON (((le.legal_entity_id = len.legal_entity_id) AND (len.is_deleted = false))))
-     LEFT JOIN public.legal_entity_contact lec ON (((le.legal_entity_id = lec.legal_entity_id) AND (lec.is_deleted = false))))
-     LEFT JOIN public.legal_entity_endpoint lee ON (((le.legal_entity_id = lee.legal_entity_id) AND (lee.is_deleted = false))))
-  WHERE (le.is_deleted = false)
-  GROUP BY le.legal_entity_id, le.party_id, pr.party_class, pr.party_type, le.primary_legal_name, le.address_line1, le.address_line2, le.postal_code, le.city, le.province, le.country_code, le.entity_legal_form, le.registered_at, le.domain, le.status, le.membership_level, le.dt_created, le.dt_modified, le.created_by, le.modified_by;
-
-
---
 -- Name: vw_m2m_clients_active; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -3772,5 +3735,5 @@ ALTER TABLE ONLY public.vies_registry_data
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 866Ya8fnT27iIeqOL2oDJ71bXob5ePbshZCxdAKgcT8e3lfE1DzBtJZANJWO81R
+\unrestrict fvk5c7IpGU82LlUvXyvlqkKPQCqMZtP9mFbPMvXGiMDQghcmhxGrl6TmRbCv42A
 

@@ -22,11 +22,7 @@ export async function getMembers(
   };
 }
 
-export async function getMember(legalEntityId: string): Promise<Member> {
-  const axiosInstance = await getAuthenticatedAxios();
-  const response = await axiosInstance.get<Member>(`/members/${legalEntityId}`);
-  return response.data;
-}
+// getMember removed (Dec 12, 2025) - endpoint dropped, was never used
 
 export async function createMember(member: Partial<Member>): Promise<Member> {
   const axiosInstance = await getAuthenticatedAxios();
