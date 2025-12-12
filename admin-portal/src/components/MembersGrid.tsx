@@ -224,16 +224,24 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
   // Column definitions for mantine-datatable
   const { effectiveColumns } = useDataTableColumns<Member>({
-    key: 'members-grid',
+    key: 'members-grid-v2',
     columns: [
       {
         accessor: 'legal_entity_id',
-        title: getColumnTitle('legal_entity_id'),
-        width: 120,
+        title: 'ID',
+        width: 90,
         toggleable: false, // Cannot be hidden - always visible
         draggable: false, // Fixed as first column
         resizable: true,
         sortable: true,
+        render: (member) => (
+          <span
+            title={member.legal_entity_id}
+            style={{ fontFamily: 'monospace', fontSize: '0.85em', cursor: 'help' }}
+          >
+            {member.legal_entity_id?.substring(0, 8)}…
+          </span>
+        ),
       },
       {
         accessor: 'legal_name',
@@ -547,7 +555,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             selectedRecords={sortedData.filter((m) => selectedIds.includes(m.legal_entity_id))}
             onSelectedRecordsChange={handleSelectedRecordsChange}
             idAccessor="legal_entity_id"
-            storeColumnsKey="members-grid"
+            storeColumnsKey="members-grid-v2"
             onRowClick={handleRowClick}
             rowStyle={() => ({ cursor: 'pointer' })}
             rowBackgroundColor={(member) =>
