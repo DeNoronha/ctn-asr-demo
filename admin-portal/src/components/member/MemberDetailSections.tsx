@@ -17,6 +17,8 @@ import { IdentifiersManager } from '../IdentifiersManager';
 import { KvkDocumentUpload } from '../KvkDocumentUpload';
 import { KvkRegistryDetails } from '../KvkRegistryDetails';
 import { LeiRegistryDetails } from '../LeiRegistryDetails';
+import { PeppolRegistryDetails } from '../PeppolRegistryDetails';
+import { ViesRegistryDetails } from '../ViesRegistryDetails';
 import { TierManagement } from '../TierManagement';
 import { LoadingState } from '../shared/LoadingState';
 
@@ -333,6 +335,64 @@ export const LeiRegistrySection: React.FC<LeiRegistrySectionProps> = ({ legalEnt
             return (
               <div className="info-section">
                 <h3>LEI Registry Data</h3>
+                <EmptyState message={es.message} hint={es.hint} />
+              </div>
+            );
+          })()
+        )}
+      </div>
+    </Tabs.Panel>
+  );
+};
+
+interface PeppolRegistrySectionProps {
+  legalEntity: LegalEntity | null;
+}
+
+export const PeppolRegistrySection: React.FC<PeppolRegistrySectionProps> = ({ legalEntity }) => {
+  return (
+    <Tabs.Panel value="peppol-registry" pt="md">
+      <div className="tab-content">
+        {legalEntity ? (
+          <PeppolRegistryDetails
+            // biome-ignore lint/style/noNonNullAssertion: legalEntity null-check performed in ternary guard above
+            legalEntityId={legalEntity.legal_entity_id!}
+          />
+        ) : (
+          (() => {
+            const es = getEmptyState('generic', 'noData');
+            return (
+              <div className="info-section">
+                <h3>Peppol Registry Data</h3>
+                <EmptyState message={es.message} hint={es.hint} />
+              </div>
+            );
+          })()
+        )}
+      </div>
+    </Tabs.Panel>
+  );
+};
+
+interface ViesRegistrySectionProps {
+  legalEntity: LegalEntity | null;
+}
+
+export const ViesRegistrySection: React.FC<ViesRegistrySectionProps> = ({ legalEntity }) => {
+  return (
+    <Tabs.Panel value="vies-registry" pt="md">
+      <div className="tab-content">
+        {legalEntity ? (
+          <ViesRegistryDetails
+            // biome-ignore lint/style/noNonNullAssertion: legalEntity null-check performed in ternary guard above
+            legalEntityId={legalEntity.legal_entity_id!}
+          />
+        ) : (
+          (() => {
+            const es = getEmptyState('generic', 'noData');
+            return (
+              <div className="info-section">
+                <h3>VIES Registry Data</h3>
                 <EmptyState message={es.message} hint={es.hint} />
               </div>
             );

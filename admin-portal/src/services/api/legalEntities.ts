@@ -155,3 +155,77 @@ export async function fetchPeppolData(
   );
   return response.data;
 }
+
+// =====================================================
+// VIES REGISTRY DATA (EU VAT Information Exchange System)
+// =====================================================
+
+export interface ViesRegistryData {
+  registry_data_id: string;
+  legal_entity_id: string;
+  country_code: string;
+  vat_number: string;
+  full_vat_number: string;
+  is_valid: boolean;
+  user_error?: string;
+  request_date?: string;
+  request_identifier?: string;
+  trader_name?: string;
+  trader_address?: string;
+  // Approximate matching data
+  approx_name?: string;
+  approx_street?: string;
+  approx_postal_code?: string;
+  approx_city?: string;
+  approx_company_type?: string;
+  match_name?: number;
+  match_street?: number;
+  match_postal_code?: number;
+  match_city?: number;
+  match_company_type?: number;
+  // Metadata
+  fetched_at: string;
+  last_verified_at?: string;
+  data_source: string;
+}
+
+export interface ViesRegistryResponse {
+  hasData: boolean;
+  data?: ViesRegistryData;
+  message?: string;
+}
+
+export async function getViesRegistryData(legalEntityId: string): Promise<ViesRegistryResponse> {
+  const axiosInstance = await getAuthenticatedAxios();
+  const response = await axiosInstance.get<ViesRegistryResponse>(
+    `/legal-entities/${legalEntityId}/vies-registry`
+  );
+  return response.data;
+}
+
+export interface ViesFetchRequest {
+  country_code: string;
+  vat_number: string;
+  save_to_database?: boolean;
+}
+
+export interface ViesFetchResponse {
+  status: 'valid' | 'invalid' | 'error';
+  is_valid: boolean;
+  trader_name?: string;
+  trader_address?: string;
+  was_saved: boolean;
+  message: string;
+}
+
+export async function fetchViesData(
+  legalEntityId: string,
+  request: ViesFetchRequest
+): Promise<ViesFetchResponse> {
+  const axiosInstance = await getAuthenticatedAxios();
+  const response = await axiosInstance.post<ViesFetchResponse>(
+    `/legal-entities/${legalEntityId}/vies/fetch`,
+    request
+  );
+  return response.data;
+}

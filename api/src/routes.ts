@@ -2543,13 +2543,16 @@ router.get('/v1/legal-entities/:legalentityid/vies-registry', requireAuth, async
     `, [legalentityid]);
 
     if (rows.length === 0) {
-      return res.status(404).json({
-        error: 'Not found',
+      return res.json({
+        hasData: false,
         message: 'No VIES registry data available. Use the fetch endpoint to validate a VAT number.'
       });
     }
 
-    res.json({ data: rows[0] });
+    res.json({
+      hasData: true,
+      data: rows[0]
+    });
   } catch (error: any) {
     console.error('Error fetching VIES registry data:', {
       legalEntityId: req.params.legalentityid,

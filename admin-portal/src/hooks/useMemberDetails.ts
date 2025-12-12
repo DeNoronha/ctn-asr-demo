@@ -29,6 +29,8 @@ interface UseMemberDetailsReturn {
   endpoints: LegalEntityEndpoint[];
   hasKvkRegistryData: boolean;
   hasLeiRegistryData: boolean;
+  hasPeppolRegistryData: boolean;
+  hasViesRegistryData: boolean;
   loading: boolean;
   handlers: {
     updateLegalEntity: (data: LegalEntity) => Promise<void>;
@@ -54,6 +56,8 @@ interface UseMemberDetailsReturn {
     refreshIdentifiers: () => Promise<void>;
     refreshKvkData: () => Promise<void>;
     refreshLeiData: () => Promise<void>;
+    refreshPeppolData: () => Promise<void>;
+    refreshViesData: () => Promise<void>;
   };
 }
 
@@ -64,6 +68,8 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
   const [endpoints, setEndpoints] = useState<LegalEntityEndpoint[]>([]);
   const [hasKvkRegistryData, setHasKvkRegistryData] = useState(false);
   const [hasLeiRegistryData, setHasLeiRegistryData] = useState(false);
+  const [hasPeppolRegistryData, setHasPeppolRegistryData] = useState(false);
+  const [hasViesRegistryData, setHasViesRegistryData] = useState(false);
   const [loading, setLoading] = useState(false);
   const notification = useNotification();
 
@@ -123,6 +129,34 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
             }
           }
           setHasLeiRegistryData(false);
+        }
+
+        // Check Peppol registry data (non-blocking)
+        try {
+          const peppolResponse = await apiV2.getPeppolRegistryData(legalEntityId);
+          setHasPeppolRegistryData(peppolResponse.hasData);
+        } catch (peppolError: unknown) {
+          if (peppolError && typeof peppolError === 'object' && 'response' in peppolError) {
+            const axiosError = peppolError as { response?: { status: number } };
+            if (axiosError.response?.status !== 404) {
+              logger.error('Error checking Peppol registry data:', peppolError);
+            }
+          }
+          setHasPeppolRegistryData(false);
+        }
+
+        // Check VIES registry data (non-blocking)
+        try {
+          const viesResponse = await apiV2.getViesRegistryData(legalEntityId);
+          setHasViesRegistryData(viesResponse.hasData);
+        } catch (viesError: unknown) {
+          if (viesError && typeof viesError === 'object' && 'response' in viesError) {
+            const axiosError = viesError as { response?: { status: number } };
+            if (axiosError.response?.status !== 404) {
+              logger.error('Error checking VIES registry data:', viesError);
+            }
+          }
+          setHasViesRegistryData(false);
         }
       } catch (error) {
         logger.error('Failed to load legal entity data:', error);
@@ -325,6 +359,34 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
     }
   };
 
+  // Handler for refreshing Peppol data
+  const refreshPeppolData = async (): Promise<void> => {
+    if (!legalEntityId) {
+      return;
+    }
+
+    try {
+      const response = await apiV2.getPeppolRegistryData(legalEntityId);
+      setHasPeppolRegistryData(response.hasData);
+    } catch (_error) {
+      setHasPeppolRegistryData(false);
+    }
+  };
+
+  // Handler for refreshing VIES data
+  const refreshViesData = async (): Promise<void> => {
+    if (!legalEntityId) {
+      return;
+    }
+
+    try {
+      const response = await apiV2.getViesRegistryData(legalEntityId);
+      setHasViesRegistryData(response.hasData);
+    } catch (_error) {
+      setHasViesRegistryData(false);
+    }
+  };
+
   return {
     legalEntity,
     contacts,
@@ -332,6 +394,8 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
     endpoints,
     hasKvkRegistryData,
     hasLeiRegistryData,
+    hasPeppolRegistryData,
+    hasViesRegistryData,
     loading,
     handlers: {
       updateLegalEntity,
@@ -344,6 +408,8 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
       refreshIdentifiers,
       refreshKvkData,
       refreshLeiData,
+      refreshPeppolData,
+      refreshViesData,
     },
   };
 }

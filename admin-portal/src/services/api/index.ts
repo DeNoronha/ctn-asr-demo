@@ -46,6 +46,8 @@ export {
   getLeiRegistryData,
   getPeppolRegistryData,
   fetchPeppolData,
+  getViesRegistryData,
+  fetchViesData,
 } from './legalEntities';
 export type {
   LeiAddress,
@@ -54,6 +56,10 @@ export type {
   PeppolRegistryResponse,
   PeppolFetchRequest,
   PeppolFetchResponse,
+  ViesRegistryData,
+  ViesRegistryResponse,
+  ViesFetchRequest,
+  ViesFetchResponse,
 } from './legalEntities';
 
 // Export identifier operations

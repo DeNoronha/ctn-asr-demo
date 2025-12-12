@@ -1,0 +1,307 @@
+/**
+ * VIES Registry Details Styles
+ */
+
+.vies-registry-details {
+  padding: 1.5rem;
+}
+
+.vies-registry-details .registry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.vies-registry-details .registry-header h2 {
+  margin: 0 0 0.5rem 0;
+  color: #111827;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.vat-code {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+.vat-value {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', monospace;
+  font-size: 0.875rem;
+  letter-spacing: 0.025em;
+}
+
+.vies-registry-details .status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.vies-registry-details .status-active {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.vies-registry-details .status-inactive {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.vies-registry-details .registry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.vies-registry-details .full-width-card {
+  grid-column: 1 / -1;
+  margin-bottom: 1.5rem;
+}
+
+.vies-registry-details .info-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vies-registry-details .info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.vies-registry-details .info-row:hover {
+  background-color: #f3f4f6;
+}
+
+.vies-registry-details .info-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.vies-registry-details .info-value {
+  color: #111827;
+  font-size: 0.9375rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Address Styling */
+.vies-registry-details .address-card {
+  padding: 1rem;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.vies-registry-details .address-line {
+  color: #374151;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+/* Approximate Matching */
+.vies-registry-details .matching-explanation {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.vies-registry-details .matching-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.vies-registry-details .match-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.vies-registry-details .match-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.vies-registry-details .match-value {
+  color: #6b7280;
+  font-size: 0.8125rem;
+}
+
+/* External Links */
+.vies-registry-details .external-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.vies-registry-details .external-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background-color: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.vies-registry-details .external-link:hover {
+  background-color: #2563eb;
+  color: white;
+  border-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
+}
+
+/* Footer */
+.vies-registry-details .data-source-footer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.vies-registry-details .data-source-footer p {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Loading, Error, and Empty States */
+.vies-registry-loading,
+.vies-registry-error,
+.vies-registry-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.vies-registry-loading p,
+.vies-registry-error p {
+  margin-top: 1rem;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.vies-registry-error {
+  color: #dc2626;
+}
+
+.vies-registry-empty {
+  color: #9ca3af;
+}
+
+.vies-registry-empty h3 {
+  margin: 1rem 0 0.5rem 0;
+  color: #374151;
+  font-size: 1.25rem;
+}
+
+.vies-registry-empty p {
+  max-width: 500px;
+  line-height: 1.6;
+  margin-top: 0.5rem;
+}
+
+.vies-registry-empty .external-link {
+  margin-top: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background-color: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.vies-registry-empty .external-link:hover {
+  background-color: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+/* Card Overrides */
+.vies-registry-details .card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.vies-registry-details .card-header {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  color: white;
+  padding: 1rem 1.25rem;
+}
+
+.vies-registry-details .card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.vies-registry-details .card-body {
+  padding: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .vies-registry-details .registry-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .vies-registry-details .registry-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vies-registry-details .matching-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vies-registry-details .external-links {
+    flex-direction: column;
+  }
+
+  .vies-registry-details .external-link {
+    justify-content: center;
+  }
+}

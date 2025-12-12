@@ -27,6 +27,8 @@ import {
   IdentifiersSection,
   KvkRegistrySection,
   LeiRegistrySection,
+  PeppolRegistrySection,
+  ViesRegistrySection,
   SystemIntegrationsSection,
 } from './member/MemberDetailSections';
 import { LoadingState } from './shared/LoadingState';
@@ -45,7 +47,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
   const { handleError } = useApiError();
 
   // Use custom hook for all member data management
-  const { legalEntity, contacts, identifiers, hasKvkRegistryData, hasLeiRegistryData, loading, handlers } =
+  const { legalEntity, contacts, identifiers, hasKvkRegistryData, hasLeiRegistryData, hasPeppolRegistryData, hasViesRegistryData, loading, handlers } =
     useMemberDetails(member.legal_entity_id);
 
   const handleUpdateCompany = async (data: typeof legalEntity) => {
@@ -152,7 +154,9 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
           <Tabs.Tab value="document-verification">Document Verification</Tabs.Tab>
           <Tabs.Tab value="authentication-tier">Authentication Tier</Tabs.Tab>
           {hasKvkRegistryData && <Tabs.Tab value="kvk-registry">KvK Registry</Tabs.Tab>}
-          {hasLeiRegistryData && <Tabs.Tab value="lei-registry">LEI Registry</Tabs.Tab>}
+          {hasLeiRegistryData && <Tabs.Tab value="lei-registry">GLEIF Registry</Tabs.Tab>}
+          {hasPeppolRegistryData && <Tabs.Tab value="peppol-registry">Peppol Registry</Tabs.Tab>}
+          {hasViesRegistryData && <Tabs.Tab value="vies-registry">VIES Registry</Tabs.Tab>}
         </Tabs.List>
 
         <Tabs.Panel value="company-details" pt="md">
@@ -265,6 +269,10 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
         {hasKvkRegistryData && <KvkRegistrySection legalEntity={legalEntity} />}
 
         {hasLeiRegistryData && <LeiRegistrySection legalEntity={legalEntity} />}
+
+        {hasPeppolRegistryData && <PeppolRegistrySection legalEntity={legalEntity} />}
+
+        {hasViesRegistryData && <ViesRegistrySection legalEntity={legalEntity} />}
       </Tabs>
     </div>
   );
