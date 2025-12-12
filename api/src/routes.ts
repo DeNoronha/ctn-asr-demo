@@ -1612,8 +1612,8 @@ router.get('/v1/legal-entities/:legalentityid/lei-registry', requireAuth, async 
         legal_name,
         legal_address,
         headquarters_address,
-        registration_authority,
-        registration_number,
+        registration_authority_id,
+        registered_as,
         registration_status,
         entity_status,
         initial_registration_date,
@@ -1625,7 +1625,7 @@ router.get('/v1/legal-entities/:legalentityid/lei-registry', requireAuth, async 
         dt_created,
         dt_modified
       FROM gleif_registry_data
-      WHERE legal_entity_id = $1 AND is_deleted = false
+      WHERE legal_entity_id = $1
       ORDER BY fetched_at DESC
       LIMIT 1
     `, [legalentityid]);
@@ -1647,8 +1647,8 @@ router.get('/v1/legal-entities/:legalentityid/lei-registry', requireAuth, async 
         legalName: data.legal_name,
         legalAddress: data.legal_address,
         headquartersAddress: data.headquarters_address,
-        registrationAuthority: data.registration_authority,
-        registrationNumber: data.registration_number,
+        registrationAuthority: data.registration_authority_id,
+        registrationNumber: data.registered_as,
         registrationStatus: data.registration_status,
         entityStatus: data.entity_status,
         initialRegistrationDate: data.initial_registration_date,
