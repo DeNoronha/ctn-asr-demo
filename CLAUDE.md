@@ -222,7 +222,7 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 - `kvk_registry_data` - KvK API response cache and validation
 - `identifier_verification_history` - Document verification workflow
 - `dns_verification_tokens` - Domain ownership verification
-- `company_registries` - Global registry metadata (KvK, Companies House, etc.)
+- `legal_entity_number_type` - Lookup table for identifier types (KVK, LEI, etc.) with validation patterns
 - `vetting_records` - Member vetting status tracking
 
 **Business Data Interchange (BDI):**
@@ -245,7 +245,7 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 - `v_members_list` - Simplified member list
 - `members_view` - Legacy view (prefer v_members_full)
 - `legal_entity_full` - Complete entity with contacts, endpoints, identifiers
-- `company_identifiers_with_registry` - Identifiers joined with registry metadata
+- `v_identifiers_with_type` - Identifiers enriched with type metadata from lookup table
 - `v_m2m_clients_active` - Active M2M clients with secret counts
 - `v_m2m_credentials_active` - Active Keycloak credentials
 - `v_audit_log_summary` - Pseudonymized audit log summary

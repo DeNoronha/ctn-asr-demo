@@ -99,7 +99,7 @@ class SchemaContractTests {
     const requiredViews = [
       'v_members_full',
       'legal_entity_full',
-      'company_identifiers_with_registry'
+      'v_identifiers_with_type'  // Replaced company_identifiers_with_registry in migration 039
     ];
 
     // Check tables

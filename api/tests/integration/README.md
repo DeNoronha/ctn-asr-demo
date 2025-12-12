@@ -26,7 +26,7 @@ We repeatedly encountered production issues where:
 ### 1. Database Schema Validation
 Verifies required tables and views exist:
 - Tables: `members`, `legal_entity`, `legal_entity_contact`, `legal_entity_number`, etc.
-- Views: `v_members_full`, `legal_entity_full`, `company_identifiers_with_registry`
+- Views: `v_members_full`, `legal_entity_full`, `v_identifiers_with_type`
 
 ### 2. API Query Validation
 Parses SQL queries from `src/routes.ts` and validates:
