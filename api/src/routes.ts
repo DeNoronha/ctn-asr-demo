@@ -1081,11 +1081,8 @@ router.delete('/v1/legal-entities/:legalentityid', requireAuth, async (req: Requ
       WHERE legal_entity_id = $1 AND is_deleted = false
     `, [legalentityid]);
 
-    // Soft-delete identifier verification history
-    await client.query(`
-      UPDATE identifier_verification_history SET is_deleted = true, dt_modified = NOW()
-      WHERE legal_entity_id = $1 AND is_deleted = false
-    `, [legalentityid]);
+    // Note: identifier_verification_history does not have is_deleted column
+    // These records are preserved for audit purposes (FK has ON DELETE CASCADE if hard delete needed)
 
     // Members table dropped (Dec 12, 2025) - legal_entity IS the member now
 
