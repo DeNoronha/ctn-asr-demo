@@ -1486,7 +1486,20 @@ router.put('/v1/identifiers/:identifierId', requireAuth, async (req: Request, re
     const pool = getPool();
     const { identifierId } = req.params;
 
-    const { identifier_type, identifier_value, issuing_authority, issued_at, expires_at, verification_status } = req.body;
+    const {
+      identifier_type,
+      identifier_value,
+      issuing_authority,
+      issued_at,
+      expires_at,
+      verification_status,
+      validation_status,
+      registry_name,
+      registry_url,
+      country_code,
+      verification_notes,
+      validation_date,
+    } = req.body;
 
     const { rows } = await pool.query(`
       UPDATE legal_entity_number SET
@@ -1496,10 +1509,30 @@ router.put('/v1/identifiers/:identifierId', requireAuth, async (req: Request, re
         issued_at = COALESCE($4, issued_at),
         expires_at = COALESCE($5, expires_at),
         verification_status = COALESCE($6, verification_status),
+        validation_status = COALESCE($7, validation_status),
+        registry_name = COALESCE($8, registry_name),
+        registry_url = COALESCE($9, registry_url),
+        country_code = COALESCE($10, country_code),
+        verification_notes = COALESCE($11, verification_notes),
+        validation_date = COALESCE($12, validation_date),
         dt_modified = NOW()
-      WHERE legal_entity_reference_id = $7 AND is_deleted = false
+      WHERE legal_entity_reference_id = $13 AND is_deleted = false
       RETURNING *
-    `, [identifier_type, identifier_value, issuing_authority, issued_at, expires_at, verification_status, identifierId]);
+    `, [
+      identifier_type,
+      identifier_value,
+      issuing_authority,
+      issued_at,
+      expires_at,
+      verification_status,
+      validation_status,
+      registry_name,
+      registry_url,
+      country_code,
+      verification_notes,
+      validation_date,
+      identifierId
+    ]);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Identifier not found' });
