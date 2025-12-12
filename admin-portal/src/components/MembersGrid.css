@@ -82,6 +82,31 @@
   overflow-x: hidden;
 }
 
+/* Column toggle dropdown - checkbox and label alignment */
+.mantine-Popover-dropdown .mantine-Checkbox-root {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.mantine-Popover-dropdown .mantine-Checkbox-body {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.mantine-Popover-dropdown .mantine-Checkbox-inner {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.mantine-Popover-dropdown .mantine-Checkbox-label {
+  padding-left: 0 !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
 /* Menu item spacing (for export menu, etc.) */
 .members-grid-container .mantine-Menu-item {
   padding: 8px 12px;
