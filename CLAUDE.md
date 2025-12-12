@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Last Updated:** November 20, 2025
+**Last Updated:** December 12, 2025
 
 ---
 
@@ -190,7 +190,7 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 3. **Review relationships** - Understand FK constraints and cascading behaviors
 4. **Verify views** - Use existing views like `v_members_full`, `legal_entity_full`
 
-**Complete Table List (30 active tables + 2 archived):**
+**Complete Table List (24 active tables):**
 
 **Core Entity Model:**
 - `party_reference` - Root entity (UUID primary key)
@@ -214,7 +214,6 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 - `ctn_m2m_secret_audit` - Keycloak secret audit trail
 - `endpoint_authorization` - BVAD token authorization for endpoints
 - `bvad_issued_tokens` - Business Validation & Authorization Descriptor tokens
-- `oauth_clients` - OAuth 2.0 client registrations
 - `issued_tokens` - Generic token tracking
 - `authorization_log` - Three-tier authorization decision logs
 
@@ -223,7 +222,6 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 - `identifier_verification_history` - Document verification workflow
 - `dns_verification_tokens` - Domain ownership verification
 - `legal_entity_number_type` - Lookup table for identifier types (KVK, LEI, etc.) with validation patterns
-- `vetting_records` - Member vetting status tracking
 
 **Business Data Interchange (BDI):**
 - `bdi_orchestrations` - Multi-party orchestration records
@@ -234,11 +232,14 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 **Audit & Compliance:**
 - `audit_log` - System-wide audit trail (with PII pseudonymization)
 - `audit_log_pii_mapping` - Encrypted PII mapping for GDPR compliance
-- `audit_log_pii_access` - Access log for PII de-anonymization
 
-**Archived Tables (Removed Nov 21, 2025 - Migration 032):**
-- ~~`legal_entity_backup_20251113`~~ - Pre-migration backup (dropped after verification)
-- ~~`members_backup_20251113`~~ - Pre-migration backup (dropped after verification)
+**Dropped Tables (Schema Cleanup):**
+- ~~`company_registries`~~ - Dropped Dec 12, 2025 (migration 039) - replaced by `legal_entity_number_type`
+- ~~`vetting_records`~~ - Dropped Dec 12, 2025 (migration 040) - never implemented
+- ~~`oauth_clients`~~ - Dropped Dec 12, 2025 (migration 040) - Keycloak used instead via `ctn_m2m_credentials`
+- ~~`audit_log_pii_access`~~ - Dropped Dec 12, 2025 (migration 040) - no active code references
+- ~~`legal_entity_backup_20251113`~~ - Dropped Nov 21, 2025 (migration 032)
+- ~~`members_backup_20251113`~~ - Dropped Nov 21, 2025 (migration 032)
 
 **Database Views (7 views):**
 - `v_members_full` - Complete member data with identifiers
@@ -257,7 +258,7 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 - CHECK constraints for enums (e.g., `status IN ('PENDING', 'ACTIVE', 'SUSPENDED')`)
 - Foreign keys with appropriate CASCADE/RESTRICT behaviors
 
-**Schema File Location:** `database/asr_dev.sql` (1,350 lines, last updated Nov 21, 2025)
+**Schema File Location:** `database/asr_dev.sql` (last updated Dec 12, 2025)
 **Migrations:** Located in `database/migrations/XXX_description.sql` (sequential numbering)
 
 **Common Pitfalls to Avoid:**

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict t5BfVBUdBEzj0TjrFuoSWAqUymVMzUvmfqqgKlv7h60iM6uacIsKgnTFocZxyHn
+\restrict 8NGYs5sHJbej9eskGaS4FRfpddd6fMny0RZocnP0whGlA5mJsaUpTHdfpVXAXa3
 
 -- Dumped from database version 15.14
 -- Dumped by pg_dump version 15.15 (Homebrew)
@@ -495,48 +495,6 @@ CREATE SEQUENCE public.audit_log_audit_log_id_seq
 --
 
 ALTER SEQUENCE public.audit_log_audit_log_id_seq OWNED BY public.audit_log.audit_log_id;
-
-
---
--- Name: audit_log_pii_access; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.audit_log_pii_access (
-    access_id integer NOT NULL,
-    pseudonym character varying(64) NOT NULL,
-    accessed_by character varying(255) NOT NULL,
-    accessed_at timestamp with time zone DEFAULT now() NOT NULL,
-    access_reason text,
-    user_agent text,
-    ip_address character varying(45)
-);
-
-
---
--- Name: TABLE audit_log_pii_access; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON TABLE public.audit_log_pii_access IS 'Audit trail of PII de-pseudonymization access. GDPR Article 32 - Monitoring and Logging.';
-
-
---
--- Name: audit_log_pii_access_access_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.audit_log_pii_access_access_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: audit_log_pii_access_access_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.audit_log_pii_access_access_id_seq OWNED BY public.audit_log_pii_access.access_id;
 
 
 --
@@ -2263,21 +2221,6 @@ CREATE VIEW public.members_view AS
 
 
 --
--- Name: oauth_clients; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.oauth_clients (
-    client_id character varying(255) NOT NULL,
-    member_id uuid,
-    client_secret_hash character varying(255) NOT NULL,
-    redirect_uris text[],
-    scopes text[],
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
-);
-
-
---
 -- Name: peppol_registry_data; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2552,22 +2495,6 @@ COMMENT ON VIEW public.v_members_list IS 'Lightweight view for member list pages
 
 
 --
--- Name: vetting_records; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.vetting_records (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    member_id uuid,
-    vetting_type character varying(50) NOT NULL,
-    status character varying(20) NOT NULL,
-    result jsonb,
-    completed_at timestamp with time zone,
-    expires_at timestamp with time zone,
-    created_at timestamp with time zone DEFAULT now()
-);
-
-
---
 -- Name: vies_registry_data; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2669,13 +2596,6 @@ ALTER TABLE ONLY public.audit_log ALTER COLUMN audit_log_id SET DEFAULT nextval(
 
 
 --
--- Name: audit_log_pii_access access_id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.audit_log_pii_access ALTER COLUMN access_id SET DEFAULT nextval('public.audit_log_pii_access_access_id_seq'::regclass);
-
-
---
 -- Name: admin_tasks admin_tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2689,14 +2609,6 @@ ALTER TABLE ONLY public.admin_tasks
 
 ALTER TABLE ONLY public.applications
     ADD CONSTRAINT applications_pkey PRIMARY KEY (application_id);
-
-
---
--- Name: audit_log_pii_access audit_log_pii_access_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.audit_log_pii_access
-    ADD CONSTRAINT audit_log_pii_access_pkey PRIMARY KEY (access_id);
 
 
 --
@@ -2940,14 +2852,6 @@ ALTER TABLE ONLY public.members
 
 
 --
--- Name: oauth_clients oauth_clients_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.oauth_clients
-    ADD CONSTRAINT oauth_clients_pkey PRIMARY KEY (client_id);
-
-
---
 -- Name: party_reference party_reference_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2977,14 +2881,6 @@ ALTER TABLE ONLY public.legal_entity_number
 
 ALTER TABLE ONLY public.bdi_orchestration_participants
     ADD CONSTRAINT uq_orchestration_participant UNIQUE (orchestration_id, participant_domain, participant_role);
-
-
---
--- Name: vetting_records vetting_records_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.vetting_records
-    ADD CONSTRAINT vetting_records_pkey PRIMARY KEY (id);
 
 
 --
@@ -3927,13 +3823,6 @@ CREATE INDEX idx_members_status ON public.legal_entity USING btree (status);
 
 
 --
--- Name: idx_oauth_member; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_oauth_member ON public.oauth_clients USING btree (member_id);
-
-
---
 -- Name: idx_orchestrations_business_keys; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4053,27 +3942,6 @@ CREATE UNIQUE INDEX idx_peppol_registry_unique_active ON public.peppol_registry_
 
 
 --
--- Name: idx_pii_access_accessed_at; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_pii_access_accessed_at ON public.audit_log_pii_access USING btree (accessed_at);
-
-
---
--- Name: idx_pii_access_accessed_by; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_pii_access_accessed_by ON public.audit_log_pii_access USING btree (accessed_by);
-
-
---
--- Name: idx_pii_access_pseudonym; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_pii_access_pseudonym ON public.audit_log_pii_access USING btree (pseudonym);
-
-
---
 -- Name: idx_pii_mapping_created_by; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4134,20 +4002,6 @@ CREATE INDEX idx_verification_status ON public.identifier_verification_history U
 --
 
 CREATE INDEX idx_verification_type ON public.identifier_verification_history USING btree (identifier_type);
-
-
---
--- Name: idx_vetting_member; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_vetting_member ON public.vetting_records USING btree (member_id);
-
-
---
--- Name: idx_vetting_status; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_vetting_status ON public.vetting_records USING btree (status);
 
 
 --
@@ -4605,27 +4459,11 @@ ALTER TABLE ONLY public.members
 
 
 --
--- Name: oauth_clients oauth_clients_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.oauth_clients
-    ADD CONSTRAINT oauth_clients_member_id_fkey FOREIGN KEY (member_id) REFERENCES public.members(id) ON DELETE CASCADE;
-
-
---
 -- Name: peppol_registry_data peppol_registry_data_legal_entity_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.peppol_registry_data
     ADD CONSTRAINT peppol_registry_data_legal_entity_id_fkey FOREIGN KEY (legal_entity_id) REFERENCES public.legal_entity(legal_entity_id) ON DELETE CASCADE;
-
-
---
--- Name: vetting_records vetting_records_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.vetting_records
-    ADD CONSTRAINT vetting_records_member_id_fkey FOREIGN KEY (member_id) REFERENCES public.members(id) ON DELETE CASCADE;
 
 
 --
@@ -4640,5 +4478,5 @@ ALTER TABLE ONLY public.vies_registry_data
 -- PostgreSQL database dump complete
 --
 
-\unrestrict t5BfVBUdBEzj0TjrFuoSWAqUymVMzUvmfqqgKlv7h60iM6uacIsKgnTFocZxyHn
+\unrestrict 8NGYs5sHJbej9eskGaS4FRfpddd6fMny0RZocnP0whGlA5mJsaUpTHdfpVXAXa3
 
