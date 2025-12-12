@@ -1,11 +1,40 @@
 ---
 name: frontend-design
-description: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Also use for UI/UX review of existing interfaces. Generates creative, polished code that avoids generic AI aesthetics.
+description: Create distinctive, production-grade frontend interfaces using Mantine UI components. Use this skill when the user asks to build web components, pages, or applications. Also use for UI/UX review of existing interfaces. Always prefer Mantine components over custom implementations.
 ---
 
 # Frontend Design & UI/UX Review Skill
 
 This skill guides creation of distinctive, production-grade frontend interfaces AND provides expert UI/UX review capabilities. Apply 15+ years of enterprise design experience to both creation and evaluation.
+
+## 🚨 CRITICAL: Mantine-First Approach
+
+**ALWAYS use Mantine UI components before creating custom implementations.**
+
+Before writing ANY component code:
+
+1. **Check Mantine Core** (`@mantine/core`): Button, TextInput, Select, Modal, Tabs, Accordion, Card, Badge, Alert, etc.
+2. **Check Mantine Extensions**:
+   - `@mantine/dates` - DatePicker, Calendar, DateTimePicker
+   - `@mantine/form` - Form state management and validation
+   - `@mantine/notifications` - Toast notifications
+   - `@mantine/modals` - Modal manager
+   - `@mantine/dropzone` - File upload
+   - `@mantine/charts` - Charts and data visualization
+   - `@mantine/spotlight` - Command palette / search
+   - `mantine-datatable` - Data tables with sorting, filtering, pagination
+3. **Check Mantine documentation**: https://mantine.dev/overview/
+4. **Reference**: `docs/MANTINE_LLMS.txt` (79K lines of Mantine reference)
+
+**Only create custom components when:**
+- No suitable Mantine component exists
+- Mantine component cannot be customized via props/styles to meet requirements
+- Business logic requires specialized behavior not achievable with Mantine
+
+**When reviewing code, flag:**
+- Custom implementations that duplicate Mantine functionality
+- Inline styles that should use Mantine's `style` prop or `createStyles`
+- Missing use of Mantine hooks (`useDisclosure`, `useForm`, `useMediaQuery`, etc.)
 
 ## Part 1: Design Creation
 
@@ -91,15 +120,56 @@ Verify:
 
 ### Mantine v8 Best Practices
 
-When using Mantine:
+**Component Selection Priority:**
+1. Use Mantine component directly with default props
+2. Customize via component props (variant, size, color, radius)
+3. Customize via `style` prop or `className` with CSS modules
+4. Extend with `createStyles` or Mantine's styling API
+5. Only then consider a wrapper or custom component
 
-- Follow library conventions for theming and customization
-- Use provided components instead of custom implementations
-- Maintain consistent component props and patterns
-- Ensure proper TypeScript typing for component props
-- Leverage built-in accessibility features
-- Use appropriate component variants (primary, secondary, outline)
-- Follow grid and layout system guidelines
+**Common Mantine Patterns:**
+
+```tsx
+// ✅ Good: Use Mantine's Stack for vertical spacing
+<Stack gap="md">
+  <TextInput label="Name" />
+  <TextInput label="Email" />
+</Stack>
+
+// ❌ Bad: Custom div with margin
+<div style={{ marginBottom: 16 }}>
+  <input />
+</div>
+
+// ✅ Good: Use Mantine's Group for horizontal layout
+<Group justify="space-between">
+  <Button>Cancel</Button>
+  <Button>Save</Button>
+</Group>
+
+// ✅ Good: Use Mantine's useForm hook
+const form = useForm({
+  initialValues: { email: '' },
+  validate: { email: (v) => (/^\S+@\S+$/.test(v) ? null : 'Invalid email') }
+});
+
+// ✅ Good: Use Mantine's useDisclosure for modals
+const [opened, { open, close }] = useDisclosure(false);
+```
+
+**Key Mantine Hooks to Use:**
+- `useDisclosure` - Boolean state with open/close/toggle
+- `useForm` - Form state and validation
+- `useMediaQuery` - Responsive breakpoints
+- `useClickOutside` - Detect outside clicks
+- `useDebouncedValue` - Debounced state
+- `useLocalStorage` - Persist state to localStorage
+
+**Theming:**
+- Use `MantineProvider` theme object for global styles
+- Use CSS variables (`var(--mantine-color-blue-6)`) for colors
+- Use Mantine spacing scale (`xs`, `sm`, `md`, `lg`, `xl`)
+- Use Mantine breakpoints for responsive design
 
 ## Review Output Format
 
