@@ -1678,7 +1678,44 @@ router.get('/v1/legal-entities/:legalentityid/kvk-registry', requireAuth, async 
     const pool = getPool();
     const { legalentityid } = req.params;
 
-    // Get the KvK identifier for this legal entity
+    // First check kvk_registry_data table (primary source - from KvK API)
+    const { rows: kvkData } = await pool.query(`
+      SELECT
+        registry_data_id,
+        kvk_number,
+        company_name,
+        legal_form,
+        trade_names,
+        formal_registration_date,
+        material_registration_date,
+        company_status,
+        addresses,
+        sbi_activities,
+        total_employees,
+        kvk_profile_url,
+        establishment_profile_url,
+        fetched_at,
+        last_verified_at,
+        data_source,
+        statutory_name,
+        rsin,
+        vestigingsnummer,
+        ind_hoofdvestiging,
+        primary_trade_name,
+        rechtsvorm,
+        total_branches
+      FROM kvk_registry_data
+      WHERE legal_entity_id = $1 AND is_deleted = false
+      ORDER BY fetched_at DESC
+      LIMIT 1
+    `, [legalentityid]);
+
+    if (kvkData.length > 0) {
+      // Return data from kvk_registry_data table
+      return res.json(kvkData[0]);
+    }
+
+    // Fallback: Check identifier_verification_history for extracted data
     const { rows: identifiers } = await pool.query(`
       SELECT legal_entity_reference_id, identifier_value
       FROM legal_entity_number

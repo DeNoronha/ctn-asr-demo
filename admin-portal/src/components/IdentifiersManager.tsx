@@ -84,13 +84,14 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
         <h3>Legal Identifiers</h3>
         <div style={{ display: 'flex', gap: '8px' }}>
           <Button
+            variant="outline"
             color="cyan"
             onClick={handleFetchLei}
             disabled={fetchingLei || identifiers.length === 0}
-            title="Fetch LEI from GLEIF API"
-            aria-label={fetchingLei ? 'Fetching LEI from GLEIF API' : 'Fetch LEI from GLEIF API'}
+            title="Enrich identifiers from external registries (GLEIF, Peppol, VIES)"
+            aria-label={fetchingLei ? 'Enriching from registries...' : 'Enrich from registries'}
           >
-            {fetchingLei ? 'Fetching...' : 'Fetch LEI'}
+            {fetchingLei ? 'Enriching...' : '>> Enrich'}
           </Button>
           <Button color="blue" onClick={handleAdd} aria-label="Add new identifier">
             <Plus size={16} />

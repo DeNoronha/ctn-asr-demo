@@ -22,27 +22,45 @@ import './KvkRegistryDetails.css';
 import { formatDate } from '../utils/dateFormat';
 import { LoadingState } from './shared/LoadingState';
 
+// Address format from KvK API (Dutch field names)
+interface KvkAddress {
+  type: string;
+  // Dutch field names from KvK API
+  straatnaam?: string;
+  huisnummer?: number | string;
+  postcode?: string;
+  plaats?: string;
+  land?: string;
+  volledigAdres?: string;
+  postbusnummer?: number;
+  // English field names (for backwards compatibility)
+  street?: string;
+  houseNumber?: string;
+  postalCode?: string;
+  city?: string;
+  country?: string;
+}
+
+// Trade name format from KvK API
+interface KvkTradeName {
+  naam: string;
+  volgorde: number;
+}
+
 interface KvkRegistryData {
   registry_data_id: string;
-  legal_entity_id: string;
+  legal_entity_id?: string;
   kvk_number: string;
   company_name: string;
   legal_form?: string;
-  trade_names?: {
+  trade_names?: KvkTradeName[] | {
     businessName: string;
     currentTradeNames: string[];
   };
   formal_registration_date?: string;
   material_registration_date?: string;
   company_status?: string;
-  addresses?: Array<{
-    type: string;
-    street: string;
-    houseNumber: string;
-    postalCode: string;
-    city: string;
-    country: string;
-  }>;
+  addresses?: KvkAddress[];
   sbi_activities?: Array<{
     sbiCode: string;
     sbiOmschrijving: string;
@@ -54,6 +72,13 @@ interface KvkRegistryData {
   fetched_at: string;
   last_verified_at?: string;
   data_source: string;
+  // Additional fields from expanded schema
+  statutory_name?: string;
+  rsin?: string;
+  vestigingsnummer?: string;
+  primary_trade_name?: string;
+  rechtsvorm?: string;
+  total_branches?: number;
 }
 
 interface KvkRegistryDetailsProps {
@@ -77,7 +102,23 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
       setError(null);
 
       const data = await apiV2.getKvkRegistryData(legalEntityId);
-      setRegistryData(data);
+
+      // Handle both response formats:
+      // 1. Direct data from kvk_registry_data table (has kvk_number field)
+      // 2. Wrapped data from verification history (has hasData field)
+      if (data && 'kvk_number' in data) {
+        // Direct data from kvk_registry_data table
+        setRegistryData(data);
+      } else if (data && 'hasData' in data) {
+        // Wrapped data from verification history
+        if (data.hasData && data.data) {
+          setRegistryData(data.data);
+        } else {
+          setRegistryData(null);
+        }
+      } else {
+        setRegistryData(null);
+      }
     } catch (err: unknown) {
       console.error('Failed to load KvK registry data:', err);
 
@@ -164,11 +205,23 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
                     <span className="info-label">Official Name:</span>
                     <span className="info-value">{registryData.company_name}</span>
                   </div>
-                  {registryData.trade_names?.businessName && (
-                    <div className="info-row">
-                      <span className="info-label">Trade Name:</span>
-                      <span className="info-value">{registryData.trade_names.businessName}</span>
-                    </div>
+                  {/* Support both Dutch array format and English object format for trade names */}
+                  {registryData.trade_names && (
+                    Array.isArray(registryData.trade_names) ? (
+                      registryData.trade_names.length > 0 && (
+                        <div className="info-row">
+                          <span className="info-label">Trade Name:</span>
+                          <span className="info-value">{(registryData.trade_names as KvkTradeName[])[0]?.naam}</span>
+                        </div>
+                      )
+                    ) : (
+                      registryData.trade_names.businessName && (
+                        <div className="info-row">
+                          <span className="info-label">Trade Name:</span>
+                          <span className="info-value">{registryData.trade_names.businessName}</span>
+                        </div>
+                      )
+                    )
                   )}
                   {registryData.legal_form && (
                     <div className="info-row">
@@ -244,23 +297,47 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
               </div>
               <div className="card-body">
                 <div className="addresses-grid">
-                  {registryData.addresses.map((address) => (
-                    <div
-                      key={`${address.type}-${address.postalCode}-${address.houseNumber}`}
-                      className="address-card"
-                    >
-                      <div className="address-type">{address.type}</div>
-                      <div className="address-details">
-                        <div>
-                          {address.street} {address.houseNumber}
+                  {registryData.addresses.map((address, index) => {
+                    // Support both Dutch (KvK API) and English field names
+                    const street = address.straatnaam || address.street;
+                    const houseNumber = address.huisnummer || address.houseNumber;
+                    const postalCode = address.postcode || address.postalCode;
+                    const city = address.plaats || address.city;
+                    const country = address.land || address.country;
+                    const fullAddress = address.volledigAdres;
+
+                    return (
+                      <div
+                        key={`${address.type}-${postalCode}-${houseNumber}-${index}`}
+                        className="address-card"
+                      >
+                        <div className="address-type">{address.type}</div>
+                        <div className="address-details">
+                          {fullAddress ? (
+                            // Use full address if available (from KvK API)
+                            <div style={{ whiteSpace: 'pre-line' }}>
+                              {fullAddress.split(' ').join('\n').replace(/\n([0-9]{4}[A-Z]{2})/g, '\n$1 ')}
+                            </div>
+                          ) : (
+                            // Fall back to individual fields
+                            <>
+                              {(street || houseNumber) && (
+                                <div>
+                                  {street} {houseNumber}
+                                </div>
+                              )}
+                              {(postalCode || city) && (
+                                <div>
+                                  {postalCode} {city}
+                                </div>
+                              )}
+                              {country && <div>{country}</div>}
+                            </>
+                          )}
                         </div>
-                        <div>
-                          {address.postalCode} {address.city}
-                        </div>
-                        <div>{address.country}</div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </Card>
