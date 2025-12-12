@@ -750,6 +750,40 @@ az monitor metrics alert list --resource-group rg-ctn-demo-asr-dev --output tabl
 
 ---
 
+## Claude Desktop & Claude Code
+
+This project can be worked on using both **Claude Code** (CLI tool) and **Claude Desktop** (chat interface with MCP tools).
+
+### Desktop Commander (MCP Server)
+
+When working via Claude Desktop, the **Desktop Commander** MCP server provides direct file system access on the local Mac:
+
+**Capabilities:**
+- Read/write/delete files and directories
+- Search files by name or content
+- Execute shell commands (bash/zsh)
+- Move/rename files
+- Get file metadata
+
+**When to use Desktop Commander:**
+- File operations on the local machine (outside of Claude's container environment)
+- Quick file deletions, moves, or renames
+- Reading local config files or logs
+- Running shell commands that need local environment access
+
+**Example operations:**
+```bash
+# These are handled via Desktop Commander MCP tools, not direct bash
+- Delete screenshots: rm "/path/to/file.png"
+- List directory: ls -la /path/to/dir
+- Search files: find /path -name "pattern"
+- Read file contents: cat /path/to/file
+```
+
+**Note:** Desktop Commander operates on the user's local filesystem. Files in `/mnt/user-data/` or `/home/claude/` are on Claude's remote container, not accessible via Desktop Commander.
+
+---
+
 ## Technology Stack
 
 - **Frontend:** React 18.3.1 + TypeScript 5.9.3 + Mantine v8.3.6 + Vite 7.1.10
