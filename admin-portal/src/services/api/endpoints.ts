@@ -1,7 +1,6 @@
 import { getAuthenticatedAxios } from './client';
 import type {
   LegalEntityEndpoint,
-  EndpointAuthorization,
   ConnectionTestDetails,
 } from './types';
 
@@ -62,45 +61,6 @@ export async function toggleEndpoint(
   const response = await axiosInstance.patch<LegalEntityEndpoint>(
     `/endpoints/${endpointId}/toggle`,
     { is_active: isActive }
-  );
-  return response.data;
-}
-
-// =====================================================
-// TOKEN ENDPOINTS (Per-Endpoint Authorization)
-// =====================================================
-
-export async function getEndpointTokens(endpointId: string): Promise<EndpointAuthorization[]> {
-  const axiosInstance = await getAuthenticatedAxios();
-  const response = await axiosInstance.get<EndpointAuthorization[]>(
-    `/endpoints/${endpointId}/tokens`
-  );
-  return response.data;
-}
-
-export async function issueEndpointToken(
-  endpointId: string,
-  options?: { expires_in_days?: number }
-): Promise<EndpointAuthorization> {
-  const axiosInstance = await getAuthenticatedAxios();
-  const response = await axiosInstance.post<EndpointAuthorization>(
-    `/endpoints/${endpointId}/tokens`,
-    options
-  );
-  return response.data;
-}
-
-export async function revokeEndpointToken(tokenId: string, reason?: string): Promise<void> {
-  const axiosInstance = await getAuthenticatedAxios();
-  await axiosInstance.post(`/tokens/${tokenId}/revoke`, { reason });
-}
-
-export async function getTokenUsageStats(
-  tokenId: string
-): Promise<{ usage_count: number; last_used_at?: string }> {
-  const axiosInstance = await getAuthenticatedAxios();
-  const response = await axiosInstance.get<{ usage_count: number; last_used_at?: string }>(
-    `/tokens/${tokenId}/stats`
   );
   return response.data;
 }

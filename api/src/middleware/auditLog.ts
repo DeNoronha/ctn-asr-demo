@@ -2,16 +2,10 @@
 // Audit Logging Middleware
 // ========================================
 // Logs all sensitive operations for security and compliance
-// GDPR-compliant: PII pseudonymization enabled
 
 import { InvocationContext } from '@azure/functions';
 import { AuthenticatedRequest } from './auth';
 import { getPool } from '../utils/database';
-import {
-  pseudonymizeEmail,
-  pseudonymizeIP,
-  storePseudonymMapping,
-} from '../utils/pseudonymization';
 
 // Use shared database pool with proper SSL validation
 const pool = getPool();
@@ -106,20 +100,17 @@ function safeGetHeader(headers: any, name: string): string | null {
 
 /**
  * Audit log entry interface
- *
- * NOTE: user_email and ip_address will be pseudonymized before storage
- * to comply with GDPR Article 5(1)(c) - Data Minimization
  */
 export interface AuditLogEntry {
   event_type: AuditEventType;
   severity: AuditSeverity;
   user_id?: string;
-  user_email?: string; // Will be pseudonymized before storage
+  user_email?: string;
   resource_type?: string;
   resource_id?: string;
   action?: string;
   result: 'success' | 'failure';
-  ip_address?: string; // Will be pseudonymized before storage
+  ip_address?: string;
   user_agent?: string;
   request_path?: string;
   request_method?: string;
@@ -129,59 +120,24 @@ export interface AuditLogEntry {
 
 /**
  * Write audit log entry to database
- *
- * GDPR Compliance:
- * - Pseudonymizes email addresses using HMAC-SHA256
- * - Pseudonymizes IP addresses using HMAC-SHA256
- * - Stores mapping in secure table for emergency de-pseudonymization
- * - Complies with GDPR Article 5(1)(c) - Data Minimization
- * - Complies with GDPR Article 32 - Security of Processing
  */
 export async function logAuditEvent(
   entry: AuditLogEntry,
   context: InvocationContext
 ): Promise<void> {
   try {
-    // Pseudonymize PII before storage
-    const pseudonymizedEmail = pseudonymizeEmail(entry.user_email);
-    const pseudonymizedIP = pseudonymizeIP(entry.ip_address);
-
-    // Store mapping for emergency de-pseudonymization (if configured)
-    // This runs asynchronously - don't block audit log insertion
-    if (entry.user_email && pseudonymizedEmail) {
-      storePseudonymMapping(
-        pseudonymizedEmail,
-        entry.user_email,
-        entry.user_id,
-        context
-      ).catch((error) => {
-        context.error('Failed to store email mapping:', error);
-      });
-    }
-
-    if (entry.ip_address && pseudonymizedIP) {
-      storePseudonymMapping(
-        pseudonymizedIP,
-        entry.ip_address,
-        entry.user_id,
-        context
-      ).catch((error) => {
-        context.error('Failed to store IP mapping:', error);
-      });
-    }
-
-    // Insert audit log with pseudonymized data
+    // Insert audit log
     await pool.query(
       `INSERT INTO audit_log (
         event_type,
         severity,
         user_id,
-        user_email_pseudonym,
+        user_email,
         resource_type,
         resource_id,
         action,
         result,
-        ip_address_pseudonym,
+        ip_address,
         user_agent,
         request_path,
         request_method,
@@ -193,12 +149,12 @@ export async function logAuditEvent(
         entry.event_type,
         entry.severity,
         entry.user_id,
-        pseudonymizedEmail, // Pseudonym, not plaintext email
+        entry.user_email,
         entry.resource_type,
         entry.resource_id,
         entry.action,
         entry.result,
-        pseudonymizedIP, // Pseudonym, not plaintext IP
+        entry.ip_address,
         entry.user_agent,
         entry.request_path,
         entry.request_method,
@@ -207,7 +163,7 @@ export async function logAuditEvent(
       ]
     );
 
-    context.log('Audit event logged (GDPR-compliant):', entry.event_type, entry.result);
+    context.log('Audit event logged:', entry.event_type, entry.result);
   } catch (error) {
     // Don't fail the request if audit logging fails
     context.error('Failed to write audit log:', error);

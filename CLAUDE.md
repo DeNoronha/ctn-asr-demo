@@ -190,7 +190,7 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 3. **Review relationships** - Understand FK constraints and cascading behaviors
 4. **Verify views** - Use existing views like `v_members_full`, `legal_entity_full`
 
-**Complete Table List (24 active tables):**
+**Complete Table List (17 active tables):**
 
 **Core Entity Model:**
 - `party_reference` - Root entity (UUID primary key)
@@ -212,8 +212,6 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 - `m2m_client_secrets_audit` - Secret generation/revocation audit trail
 - `ctn_m2m_credentials` - Keycloak M2M credentials (service accounts)
 - `ctn_m2m_secret_audit` - Keycloak secret audit trail
-- `endpoint_authorization` - BVAD token authorization for endpoints
-- `bvad_issued_tokens` - Business Validation & Authorization Descriptor tokens
 - `issued_tokens` - Generic token tracking
 - `authorization_log` - Three-tier authorization decision logs
 
@@ -223,21 +221,21 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 - `dns_verification_tokens` - Domain ownership verification
 - `legal_entity_number_type` - Lookup table for identifier types (KVK, LEI, etc.) with validation patterns
 
-**Business Data Interchange (BDI):**
-- `bdi_orchestrations` - Multi-party orchestration records
-- `bdi_orchestration_participants` - Participant roles in orchestrations
-- `bdi_external_systems` - External system registrations
-- `bvod_validation_log` - Business Validation on Demand token validation logs
-
 **Audit & Compliance:**
-- `audit_log` - System-wide audit trail (with PII pseudonymization)
-- `audit_log_pii_mapping` - Encrypted PII mapping for GDPR compliance
+- `audit_log` - System-wide audit trail
 
 **Dropped Tables (Schema Cleanup):**
 - ~~`company_registries`~~ - Dropped Dec 12, 2025 (migration 039) - replaced by `legal_entity_number_type`
 - ~~`vetting_records`~~ - Dropped Dec 12, 2025 (migration 040) - never implemented
 - ~~`oauth_clients`~~ - Dropped Dec 12, 2025 (migration 040) - Keycloak used instead via `ctn_m2m_credentials`
 - ~~`audit_log_pii_access`~~ - Dropped Dec 12, 2025 (migration 040) - no active code references
+- ~~`endpoint_authorization`~~ - Dropped Dec 12, 2025 (migration 041) - API endpoints never implemented
+- ~~`bdi_external_systems`~~ - Dropped Dec 12, 2025 (migration 041) - BDI feature never implemented
+- ~~`bdi_orchestration_participants`~~ - Dropped Dec 12, 2025 (migration 041) - BDI feature never implemented
+- ~~`bvod_validation_log`~~ - Dropped Dec 12, 2025 (migration 042) - BDI feature never implemented
+- ~~`bvad_issued_tokens`~~ - Dropped Dec 12, 2025 (migration 042) - BDI feature never implemented
+- ~~`bdi_orchestrations`~~ - Dropped Dec 12, 2025 (migration 042) - BDI feature never implemented
+- ~~`audit_log_pii_mapping`~~ - Dropped Dec 12, 2025 (migration 042) - pseudonymization feature removed
 - ~~`legal_entity_backup_20251113`~~ - Dropped Nov 21, 2025 (migration 032)
 - ~~`members_backup_20251113`~~ - Dropped Nov 21, 2025 (migration 032)
 
@@ -249,7 +247,7 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 - `v_identifiers_with_type` - Identifiers enriched with type metadata from lookup table
 - `v_m2m_clients_active` - Active M2M clients with secret counts
 - `v_m2m_credentials_active` - Active Keycloak credentials
-- `v_audit_log_summary` - Pseudonymized audit log summary
+- `v_audit_log_summary` - Audit log summary view
 
 **Schema Conventions:**
 - All tables have `dt_created`, `dt_modified` timestamps (or `created_at`, `updated_at`)

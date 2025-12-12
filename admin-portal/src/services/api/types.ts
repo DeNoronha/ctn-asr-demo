@@ -138,28 +138,6 @@ export interface LegalEntityEndpoint {
   is_deleted?: boolean;
 }
 
-export interface EndpointAuthorization {
-  endpoint_authorization_id?: string;
-  legal_entity_endpoint_id: string;
-  token_value: string;
-  token_type?: string;
-  token_hash?: string;
-  issued_at?: string;
-  expires_at?: string;
-  revoked_at?: string;
-  revocation_reason?: string;
-  is_active?: boolean;
-  last_used_at?: string;
-  usage_count?: number;
-  issued_by?: string;
-  issued_by_user_id?: string;
-  dt_created?: string;
-  dt_modified?: string;
-  created_by?: string;
-  modified_by?: string;
-  is_deleted?: boolean;
-}
-
 export interface LegalEntity {
   legal_entity_id?: string;
   party_id?: string;

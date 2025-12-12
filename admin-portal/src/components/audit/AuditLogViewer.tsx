@@ -86,7 +86,6 @@ const RESOURCE_TYPE_OPTIONS = [
   { value: 'legal_entity_contact', label: 'Contact' },
   { value: 'legal_entity_endpoint', label: 'Endpoint' },
   { value: 'legal_entity_identifier', label: 'Identifier' },
-  { value: 'endpoint_authorization', label: 'Endpoint Authorization' },
   { value: 'euid', label: 'EUID' },
   { value: 'lei', label: 'LEI' },
   { value: 'subscription', label: 'Subscription' },

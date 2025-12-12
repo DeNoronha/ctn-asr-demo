@@ -1,29 +1,25 @@
 import {
-  ActionIcon,
   Button,
   Group,
   Modal,
   Select,
   TextInput,
   Textarea,
-  Tooltip,
 } from '@mantine/core';
-import { IconKey } from '@tabler/icons-react';
 import { DataTable, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState } from 'react';
 
 import { helpContent } from '../config/helpContent';
 import { useNotification } from '../contexts/NotificationContext';
-import { type EndpointAuthorization, type LegalEntityEndpoint, apiV2 } from "../services/api";
-import { announceToScreenReader } from '../utils/aria';
+import { type LegalEntityEndpoint, apiV2 } from "../services/api";
 import { formatDateTime } from '../utils/dateFormat';
 import { getEmptyState } from '../utils/emptyStates';
-import { endpointSuccessMessages, tokenSuccessMessages } from '../utils/successMessages';
+import { endpointSuccessMessages } from '../utils/successMessages';
 import { EmptyState } from './EmptyState';
 import { ErrorBoundary } from './ErrorBoundary';
 import { HelpTooltip } from './help/HelpTooltip';
 import { Plus } from './icons';
-import { defaultDataTableProps, defaultPaginationOptions } from './shared/DataTableConfig';
+import { defaultDataTableProps } from './shared/DataTableConfig';
 import './EndpointManagement.css';
 
 interface EndpointManagementProps {
@@ -47,9 +43,6 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
   const [endpoints, setEndpoints] = useState<LegalEntityEndpoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-  const [showTokenDialog, setShowTokenDialog] = useState(false);
-  const [selectedEndpoint, setSelectedEndpoint] = useState<LegalEntityEndpoint | null>(null);
-  const [newToken, setNewToken] = useState<EndpointAuthorization | null>(null);
   const notification = useNotification();
 
   const [formData, setFormData] = useState({
@@ -112,42 +105,6 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
     }
   };
 
-  const handleIssueToken = async (endpoint: LegalEntityEndpoint) => {
-    if (!endpoint.legal_entity_endpoint_id) {
-      notification.showError('Invalid endpoint - missing ID');
-      return;
-    }
-    setLoading(true);
-    try {
-      const token = await apiV2.issueEndpointToken(endpoint.legal_entity_endpoint_id);
-      setNewToken(token);
-      setSelectedEndpoint(endpoint);
-      setShowTokenDialog(true);
-      const msg = tokenSuccessMessages.generated();
-      notification.showSuccess(msg.title);
-      try {
-        announceToScreenReader(
-          'API token generated. Copy it now, it will not be shown again.',
-          'assertive'
-        );
-      } catch {}
-    } catch (error) {
-      console.error('Error issuing token:', error);
-      notification.showError('Failed to issue token');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    const msg = tokenSuccessMessages.copied();
-    notification.showSuccess(msg.title);
-    try {
-      announceToScreenReader('Token copied to clipboard.');
-    } catch {}
-  };
-
   // mantine-datatable column definitions
   const { effectiveColumns } = useDataTableColumns<LegalEntityEndpoint>({
     key: 'endpoints-grid',
@@ -207,31 +164,6 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
         resizable: true,
         sortable: true,
         render: (endpoint) => <div>{formatDateTime(endpoint.dt_created)}</div>,
-      },
-      {
-        accessor: 'legal_entity_endpoint_id',
-        title: 'Actions',
-        width: '0%',
-        toggleable: false,
-        sortable: false,
-        render: (endpoint) => (
-          <Group gap={4} wrap="nowrap">
-            <Tooltip label={`Issue token for ${endpoint.endpoint_name}`}>
-              <ActionIcon
-                variant="subtle"
-                color="blue"
-                onClick={(e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  handleIssueToken(endpoint);
-                }}
-                disabled={loading}
-                aria-label={`Issue token for ${endpoint.endpoint_name}`}
-              >
-                <IconKey size={16} />
-              </ActionIcon>
-            </Tooltip>
-          </Group>
-        ),
       },
     ],
   });
@@ -348,63 +280,6 @@ const EndpointManagementComponent: React.FC<EndpointManagementProps> = ({
             Register Endpoint
           </Button>
         </Group>
-      </Modal>
-
-      <Modal
-        opened={showTokenDialog && !!newToken && !!selectedEndpoint}
-        onClose={() => setShowTokenDialog(false)}
-        title="Token Issued Successfully"
-        size="xl"
-      >
-        {newToken && selectedEndpoint && (
-          <>
-            <div className="token-display">
-              <p className="success-message">
-                ✅ New token issued for <strong>{selectedEndpoint.endpoint_name}</strong>
-              </p>
-
-              <div className="token-info">
-                <strong>Token Value:</strong>
-                <div className="token-value-container">
-                  <code className="token-value">{newToken.token_value}</code>
-                  <Button
-                    size="sm"
-                    onClick={() => copyToClipboard(newToken.token_value)}
-                    aria-label="Copy token to clipboard"
-                  >
-                    Copy
-                  </Button>
-                </div>
-              </div>
-
-              <div className="token-details">
-                <div className="token-detail">
-                  <strong>Type:</strong> {newToken.token_type}
-                </div>
-                <div className="token-detail">
-                  <strong>Issued:</strong> {formatDateTime(newToken.issued_at)}
-                </div>
-                <div className="token-detail">
-                  <strong>Expires:</strong> {formatDateTime(newToken.expires_at)}
-                </div>
-              </div>
-
-              <div className="token-warning">
-                ⚠️ <strong>Important:</strong> Save this token securely. It won't be displayed again.
-              </div>
-            </div>
-
-            <Group mt="xl" justify="flex-end">
-              <Button
-                color="blue"
-                onClick={() => setShowTokenDialog(false)}
-                aria-label="Close token dialog"
-              >
-                Done
-              </Button>
-            </Group>
-          </>
-        )}
       </Modal>
     </div>
   );
