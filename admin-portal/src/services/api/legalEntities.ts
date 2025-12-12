@@ -42,7 +42,7 @@ export async function listLegalEntities(): Promise<LegalEntity[]> {
 
 export async function getKvkRegistryData(legalEntityId: string): Promise<any> {
   const axiosInstance = await getAuthenticatedAxios();
-  const response = await axiosInstance.get(`/legal-entities/${legalEntityId}/kvk-registry-data`);
+  const response = await axiosInstance.get(`/legal-entities/${legalEntityId}/kvk-registry`);
   return response.data;
 }
 
