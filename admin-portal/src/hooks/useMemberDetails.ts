@@ -54,6 +54,8 @@ interface UseMemberDetailsReturn {
     ) => Promise<LegalEntityIdentifier>;
     deleteIdentifier: (identifierId: string) => Promise<void>;
     refreshIdentifiers: () => Promise<void>;
+    refreshLegalEntity: () => Promise<void>;
+    refreshAll: () => Promise<void>;
     refreshKvkData: () => Promise<void>;
     refreshLeiData: () => Promise<void>;
     refreshPeppolData: () => Promise<void>;
@@ -331,6 +333,73 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
     }
   };
 
+  // Handler for refreshing legal entity data (company details)
+  const refreshLegalEntity = async (): Promise<void> => {
+    if (!legalEntityId) {
+      return;
+    }
+
+    try {
+      const entity = await api.getLegalEntity(legalEntityId);
+      setLegalEntity(entity);
+    } catch (error) {
+      logger.error('Failed to refresh legal entity:', error);
+      throw error;
+    }
+  };
+
+  // Handler for refreshing all data (legal entity + identifiers + registry data)
+  const refreshAll = async (): Promise<void> => {
+    if (!legalEntityId) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Refresh legal entity
+      const entity = await api.getLegalEntity(legalEntityId);
+      setLegalEntity(entity);
+
+      // Refresh identifiers
+      const refreshedIdentifiers = await apiV2.getIdentifiers(legalEntityId);
+      setIdentifiers(refreshedIdentifiers);
+
+      // Refresh registry data flags
+      try {
+        await apiV2.getKvkRegistryData(legalEntityId);
+        setHasKvkRegistryData(true);
+      } catch (_error) {
+        setHasKvkRegistryData(false);
+      }
+
+      try {
+        await apiV2.getLeiRegistryData(legalEntityId);
+        setHasLeiRegistryData(true);
+      } catch (_error) {
+        setHasLeiRegistryData(false);
+      }
+
+      try {
+        const peppolResponse = await apiV2.getPeppolRegistryData(legalEntityId);
+        setHasPeppolRegistryData(peppolResponse.hasData);
+      } catch (_error) {
+        setHasPeppolRegistryData(false);
+      }
+
+      try {
+        const viesResponse = await apiV2.getViesRegistryData(legalEntityId);
+        setHasViesRegistryData(viesResponse.hasData);
+      } catch (_error) {
+        setHasViesRegistryData(false);
+      }
+    } catch (error) {
+      logger.error('Failed to refresh all data:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Handler for refreshing KvK data
   const refreshKvkData = async (): Promise<void> => {
     if (!legalEntityId) {
@@ -406,6 +475,8 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
       updateIdentifier,
       deleteIdentifier,
       refreshIdentifiers,
+      refreshLegalEntity,
+      refreshAll,
       refreshKvkData,
       refreshLeiData,
       refreshPeppolData,

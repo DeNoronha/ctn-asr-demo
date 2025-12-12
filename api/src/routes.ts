@@ -3193,13 +3193,81 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
           if (kvkData?.rsin) {
             rsin = kvkData.rsin;
             console.log('Fetched RSIN from KVK API:', rsin);
+          }
 
-            // Update kvk_registry_data
-            await pool.query(`
-              UPDATE kvk_registry_data
-              SET rsin = $1, dt_modified = NOW()
-              WHERE legal_entity_id = $2 AND is_deleted = false
-            `, [rsin, legalentityid]);
+          // Store the full KVK registry data (INSERT or UPDATE)
+          if (kvkData) {
+            // Check if kvk_registry_data already exists for this legal entity
+            const { rows: existingKvk } = await pool.query(`
+              SELECT registry_data_id FROM kvk_registry_data
+              WHERE legal_entity_id = $1 AND is_deleted = false
+              LIMIT 1
+            `, [legalentityid]);
+
+            if (existingKvk.length > 0) {
+              // Update existing record
+              await pool.query(`
+                UPDATE kvk_registry_data SET
+                  company_name = $2,
+                  legal_form = $3,
+                  statutory_name = $4,
+                  trade_names = $5,
+                  formal_registration_date = $6,
+                  material_registration_date = $7,
+                  company_status = $8,
+                  addresses = $9,
+                  sbi_activities = $10,
+                  total_employees = $11,
+                  rsin = $12,
+                  raw_api_response = $13,
+                  last_verified_at = NOW(),
+                  dt_modified = NOW()
+                WHERE legal_entity_id = $1 AND is_deleted = false
+              `, [
+                legalentityid,
+                kvkData.companyName || null,
+                kvkData.legalForm || null,
+                kvkData.statutoryName || null,
+                kvkData.tradeNames ? JSON.stringify(kvkData.tradeNames) : null,
+                kvkData.formalRegistrationDate || null,
+                kvkData.materialStartDate || null,
+                null, // company_status - not provided by KvKCompanyData
+                kvkData.addresses ? JSON.stringify(kvkData.addresses) : null,
+                kvkData.sbiActivities ? JSON.stringify(kvkData.sbiActivities) : null,
+                kvkData.totalEmployees || null,
+                rsin,
+                JSON.stringify(kvkData.rawApiResponse || kvkData)
+              ]);
+            } else {
+              // Insert new record
+              await pool.query(`
+                INSERT INTO kvk_registry_data (
+                  legal_entity_id, kvk_number, company_name, legal_form, statutory_name,
+                  trade_names, formal_registration_date, material_registration_date,
+                  company_status, addresses, sbi_activities, total_employees,
+                  rsin, raw_api_response, fetched_at, last_verified_at,
+                  data_source, created_by, dt_created, dt_modified, is_deleted
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW(),
+                        'kvk_api', 'enrichment', NOW(), NOW(), false)
+              `, [
+                legalentityid,
+                kvkNumber,
+                kvkData.companyName || null,
+                kvkData.legalForm || null,
+                kvkData.statutoryName || null,
+                kvkData.tradeNames ? JSON.stringify(kvkData.tradeNames) : null,
+                kvkData.formalRegistrationDate || null,
+                kvkData.materialStartDate || null,
+                null, // company_status - not provided by KvKCompanyData
+                kvkData.addresses ? JSON.stringify(kvkData.addresses) : null,
+                kvkData.sbiActivities ? JSON.stringify(kvkData.sbiActivities) : null,
+                kvkData.totalEmployees || null,
+                rsin,
+                JSON.stringify(kvkData.rawApiResponse || kvkData)
+              ]);
+            }
+            console.log('Stored KVK registry data for:', kvkNumber);
           }
         } catch (kvkError: any) {
           console.warn('Failed to fetch KVK data for RSIN:', kvkError.message);
@@ -3388,7 +3456,61 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
     }
 
     // =========================================================================
-    // 5. Update legal_entity with KVK registry data (address, legal form, etc.)
+    // 5. Ensure KVK registry data exists (even if RSIN was already present)
+    // =========================================================================
+    if (kvkNumber) {
+      // Check if kvk_registry_data exists
+      const { rows: kvkExists } = await pool.query(`
+        SELECT registry_data_id FROM kvk_registry_data
+        WHERE legal_entity_id = $1 AND is_deleted = false
+        LIMIT 1
+      `, [legalentityid]);
+
+      if (kvkExists.length === 0) {
+        // KVK registry data doesn't exist - fetch from KVK API
+        try {
+          console.log('Fetching KVK registry data for CoC tab:', kvkNumber);
+          const { KvKService } = await import('./services/kvkService');
+          const kvkService = new KvKService();
+          const kvkData = await kvkService.fetchCompanyProfile(kvkNumber, false);
+
+          if (kvkData) {
+            await pool.query(`
+              INSERT INTO kvk_registry_data (
+                legal_entity_id, kvk_number, company_name, legal_form, statutory_name,
+                trade_names, formal_registration_date, material_registration_date,
+                company_status, addresses, sbi_activities, total_employees,
+                rsin, raw_api_response, fetched_at, last_verified_at,
+                data_source, created_by, dt_created, dt_modified, is_deleted
+              )
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW(),
+                      'kvk_api', 'enrichment', NOW(), NOW(), false)
+            `, [
+              legalentityid,
+              kvkNumber,
+              kvkData.companyName || null,
+              kvkData.legalForm || null,
+              kvkData.statutoryName || null,
+              kvkData.tradeNames ? JSON.stringify(kvkData.tradeNames) : null,
+              kvkData.formalRegistrationDate || null,
+              kvkData.materialStartDate || null,
+              null, // company_status - not provided by KvKCompanyData
+              kvkData.addresses ? JSON.stringify(kvkData.addresses) : null,
+              kvkData.sbiActivities ? JSON.stringify(kvkData.sbiActivities) : null,
+              kvkData.totalEmployees || null,
+              kvkData.rsin || getExistingValue('RSIN') || null,
+              JSON.stringify(kvkData.rawApiResponse || kvkData)
+            ]);
+            console.log('Stored KVK registry data for CoC tab:', kvkNumber);
+          }
+        } catch (kvkFetchError: any) {
+          console.warn('Failed to fetch KVK registry data:', kvkFetchError.message);
+        }
+      }
+    }
+
+    // =========================================================================
+    // 6. Update legal_entity with KVK registry data (address, legal form, etc.)
     // =========================================================================
     let companyDetailsUpdated = false;
     const updatedFields: string[] = [];

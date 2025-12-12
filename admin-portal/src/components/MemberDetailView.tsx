@@ -169,6 +169,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
                     company={legalEntity}
                     identifiers={identifiers}
                     onEdit={() => setIsEditingCompany(true)}
+                    onRefresh={handlers.refreshAll}
                   />
                 ) : (
                   <CompanyForm
@@ -220,7 +221,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
           onIdentifierCreate={handlers.createIdentifier}
           onIdentifierUpdate={handlers.updateIdentifier}
           onIdentifierDelete={handlers.deleteIdentifier}
-          onRefresh={handlers.refreshIdentifiers}
+          onRefresh={handlers.refreshAll}
           onCreateLegalEntity={handleCreateLegalEntity}
         />
 

@@ -1,6 +1,7 @@
-import { Button } from '@mantine/core';
+import { Button, Group } from '@mantine/core';
 // CompanyDetails.tsx - Display company/legal entity information
 import type React from 'react';
+import { useState } from 'react';
 
 import type { LegalEntity, LegalEntityIdentifier } from '../services/api';
 import { formatDateTime } from '../utils/dateFormat';
@@ -10,20 +11,39 @@ interface CompanyDetailsProps {
   company: LegalEntity;
   identifiers?: LegalEntityIdentifier[];
   onEdit: () => void;
+  onRefresh?: () => Promise<void>;
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Display component renders comprehensive company details with many conditional fields
-export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, identifiers = [], onEdit }) => {
+export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, identifiers = [], onEdit, onRefresh }) => {
   // Find EUID from identifiers for Registration Number field
   const euidIdentifier = identifiers.find(id => id.identifier_type === 'EUID');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (!onRefresh) return;
+    setIsRefreshing(true);
+    try {
+      await onRefresh();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <div className="company-details">
       <div className="detail-header">
         <h3>{company.primary_legal_name || 'Company Information'}</h3>
-        <Button color="blue" onClick={onEdit}>
-          Edit Company
-        </Button>
+        <Group gap="sm">
+          {onRefresh && (
+            <Button color="gray" variant="light" onClick={handleRefresh} loading={isRefreshing}>
+              Update
+            </Button>
+          )}
+          <Button color="blue" onClick={onEdit}>
+            Edit Company
+          </Button>
+        </Group>
       </div>
 
       <div className="detail-grid detail-grid-columns">
