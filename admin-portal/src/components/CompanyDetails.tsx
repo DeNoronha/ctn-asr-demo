@@ -2,17 +2,21 @@ import { Button } from '@mantine/core';
 // CompanyDetails.tsx - Display company/legal entity information
 import type React from 'react';
 
-import type { LegalEntity } from '../services/api';
+import type { LegalEntity, LegalEntityIdentifier } from '../services/api';
 import { formatDateTime } from '../utils/dateFormat';
 import './CompanyDetails.css';
 
 interface CompanyDetailsProps {
   company: LegalEntity;
+  identifiers?: LegalEntityIdentifier[];
   onEdit: () => void;
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Display component renders comprehensive company details with many conditional fields
-export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit }) => {
+export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, identifiers = [], onEdit }) => {
+  // Find EUID from identifiers for Registration Number field
+  const euidIdentifier = identifiers.find(id => id.identifier_type === 'EUID');
+
   return (
     <div className="company-details">
       <div className="detail-header">
@@ -28,6 +32,11 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit 
             <h4>Basic Information</h4>
 
             <div className="detail-row">
+              <div className="detail-label">Legal Entity ID:</div>
+              <span style={{ fontFamily: 'monospace', fontSize: '0.9em' }}>{company.legal_entity_id || '-'}</span>
+            </div>
+
+            <div className="detail-row">
               <div className="detail-label">Legal Name:</div>
               <span>{company.primary_legal_name || '-'}</span>
             </div>
@@ -39,7 +48,7 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, onEdit 
 
             <div className="detail-row">
               <div className="detail-label">Registration Number:</div>
-              <span>{company.registered_at || '-'}</span>
+              <span>{euidIdentifier?.identifier_value || '-'}</span>
             </div>
 
             <div className="detail-row">

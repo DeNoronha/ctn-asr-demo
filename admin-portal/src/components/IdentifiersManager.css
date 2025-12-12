@@ -187,3 +187,37 @@
   display: flex;
   gap: 8px;
 }
+
+/* Column toggle dropdown - make it wider for readability */
+.identifiers-manager .mantine-Popover-dropdown,
+.identifiers-manager .mantine-Menu-dropdown {
+  min-width: 260px !important;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* DataTable header dropdowns (sort/filter menus) */
+.identifiers-manager .mantine-DataTable-header .mantine-Popover-dropdown,
+.identifiers-manager [class*="mantine-DataTable"] .mantine-Popover-dropdown {
+  min-width: 280px !important;
+}
+
+/* Column toggle menu items - better spacing and readability */
+.identifiers-manager .mantine-Menu-item,
+.identifiers-manager .mantine-Popover-dropdown .mantine-Checkbox-root {
+  padding: 10px 16px !important;
+  min-height: 40px;
+}
+
+.identifiers-manager .mantine-Menu-itemLabel,
+.identifiers-manager .mantine-Checkbox-label {
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+/* DataTable column header sort/filter dropdown text */
+.identifiers-manager .mantine-DataTable-header .mantine-Text,
+.identifiers-manager [class*="mantine-DataTable"] .mantine-Popover-dropdown .mantine-Text {
+  white-space: nowrap;
+  overflow: visible;
+}

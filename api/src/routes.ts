@@ -1087,11 +1087,7 @@ router.delete('/v1/legal-entities/:legalentityid', requireAuth, async (req: Requ
       WHERE legal_entity_id = $1 AND is_deleted = false
     `, [legalentityid]);
 
-    // Soft-delete member record (if exists)
-    await client.query(`
-      UPDATE members SET is_deleted = true, updated_at = NOW()
-      WHERE legal_entity_id = $1 AND is_deleted = false
-    `, [legalentityid]);
+    // Members table dropped (Dec 12, 2025) - legal_entity IS the member now
 
     // 3. Soft-delete the legal entity itself
     await client.query(`
@@ -1805,6 +1801,171 @@ router.get('/v1/legal-entities/:legalentityid/kvk-registry', requireAuth, async 
   }
 });
 
+// Refresh address from existing KVK registry data (bezoekadres)
+router.post('/v1/legal-entities/:legalentityid/refresh-address-from-kvk', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    // Get KVK registry data with addresses
+    const { rows: kvkData } = await pool.query(`
+      SELECT addresses FROM kvk_registry_data
+      WHERE legal_entity_id = $1 AND is_deleted = false
+      ORDER BY fetched_at DESC
+      LIMIT 1
+    `, [legalentityid]);
+
+    if (kvkData.length === 0 || !kvkData[0].addresses) {
+      return res.status(404).json({ error: 'No KVK registry data with addresses found' });
+    }
+
+    const addresses = typeof kvkData[0].addresses === 'string'
+      ? JSON.parse(kvkData[0].addresses)
+      : kvkData[0].addresses;
+
+    // Find bezoekadres (visiting address)
+    const bezoekadres = addresses.find(
+      (addr: any) => addr.type === 'bezoekadres' || addr.type === 'Bezoekadres'
+    ) || addresses[0];
+
+    if (!bezoekadres) {
+      return res.status(404).json({ error: 'No address found in KVK data' });
+    }
+
+    // Format address line based on country (NL, DE, BE formats)
+    const formatAddressLine = (addr: any): string => {
+      const country = addr.country || 'Nederland';
+      const countryCode = country === 'Nederland' ? 'NL' :
+                         country === 'Deutschland' || country === 'Germany' ? 'DE' :
+                         country === 'België' || country === 'Belgium' || country === 'Belgique' ? 'BE' : 'NL';
+
+      const houseNum = addr.houseNumber || '';
+      const houseLetter = addr.houseLetter || '';
+      const houseAddition = addr.houseNumberAddition || '';
+      const street = addr.street || '';
+
+      if (countryCode === 'DE') {
+        return `${street} ${houseNum}${houseLetter}${houseAddition ? '-' + houseAddition : ''}`.trim();
+      } else if (countryCode === 'BE') {
+        return `${street} ${houseNum}${houseLetter}${houseAddition ? ' bus ' + houseAddition : ''}`.trim();
+      } else {
+        return `${street} ${houseNum}${houseLetter}${houseAddition ? '-' + houseAddition : ''}`.trim();
+      }
+    };
+
+    const addressLine1 = formatAddressLine(bezoekadres);
+    const postalCode = bezoekadres.postalCode || '';
+    const city = bezoekadres.city || '';
+    const country = bezoekadres.country || 'Nederland';
+    const countryCode = country === 'Nederland' ? 'NL' :
+                       country === 'Deutschland' || country === 'Germany' ? 'DE' :
+                       country === 'België' || country === 'Belgium' || country === 'Belgique' ? 'BE' :
+                       country.substring(0, 2).toUpperCase();
+
+    // Update legal_entity address (force update, not just when empty)
+    const { rowCount } = await pool.query(`
+      UPDATE legal_entity
+      SET
+        address_line1 = $2,
+        postal_code = $3,
+        city = $4,
+        country_code = $5,
+        dt_modified = NOW()
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid, addressLine1, postalCode, city, countryCode]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Legal entity not found' });
+    }
+
+    res.json({
+      message: 'Address updated from KVK bezoekadres',
+      address: {
+        address_line1: addressLine1,
+        postal_code: postalCode,
+        city,
+        country_code: countryCode
+      }
+    });
+  } catch (error: any) {
+    console.error('Error refreshing address from KVK:', error);
+    res.status(500).json({ error: 'Failed to refresh address', detail: error.message });
+  }
+});
+
+// Bulk refresh addresses from KVK data for all entities with empty addresses
+router.post('/v1/admin/refresh-all-addresses-from-kvk', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+
+    // Find all legal entities with KVK data but empty addresses
+    const { rows: entities } = await pool.query(`
+      SELECT le.legal_entity_id, le.primary_legal_name, k.addresses
+      FROM legal_entity le
+      INNER JOIN kvk_registry_data k ON le.legal_entity_id = k.legal_entity_id AND k.is_deleted = false
+      WHERE le.is_deleted = false
+        AND (le.address_line1 IS NULL OR le.address_line1 = '')
+        AND k.addresses IS NOT NULL
+    `);
+
+    const results: { updated: string[]; failed: string[] } = { updated: [], failed: [] };
+
+    for (const entity of entities) {
+      try {
+        const addresses = typeof entity.addresses === 'string'
+          ? JSON.parse(entity.addresses)
+          : entity.addresses;
+
+        const bezoekadres = addresses.find(
+          (addr: any) => addr.type === 'bezoekadres' || addr.type === 'Bezoekadres'
+        ) || addresses[0];
+
+        if (!bezoekadres) continue;
+
+        // Format address line
+        const country = bezoekadres.country || 'Nederland';
+        const countryCode = country === 'Nederland' ? 'NL' :
+                           country === 'Deutschland' || country === 'Germany' ? 'DE' :
+                           country === 'België' || country === 'Belgium' || country === 'Belgique' ? 'BE' :
+                           country.substring(0, 2).toUpperCase();
+
+        const houseNum = bezoekadres.houseNumber || '';
+        const houseLetter = bezoekadres.houseLetter || '';
+        const houseAddition = bezoekadres.houseNumberAddition || '';
+        const street = bezoekadres.street || '';
+
+        let addressLine1: string;
+        if (countryCode === 'DE') {
+          addressLine1 = `${street} ${houseNum}${houseLetter}${houseAddition ? '-' + houseAddition : ''}`.trim();
+        } else if (countryCode === 'BE') {
+          addressLine1 = `${street} ${houseNum}${houseLetter}${houseAddition ? ' bus ' + houseAddition : ''}`.trim();
+        } else {
+          addressLine1 = `${street} ${houseNum}${houseLetter}${houseAddition ? '-' + houseAddition : ''}`.trim();
+        }
+
+        await pool.query(`
+          UPDATE legal_entity
+          SET address_line1 = $2, postal_code = $3, city = $4, country_code = $5, dt_modified = NOW()
+          WHERE legal_entity_id = $1
+        `, [entity.legal_entity_id, addressLine1, bezoekadres.postalCode || '', bezoekadres.city || '', countryCode]);
+
+        results.updated.push(entity.primary_legal_name);
+      } catch (err) {
+        results.failed.push(entity.primary_legal_name);
+      }
+    }
+
+    res.json({
+      message: `Updated ${results.updated.length} entities, ${results.failed.length} failed`,
+      updated: results.updated,
+      failed: results.failed
+    });
+  } catch (error: any) {
+    console.error('Error bulk refreshing addresses:', error);
+    res.status(500).json({ error: 'Failed to bulk refresh addresses', detail: error.message });
+  }
+});
+
 // Async function to process KvK document verification
 async function processKvKVerification(legalEntityId: string, blobUrl: string, verificationId: string): Promise<void> {
   const pool = getPool();
@@ -1947,6 +2108,61 @@ async function processKvKVerification(legalEntityId: string, blobUrl: string, ve
           kvkData.totalEmployees,
           JSON.stringify(validation.companyData)
         ]);
+
+        // Update legal_entity address from KVK bezoekadres (if address is empty)
+        // Find the bezoekadres (visiting address) from KVK data
+        const bezoekadres = kvkData.addresses?.find(
+          (addr: any) => addr.type === 'bezoekadres' || addr.type === 'Bezoekadres'
+        ) || kvkData.addresses?.[0]; // Fallback to first address
+
+        if (bezoekadres) {
+          // Format address line based on country (NL, DE, BE formats)
+          const formatAddressLine = (addr: any): string => {
+            const countryCode = addr.country === 'Nederland' ? 'NL' :
+                               addr.country === 'Deutschland' || addr.country === 'Germany' ? 'DE' :
+                               addr.country === 'België' || addr.country === 'Belgium' || addr.country === 'Belgique' ? 'BE' : 'NL';
+
+            const houseNum = addr.houseNumber || '';
+            const houseLetter = addr.houseLetter || '';
+            const houseAddition = addr.houseNumberAddition || '';
+            const street = addr.street || '';
+
+            if (countryCode === 'DE') {
+              // German format: Straße Hausnummer[Buchstabe][-Zusatz]
+              return `${street} ${houseNum}${houseLetter}${houseAddition ? '-' + houseAddition : ''}`.trim();
+            } else if (countryCode === 'BE') {
+              // Belgian format: Straat huisnummer [bus toevoeging]
+              return `${street} ${houseNum}${houseLetter}${houseAddition ? ' bus ' + houseAddition : ''}`.trim();
+            } else {
+              // Dutch format: Straat huisnummer[letter][-toevoeging]
+              return `${street} ${houseNum}${houseLetter}${houseAddition ? '-' + houseAddition : ''}`.trim();
+            }
+          };
+
+          const addressLine1 = formatAddressLine(bezoekadres);
+          const postalCode = bezoekadres.postalCode || '';
+          const city = bezoekadres.city || '';
+          const countryCode = bezoekadres.country === 'Nederland' ? 'NL' :
+                             bezoekadres.country === 'Deutschland' || bezoekadres.country === 'Germany' ? 'DE' :
+                             bezoekadres.country === 'België' || bezoekadres.country === 'Belgium' || bezoekadres.country === 'Belgique' ? 'BE' :
+                             bezoekadres.country?.substring(0, 2).toUpperCase() || 'NL';
+
+          // Only update if address fields are currently empty
+          await pool.query(`
+            UPDATE legal_entity
+            SET
+              address_line1 = COALESCE(NULLIF(address_line1, ''), $2),
+              postal_code = COALESCE(NULLIF(postal_code, ''), $3),
+              city = COALESCE(NULLIF(city, ''), $4),
+              country_code = COALESCE(NULLIF(country_code, ''), $5),
+              dt_modified = NOW()
+            WHERE legal_entity_id = $1
+          `, [legalEntityId, addressLine1, postalCode, city, countryCode]);
+
+          console.log('Updated legal_entity address from KVK bezoekadres:', {
+            addressLine1, postalCode, city, countryCode
+          });
+        }
 
         // Create EUID from KvK number (NL.KVK.{kvk_number})
         const euid = `NL.KVK.${kvkData.kvkNumber}`;
@@ -4077,35 +4293,68 @@ router.post('/v1/kvk-verification/:legalentityid/review', requireAuth, async (re
 });
 
 // ============================================================================
-// MEMBER STATUS
+// MEMBER STATUS (Updated Dec 12, 2025 - uses legal_entity, members table dropped)
 // ============================================================================
-router.put('/v1/members/:memberId/status', requireAuth, async (req: Request, res: Response) => {
+// Support both PUT and PATCH for backward compatibility
+router.put('/v1/members/:legalEntityId/status', requireAuth, updateMemberStatusHandler);
+router.patch('/v1/members/:legalEntityId/status', requireAuth, updateMemberStatusHandler);
+
+async function updateMemberStatusHandler(req: Request, res: Response) {
   try {
     const pool = getPool();
-    const { memberId } = req.params;
-    const { status, reason } = req.body;
+    const { legalEntityId } = req.params;
+    const { status, reason, notes } = req.body;
+
+    // Accept 'reason' or 'notes' for backward compatibility
+    const statusNotes = notes || reason;
 
     if (!status) {
       return res.status(400).json({ error: 'status is required' });
     }
 
+    // Get old status for response
+    const { rows: oldRows } = await pool.query(
+      `SELECT status FROM legal_entity WHERE legal_entity_id = $1 AND is_deleted = false`,
+      [legalEntityId]
+    );
+
+    if (oldRows.length === 0) {
+      return res.status(404).json({ error: 'Member not found' });
+    }
+
+    const oldStatus = oldRows[0].status;
+
+    // Update legal_entity status
     const { rows, rowCount } = await pool.query(`
-      UPDATE members
-      SET status = $1, status_reason = $2, dt_modified = NOW()
-      WHERE org_id = $3
-      RETURNING *
-    `, [status, reason, memberId]);
+      UPDATE legal_entity
+      SET status = $1, dt_modified = NOW()
+      WHERE legal_entity_id = $2 AND is_deleted = false
+      RETURNING legal_entity_id, primary_legal_name, status, dt_modified
+    `, [status, legalEntityId]);
 
     if (rowCount === 0) {
       return res.status(404).json({ error: 'Member not found' });
     }
 
-    res.json(rows[0]);
+    // Log status change to audit_log
+    await pool.query(`
+      INSERT INTO audit_log (event_type, severity, result, resource_type, resource_id, action, details)
+      VALUES ('member_status_change', 'INFO', 'SUCCESS', 'legal_entity', $1, 'UPDATE_STATUS',
+        jsonb_build_object('old_status', $2, 'new_status', $3, 'notes', $4))
+    `, [legalEntityId, oldStatus, status, statusNotes || '']);
+
+    res.json({
+      message: 'Member status updated successfully',
+      oldStatus,
+      newStatus: status,
+      legal_entity_id: rows[0].legal_entity_id,
+      primary_legal_name: rows[0].primary_legal_name
+    });
   } catch (error: any) {
     console.error('Error updating member status:', error);
     res.status(500).json({ error: 'Failed to update member status' });
   }
-});
+}
 
 // Endpoint removed (Dec 12, 2025): /v1/admin/fix-missing-members
 // Members table dropped - legal_entity IS the member now

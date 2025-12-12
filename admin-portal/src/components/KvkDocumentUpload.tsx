@@ -22,7 +22,7 @@ export const KvkDocumentUpload: React.FC<KvkDocumentUploadProps> = ({
   return (
     <LoadingState loading={loading} minHeight={400}>
       <div className="kvk-document-upload">
-        <h3>KvK Document Verification</h3>
+        <h3>Chamber of Commerce Document Verification</h3>
 
         {verificationStatus?.kvk_document_url ? (
           <KvkVerificationDisplay

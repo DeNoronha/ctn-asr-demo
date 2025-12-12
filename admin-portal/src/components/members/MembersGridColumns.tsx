@@ -48,6 +48,22 @@ export const useMembersGridColumns = ({
 
   return [
     {
+      // Legal Entity ID - first column, compact display showing only first 8 chars
+      accessor: 'legal_entity_id',
+      title: 'ID',
+      width: 90,
+      resizable: true,
+      sortable: true,
+      render: (member) => (
+        <span
+          title={member.legal_entity_id}
+          style={{ fontFamily: 'monospace', fontSize: '0.85em', cursor: 'help' }}
+        >
+          {member.legal_entity_id?.substring(0, 8)}…
+        </span>
+      ),
+    },
+    {
       accessor: 'legal_name',
       title: getColumnTitle('legal_name'),
       width: 200,
@@ -93,7 +109,7 @@ export const useMembersGridColumns = ({
     {
       accessor: 'euid',
       title: 'EUID',
-      width: 150,
+      width: 180,
       toggleable: true,
       resizable: true,
       sortable: true,
@@ -105,6 +121,7 @@ export const useMembersGridColumns = ({
       toggleable: true,
       resizable: true,
       sortable: true,
+      defaultToggle: false, // Hidden by default
     },
     {
       accessor: 'created_at',
@@ -113,16 +130,8 @@ export const useMembersGridColumns = ({
       toggleable: true,
       resizable: true,
       sortable: true,
-      render: (member) => <div>{new Date(member.created_at).toLocaleDateString()}</div>,
-    },
-    {
-      accessor: 'legal_entity_id',
-      title: getColumnTitle('legal_entity_id'),
-      width: 180,
-      toggleable: true,
-      resizable: true,
-      sortable: true,
       defaultToggle: false, // Hidden by default
+      render: (member) => <div>{new Date(member.created_at).toLocaleDateString()}</div>,
     },
     {
       accessor: 'domain',

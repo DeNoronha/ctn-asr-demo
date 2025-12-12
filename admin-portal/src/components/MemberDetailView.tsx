@@ -148,15 +148,16 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
         <Tabs.List>
           <Tabs.Tab value="company-details">Company Details</Tabs.Tab>
           <Tabs.Tab value="identifiers">Identifiers</Tabs.Tab>
-          <Tabs.Tab value="system-integrations">System Integrations</Tabs.Tab>
-          <Tabs.Tab value="api-access">API Access</Tabs.Tab>
+          {/* System Integrations and API Access tabs hidden for debugging - will re-enable later */}
+          {/* <Tabs.Tab value="system-integrations">System Integrations</Tabs.Tab> */}
+          {/* <Tabs.Tab value="api-access">API Access</Tabs.Tab> */}
           <Tabs.Tab value="contacts">Contacts</Tabs.Tab>
           <Tabs.Tab value="document-verification">Document Verification</Tabs.Tab>
           <Tabs.Tab value="authentication-tier">Authentication Tier</Tabs.Tab>
-          {hasKvkRegistryData && <Tabs.Tab value="kvk-registry">KvK Registry</Tabs.Tab>}
-          {hasLeiRegistryData && <Tabs.Tab value="lei-registry">GLEIF Registry</Tabs.Tab>}
-          {hasPeppolRegistryData && <Tabs.Tab value="peppol-registry">Peppol Registry</Tabs.Tab>}
-          {hasViesRegistryData && <Tabs.Tab value="vies-registry">VIES Registry</Tabs.Tab>}
+          {hasKvkRegistryData && <Tabs.Tab value="kvk-registry">CoC</Tabs.Tab>}
+          {hasLeiRegistryData && <Tabs.Tab value="lei-registry">GLEIF</Tabs.Tab>}
+          {hasPeppolRegistryData && <Tabs.Tab value="peppol-registry">Peppol</Tabs.Tab>}
+          {hasViesRegistryData && <Tabs.Tab value="vies-registry">VIES</Tabs.Tab>}
         </Tabs.List>
 
         <Tabs.Panel value="company-details" pt="md">
@@ -164,33 +165,11 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
             <LoadingState loading={loading} minHeight={300}>
               {legalEntity ? (
                 !isEditingCompany ? (
-                  <>
-                    <CompanyDetails
-                      company={legalEntity}
-                      onEdit={() => setIsEditingCompany(true)}
-                    />
-                    <div className="info-section">
-                      <h3>Member Information</h3>
-                      <div className="info-grid">
-                        <div className="info-field">
-                          <strong>Legal Entity ID</strong>
-                          <span>{member.legal_entity_id}</span>
-                        </div>
-                        <div className="info-field">
-                          <strong>Domain</strong>
-                          <span>{member.domain}</span>
-                        </div>
-                        <div className="info-field">
-                          <strong>Status</strong>
-                          {getStatusBadge(member.status)}
-                        </div>
-                        <div className="info-field">
-                          <strong>Membership Level</strong>
-                          {getMembershipBadge(member.membership_level)}
-                        </div>
-                      </div>
-                    </div>
-                  </>
+                  <CompanyDetails
+                    company={legalEntity}
+                    identifiers={identifiers}
+                    onEdit={() => setIsEditingCompany(true)}
+                  />
                 ) : (
                   <CompanyForm
                     data={legalEntity}

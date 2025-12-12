@@ -1,4 +1,4 @@
-import { Button, Checkbox, Select, TextInput } from '@mantine/core';
+import { Button, Select, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 
 // ContactForm.tsx - Form for creating/editing contacts
@@ -6,10 +6,8 @@ import type React from 'react';
 import { helpContent } from '../config/helpContent';
 import type { LegalEntityContact } from '../services/api';
 import { sanitizeFormData } from '../utils/sanitize';
-import { ProgressiveSection } from './forms/ProgressiveSection';
 import { FieldLabel } from './help/FieldLabel';
 import './ContactForm.css';
-import '../styles/progressive-forms.css';
 
 interface ContactFormProps {
   contact: LegalEntityContact | null;
@@ -18,7 +16,14 @@ interface ContactFormProps {
   onCancel: () => void;
 }
 
-const contactTypes = ['PRIMARY', 'TECHNICAL', 'BILLING', 'SUPPORT', 'LEGAL', 'OTHER'];
+const contactTypes = [
+  { value: 'AUTHORIZED_REP', label: 'Authorized Representative' },
+  { value: 'TECHNICAL', label: 'Technical' },
+  { value: 'BILLING', label: 'Billing' },
+  { value: 'SUPPORT', label: 'Support' },
+  { value: 'LEGAL', label: 'Legal' },
+  { value: 'OTHER', label: 'Other' },
+];
 
 /**
  * Form validation functions with inline feedback (DA-007)
@@ -59,10 +64,8 @@ export const ContactForm: React.FC<ContactFormProps> = ({
   const getInitialValues = () => {
     if (contact) {
       const [first_name, ...lastNames] = (contact.full_name || '').split(' ');
-      const contactType = contact.contact_type || 'PRIMARY';
-
       return {
-        contact_type: contactType,
+        contact_type: contact.contact_type || 'AUTHORIZED_REP',
         first_name: first_name || '',
         last_name: lastNames.join(' ') || '',
         email: contact.email || '',
@@ -70,12 +73,10 @@ export const ContactForm: React.FC<ContactFormProps> = ({
         mobile: contact.mobile || '',
         job_title: contact.job_title || '',
         department: contact.department || '',
-        is_primary: contact.is_primary || false,
       };
     }
     return {
-      contact_type: 'PRIMARY',
-      is_primary: false,
+      contact_type: 'AUTHORIZED_REP',
       first_name: '',
       last_name: '',
       email: '',
@@ -106,7 +107,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
       dt_created: contact?.dt_created || new Date().toISOString(),
       dt_modified: new Date().toISOString(),
       contact_type: (sanitizedData.contact_type as string).toUpperCase() as
-        | 'PRIMARY'
+        | 'AUTHORIZED_REP'
         | 'TECHNICAL'
         | 'BILLING'
         | 'SUPPORT'
@@ -118,7 +119,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
       mobile: sanitizedData.mobile as string,
       job_title: sanitizedData.job_title as string,
       department: sanitizedData.department as string,
-      is_primary: (sanitizedData.is_primary as boolean) || false,
+      is_primary: sanitizedData.contact_type === 'AUTHORIZED_REP',
     };
 
     await onSave(contactData);
@@ -139,18 +140,6 @@ export const ContactForm: React.FC<ContactFormProps> = ({
             />
           }
           data={contactTypes}
-          mb="md"
-        />
-
-        <Checkbox
-          {...form.getInputProps('is_primary', { type: 'checkbox' })}
-          label={
-            <FieldLabel
-              text="Primary Contact"
-              helpText={helpContent.isPrimaryContact}
-              dataTestId="is-primary-help"
-            />
-          }
           mb="md"
         />
       </fieldset>
@@ -194,11 +183,9 @@ export const ContactForm: React.FC<ContactFormProps> = ({
         />
       </fieldset>
 
-      <ProgressiveSection
-        title="Additional Contact Details (Optional)"
-        storageKey="contact-form-details"
-        defaultExpanded={false}
-      >
+      <fieldset className="form-fieldset">
+        <legend>Additional Contact Details</legend>
+
         <div className="form-row-group">
           <TextInput
             {...form.getInputProps('phone')}
@@ -250,7 +237,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
           placeholder="e.g., IT, Operations, Finance"
           mb="md"
         />
-      </ProgressiveSection>
+      </fieldset>
 
       <div className="form-buttons">
         <Button type="submit" color="blue">

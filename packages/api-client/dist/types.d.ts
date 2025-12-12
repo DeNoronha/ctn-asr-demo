@@ -69,7 +69,7 @@ export interface Contact {
     id: string;
     email: string;
     full_name: string;
-    contact_type: 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
+    contact_type: 'AUTHORIZED_REP' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
     is_primary: boolean;
     phone?: string;
     mobile?: string;
@@ -81,7 +81,7 @@ export interface Contact {
 export interface ContactRequest {
     email: string;
     name: string;
-    type: 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
+    type: 'AUTHORIZED_REP' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
     phone?: string;
     mobile?: string;
     job_title?: string;
@@ -90,7 +90,7 @@ export interface ContactRequest {
 export interface UpdateContactRequest {
     email?: string;
     full_name?: string;
-    contact_type?: 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
+    contact_type?: 'AUTHORIZED_REP' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
     phone?: string;
     mobile?: string;
     job_title?: string;

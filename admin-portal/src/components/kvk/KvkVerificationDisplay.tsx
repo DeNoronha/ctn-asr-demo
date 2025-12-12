@@ -64,7 +64,7 @@ const CompanyStatusBadge: React.FC<{ verificationStatus: KvkVerificationStatus }
         <span style={{ fontSize: '1.5em' }}>{companyStatus.icon}</span>
         <div>
           <strong style={{ fontSize: '1.1em' }}>
-            Company Status (KvK Registry):{' '}
+            Company Status (CoC Registry):{' '}
             <span style={{ color: companyStatus.color }}>{companyStatus.text}</span>
           </strong>
           <div style={{ fontSize: '0.9em', color: TEXT_COLORS.muted, marginTop: '5px' }}>
@@ -105,7 +105,7 @@ const getKvkCellBackground = (
   extractedValue: string | null
 ): string => {
   if (verificationStatus.kvk_mismatch_flags?.includes(kvkMismatchFlag)) {
-    return '#fef3c7'; // Yellow - KvK doesn't match PDF
+    return '#fef3c7'; // Yellow - CoC doesn't match PDF
   }
   if (kvkValue && extractedValue) {
     return '#d4edda'; // Green - data matches
@@ -143,7 +143,7 @@ const ComparisonLegend: React.FC = () => (
       PDF doesn't match entered data
     </span>
     <span style={{ backgroundColor: '#fef3c7', padding: '2px 6px', borderRadius: '3px' }}>
-      KvK doesn't match PDF
+      CoC doesn't match PDF
     </span>
   </div>
 );
@@ -181,7 +181,7 @@ const VerificationComparisonTable: React.FC<{ verificationStatus: KvkVerificatio
             </th>
             <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600 }}>Entered by User</th>
             <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600 }}>From PDF</th>
-            <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600 }}>KvK Registry</th>
+            <th style={{ padding: '10px', textAlign: 'left', fontWeight: 600 }}>CoC Registry</th>
           </tr>
         </thead>
         <tbody>
@@ -221,10 +221,10 @@ const VerificationComparisonTable: React.FC<{ verificationStatus: KvkVerificatio
             </td>
           </tr>
 
-          {/* KvK Number Row */}
+          {/* CoC Number Row */}
           <tr style={{ borderBottom: '1px solid #eee' }}>
             <td style={{ padding: '10px', fontWeight: 500, backgroundColor: '#fafafa' }}>
-              KvK Number
+              CoC Number
             </td>
             <td style={{ padding: '10px' }}>
               {verificationStatus.entered_kvk_number || <EmptyCell />}
@@ -276,21 +276,21 @@ const ValidationIssuesList: React.FC<{ verificationStatus: KvkVerificationStatus
   const getFlagDescription = (flag: string): string => {
     const descriptions: { [key: string]: string } = {
       // Entered vs Extracted comparison flags
-      entered_kvk_mismatch: 'Entered KvK number does not match extracted number from document',
+      entered_kvk_mismatch: 'Entered CoC number does not match extracted number from document',
       entered_name_mismatch: 'Entered company name does not match extracted name from document',
 
-      // KvK API validation flags
-      company_name_mismatch: 'Company name does not match KvK registry',
-      kvk_number_mismatch: 'KvK number mismatch with registry',
-      bankrupt: 'Company is bankrupt according to KvK',
-      dissolved: 'Company is dissolved according to KvK',
-      kvk_number_not_found: 'KvK number not found in registry',
-      api_key_missing: 'KvK API key not configured',
+      // CoC API validation flags
+      company_name_mismatch: 'Company name does not match CoC registry',
+      kvk_number_mismatch: 'CoC number mismatch with registry',
+      bankrupt: 'Company is bankrupt according to CoC registry',
+      dissolved: 'Company is dissolved according to CoC registry',
+      kvk_number_not_found: 'CoC number not found in registry',
+      api_key_missing: 'CoC API key not configured',
 
       // Processing flags
       extraction_failed: 'Failed to extract data from document',
       processing_error: 'Error processing document',
-      api_error: 'Failed to connect to KvK API',
+      api_error: 'Failed to connect to CoC API',
     };
 
     return descriptions[flag] || flag;

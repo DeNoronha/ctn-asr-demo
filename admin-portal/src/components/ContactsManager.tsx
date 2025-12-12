@@ -101,12 +101,22 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
   }, []);
 
   // mantine-datatable column definitions
+  const contactTypeLabels: Record<string, string> = {
+    AUTHORIZED_REP: 'Authorized Rep',
+    TECHNICAL: 'Technical',
+    BILLING: 'Billing',
+    SUPPORT: 'Support',
+    LEGAL: 'Legal',
+    OTHER: 'Other',
+  };
+
   const contactTypeTooltips: Record<string, string> = {
-    Primary: 'Primary point of contact for this organization',
-    Technical: 'Technical contact for system integration and API issues',
-    Billing: 'Billing and invoicing contact',
-    Support: 'Customer support and service desk contact',
-    General: 'General contact for miscellaneous inquiries',
+    AUTHORIZED_REP: 'Authorized representative (bestuurder/gevolmachtigde) - verified via eHerkenning',
+    TECHNICAL: 'Technical contact for system integration and API issues',
+    BILLING: 'Billing and invoicing contact',
+    SUPPORT: 'Customer support and service desk contact',
+    LEGAL: 'Legal contact for contracts and compliance',
+    OTHER: 'Other contact type',
   };
 
   const { effectiveColumns } = useDataTableColumns<LegalEntityContact>({
@@ -120,28 +130,18 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
         resizable: true,
         sortable: true,
         render: (contact) => {
-          const type = contact.contact_type || 'General';
+          const type = contact.contact_type || 'OTHER';
+          const label = contactTypeLabels[type] || type;
           return (
-            <span>
-              <span
-                className="contact-type-badge"
-                style={{ backgroundColor: getContactTypeColor(type) }}
-                // biome-ignore lint/a11y/useSemanticElements: Inline badge element with styling - semantic equivalent not available
-                role="status"
-                aria-label={`Contact type: ${type}`}
-                title={contactTypeTooltips[type] || `${type} contact`}
-              >
-                {type}
-              </span>
-              {contact.is_primary && (
-                <span
-                  className="primary-indicator"
-                  title="Primary Contact"
-                  aria-label="Primary contact"
-                >
-                  ★
-                </span>
-              )}
+            <span
+              className="contact-type-badge"
+              style={{ backgroundColor: getContactTypeColor(type) }}
+              // biome-ignore lint/a11y/useSemanticElements: Inline badge element with styling - semantic equivalent not available
+              role="status"
+              aria-label={`Contact type: ${label}`}
+              title={contactTypeTooltips[type] || `${label} contact`}
+            >
+              {label}
             </span>
           );
         },

@@ -18,7 +18,7 @@ export const KvkDocumentDropzone: React.FC<KvkDocumentDropzoneProps> = ({
 
   return (
     <div>
-      <p>Upload a KvK (Chamber of Commerce) statement to verify company details.</p>
+      <p>Upload a Chamber of Commerce (CoC) statement to verify company details.</p>
 
       <Dropzone
         onDrop={onUpload}
@@ -68,7 +68,7 @@ export const KvkDocumentDropzone: React.FC<KvkDocumentDropzoneProps> = ({
         <ul>
           <li>PDF format only</li>
           <li>Maximum file size: 10MB</li>
-          <li>Must contain KvK number and company name</li>
+          <li>Must contain CoC registration number and company name</li>
         </ul>
       </div>
     </div>

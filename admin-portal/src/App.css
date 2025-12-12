@@ -560,3 +560,45 @@ a:hover,
 .view-container {
   animation: fadeIn 0.3s ease-in-out;
 }
+
+/* Global: mantine-datatable column toggle dropdown - wider for readability */
+.mantine-DataTable-columnToggle,
+.mantine-DataTable-root + .mantine-Popover-dropdown,
+[class*="DataTable"] .mantine-Popover-dropdown,
+[class*="datatable"] .mantine-Popover-dropdown,
+.mantine-Popover-dropdown:has(.mantine-Checkbox-root) {
+  min-width: 280px !important;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Column toggle menu items - better spacing */
+.mantine-DataTable-columnToggle .mantine-Checkbox-root,
+[class*="DataTable"] .mantine-Popover-dropdown .mantine-Checkbox-root,
+[class*="datatable"] .mantine-Popover-dropdown .mantine-Checkbox-root,
+.mantine-Popover-dropdown .mantine-Checkbox-root {
+  padding: 8px 14px !important;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.mantine-DataTable-columnToggle .mantine-Checkbox-label,
+[class*="DataTable"] .mantine-Popover-dropdown .mantine-Checkbox-label,
+[class*="datatable"] .mantine-Popover-dropdown .mantine-Checkbox-label,
+.mantine-Popover-dropdown .mantine-Checkbox-label {
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+/* DataTable header sort/filter dropdowns - wider for registry names */
+.mantine-DataTable-header .mantine-Popover-dropdown,
+[class*="mantine-DataTable"] .mantine-Menu-dropdown {
+  min-width: 300px !important;
+}
+
+/* Ensure dropdown text doesn't wrap */
+.mantine-Popover-dropdown .mantine-Text,
+.mantine-Menu-dropdown .mantine-Menu-itemLabel {
+  white-space: nowrap;
+}

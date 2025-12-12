@@ -97,7 +97,7 @@ export interface LegalEntityIdentifier {
 export interface LegalEntityContact {
   legal_entity_contact_id?: string;
   legal_entity_id: string;
-  contact_type: 'PRIMARY' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
+  contact_type: 'AUTHORIZED_REP' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
   full_name: string;
   email: string;
   phone?: string;
