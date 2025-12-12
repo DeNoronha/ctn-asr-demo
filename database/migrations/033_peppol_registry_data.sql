@@ -78,8 +78,16 @@ CREATE TRIGGER trigger_peppol_registry_modified
     FOR EACH ROW
     EXECUTE FUNCTION update_modified_column();
 
--- Grant permissions
-GRANT SELECT, INSERT, UPDATE, DELETE ON peppol_registry_data TO ctn_app_user;
+-- Grant permissions (wrapped in DO block to handle missing role gracefully)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'ctn_app_user') THEN
+        GRANT SELECT, INSERT, UPDATE, DELETE ON peppol_registry_data TO ctn_app_user;
+        RAISE NOTICE 'Granted permissions to ctn_app_user';
+    ELSE
+        RAISE NOTICE 'Role ctn_app_user does not exist - skipping GRANT (table accessible via current user)';
+    END IF;
+END $$;
 
 -- Add comments for documentation
 COMMENT ON TABLE peppol_registry_data IS 'Stores Peppol Directory data for legal entities. Peppol is the Pan-European Public Procurement Online network for e-invoicing and document exchange.';
