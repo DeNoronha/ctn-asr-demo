@@ -3381,6 +3381,112 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
     }
 
     // =========================================================================
+    // 5. Update legal_entity with KVK registry data (address, legal form, etc.)
+    // =========================================================================
+    let companyDetailsUpdated = false;
+    const updatedFields: string[] = [];
+    try {
+      // Get KVK registry data to enrich legal_entity
+      const { rows: kvkData } = await pool.query(`
+        SELECT company_name, statutory_name, legal_form, addresses,
+               formal_registration_date, company_status
+        FROM kvk_registry_data
+        WHERE legal_entity_id = $1 AND is_deleted = false
+        ORDER BY fetched_at DESC
+        LIMIT 1
+      `, [legalentityid]);
+
+      if (kvkData.length > 0) {
+        const kvk = kvkData[0];
+        const addresses = kvk.addresses || [];
+
+        // Find bezoekadres (visit address) - preferred for business address
+        const bezoekadres = addresses.find((a: any) => a.type === 'bezoekadres') || addresses[0];
+
+        // Build update fields
+        const updateFieldsSql: string[] = [];
+        const updateValues: any[] = [];
+        let paramIndex = 1;
+
+        // Update entity_legal_form from KVK
+        if (kvk.legal_form) {
+          updateFieldsSql.push(`entity_legal_form = $${paramIndex++}`);
+          updateValues.push(kvk.legal_form);
+          updatedFields.push('entity_legal_form');
+        }
+
+        // Update address from bezoekadres
+        if (bezoekadres) {
+          // Build address_line1: street + house number + letter + addition
+          let addressLine1 = '';
+          if (bezoekadres.street) {
+            addressLine1 = bezoekadres.street;
+            if (bezoekadres.houseNumber) {
+              addressLine1 += ` ${bezoekadres.houseNumber}`;
+            }
+            if (bezoekadres.houseLetter) {
+              addressLine1 += bezoekadres.houseLetter;
+            }
+            if (bezoekadres.houseNumberAddition) {
+              addressLine1 += `-${bezoekadres.houseNumberAddition}`;
+            }
+          } else if (bezoekadres.fullAddress) {
+            // Fallback to full address if structured data not available
+            addressLine1 = bezoekadres.fullAddress.split('\n')[0];
+          }
+
+          if (addressLine1) {
+            updateFieldsSql.push(`address_line1 = $${paramIndex++}`);
+            updateValues.push(addressLine1);
+            updatedFields.push('address_line1');
+          }
+
+          if (bezoekadres.postalCode) {
+            updateFieldsSql.push(`postal_code = $${paramIndex++}`);
+            updateValues.push(bezoekadres.postalCode);
+            updatedFields.push('postal_code');
+          }
+
+          if (bezoekadres.city) {
+            updateFieldsSql.push(`city = $${paramIndex++}`);
+            updateValues.push(bezoekadres.city);
+            updatedFields.push('city');
+          }
+
+          if (bezoekadres.country) {
+            updateFieldsSql.push(`country_code = $${paramIndex++}`);
+            updateValues.push(bezoekadres.country === 'Nederland' ? 'NL' : bezoekadres.country);
+            updatedFields.push('country_code');
+          }
+        }
+
+        // Update registered_at from formal_registration_date
+        if (kvk.formal_registration_date) {
+          updateFieldsSql.push(`registered_at = $${paramIndex++}`);
+          updateValues.push(kvk.formal_registration_date);
+          updatedFields.push('registered_at');
+        }
+
+        // Execute update if we have fields to update
+        if (updateFieldsSql.length > 0) {
+          updateFieldsSql.push('dt_modified = NOW()');
+          updateValues.push(legalentityid);
+
+          await pool.query(`
+            UPDATE legal_entity
+            SET ${updateFieldsSql.join(', ')}
+            WHERE legal_entity_id = $${paramIndex} AND is_deleted = false
+          `, updateValues);
+
+          companyDetailsUpdated = true;
+          console.log('Updated legal_entity with KVK data:', updatedFields);
+        }
+      }
+    } catch (kvkUpdateError: any) {
+      console.warn('Failed to update legal_entity with KVK data:', kvkUpdateError.message);
+    }
+
+    // =========================================================================
     // Summary
     // =========================================================================
     const added = results.filter(r => r.status === 'added');
@@ -3393,18 +3499,23 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
       added: added.map(r => r.identifier),
       exists: exists.map(r => r.identifier),
       notAvailable: notAvailable.map(r => r.identifier),
-      errors: errors.map(r => r.identifier)
+      errors: errors.map(r => r.identifier),
+      companyDetailsUpdated,
+      updatedFields
     });
 
     res.json({
       success: true,
       added_count: added.length,
+      company_details_updated: companyDetailsUpdated,
+      updated_fields: updatedFields,
       results,
       summary: {
         added: added.map(r => `${r.identifier}: ${r.value}`),
         already_exists: exists.map(r => r.identifier),
         not_available: notAvailable.map(r => `${r.identifier} (${r.message})`),
-        errors: errors.map(r => `${r.identifier}: ${r.message}`)
+        errors: errors.map(r => `${r.identifier}: ${r.message}`),
+        company_fields_updated: companyDetailsUpdated ? updatedFields : []
       }
     });
   } catch (error: any) {
