@@ -697,6 +697,8 @@ export function useIdentifierVerification(
       const response = await axiosInstance.post<{
         success: boolean;
         added_count: number;
+        company_details_updated: boolean;
+        updated_fields: string[];
         results: Array<{
           identifier: string;
           status: 'added' | 'exists' | 'error' | 'not_available';
@@ -708,22 +710,56 @@ export function useIdentifierVerification(
           already_exists: string[];
           not_available: string[];
           errors: string[];
+          company_fields_updated: string[];
         };
       }>(`/legal-entities/${legalEntityId}/enrich`);
 
-      const { summary, added_count } = response.data;
+      const { summary, added_count, results, company_details_updated } = response.data;
+
+      // Build detailed message
+      const messages: string[] = [];
 
       if (added_count > 0) {
-        notification.showSuccess(`Enrichment complete: Added ${summary.added.join(', ')}`);
+        messages.push(`Added: ${summary.added.join(', ')}`);
+      }
+
+      if (company_details_updated) {
+        messages.push('Company details updated from KVK');
+      }
+
+      if (summary.already_exists?.length > 0) {
+        messages.push(`Already have: ${summary.already_exists.join(', ')}`);
+      }
+
+      // Show detailed reasons for not available identifiers
+      if (summary.not_available?.length > 0) {
+        const notAvailableReasons = results
+          .filter(r => r.status === 'not_available')
+          .map(r => {
+            // Make messages more user-friendly
+            if (r.identifier === 'RSIN' && r.message?.includes('not found')) {
+              return 'RSIN: Not available for this company type';
+            }
+            if (r.identifier === 'VAT' && r.message?.includes('without RSIN')) {
+              return 'VAT: Cannot derive without RSIN';
+            }
+            if (r.identifier === 'LEI' && r.message?.includes('No LEI found')) {
+              return 'LEI: Not registered in GLEIF';
+            }
+            if (r.identifier === 'PEPPOL' && r.message?.includes('No Peppol')) {
+              return 'Peppol: Not in Peppol Directory';
+            }
+            return `${r.identifier}: ${r.message || 'Not available'}`;
+          });
+        messages.push(`Not found: ${notAvailableReasons.join(', ')}`);
+      }
+
+      // Show appropriate notification
+      if (added_count > 0 || company_details_updated) {
+        notification.showSuccess(messages.join('. '));
         await onRefresh();
-      } else if (summary.already_exists.length > 0) {
-        const existingMsg = summary.already_exists.length > 0
-          ? `Already have: ${summary.already_exists.join(', ')}`
-          : '';
-        const notAvailMsg = summary.not_available.length > 0
-          ? `Not available: ${summary.not_available.map(s => s.split(' (')[0]).join(', ')}`
-          : '';
-        notification.showInfo(`${existingMsg}${existingMsg && notAvailMsg ? '. ' : ''}${notAvailMsg}`);
+      } else if (messages.length > 0) {
+        notification.showInfo(messages.join('. '));
       } else {
         notification.showInfo('No identifiers could be enriched. Make sure a KVK number exists.');
       }
