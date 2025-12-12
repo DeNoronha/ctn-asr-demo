@@ -28,6 +28,7 @@ interface UseMemberDetailsReturn {
   identifiers: LegalEntityIdentifier[];
   endpoints: LegalEntityEndpoint[];
   hasKvkRegistryData: boolean;
+  hasLeiRegistryData: boolean;
   loading: boolean;
   handlers: {
     updateLegalEntity: (data: LegalEntity) => Promise<void>;
@@ -52,6 +53,7 @@ interface UseMemberDetailsReturn {
     deleteIdentifier: (identifierId: string) => Promise<void>;
     refreshIdentifiers: () => Promise<void>;
     refreshKvkData: () => Promise<void>;
+    refreshLeiData: () => Promise<void>;
   };
 }
 
@@ -61,6 +63,7 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
   const [identifiers, setIdentifiers] = useState<LegalEntityIdentifier[]>([]);
   const [endpoints, setEndpoints] = useState<LegalEntityEndpoint[]>([]);
   const [hasKvkRegistryData, setHasKvkRegistryData] = useState(false);
+  const [hasLeiRegistryData, setHasLeiRegistryData] = useState(false);
   const [loading, setLoading] = useState(false);
   const notification = useNotification();
 
@@ -106,6 +109,20 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
             }
           }
           setHasKvkRegistryData(false);
+        }
+
+        // Check LEI registry data (non-blocking)
+        try {
+          await apiV2.getLeiRegistryData(legalEntityId);
+          setHasLeiRegistryData(true);
+        } catch (leiError: unknown) {
+          if (leiError && typeof leiError === 'object' && 'response' in leiError) {
+            const axiosError = leiError as { response?: { status: number } };
+            if (axiosError.response?.status !== 404) {
+              logger.error('Error checking LEI registry data:', leiError);
+            }
+          }
+          setHasLeiRegistryData(false);
         }
       } catch (error) {
         logger.error('Failed to load legal entity data:', error);
@@ -294,12 +311,27 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
     }
   };
 
+  // Handler for refreshing LEI data
+  const refreshLeiData = async (): Promise<void> => {
+    if (!legalEntityId) {
+      return;
+    }
+
+    try {
+      await apiV2.getLeiRegistryData(legalEntityId);
+      setHasLeiRegistryData(true);
+    } catch (_error) {
+      setHasLeiRegistryData(false);
+    }
+  };
+
   return {
     legalEntity,
     contacts,
     identifiers,
     endpoints,
     hasKvkRegistryData,
+    hasLeiRegistryData,
     loading,
     handlers: {
       updateLegalEntity,
@@ -311,6 +343,7 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
       deleteIdentifier,
       refreshIdentifiers,
       refreshKvkData,
+      refreshLeiData,
     },
   };
 }

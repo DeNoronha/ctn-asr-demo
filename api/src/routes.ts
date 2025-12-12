@@ -1583,6 +1583,94 @@ router.get('/v1/legal-entities/:legalentityid/verifications', requireAuth, async
 });
 
 // ============================================================================
+// LEI REGISTRY DATA (GLEIF)
+// ============================================================================
+router.get('/v1/legal-entities/:legalentityid/lei-registry', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    // Get the LEI identifier for this legal entity
+    const { rows: identifiers } = await pool.query(`
+      SELECT legal_entity_reference_id, identifier_value
+      FROM legal_entity_number
+      WHERE legal_entity_id = $1 AND identifier_type = 'LEI' AND is_deleted = false
+      LIMIT 1
+    `, [legalentityid]);
+
+    if (identifiers.length === 0) {
+      return res.status(404).json({ error: 'No LEI identifier found for this legal entity' });
+    }
+
+    const leiCode = identifiers[0].identifier_value;
+
+    // Get the GLEIF registry data if available
+    const { rows } = await pool.query(`
+      SELECT
+        registry_data_id,
+        lei,
+        legal_name,
+        legal_address,
+        headquarters_address,
+        registration_authority,
+        registration_number,
+        registration_status,
+        entity_status,
+        initial_registration_date,
+        last_update_date,
+        next_renewal_date,
+        managing_lou,
+        raw_api_response,
+        fetched_at,
+        dt_created,
+        dt_modified
+      FROM gleif_registry_data
+      WHERE legal_entity_id = $1 AND is_deleted = false
+      ORDER BY fetched_at DESC
+      LIMIT 1
+    `, [legalentityid]);
+
+    if (rows.length === 0) {
+      // Return basic info even if no stored GLEIF data
+      return res.json({
+        lei: leiCode,
+        hasData: false,
+        message: 'No GLEIF registry data stored. LEI identifier exists but detailed registry data has not been fetched yet.'
+      });
+    }
+
+    const data = rows[0];
+    res.json({
+      lei: leiCode,
+      hasData: true,
+      data: {
+        legalName: data.legal_name,
+        legalAddress: data.legal_address,
+        headquartersAddress: data.headquarters_address,
+        registrationAuthority: data.registration_authority,
+        registrationNumber: data.registration_number,
+        registrationStatus: data.registration_status,
+        entityStatus: data.entity_status,
+        initialRegistrationDate: data.initial_registration_date,
+        lastUpdateDate: data.last_update_date,
+        nextRenewalDate: data.next_renewal_date,
+        managingLou: data.managing_lou,
+        rawResponse: data.raw_api_response
+      },
+      fetchedAt: data.fetched_at
+    });
+  } catch (error: any) {
+    console.error('Error fetching LEI registry data:', {
+      legalEntityId: req.params.legalentityid,
+      error: error.message,
+      stack: error.stack,
+      detail: error.detail || error.toString()
+    });
+    res.status(500).json({ error: 'Failed to fetch LEI registry data', detail: error.message });
+  }
+});
+
+// ============================================================================
 // KVK REGISTRY DATA
 // ============================================================================
 router.get('/v1/legal-entities/:legalentityid/kvk-registry', requireAuth, async (req: Request, res: Response) => {

@@ -47,6 +47,49 @@ export async function getKvkRegistryData(legalEntityId: string): Promise<any> {
 }
 
 // =====================================================
+// LEI REGISTRY DATA (GLEIF)
+// =====================================================
+
+export interface LeiAddress {
+  country: string;
+  addressLines?: string[];
+  city?: string;
+  postalCode?: string;
+  region?: string;
+}
+
+export interface LeiRegistryData {
+  legalName: string;
+  legalAddress?: LeiAddress;
+  headquartersAddress?: LeiAddress;
+  registrationAuthority?: string;
+  registrationNumber?: string;
+  registrationStatus: string;
+  entityStatus?: string;
+  initialRegistrationDate?: string;
+  lastUpdateDate?: string;
+  nextRenewalDate?: string;
+  managingLou?: string;
+  rawResponse?: Record<string, unknown>;
+}
+
+export interface LeiRegistryResponse {
+  lei: string;
+  hasData: boolean;
+  data?: LeiRegistryData;
+  fetchedAt?: string;
+  message?: string;
+}
+
+export async function getLeiRegistryData(legalEntityId: string): Promise<LeiRegistryResponse> {
+  const axiosInstance = await getAuthenticatedAxios();
+  const response = await axiosInstance.get<LeiRegistryResponse>(
+    `/legal-entities/${legalEntityId}/lei-registry`
+  );
+  return response.data;
+}
+
+// =====================================================
 // PEPPOL REGISTRY DATA
 // =====================================================
 

@@ -26,6 +26,7 @@ import {
   DocumentVerificationSection,
   IdentifiersSection,
   KvkRegistrySection,
+  LeiRegistrySection,
   SystemIntegrationsSection,
 } from './member/MemberDetailSections';
 import { LoadingState } from './shared/LoadingState';
@@ -44,7 +45,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
   const { handleError } = useApiError();
 
   // Use custom hook for all member data management
-  const { legalEntity, contacts, identifiers, hasKvkRegistryData, loading, handlers } =
+  const { legalEntity, contacts, identifiers, hasKvkRegistryData, hasLeiRegistryData, loading, handlers } =
     useMemberDetails(member.legal_entity_id);
 
   const handleUpdateCompany = async (data: typeof legalEntity) => {
@@ -151,6 +152,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
           <Tabs.Tab value="document-verification">Document Verification</Tabs.Tab>
           <Tabs.Tab value="authentication-tier">Authentication Tier</Tabs.Tab>
           {hasKvkRegistryData && <Tabs.Tab value="kvk-registry">KvK Registry</Tabs.Tab>}
+          {hasLeiRegistryData && <Tabs.Tab value="lei-registry">LEI Registry</Tabs.Tab>}
         </Tabs.List>
 
         <Tabs.Panel value="company-details" pt="md">
@@ -261,6 +263,8 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
         <AuthenticationTierSection legalEntity={legalEntity} />
 
         {hasKvkRegistryData && <KvkRegistrySection legalEntity={legalEntity} />}
+
+        {hasLeiRegistryData && <LeiRegistrySection legalEntity={legalEntity} />}
       </Tabs>
     </div>
   );

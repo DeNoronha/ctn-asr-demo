@@ -16,6 +16,7 @@ import { EndpointManagement } from '../EndpointManagement';
 import { IdentifiersManager } from '../IdentifiersManager';
 import { KvkDocumentUpload } from '../KvkDocumentUpload';
 import { KvkRegistryDetails } from '../KvkRegistryDetails';
+import { LeiRegistryDetails } from '../LeiRegistryDetails';
 import { TierManagement } from '../TierManagement';
 import { LoadingState } from '../shared/LoadingState';
 
@@ -303,6 +304,35 @@ export const KvkRegistrySection: React.FC<KvkRegistrySectionProps> = ({ legalEnt
             return (
               <div className="info-section">
                 <h3>KvK Registry Data</h3>
+                <EmptyState message={es.message} hint={es.hint} />
+              </div>
+            );
+          })()
+        )}
+      </div>
+    </Tabs.Panel>
+  );
+};
+
+interface LeiRegistrySectionProps {
+  legalEntity: LegalEntity | null;
+}
+
+export const LeiRegistrySection: React.FC<LeiRegistrySectionProps> = ({ legalEntity }) => {
+  return (
+    <Tabs.Panel value="lei-registry" pt="md">
+      <div className="tab-content">
+        {legalEntity ? (
+          <LeiRegistryDetails
+            // biome-ignore lint/style/noNonNullAssertion: legalEntity null-check performed in ternary guard above
+            legalEntityId={legalEntity.legal_entity_id!}
+          />
+        ) : (
+          (() => {
+            const es = getEmptyState('generic', 'noData');
+            return (
+              <div className="info-section">
+                <h3>LEI Registry Data</h3>
                 <EmptyState message={es.message} hint={es.hint} />
               </div>
             );
