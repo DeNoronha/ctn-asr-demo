@@ -12,17 +12,20 @@ export interface PaginatedResponse<T> {
     };
 }
 export interface Member {
-    id: string;
-    org_id: string;
+    legal_entity_id: string;
     legal_name: string;
     lei?: string;
     kvk?: string;
-    domain: string;
+    euid?: string;
+    eori?: string;
+    duns?: string;
+    domain?: string;
     status: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'TERMINATED';
     membership_level?: 'BASIC' | 'FULL' | 'PREMIUM';
     created_at: string;
-    updated_at: string;
-    legal_entity_id?: string;
+    metadata?: Record<string, unknown>;
+    contact_count?: number;
+    endpoint_count?: number;
     party_id?: string;
 }
 export interface CreateMemberRequest {

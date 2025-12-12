@@ -14,19 +14,22 @@ export interface PaginatedResponse<T> {
   };
 }
 
-// Member types
+// Member types (Dec 12, 2025: members table dropped - Member now maps to legal_entity via vw_legal_entities)
 export interface Member {
-  id: string;
-  org_id: string;
-  legal_name: string;
-  lei?: string;
-  kvk?: string;
-  domain: string;
+  legal_entity_id: string;  // Primary key (was: id from members table)
+  legal_name: string;       // From primary_legal_name
+  lei?: string;             // Pivoted from legal_entity_number
+  kvk?: string;             // Pivoted from legal_entity_number
+  euid?: string;            // Pivoted from legal_entity_number
+  eori?: string;            // Pivoted from legal_entity_number
+  duns?: string;            // Pivoted from legal_entity_number
+  domain?: string;
   status: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'TERMINATED';
   membership_level?: 'BASIC' | 'FULL' | 'PREMIUM';
   created_at: string;
-  updated_at: string;
-  legal_entity_id?: string;
+  metadata?: Record<string, unknown>;
+  contact_count?: number;   // From vw_legal_entities
+  endpoint_count?: number;  // From vw_legal_entities
   party_id?: string;
 }
 

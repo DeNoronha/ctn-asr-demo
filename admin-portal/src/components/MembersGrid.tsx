@@ -96,7 +96,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       lei: 'LEI',
       euid: 'EUID',
       kvk: 'KVK',
-      org_id: t('members.orgId', 'Org ID'),
+      legal_entity_id: t('members.legalEntityId', 'Legal Entity ID'),
       domain: t('members.domain', 'Domain'),
       membership_level: t('members.membership', 'Membership'),
     };

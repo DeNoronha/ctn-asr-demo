@@ -38,7 +38,7 @@ export const useMembersGridColumns = ({
       lei: 'LEI',
       euid: 'EUID',
       kvk: 'KVK',
-      org_id: t('members.orgId', 'Organization ID'),
+      legal_entity_id: t('members.legalEntityId', 'Legal Entity ID'),
       domain: t('members.domain', 'Domain'),
       membership_level: t('members.membership', 'Membership'),
       created_at: t('members.memberSince', 'Member Since'),

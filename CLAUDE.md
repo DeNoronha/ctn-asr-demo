@@ -188,20 +188,20 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 1. **Read `database/asr_dev.sql`** - This is the authoritative source of truth (exported Nov 21, 2025)
 2. **Check existing tables** - Avoid creating duplicate tables or fields
 3. **Review relationships** - Understand FK constraints and cascading behaviors
-4. **Verify views** - Use existing views like `vw_members_full`, `vw_members`
+4. **Verify views** - Use existing views like `vw_legal_entities`
 
-**Complete Table List (17 active tables):**
+**Complete Table List (21 active tables):**
 
 **Core Entity Model:**
 - `party_reference` - Root entity (UUID primary key)
-- `legal_entity` - Organizations/companies (FK to party_reference)
+- `legal_entity` - Organizations/companies (FK to party_reference) - **THE source of truth for members**
+  - Includes `azure_ad_object_id` for Azure AD integration (added Dec 12, 2025)
 - `legal_entity_contact` - Contact persons (PRIMARY, BILLING, TECHNICAL, ADMIN)
 - `legal_entity_number` - Identifiers (KvK, LEI, EUID, EORI, DUNS)
   - **EUID**: European Unique Identifier (auto-generated from KvK, format: NL.KVK.12345678)
   - **EORI**: Economic Operators Registration & Identification (customs/import-export, format: NL123456789)
   - **Note**: EURI was removed (not a recognized identifier system)
 - `legal_entity_endpoint` - M2M communication endpoints
-- `members` - Member accounts (links to legal_entity + Azure AD)
 
 **Application & Onboarding:**
 - `applications` - Member registration applications
@@ -212,7 +212,7 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 - `m2m_client_secrets_audit` - Secret generation/revocation audit trail
 - `ctn_m2m_credentials` - Keycloak M2M credentials (service accounts)
 - `ctn_m2m_secret_audit` - Keycloak secret audit trail
-- `issued_tokens` - Generic token tracking
+- `issued_tokens` - Generic token tracking (FK to `legal_entity.legal_entity_id`)
 - `authorization_log` - Three-tier authorization decision logs
 
 **Identity Verification:**
@@ -236,18 +236,24 @@ Scope Check (Booking.Read, etc.) → Business Logic → Response
 - ~~`bvad_issued_tokens`~~ - Dropped Dec 12, 2025 (migration 042) - BDI feature never implemented
 - ~~`bdi_orchestrations`~~ - Dropped Dec 12, 2025 (migration 042) - BDI feature never implemented
 - ~~`audit_log_pii_mapping`~~ - Dropped Dec 12, 2025 (migration 042) - pseudonymization feature removed
+- ~~`members`~~ - **Dropped Dec 12, 2025 (migration 045)** - KISS simplification: `legal_entity` is the single source of truth
 - ~~`legal_entity_backup_20251113`~~ - Dropped Nov 21, 2025 (migration 032)
 - ~~`members_backup_20251113`~~ - Dropped Nov 21, 2025 (migration 032)
 
-**Database Views (7 views - all use vw_ prefix):**
-- `vw_members_full` - Complete member data with identifiers
-- `vw_members_list` - Simplified member list
-- `vw_members` - Basic member view with key fields
+**Database Views (5 views - all use vw_ prefix):**
+- `vw_legal_entities` - **Primary view for member listing** (replaces vw_members_full, Dec 12, 2025)
+  - Pivoted identifier columns (kvk, lei, euid, eori, duns, vat)
+  - contact_count, endpoint_count aggregations
 - `vw_identifiers_with_type` - Identifiers enriched with type metadata from lookup table
 - `vw_m2m_clients_active` - Active M2M clients with secret counts
 - `vw_m2m_credentials_active` - Active Keycloak credentials
 - `vw_audit_log_summary` - Audit log summary view
-- ~~`vw_legal_entity_full`~~ - Dropped Dec 12, 2025 (migration 044) - was unused
+
+**Dropped Views (Dec 12, 2025):**
+- ~~`vw_members_full`~~ - Replaced by `vw_legal_entities` (migration 045)
+- ~~`vw_members_list`~~ - No longer needed (migration 045)
+- ~~`vw_members`~~ - No longer needed (migration 045)
+- ~~`vw_legal_entity_full`~~ - Dropped earlier (migration 044)
 
 **Schema Conventions:**
 - All tables have `dt_created`, `dt_modified` timestamps (or `created_at`, `updated_at`)
@@ -416,7 +422,7 @@ psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com \
 psql "host=... sslmode=require" -f database/migrations/025_new_migration.sql
 
 # Common queries
-SELECT org_id, legal_name, status FROM members ORDER BY legal_name;
+SELECT legal_entity_id, primary_legal_name, status, kvk, lei FROM vw_legal_entities ORDER BY primary_legal_name;
 SELECT legal_entity_id, identifier_type, identifier_value
 FROM legal_entity_number WHERE is_deleted = false;
 ```

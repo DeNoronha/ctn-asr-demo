@@ -262,12 +262,12 @@ export async function resolvePartyId(
     const pool = getPool();
 
     // Query to resolve party ID from Azure AD object ID
+    // Members table dropped Dec 12, 2025 - now uses legal_entity.azure_ad_object_id
     const query = `
       SELECT pr.party_id
-      FROM members m
-      INNER JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
+      FROM legal_entity le
       INNER JOIN party_reference pr ON le.party_id = pr.party_id
-      WHERE m.azure_ad_object_id = $1
+      WHERE le.azure_ad_object_id = $1
         AND le.status != 'DELETED'
         AND le.is_deleted = false
         AND pr.is_deleted = false

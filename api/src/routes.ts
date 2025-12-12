@@ -86,18 +86,18 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
     const pool = getPool();
     const { page = '1', limit = '50', search, status } = req.query;
 
-    // Use the vw_members_full view which includes all identifier types (euid, eori, duns, etc.)
+    // Use vw_legal_entities view for member listing
     let query = `
-      SELECT legal_entity_id, legal_name, kvk, lei, euid, eori, duns, domain, status, membership_level,
-             created_at, member_metadata, legal_entity_metadata, contact_count, endpoint_count
-      FROM vw_members_full
+      SELECT legal_entity_id, primary_legal_name as legal_name, kvk, lei, euid, eori, duns, domain, status, membership_level,
+             dt_created as created_at, metadata, contact_count, endpoint_count
+      FROM vw_legal_entities
       WHERE 1=1
     `;
     const params: any[] = [];
     let paramIndex = 1;
 
     if (search) {
-      query += ` AND (legal_name ILIKE $${paramIndex} OR kvk ILIKE $${paramIndex})`;
+      query += ` AND (primary_legal_name ILIKE $${paramIndex} OR kvk ILIKE $${paramIndex})`;
       params.push(`%${search}%`);
       paramIndex++;
     }
@@ -108,7 +108,7 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
       paramIndex++;
     }
 
-    query += ` ORDER BY legal_name ASC`;
+    query += ` ORDER BY primary_legal_name ASC`;
 
     const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
     query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
@@ -117,11 +117,11 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
     const { rows } = await pool.query(query, params);
 
     // Get total count
-    let countQuery = `SELECT COUNT(*) FROM vw_members_full WHERE 1=1`;
+    let countQuery = `SELECT COUNT(*) FROM vw_legal_entities WHERE 1=1`;
     const countParams: any[] = [];
     let countParamIndex = 1;
     if (search) {
-      countQuery += ` AND (legal_name ILIKE $${countParamIndex} OR kvk ILIKE $${countParamIndex})`;
+      countQuery += ` AND (primary_legal_name ILIKE $${countParamIndex} OR kvk ILIKE $${countParamIndex})`;
       countParams.push(`%${search}%`);
       countParamIndex++;
     }
@@ -153,18 +153,18 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
     const { page = '1', page_size = '50', search, status } = req.query;
     const limit = page_size; // all-members uses page_size param
 
-    // Use the vw_members_full view which includes all identifier types (euid, eori, duns, etc.)
+    // Use vw_legal_entities view for member listing
     let query = `
-      SELECT legal_entity_id, legal_name, kvk, lei, euid, eori, duns, domain, status, membership_level,
-             created_at, member_metadata, legal_entity_metadata, contact_count, endpoint_count
-      FROM vw_members_full
+      SELECT legal_entity_id, primary_legal_name as legal_name, kvk, lei, euid, eori, duns, domain, status, membership_level,
+             dt_created as created_at, metadata, contact_count, endpoint_count
+      FROM vw_legal_entities
       WHERE 1=1
     `;
     const params: any[] = [];
     let paramIndex = 1;
 
     if (search) {
-      query += ` AND (legal_name ILIKE $${paramIndex} OR kvk ILIKE $${paramIndex})`;
+      query += ` AND (primary_legal_name ILIKE $${paramIndex} OR kvk ILIKE $${paramIndex})`;
       params.push(`%${search}%`);
       paramIndex++;
     }
@@ -175,7 +175,7 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
       paramIndex++;
     }
 
-    query += ` ORDER BY legal_name ASC`;
+    query += ` ORDER BY primary_legal_name ASC`;
 
     const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
     query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
@@ -184,11 +184,11 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
     const { rows } = await pool.query(query, params);
 
     // Get total count
-    let countQuery = `SELECT COUNT(*) FROM vw_members_full WHERE 1=1`;
+    let countQuery = `SELECT COUNT(*) FROM vw_legal_entities WHERE 1=1`;
     const countParams: any[] = [];
     let countParamIndex = 1;
     if (search) {
-      countQuery += ` AND (legal_name ILIKE $${countParamIndex} OR kvk ILIKE $${countParamIndex})`;
+      countQuery += ` AND (primary_legal_name ILIKE $${countParamIndex} OR kvk ILIKE $${countParamIndex})`;
       countParams.push(`%${search}%`);
       countParamIndex++;
     }
@@ -376,7 +376,7 @@ router.post('/v1/register-member', upload.single('kvkDocument'), async (req, res
     }
 
     const { rows: existingKvK } = await pool.query(
-      `SELECT legal_entity_id FROM vw_members WHERE kvk = $1`,
+      `SELECT legal_entity_id FROM vw_legal_entities WHERE kvk = $1`,
       [body.kvkNumber]
     );
     if (existingKvK.length > 0) {
@@ -471,20 +471,21 @@ router.get('/v1/member', requireAuth, async (req: Request, res: Response) => {
     }
 
     // Query member data with identifiers in a single query (optimized N+1 → 1)
+    // Now uses legal_entity directly (members table dropped Dec 12, 2025)
     let result = await pool.query(
       `
       SELECT
-        m.org_id as "organizationId",
-        m.legal_name as "legalName",
-        m.lei,
-        m.kvk,
-        m.domain,
-        m.status,
-        m.membership_level as "membershipLevel",
-        m.created_at as "createdAt",
+        le.legal_entity_id as "organizationId",
+        le.primary_legal_name as "legalName",
+        v.lei,
+        v.kvk,
+        le.domain,
+        le.status,
+        le.membership_level as "membershipLevel",
+        le.dt_created as "createdAt",
         le.primary_legal_name as "entityName",
         le.entity_legal_form as "entityType",
-        m.legal_entity_id as "legalEntityId",
+        le.legal_entity_id as "legalEntityId",
         c.full_name as "contactName",
         c.email,
         c.job_title as "jobTitle",
@@ -509,15 +510,14 @@ router.get('/v1/member', requireAuth, async (req: Request, res: Response) => {
           ) FILTER (WHERE len.identifier_type IS NOT NULL),
           '[]'::json
         ) as "registryIdentifiers"
-      FROM vw_members_full m
-      LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
+      FROM legal_entity le
+      LEFT JOIN vw_legal_entities v ON le.legal_entity_id = v.legal_entity_id
       LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
       LEFT JOIN legal_entity_number len ON le.legal_entity_id = len.legal_entity_id
         AND (len.is_deleted = false OR len.is_deleted IS NULL)
-      WHERE c.email = $1 AND c.is_active = true
-      GROUP BY m.org_id, m.legal_name, m.lei, m.kvk, m.domain, m.status,
-               m.membership_level, m.created_at, le.primary_legal_name,
-               le.entity_legal_form, m.legal_entity_id, c.full_name, c.email, c.job_title
+      WHERE c.email = $1 AND c.is_active = true AND le.is_deleted = false
+      GROUP BY le.legal_entity_id, le.primary_legal_name, v.lei, v.kvk, le.domain, le.status,
+               le.membership_level, le.dt_created, le.entity_legal_form, c.full_name, c.email, c.job_title
       LIMIT 1
     `,
       [userEmail]
@@ -529,17 +529,17 @@ router.get('/v1/member', requireAuth, async (req: Request, res: Response) => {
       result = await pool.query(
         `
         SELECT
-          m.org_id as "organizationId",
-          m.legal_name as "legalName",
-          m.lei,
-          m.kvk,
-          m.domain,
-          m.status,
-          m.membership_level as "membershipLevel",
-          m.created_at as "createdAt",
+          le.legal_entity_id as "organizationId",
+          le.primary_legal_name as "legalName",
+          v.lei,
+          v.kvk,
+          le.domain,
+          le.status,
+          le.membership_level as "membershipLevel",
+          le.dt_created as "createdAt",
           le.primary_legal_name as "entityName",
           le.entity_legal_form as "entityType",
-          m.legal_entity_id as "legalEntityId",
+          le.legal_entity_id as "legalEntityId",
           COALESCE(
             json_agg(
               json_build_object(
@@ -561,14 +561,13 @@ router.get('/v1/member', requireAuth, async (req: Request, res: Response) => {
             ) FILTER (WHERE len.identifier_type IS NOT NULL),
             '[]'::json
           ) as "registryIdentifiers"
-        FROM vw_members_full m
-        LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
+        FROM legal_entity le
+        LEFT JOIN vw_legal_entities v ON le.legal_entity_id = v.legal_entity_id
         LEFT JOIN legal_entity_number len ON le.legal_entity_id = len.legal_entity_id
           AND (len.is_deleted = false OR len.is_deleted IS NULL)
-        WHERE m.domain = $1
-        GROUP BY m.org_id, m.legal_name, m.lei, m.kvk, m.domain, m.status,
-                 m.membership_level, m.created_at, le.primary_legal_name,
-                 le.entity_legal_form, m.legal_entity_id
+        WHERE le.domain = $1 AND le.is_deleted = false
+        GROUP BY le.legal_entity_id, le.primary_legal_name, v.lei, v.kvk, le.domain, le.status,
+                 le.membership_level, le.dt_created, le.entity_legal_form
         LIMIT 1
       `,
         [emailDomain]
@@ -603,23 +602,22 @@ router.get('/v1/member/tokens', requireAuth, async (req: Request, res: Response)
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Get member ID from their email
-    const memberResult = await pool.query(`
-      SELECT m.id
-      FROM members m
-      LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
-      LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
-      WHERE c.email = $1 AND c.is_active = true
+    // Get legal_entity_id from user's email (members table dropped Dec 12, 2025)
+    const entityResult = await pool.query(`
+      SELECT le.legal_entity_id
+      FROM legal_entity le
+      JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
+      WHERE c.email = $1 AND c.is_active = true AND le.is_deleted = false
       LIMIT 1
     `, [userEmail]);
 
-    if (memberResult.rows.length === 0) {
+    if (entityResult.rows.length === 0) {
       return res.status(404).json({ error: 'Member not found' });
     }
 
-    const { id: memberId } = memberResult.rows[0];
+    const { legal_entity_id: legalEntityId } = entityResult.rows[0];
 
-    // Get all API tokens for this member
+    // Get all API tokens for this legal entity
     const tokensResult = await pool.query(`
       SELECT
         jti,
@@ -629,10 +627,10 @@ router.get('/v1/member/tokens', requireAuth, async (req: Request, res: Response)
         revoked,
         metadata
       FROM issued_tokens
-      WHERE member_id = $1
+      WHERE legal_entity_id = $1
       ORDER BY issued_at DESC
       LIMIT 50
-    `, [memberId]);
+    `, [legalEntityId]);
 
     res.json({ tokens: tokensResult.rows });
   } catch (error: any) {
@@ -651,21 +649,20 @@ router.post('/v1/member/tokens', requireAuth, async (req: Request, res: Response
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Get member ID
-    const memberResult = await pool.query(`
-      SELECT m.id
-      FROM members m
-      LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
-      LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
-      WHERE c.email = $1 AND c.is_active = true
+    // Get legal_entity_id from user's email (members table dropped Dec 12, 2025)
+    const entityResult = await pool.query(`
+      SELECT le.legal_entity_id
+      FROM legal_entity le
+      JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
+      WHERE c.email = $1 AND c.is_active = true AND le.is_deleted = false
       LIMIT 1
     `, [userEmail]);
 
-    if (memberResult.rows.length === 0) {
+    if (entityResult.rows.length === 0) {
       return res.status(404).json({ error: 'Member not found' });
     }
 
-    const { id: memberId } = memberResult.rows[0];
+    const { legal_entity_id: legalEntityId } = entityResult.rows[0];
 
     // Generate new JWT token (simplified - in production use proper JWT library)
     const crypto = require('crypto');
@@ -678,12 +675,12 @@ router.post('/v1/member/tokens', requireAuth, async (req: Request, res: Response
       INSERT INTO issued_tokens (
         jti,
         token_type,
-        member_id,
+        legal_entity_id,
         issued_at,
         expires_at,
         metadata
       ) VALUES ($1, $2, $3, $4, $5, $6)
-    `, [jti, 'API', memberId, now, expiresAt, JSON.stringify({ description })]);
+    `, [jti, 'API', legalEntityId, now, expiresAt, JSON.stringify({ description })]);
 
     res.status(201).json({
       jti,
@@ -708,29 +705,28 @@ router.delete('/v1/member/tokens/:tokenId', requireAuth, async (req: Request, re
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Get member ID
-    const memberResult = await pool.query(`
-      SELECT m.id
-      FROM members m
-      LEFT JOIN legal_entity le ON m.legal_entity_id = le.legal_entity_id
-      LEFT JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
-      WHERE c.email = $1 AND c.is_active = true
+    // Get legal_entity_id from user's email (members table dropped Dec 12, 2025)
+    const entityResult = await pool.query(`
+      SELECT le.legal_entity_id
+      FROM legal_entity le
+      JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
+      WHERE c.email = $1 AND c.is_active = true AND le.is_deleted = false
       LIMIT 1
     `, [userEmail]);
 
-    if (memberResult.rows.length === 0) {
+    if (entityResult.rows.length === 0) {
       return res.status(404).json({ error: 'Member not found' });
     }
 
-    const { id: memberId } = memberResult.rows[0];
+    const { legal_entity_id: legalEntityId } = entityResult.rows[0];
 
-    // Revoke the token (only if it belongs to this member)
+    // Revoke the token (only if it belongs to this legal entity)
     const result = await pool.query(`
       UPDATE issued_tokens
       SET revoked = true
-      WHERE jti = $1 AND member_id = $2
+      WHERE jti = $1 AND legal_entity_id = $2
       RETURNING jti
-    `, [tokenId, memberId]);
+    `, [tokenId, legalEntityId]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Token not found or does not belong to you' });
@@ -3131,21 +3127,9 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
         `, [leiId, legalEntityId, application.lei]);
       }
 
-      // 6a. Create members record (required for Member Portal login)
-      const memberId = randomUUID();
-      await client.query(`
-        INSERT INTO members (
-          id, org_id, legal_entity_id, email, created_at, updated_at
-        )
-        VALUES ($1, $2, $3, $4, NOW(), NOW())
-      `, [
-        memberId,
-        legalEntityId, // org_id (UUIDs are 36 chars, well under varchar(100) limit)
-        legalEntityId,
-        application.applicant_email
-      ]);
+      // 6a. Members table dropped (Dec 12, 2025) - legal_entity IS the member now
 
-      // 7. Update application status and link to created member
+      // 7. Update application status and link to created legal_entity
       await client.query(`
         UPDATE applications
         SET status = 'approved',
@@ -3153,7 +3137,7 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
             dt_updated = NOW(),
             created_member_id = $2
         WHERE application_id = $1
-      `, [id, memberId]);
+      `, [id, legalEntityId]);
 
       // Return the created member details
       const memberResult = await client.query(`
@@ -3168,7 +3152,6 @@ router.post('/v1/applications/:id/approve', requireAuth, async (req: Request, re
     console.log('Application approved successfully:', {
       applicationId: id,
       legalEntityId: legalEntityId,
-      memberId: memberId,
       email: application.applicant_email
     });
 
@@ -3231,33 +3214,33 @@ router.get('/v1/member-contacts', requireAuth, cacheMiddleware(CacheTTL.CONTACTS
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Get member's legal_entity_id using email
-    let memberResult = await pool.query(`
+    // Get legal_entity_id using email (members table dropped Dec 12, 2025)
+    let entityResult = await pool.query(`
       SELECT DISTINCT le.legal_entity_id
       FROM legal_entity le
       INNER JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
-      WHERE c.email = $1 AND c.is_active = true
+      WHERE c.email = $1 AND c.is_active = true AND le.is_deleted = false
       LIMIT 1
     `, [userEmail]);
 
     // If not found, try by domain
-    if (memberResult.rows.length === 0) {
+    if (entityResult.rows.length === 0) {
       const emailDomain = userEmail.split('@')[1];
-      memberResult = await pool.query(`
-        SELECT m.legal_entity_id
-        FROM vw_members_full m
-        WHERE m.domain = $1
+      entityResult = await pool.query(`
+        SELECT legal_entity_id
+        FROM vw_legal_entities
+        WHERE domain = $1
         LIMIT 1
       `, [emailDomain]);
     }
 
-    if (memberResult.rows.length === 0) {
+    if (entityResult.rows.length === 0) {
       return res.status(404).json({ error: 'Member not found' });
     }
 
-    const { legal_entity_id } = memberResult.rows[0];
+    const { legal_entity_id } = entityResult.rows[0];
 
-    // Get all contacts for this member's legal entity
+    // Get all contacts for this legal entity
     const result = await pool.query(`
       SELECT
         legal_entity_contact_id,
@@ -3307,13 +3290,13 @@ router.get('/v1/member-endpoints', requireAuth, cacheMiddleware(CacheTTL.ENDPOIN
       LIMIT 1
     `, [userEmail]);
 
-    // If not found, try by domain
+    // If not found, try by domain (members table dropped Dec 12, 2025)
     if (memberResult.rows.length === 0) {
       const emailDomain = userEmail.split('@')[1];
       memberResult = await pool.query(`
-        SELECT m.legal_entity_id
-        FROM vw_members_full m
-        WHERE m.domain = $1
+        SELECT legal_entity_id
+        FROM vw_legal_entities
+        WHERE domain = $1
         LIMIT 1
       `, [emailDomain]);
     }
@@ -4124,42 +4107,8 @@ router.put('/v1/members/:memberId/status', requireAuth, async (req: Request, res
   }
 });
 
-// Admin endpoint to fix missing member records
-router.post('/v1/admin/fix-missing-members', requireAuth, async (req: Request, res: Response) => {
-  const pool = getPool();
-
-  try {
-    // Insert missing member records for legal entities without members
-    const { rows } = await pool.query(`
-      INSERT INTO members (
-        id, org_id, legal_entity_id, email, created_at, updated_at
-      )
-      SELECT
-        gen_random_uuid() as id,
-        le.legal_entity_id as org_id,
-        le.legal_entity_id,
-        COALESCE(lec.email, 'noreply@example.com') as email,
-        le.dt_created as created_at,
-        NOW() as updated_at
-      FROM legal_entity le
-      LEFT JOIN members m ON le.legal_entity_id = m.legal_entity_id
-      LEFT JOIN legal_entity_contact lec ON le.legal_entity_id = lec.legal_entity_id AND lec.is_primary = true AND lec.is_deleted = false
-      WHERE m.id IS NULL
-        AND le.is_deleted = false
-        AND le.status IN ('ACTIVE', 'PENDING')
-      ON CONFLICT DO NOTHING
-      RETURNING legal_entity_id, email
-    `);
-
-    res.json({
-      message: `Created ${rows.length} missing member record(s)`,
-      created: rows
-    });
-  } catch (error: any) {
-    console.error('Error fixing missing members:', error);
-    res.status(500).json({ error: 'Failed to fix missing members' });
-  }
-});
+// Endpoint removed (Dec 12, 2025): /v1/admin/fix-missing-members
+// Members table dropped - legal_entity IS the member now
 
 // ============================================================================
 // BDI (Business Data Interchange) ENDPOINTS
