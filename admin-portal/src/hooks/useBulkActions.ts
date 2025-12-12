@@ -2,7 +2,7 @@ import { Workbook } from 'exceljs';
 import { useCallback, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import type { Member } from '../services/api';
-import { apiV2 } from "../services/api";
+import { apiV2, deleteLegalEntity } from "../services/api";
 import { exportToCSV, exportToPDF } from '../utils/exportUtils';
 import { useApiError } from './useApiError';
 
@@ -221,15 +221,16 @@ async function handleSuspendAction(
 }
 
 /**
- * Handles bulk delete action
+ * Handles bulk delete action (soft delete)
  */
 async function handleDeleteAction(
   selectedIds: string[],
   notification: ReturnType<typeof useNotification>,
   onRefresh?: () => Promise<void>
 ): Promise<void> {
+  // Use actual delete endpoint which performs soft delete
   const deletePromises = selectedIds.map((legalEntityId) =>
-    apiV2.updateMemberStatus(legalEntityId, 'TERMINATED', 'Bulk deleted via admin portal')
+    deleteLegalEntity(legalEntityId)
   );
   await Promise.all(deletePromises);
 
