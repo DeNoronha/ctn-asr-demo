@@ -1340,20 +1340,19 @@ router.get('/v1/legal-entities/:legalentityid/identifiers', requireAuth, cacheMi
     const pool = getPool();
     const { legalentityid } = req.params;
 
-    // Join with legal_entity_number_type to get registry name from lookup table
-    // COALESCE prefers the explicit registry_name if set, otherwise uses type_name from lookup
+    // Join with legal_entity_number_type - always use lookup table as authoritative source
     const { rows } = await pool.query(`
       SELECT len.legal_entity_reference_id, len.legal_entity_id, len.identifier_type, len.identifier_value,
              len.country_code, len.issued_by, len.validated_by, len.validation_status, len.validation_date,
-             COALESCE(len.registry_name, lent.type_name) AS registry_name,
-             COALESCE(len.registry_url, lent.registry_url) AS registry_url,
+             lent.type_name AS registry_name,
+             lent.registry_url AS registry_url,
              len.issuing_authority, len.issued_at, len.expires_at,
              len.verification_status, len.verification_document_url, len.verification_notes,
              len.dt_created, len.dt_modified
       FROM legal_entity_number len
       LEFT JOIN legal_entity_number_type lent ON len.identifier_type = lent.type_code
       WHERE len.legal_entity_id = $1 AND len.is_deleted = false
-      ORDER BY len.identifier_type ASC
+      ORDER BY lent.display_order ASC, len.identifier_type ASC
     `, [legalentityid]);
 
     res.json({ data: rows });
@@ -1374,20 +1373,19 @@ router.get('/v1/entities/:legalentityid/identifiers', requireAuth, async (req: R
     const pool = getPool();
     const { legalentityid } = req.params;
 
-    // Join with legal_entity_number_type to get registry name from lookup table
-    // COALESCE prefers the explicit registry_name if set, otherwise uses type_name from lookup
+    // Join with legal_entity_number_type - always use lookup table as authoritative source
     const { rows } = await pool.query(`
       SELECT len.legal_entity_reference_id, len.legal_entity_id, len.identifier_type, len.identifier_value,
              len.country_code, len.issued_by, len.validated_by, len.validation_status, len.validation_date,
-             COALESCE(len.registry_name, lent.type_name) AS registry_name,
-             COALESCE(len.registry_url, lent.registry_url) AS registry_url,
+             lent.type_name AS registry_name,
+             lent.registry_url AS registry_url,
              len.issuing_authority, len.issued_at, len.expires_at,
              len.verification_status, len.verification_document_url, len.verification_notes,
              len.dt_created, len.dt_modified
       FROM legal_entity_number len
       LEFT JOIN legal_entity_number_type lent ON len.identifier_type = lent.type_code
       WHERE len.legal_entity_id = $1 AND len.is_deleted = false
-      ORDER BY len.identifier_type ASC
+      ORDER BY lent.display_order ASC, len.identifier_type ASC
     `, [legalentityid]);
 
     res.json({ data: rows });
