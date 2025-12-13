@@ -42,6 +42,7 @@ export {
   deleteLegalEntity,
   listLegalEntities,
   getKvkRegistryData,
+  enrichLegalEntity,
   getLeiRegistryData,
   getPeppolRegistryData,
   fetchPeppolData,
@@ -49,6 +50,8 @@ export {
   fetchViesData,
 } from './legalEntities';
 export type {
+  EnrichmentResult,
+  EnrichmentResponse,
   LeiAddress,
   LeiRegistryData,
   LeiRegistryResponse,

@@ -169,7 +169,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
                     company={legalEntity}
                     identifiers={identifiers}
                     onEdit={() => setIsEditingCompany(true)}
-                    onRefresh={handlers.refreshAll}
+                    onRefresh={handlers.enrichAndRefresh}
                   />
                 ) : (
                   <CompanyForm

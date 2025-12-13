@@ -3611,6 +3611,13 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
         const updateValues: any[] = [];
         let paramIndex = 1;
 
+        // Update primary_legal_name from KVK company_name (official name)
+        if (kvk.company_name) {
+          updateFieldsSql.push(`primary_legal_name = $${paramIndex++}`);
+          updateValues.push(kvk.company_name);
+          updatedFields.push('primary_legal_name');
+        }
+
         // Update entity_legal_form from KVK
         if (kvk.legal_form) {
           updateFieldsSql.push(`entity_legal_form = $${paramIndex++}`);

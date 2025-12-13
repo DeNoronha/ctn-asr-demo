@@ -47,6 +47,44 @@ export async function getKvkRegistryData(legalEntityId: string): Promise<any> {
 }
 
 // =====================================================
+// ENRICHMENT - Sync data from external registries
+// =====================================================
+
+export interface EnrichmentResult {
+  identifier: string;
+  status: 'added' | 'exists' | 'error' | 'not_available';
+  value?: string;
+  message?: string;
+}
+
+export interface EnrichmentResponse {
+  success: boolean;
+  added_count: number;
+  company_details_updated: boolean;
+  updated_fields: string[];
+  results: EnrichmentResult[];
+  summary: {
+    added: string[];
+    already_exists: string[];
+    not_available: string[];
+    errors: string[];
+    company_fields_updated: string[];
+  };
+}
+
+/**
+ * Enriches a legal entity by fetching data from external registries (KVK, GLEIF, Peppol, VIES)
+ * and updating the legal_entity table with company details (name, address, legal form, etc.)
+ */
+export async function enrichLegalEntity(legalEntityId: string): Promise<EnrichmentResponse> {
+  const axiosInstance = await getAuthenticatedAxios();
+  const response = await axiosInstance.post<EnrichmentResponse>(
+    `/legal-entities/${legalEntityId}/enrich`
+  );
+  return response.data;
+}
+
+// =====================================================
 // LEI REGISTRY DATA (GLEIF)
 // =====================================================
 

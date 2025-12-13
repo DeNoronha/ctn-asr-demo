@@ -19,7 +19,7 @@
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntity, type LegalEntityContact, api } from '../services/api';
-import { type LegalEntityEndpoint, type LegalEntityIdentifier, apiV2 } from "../services/api";
+import { type LegalEntityEndpoint, type LegalEntityIdentifier, apiV2, enrichLegalEntity } from "../services/api";
 import { logger } from '../utils/logger';
 
 interface UseMemberDetailsReturn {
@@ -56,6 +56,7 @@ interface UseMemberDetailsReturn {
     refreshIdentifiers: () => Promise<void>;
     refreshLegalEntity: () => Promise<void>;
     refreshAll: () => Promise<void>;
+    enrichAndRefresh: () => Promise<void>;
     refreshKvkData: () => Promise<void>;
     refreshLeiData: () => Promise<void>;
     refreshPeppolData: () => Promise<void>;
@@ -400,6 +401,42 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
     }
   };
 
+  // Handler for enriching from registries and refreshing all data
+  // This calls the enrich endpoint which updates legal_entity with KVK data (name, address, etc.)
+  const enrichAndRefresh = async (): Promise<void> => {
+    if (!legalEntityId) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Call enrich endpoint to sync from external registries
+      const enrichResult = await enrichLegalEntity(legalEntityId);
+
+      // Show notification with what was updated
+      if (enrichResult.company_details_updated && enrichResult.updated_fields.length > 0) {
+        notification.showSuccess(
+          `Company details updated: ${enrichResult.updated_fields.join(', ')}`
+        );
+      } else if (enrichResult.added_count > 0) {
+        notification.showSuccess(
+          `Added ${enrichResult.added_count} new identifier(s)`
+        );
+      } else {
+        notification.showInfo('Company details are already up to date');
+      }
+
+      // Refresh all data from database
+      await refreshAll();
+    } catch (error) {
+      logger.error('Failed to enrich and refresh:', error);
+      notification.showError('Failed to update company details from registry');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Handler for refreshing KvK data
   const refreshKvkData = async (): Promise<void> => {
     if (!legalEntityId) {
@@ -477,6 +514,7 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
       refreshIdentifiers,
       refreshLegalEntity,
       refreshAll,
+      enrichAndRefresh,
       refreshKvkData,
       refreshLeiData,
       refreshPeppolData,
