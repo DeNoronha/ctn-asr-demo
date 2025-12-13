@@ -1340,15 +1340,20 @@ router.get('/v1/legal-entities/:legalentityid/identifiers', requireAuth, cacheMi
     const pool = getPool();
     const { legalentityid } = req.params;
 
+    // Join with legal_entity_number_type to get registry name from lookup table
+    // COALESCE prefers the explicit registry_name if set, otherwise uses type_name from lookup
     const { rows } = await pool.query(`
-      SELECT legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
-             country_code, issued_by, validated_by, validation_status, validation_date,
-             registry_name, registry_url, issuing_authority, issued_at, expires_at,
-             verification_status, verification_document_url, verification_notes,
-             dt_created, dt_modified
-      FROM legal_entity_number
-      WHERE legal_entity_id = $1 AND is_deleted = false
-      ORDER BY identifier_type ASC
+      SELECT len.legal_entity_reference_id, len.legal_entity_id, len.identifier_type, len.identifier_value,
+             len.country_code, len.issued_by, len.validated_by, len.validation_status, len.validation_date,
+             COALESCE(len.registry_name, lent.type_name) AS registry_name,
+             COALESCE(len.registry_url, lent.registry_url) AS registry_url,
+             len.issuing_authority, len.issued_at, len.expires_at,
+             len.verification_status, len.verification_document_url, len.verification_notes,
+             len.dt_created, len.dt_modified
+      FROM legal_entity_number len
+      LEFT JOIN legal_entity_number_type lent ON len.identifier_type = lent.type_code
+      WHERE len.legal_entity_id = $1 AND len.is_deleted = false
+      ORDER BY len.identifier_type ASC
     `, [legalentityid]);
 
     res.json({ data: rows });
@@ -1369,15 +1374,20 @@ router.get('/v1/entities/:legalentityid/identifiers', requireAuth, async (req: R
     const pool = getPool();
     const { legalentityid } = req.params;
 
+    // Join with legal_entity_number_type to get registry name from lookup table
+    // COALESCE prefers the explicit registry_name if set, otherwise uses type_name from lookup
     const { rows } = await pool.query(`
-      SELECT legal_entity_reference_id, legal_entity_id, identifier_type, identifier_value,
-             country_code, issued_by, validated_by, validation_status, validation_date,
-             registry_name, registry_url, issuing_authority, issued_at, expires_at,
-             verification_status, verification_document_url, verification_notes,
-             dt_created, dt_modified
-      FROM legal_entity_number
-      WHERE legal_entity_id = $1 AND is_deleted = false
-      ORDER BY identifier_type ASC
+      SELECT len.legal_entity_reference_id, len.legal_entity_id, len.identifier_type, len.identifier_value,
+             len.country_code, len.issued_by, len.validated_by, len.validation_status, len.validation_date,
+             COALESCE(len.registry_name, lent.type_name) AS registry_name,
+             COALESCE(len.registry_url, lent.registry_url) AS registry_url,
+             len.issuing_authority, len.issued_at, len.expires_at,
+             len.verification_status, len.verification_document_url, len.verification_notes,
+             len.dt_created, len.dt_modified
+      FROM legal_entity_number len
+      LEFT JOIN legal_entity_number_type lent ON len.identifier_type = lent.type_code
+      WHERE len.legal_entity_id = $1 AND len.is_deleted = false
+      ORDER BY len.identifier_type ASC
     `, [legalentityid]);
 
     res.json({ data: rows });
@@ -3291,9 +3301,10 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
           INSERT INTO legal_entity_number (
             legal_entity_reference_id, legal_entity_id,
             identifier_type, identifier_value, country_code,
-            validation_status, dt_created, dt_modified
+            validation_status, registry_name, registry_url,
+            dt_created, dt_modified
           )
-          VALUES ($1, $2, 'RSIN', $3, 'NL', 'VERIFIED', NOW(), NOW())
+          VALUES ($1, $2, 'RSIN', $3, 'NL', 'VERIFIED', 'KVK', 'https://www.kvk.nl/', NOW(), NOW())
         `, [randomUUID(), legalentityid, rsin]);
 
         results.push({ identifier: 'RSIN', status: 'added', value: rsin });
