@@ -67,9 +67,22 @@ If LEI number is fetched/updated always fetch the detailed registry data
 
 ---
 
-Task 17
+Task 17: ✅ COMPLETED (2025-12-14)
 
 GLEIF and bundesAPI are separate registries. Not fall-backs for each other. Each can be searched via a CoC number or via a Name (+address/city).
+
+**Solution:**
+1. Updated service header documentation to clarify registry differences
+2. Added `searchGleifOnly()` method for LEI-specific searches
+3. Added `searchHandelsregisterOnly()` method for German commercial register searches
+4. Kept combined `searchByCompanyName()` for backward compatibility (searches both)
+
+**Registry Distinction:**
+- GLEIF: Global LEI database (~2M companies with LEIs)
+- BundesAPI/Handelsregister.de: German commercial register (all German companies)
+
+**Files Modified:**
+- `api/src/services/handelsregisterService.ts` - Added registry-specific search methods
 
 ---
 
@@ -77,8 +90,21 @@ Task 18
 
 Make sure that verifications and enrichments are stored as separate TS services. In order to avoid a huge validator.ts files that no one can decipher.
 
-Task 19:
-make sure you can transform a HRB number to an EUID. Look at for instance Contargo Neuss record. HRB known. But no EUID. 
+Task 19: ✅ COMPLETED (2025-12-14)
+
+make sure you can transform a HRB number to an EUID. Look at for instance Contargo Neuss record. HRB known. But no EUID.
+
+**Solution:**
+When german_registry_data already exists but EUID is missing:
+1. Enrichment now checks for existing HRB/HRA identifier
+2. Gets court_code from german_registry_data table
+3. Generates EUID using `DE{courtCode}.{registerType}{number}` format
+4. Example: HRB 15884 at Neuss (D4601R) → DED4601R.HRB15884
+
+**Files Modified:**
+- `api/src/routes.ts` - Added EUID generation from existing HRB in enrichment else-branch
+
+---
 
 Task 20:
 Push to remote and test thoroughly. 

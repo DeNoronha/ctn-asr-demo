@@ -3,9 +3,23 @@ import { bundesApiService } from './bundesApiService';
 
 // ============================================================================
 // German Handelsregister Service
-// Fetches company data from the German Commercial Register
-// Primary: GLEIF API (companies with LEI)
-// Fallback: BundesAPI (official Handelsregister.de scraping)
+// Fetches company data from German registries
+//
+// IMPORTANT (Task 17): GLEIF and BundesAPI are SEPARATE registries, not fallbacks!
+//
+// - GLEIF: Global LEI database - companies that have registered for an LEI
+//   - Data: LEI, company name, address, registration info
+//   - Searchable by: company name, registration number (HRB/KVK)
+//   - Only ~2M companies globally have LEIs
+//
+// - BundesAPI (Handelsregister.de): Official German commercial register
+//   - Data: HRB/HRA number, company name, court, status
+//   - Searchable by: company name, HRB/HRA number
+//   - All German companies are registered here
+//
+// Use searchGleifOnly() for LEI-specific searches
+// Use searchHandelsregisterOnly() for German commercial register searches
+// Use searchByCompanyName() to search both (with combined results)
 // ============================================================================
 
 /**
@@ -126,9 +140,102 @@ export class HandelsregisterService {
   private readonly gleifApiUrl = 'https://api.gleif.org/api/v1';
   private readonly openCorporatesApiUrl = 'https://api.opencorporates.com/v0.4';
 
+  // =========================================================================
+  // PUBLIC METHODS - Registry-Specific Searches (Task 17)
+  // =========================================================================
+
+  /**
+   * Search GLEIF only - for companies with LEI
+   * Use when you specifically need LEI data
+   */
+  async searchGleifOnly(
+    companyName: string,
+    countryCode: string = 'DE'
+  ): Promise<HandelsregisterSearchResult> {
+    console.log(`[GLEIF] Searching for "${companyName}" in ${countryCode}`);
+    return this.searchGleifByName(companyName, countryCode);
+  }
+
+  /**
+   * Search Handelsregister.de only - for German commercial register data
+   * Use when you specifically need HRB/HRA data
+   */
+  async searchHandelsregisterOnly(
+    companyName: string,
+    _city?: string
+  ): Promise<HandelsregisterSearchResult> {
+    console.log(`[Handelsregister] Searching for "${companyName}"`);
+    try {
+      const bundesResults = await bundesApiService.search(companyName, { mode: 'all' });
+
+      if (bundesResults.length === 0) {
+        return {
+          status: 'not_found',
+          message: `No results in Handelsregister.de for "${companyName}"`,
+        };
+      }
+
+      // Find best match
+      const normalizedSearch = companyName.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const exactMatch = bundesResults.find(r => {
+        const normalizedName = r.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return normalizedName === normalizedSearch;
+      });
+
+      const match = exactMatch || bundesResults[0];
+      const courtMatch = match.court.match(/(?:Amtsgericht\s+)?(\w+)\s+(?:HRA|HRB|GnR|VR|PR)/i);
+      const courtName = courtMatch ? courtMatch[1] : 'Unknown';
+      const courtCode = this.getCourtCode(courtName);
+
+      const companyData: HandelsregisterCompanyData = {
+        registerNumber: `${match.registerType} ${match.registerNumber}`,
+        registerType: match.registerType as 'HRA' | 'HRB' | 'GnR' | 'PR' | 'VR',
+        registerCourt: courtName,
+        registerCourtCode: courtCode,
+        companyName: match.name,
+        status: match.statusCurrent ? 'Active' : 'Dissolved',
+        dataSource: 'handelsregister',
+        sourceUrl: `https://www.handelsregister.de/rp_web/search.xhtml`,
+      };
+
+      if (companyData.registerCourtCode) {
+        companyData.euid = this.generateEuid(
+          companyData.registerCourtCode,
+          companyData.registerType,
+          match.registerNumber
+        );
+      }
+
+      return {
+        status: bundesResults.length === 1 ? 'found' : 'multiple_matches',
+        companyData,
+        matches: bundesResults.length > 1 ? bundesResults.map(r => ({
+          registerNumber: `${r.registerType} ${r.registerNumber}`,
+          registerType: r.registerType as 'HRA' | 'HRB',
+          registerCourt: r.court,
+          companyName: r.name,
+          status: r.statusCurrent ? 'Active' : 'Dissolved',
+          dataSource: 'handelsregister' as const,
+        })) : undefined,
+        message: `Found in Handelsregister.de${bundesResults.length > 1 ? ` (${bundesResults.length} matches)` : ''}`,
+      };
+    } catch (error: any) {
+      console.error('[Handelsregister] Search failed:', error.message);
+      return {
+        status: 'error',
+        message: `Handelsregister search failed: ${error.message}`,
+      };
+    }
+  }
+
+  // =========================================================================
+  // COMBINED SEARCH METHODS (search both registries)
+  // =========================================================================
+
   /**
    * Search for a German company by name
-   * Uses GLEIF API first (free, reliable) then falls back to other sources
+   * Searches BOTH GLEIF and Handelsregister - returns first found result
+   * Note: These are independent registries, results may differ
    */
   async searchByCompanyName(
     companyName: string,

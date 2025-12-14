@@ -4202,6 +4202,60 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
           }
         } else {
           console.log('German registry data already exists for legal entity');
+
+          // Task 19: Generate EUID from existing HRB/HRA if EUID is missing
+          if (!existingTypes.has('EUID')) {
+            const existingHrb = existingIdentifiers.find(i =>
+              (i.identifier_type === 'HRB' || i.identifier_type === 'HRA') && i.identifier_value
+            );
+
+            if (existingHrb) {
+              // Get court code from german_registry_data
+              const { rows: grData } = await pool.query(`
+                SELECT register_court_code, register_type
+                FROM german_registry_data
+                WHERE legal_entity_id = $1 AND is_deleted = false
+                LIMIT 1
+              `, [legalentityid]);
+
+              if (grData.length > 0 && grData[0].register_court_code) {
+                const { HandelsregisterService } = await import('./services/handelsregisterService');
+                const hrService = new HandelsregisterService();
+
+                // Parse HRB number (e.g., "HRB 15884" -> { type: "HRB", number: "15884" })
+                const hrbMatch = existingHrb.identifier_value.match(/([A-Z]+)\s*(\d+)/i);
+                if (hrbMatch) {
+                  const registerType = hrbMatch[1].toUpperCase();
+                  const registerNumber = hrbMatch[2];
+
+                  const euid = hrService.generateEuid(
+                    grData[0].register_court_code,
+                    registerType,
+                    registerNumber
+                  );
+
+                  await pool.query(`
+                    INSERT INTO legal_entity_number (
+                      legal_entity_reference_id, legal_entity_id,
+                      identifier_type, identifier_value,
+                      validation_status, registry_name, registry_url,
+                      dt_created, dt_modified
+                    )
+                    VALUES ($1, $2, 'EUID', $3, 'GENERATED', 'BRIS', 'https://e-justice.europa.eu/', NOW(), NOW())
+                  `, [randomUUID(), legalentityid, euid]);
+
+                  results.push({
+                    identifier: 'EUID',
+                    status: 'added',
+                    value: euid,
+                    message: 'Generated from existing HRB/HRA and court code'
+                  });
+
+                  console.log(`Generated EUID ${euid} from existing HRB ${existingHrb.identifier_value}`);
+                }
+              }
+            }
+          }
         }
       } catch (hrError: any) {
         console.warn('German Handelsregister search failed:', hrError.message);
