@@ -3981,7 +3981,7 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
     // 8. German Handelsregister - For German companies (country_code = DE)
     // =========================================================================
     let germanRegistryFetched = false;
-    if (countryCode === 'DE' && !existingTypes.has('HRB') && !existingTypes.has('HRA')) {
+    if (countryCode === 'DE') {
       try {
         // Check if we already have German registry data
         const { rows: existingGermanRegistry } = await pool.query(`
@@ -3990,15 +3990,30 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
           LIMIT 1
         `, [legalentityid]);
 
-        if (existingGermanRegistry.length === 0 && companyName) {
-          console.log('Searching German Handelsregister for:', companyName);
+        if (existingGermanRegistry.length === 0) {
           const { HandelsregisterService } = await import('./services/handelsregisterService');
           const hrService = new HandelsregisterService();
+          let hrResult: any = null;
 
-          // Search by company name
-          const hrResult = await hrService.searchByCompanyName(companyName);
+          // Check if we have an existing HRB/HRA identifier to search by
+          const existingHrb = existingIdentifiers.find(i =>
+            (i.identifier_type === 'HRB' || i.identifier_type === 'HRA') && i.identifier_value
+          );
 
-          if (hrResult.status === 'found' && hrResult.companyData) {
+          if (existingHrb) {
+            // Search by existing HRB/HRA number
+            console.log('Searching German Handelsregister by register number:', existingHrb.identifier_value);
+            hrResult = await hrService.searchByRegisterNumber(
+              existingHrb.identifier_value,
+              existingHrb.registry_name || undefined
+            );
+          } else if (companyName) {
+            // Search by company name
+            console.log('Searching German Handelsregister for:', companyName);
+            hrResult = await hrService.searchByCompanyName(companyName);
+          }
+
+          if (hrResult?.status === 'found' && hrResult.companyData) {
             const hrData = hrResult.companyData;
             console.log('Found German company data:', hrData.companyName, hrData.registerNumber);
 
@@ -4027,7 +4042,7 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
               hrData.address?.street,
               hrData.address?.postalCode,
               hrData.address?.city,
-              hrData.address?.country || 'Germany',
+              hrData.address?.country || 'DE',
               hrData.address?.fullAddress,
               hrData.dataSource,
               hrData.sourceUrl,
@@ -4036,8 +4051,9 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
 
             germanRegistryFetched = true;
 
-            // Add HRB/HRA identifier if we have a valid register number
-            if (hrData.registerNumber && hrData.registerNumber !== 'Unknown') {
+            // Add HRB/HRA identifier if we have a valid register number and don't already have it
+            if (hrData.registerNumber && hrData.registerNumber !== 'Unknown' &&
+                !existingTypes.has('HRB') && !existingTypes.has('HRA')) {
               await pool.query(`
                 INSERT INTO legal_entity_number (
                   legal_entity_reference_id, legal_entity_id,
@@ -4110,14 +4126,14 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
             }
 
             console.log('Stored German registry data for:', hrData.companyName);
-          } else {
+          } else if (hrResult) {
             results.push({
               identifier: 'HRB',
               status: 'not_available',
               message: hrResult.message || 'Not found in Handelsregister'
             });
           }
-        } else if (existingGermanRegistry.length > 0) {
+        } else {
           console.log('German registry data already exists for legal entity');
         }
       } catch (hrError: any) {

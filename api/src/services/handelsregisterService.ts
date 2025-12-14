@@ -108,6 +108,7 @@ const COURT_CODES: Record<string, string> = {
   'Saarbrücken': 'B4101R',
   'Kiel': 'D1101R',
   'Lübeck': 'D1301R',
+  'Neuss': 'D4601R',
   'Rostock': 'E1103R',
   'Schwerin': 'E1201R',
   'Magdeburg': 'F1301R',
