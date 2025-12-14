@@ -24,6 +24,7 @@ import {
   AuthenticationTierSection,
   ContactsSection,
   DocumentVerificationSection,
+  GermanRegistrySection,
   IdentifiersSection,
   KvkRegistrySection,
   LeiRegistrySection,
@@ -47,7 +48,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
   const { handleError } = useApiError();
 
   // Use custom hook for all member data management
-  const { legalEntity, contacts, identifiers, hasKvkRegistryData, hasLeiRegistryData, hasPeppolRegistryData, hasViesRegistryData, loading, handlers } =
+  const { legalEntity, contacts, identifiers, hasKvkRegistryData, hasLeiRegistryData, hasPeppolRegistryData, hasViesRegistryData, hasGermanRegistryData, loading, handlers } =
     useMemberDetails(member.legal_entity_id);
 
   const handleUpdateCompany = async (data: typeof legalEntity) => {
@@ -159,6 +160,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
           {hasLeiRegistryData && <Tabs.Tab value="lei-registry">GLEIF</Tabs.Tab>}
           {hasPeppolRegistryData && <Tabs.Tab value="peppol-registry">Peppol</Tabs.Tab>}
           {hasViesRegistryData && <Tabs.Tab value="vies-registry">VIES</Tabs.Tab>}
+          {hasGermanRegistryData && <Tabs.Tab value="german-registry">Handelsregister</Tabs.Tab>}
         </Tabs.List>
 
         <Tabs.Panel value="company-details" pt="md">
@@ -251,6 +253,8 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
         {hasPeppolRegistryData && <PeppolRegistrySection legalEntity={legalEntity} />}
 
         {hasViesRegistryData && <ViesRegistrySection legalEntity={legalEntity} />}
+
+        {hasGermanRegistryData && <GermanRegistrySection legalEntity={legalEntity} />}
       </Tabs>
     </div>
   );

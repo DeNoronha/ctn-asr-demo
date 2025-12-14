@@ -267,3 +267,66 @@ export async function fetchViesData(
   );
   return response.data;
 }
+
+// =====================================================
+// GERMAN REGISTRY DATA (Handelsregister)
+// =====================================================
+
+export interface GermanRegistryData {
+  registry_data_id: string;
+  legal_entity_id: string;
+  register_number: string;
+  register_type: string;  // HRA, HRB, GnR, PR, VR
+  register_court?: string;
+  register_court_code?: string;
+  euid?: string;
+  company_name: string;
+  legal_form?: string;
+  legal_form_long?: string;
+  company_status?: string;
+  registration_date?: string;
+  dissolution_date?: string;
+  street?: string;
+  house_number?: string;
+  postal_code?: string;
+  city?: string;
+  country?: string;
+  full_address?: string;
+  business_purpose?: string;
+  share_capital?: string;
+  share_capital_currency?: string;
+  representatives?: Array<{
+    name: string;
+    role: string;
+    birthDate?: string;
+    residence?: string;
+    appointedDate?: string;
+  }>;
+  shareholders?: Array<{
+    name: string;
+    share?: string;
+    type?: string;
+  }>;
+  is_main_establishment?: boolean;
+  branch_count?: number;
+  vat_number?: string;
+  lei?: string;
+  data_source: string;
+  source_url?: string;
+  fetched_at: string;
+  last_verified_at?: string;
+}
+
+export interface GermanRegistryResponse {
+  hasData: boolean;
+  data?: GermanRegistryData;
+  message?: string;
+}
+
+export async function getGermanRegistryData(legalEntityId: string): Promise<GermanRegistryResponse> {
+  const axiosInstance = await getAuthenticatedAxios();
+  const response = await axiosInstance.get<GermanRegistryResponse>(
+    `/legal-entities/${legalEntityId}/german-registry`
+  );
+  return response.data;
+}

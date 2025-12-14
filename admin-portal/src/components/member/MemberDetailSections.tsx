@@ -15,6 +15,7 @@ import { EmptyState } from '../EmptyState';
 import { EndpointManagement } from '../EndpointManagement';
 import { IdentifiersManager } from '../IdentifiersManager';
 import { KvkDocumentUpload } from '../KvkDocumentUpload';
+import { GermanRegistryDetails } from '../GermanRegistryDetails';
 import { KvkRegistryDetails } from '../KvkRegistryDetails';
 import { LeiRegistryDetails } from '../LeiRegistryDetails';
 import { PeppolRegistryDetails } from '../PeppolRegistryDetails';
@@ -393,6 +394,35 @@ export const ViesRegistrySection: React.FC<ViesRegistrySectionProps> = ({ legalE
             return (
               <div className="info-section">
                 <h3>VIES Registry Data</h3>
+                <EmptyState message={es.message} hint={es.hint} />
+              </div>
+            );
+          })()
+        )}
+      </div>
+    </Tabs.Panel>
+  );
+};
+
+interface GermanRegistrySectionProps {
+  legalEntity: LegalEntity | null;
+}
+
+export const GermanRegistrySection: React.FC<GermanRegistrySectionProps> = ({ legalEntity }) => {
+  return (
+    <Tabs.Panel value="german-registry" pt="md">
+      <div className="tab-content">
+        {legalEntity ? (
+          <GermanRegistryDetails
+            // biome-ignore lint/style/noNonNullAssertion: legalEntity null-check performed in ternary guard above
+            legalEntityId={legalEntity.legal_entity_id!}
+          />
+        ) : (
+          (() => {
+            const es = getEmptyState('generic', 'noData');
+            return (
+              <div className="info-section">
+                <h3>German Registry Data</h3>
                 <EmptyState message={es.message} hint={es.hint} />
               </div>
             );

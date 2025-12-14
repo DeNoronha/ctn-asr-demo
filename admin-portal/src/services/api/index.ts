@@ -48,6 +48,7 @@ export {
   fetchPeppolData,
   getViesRegistryData,
   fetchViesData,
+  getGermanRegistryData,
 } from './legalEntities';
 export type {
   EnrichmentResult,
@@ -62,6 +63,8 @@ export type {
   ViesRegistryResponse,
   ViesFetchRequest,
   ViesFetchResponse,
+  GermanRegistryData,
+  GermanRegistryResponse,
 } from './legalEntities';
 
 // Export identifier operations

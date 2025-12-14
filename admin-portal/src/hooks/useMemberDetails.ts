@@ -31,6 +31,7 @@ interface UseMemberDetailsReturn {
   hasLeiRegistryData: boolean;
   hasPeppolRegistryData: boolean;
   hasViesRegistryData: boolean;
+  hasGermanRegistryData: boolean;
   loading: boolean;
   handlers: {
     updateLegalEntity: (data: LegalEntity) => Promise<void>;
@@ -61,6 +62,7 @@ interface UseMemberDetailsReturn {
     refreshLeiData: () => Promise<void>;
     refreshPeppolData: () => Promise<void>;
     refreshViesData: () => Promise<void>;
+    refreshGermanData: () => Promise<void>;
   };
 }
 
@@ -73,6 +75,7 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
   const [hasLeiRegistryData, setHasLeiRegistryData] = useState(false);
   const [hasPeppolRegistryData, setHasPeppolRegistryData] = useState(false);
   const [hasViesRegistryData, setHasViesRegistryData] = useState(false);
+  const [hasGermanRegistryData, setHasGermanRegistryData] = useState(false);
   const [loading, setLoading] = useState(false);
   const notification = useNotification();
 
@@ -160,6 +163,20 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
             }
           }
           setHasViesRegistryData(false);
+        }
+
+        // Check German registry data (non-blocking)
+        try {
+          const germanResponse = await apiV2.getGermanRegistryData(legalEntityId);
+          setHasGermanRegistryData(germanResponse.hasData);
+        } catch (germanError: unknown) {
+          if (germanError && typeof germanError === 'object' && 'response' in germanError) {
+            const axiosError = germanError as { response?: { status: number } };
+            if (axiosError.response?.status !== 404) {
+              logger.error('Error checking German registry data:', germanError);
+            }
+          }
+          setHasGermanRegistryData(false);
         }
       } catch (error) {
         logger.error('Failed to load legal entity data:', error);
@@ -393,6 +410,13 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
       } catch (_error) {
         setHasViesRegistryData(false);
       }
+
+      try {
+        const germanResponse = await apiV2.getGermanRegistryData(legalEntityId);
+        setHasGermanRegistryData(germanResponse.hasData);
+      } catch (_error) {
+        setHasGermanRegistryData(false);
+      }
     } catch (error) {
       logger.error('Failed to refresh all data:', error);
       throw error;
@@ -493,6 +517,20 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
     }
   };
 
+  // Handler for refreshing German registry data
+  const refreshGermanData = async (): Promise<void> => {
+    if (!legalEntityId) {
+      return;
+    }
+
+    try {
+      const response = await apiV2.getGermanRegistryData(legalEntityId);
+      setHasGermanRegistryData(response.hasData);
+    } catch (_error) {
+      setHasGermanRegistryData(false);
+    }
+  };
+
   return {
     legalEntity,
     contacts,
@@ -502,6 +540,7 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
     hasLeiRegistryData,
     hasPeppolRegistryData,
     hasViesRegistryData,
+    hasGermanRegistryData,
     loading,
     handlers: {
       updateLegalEntity,
@@ -519,6 +558,7 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
       refreshLeiData,
       refreshPeppolData,
       refreshViesData,
+      refreshGermanData,
     },
   };
 }

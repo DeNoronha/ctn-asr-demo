@@ -1954,6 +1954,108 @@ router.get('/v1/legal-entities/:legalentityid/kvk-registry', requireAuth, async 
   }
 });
 
+// ============================================================================
+// GERMAN REGISTRY DATA (Handelsregister)
+// ============================================================================
+router.get('/v1/legal-entities/:legalentityid/german-registry', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    // Fetch from german_registry_data table
+    const { rows: germanData } = await pool.query(`
+      SELECT
+        registry_data_id,
+        register_number,
+        register_type,
+        register_court,
+        register_court_code,
+        euid,
+        company_name,
+        legal_form,
+        legal_form_long,
+        company_status,
+        registration_date,
+        dissolution_date,
+        street,
+        house_number,
+        postal_code,
+        city,
+        country,
+        full_address,
+        business_purpose,
+        share_capital,
+        share_capital_currency,
+        representatives,
+        shareholders,
+        is_main_establishment,
+        branch_count,
+        vat_number,
+        lei,
+        data_source,
+        source_url,
+        fetched_at,
+        last_verified_at
+      FROM german_registry_data
+      WHERE legal_entity_id = $1 AND is_deleted = false
+      ORDER BY fetched_at DESC
+      LIMIT 1
+    `, [legalentityid]);
+
+    if (germanData.length > 0) {
+      return res.json(germanData[0]);
+    }
+
+    // Check if this is a German company
+    const { rows: entityData } = await pool.query(`
+      SELECT country_code FROM legal_entity
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    if (entityData.length === 0) {
+      return res.status(404).json({ error: 'Legal entity not found' });
+    }
+
+    if (entityData[0].country_code !== 'DE') {
+      return res.json({
+        hasData: false,
+        message: 'Not a German company. German registry data only available for DE entities.'
+      });
+    }
+
+    // Check for HRB/HRA identifier
+    const { rows: identifiers } = await pool.query(`
+      SELECT identifier_type, identifier_value
+      FROM legal_entity_number
+      WHERE legal_entity_id = $1
+        AND identifier_type IN ('HRB', 'HRA')
+        AND is_deleted = false
+      LIMIT 1
+    `, [legalentityid]);
+
+    if (identifiers.length > 0) {
+      return res.json({
+        hasData: false,
+        registerNumber: identifiers[0].identifier_value,
+        registerType: identifiers[0].identifier_type,
+        message: 'Register number found but detailed data not yet fetched. Click Enrich to fetch full registry data.'
+      });
+    }
+
+    return res.json({
+      hasData: false,
+      message: 'No German Handelsregister data available. Click Enrich to search for company data.'
+    });
+  } catch (error: any) {
+    console.error('Error fetching German registry data:', {
+      legalEntityId: req.params.legalentityid,
+      error: error.message,
+      stack: error.stack
+    });
+    res.status(500).json({ error: 'Failed to fetch German registry data', detail: error.message });
+  }
+});
+
 // Refresh address from existing KVK registry data (bezoekadres)
 router.post('/v1/legal-entities/:legalentityid/refresh-address-from-kvk', requireAuth, async (req: Request, res: Response) => {
   try {
@@ -3876,6 +3978,159 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
     }
 
     // =========================================================================
+    // 8. German Handelsregister - For German companies (country_code = DE)
+    // =========================================================================
+    let germanRegistryFetched = false;
+    if (countryCode === 'DE' && !existingTypes.has('HRB') && !existingTypes.has('HRA')) {
+      try {
+        // Check if we already have German registry data
+        const { rows: existingGermanRegistry } = await pool.query(`
+          SELECT registry_data_id FROM german_registry_data
+          WHERE legal_entity_id = $1 AND is_deleted = false
+          LIMIT 1
+        `, [legalentityid]);
+
+        if (existingGermanRegistry.length === 0 && companyName) {
+          console.log('Searching German Handelsregister for:', companyName);
+          const { HandelsregisterService } = await import('./services/handelsregisterService');
+          const hrService = new HandelsregisterService();
+
+          // Search by company name
+          const hrResult = await hrService.searchByCompanyName(companyName);
+
+          if (hrResult.status === 'found' && hrResult.companyData) {
+            const hrData = hrResult.companyData;
+            console.log('Found German company data:', hrData.companyName, hrData.registerNumber);
+
+            // Store in german_registry_data
+            await pool.query(`
+              INSERT INTO german_registry_data (
+                legal_entity_id, register_number, register_type, register_court,
+                register_court_code, euid, company_name, legal_form, legal_form_long,
+                company_status, registration_date, street, postal_code, city, country,
+                full_address, data_source, source_url, raw_response,
+                fetched_at, created_by, dt_created, dt_modified, is_deleted
+              )
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NOW(), 'enrichment', NOW(), NOW(), false)
+            `, [
+              legalentityid,
+              hrData.registerNumber,
+              hrData.registerType,
+              hrData.registerCourt,
+              hrData.registerCourtCode,
+              hrData.euid,
+              hrData.companyName,
+              hrData.legalForm,
+              hrData.legalFormLong,
+              hrData.status,
+              hrData.registrationDate,
+              hrData.address?.street,
+              hrData.address?.postalCode,
+              hrData.address?.city,
+              hrData.address?.country || 'Germany',
+              hrData.address?.fullAddress,
+              hrData.dataSource,
+              hrData.sourceUrl,
+              JSON.stringify(hrData.rawResponse)
+            ]);
+
+            germanRegistryFetched = true;
+
+            // Add HRB/HRA identifier if we have a valid register number
+            if (hrData.registerNumber && hrData.registerNumber !== 'Unknown') {
+              await pool.query(`
+                INSERT INTO legal_entity_number (
+                  legal_entity_reference_id, legal_entity_id,
+                  identifier_type, identifier_value, country_code,
+                  validation_status, registry_name, registry_url,
+                  dt_created, dt_modified
+                )
+                VALUES ($1, $2, $3, $4, 'DE', 'VERIFIED', 'Handelsregister', 'https://www.handelsregister.de/', NOW(), NOW())
+              `, [randomUUID(), legalentityid, hrData.registerType, hrData.registerNumber]);
+
+              results.push({
+                identifier: hrData.registerType,
+                status: 'added',
+                value: hrData.registerNumber,
+                message: 'Found via GLEIF/Handelsregister'
+              });
+            }
+
+            // Add EUID if generated
+            if (hrData.euid && !existingTypes.has('EUID')) {
+              await pool.query(`
+                INSERT INTO legal_entity_number (
+                  legal_entity_reference_id, legal_entity_id,
+                  identifier_type, identifier_value,
+                  validation_status, registry_name, registry_url,
+                  dt_created, dt_modified
+                )
+                VALUES ($1, $2, 'EUID', $3, 'GENERATED', 'BRIS', 'https://e-justice.europa.eu/', NOW(), NOW())
+              `, [randomUUID(), legalentityid, hrData.euid]);
+
+              results.push({
+                identifier: 'EUID',
+                status: 'added',
+                value: hrData.euid,
+                message: 'Generated from German register data'
+              });
+            }
+
+            // Update legal_entity with address if available
+            if (hrData.address?.city || hrData.address?.street) {
+              const updateFields: string[] = [];
+              const updateVals: any[] = [];
+              let idx = 1;
+
+              if (hrData.address.street) {
+                updateFields.push(`address_line1 = $${idx++}`);
+                updateVals.push(hrData.address.street);
+              }
+              if (hrData.address.postalCode) {
+                updateFields.push(`postal_code = $${idx++}`);
+                updateVals.push(hrData.address.postalCode);
+              }
+              if (hrData.address.city) {
+                updateFields.push(`city = $${idx++}`);
+                updateVals.push(hrData.address.city);
+              }
+              updateFields.push(`country_code = $${idx++}`);
+              updateVals.push('DE');
+
+              if (updateFields.length > 0) {
+                updateFields.push('dt_modified = NOW()');
+                updateVals.push(legalentityid);
+
+                await pool.query(`
+                  UPDATE legal_entity
+                  SET ${updateFields.join(', ')}
+                  WHERE legal_entity_id = $${idx} AND is_deleted = false
+                `, updateVals);
+              }
+            }
+
+            console.log('Stored German registry data for:', hrData.companyName);
+          } else {
+            results.push({
+              identifier: 'HRB',
+              status: 'not_available',
+              message: hrResult.message || 'Not found in Handelsregister'
+            });
+          }
+        } else if (existingGermanRegistry.length > 0) {
+          console.log('German registry data already exists for legal entity');
+        }
+      } catch (hrError: any) {
+        console.warn('German Handelsregister search failed:', hrError.message);
+        results.push({
+          identifier: 'HRB',
+          status: 'error',
+          message: hrError.message
+        });
+      }
+    }
+
+    // =========================================================================
     // Summary
     // =========================================================================
     const added = results.filter(r => r.status === 'added');
@@ -3891,7 +4146,8 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
       errors: errors.map(r => r.identifier),
       companyDetailsUpdated,
       updatedFields,
-      logoFetched
+      logoFetched,
+      germanRegistryFetched
     });
 
     res.json({
