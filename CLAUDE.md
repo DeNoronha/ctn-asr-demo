@@ -464,14 +464,23 @@ git status
 git add -A
 git commit -m "feat: descriptive message"
 
-# 3. Push to trigger pipeline
+# 3. CHECK FOR RUNNING BUILDS BEFORE PUSHING
+az pipelines build list --project "ASR" --top 3 --query "[].{status:status,result:result,definition:definition.name}" -o table
+# WAIT if any builds show "inProgress" status!
+
+# 4. Push to trigger pipeline (only if no builds running)
 git push origin main
 
-# 4. Wait ~2-3 minutes, verify deployment
+# 5. Wait ~2-3 minutes, verify deployment
 # Check: https://dev.azure.com/ctn-demo/ASR/_build
 
-# 5. Test deployed changes (TE agent pattern: API curl first, then UI)
+# 6. Test deployed changes (TE agent pattern: API curl first, then UI)
 ```
+
+**⚠️ CRITICAL: Never start a manual build or push while another build is running!**
+- Concurrent builds can cause deployment conflicts and race conditions
+- Always check `az pipelines build list` before triggering new builds
+- Wait for "completed" status before pushing new changes
 
 **Verification Scripts:**
 ```bash

@@ -438,3 +438,109 @@ export async function fetchLeiForOrganizationWithNameFallback(
     };
   }
 }
+
+/**
+ * Fetch LEI details directly from GLEIF API by LEI code
+ *
+ * @param lei - The 20-character LEI code
+ * @returns GLEIF LEI record or null if not found
+ */
+export async function fetchLeiByCode(lei: string): Promise<GLEIFLeiRecord | null> {
+  if (!isValidLeiFormat(lei)) {
+    console.error('Invalid LEI format:', lei);
+    return null;
+  }
+
+  const url = `${GLEIF_API_BASE_URL}/lei-records/${lei.toUpperCase()}`;
+
+  try {
+    const response = await axios.get<{ data: GLEIFLeiRecord }>(url, {
+      headers: {
+        'Accept': 'application/json',
+      },
+      timeout: 10000,
+    });
+
+    if (response.data.data) {
+      return response.data.data;
+    }
+    return null;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      console.log(`LEI ${lei} not found in GLEIF`);
+      return null;
+    }
+    console.error(`GLEIF API error for LEI ${lei}:`, error.message);
+    throw error;
+  }
+}
+
+/**
+ * Store GLEIF registry data in the database
+ *
+ * @param pool - PostgreSQL connection pool
+ * @param legalEntityId - UUID of the legal entity
+ * @param gleifRecord - Full GLEIF API record
+ */
+export async function storeGleifRegistryData(
+  pool: any,
+  legalEntityId: string,
+  gleifRecord: GLEIFLeiRecord
+): Promise<void> {
+  const entity = gleifRecord.attributes.entity;
+  const registration = gleifRecord.attributes.registration;
+
+  await pool.query(`
+    INSERT INTO gleif_registry_data (
+      legal_entity_id, lei, legal_name, legal_name_language,
+      jurisdiction, registered_as, registration_authority_id,
+      legal_address, headquarters_address,
+      entity_status, initial_registration_date, last_update_date,
+      next_renewal_date, registration_status, managing_lou,
+      raw_api_response, fetched_at, last_verified_at,
+      data_source, created_by, dt_created, dt_modified
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW(), NOW(), 'gleif_api', 'enrichment', NOW(), NOW())
+    ON CONFLICT (legal_entity_id) WHERE legal_entity_id IS NOT NULL
+    DO UPDATE SET
+      lei = EXCLUDED.lei,
+      legal_name = EXCLUDED.legal_name,
+      legal_name_language = EXCLUDED.legal_name_language,
+      jurisdiction = EXCLUDED.jurisdiction,
+      registered_as = EXCLUDED.registered_as,
+      registration_authority_id = EXCLUDED.registration_authority_id,
+      legal_address = EXCLUDED.legal_address,
+      headquarters_address = EXCLUDED.headquarters_address,
+      entity_status = EXCLUDED.entity_status,
+      initial_registration_date = EXCLUDED.initial_registration_date,
+      last_update_date = EXCLUDED.last_update_date,
+      next_renewal_date = EXCLUDED.next_renewal_date,
+      registration_status = EXCLUDED.registration_status,
+      managing_lou = EXCLUDED.managing_lou,
+      raw_api_response = EXCLUDED.raw_api_response,
+      last_verified_at = NOW(),
+      dt_modified = NOW()
+  `, [
+    legalEntityId,
+    gleifRecord.attributes.lei,
+    entity.legalName?.name || null,
+    null, // legal_name_language - not directly available in current structure
+    entity.legalAddress?.country || null,
+    entity.registeredAs || null,
+    entity.registrationAuthority?.id || null,
+    entity.legalAddress ? JSON.stringify(entity.legalAddress) : null,
+    entity.headquartersAddress ? JSON.stringify(entity.headquartersAddress) : null,
+    null, // entity_status - need to check if in response
+    registration?.registrationDate ? new Date(registration.registrationDate) : null,
+    registration?.lastUpdateDate ? new Date(registration.lastUpdateDate) : null,
+    null, // next_renewal_date
+    registration?.registrationStatus || null,
+    null, // managing_lou
+    JSON.stringify(gleifRecord)
+  ]);
+
+  console.log(`Stored GLEIF registry data for legal entity ${legalEntityId}, LEI: ${gleifRecord.attributes.lei}`);
+}
+
+// Re-export the GLEIFLeiRecord type for external use
+export type { GLEIFLeiRecord };

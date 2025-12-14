@@ -17,23 +17,53 @@ Tier 3 is there for Contargo, but it doesn't show up as such on the Dashboard. W
 
 ---
 
-Task 14:
+Task 14: ✅ COMPLETED (2025-12-14)
 
 Don't start a build manually before checking if a build is still running. Put this in CLAUDE.md
 
+**Solution:** Added build check instructions to CLAUDE.md in the "Standard Flow" section:
+- Added step 3: Check for running builds with `az pipelines build list`
+- Added warning: Never push while another build is running
+- Explains risks: deployment conflicts and race conditions
+
 ---
 
-Task 15:
+Task 15: ✅ COMPLETED (2025-12-14)
 
 Fetching a VAT number in NL can be done via RSIN. But in Germany it might be returned via the BundesAPI. Hence the logic RSIN --> VAT accommodate that. Aka RSIN is not mandatory for non-NL companies
 
+**Analysis:**
+- VIES: Can only **validate** existing VAT numbers (not search by name)
+- Handelsregister/BundesAPI: Commercial register - does NOT contain VAT data
+- GLEIF: LEI data only, no VAT numbers
+- For German companies: VAT must be provided manually
+
+**Solution:**
+1. Made RSIN enrichment conditional on `countryCode === 'NL'`
+2. Updated VAT error messages to be country-specific:
+   - NL: "Cannot derive VAT without RSIN (Dutch companies)"
+   - Non-NL: "VAT for {country} companies must be provided manually (cannot be auto-derived)"
+
+**Files Modified:**
+- `api/src/routes.ts` - Updated enrichment endpoint to skip RSIN for non-NL companies
+
 ---
 
-Task 16:
+Task 16: ✅ COMPLETED (2025-12-14)
 
 If LEI Found: HD52L5PJVBXJUUX8I539 then also fetch all other info of GLEIF registry. This error/message should not occur>> LEI identifier exists but detailed registry data has not been fetched yet.
 
 If LEI number is fetched/updated always fetch the detailed registry data
+
+**Solution:**
+1. Added `storeGleifRegistryData()` function to leiService.ts to store GLEIF registry data
+2. Added `fetchLeiByCode()` function to fetch LEI details directly by LEI code
+3. Modified enrichment endpoint: When LEI is found during enrichment, GLEIF registry data is now automatically stored
+4. Modified LEI registry endpoint: If no GLEIF data exists, it now auto-fetches from GLEIF API on-demand
+
+**Files Modified:**
+- `api/src/services/leiService.ts` - Added storeGleifRegistryData() and fetchLeiByCode() functions
+- `api/src/routes.ts` - Updated enrichment to store GLEIF data, updated lei-registry endpoint to fetch on-demand
 
 ---
 
@@ -49,3 +79,6 @@ Make sure that verifications and enrichments are stored as separate TS services.
 
 Task 19:
 make sure you can transform a HRB number to an EUID. Look at for instance Contargo Neuss record. HRB known. But no EUID. 
+
+Task 20:
+Push to remote and test thoroughly. 

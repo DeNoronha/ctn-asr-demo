@@ -1800,12 +1800,55 @@ router.get('/v1/legal-entities/:legalentityid/lei-registry', requireAuth, async 
     `, [legalentityid]);
 
     if (rows.length === 0) {
-      // Return basic info even if no stored GLEIF data
-      return res.json({
-        lei: leiCode,
-        hasData: false,
-        message: 'No GLEIF registry data stored. LEI identifier exists but detailed registry data has not been fetched yet.'
-      });
+      // Task 16: Auto-fetch GLEIF data when LEI exists but registry data is missing
+      console.log(`No GLEIF registry data for ${leiCode}, fetching from GLEIF API...`);
+      try {
+        const { fetchLeiByCode, storeGleifRegistryData } = await import('./services/leiService');
+        const gleifRecord = await fetchLeiByCode(leiCode);
+
+        if (gleifRecord) {
+          // Store the fetched data
+          await storeGleifRegistryData(pool, legalentityid, gleifRecord);
+
+          // Return the freshly fetched data
+          const entity = gleifRecord.attributes.entity;
+          const registration = gleifRecord.attributes.registration;
+
+          return res.json({
+            lei: leiCode,
+            hasData: true,
+            data: {
+              legalName: entity.legalName?.name,
+              legalAddress: entity.legalAddress,
+              headquartersAddress: entity.headquartersAddress,
+              registrationAuthority: entity.registrationAuthority?.id,
+              registrationNumber: entity.registeredAs,
+              registrationStatus: registration?.registrationStatus,
+              entityStatus: null,
+              initialRegistrationDate: registration?.registrationDate,
+              lastUpdateDate: registration?.lastUpdateDate,
+              nextRenewalDate: null,
+              managingLou: null,
+              rawResponse: gleifRecord
+            },
+            fetchedAt: new Date().toISOString(),
+            message: 'GLEIF data fetched on-demand'
+          });
+        } else {
+          return res.json({
+            lei: leiCode,
+            hasData: false,
+            message: 'LEI not found in GLEIF database'
+          });
+        }
+      } catch (gleifError: any) {
+        console.error('Failed to fetch GLEIF data on-demand:', gleifError.message);
+        return res.json({
+          lei: leiCode,
+          hasData: false,
+          message: `Failed to fetch GLEIF registry data: ${gleifError.message}`
+        });
+      }
     }
 
     const data = rows[0];
@@ -3377,10 +3420,11 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
 
     // =========================================================================
     // 1. RSIN - Get from stored KVK registry data or fetch fresh from KVK API
+    //    (Only applicable for Dutch companies - RSIN is a Dutch-specific identifier)
     // =========================================================================
     let rsin: string | null = null;
 
-    if (!existingTypes.has('RSIN')) {
+    if (countryCode === 'NL' && !existingTypes.has('RSIN')) {
       // First check kvk_registry_data table
       const { rows: kvkRegistry } = await pool.query(`
         SELECT rsin, raw_api_response
@@ -3529,10 +3573,12 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
       } else if (kvkNumber) {
         results.push({ identifier: 'RSIN', status: 'not_available', message: 'RSIN not found in KVK data' });
       }
-    } else {
+    } else if (countryCode === 'NL' && existingTypes.has('RSIN')) {
+      // Dutch company with existing RSIN
       rsin = getExistingValue('RSIN') || null;
       results.push({ identifier: 'RSIN', status: 'exists', value: rsin || undefined });
     }
+    // Note: For non-NL countries, RSIN is not applicable (Dutch-specific identifier)
 
     // =========================================================================
     // 2. VAT - Derive from RSIN (Dutch VAT = NL + RSIN + B01)
@@ -3621,8 +3667,18 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
       }
     } else if (existingTypes.has('VAT')) {
       results.push({ identifier: 'VAT', status: 'exists', value: getExistingValue('VAT') });
-    } else if (!rsin) {
-      results.push({ identifier: 'VAT', status: 'not_available', message: 'Cannot derive VAT without RSIN' });
+    } else if (!rsin && countryCode === 'NL') {
+      // Only show RSIN requirement for Dutch companies
+      results.push({ identifier: 'VAT', status: 'not_available', message: 'Cannot derive VAT without RSIN (Dutch companies)' });
+    } else if (!rsin && countryCode !== 'NL') {
+      // For non-NL EU countries, VAT cannot be auto-derived - must be provided manually
+      // VIES can only validate existing VAT numbers, not search by company name
+      // German Handelsregister does not contain VAT information
+      results.push({
+        identifier: 'VAT',
+        status: 'not_available',
+        message: `VAT for ${countryCode} companies must be provided manually (cannot be auto-derived)`
+      });
     }
 
     // =========================================================================
@@ -3711,6 +3767,17 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
               )
               VALUES ($1, $2, 'LEI', $3, 'VERIFIED', 'GLEIF', 'https://www.gleif.org/', NOW(), NOW())
             `, [randomUUID(), legalentityid, leiResult.lei]);
+
+            // Store GLEIF registry data if available (Task 16: Always fetch GLEIF data when LEI found)
+            if (leiResult.gleif_response) {
+              try {
+                const { storeGleifRegistryData } = await import('./services/leiService');
+                await storeGleifRegistryData(pool, legalentityid, leiResult.gleif_response);
+                console.log('Stored GLEIF registry data for LEI:', leiResult.lei);
+              } catch (gleifStoreError: any) {
+                console.warn('Failed to store GLEIF registry data:', gleifStoreError.message);
+              }
+            }
 
             results.push({ identifier: 'LEI', status: 'added', value: leiResult.lei, message: leiResult.message });
           } else {
