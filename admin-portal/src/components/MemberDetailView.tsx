@@ -126,7 +126,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
           <h1>{member.legal_name}</h1>
           <div className="header-badges">
             {getStatusBadge(member.status)}
-            {getMembershipBadge(member.membership_level)}
+            {/* Membership badge hidden - membership levels feature disabled */}
             {member.status?.toUpperCase() === 'PENDING' && (
               <RoleGuard allowedRoles={[UserRole.ASSOCIATION_ADMIN, UserRole.SYSTEM_ADMIN]}>
                 <Button
@@ -198,10 +198,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
                       <strong>Status</strong>
                       {getStatusBadge(member.status)}
                     </div>
-                    <div className="info-field">
-                      <strong>Membership Level</strong>
-                      {getMembershipBadge(member.membership_level)}
-                    </div>
+                    {/* Membership Level field hidden - membership levels feature disabled */}
                   </div>
                   {(() => {
                     const es = getEmptyState('generic', 'noData');

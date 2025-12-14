@@ -37,7 +37,7 @@ const fields = [
   { value: 'legal_entity_id', label: 'Organization ID' },
   { value: 'domain', label: 'Domain' },
   { value: 'status', label: 'Status' },
-  { value: 'membership_level', label: 'Membership Level' },
+  // membership_level removed - membership levels feature disabled
   { value: 'lei', label: 'LEI' },
   { value: 'kvk', label: 'KvK' },
   { value: 'created_at', label: 'Created Date' },

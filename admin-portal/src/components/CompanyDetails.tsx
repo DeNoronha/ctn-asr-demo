@@ -81,10 +81,7 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, identif
               <span>{company.status || '-'}</span>
             </div>
 
-            <div className="detail-row">
-              <div className="detail-label">Membership Level:</div>
-              <span>{company.membership_level || '-'}</span>
-            </div>
+            {/* Membership Level field hidden - membership levels feature disabled */}
           </div>
 
           <div className="detail-section">

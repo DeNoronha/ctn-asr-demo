@@ -96,10 +96,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               <strong>Status</strong>
               {getStatusBadge(member.status)}
             </div>
-            <div className="detail-field">
-              <strong>Membership Level</strong>
-              {getMembershipBadge(member.membership_level)}
-            </div>
+            {/* Membership Level field hidden - membership levels feature disabled */}
           </div>
         </div>
 

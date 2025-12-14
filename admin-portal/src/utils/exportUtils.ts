@@ -22,7 +22,7 @@ export const exportToPDF = (members: Member[], options: ExportOptions = {}) => {
     title = 'CTN Members Export',
     orientation = 'landscape',
     includeTimestamp = true,
-    columns = ['legal_name', 'legal_entity_id', 'domain', 'status', 'membership_level', 'lei', 'kvk'],
+    columns = ['legal_name', 'legal_entity_id', 'domain', 'status', 'lei', 'kvk'],
   } = options;
 
   // Create PDF document
@@ -51,7 +51,7 @@ export const exportToPDF = (members: Member[], options: ExportOptions = {}) => {
     legal_entity_id: 'Legal Entity ID',
     domain: 'Domain',
     status: 'Status',
-    membership_level: 'Membership',
+    // membership_level removed - feature disabled
     lei: 'LEI',
     kvk: 'KvK',
     created_at: 'Joined Date',
@@ -166,7 +166,7 @@ export const exportMemberDetailToPDF = (member: Member) => {
   addField('Legal Entity ID:', member.legal_entity_id);
   addField('Domain:', member.domain);
   addField('Status:', member.status);
-  addField('Membership Level:', member.membership_level);
+  // Membership Level removed - feature disabled
 
   y += 5;
 
@@ -250,7 +250,7 @@ export const exportToCSV = (members: Member[], filename?: string) => {
     'Legal Entity ID',
     'Domain',
     'Status',
-    'Membership Level',
+    // Membership Level removed - feature disabled
     'LEI',
     'KvK',
     'Joined Date',
@@ -264,7 +264,7 @@ export const exportToCSV = (members: Member[], filename?: string) => {
         member.legal_entity_id,
         member.domain,
         member.status,
-        member.membership_level,
+        // membership_level removed - feature disabled
         member.lei || '',
         member.kvk || '',
         member.created_at ? new Date(member.created_at).toLocaleDateString() : '',

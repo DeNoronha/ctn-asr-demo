@@ -51,10 +51,11 @@ const STATUS_COLORS: Record<string, string> = {
   TERMINATED: '#6b7280',
 };
 
-const MEMBERSHIP_COLORS: Record<string, string> = {
-  PREMIUM: COLORS.accent,
-  STANDARD: COLORS.primary,
-  BASIC: COLORS.info,
+const TIER_COLORS: Record<string, string> = {
+  TIER_3: COLORS.accent,
+  TIER_2: COLORS.primary,
+  TIER_1: COLORS.info,
+  NONE: '#6b7280',
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers }) => {
@@ -67,16 +68,12 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers }) => {
     const active = safeFilter(safeMembersList, (m) => m.status === 'ACTIVE').length;
     const pending = safeFilter(safeMembersList, (m) => m.status === 'PENDING').length;
     const suspended = safeFilter(safeMembersList, (m) => m.status === 'SUSPENDED').length;
-    const premium = safeFilter(safeMembersList, (m) => m.membership_level === 'PREMIUM').length;
-
     return {
       total,
       active,
       pending,
       suspended,
-      premium,
       activeRate: total > 0 ? ((active / total) * 100).toFixed(1) : '0',
-      premiumRate: total > 0 ? ((premium / total) * 100).toFixed(1) : '0',
     };
   }, [members, totalMembers]);
 
@@ -94,18 +91,19 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers }) => {
     }));
   }, [members]);
 
-  // Membership level distribution for Bar Chart
-  const membershipData = useMemo(() => {
-    const levelCounts: Record<string, number> = {};
+  // Authentication tier distribution for Bar Chart
+  const tierData = useMemo(() => {
+    const tierCounts: Record<string, number> = {};
     members.forEach((m) => {
-      const level = m.membership_level || 'STANDARD';
-      levelCounts[level] = (levelCounts[level] || 0) + 1;
+      // authentication_tier comes from API but isn't in Member type definition
+      const tier = (m as unknown as { authentication_tier?: string }).authentication_tier || 'NONE';
+      tierCounts[tier] = (tierCounts[tier] || 0) + 1;
     });
 
-    return Object.entries(levelCounts).map(([level, count]) => ({
-      name: level,
+    return Object.entries(tierCounts).map(([tier, count]) => ({
+      name: tier === 'NONE' ? 'Not Set' : tier.replace('_', ' '),
       members: count,
-      color: MEMBERSHIP_COLORS[level] || COLORS.primary,
+      color: TIER_COLORS[tier] || COLORS.primary,
     }));
   }, [members]);
 
@@ -204,24 +202,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers }) => {
           </Text>
         </Paper>
 
-        <Paper withBorder p="md" radius="md">
-          <Group justify="space-between">
-            <div>
-              <Text c="dimmed" tt="uppercase" fw={700} size="xs">
-                {t('dashboard.premiumMembers', 'Premium Members')}
-              </Text>
-              <Text fw={700} size="xl">
-                {stats.premium}
-              </Text>
-            </div>
-            <ThemeIcon color="orange" variant="light" size={38} radius="md">
-              <Text size="xl">⭐</Text>
-            </ThemeIcon>
-          </Group>
-          <Text c="dimmed" size="xs" mt="md">
-            {stats.premiumRate}% {t('dashboard.ofTotal', 'of total')}
-          </Text>
-        </Paper>
+{/* Premium Members card hidden - membership levels feature disabled */}
       </SimpleGrid>
 
       {/* Charts Section */}
@@ -262,24 +243,24 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers }) => {
           </div>
         </Paper>
 
-        {/* Membership Levels - Bar Chart */}
+        {/* Authentication Tiers - Bar Chart */}
         <Paper withBorder p="md" radius="md">
           <Title order={3} size="h4" mb="md">
-            {t('dashboard.membershipLevels', 'Membership Levels')}
+            {t('dashboard.authenticationTiers', 'Authentication Tiers')}
           </Title>
           <div
             role="img"
-            aria-label={`Bar chart showing membership levels: ${membershipData.map((d) => `${d.name} ${d.members} members`).join(', ')}`}
+            aria-label={`Bar chart showing authentication tiers: ${tierData.map((d) => `${d.name} ${d.members} members`).join(', ')}`}
           >
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={membershipData}>
+              <BarChart data={tierData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="members" fill={COLORS.primary}>
-                  {membershipData.map((entry) => (
+                  {tierData.map((entry) => (
                     <Cell key={`cell-${entry.name}`} fill={entry.color} />
                   ))}
                 </Bar>

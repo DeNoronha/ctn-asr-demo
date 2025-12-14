@@ -158,9 +158,7 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
             <div className={`status-badge ${getStatusColor(memberData.status)}`}>
               {memberData.status}
             </div>
-            <p style={{ marginTop: '0.5rem', color: 'var(--ctn-text-light)', fontSize: '0.9rem' }}>
-              Membership: {memberData.membershipLevel || 'Basic'}
-            </p>
+            {/* Membership level display hidden - membership levels feature disabled */}
           </div>
 
           {tierInfo && (

@@ -143,24 +143,6 @@ export const useMembersGridColumns = ({
       defaultToggle: false, // Hidden by default
       render: (member) => <div>{sanitizeGridCell(member.domain || '')}</div>,
     },
-    {
-      accessor: 'membership_level',
-      title: getColumnTitle('membership_level'),
-      width: 120,
-      toggleable: true,
-      resizable: true,
-      sortable: true,
-      defaultToggle: false, // Hidden by default
-      render: (member) => (
-        <output
-          className="membership-badge"
-          style={{ backgroundColor: getMembershipColor(member.membership_level) }}
-          title={membershipTooltips[member.membership_level] || 'Membership level'}
-          aria-label={`Membership: ${member.membership_level}`}
-        >
-          {member.membership_level}
-        </output>
-      ),
-    },
+    /* membership_level column hidden - membership levels feature disabled */
   ];
 };

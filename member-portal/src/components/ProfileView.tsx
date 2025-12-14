@@ -79,10 +79,7 @@ export const ProfileView: React.FC<ComponentProps> = ({
                   {memberData.status}
                 </span>
               </div>
-              <div className="info-item">
-                <strong>Membership Level:</strong>
-                <span>{memberData.membershipLevel || 'Basic'}</span>
-              </div>
+              {/* Membership Level field hidden - membership levels feature disabled */}
               <div className="info-item">
                 <strong>Member Since:</strong>
                 <span>{new Date(memberData.createdAt).toLocaleDateString()}</span>
