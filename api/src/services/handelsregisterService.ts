@@ -1,8 +1,11 @@
 import axios from 'axios';
+import { bundesApiService } from './bundesApiService';
 
 // ============================================================================
 // German Handelsregister Service
 // Fetches company data from the German Commercial Register
+// Primary: GLEIF API (companies with LEI)
+// Fallback: BundesAPI (official Handelsregister.de scraping)
 // ============================================================================
 
 /**
@@ -141,6 +144,64 @@ export class HandelsregisterService {
       console.warn('GLEIF search failed:', error.message);
     }
 
+    // Try BundesAPI (official Handelsregister.de) as fallback
+    try {
+      console.log('Trying BundesAPI for:', companyName);
+      const bundesResults = await bundesApiService.search(companyName, { mode: 'all' });
+
+      if (bundesResults.length > 0) {
+        // Find best match (prefer exact name match)
+        const normalizedSearch = companyName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const exactMatch = bundesResults.find(r => {
+          const normalizedName = r.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+          return normalizedName === normalizedSearch;
+        });
+
+        const match = exactMatch || bundesResults[0];
+
+        // Extract court name from court field (e.g., "Amtsgericht Neuss HRB 15884" -> "Neuss")
+        const courtMatch = match.court.match(/(?:Amtsgericht\s+)?(\w+)\s+(?:HRA|HRB|GnR|VR|PR)/i);
+        const courtName = courtMatch ? courtMatch[1] : 'Unknown';
+        const courtCode = this.getCourtCode(courtName);
+
+        const companyData: HandelsregisterCompanyData = {
+          registerNumber: `${match.registerType} ${match.registerNumber}`,
+          registerType: match.registerType as 'HRA' | 'HRB' | 'GnR' | 'PR' | 'VR',
+          registerCourt: courtName,
+          registerCourtCode: courtCode,
+          companyName: match.name,
+          status: match.statusCurrent ? 'Active' : 'Dissolved',
+          dataSource: 'handelsregister',
+          sourceUrl: `https://www.handelsregister.de/rp_web/search.xhtml`,
+        };
+
+        // Generate EUID if we have court code
+        if (companyData.registerCourtCode) {
+          companyData.euid = this.generateEuid(
+            companyData.registerCourtCode,
+            companyData.registerType,
+            match.registerNumber
+          );
+        }
+
+        return {
+          status: bundesResults.length === 1 ? 'found' : 'multiple_matches',
+          companyData,
+          matches: bundesResults.length > 1 ? bundesResults.map(r => ({
+            registerNumber: `${r.registerType} ${r.registerNumber}`,
+            registerType: r.registerType as 'HRA' | 'HRB',
+            registerCourt: r.court,
+            companyName: r.name,
+            status: r.statusCurrent ? 'Active' : 'Dissolved',
+            dataSource: 'handelsregister' as const,
+          })) : undefined,
+          message: `Company found via Handelsregister.de${bundesResults.length > 1 ? ` (${bundesResults.length} matches)` : ''}`,
+        };
+      }
+    } catch (error: any) {
+      console.warn('BundesAPI search failed:', error.message);
+    }
+
     // Return not found if no results
     return {
       status: 'not_found',
@@ -178,7 +239,52 @@ export class HandelsregisterService {
       console.warn('GLEIF search by register number failed:', error.message);
     }
 
-    // Create basic company data from what we have
+    // Try BundesAPI (official Handelsregister.de) as fallback
+    try {
+      console.log('Trying BundesAPI for register number:', registerNumber);
+      const bundesResult = await bundesApiService.searchByRegisterNumber(
+        parsed.type,
+        parsed.number,
+        registerCourt
+      );
+
+      if (bundesResult) {
+        // Extract court name from court field
+        const courtMatch = bundesResult.court.match(/(?:Amtsgericht\s+)?(\w+)\s+(?:HRA|HRB|GnR|VR|PR)/i);
+        const courtName = courtMatch ? courtMatch[1] : registerCourt || 'Unknown';
+        const courtCode = this.getCourtCode(courtName);
+
+        const companyData: HandelsregisterCompanyData = {
+          registerNumber: registerNumber,
+          registerType: parsed.type as 'HRA' | 'HRB',
+          registerCourt: courtName,
+          registerCourtCode: courtCode,
+          companyName: bundesResult.name,
+          status: bundesResult.statusCurrent ? 'Active' : 'Dissolved',
+          dataSource: 'handelsregister',
+          sourceUrl: `https://www.handelsregister.de/rp_web/search.xhtml`,
+        };
+
+        // Generate EUID if we have court code
+        if (companyData.registerCourtCode) {
+          companyData.euid = this.generateEuid(
+            companyData.registerCourtCode,
+            companyData.registerType,
+            parsed.number
+          );
+        }
+
+        return {
+          status: 'found',
+          companyData,
+          message: 'Company found via Handelsregister.de',
+        };
+      }
+    } catch (error: any) {
+      console.warn('BundesAPI search by register number failed:', error.message);
+    }
+
+    // Create basic company data from what we have (last resort)
     const basicData: HandelsregisterCompanyData = {
       registerNumber: registerNumber,
       registerType: parsed.type as 'HRA' | 'HRB',

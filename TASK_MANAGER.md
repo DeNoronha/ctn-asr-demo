@@ -277,4 +277,22 @@ function generateGermanEUID(courtCode: string, registerType: 'HRA' | 'HRB', regi
 
 
 
+Task 13:
+/Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-14 om 13.32.12.png /Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-14 om 13.32.21.png 
+
+Tier 3 is there for Contargo, but it doesn't show up as such on the Dashboard. Wrong field again?
+
+Task 14:
+Don't start a build manually before checking if a build is still running. Put this in CLAUDE.md
+
+Task 15:
+
+Fetching a VAT number in NL can be done via RSIN. But in Germany it might be returned bia the BundesAPI. Hence the logic RSIN --> VAT accomodate that. Aka RSIN is not mandatory for non-NL companies
+
+Task 16:
+If LEI Found: HD52L5PJVBXJUUX8I539 then also fetch all other info of GLEIF registry. This error/message should not occur>> LEI identifier exists but detailed registry data has not been fetched yet.
+
+If LEI number is fetched/updated always fetch the detailed registry data
+
+
 
