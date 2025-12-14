@@ -163,17 +163,117 @@ I don't like COALESCE(len.country_code, lent.country_scope). That defeats the pu
 New task
 Make sure country_scope is not Null. EORI, EUID >> EU. VAT, DUNS >> GLOBAL etc.
 
-New task
+Task 12: ✅ COMPLETED (2025-12-14)
 
-Can you look for alternatives for a CoC for German companies. Important is that we fetch the CoC number of german companies. Convert it to EUID format. LEI and VAT/VIES number are also needed. Ideally we fetch via (free) API's. Some suggestions.
+**German CoC Alternatives Research**
 
-https://opencorporates.com/companies/de/R1102_HRB15884
+Can you look for alternatives for a CoC for German companies. Important is that we fetch the CoC number of german companies. Convert it to EUID format. LEI and VAT/VIES number are also needed. Ideally we fetch via (free) API's.
 
-https://e-justice.europa.eu/topics/registers-business-insolvency-land/business-registers-search-company-eu/general-information-find-company_en
+---
 
-https://www.unternehmensregister.de/en/search?areas=all&companyName=Contargo&searchToken=Xqcu6naeActY4WedeA1b9UeKkWjOhDeDFxzHMvYaYBfuP7tU8jT85e33_wuQ6XURRBG7rffWzUzPu-9_-KmWtCBBqjKmCSHGwKhktDSE3Zd-K6vEKrePPXdTnmoEFv8zFeMh-MUIpPtDSfKyk0lcqwBUFjSLoR0agdxH900femt7Y4bsGPn5BvjKK78N-d87iQA3mzJx
+## German Business Register Landscape
 
-# German Transparency Register?
+Germany has **3 separate systems** with overlapping data:
+1. **Handelsregister** - Commercial register (HRA/HRB numbers) maintained by 150 local courts
+2. **Unternehmensregister** - Central online platform consolidating data from multiple sources
+3. **Transparenzregister** - Beneficial ownership register (restricted access since 2022)
+
+### EUID Format for Germany
+Format: `DE{CourtCode}.{RegisterType}{Number}`
+Example: `DEK1101R.HRB116737` (DE = Germany, K1101R = Hamburg court, HRB116737 = register number)
+
+---
+
+## FREE API Options
+
+### 1. **bundesAPI/handelsregister** (Open Source) ⭐ RECOMMENDED
+- **URL:** https://github.com/bundesAPI/handelsregister
+- **Cost:** FREE (open source Python CLI)
+- **Data:** Company name, HRB/HRA number, court, legal form, address
+- **Rate Limit:** 60 requests/hour (per German law)
+- **Installation:**
+  ```bash
+  git clone https://github.com/bundesAPI/handelsregister.git
+  poetry install
+  poetry run python handelsregister.py -s "Contargo" -so all
+  ```
+- **Pros:** Direct access to official register, no API key needed
+- **Cons:** Rate limited, requires scraping approach
+
+### 2. **GLEIF LEI API** (Legal Entity Identifier) ⭐ RECOMMENDED
+- **URL:** https://www.gleif.org/en/lei-data/gleif-api
+- **Cost:** FREE (no registration required)
+- **Data:** LEI, legal name, addresses, parent/child relationships, registration authority
+- **Features:** Fuzzy search, BIC/ISIN mapping, corporate structure
+- **Example:** Search "Contargo" → Get LEI + linked HRB number
+- **Pros:** Official, comprehensive, includes corporate ownership
+- **Cons:** Only companies with LEI (mainly financial sector)
+
+### 3. **VIES VAT Validation** (European Commission)
+- **URL:** https://ec.europa.eu/taxation_customs/vies/
+- **Cost:** FREE
+- **Data:** VAT number validation, company name, address
+- **Format:** German VAT = `DE` + 9 digits (e.g., `DE123456789`)
+- **Pros:** Official EU service, real-time validation
+- **Cons:** Limited data (no HRB number)
+
+### 4. **BRIS / European e-Justice Portal**
+- **URL:** https://webgate.ec.europa.eu/e-justice/searchBris.do
+- **Cost:** FREE for basic data (name, type, seat, registration number)
+- **Data:** Company search across all 27 EU member states + EEA
+- **Pros:** Cross-border search, EUID format
+- **Cons:** Manual interface, no public API (Open BRIS at openbris.eu exists but limited)
+
+### 5. **OpenCorporates**
+- **URL:** https://api.opencorporates.com/
+- **Cost:** FREE for public benefit projects (academics, NGOs, journalists)
+- **Commercial:** Requires paid subscription
+- **Data:** 200M+ companies worldwide, German HRB/HRA data
+- **Pros:** Largest open database, good API
+- **Cons:** Commercial use requires license
+
+---
+
+## PAID API Options
+
+| Provider | Cost | Notes |
+|----------|------|-------|
+| **handelsregister.ai** | Paid | Daily updated, structured data, fast |
+| **North Data** | €500/month | 5000 free requests/month, comprehensive |
+| **Kausate/OpenRegisters** | Paid | REST API access |
+| **Company Start DE** | Paid | OpenAPI integration |
+
+---
+
+## Recommendation for Implementation
+
+**Phase 1 (FREE):**
+1. **LEI Lookup via GLEIF API** - For companies with LEI, get full corporate data
+2. **VIES VAT Validation** - Validate German VAT numbers
+3. **bundesAPI Script** - For HRB number lookup (rate limited)
+
+**Phase 2 (If budget allows):**
+- **North Data** (€500/month) or **handelsregister.ai** for production-grade API access
+
+**EUID Generation Logic:**
+```typescript
+// German EUID format: DE{CourtCode}.{RegisterType}{Number}
+function generateGermanEUID(courtCode: string, registerType: 'HRA' | 'HRB', registerNumber: string): string {
+  return `DE${courtCode}.${registerType}${registerNumber}`;
+}
+// Example: generateGermanEUID('K1101R', 'HRB', '116737') → 'DEK1101R.HRB116737'
+```
+
+---
+
+## Sources
+- [Kyckr German Business Register Guide](https://www.kyckr.com/blog/german-business-register-2025-update)
+- [bundesAPI/handelsregister GitHub](https://github.com/bundesAPI/handelsregister)
+- [GLEIF LEI API](https://www.gleif.org/en/lei-data/gleif-api)
+- [VIES VAT Validation](https://ec.europa.eu/taxation_customs/vies/)
+- [European e-Justice BRIS](https://webgate.ec.europa.eu/e-justice/searchBris.do)
+- [OpenCorporates API](https://api.opencorporates.com/)
+- [North Data](https://www.northdata.com/_data)
 
 
 
