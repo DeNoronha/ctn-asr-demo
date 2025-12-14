@@ -200,11 +200,13 @@ else
     echo -e "${YELLOW}SKIP: No endpoint found to test${NC}"
 fi
 
-# Test with invalid body
-test_endpoint "PATCH /endpoints/:id/toggle (bad request)" "PATCH" \
-    "$API_BASE_URL/api/v1/endpoints/$ENDPOINT_ID/toggle" \
-    '{"is_active": "not-boolean"}' \
-    "400"
+# Test with invalid body (only if we have a valid endpoint to test against)
+if [ -n "$ENDPOINT_ID" ]; then
+    test_endpoint "PATCH /endpoints/:id/toggle (bad request)" "PATCH" \
+        "$API_BASE_URL/api/v1/endpoints/$ENDPOINT_ID/toggle" \
+        '{"is_active": "not-boolean"}' \
+        "400"
+fi
 
 # Test with invalid ID
 test_endpoint "PATCH /endpoints/:id/toggle (404)" "PATCH" \
