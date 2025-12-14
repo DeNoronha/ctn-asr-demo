@@ -52,10 +52,13 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const TIER_COLORS: Record<string, string> = {
-  TIER_3: COLORS.accent,
-  TIER_2: COLORS.primary,
-  TIER_1: COLORS.info,
-  NONE: '#6b7280',
+  '3': COLORS.accent,      // Tier 3 - highest
+  '2': COLORS.primary,     // Tier 2 - medium
+  '1': COLORS.info,        // Tier 1 - basic
+  'Tier 3': COLORS.accent,
+  'Tier 2': COLORS.primary,
+  'Tier 1': COLORS.info,
+  'Not Set': '#6b7280',
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers }) => {
@@ -95,13 +98,14 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers }) => {
   const tierData = useMemo(() => {
     const tierCounts: Record<string, number> = {};
     members.forEach((m) => {
-      // authentication_tier comes from API but isn't in Member type definition
-      const tier = (m as unknown as { authentication_tier?: string }).authentication_tier || 'NONE';
+      // authentication_tier is a number (1, 2, or 3) or null
+      const tierNum = (m as unknown as { authentication_tier?: number | null }).authentication_tier;
+      const tier = tierNum ? `Tier ${tierNum}` : 'Not Set';
       tierCounts[tier] = (tierCounts[tier] || 0) + 1;
     });
 
     return Object.entries(tierCounts).map(([tier, count]) => ({
-      name: tier === 'NONE' ? 'Not Set' : tier.replace('_', ' '),
+      name: tier,
       members: count,
       color: TIER_COLORS[tier] || COLORS.primary,
     }));

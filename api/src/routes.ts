@@ -89,7 +89,7 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
     // Use vw_legal_entities view for member listing
     let query = `
       SELECT legal_entity_id, primary_legal_name as legal_name, kvk, lei, euid, eori, duns, domain, status, membership_level,
-             dt_created as created_at, metadata, contact_count, endpoint_count
+             authentication_tier, authentication_method, dt_created as created_at, metadata, contact_count, endpoint_count
       FROM vw_legal_entities
       WHERE 1=1
     `;
@@ -156,7 +156,7 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
     // Use vw_legal_entities view for member listing
     let query = `
       SELECT legal_entity_id, primary_legal_name as legal_name, kvk, lei, euid, eori, duns, domain, status, membership_level,
-             dt_created as created_at, metadata, contact_count, endpoint_count
+             authentication_tier, authentication_method, dt_created as created_at, metadata, contact_count, endpoint_count
       FROM vw_legal_entities
       WHERE 1=1
     `;
