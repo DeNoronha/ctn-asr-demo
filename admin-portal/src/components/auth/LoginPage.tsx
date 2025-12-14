@@ -49,7 +49,7 @@ export const LoginPage: React.FC = () => {
             <ul>
               <li>All users must register via Member Portal first</li>
               <li>Multi-Factor Authentication (MFA) is required</li>
-              <li>Cloud-based Azure Entra ID authentication</li>
+              <li>Cloud-based Keycloak authentication</li>
             </ul>
           </div>
         </div>
@@ -69,7 +69,7 @@ export const LoginPage: React.FC = () => {
           disabled={isLoading}
           loading={isLoading}
         >
-          {isLoading ? 'Signing in...' : 'Sign in with Microsoft'}
+          {isLoading ? 'Signing in...' : 'Sign in with Keycloak'}
         </Button>
 
         <div className="login-footer">
