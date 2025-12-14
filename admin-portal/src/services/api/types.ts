@@ -159,6 +159,8 @@ export interface LegalEntity {
   domain?: string;
   status?: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'TERMINATED';
   membership_level?: 'BASIC' | 'FULL' | 'PREMIUM';
+  authentication_tier?: number; // 1, 2, or 3
+  authentication_method?: string;
   metadata?: Metadata;
   dt_created?: string;
   dt_modified?: string;

@@ -12,7 +12,7 @@ import { useApiError } from '../hooks/useApiError';
 import { useMemberDetails } from '../hooks/useMemberDetails';
 import { type Member, api } from '../services/api';
 import { apiV2 } from "../services/api";
-import { getMembershipColor, getStatusColor } from '../utils/colors';
+import { getStatusColor, getTierColor } from '../utils/colors';
 import { getEmptyState } from '../utils/emptyStates';
 import { logger } from '../utils/logger';
 import { CompanyDetails } from './CompanyDetails';
@@ -107,10 +107,11 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
     );
   };
 
-  const getMembershipBadge = (level: string) => {
+  const getTierBadge = (tier: number | undefined) => {
+    if (!tier) return null;
     return (
-      <span className="membership-badge" style={{ backgroundColor: getMembershipColor(level) }}>
-        {level}
+      <span className="tier-badge" style={{ backgroundColor: getTierColor(tier) }}>
+        Tier {tier}
       </span>
     );
   };
@@ -126,7 +127,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
           <h1>{member.legal_name}</h1>
           <div className="header-badges">
             {getStatusBadge(member.status)}
-            {/* Membership badge hidden - membership levels feature disabled */}
+            {getTierBadge(legalEntity?.authentication_tier)}
             {member.status?.toUpperCase() === 'PENDING' && (
               <RoleGuard allowedRoles={[UserRole.ASSOCIATION_ADMIN, UserRole.SYSTEM_ADMIN]}>
                 <Button

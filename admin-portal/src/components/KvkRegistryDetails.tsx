@@ -15,6 +15,8 @@ import {
   CheckCircle,
   ExternalLink,
   FileText,
+  Globe,
+  Hash,
   MapPin,
   Users,
 } from './icons';
@@ -59,6 +61,7 @@ interface KvkRegistryData {
   };
   formal_registration_date?: string;
   material_registration_date?: string;
+  material_end_date?: string;
   company_status?: string;
   addresses?: KvkAddress[];
   sbi_activities?: Array<{
@@ -67,6 +70,8 @@ interface KvkRegistryData {
     indHoofdactiviteit: string;
   }>;
   total_employees?: number;
+  fulltime_employees?: number;
+  parttime_employees?: number;
   kvk_profile_url?: string;
   establishment_profile_url?: string;
   fetched_at: string;
@@ -79,6 +84,16 @@ interface KvkRegistryData {
   primary_trade_name?: string;
   rechtsvorm?: string;
   total_branches?: number;
+  commercial_branches?: number;
+  non_commercial_branches?: number;
+  ind_hoofdvestiging?: string;
+  ind_commerciele_vestiging?: string;
+  ind_non_mailing?: string;
+  websites?: string[];
+  geo_data?: {
+    latitude?: number;
+    longitude?: number;
+  };
 }
 
 interface KvkRegistryDetailsProps {
@@ -201,17 +216,37 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
                     <span className="info-label">KvK Number:</span>
                     <span className="info-value">{registryData.kvk_number}</span>
                   </div>
+                  {registryData.vestigingsnummer && (
+                    <div className="info-row">
+                      <span className="info-label">Vestigingsnummer:</span>
+                      <span className="info-value">{registryData.vestigingsnummer}</span>
+                    </div>
+                  )}
+                  {registryData.rsin && (
+                    <div className="info-row">
+                      <span className="info-label">RSIN:</span>
+                      <span className="info-value">{registryData.rsin}</span>
+                    </div>
+                  )}
                   <div className="info-row">
                     <span className="info-label">Official Name:</span>
                     <span className="info-value">{registryData.company_name}</span>
                   </div>
+                  {registryData.statutory_name && registryData.statutory_name !== registryData.company_name && (
+                    <div className="info-row">
+                      <span className="info-label">Statutory Name:</span>
+                      <span className="info-value">{registryData.statutory_name}</span>
+                    </div>
+                  )}
                   {/* Support both Dutch array format and English object format for trade names */}
                   {registryData.trade_names && (
                     Array.isArray(registryData.trade_names) ? (
                       registryData.trade_names.length > 0 && (
                         <div className="info-row">
-                          <span className="info-label">Trade Name:</span>
-                          <span className="info-value">{(registryData.trade_names as KvkTradeName[])[0]?.naam}</span>
+                          <span className="info-label">Trade Name{registryData.trade_names.length > 1 ? 's' : ''}:</span>
+                          <span className="info-value">
+                            {(registryData.trade_names as KvkTradeName[]).map(tn => tn.naam).join(', ')}
+                          </span>
                         </div>
                       )
                     ) : (
@@ -229,16 +264,28 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
                       <span className="info-value">{registryData.legal_form}</span>
                     </div>
                   )}
-                  {registryData.total_employees !== null &&
-                    registryData.total_employees !== undefined && (
-                      <div className="info-row">
-                        <span className="info-label">Employees:</span>
-                        <span className="info-value">
-                          <Users size={14} />
-                          {registryData.total_employees}
-                        </span>
-                      </div>
-                    )}
+                  {registryData.rechtsvorm && registryData.rechtsvorm !== registryData.legal_form && (
+                    <div className="info-row">
+                      <span className="info-label">Rechtsvorm:</span>
+                      <span className="info-value">{registryData.rechtsvorm}</span>
+                    </div>
+                  )}
+                  {registryData.ind_hoofdvestiging && (
+                    <div className="info-row">
+                      <span className="info-label">Main Establishment:</span>
+                      <span className="info-value">
+                        {registryData.ind_hoofdvestiging === 'Ja' ? 'Yes' : 'No'}
+                      </span>
+                    </div>
+                  )}
+                  {registryData.ind_commerciele_vestiging && (
+                    <div className="info-row">
+                      <span className="info-label">Commercial:</span>
+                      <span className="info-value">
+                        {registryData.ind_commerciele_vestiging === 'Ja' ? 'Yes' : 'No'}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>
@@ -284,6 +331,60 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
                 </div>
               </div>
             </Card>
+
+            {/* Employees & Branches Card - only show if data available */}
+            {(registryData.total_employees !== null && registryData.total_employees !== undefined) ||
+             registryData.fulltime_employees || registryData.parttime_employees ||
+             registryData.total_branches ? (
+              <Card withBorder shadow="sm" padding="lg">
+                <div className="card-header">
+                  <div className="card-title">
+                    <Users size={20} />
+                    Employees & Branches
+                  </div>
+                </div>
+                <div className="card-body">
+                  <div className="info-table">
+                    {registryData.total_employees !== null && registryData.total_employees !== undefined && (
+                      <div className="info-row">
+                        <span className="info-label">Total Employees:</span>
+                        <span className="info-value">{registryData.total_employees}</span>
+                      </div>
+                    )}
+                    {registryData.fulltime_employees !== null && registryData.fulltime_employees !== undefined && (
+                      <div className="info-row">
+                        <span className="info-label">Full-time:</span>
+                        <span className="info-value">{registryData.fulltime_employees}</span>
+                      </div>
+                    )}
+                    {registryData.parttime_employees !== null && registryData.parttime_employees !== undefined && (
+                      <div className="info-row">
+                        <span className="info-label">Part-time:</span>
+                        <span className="info-value">{registryData.parttime_employees}</span>
+                      </div>
+                    )}
+                    {registryData.total_branches !== null && registryData.total_branches !== undefined && (
+                      <div className="info-row">
+                        <span className="info-label">Total Branches:</span>
+                        <span className="info-value">{registryData.total_branches}</span>
+                      </div>
+                    )}
+                    {registryData.commercial_branches !== null && registryData.commercial_branches !== undefined && (
+                      <div className="info-row">
+                        <span className="info-label">Commercial:</span>
+                        <span className="info-value">{registryData.commercial_branches}</span>
+                      </div>
+                    )}
+                    {registryData.non_commercial_branches !== null && registryData.non_commercial_branches !== undefined && (
+                      <div className="info-row">
+                        <span className="info-label">Non-commercial:</span>
+                        <span className="info-value">{registryData.non_commercial_branches}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ) : null}
           </div>
 
           {/* Addresses Section */}
@@ -364,6 +465,34 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
                       </div>
                       <div className="sbi-description">{activity.sbiOmschrijving}</div>
                     </div>
+                  ))}
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Company Websites */}
+          {registryData.websites && registryData.websites.length > 0 && (
+            <Card className="full-width-card" withBorder shadow="sm" padding="lg">
+              <div className="card-header">
+                <div className="card-title">
+                  <Globe size={20} />
+                  Company Websites
+                </div>
+              </div>
+              <div className="card-body">
+                <div className="websites-list">
+                  {registryData.websites.map((website, index) => (
+                    <a
+                      key={`website-${index}`}
+                      href={website.startsWith('http') ? website : `https://${website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="website-link"
+                    >
+                      <Globe size={14} />
+                      {website}
+                    </a>
                   ))}
                 </div>
               </div>

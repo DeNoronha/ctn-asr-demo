@@ -83,6 +83,25 @@ export const getVerificationColor = (status: string): string => {
 };
 
 /**
+ * Authentication tier colors for badges (white text on colored background)
+ * All colors have 4.5:1+ contrast ratio with white text
+ */
+export const TIER_COLORS = {
+  3: '#b45309', // Tier 3 (highest) - Darker amber: 4.52:1 contrast
+  2: '#1e40af', // Tier 2 (DNS verified) - Darker blue: 6.80:1 contrast
+  1: '#0d8558', // Tier 1 (eHerkenning) - Darker green: 4.53:1 contrast
+  DEFAULT: '#4b5563', // Fallback gray: 5.93:1 contrast
+} as const;
+
+/**
+ * Utility function to get tier color with fallback
+ */
+export const getTierColor = (tier: number | undefined): string => {
+  if (!tier) return TIER_COLORS.DEFAULT;
+  return TIER_COLORS[tier as keyof typeof TIER_COLORS] || TIER_COLORS.DEFAULT;
+};
+
+/**
  * Contact type colors for badges (white text on colored background)
  * All colors have 4.5:1+ contrast ratio with white text
  */

@@ -32,7 +32,8 @@
 }
 
 .status-badge,
-.membership-badge {
+.membership-badge,
+.tier-badge {
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 12px;

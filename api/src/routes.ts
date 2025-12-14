@@ -923,7 +923,8 @@ router.get('/v1/legal-entities/:legalentityid', requireAuth, async (req: Request
 
     const { rows } = await pool.query(`
       SELECT legal_entity_id, party_id, primary_legal_name, domain, status,
-             membership_level, address_line1, address_line2, postal_code, city,
+             membership_level, authentication_tier, authentication_method,
+             address_line1, address_line2, postal_code, city,
              province, country_code, entity_legal_form, registered_at,
              dt_created, dt_modified
       FROM legal_entity
@@ -1340,10 +1341,11 @@ router.get('/v1/legal-entities/:legalentityid/identifiers', requireAuth, cacheMi
     const pool = getPool();
     const { legalentityid } = req.params;
 
-    // Join with legal_entity_number_type - always use lookup table as authoritative source
+    // Join with legal_entity_number_type - lookup table is authoritative source for country
     const { rows } = await pool.query(`
       SELECT len.legal_entity_reference_id, len.legal_entity_id, len.identifier_type, len.identifier_value,
-             len.country_code, len.issued_by, len.validated_by, len.validation_status, len.validation_date,
+             lent.country_scope AS country_code,
+             len.issued_by, len.validated_by, len.validation_status, len.validation_date,
              lent.type_name AS registry_name,
              lent.registry_url AS registry_url,
              len.issuing_authority, len.issued_at, len.expires_at,
@@ -1373,10 +1375,11 @@ router.get('/v1/entities/:legalentityid/identifiers', requireAuth, async (req: R
     const pool = getPool();
     const { legalentityid } = req.params;
 
-    // Join with legal_entity_number_type - always use lookup table as authoritative source
+    // Join with legal_entity_number_type - lookup table is authoritative source for country
     const { rows } = await pool.query(`
       SELECT len.legal_entity_reference_id, len.legal_entity_id, len.identifier_type, len.identifier_value,
-             len.country_code, len.issued_by, len.validated_by, len.validation_status, len.validation_date,
+             lent.country_scope AS country_code,
+             len.issued_by, len.validated_by, len.validation_status, len.validation_date,
              lent.type_name AS registry_name,
              lent.registry_url AS registry_url,
              len.issuing_authority, len.issued_at, len.expires_at,
@@ -1854,10 +1857,13 @@ router.get('/v1/legal-entities/:legalentityid/kvk-registry', requireAuth, async 
         trade_names,
         formal_registration_date,
         material_registration_date,
+        material_end_date,
         company_status,
         addresses,
         sbi_activities,
         total_employees,
+        fulltime_employees,
+        parttime_employees,
         kvk_profile_url,
         establishment_profile_url,
         fetched_at,
@@ -1867,9 +1873,15 @@ router.get('/v1/legal-entities/:legalentityid/kvk-registry', requireAuth, async 
         rsin,
         vestigingsnummer,
         ind_hoofdvestiging,
+        ind_commerciele_vestiging,
+        ind_non_mailing,
         primary_trade_name,
         rechtsvorm,
-        total_branches
+        total_branches,
+        commercial_branches,
+        non_commercial_branches,
+        websites,
+        geo_data
       FROM kvk_registry_data
       WHERE legal_entity_id = $1 AND is_deleted = false
       ORDER BY fetched_at DESC
@@ -3381,6 +3393,18 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
               ]);
             }
             console.log('Stored KVK registry data for:', kvkNumber);
+
+            // Sync company name from KVK to legal_entity.primary_legal_name
+            // Use statutory name (official company name) if available, otherwise company name
+            const officialName = kvkData.statutoryName || kvkData.companyName;
+            if (officialName) {
+              await pool.query(`
+                UPDATE legal_entity
+                SET primary_legal_name = $1, dt_modified = NOW()
+                WHERE legal_entity_id = $2 AND is_deleted = false
+              `, [officialName, legalentityid]);
+              console.log('Updated legal_entity.primary_legal_name from KVK:', officialName);
+            }
           }
         } catch (kvkError: any) {
           console.warn('Failed to fetch KVK data for RSIN:', kvkError.message);
@@ -3800,6 +3824,58 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
     }
 
     // =========================================================================
+    // 7. Fetch company logo from domain (for member portal theming)
+    // =========================================================================
+    let logoFetched = false;
+    let logoUrl: string | null = null;
+    try {
+      // Get the domain from legal_entity
+      const { rows: entityData } = await pool.query(`
+        SELECT domain FROM legal_entity WHERE legal_entity_id = $1 AND is_deleted = false
+      `, [legalentityid]);
+
+      const domain = entityData[0]?.domain;
+
+      if (domain) {
+        // Check if branding already exists
+        const { rows: existingBranding } = await pool.query(`
+          SELECT branding_id, logo_url FROM legal_entity_branding
+          WHERE legal_entity_id = $1 AND is_deleted = false
+        `, [legalentityid]);
+
+        if (existingBranding.length === 0) {
+          // Try to fetch logo from domain using Logo.dev-style URL or favicon
+          // Using direct favicon URL as fallback (no API key required)
+          const cleanDomain = domain.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
+
+          // Try Google's favicon service first (free, no API key)
+          const googleFaviconUrl = `https://www.google.com/s2/favicons?domain=${cleanDomain}&sz=128`;
+          // Alternative: DuckDuckGo favicon service
+          const ddgFaviconUrl = `https://icons.duckduckgo.com/ip3/${cleanDomain}.ico`;
+
+          // Store the branding data with favicon URL
+          await pool.query(`
+            INSERT INTO legal_entity_branding (
+              legal_entity_id, logo_url, logo_source, logo_format,
+              favicon_url, extracted_from_domain, extracted_at,
+              dt_created, dt_modified, created_by
+            )
+            VALUES ($1, $2, 'google_favicon', 'png', $3, $4, NOW(), NOW(), NOW(), 'enrichment')
+          `, [legalentityid, googleFaviconUrl, ddgFaviconUrl, cleanDomain]);
+
+          logoFetched = true;
+          logoUrl = googleFaviconUrl;
+          console.log('Stored company branding for domain:', cleanDomain);
+        } else {
+          logoUrl = existingBranding[0].logo_url;
+          console.log('Branding already exists for legal entity');
+        }
+      }
+    } catch (brandingError: any) {
+      console.warn('Failed to fetch company branding:', brandingError.message);
+    }
+
+    // =========================================================================
     // Summary
     // =========================================================================
     const added = results.filter(r => r.status === 'added');
@@ -3814,7 +3890,8 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
       notAvailable: notAvailable.map(r => r.identifier),
       errors: errors.map(r => r.identifier),
       companyDetailsUpdated,
-      updatedFields
+      updatedFields,
+      logoFetched
     });
 
     res.json({
@@ -3822,13 +3899,16 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
       added_count: added.length,
       company_details_updated: companyDetailsUpdated,
       updated_fields: updatedFields,
+      logo_fetched: logoFetched,
+      logo_url: logoUrl,
       results,
       summary: {
         added: added.map(r => `${r.identifier}: ${r.value}`),
         already_exists: exists.map(r => r.identifier),
         not_available: notAvailable.map(r => `${r.identifier} (${r.message})`),
         errors: errors.map(r => `${r.identifier}: ${r.message}`),
-        company_fields_updated: companyDetailsUpdated ? updatedFields : []
+        company_fields_updated: companyDetailsUpdated ? updatedFields : [],
+        branding: logoFetched ? 'Logo fetched from domain' : (logoUrl ? 'Logo already exists' : 'No domain available')
       }
     });
   } catch (error: any) {
@@ -3842,6 +3922,115 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
       detail: error.message,
       partial_results: results
     });
+  }
+});
+
+// ============================================================================
+// BRANDING
+// ============================================================================
+router.get('/v1/legal-entities/:legalentityid/branding', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT
+        branding_id,
+        legal_entity_id,
+        logo_url,
+        logo_source,
+        logo_format,
+        favicon_url,
+        primary_color,
+        secondary_color,
+        accent_color,
+        background_color,
+        text_color,
+        preferred_theme,
+        extracted_from_domain,
+        extracted_at,
+        dt_created,
+        dt_modified
+      FROM legal_entity_branding
+      WHERE legal_entity_id = $1 AND is_deleted = false
+      LIMIT 1
+    `, [legalentityid]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'No branding data found for this legal entity' });
+    }
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error fetching branding:', {
+      legalEntityId: req.params.legalentityid,
+      error: error.message
+    });
+    res.status(500).json({ error: 'Failed to fetch branding', detail: error.message });
+  }
+});
+
+// Update branding (for manual color/logo updates)
+router.put('/v1/legal-entities/:legalentityid/branding', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { legalentityid } = req.params;
+    const {
+      logo_url,
+      primary_color,
+      secondary_color,
+      accent_color,
+      background_color,
+      text_color,
+      preferred_theme
+    } = req.body;
+
+    // Check if branding exists
+    const { rows: existing } = await pool.query(`
+      SELECT branding_id FROM legal_entity_branding
+      WHERE legal_entity_id = $1 AND is_deleted = false
+    `, [legalentityid]);
+
+    if (existing.length === 0) {
+      // Insert new record
+      const { rows } = await pool.query(`
+        INSERT INTO legal_entity_branding (
+          legal_entity_id, logo_url, logo_source,
+          primary_color, secondary_color, accent_color,
+          background_color, text_color, preferred_theme,
+          dt_created, dt_modified, created_by
+        )
+        VALUES ($1, $2, 'manual', $3, $4, $5, $6, $7, $8, NOW(), NOW(), 'admin')
+        RETURNING *
+      `, [legalentityid, logo_url, primary_color, secondary_color, accent_color, background_color, text_color, preferred_theme || 'light']);
+
+      return res.status(201).json(rows[0]);
+    }
+
+    // Update existing record
+    const { rows } = await pool.query(`
+      UPDATE legal_entity_branding SET
+        logo_url = COALESCE($2, logo_url),
+        logo_source = CASE WHEN $2 IS NOT NULL THEN 'manual' ELSE logo_source END,
+        primary_color = COALESCE($3, primary_color),
+        secondary_color = COALESCE($4, secondary_color),
+        accent_color = COALESCE($5, accent_color),
+        background_color = COALESCE($6, background_color),
+        text_color = COALESCE($7, text_color),
+        preferred_theme = COALESCE($8, preferred_theme),
+        dt_modified = NOW(),
+        modified_by = 'admin'
+      WHERE legal_entity_id = $1 AND is_deleted = false
+      RETURNING *
+    `, [legalentityid, logo_url, primary_color, secondary_color, accent_color, background_color, text_color, preferred_theme]);
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error updating branding:', {
+      legalEntityId: req.params.legalentityid,
+      error: error.message
+    });
+    res.status(500).json({ error: 'Failed to update branding', detail: error.message });
   }
 });
 

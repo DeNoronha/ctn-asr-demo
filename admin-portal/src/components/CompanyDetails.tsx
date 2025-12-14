@@ -4,7 +4,9 @@ import type React from 'react';
 import { useState } from 'react';
 
 import type { LegalEntity, LegalEntityIdentifier } from '../services/api';
+import { formatAddress, formatPostalCodeCity, getCountryName } from '../utils/addressFormat';
 import { formatDateTime } from '../utils/dateFormat';
+import { AddressMap } from './AddressMap';
 import './CompanyDetails.css';
 
 interface CompanyDetailsProps {
@@ -16,7 +18,7 @@ interface CompanyDetailsProps {
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Display component renders comprehensive company details with many conditional fields
 export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, identifiers = [], onEdit, onRefresh }) => {
-  // Find EUID from identifiers for Registration Number field
+  // Find EUID from identifiers for EUID field display
   const euidIdentifier = identifiers.find(id => id.identifier_type === 'EUID');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -67,7 +69,7 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, identif
             </div>
 
             <div className="detail-row">
-              <div className="detail-label">Registration Number:</div>
+              <div className="detail-label">EUID:</div>
               <span>{euidIdentifier?.identifier_value || '-'}</span>
             </div>
 
@@ -110,37 +112,40 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, identif
           <div className="detail-section">
             <h4>Address</h4>
 
+            {/* Formatted address display according to country standards */}
             <div className="detail-row">
               <div className="detail-label">Street:</div>
-              <span>{company.address_line1 || '-'}</span>
+              <span>{formatAddress(company).streetLine || '-'}</span>
             </div>
 
-            {company.address_line2 && (
+            <div className="detail-row">
+              <div className="detail-label">Postal Code / City:</div>
+              <span>{formatPostalCodeCity(company.postal_code, company.city, company.country_code)}</span>
+            </div>
+
+            {company.province && (
               <div className="detail-row">
-                <div className="detail-label">Address Line 2:</div>
-                <span>{company.address_line2}</span>
+                <div className="detail-label">Province/State:</div>
+                <span>{company.province}</span>
               </div>
             )}
 
             <div className="detail-row">
-              <div className="detail-label">Postal Code:</div>
-              <span>{company.postal_code || '-'}</span>
-            </div>
-
-            <div className="detail-row">
-              <div className="detail-label">City:</div>
-              <span>{company.city || '-'}</span>
-            </div>
-
-            <div className="detail-row">
-              <div className="detail-label">Province/State:</div>
-              <span>{company.province || '-'}</span>
-            </div>
-
-            <div className="detail-row">
               <div className="detail-label">Country:</div>
-              <span>{company.country_code || '-'}</span>
+              <span>{getCountryName(company.country_code)}</span>
             </div>
+
+            {/* Google Maps showing company location */}
+            {(company.address_line1 || company.city) && (
+              <div className="detail-row" style={{ marginTop: '16px' }}>
+                <AddressMap
+                  address={company.address_line1 || ''}
+                  city={company.city}
+                  postalCode={company.postal_code}
+                  country={getCountryName(company.country_code)}
+                />
+              </div>
+            )}
           </div>
 
           {(company.direct_parent_legal_entity_id || company.ultimate_parent_legal_entity_id) && (

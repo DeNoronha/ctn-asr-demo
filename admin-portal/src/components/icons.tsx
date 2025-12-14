@@ -142,3 +142,4 @@ export const FileSpreadsheet: React.FC<IconProps> = (props) => (
 export const FileJson: React.FC<IconProps> = (props) => (
   <Icon {...props} icon="📋" label="JSON File" />
 );
+export const Hash: React.FC<IconProps> = (props) => <Icon {...props} icon="#" label="Hash" />;
