@@ -86,9 +86,32 @@ GLEIF and bundesAPI are separate registries. Not fall-backs for each other. Each
 
 ---
 
-Task 18
+Task 18: ✅ COMPLETED (2025-12-14)
 
 Make sure that verifications and enrichments are stored as separate TS services. In order to avoid a huge validator.ts files that no one can decipher.
+
+**Solution:**
+Extracted ~900 lines of inline enrichment logic from `routes.ts` into a dedicated service directory with modular architecture:
+
+**New Directory:** `api/src/services/enrichment/`
+- `types.ts` - Shared types (EnrichmentContext, EnrichmentResult, EnrichmentSummary)
+- `nlEnrichmentService.ts` - Dutch-specific: RSIN from KVK, VAT derivation, KVK registry data sync
+- `deEnrichmentService.ts` - German-specific: HRB/HRA lookup, EUID generation
+- `leiEnrichmentService.ts` - Global LEI lookup via GLEIF (supports all CoC types: KVK, HRB, KBO, CRN, etc.)
+- `peppolEnrichmentService.ts` - Global Peppol lookup (supports all countries via CoC/VAT)
+- `brandingService.ts` - Company logo/branding from domain
+- `index.ts` - Main orchestrator coordinating all enrichment services
+
+**Key Principles:**
+1. LEI, Peppol, and branding apply to ALL countries (not just NL/DE)
+2. LEI lookup uses Chamber of Commerce number first, then company name fallback
+3. Each service has single responsibility and clear interfaces
+
+**Files Modified:**
+- `api/src/routes.ts` - Replaced inline enrichment with service call
+- Created 7 new files in `api/src/services/enrichment/`
+
+---
 
 Task 19: ✅ COMPLETED (2025-12-14)
 
@@ -106,5 +129,40 @@ When german_registry_data already exists but EUID is missing:
 
 ---
 
-Task 20:
-Push to remote and test thoroughly. 
+Task 20: ✅ COMPLETED (2025-12-14)
+
+Push to remote and test thoroughly.
+
+**Status:** All changes committed and pushed. See Task 18 and 21 for details.
+
+---
+
+Task 21: ✅ COMPLETED (2025-12-14)
+
+Make a mermaid diagram of the verification/enrichment logic we have. Including all data uses for parameters/decisions
+
+E.g. NL then RSIN via KVK. Via RSIN to VAT. Verification via VIES.
+
+**Solution:**
+Created comprehensive documentation with mermaid diagrams:
+
+**New File:** `docs/ENRICHMENT_ARCHITECTURE.md`
+- High-level overview flowchart showing enrichment orchestration
+- Detailed Dutch enrichment flow (KVK → RSIN → VAT → VIES)
+- German enrichment flow (HRB/HRA → Handelsregister → EUID)
+- Global enrichment flows (LEI via CoC/name, Peppol via identifier)
+- Identifier Type Matrix showing country-specific vs global identifiers
+- Service Architecture section documenting all extracted services
+
+**Key Diagrams:**
+1. High-Level Overview - Shows orchestrator calling country-specific + global services
+2. Dutch Enrichment - KVK API → RSIN extraction → VAT derivation → VIES validation
+3. German Enrichment - HRB lookup → BundesAPI → EUID generation
+4. LEI Enrichment - CoC identifier search → name fallback → GLEIF storage
+5. Peppol Enrichment - CoC/VAT identifier → name search fallback
+
+**Files Created:**
+- `docs/ENRICHMENT_ARCHITECTURE.md` - Complete architecture documentation with mermaid diagrams 
+
+
+
