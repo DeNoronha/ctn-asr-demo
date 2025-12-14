@@ -27,11 +27,13 @@ interface HealthStatus {
   uptime: number;
   environment: string;
   version: string;
+  runtime?: string;
   checks: {
     database: HealthCheck;
     applicationInsights: HealthCheck;
-    azureKeyVault: HealthCheck;
-    staticWebApps: HealthCheck;
+    // Legacy checks removed from Container Apps backend (Nov 2025)
+    azureKeyVault?: HealthCheck;
+    staticWebApps?: HealthCheck;
   };
 }
 

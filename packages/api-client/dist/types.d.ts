@@ -65,80 +65,128 @@ export interface UpdateLegalEntityRequest {
     city?: string;
     country_code?: string;
 }
+export type ContactType = 'AUTHORIZED_REP' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
 export interface Contact {
-    id: string;
-    email: string;
+    legal_entity_contact_id: string;
+    legal_entity_id: string;
+    contact_type: ContactType;
     full_name: string;
-    contact_type: 'AUTHORIZED_REP' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
-    is_primary: boolean;
+    email: string;
     phone?: string;
     mobile?: string;
     job_title?: string;
     department?: string;
-    created_at: string;
-    updated_at?: string;
+    preferred_language?: string;
+    preferred_contact_method?: 'EMAIL' | 'PHONE' | 'SMS';
+    is_primary?: boolean;
+    is_active?: boolean;
+    first_name?: string;
+    last_name?: string;
+    dt_created?: string;
+    dt_modified?: string;
 }
 export interface ContactRequest {
+    contact_type: ContactType;
+    full_name: string;
     email: string;
-    name: string;
-    type: 'AUTHORIZED_REP' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
     phone?: string;
     mobile?: string;
     job_title?: string;
     department?: string;
+    preferred_language?: string;
+    preferred_contact_method?: 'EMAIL' | 'PHONE' | 'SMS';
+    is_primary?: boolean;
 }
 export interface UpdateContactRequest {
-    email?: string;
+    contact_type?: ContactType;
     full_name?: string;
-    contact_type?: 'AUTHORIZED_REP' | 'TECHNICAL' | 'BILLING' | 'SUPPORT' | 'LEGAL' | 'OTHER';
+    email?: string;
     phone?: string;
     mobile?: string;
     job_title?: string;
     department?: string;
+    preferred_language?: string;
+    preferred_contact_method?: 'EMAIL' | 'PHONE' | 'SMS';
+    is_primary?: boolean;
+    is_active?: boolean;
 }
+export type IdentifierType = 'LEI' | 'KVK' | 'EORI' | 'VAT' | 'DUNS' | 'EUID' | 'HRB' | 'HRA' | 'KBO' | 'SIREN' | 'SIRET' | 'CRN' | 'PEPPOL' | 'VIES' | 'RSIN' | 'OTHER';
 export interface Identifier {
     id: string;
-    identifier_type: 'EORI' | 'SCAC' | 'UNLOC' | 'GLN';
+    legal_entity_id: string;
+    identifier_type: IdentifierType;
     identifier_value: string;
-    country_code: string;
-    is_active: boolean;
+    country_code?: string;
+    registry_name?: string;
+    registry_url?: string;
+    valid_from?: string;
+    valid_to?: string;
+    issued_by?: string;
+    validated_by?: string;
+    validation_status?: 'PENDING' | 'VALIDATED' | 'VERIFIED' | 'FAILED' | 'EXPIRED';
+    validation_date?: string;
+    verification_status?: 'PENDING' | 'VERIFIED' | 'FAILED' | 'EXPIRED';
+    issuing_authority?: string;
+    issued_at?: string;
+    expires_at?: string;
+    is_deleted?: boolean;
     created_at: string;
     updated_at?: string;
 }
 export interface CreateIdentifierRequest {
-    identifier_type: 'EORI' | 'SCAC' | 'UNLOC' | 'GLN';
+    identifier_type: IdentifierType;
     identifier_value: string;
-    country_code: string;
+    country_code?: string;
+    issued_by?: string;
+    valid_from?: string;
+    valid_to?: string;
 }
 export interface UpdateIdentifierRequest {
     identifier_value?: string;
     country_code?: string;
-    is_active?: boolean;
+    issued_by?: string;
+    valid_from?: string;
+    valid_to?: string;
+    validation_status?: 'PENDING' | 'VALIDATED' | 'VERIFIED' | 'FAILED' | 'EXPIRED';
 }
+export type EndpointType = 'REST' | 'REST_API' | 'SOAP' | 'WEBHOOK' | 'OTHER';
 export interface Endpoint {
-    id: string;
-    endpoint_url: string;
-    endpoint_type: 'WEBHOOK' | 'API' | 'CALLBACK';
-    is_active: boolean;
-    auth_type?: string;
-    created_at: string;
-    updated_at?: string;
-    verification_token?: string;
+    legal_entity_endpoint_id: string;
+    legal_entity_id: string;
+    endpoint_name: string;
+    endpoint_url?: string;
+    endpoint_description?: string;
+    data_category?: 'CONTAINER' | 'CUSTOMS' | 'WAREHOUSE' | 'TRANSPORT' | 'OTHER';
+    endpoint_type?: EndpointType;
+    authentication_method?: string;
+    last_connection_test?: string;
+    last_connection_status?: string;
+    is_active?: boolean;
+    activation_date?: string;
+    deactivation_date?: string;
     verification_status?: 'PENDING' | 'SENT' | 'VERIFIED' | 'FAILED' | 'EXPIRED';
     verification_sent_at?: string;
     verification_expires_at?: string;
     test_result_data?: Record<string, unknown>;
+    dt_created?: string;
+    dt_modified?: string;
 }
 export interface CreateEndpointRequest {
+    endpoint_name: string;
     endpoint_url: string;
-    endpoint_type: 'WEBHOOK' | 'API' | 'CALLBACK';
-    auth_token?: string;
+    endpoint_description?: string;
+    data_category?: string;
+    endpoint_type?: EndpointType;
+    authentication_method?: string;
 }
 export interface UpdateEndpointRequest {
+    endpoint_name?: string;
     endpoint_url?: string;
-    endpoint_type?: 'WEBHOOK' | 'API' | 'CALLBACK';
+    endpoint_description?: string;
+    data_category?: string;
+    endpoint_type?: EndpointType;
+    authentication_method?: string;
     is_active?: boolean;
-    auth_token?: string;
 }
 export interface InitiateEndpointRegistrationRequest {
     endpoint_name: string;

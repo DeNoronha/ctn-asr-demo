@@ -768,9 +768,9 @@ router.get('/v1/member/contacts', requireAuth, async (req: Request, res: Respons
 
     // Get all contacts for this legal entity
     const { rows } = await pool.query(`
-      SELECT legal_entity_contact_id, contact_type, full_name, email, phone, mobile,
-             job_title, department, is_primary, is_active, preferred_contact_method,
-             dt_created, dt_modified
+      SELECT legal_entity_contact_id, legal_entity_id, contact_type, full_name, email,
+             phone, mobile, job_title, department, preferred_language, preferred_contact_method,
+             is_primary, is_active, first_name, last_name, dt_created, dt_modified
       FROM legal_entity_contact
       WHERE legal_entity_id = $1 AND is_deleted = false
       ORDER BY is_primary DESC, full_name ASC
@@ -1586,6 +1586,100 @@ router.delete('/v1/identifiers/:identifierId', requireAuth, async (req: Request,
   } catch (error: any) {
     console.error('Error deleting identifier:', error);
     res.status(500).json({ error: 'Failed to delete identifier' });
+  }
+});
+
+// Validate identifier against registry
+router.post('/v1/identifiers/:identifierId/validate', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { identifierId } = req.params;
+
+    // Get the identifier
+    const { rows, rowCount } = await pool.query(`
+      SELECT len.legal_entity_reference_id, len.legal_entity_id, len.identifier_type, len.identifier_value,
+             len.country_code, lent.registry_url
+      FROM legal_entity_number len
+      LEFT JOIN legal_entity_number_type lent ON len.identifier_type = lent.type_code
+      WHERE len.legal_entity_reference_id = $1 AND len.is_deleted = false
+    `, [identifierId]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Identifier not found' });
+    }
+
+    const identifier = rows[0];
+    let valid = false;
+    const validationDetails: Record<string, any> = {
+      validated_at: new Date().toISOString(),
+      identifier_type: identifier.identifier_type,
+      identifier_value: identifier.identifier_value,
+    };
+
+    // For now, do basic format validation based on type
+    // TODO: Implement actual registry lookups (KVK API, GLEIF API, VIES API, etc.)
+    switch (identifier.identifier_type) {
+      case 'KVK':
+        // KVK is 8 digits
+        valid = /^\d{8}$/.test(identifier.identifier_value);
+        validationDetails.validation_method = 'format_check';
+        validationDetails.expected_format = '8 digits';
+        break;
+      case 'LEI':
+        // LEI is 20 alphanumeric characters
+        valid = /^[A-Z0-9]{20}$/.test(identifier.identifier_value);
+        validationDetails.validation_method = 'format_check';
+        validationDetails.expected_format = '20 alphanumeric characters';
+        break;
+      case 'EORI':
+        // EORI is country code + up to 15 alphanumeric
+        valid = /^[A-Z]{2}[A-Z0-9]{1,15}$/.test(identifier.identifier_value);
+        validationDetails.validation_method = 'format_check';
+        validationDetails.expected_format = 'Country code + up to 15 alphanumeric';
+        break;
+      case 'VAT':
+        // VAT is country code + alphanumeric
+        valid = /^[A-Z]{2}[A-Z0-9]+$/.test(identifier.identifier_value);
+        validationDetails.validation_method = 'format_check';
+        validationDetails.expected_format = 'Country code + alphanumeric';
+        break;
+      case 'DUNS':
+        // DUNS is 9 digits
+        valid = /^\d{9}$/.test(identifier.identifier_value);
+        validationDetails.validation_method = 'format_check';
+        validationDetails.expected_format = '9 digits';
+        break;
+      case 'RSIN':
+        // RSIN is 9 digits
+        valid = /^\d{9}$/.test(identifier.identifier_value);
+        validationDetails.validation_method = 'format_check';
+        validationDetails.expected_format = '9 digits';
+        break;
+      default:
+        // For other types, assume valid if non-empty
+        valid = identifier.identifier_value && identifier.identifier_value.length > 0;
+        validationDetails.validation_method = 'presence_check';
+    }
+
+    // Update the identifier with validation result
+    await pool.query(`
+      UPDATE legal_entity_number
+      SET validation_status = $2,
+          validation_date = NOW(),
+          dt_modified = NOW()
+      WHERE legal_entity_reference_id = $1
+    `, [identifierId, valid ? 'VALIDATED' : 'FAILED']);
+
+    // Invalidate cache
+    invalidateCacheForUser(req, `/v1/legal-entities/${identifier.legal_entity_id}/identifiers`);
+
+    res.json({
+      valid,
+      details: validationDetails,
+    });
+  } catch (error: any) {
+    console.error('Error validating identifier:', error);
+    res.status(500).json({ error: 'Failed to validate identifier' });
   }
 });
 
@@ -3760,9 +3854,25 @@ router.get('/v1/legal-entities/:legalentityid/endpoints', requireAuth, async (re
     const { legalentityid } = req.params;
 
     const { rows } = await pool.query(`
-      SELECT legal_entity_endpoint_id, legal_entity_id, endpoint_type, endpoint_url,
-             endpoint_name, is_active, authentication_method,
-             dt_created, dt_modified
+      SELECT
+        legal_entity_endpoint_id,
+        legal_entity_id,
+        endpoint_name,
+        endpoint_url,
+        endpoint_description,
+        data_category,
+        endpoint_type,
+        authentication_method,
+        last_connection_test,
+        last_connection_status,
+        is_active,
+        activation_date,
+        deactivation_date,
+        verification_status,
+        verification_sent_at,
+        verification_expires_at,
+        dt_created,
+        dt_modified
       FROM legal_entity_endpoint
       WHERE legal_entity_id = $1 AND is_deleted = false
       ORDER BY endpoint_name ASC
@@ -3872,6 +3982,267 @@ router.delete('/v1/endpoints/:endpointId', requireAuth, async (req: Request, res
   } catch (error: any) {
     console.error('Error deleting endpoint:', error);
     res.status(500).json({ error: 'Failed to delete endpoint' });
+  }
+});
+
+// SSRF protection: Validate URL is safe to fetch (SEC-005)
+function isUrlSafeForFetch(urlString: string): { safe: boolean; reason?: string } {
+  try {
+    const url = new URL(urlString);
+
+    // Only allow HTTP/HTTPS protocols
+    if (!['http:', 'https:'].includes(url.protocol)) {
+      return { safe: false, reason: 'Only HTTP and HTTPS protocols are allowed' };
+    }
+
+    const hostname = url.hostname.toLowerCase();
+
+    // Block localhost and loopback addresses
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
+      return { safe: false, reason: 'Localhost addresses are not allowed' };
+    }
+
+    // Block cloud metadata endpoints (AWS, Azure, GCP)
+    const metadataEndpoints = [
+      '169.254.169.254',  // AWS/Azure/GCP metadata
+      'metadata.google.internal',
+      'metadata.goog',
+      '169.254.170.2',    // AWS ECS task metadata
+    ];
+    if (metadataEndpoints.includes(hostname)) {
+      return { safe: false, reason: 'Cloud metadata endpoints are not allowed' };
+    }
+
+    // Block private IP ranges (RFC 1918)
+    const ipv4Match = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+    if (ipv4Match) {
+      const [, a, b, c] = ipv4Match.map(Number);
+
+      // 10.0.0.0/8 - Private network
+      if (a === 10) {
+        return { safe: false, reason: 'Private IP ranges (10.x.x.x) are not allowed' };
+      }
+
+      // 172.16.0.0/12 - Private network
+      if (a === 172 && b >= 16 && b <= 31) {
+        return { safe: false, reason: 'Private IP ranges (172.16-31.x.x) are not allowed' };
+      }
+
+      // 192.168.0.0/16 - Private network
+      if (a === 192 && b === 168) {
+        return { safe: false, reason: 'Private IP ranges (192.168.x.x) are not allowed' };
+      }
+
+      // 169.254.0.0/16 - Link-local
+      if (a === 169 && b === 254) {
+        return { safe: false, reason: 'Link-local addresses (169.254.x.x) are not allowed' };
+      }
+
+      // 0.0.0.0/8 - Current network
+      if (a === 0) {
+        return { safe: false, reason: 'Invalid IP address' };
+      }
+    }
+
+    return { safe: true };
+  } catch {
+    return { safe: false, reason: 'Invalid URL format' };
+  }
+}
+
+// Test endpoint connection
+router.post('/v1/endpoints/:endpointId/test', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { endpointId } = req.params;
+
+    // Get the endpoint
+    const { rows, rowCount } = await pool.query(`
+      SELECT legal_entity_endpoint_id, endpoint_url, endpoint_name, authentication_method, legal_entity_id
+      FROM legal_entity_endpoint
+      WHERE legal_entity_endpoint_id = $1 AND is_deleted = false
+    `, [endpointId]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Endpoint not found' });
+    }
+
+    const endpoint = rows[0];
+
+    // IDOR protection: Verify user has access to this endpoint's legal entity (SEC-006)
+    const userId = (req as any).userId;
+    const userEmail = (req as any).userEmail;
+    const userRoles = (req as any).userRoles || [];
+
+    // SystemAdmin and AssociationAdmin can test any endpoint
+    const isAdmin = userRoles.includes('SystemAdmin') || userRoles.includes('AssociationAdmin');
+
+    if (!isAdmin) {
+      // Check if user's party owns this endpoint
+      const { rows: partyRows } = await pool.query(`
+        SELECT 1 FROM legal_entity le
+        JOIN legal_entity_contact lec ON lec.legal_entity_id = le.legal_entity_id
+        WHERE le.legal_entity_id = $1
+          AND lec.email = $2
+          AND lec.is_active = true
+          AND le.is_deleted = false
+      `, [endpoint.legal_entity_id, userEmail]);
+
+      if (partyRows.length === 0) {
+        // Return 404 to prevent information disclosure (don't reveal endpoint exists)
+        return res.status(404).json({ error: 'Endpoint not found' });
+      }
+    }
+
+    const testStartTime = Date.now();
+    let success = false;
+    let statusCode: number | undefined;
+    let errorMessage: string | undefined;
+
+    // Attempt to test connection if URL exists
+    if (endpoint.endpoint_url) {
+      // SSRF protection: Validate URL before fetching (SEC-005)
+      const urlValidation = isUrlSafeForFetch(endpoint.endpoint_url);
+      if (!urlValidation.safe) {
+        errorMessage = `URL blocked: ${urlValidation.reason}`;
+      } else {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+          const response = await fetch(endpoint.endpoint_url, {
+            method: 'HEAD',
+            signal: controller.signal,
+            redirect: 'manual', // Don't follow redirects automatically (SSRF protection)
+          });
+          clearTimeout(timeout);
+
+          statusCode = response.status;
+          // Consider redirect as partial success - URL is reachable but redirects
+          if (response.status >= 300 && response.status < 400) {
+            success = true;
+            errorMessage = `Endpoint redirects to: ${response.headers.get('location') || 'unknown'}`;
+          } else {
+            success = response.ok;
+          }
+        } catch (fetchError: any) {
+          errorMessage = fetchError.name === 'AbortError'
+            ? 'Connection timeout (10s)'
+            : fetchError.message || 'Connection failed';
+        }
+      }
+    } else {
+      errorMessage = 'No endpoint URL configured';
+    }
+
+    const responseTime = Date.now() - testStartTime;
+
+    // Update the endpoint with test results
+    await pool.query(`
+      UPDATE legal_entity_endpoint
+      SET last_connection_test = NOW(),
+          last_connection_status = $2,
+          connection_test_details = $3,
+          dt_modified = NOW()
+      WHERE legal_entity_endpoint_id = $1
+    `, [
+      endpointId,
+      success ? 'SUCCESS' : 'FAILED',
+      JSON.stringify({
+        status_code: statusCode,
+        response_time_ms: responseTime,
+        error_message: errorMessage,
+        tested_at: new Date().toISOString(),
+      }),
+    ]);
+
+    res.json({
+      success,
+      message: success ? 'Connection successful' : (errorMessage || 'Connection failed'),
+      details: {
+        status_code: statusCode,
+        response_time_ms: responseTime,
+        error_message: errorMessage,
+        tested_at: new Date().toISOString(),
+      },
+    });
+  } catch (error: any) {
+    console.error('Error testing endpoint:', error);
+    res.status(500).json({ error: 'Failed to test endpoint connection' });
+  }
+});
+
+// Toggle endpoint active status
+router.patch('/v1/endpoints/:endpointId/toggle', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const pool = getPool();
+    const { endpointId } = req.params;
+    const { is_active } = req.body;
+
+    if (typeof is_active !== 'boolean') {
+      return res.status(400).json({ error: 'is_active must be a boolean' });
+    }
+
+    // First, get the endpoint to check authorization (SEC-006)
+    const { rows: endpointRows, rowCount: endpointCount } = await pool.query(`
+      SELECT legal_entity_endpoint_id, legal_entity_id
+      FROM legal_entity_endpoint
+      WHERE legal_entity_endpoint_id = $1 AND is_deleted = false
+    `, [endpointId]);
+
+    if (endpointCount === 0) {
+      return res.status(404).json({ error: 'Endpoint not found' });
+    }
+
+    const endpoint = endpointRows[0];
+
+    // IDOR protection: Verify user has access to this endpoint's legal entity (SEC-006)
+    const userEmail = (req as any).userEmail;
+    const userRoles = (req as any).userRoles || [];
+
+    // SystemAdmin and AssociationAdmin can toggle any endpoint
+    const isAdmin = userRoles.includes('SystemAdmin') || userRoles.includes('AssociationAdmin');
+
+    if (!isAdmin) {
+      // Check if user's party owns this endpoint
+      const { rows: partyRows } = await pool.query(`
+        SELECT 1 FROM legal_entity le
+        JOIN legal_entity_contact lec ON lec.legal_entity_id = le.legal_entity_id
+        WHERE le.legal_entity_id = $1
+          AND lec.email = $2
+          AND lec.is_active = true
+          AND le.is_deleted = false
+      `, [endpoint.legal_entity_id, userEmail]);
+
+      if (partyRows.length === 0) {
+        // Return 404 to prevent information disclosure (don't reveal endpoint exists)
+        return res.status(404).json({ error: 'Endpoint not found' });
+      }
+    }
+
+    // Now perform the update
+    const { rows, rowCount } = await pool.query(`
+      UPDATE legal_entity_endpoint
+      SET is_active = $2,
+          activation_date = CASE WHEN $2 = true THEN NOW() ELSE activation_date END,
+          deactivation_date = CASE WHEN $2 = false THEN NOW() ELSE NULL END,
+          dt_modified = NOW()
+      WHERE legal_entity_endpoint_id = $1 AND is_deleted = false
+      RETURNING *
+    `, [endpointId, is_active]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Endpoint not found' });
+    }
+
+    // Invalidate cache
+    invalidateCacheForUser(req, `/v1/legal-entities/${rows[0].legal_entity_id}/endpoints`);
+    invalidateCacheForUser(req, `/v1/member-endpoints`);
+
+    res.json(rows[0]);
+  } catch (error: any) {
+    console.error('Error toggling endpoint:', error);
+    res.status(500).json({ error: 'Failed to toggle endpoint status' });
   }
 });
 
@@ -4217,6 +4588,9 @@ router.get('/v1/member-endpoints', requireAuth, cacheMiddleware(CacheTTL.ENDPOIN
         is_active,
         activation_date,
         deactivation_date,
+        verification_status,
+        verification_sent_at,
+        verification_expires_at,
         dt_created,
         dt_modified
       FROM legal_entity_endpoint

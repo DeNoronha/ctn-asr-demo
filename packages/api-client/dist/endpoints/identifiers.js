@@ -10,30 +10,37 @@ export class IdentifiersEndpoint {
         return data;
     }
     /**
-     * Get identifier by ID
+     * Get identifier by ID (uses simplified path - identifier ID is globally unique)
      */
-    async getById(legalEntityId, identifierId) {
-        const { data } = await this.axios.get(`/legal-entities/${legalEntityId}/identifiers/${identifierId}`);
+    async getById(identifierId) {
+        const { data } = await this.axios.get(`/identifiers/${identifierId}`);
         return data;
     }
     /**
      * Create identifier for legal entity
      */
     async create(legalEntityId, identifier) {
-        const { data } = await this.axios.post(`/legal-entities/${legalEntityId}/identifiers`, identifier);
+        const { data } = await this.axios.post(`/entities/${legalEntityId}/identifiers`, identifier);
         return data;
     }
     /**
-     * Update identifier
+     * Update identifier (uses simplified path - identifier ID is globally unique)
      */
-    async update(legalEntityId, identifierId, updates) {
-        const { data } = await this.axios.put(`/legal-entities/${legalEntityId}/identifiers/${identifierId}`, updates);
+    async update(identifierId, updates) {
+        const { data } = await this.axios.put(`/identifiers/${identifierId}`, updates);
         return data;
     }
     /**
-     * Delete identifier
+     * Delete identifier (uses simplified path - identifier ID is globally unique)
      */
-    async delete(legalEntityId, identifierId) {
-        await this.axios.delete(`/legal-entities/${legalEntityId}/identifiers/${identifierId}`);
+    async delete(identifierId) {
+        await this.axios.delete(`/identifiers/${identifierId}`);
+    }
+    /**
+     * Validate identifier format and optionally against registry
+     */
+    async validate(identifierId) {
+        const { data } = await this.axios.post(`/identifiers/${identifierId}/validate`);
+        return data;
     }
 }

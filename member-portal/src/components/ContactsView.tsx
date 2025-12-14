@@ -7,7 +7,7 @@ import type { ComponentProps, Contact } from '../types';
 import { Edit2, Plus, User } from './icons';
 import { LoadingState } from './shared/LoadingState';
 
-const contactTypes = ['PRIMARY', 'TECHNICAL', 'BILLING', 'SUPPORT', 'LEGAL', 'OTHER'];
+const contactTypes = ['AUTHORIZED_REP', 'TECHNICAL', 'BILLING', 'SUPPORT', 'LEGAL', 'OTHER'];
 const contactMethods = ['EMAIL', 'PHONE', 'MOBILE'];
 
 export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataChange }) => {
@@ -68,7 +68,7 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
           email: formData.email,
           full_name: formData.full_name,
           contact_type: formData.contact_type as
-            | 'PRIMARY'
+            | 'AUTHORIZED_REP'
             | 'TECHNICAL'
             | 'BILLING'
             | 'SUPPORT'
@@ -83,12 +83,12 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
         await apiClient.member.updateContact(editingContact.legal_entity_contact_id, updateRequest);
         onNotification('Contact updated successfully', 'success');
       } else {
-        // Transform formData to ContactRequest format (name instead of full_name, type instead of contact_type)
+        // Transform formData to ContactRequest format
         const createRequest = {
           email: formData.email || '',
-          name: formData.full_name || '',
-          type: (formData.contact_type || 'OTHER') as
-            | 'PRIMARY'
+          full_name: formData.full_name || '',
+          contact_type: (formData.contact_type || 'OTHER') as
+            | 'AUTHORIZED_REP'
             | 'TECHNICAL'
             | 'BILLING'
             | 'SUPPORT'
@@ -142,7 +142,7 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
                   render: (contact: Contact) => (
                     <Badge
                       color={
-                        contact.contact_type === 'PRIMARY'
+                        contact.contact_type === 'AUTHORIZED_REP'
                           ? 'blue'
                           : contact.contact_type === 'TECHNICAL'
                             ? 'cyan'

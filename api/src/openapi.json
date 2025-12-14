@@ -16,16 +16,16 @@
   },
   "servers": [
     {
-      "url": "https://fa-ctn-asr-dev.azurewebsites.net/api",
-      "description": "Development environment"
+      "url": "https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api",
+      "description": "Development environment (Container Apps)"
     },
     {
-      "url": "https://fa-ctn-asr-staging.azurewebsites.net/api",
-      "description": "Staging environment"
+      "url": "https://ca-ctn-asr-api-staging.westeurope.azurecontainerapps.io/api",
+      "description": "Staging environment (Container Apps)"
     },
     {
-      "url": "https://fa-ctn-asr-prod.azurewebsites.net/api",
-      "description": "Production environment"
+      "url": "https://ca-ctn-asr-api-prod.westeurope.azurecontainerapps.io/api",
+      "description": "Production environment (Container Apps)"
     }
   ],
   "tags": [

@@ -83,10 +83,14 @@ export interface LegalEntityIdentifier {
   valid_to?: string;
   issued_by?: string;
   validated_by?: string;
-  validation_status?: 'PENDING' | 'VALIDATED' | 'FAILED' | 'EXPIRED';
+  validation_status?: 'PENDING' | 'VALIDATED' | 'VERIFIED' | 'FAILED' | 'EXPIRED';
   validation_date?: string;
+  verification_status?: 'PENDING' | 'VERIFIED' | 'FAILED' | 'EXPIRED';
   verification_document_url?: string;
   verification_notes?: string;
+  issuing_authority?: string;
+  issued_at?: string;
+  expires_at?: string;
   dt_created?: string;
   dt_modified?: string;
   created_by?: string;
@@ -168,19 +172,24 @@ export interface LegalEntity {
   endpoints?: LegalEntityEndpoint[];
 }
 
-// Member type from vw_members
+// Member type from vw_legal_entities view
 export interface Member {
   legal_entity_id: string;
   legal_name: string;
   lei?: string;
   kvk?: string;
   euid?: string;
+  eori?: string;
+  duns?: string;
+  vat?: string;
   domain: string;
   status: string;
   membership_level: string;
   created_at: string;
   updated_at?: string;
   metadata?: Metadata;
+  contact_count?: number;
+  endpoint_count?: number;
   legal_entity?: LegalEntity;
 }
 
@@ -243,16 +252,10 @@ export interface HealthCheckResponse {
   uptime: number;
   environment: string;
   version: string;
+  runtime?: string;
   checks: {
-    database: { status: 'up' | 'down'; responseTime?: number; error?: string; details?: any };
-    applicationInsights: { status: 'up' | 'down'; error?: string; details?: any };
-    azureKeyVault: { status: 'up' | 'down'; responseTime?: number; error?: string };
-    staticWebApps: {
-      status: 'up' | 'down';
-      responseTime?: number;
-      error?: string;
-      details?: any;
-    };
+    database: { status: 'up' | 'down'; responseTime?: number; error?: string };
+    applicationInsights: { status: 'up' | 'down'; error?: string };
   };
 }
 

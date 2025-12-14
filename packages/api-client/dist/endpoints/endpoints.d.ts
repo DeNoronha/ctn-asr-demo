@@ -8,28 +8,32 @@ export declare class EndpointsEndpoint {
      */
     getByLegalEntity(legalEntityId: string): Promise<Endpoint[]>;
     /**
-     * Get endpoint by ID
+     * Get endpoint by ID (uses simplified path - endpoint ID is globally unique)
      */
-    getById(legalEntityId: string, endpointId: string): Promise<Endpoint>;
+    getById(endpointId: string): Promise<Endpoint>;
     /**
      * Create endpoint for legal entity
      */
     create(legalEntityId: string, endpoint: CreateEndpointRequest): Promise<Endpoint>;
     /**
-     * Update endpoint
+     * Update endpoint (uses simplified path - endpoint ID is globally unique)
      */
-    update(legalEntityId: string, endpointId: string, updates: UpdateEndpointRequest): Promise<Endpoint>;
+    update(endpointId: string, updates: UpdateEndpointRequest): Promise<Endpoint>;
     /**
-     * Delete endpoint
+     * Delete endpoint (uses simplified path - endpoint ID is globally unique)
      */
-    delete(legalEntityId: string, endpointId: string): Promise<void>;
+    delete(endpointId: string): Promise<void>;
     /**
-     * Test endpoint connectivity
+     * Test endpoint connectivity (uses simplified path - endpoint ID is globally unique)
      */
-    test(legalEntityId: string, endpointId: string): Promise<{
+    test(endpointId: string): Promise<{
         success: boolean;
         message: string;
     }>;
+    /**
+     * Toggle endpoint active status
+     */
+    toggle(endpointId: string, isActive: boolean): Promise<Endpoint>;
     /**
      * Step 1: Initiate endpoint registration with verification token
      */

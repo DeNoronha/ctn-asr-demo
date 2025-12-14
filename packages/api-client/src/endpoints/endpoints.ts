@@ -20,10 +20,10 @@ export class EndpointsEndpoint {
   }
 
   /**
-   * Get endpoint by ID
+   * Get endpoint by ID (uses simplified path - endpoint ID is globally unique)
    */
-  async getById(legalEntityId: string, endpointId: string): Promise<Endpoint> {
-    const { data } = await this.axios.get<Endpoint>(`/legal-entities/${legalEntityId}/endpoints/${endpointId}`);
+  async getById(endpointId: string): Promise<Endpoint> {
+    const { data } = await this.axios.get<Endpoint>(`/endpoints/${endpointId}`);
     return data;
   }
 
@@ -36,25 +36,33 @@ export class EndpointsEndpoint {
   }
 
   /**
-   * Update endpoint
+   * Update endpoint (uses simplified path - endpoint ID is globally unique)
    */
-  async update(legalEntityId: string, endpointId: string, updates: UpdateEndpointRequest): Promise<Endpoint> {
-    const { data } = await this.axios.put<Endpoint>(`/legal-entities/${legalEntityId}/endpoints/${endpointId}`, updates);
+  async update(endpointId: string, updates: UpdateEndpointRequest): Promise<Endpoint> {
+    const { data } = await this.axios.put<Endpoint>(`/endpoints/${endpointId}`, updates);
     return data;
   }
 
   /**
-   * Delete endpoint
+   * Delete endpoint (uses simplified path - endpoint ID is globally unique)
    */
-  async delete(legalEntityId: string, endpointId: string): Promise<void> {
-    await this.axios.delete(`/legal-entities/${legalEntityId}/endpoints/${endpointId}`);
+  async delete(endpointId: string): Promise<void> {
+    await this.axios.delete(`/endpoints/${endpointId}`);
   }
 
   /**
-   * Test endpoint connectivity
+   * Test endpoint connectivity (uses simplified path - endpoint ID is globally unique)
    */
-  async test(legalEntityId: string, endpointId: string): Promise<{ success: boolean; message: string }> {
-    const { data } = await this.axios.post<{ success: boolean; message: string }>(`/legal-entities/${legalEntityId}/endpoints/${endpointId}/test`);
+  async test(endpointId: string): Promise<{ success: boolean; message: string }> {
+    const { data } = await this.axios.post<{ success: boolean; message: string }>(`/endpoints/${endpointId}/test`);
+    return data;
+  }
+
+  /**
+   * Toggle endpoint active status
+   */
+  async toggle(endpointId: string, isActive: boolean): Promise<Endpoint> {
+    const { data } = await this.axios.patch<Endpoint>(`/endpoints/${endpointId}/toggle`, { is_active: isActive });
     return data;
   }
 

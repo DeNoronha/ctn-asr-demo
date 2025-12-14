@@ -8,20 +8,30 @@ export declare class IdentifiersEndpoint {
      */
     getByLegalEntity(legalEntityId: string): Promise<Identifier[]>;
     /**
-     * Get identifier by ID
+     * Get identifier by ID (uses simplified path - identifier ID is globally unique)
      */
-    getById(legalEntityId: string, identifierId: string): Promise<Identifier>;
+    getById(identifierId: string): Promise<Identifier>;
     /**
      * Create identifier for legal entity
      */
     create(legalEntityId: string, identifier: CreateIdentifierRequest): Promise<Identifier>;
     /**
-     * Update identifier
+     * Update identifier (uses simplified path - identifier ID is globally unique)
      */
-    update(legalEntityId: string, identifierId: string, updates: UpdateIdentifierRequest): Promise<Identifier>;
+    update(identifierId: string, updates: UpdateIdentifierRequest): Promise<Identifier>;
     /**
-     * Delete identifier
+     * Delete identifier (uses simplified path - identifier ID is globally unique)
      */
-    delete(legalEntityId: string, identifierId: string): Promise<void>;
+    delete(identifierId: string): Promise<void>;
+    /**
+     * Validate identifier format and optionally against registry
+     */
+    validate(identifierId: string): Promise<{
+        valid: boolean;
+        details?: {
+            validation_method: string;
+            validated_at: string;
+        };
+    }>;
 }
 //# sourceMappingURL=identifiers.d.ts.map

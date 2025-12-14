@@ -10,10 +10,10 @@ export class EndpointsEndpoint {
         return data;
     }
     /**
-     * Get endpoint by ID
+     * Get endpoint by ID (uses simplified path - endpoint ID is globally unique)
      */
-    async getById(legalEntityId, endpointId) {
-        const { data } = await this.axios.get(`/legal-entities/${legalEntityId}/endpoints/${endpointId}`);
+    async getById(endpointId) {
+        const { data } = await this.axios.get(`/endpoints/${endpointId}`);
         return data;
     }
     /**
@@ -24,23 +24,30 @@ export class EndpointsEndpoint {
         return data;
     }
     /**
-     * Update endpoint
+     * Update endpoint (uses simplified path - endpoint ID is globally unique)
      */
-    async update(legalEntityId, endpointId, updates) {
-        const { data } = await this.axios.put(`/legal-entities/${legalEntityId}/endpoints/${endpointId}`, updates);
+    async update(endpointId, updates) {
+        const { data } = await this.axios.put(`/endpoints/${endpointId}`, updates);
         return data;
     }
     /**
-     * Delete endpoint
+     * Delete endpoint (uses simplified path - endpoint ID is globally unique)
      */
-    async delete(legalEntityId, endpointId) {
-        await this.axios.delete(`/legal-entities/${legalEntityId}/endpoints/${endpointId}`);
+    async delete(endpointId) {
+        await this.axios.delete(`/endpoints/${endpointId}`);
     }
     /**
-     * Test endpoint connectivity
+     * Test endpoint connectivity (uses simplified path - endpoint ID is globally unique)
      */
-    async test(legalEntityId, endpointId) {
-        const { data } = await this.axios.post(`/legal-entities/${legalEntityId}/endpoints/${endpointId}/test`);
+    async test(endpointId) {
+        const { data } = await this.axios.post(`/endpoints/${endpointId}/test`);
+        return data;
+    }
+    /**
+     * Toggle endpoint active status
+     */
+    async toggle(endpointId, isActive) {
+        const { data } = await this.axios.patch(`/endpoints/${endpointId}/toggle`, { is_active: isActive });
         return data;
     }
     /**

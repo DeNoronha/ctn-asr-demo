@@ -13,10 +13,10 @@ export class IdentifiersEndpoint {
   }
 
   /**
-   * Get identifier by ID
+   * Get identifier by ID (uses simplified path - identifier ID is globally unique)
    */
-  async getById(legalEntityId: string, identifierId: string): Promise<Identifier> {
-    const { data } = await this.axios.get<Identifier>(`/legal-entities/${legalEntityId}/identifiers/${identifierId}`);
+  async getById(identifierId: string): Promise<Identifier> {
+    const { data } = await this.axios.get<Identifier>(`/identifiers/${identifierId}`);
     return data;
   }
 
@@ -24,22 +24,30 @@ export class IdentifiersEndpoint {
    * Create identifier for legal entity
    */
   async create(legalEntityId: string, identifier: CreateIdentifierRequest): Promise<Identifier> {
-    const { data } = await this.axios.post<Identifier>(`/legal-entities/${legalEntityId}/identifiers`, identifier);
+    const { data } = await this.axios.post<Identifier>(`/entities/${legalEntityId}/identifiers`, identifier);
     return data;
   }
 
   /**
-   * Update identifier
+   * Update identifier (uses simplified path - identifier ID is globally unique)
    */
-  async update(legalEntityId: string, identifierId: string, updates: UpdateIdentifierRequest): Promise<Identifier> {
-    const { data } = await this.axios.put<Identifier>(`/legal-entities/${legalEntityId}/identifiers/${identifierId}`, updates);
+  async update(identifierId: string, updates: UpdateIdentifierRequest): Promise<Identifier> {
+    const { data } = await this.axios.put<Identifier>(`/identifiers/${identifierId}`, updates);
     return data;
   }
 
   /**
-   * Delete identifier
+   * Delete identifier (uses simplified path - identifier ID is globally unique)
    */
-  async delete(legalEntityId: string, identifierId: string): Promise<void> {
-    await this.axios.delete(`/legal-entities/${legalEntityId}/identifiers/${identifierId}`);
+  async delete(identifierId: string): Promise<void> {
+    await this.axios.delete(`/identifiers/${identifierId}`);
+  }
+
+  /**
+   * Validate identifier format and optionally against registry
+   */
+  async validate(identifierId: string): Promise<{ valid: boolean; details?: { validation_method: string; validated_at: string } }> {
+    const { data } = await this.axios.post<{ valid: boolean; details?: { validation_method: string; validated_at: string } }>(`/identifiers/${identifierId}/validate`);
+    return data;
   }
 }
