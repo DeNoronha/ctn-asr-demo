@@ -56,9 +56,10 @@ GET https://api.gleif.org/api/v1/lei-records
 
 ### Important Notes
 
-- **DO NOT** use combined formats like `NL-KVK/12345678` in registeredAs
-- **DO NOT** filter by Registration Authority ID (RA code) - Germany has ~100 local court RA codes, making country filter more reliable
-- The GLEIF **response** contains `registeredAt.id` with the RA code (e.g., `RA000463` for NL-KVK), but this is for reference only, not for searching
+- **DO NOT** use combined formats like `NL-KVK/12345678` in `registeredAs`
+- The GLEIF API does **NOT** support filtering by Registration Authority (RA) code - there is no `filter[registeredAt.id]` parameter
+- Use `filter[entity.legalAddress.country]` instead of RA code filtering (works reliably for all countries including Germany with its ~100 local court RA codes)
+- The GLEIF **response** contains `registeredAt.id` with the RA code (e.g., `RA000463` for NL-KVK) - we store this for reference, but cannot use it for searching
 
 ---
 
