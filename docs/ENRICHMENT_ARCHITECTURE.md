@@ -38,7 +38,7 @@ filter[entity.registeredAs]=33031431
 filter[entity.legalAddress.country]=NL
 ```
 
-### Fallback Search: Company Name (the official registered companame as registered in for instance the KvK) + Country
+### Fallback Search: Company Name (the official registered company name) + Country
 
 If registration number lookup fails:
 
@@ -311,6 +311,77 @@ flowchart TD
 
 ---
 
+## Peppol Enrichment Flow (ALL EU Countries)
+
+**Peppol** is a pan-European e-invoicing network. Companies registered in the Peppol Directory can send and receive electronic invoices. The enrichment service searches for Peppol participants using country-specific identifier schemes.
+
+**Search Strategy:**
+1. First, search by national registry number (KVK for NL, KBO for BE, etc.)
+2. Then, search by VAT number
+3. Fallback: search by company name (less reliable)
+
+```mermaid
+flowchart TD
+    START([Start Peppol Enrichment])
+
+    subgraph Search["Peppol Directory Search"]
+        CHECK_PEPPOL{PEPPOL already exists?}
+        HAS_COC{CoC number exists?}
+        SEARCH_COC["Search by CoC:
+        NL: scheme=0106 (KVK)
+        BE: scheme=0208 (KBO)
+        DE: N/A (no scheme)"]
+        COC_FOUND{Participant found?}
+        HAS_VAT{VAT number exists?}
+        SEARCH_VAT["Search by VAT:
+        NL: scheme=9944
+        BE: scheme=9925
+        DE: scheme=9930"]
+        VAT_FOUND{Participant found?}
+        SEARCH_NAME["Search by company name
+        (fallback, less reliable)"]
+        NAME_FOUND{Participant found?}
+        STORE_PEPPOL[Store PEPPOL identifier]
+        NO_PEPPOL["Not found in Peppol Directory"]
+    end
+
+    START --> CHECK_PEPPOL
+    CHECK_PEPPOL -->|Yes| DONE([Already exists])
+    CHECK_PEPPOL -->|No| HAS_COC
+    HAS_COC -->|Yes| SEARCH_COC
+    HAS_COC -->|No| HAS_VAT
+    SEARCH_COC --> COC_FOUND
+    COC_FOUND -->|Yes| STORE_PEPPOL
+    COC_FOUND -->|No| HAS_VAT
+    HAS_VAT -->|Yes| SEARCH_VAT
+    HAS_VAT -->|No| SEARCH_NAME
+    SEARCH_VAT --> VAT_FOUND
+    VAT_FOUND -->|Yes| STORE_PEPPOL
+    VAT_FOUND -->|No| SEARCH_NAME
+    SEARCH_NAME --> NAME_FOUND
+    NAME_FOUND -->|Yes| STORE_PEPPOL
+    NAME_FOUND -->|No| NO_PEPPOL
+```
+
+**Peppol Identifier Schemes by Country:**
+
+| Country | CoC Scheme | VAT Scheme | Example |
+|---------|-----------|-----------|---------|
+| **NL** | 0106 (KVK) | 9944 | `0106:12345678` |
+| **BE** | 0208 (KBO) | 9925 | `0208:0439291125` |
+| **DE** | - | 9930 | `9930:DE123456789` |
+| **FR** | 0009 (SIRET) | 9957 | `0009:12345678901234` |
+| **GB** | 0088 (CRN) | 9932 | `0088:12345678` |
+| **DK** | 0184 (CVR) | 9902 | `0184:12345678` |
+
+**Document Types Supported:**
+- UBL Invoice 2.1 (Peppol BIS Billing 3.0)
+- UBL Credit Note 2.1
+- CII CrossIndustryInvoice (D16B)
+- Self-billing variants
+
+---
+
 ## External Registry Services
 
 ```mermaid
@@ -387,7 +458,7 @@ flowchart LR
 
 | Service | URL | Method | Rate Limit |
 |---------|-----|--------|------------|
-| **BundesAPI** | `handelsregister.de` | Web scraping | **60 requests/hour** (1 per minute minimum) |
+| **BundesAPI** | `handelsregister.de` | Web scraping | **60 requests/hour** (1 per minute) |
 | **GLEIF** (fallback) | `api.gleif.org` | REST API | No hard limit (fair use) |
 
 **Implementation:** `api/src/services/bundesApiService.ts`
@@ -562,18 +633,37 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Q1{Country = NL?}
-    Q1 -->|Yes| Q2{RSIN available?}
-    Q1 -->|No| MANUAL["VAT must be provided manually
-    (Handelsregister has no VAT data,
-    VIES only validates existing VAT)"]
-    Q2 -->|Yes| DERIVE["Derive: NL RSIN B01"]
+    Q1{Country?}
+    Q1 -->|NL| Q2{RSIN available?}
+    Q1 -->|BE| Q3{KBO number available?}
+    Q1 -->|DE| MANUAL_DE["VAT must be provided manually
+    (Handelsregister has no VAT data)"]
+    Q1 -->|Other| MANUAL_OTHER["VAT must be provided manually
+    (no derivation rule)"]
+
+    Q2 -->|Yes| DERIVE_NL["Derive: NL + RSIN + B01"]
     Q2 -->|No| NO_RSIN["Cannot derive VAT
     without RSIN"]
-    DERIVE --> VALIDATE[Validate via VIES]
-    VALIDATE --> |Valid| STORE[Store VAT]
-    VALIDATE --> |Invalid| TRY_B02["Try B02 suffix"]
+    DERIVE_NL --> VALIDATE_NL[Validate via VIES]
+    VALIDATE_NL -->|Valid| STORE_NL[Store VAT as VERIFIED]
+    VALIDATE_NL -->|Invalid| TRY_B02["Try B02, B03... suffix"]
+
+    Q3 -->|Yes| DERIVE_BE["Derive: BE + KBO number"]
+    Q3 -->|No| NO_KBO["Cannot derive VAT
+    without KBO"]
+    DERIVE_BE --> VALIDATE_BE[Verify against VIES]
+    VALIDATE_BE -->|Valid| STORE_BE_V[Store VAT as VERIFIED]
+    VALIDATE_BE -->|Invalid| STORE_BE_D[Store VAT as DERIVED]
 ```
+
+**VAT Derivation Rules by Country:**
+
+| Country | Rule | Example |
+|---------|------|---------|
+| **NL** | `NL` + RSIN + `B01` (try B02, B03 if invalid) | `NL861785721B01` |
+| **BE** | `BE` + KBO number (10 digits, no dots) | `BE0439291125` |
+| **DE** | Manual entry only (Handelsregister has no VAT) | `DE123456789` |
+| **Other** | Manual entry | Country-specific format |
 
 ### When can EUID be generated?
 
