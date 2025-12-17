@@ -2,7 +2,7 @@
 
 **Last Updated:** 2025-12-17
 
-This document visualizes the data enrichment and verification flows in the ASR system.
+This document describes and visualizes the data enrichment and verification flows in the ASR system.
 
 ---
 
@@ -377,6 +377,72 @@ flowchart LR
 
 ---
 
+## Data Sources & Rate Limits
+
+### Web Scraping Services
+
+⚠️ **Important:** The following services use web scraping rather than official APIs. This means they have rate limits to avoid being blocked and may be more fragile than API-based services.
+
+#### German Handelsregister (DE)
+
+| Service | URL | Method | Rate Limit |
+|---------|-----|--------|------------|
+| **BundesAPI** | `handelsregister.de` | Web scraping | **60 requests/hour** (1 per minute minimum) |
+| **GLEIF** (fallback) | `api.gleif.org` | REST API | No hard limit (fair use) |
+
+**Implementation:** `api/src/services/bundesApiService.ts`
+
+```typescript
+// Rate limit: 60 queries/hour per Terms of Use
+private readonly minRequestInterval = 60000; // 1 minute between requests
+```
+
+**Notes:**
+- The BundesAPI scrapes the official German commercial register at `handelsregister.de`
+- Rate limiting is enforced via minimum delay between requests
+- If rate limit is exceeded, the service will return an error
+- GLEIF is used as a secondary source (only for companies with LEI)
+
+#### Belgian KBO Public Search (BE)
+
+| Service | URL | Method | Rate Limit |
+|---------|-----|--------|------------|
+| **KBO Public** | `kbopub.economie.fgov.be` | Web scraping | No documented limit (be respectful) |
+| **KBO API** (paid) | `api.kbodata.app` | REST API | Per subscription tier |
+
+**Implementation:** `api/src/services/kboService.ts`
+
+```typescript
+// No explicit rate limit implemented, but use responsibly
+// For high-volume needs, use the paid KBO API instead
+```
+
+**Notes:**
+- The KBO public search requires an enterprise number (KBO number) - name search is not supported
+- Web scraping parses HTML responses from the Belgian government portal
+- For production use with high volume, the paid KBO API is recommended
+- The paid API provides richer data and guaranteed availability
+
+### Official API Services
+
+These services use official REST APIs with published rate limits:
+
+| Service | API | Rate Limit | Auth Required |
+|---------|-----|------------|---------------|
+| **KVK** (NL) | `api.kvk.nl` | Per API key tier | Yes (API key) |
+| **GLEIF** | `api.gleif.org` | Fair use policy | No |
+| **VIES** | `ec.europa.eu/taxation_customs/vies` | Fair use policy | No |
+| **Peppol Directory** | `directory.peppol.eu` | 2 req/second | No |
+
+**Peppol Rate Limiting Implementation:** `api/src/services/peppolService.ts`
+
+```typescript
+// Rate limit: 2 queries per second (500ms minimum between requests)
+const MIN_REQUEST_INTERVAL_MS = 500;
+```
+
+---
+
 ## Identifier Type Matrix
 
 ### Country-Specific Identifiers
@@ -550,18 +616,18 @@ flowchart TD
 
 ### External API Services
 
-| Service | File | Purpose | Status |
-|---------|------|---------|--------|
-| KVK | `api/src/services/kvkService.ts` | Dutch Chamber of Commerce API | Active |
-| KBO (scraping) | `api/src/services/kboService.ts` | Belgian KBO public search scraping | Active |
-| KBO API | `api/src/services/kboApiService.ts` | Belgian KBO official API (kbodata.app) | **Disabled** (requires subscription) |
-| VIES | `api/src/services/viesService.ts` | EU VAT validation | Active |
-| LEI | `api/src/services/leiService.ts` | GLEIF LEI lookup + storage | Active |
-| Handelsregister | `api/src/services/handelsregisterService.ts` | German commercial register | Active |
-| BundesAPI | `api/src/services/bundesApiService.ts` | Handelsregister.de scraping | Active |
-| Peppol | `api/src/services/peppolService.ts` | Peppol directory lookup | Active |
-| EUID | `api/src/services/euidService.ts` | EUID format generation | Active |
-| DNS | `api/src/services/dnsVerificationService.ts` | Domain ownership verification | Active |
+| Service | File | Purpose | Method | Status |
+|---------|------|---------|--------|--------|
+| KVK | `api/src/services/kvkService.ts` | Dutch Chamber of Commerce | REST API | Active |
+| KBO (scraping) | `api/src/services/kboService.ts` | Belgian KBO public search | **Web Scraping** | Active |
+| KBO API | `api/src/services/kboApiService.ts` | Belgian KBO official API (kbodata.app) | REST API | **Disabled** (requires subscription) |
+| VIES | `api/src/services/viesService.ts` | EU VAT validation | SOAP/REST API | Active |
+| LEI | `api/src/services/leiService.ts` | GLEIF LEI lookup + storage | REST API | Active |
+| Handelsregister | `api/src/services/handelsregisterService.ts` | German commercial register coordinator | Mixed | Active |
+| BundesAPI | `api/src/services/bundesApiService.ts` | Handelsregister.de | **Web Scraping** (60/hr limit) | Active |
+| Peppol | `api/src/services/peppolService.ts` | Peppol directory lookup | REST API (2/sec limit) | Active |
+| EUID | `api/src/services/euidService.ts` | EUID format generation | Local generation | Active |
+| DNS | `api/src/services/dnsVerificationService.ts` | Domain ownership verification | DNS lookup | Active |
 
 ### KBO API (Belgium) - Paid Service
 
