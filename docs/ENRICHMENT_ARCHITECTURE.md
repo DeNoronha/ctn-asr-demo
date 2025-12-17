@@ -1,10 +1,6 @@
 # Enrichment & Verification Architecture
 
 **Last Updated:** 2025-12-17
-**Related Code:**
-- `api/src/routes.ts` - POST /v1/legal-entities/:id/enrich endpoint
-- `api/src/services/enrichment/` - Modular enrichment services
-- `api/src/services/leiService.ts` - GLEIF API client
 
 This document visualizes the data enrichment and verification flows in the ASR system.
 
@@ -12,9 +8,9 @@ This document visualizes the data enrichment and verification flows in the ASR s
 
 ## Key Principles
 
-1. **LEI, Peppol, and branding apply to ALL countries** - not just NL/DE
+1. **EUID, LEI, Peppol apply to ALL EU countries** - not just NL/DE
 2. **Registration Number + Country first, then company name fallback** - LEI and Peppol search strategy
-3. **Country-specific flows** - RSIN/VAT for NL, HRB/EUID for DE
+3. **Country-specific flows** - RSIN/VAT for NL, Handelsregister for DE
 4. **Modular services** - Each enrichment type in its own service file for maintainability
 
 ---
@@ -41,7 +37,7 @@ filter[entity.registeredAs]=33031431
 filter[entity.legalAddress.country]=NL
 ```
 
-### Fallback Search: Company Name + Country
+### Fallback Search: Company Name (the official name as registered in for instance the KvK) + Country
 
 If registration number lookup fails:
 
@@ -88,16 +84,16 @@ flowchart TB
         RSIN[RSIN Identifier]
         VAT_DERIVE[Derive VAT: NL + RSIN + B01]
         VIES[VIES Validation]
-        EUID_NL[EUID: NL.KVK.number]
     end
 
     subgraph DE["German Company Flow (DE only)"]
         HR_SEARCH[Handelsregister Search]
         HRB[HRB/HRA Identifier]
-        EUID_DE[EUID: DEcourtCode.typenumber]
     end
 
-    subgraph Global["Global Enrichment (ALL Countries)"]
+    subgraph Global["Global Enrichment (ALL EU Countries)"]
+        EUID_GEN["EUID Generation
+        From national identifiers"]
         LEI_SEARCH["LEI Search
         1. Registration number + country
         2. Company name + country fallback"]
@@ -119,7 +115,7 @@ flowchart TB
     LE --> ENRICH
     ENRICH --> |country=NL| NL
     ENRICH --> |country=DE| DE
-    ENRICH --> |ALL countries| Global
+    ENRICH --> |ALL EU countries| Global
 
     COC_ID --> KVK_API
     KVK_API --> RSIN
@@ -128,15 +124,15 @@ flowchart TB
     VAT_DERIVE --> VIES
     VIES --> |valid| LEN
     VIES --> VIES_DATA
-    COC_ID --> EUID_NL
-    EUID_NL --> LEN
 
     COC_ID --> HR_SEARCH
     NAME --> HR_SEARCH
     HR_SEARCH --> HRB
     HR_SEARCH --> DE_DATA
-    HRB --> EUID_DE
-    EUID_DE --> LEN
+    HRB --> LEN
+
+    COC_ID --> EUID_GEN
+    EUID_GEN --> LEN
 
     COC_ID --> LEI_SEARCH
     NAME --> LEI_SEARCH
@@ -377,13 +373,37 @@ flowchart LR
 | FR | SIRET/RCS | Input | French business register number |
 | GB | CRN | Input | UK Companies House number |
 
-### Global Identifiers (ALL Countries)
+### Global Identifiers (ALL EU Countries)
 
 | Identifier | Source | Lookup Strategy |
 |------------|--------|-----------------|
+| **EUID** | Generated | From national identifier (KVK, KBO, HRB, SIREN, etc.) |
 | **LEI** | GLEIF | 1. Registration number + country code<br>2. Company name + country fallback |
 | **PEPPOL** | Peppol Directory | 1. CoC/VAT by country-specific scheme<br>2. Company name + country search fallback |
 | **Branding** | Domain | Google/DuckDuckGo favicon services |
+
+### EUID Format by Country
+
+EUID (European Unique Identifier) is available for **ALL EU member states** via the BRIS system.
+
+| Country | Format | Example | Source Identifier |
+|---------|--------|---------|-------------------|
+| NL | `NL.KVK.{number}` | `NL.KVK.12345678` | KVK |
+| BE | `BE.KBO.{number}` | `BE.KBO.0123456789` | KBO/BCE |
+| DE | `DE{courtCode}.{type}{number}` | `DEK1101R.HRB116737` | HRB/HRA + court code |
+| FR | `FR.SIREN.{number}` | `FR.SIREN.123456789` | SIREN/SIRET |
+| AT | `AT.FB.{number}` | `AT.FB.123456A` | FB (Firmenbuch) |
+| IT | `IT.REA.{number}` | `IT.REA.RM-123456` | REA |
+| ES | `ES.CIF.{number}` | `ES.CIF.A12345678` | CIF |
+| DK | `DK.CVR.{number}` | `DK.CVR.12345678` | CVR |
+| PL | `PL.KRS.{number}` | `PL.KRS.0000123456` | KRS |
+| CH | `CH.CHR.{number}` | `CH.CHR.123456789` | CHR/UID |
+| LU | `LU.RCS.{number}` | `LU.RCS.B123456` | RCS |
+| PT | `PT.NIF.{number}` | `PT.NIF.123456789` | NIF |
+| IE | `IE.CRO.{number}` | `IE.CRO.123456` | CRO |
+| SE | `SE.ORG.{number}` | `SE.ORG.1234567890` | ORG |
+| FI | `FI.YTJ.{number}` | `FI.YTJ.12345671` | YTJ/BID |
+| CZ | `CZ.ICO.{number}` | `CZ.ICO.12345678` | ICO |
 
 ### Supported CoC Types for LEI Lookup
 
@@ -497,8 +517,9 @@ flowchart TD
 | Service | File | Purpose |
 |---------|------|---------|
 | **Orchestrator** | `api/src/services/enrichment/index.ts` | Main enrichment coordinator |
-| **NL Enrichment** | `api/src/services/enrichment/nlEnrichmentService.ts` | Dutch: RSIN, VAT, EUID, KVK registry |
-| **DE Enrichment** | `api/src/services/enrichment/deEnrichmentService.ts` | German: HRB/HRA, EUID generation |
+| **EUID Enrichment** | `api/src/services/enrichment/euidEnrichmentService.ts` | EUID generation (ALL EU countries) |
+| **NL Enrichment** | `api/src/services/enrichment/nlEnrichmentService.ts` | Dutch: RSIN, VAT, KVK registry |
+| **DE Enrichment** | `api/src/services/enrichment/deEnrichmentService.ts` | German: HRB/HRA, registry data |
 | **LEI Enrichment** | `api/src/services/enrichment/leiEnrichmentService.ts` | GLEIF lookup (ALL countries) |
 | **Peppol Enrichment** | `api/src/services/enrichment/peppolEnrichmentService.ts` | Peppol lookup (ALL countries) |
 | **Branding** | `api/src/services/enrichment/brandingService.ts` | Logo/favicon from domain |
@@ -524,8 +545,9 @@ api/src/services/
 ├── enrichment/                     # ENRICHMENT ORCHESTRATION
 │   ├── index.ts                    # Main orchestrator - enrichLegalEntity()
 │   ├── types.ts                    # EnrichmentContext, EnrichmentResult types
-│   ├── nlEnrichmentService.ts      # enrichRsin(), enrichVat(), enrichEuid()
-│   ├── deEnrichmentService.ts      # enrichGermanRegistry(), generateEuidFromExisting()
+│   ├── euidEnrichmentService.ts    # enrichEuid() - ALL EU countries
+│   ├── nlEnrichmentService.ts      # enrichRsin(), enrichVat() - NL only
+│   ├── deEnrichmentService.ts      # enrichGermanRegistry() - DE only
 │   ├── leiEnrichmentService.ts     # enrichLei() - ALL countries via CoC or name
 │   ├── peppolEnrichmentService.ts  # enrichPeppol() - ALL countries via CoC/VAT or name
 │   └── brandingService.ts          # enrichBranding() - logo from domain
@@ -535,7 +557,7 @@ api/src/services/
 ├── handelsregisterService.ts       # Handelsregister search logic
 ├── bundesApiService.ts             # Handelsregister.de web scraping
 ├── peppolService.ts                # Peppol Directory API client
-└── euidService.ts                  # EUID format generation
+└── euidService.ts                  # EUID format generation (legacy)
 ```
 
 ### Enrichment Context
@@ -563,8 +585,8 @@ interface EnrichmentResult {
 1. **Separation of concerns** - Each enrichment type in its own service
 2. **Testability** - Services can be unit tested independently
 3. **Readability** - ~100-200 lines per service vs 900+ lines inline
-4. **Global scope** - LEI and Peppol work for ALL countries, not just NL/DE
-5. **Extensibility** - Easy to add new country-specific enrichments (BE, FR, etc.)
+4. **Global scope** - EUID, LEI and Peppol work for ALL EU countries
+5. **Extensibility** - Easy to add new country-specific identifier formats
 
 ---
 

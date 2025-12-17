@@ -3,7 +3,8 @@
  *
  * Coordinates all enrichment operations for legal entities:
  * - NL: KVK → RSIN → VAT → VIES
- * - DE: Handelsregister → HRB → EUID
+ * - DE: Handelsregister → HRB
+ * - ALL EU: EUID generation (from national identifiers)
  * - Global: LEI (GLEIF), Peppol, Branding
  *
  * @see docs/ENRICHMENT_ARCHITECTURE.md
@@ -11,11 +12,12 @@
 
 import { Pool } from 'pg';
 import { EnrichmentContext, EnrichmentResult, EnrichmentSummary, ExistingIdentifier } from './types';
-import { enrichRsin, enrichVat, enrichEuid, ensureKvkRegistryData, updateLegalEntityFromKvk } from './nlEnrichmentService';
+import { enrichRsin, enrichVat, ensureKvkRegistryData, updateLegalEntityFromKvk } from './nlEnrichmentService';
 import { enrichGermanRegistry } from './deEnrichmentService';
 import { enrichLei } from './leiEnrichmentService';
 import { enrichPeppol } from './peppolEnrichmentService';
 import { enrichBranding } from './brandingService';
+import { enrichEuid } from './euidEnrichmentService';
 
 // Re-export types
 export * from './types';
@@ -25,8 +27,9 @@ export * from './types';
  *
  * Performs comprehensive enrichment based on country code:
  * 1. NL: RSIN from KVK → VAT derivation → VIES validation
- * 2. DE: Handelsregister → HRB/HRA → EUID generation
- * 3. All: LEI from GLEIF, Peppol lookup, branding
+ * 2. DE: Handelsregister → HRB/HRA
+ * 3. ALL EU: EUID generation from national identifiers
+ * 4. Global: LEI from GLEIF, Peppol lookup, branding
  *
  * @param pool - PostgreSQL connection pool
  * @param legalEntityId - UUID of the legal entity to enrich
@@ -92,12 +95,6 @@ export async function enrichLegalEntity(
   const vatResult = await enrichVat(ctx, rsin);
   results.push(vatResult);
 
-  // EUID from KVK (Dutch companies)
-  if (countryCode === 'NL') {
-    const euidResult = await enrichEuid(ctx);
-    results.push(euidResult);
-  }
-
   // =========================================================================
   // 2. German-specific enrichment (DE)
   // =========================================================================
@@ -105,12 +102,20 @@ export async function enrichLegalEntity(
 
   if (countryCode === 'DE') {
     const deResults = await enrichGermanRegistry(ctx);
-    results.push(...deResults);
-    germanRegistryFetched = deResults.some(r => r.status === 'added' && r.identifier !== 'EUID');
+    // Filter out EUID from DE results - we'll handle it in the generic EUID step
+    const deResultsWithoutEuid = deResults.filter(r => r.identifier !== 'EUID');
+    results.push(...deResultsWithoutEuid);
+    germanRegistryFetched = deResultsWithoutEuid.some(r => r.status === 'added');
   }
 
   // =========================================================================
-  // 3. Global enrichment (all countries)
+  // 3. EUID generation (ALL EU countries)
+  // =========================================================================
+  const euidResult = await enrichEuid(ctx);
+  results.push(euidResult);
+
+  // =========================================================================
+  // 4. Global enrichment (all countries)
   // =========================================================================
 
   // LEI from GLEIF
@@ -122,14 +127,14 @@ export async function enrichLegalEntity(
   results.push(peppolResult);
 
   // =========================================================================
-  // 4. Ensure KVK registry data exists (NL)
+  // 5. Ensure KVK registry data exists (NL)
   // =========================================================================
   if (countryCode === 'NL') {
     await ensureKvkRegistryData(ctx);
   }
 
   // =========================================================================
-  // 5. Update legal_entity with registry data
+  // 6. Update legal_entity with registry data
   // =========================================================================
   let companyDetailsUpdated = false;
   let updatedFields: string[] = [];
@@ -141,7 +146,7 @@ export async function enrichLegalEntity(
   }
 
   // =========================================================================
-  // 6. Branding (logo from domain)
+  // 7. Branding (logo from domain)
   // =========================================================================
   const brandingResult = await enrichBranding(ctx);
 
