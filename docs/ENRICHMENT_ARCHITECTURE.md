@@ -38,7 +38,7 @@ filter[entity.registeredAs]=33031431
 filter[entity.legalAddress.country]=NL
 ```
 
-### Fallback Search: Company Name (the official name as registered in for instance the KvK) + Country
+### Fallback Search: Company Name (the official registered companame as registered in for instance the KvK) + Country
 
 If registration number lookup fails:
 
