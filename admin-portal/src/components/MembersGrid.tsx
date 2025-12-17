@@ -229,13 +229,12 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   };
 
   // Render identifier pills for a member
-  // Task 08: Show EUID, PEPPOL, VIES, VAT, EORI pills; hide KVK and DUNS
+  // Show EUID, PEPPOL, VIES, EORI pills; hide KVK, DUNS, and VAT (VAT redundant with VIES)
   const renderIdentifierPills = (member: Member) => {
     const identifiers = [
       { key: 'EUID', value: member.euid, label: 'EUID' },
       { key: 'PEPPOL', value: member.peppol, label: 'PEPPOL' },
       { key: 'VIES', value: member.vat, label: 'VIES' }, // VIES uses VAT for validation
-      { key: 'VAT', value: member.vat, label: 'VAT' },
       { key: 'EORI', value: member.eori, label: 'EORI' },
     ];
 
@@ -319,13 +318,13 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'euid',
         title: 'EUID',
-        width: 140,
+        width: 120,
         toggleable: true,
         draggable: true,
         resizable: true,
         sortable: true,
         render: (member) => (
-          <span style={{ fontFamily: 'monospace', fontSize: '0.8em' }}>
+          <span style={{ fontFamily: 'monospace', fontSize: '0.75em' }}>
             {member.euid || '—'}
           </span>
         ),
@@ -338,6 +337,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         draggable: true,
         resizable: true,
         sortable: true,
+        defaultToggle: false, // Hidden by default per user request
         render: (member) => (
           <span style={{ fontFamily: 'monospace', fontSize: '0.8em' }}>
             {member.lei || '—'}
@@ -347,7 +347,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'identifiers',
         title: 'Identifiers',
-        width: 200,
+        width: 170,
         toggleable: true,
         draggable: true,
         resizable: true,
@@ -357,7 +357,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'status',
         title: 'Status',
-        width: 95,
+        width: 80,
         toggleable: true,
         draggable: true,
         resizable: true,
@@ -367,8 +367,8 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             className="status-badge"
             style={{
               backgroundColor: getStatusColor(member.status),
-              fontSize: '0.7rem',
-              padding: '2px 6px'
+              fontSize: '0.65rem',
+              padding: '2px 5px'
             }}
             title={statusTooltips[member.status] || 'Member status'}
             aria-label={`Status: ${member.status}`}

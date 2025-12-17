@@ -202,20 +202,26 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
         accessor: 'verification_status',
         title: 'Status',
         width: 120,
-        render: (identifier: Identifier) => (
-          <Badge
-            color={
-              identifier.verification_status === 'VALIDATED'
-                ? 'green'
-                : identifier.verification_status === 'PENDING'
-                  ? 'yellow'
-                  : 'gray'
-            }
-            variant="light"
-          >
-            {identifier.verification_status || 'PENDING'}
-          </Badge>
-        ),
+        render: (identifier: Identifier) => {
+          const status = identifier.verification_status || 'PENDING';
+          const colorMap: Record<string, string> = {
+            VALID: 'green',
+            INVALID: 'red',
+            PENDING: 'yellow',
+            EXPIRED: 'gray',
+            NOT_VERIFIABLE: 'blue',
+            // Legacy values (backward compatibility)
+            VALIDATED: 'green',
+            VERIFIED: 'green',
+            FAILED: 'red',
+            DERIVED: 'green',
+          };
+          return (
+            <Badge color={colorMap[status] || 'gray'} variant="light">
+              {status}
+            </Badge>
+          );
+        },
       },
       {
         accessor: 'dt_created',

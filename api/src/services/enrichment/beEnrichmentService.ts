@@ -108,7 +108,7 @@ export async function enrichBelgianRegistry(ctx: EnrichmentContext): Promise<Enr
               validation_status, registry_name, registry_url,
               dt_created, dt_modified
             )
-            VALUES ($1, $2, 'KBO', $3, 'BE', 'VERIFIED', 'KBO', 'https://kbopub.economie.fgov.be', NOW(), NOW())
+            VALUES ($1, $2, 'KBO', $3, 'BE', 'VALID', 'KBO', 'https://kbopub.economie.fgov.be', NOW(), NOW())
           `, [randomUUID(), legalEntityId, kboData.kboNumberClean]);
 
           results.push({
@@ -130,7 +130,7 @@ export async function enrichBelgianRegistry(ctx: EnrichmentContext): Promise<Enr
               validation_status, registry_name, registry_url,
               verification_notes, dt_created, dt_modified
             )
-            VALUES ($1, $2, 'VAT', $3, 'BE', 'DERIVED', 'KBO', 'https://kbopub.economie.fgov.be',
+            VALUES ($1, $2, 'VAT', $3, 'BE', 'VALID', 'KBO', 'https://kbopub.economie.fgov.be',
                     'Derived from KBO number', NOW(), NOW())
           `, [randomUUID(), legalEntityId, vatNumber]);
 
@@ -170,7 +170,7 @@ export async function enrichBelgianRegistry(ctx: EnrichmentContext): Promise<Enr
               validation_status, registry_name, verification_notes,
               dt_created, dt_modified
             )
-            VALUES ($1, $2, 'VAT', $3, 'BE', 'DERIVED', 'KBO',
+            VALUES ($1, $2, 'VAT', $3, 'BE', 'VALID', 'KBO',
                     'Derived from KBO number', NOW(), NOW())
           `, [randomUUID(), legalEntityId, vatNumber]);
 

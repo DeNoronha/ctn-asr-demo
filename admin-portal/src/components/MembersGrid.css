@@ -29,6 +29,20 @@
   box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Fix pinned Actions column background - ensure solid white background */
+.members-grid-container td.mantine-DataTable-pinnedColumn--right {
+  background-color: white !important;
+}
+
+/* Ensure striped rows don't bleed into pinned column */
+.members-grid-container tr:nth-of-type(odd) td.mantine-DataTable-pinnedColumn--right {
+  background-color: white !important;
+}
+
+.members-grid-container tr:nth-of-type(even) td.mantine-DataTable-pinnedColumn--right {
+  background-color: white !important;
+}
+
 /* Checkbox Column Styling - Equal padding and perfect centering */
 
 /* Target the checkbox column cells for equal padding */

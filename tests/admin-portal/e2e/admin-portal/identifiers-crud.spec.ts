@@ -99,7 +99,7 @@ test.describe('Identifier CRUD API - Direct API Testing', () => {
       identifier_type: 'KVK',
       identifier_value: '95944192',
       country_code: 'NL',
-      validation_status: 'PENDING',
+      validation_status: 'PENDING', // Valid values: PENDING, VALID, INVALID, EXPIRED, NOT_VERIFIABLE
     };
 
     const response = await request.post(

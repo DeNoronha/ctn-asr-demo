@@ -83,9 +83,9 @@ export interface LegalEntityIdentifier {
   valid_to?: string;
   issued_by?: string;
   validated_by?: string;
-  validation_status?: 'PENDING' | 'VALIDATED' | 'VERIFIED' | 'FAILED' | 'EXPIRED';
+  validation_status?: 'PENDING' | 'VALID' | 'INVALID' | 'EXPIRED' | 'NOT_VERIFIABLE';
   validation_date?: string;
-  verification_status?: 'PENDING' | 'VERIFIED' | 'FAILED' | 'EXPIRED';
+  verification_status?: 'PENDING' | 'VALID' | 'INVALID' | 'EXPIRED';
   verification_document_url?: string;
   verification_notes?: string;
   issuing_authority?: string;

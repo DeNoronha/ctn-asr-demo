@@ -50,7 +50,7 @@ async function runIdentifierTests(token, legalEntityId) {
         identifier_value: generateTestId('').substring(0, 8).replace(/\D/g, '0') + '12345678'.substring(0, 8),
         country_code: 'NL',
         registry_name: 'KvK (Test)',
-        validation_status: 'PENDING'
+        validation_status: 'PENDING' // Valid values: PENDING, VALID, INVALID, EXPIRED, NOT_VERIFIABLE
       };
 
       const response = await apiRequest('POST', `/entities/${legalEntityId}/identifiers`, {
@@ -81,7 +81,7 @@ async function runIdentifierTests(token, legalEntityId) {
         identifier_value: leiValue,
         country_code: 'NL',
         registry_name: 'GLEIF (Test)',
-        validation_status: 'PENDING',
+        validation_status: 'PENDING', // Valid values: PENDING, VALID, INVALID, EXPIRED, NOT_VERIFIABLE
         issued_by: 'Test Authority'
       };
 
@@ -109,7 +109,7 @@ async function runIdentifierTests(token, legalEntityId) {
         identifier_value: eoriValue,
         country_code: 'NL',
         registry_name: 'EU Customs (Test)',
-        validation_status: 'PENDING'
+        validation_status: 'PENDING' // Valid values: PENDING, VALID, INVALID, EXPIRED, NOT_VERIFIABLE
       };
 
       const response = await apiRequest('POST', `/entities/${legalEntityId}/identifiers`, {
@@ -136,7 +136,7 @@ async function runIdentifierTests(token, legalEntityId) {
         identifier_type: 'DUNS',
         identifier_value: dunsValue,
         registry_name: 'Dun & Bradstreet (Test)',
-        validation_status: 'PENDING'
+        validation_status: 'PENDING' // Valid values: PENDING, VALID, INVALID, EXPIRED, NOT_VERIFIABLE
       };
 
       const response = await apiRequest('POST', `/entities/${legalEntityId}/identifiers`, {
@@ -210,7 +210,7 @@ async function runIdentifierTests(token, legalEntityId) {
   if (createdKvkId) {
     await runTest('Identifiers', 'Update identifier', async () => {
       const updateData = {
-        validation_status: 'VALIDATED',
+        validation_status: 'VALID', // New terminology (Dec 2025): PENDING, VALID, INVALID, EXPIRED, NOT_VERIFIABLE
         verification_notes: 'API test validation'
       };
 
@@ -220,8 +220,8 @@ async function runIdentifierTests(token, legalEntityId) {
       });
 
       assertStatus(response.status, 200);
-      if (response.data.validation_status !== 'VALIDATED') {
-        throw new Error(`Expected validation_status to be VALIDATED, got ${response.data.validation_status}`);
+      if (response.data.validation_status !== 'VALID') {
+        throw new Error(`Expected validation_status to be VALID, got ${response.data.validation_status}`);
       }
     });
   } else {
@@ -233,7 +233,7 @@ async function runIdentifierTests(token, legalEntityId) {
     const fakeId = generateUUID();
     const response = await apiRequest('PUT', `/identifiers/${fakeId}`, {
       token,
-      body: { validation_status: 'VALIDATED' }
+      body: { validation_status: 'VALID' } // New terminology (Dec 2025)
     });
     assertStatus(response.status, 404);
   });

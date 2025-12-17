@@ -104,7 +104,7 @@ export async function enrichRsin(ctx: EnrichmentContext): Promise<{
         validation_status, registry_name, registry_url,
         dt_created, dt_modified
       )
-      VALUES ($1, $2, 'RSIN', $3, 'NL', 'VERIFIED', 'KVK', 'https://www.kvk.nl/', NOW(), NOW())
+      VALUES ($1, $2, 'RSIN', $3, 'NL', 'VALID', 'KVK', 'https://www.kvk.nl/', NOW(), NOW())
     `, [randomUUID(), legalEntityId, rsin]);
 
     return {
@@ -164,7 +164,7 @@ export async function enrichVat(
             validation_status, registry_name, registry_url,
             dt_created, dt_modified
           )
-          VALUES ($1, $2, 'VAT', $3, 'NL', 'VERIFIED', 'VIES', 'https://ec.europa.eu/taxation_customs/vies/', NOW(), NOW())
+          VALUES ($1, $2, 'VAT', $3, 'NL', 'VALID', 'VIES', 'https://ec.europa.eu/taxation_customs/vies/', NOW(), NOW())
         `, [randomUUID(), legalEntityId, derivedVat]);
 
         // Store VIES registry data
@@ -188,7 +188,7 @@ export async function enrichVat(
               validation_status, registry_name, registry_url,
               dt_created, dt_modified
             )
-            VALUES ($1, $2, 'VAT', $3, 'NL', 'VERIFIED', 'VIES', 'https://ec.europa.eu/taxation_customs/vies/', NOW(), NOW())
+            VALUES ($1, $2, 'VAT', $3, 'NL', 'VALID', 'VIES', 'https://ec.europa.eu/taxation_customs/vies/', NOW(), NOW())
           `, [randomUUID(), legalEntityId, vatB02]);
 
           return {
@@ -506,7 +506,7 @@ export async function enrichEuid(ctx: EnrichmentContext): Promise<EnrichmentResu
       validation_status, registry_name, registry_url,
       verification_notes, dt_created, dt_modified
     )
-    VALUES ($1, $2, 'EUID', $3, 'NL', 'VALIDATED', 'BRIS', 'https://e-justice.europa.eu/489/EN/business_registers',
+    VALUES ($1, $2, 'EUID', $3, 'NL', 'VALID', 'BRIS', 'https://e-justice.europa.eu/489/EN/business_registers',
             'Auto-generated from KVK', NOW(), NOW())
   `, [randomUUID(), legalEntityId, euidValue]);
 

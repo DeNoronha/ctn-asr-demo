@@ -82,7 +82,7 @@ export async function enrichGermanRegistry(ctx: EnrichmentContext): Promise<Enri
               validation_status, registry_name, registry_url,
               dt_created, dt_modified
             )
-            VALUES ($1, $2, $3, $4, 'DE', 'VERIFIED', 'Handelsregister', 'https://www.handelsregister.de/', NOW(), NOW())
+            VALUES ($1, $2, $3, $4, 'DE', 'VALID', 'Handelsregister', 'https://www.handelsregister.de/', NOW(), NOW())
           `, [randomUUID(), legalEntityId, hrData.registerType, hrData.registerNumber]);
 
           results.push({
@@ -102,7 +102,7 @@ export async function enrichGermanRegistry(ctx: EnrichmentContext): Promise<Enri
               validation_status, registry_name, registry_url,
               dt_created, dt_modified
             )
-            VALUES ($1, $2, 'EUID', $3, 'VALIDATED', 'BRIS', 'https://e-justice.europa.eu/', NOW(), NOW())
+            VALUES ($1, $2, 'EUID', $3, 'VALID', 'BRIS', 'https://e-justice.europa.eu/', NOW(), NOW())
           `, [randomUUID(), legalEntityId, hrData.euid]);
 
           results.push({
@@ -204,7 +204,7 @@ export async function generateEuidFromExisting(ctx: EnrichmentContext): Promise<
       validation_status, registry_name, registry_url,
       dt_created, dt_modified
     )
-    VALUES ($1, $2, 'EUID', $3, 'VALIDATED', 'BRIS', 'https://e-justice.europa.eu/', NOW(), NOW())
+    VALUES ($1, $2, 'EUID', $3, 'VALID', 'BRIS', 'https://e-justice.europa.eu/', NOW(), NOW())
   `, [randomUUID(), legalEntityId, euid]);
 
   console.log(`[DE Enrichment] Generated EUID ${euid} from existing HRB ${existingHrb.identifier_value}`);

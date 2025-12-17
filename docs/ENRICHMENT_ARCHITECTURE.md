@@ -255,8 +255,8 @@ flowchart TD
         DERIVE_VAT["Derive VAT: BE + KBO number"]
         VERIFY_VIES[Verify against VIES API]
         VIES_VALID{VIES valid?}
-        STORE_VAT_VERIFIED[Store VAT as VERIFIED]
-        STORE_VAT_DERIVED[Store VAT as DERIVED]
+        STORE_VAT_VERIFIED[Store VAT as VALID]
+        STORE_VAT_DERIVED[Store VAT as VALID]
         STORE_VIES[Store vies_registry_data]
     end
 
@@ -649,15 +649,15 @@ flowchart TD
     Q2 -->|No| NO_RSIN["Cannot derive VAT
     without RSIN"]
     DERIVE_NL --> VALIDATE_NL[Validate via VIES]
-    VALIDATE_NL -->|Valid| STORE_NL[Store VAT as VERIFIED]
+    VALIDATE_NL -->|Valid| STORE_NL[Store VAT as VALID]
     VALIDATE_NL -->|Invalid| TRY_B02["Try B02, B03... suffix"]
 
     Q3 -->|Yes| DERIVE_BE["Derive: BE + KBO number"]
     Q3 -->|No| NO_KBO["Cannot derive VAT
     without KBO"]
     DERIVE_BE --> VALIDATE_BE[Verify against VIES]
-    VALIDATE_BE -->|Valid| STORE_BE_V[Store VAT as VERIFIED]
-    VALIDATE_BE -->|Invalid| STORE_BE_D[Store VAT as DERIVED]
+    VALIDATE_BE -->|Valid| STORE_BE_V[Store VAT as VALID]
+    VALIDATE_BE -->|Invalid| STORE_BE_D[Store VAT as VALID]
 ```
 
 **VAT Derivation Rules by Country:**
@@ -848,39 +848,50 @@ type EnrichmentStatus = 'added' | 'exists' | 'error' | 'not_available';
 
 When enrichment runs, each identifier returns one of these statuses:
 
-| Enrichment Status | Meaning | Maps to Verification Status |
-|-------------------|---------|----------------------------|
-| `added` | New identifier found and stored | `VERIFIED` or `VALIDATED` |
+| Enrichment Status | Meaning | Maps to Validation Status |
+|-------------------|---------|---------------------------|
+| `added` | New identifier found and stored | `VALID` |
 | `exists` | Identifier already in database | (unchanged) |
 | `not_available` | Identifier cannot be found/derived | (not stored) |
 | `error` | API or processing error occurred | (not stored) |
 
-### Verification Status (Database)
+### Validation Status (Database)
+
+> **Terminology Update (December 2025):** The validation status values were updated to align with industry standards (GLEIF, KVK API, VIES). The previous terminology confused ACTIONS (verify, derive, validate) with RESULTS (valid, invalid).
 
 The `validation_status` field in `legal_entity_number` table uses these values:
 
 | Status | Meaning | Set When |
 |--------|---------|----------|
-| `VERIFIED` | Confirmed via external API | LEI from GLEIF, VAT from VIES, RSIN from KVK |
-| `VALIDATED` | Format validated, auto-generated | EUID generated from national identifier |
-| `DERIVED` | Mathematically derived from verified identifier | Belgian VAT (BE + KBO number) before VIES check |
-| `PENDING` | Awaiting verification | Manual entry, awaiting API check |
-| `UNVERIFIED` | Manual entry, not yet checked | User-entered identifier |
-| `FAILED` | Failed verification | VIES returned invalid, GLEIF not found |
-| `EXPIRED` | Verification has expired | Periodic re-verification needed |
+| `VALID` | Confirmed valid by registry API or derivation rules | LEI from GLEIF, VAT from VIES, RSIN from KVK, EUID generated, Belgian VAT derived |
+| `INVALID` | Registry confirmed identifier does not exist or failed validation | VIES returned invalid, GLEIF not found |
+| `PENDING` | Not yet checked/verified | Manual entry, awaiting API check |
+| `EXPIRED` | Was valid but verification has expired | Periodic re-verification needed |
+| `NOT_VERIFIABLE` | Cannot be verified (no registry API exists) | Identifier types without registry APIs |
+
+**Legacy Status Mapping (for reference):**
+| Old Status | New Status | Reason |
+|------------|------------|--------|
+| `VERIFIED` | `VALID` | External API confirmed |
+| `VALIDATED` | `VALID` | Format valid, auto-generated |
+| `DERIVED` | `VALID` | Mathematically derived from valid source |
+| `FAILED` | `INVALID` | Verification failed |
+| `UNVERIFIED` | `PENDING` | Awaiting check |
 
 ### Status Mapping
 
-| Source | Enrichment Status | Verification Status |
-|--------|-------------------|---------------------|
-| LEI from GLEIF API | `added` | `VERIFIED` |
-| VAT from VIES API | `added` | `VERIFIED` |
-| RSIN from KVK API | `added` | `VERIFIED` |
-| EUID auto-generated | `added` | `VALIDATED` |
-| Peppol from Directory | `added` | `VERIFIED` |
-| Belgian VAT (derived, not yet VIES checked) | `added` | `DERIVED` |
-| Belgian VAT (after VIES verification) | `added` | `VERIFIED` |
-| Manual entry | N/A | `UNVERIFIED` or `PENDING` |
+| Source | Enrichment Status | Validation Status |
+|--------|-------------------|-------------------|
+| LEI from GLEIF API | `added` | `VALID` |
+| VAT from VIES API | `added` | `VALID` |
+| RSIN from KVK API | `added` | `VALID` |
+| EUID auto-generated | `added` | `VALID` |
+| Peppol from Directory | `added` | `VALID` |
+| Belgian VAT (derived from KBO) | `added` | `VALID` |
+| KBO from Belgian registry | `added` | `VALID` |
+| HRB/HRA from German registry | `added` | `VALID` |
+| Manual entry | N/A | `PENDING` |
+| VIES validation failed | N/A | `INVALID` |
 
 ---
 

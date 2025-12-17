@@ -34,10 +34,24 @@ export const MEMBERSHIP_COLORS = {
 } as const;
 
 /**
- * Verification status colors for badges (white text on colored background)
+ * Validation status colors for badges (white text on colored background)
  * All colors have 4.5:1+ contrast ratio with white text
+ *
+ * New terminology (Dec 2025):
+ *   VALID          - Green: Confirmed valid by registry or derivation
+ *   INVALID        - Red: Registry confirmed does not exist or failed
+ *   PENDING        - Amber: Not yet checked/verified
+ *   EXPIRED        - Gray: Was valid but verification expired
+ *   NOT_VERIFIABLE - Blue-gray: Cannot be verified (no registry API exists)
  */
 export const VERIFICATION_COLORS = {
+  // New status names (preferred)
+  VALID: '#0d8558', // Green: 4.53:1 contrast
+  INVALID: '#b91c1c', // Red: 5.94:1 contrast
+  PENDING: '#b45309', // Amber: 4.52:1 contrast
+  EXPIRED: '#4b5563', // Gray: 5.93:1 contrast
+  NOT_VERIFIABLE: '#475569', // Blue-gray: 8.59:1 contrast
+  // Legacy names (for backward compatibility)
   verified: '#0d8558', // Darker green: 4.53:1 contrast
   pending: '#b45309', // Darker amber: 4.52:1 contrast
   failed: '#b91c1c', // Darker red: 5.94:1 contrast

@@ -273,7 +273,7 @@ export async function enrichEuid(ctx: EnrichmentContext): Promise<EnrichmentResu
       validation_status, registry_name, registry_url,
       verification_notes, dt_created, dt_modified
     )
-    VALUES ($1, $2, 'EUID', $3, $4, 'VALIDATED', 'BRIS', 'https://e-justice.europa.eu/489/EN/business_registers',
+    VALUES ($1, $2, 'EUID', $3, $4, 'VALID', 'BRIS', 'https://e-justice.europa.eu/489/EN/business_registers',
             $5, NOW(), NOW())
   `, [
     randomUUID(),

@@ -1667,7 +1667,7 @@ router.post('/v1/identifiers/:identifierId/validate', requireAuth, async (req: R
           validation_date = NOW(),
           dt_modified = NOW()
       WHERE legal_entity_reference_id = $1
-    `, [identifierId, valid ? 'VALIDATED' : 'FAILED']);
+    `, [identifierId, valid ? 'VALID' : 'INVALID']);
 
     // Invalidate cache
     invalidateCacheForUser(req, `/v1/legal-entities/${identifier.legal_entity_id}/identifiers`);
@@ -2475,7 +2475,7 @@ async function processKvKVerification(legalEntityId: string, blobUrl: string, ve
               identifier_type, identifier_value, country_code,
               validation_status, dt_created, dt_modified
             )
-            VALUES ($1, $2, 'EUID', $3, 'NL', 'VERIFIED', NOW(), NOW())
+            VALUES ($1, $2, 'EUID', $3, 'NL', 'VALID', NOW(), NOW())
           `, [randomUUID(), legalEntityId, euid]);
 
           console.log('Created EUID identifier:', euid);
@@ -2522,7 +2522,7 @@ async function processKvKVerification(legalEntityId: string, blobUrl: string, ve
                   identifier_type, identifier_value,
                   validation_status, dt_created, dt_modified
                 )
-                VALUES ($1, $2, 'LEI', $3, 'VERIFIED', NOW(), NOW())
+                VALUES ($1, $2, 'LEI', $3, 'VALID', NOW(), NOW())
               `, [randomUUID(), legalEntityId, leiResult.lei]);
 
               console.log('Created LEI identifier:', leiResult.lei);
@@ -2569,7 +2569,7 @@ async function processKvKVerification(legalEntityId: string, blobUrl: string, ve
                   validation_status, registry_name, registry_url,
                   dt_created, dt_modified
                 )
-                VALUES ($1, $2, 'PEPPOL', $3, 'VERIFIED', 'Peppol Directory', 'https://directory.peppol.eu/', NOW(), NOW())
+                VALUES ($1, $2, 'PEPPOL', $3, 'VALID', 'Peppol Directory', 'https://directory.peppol.eu/', NOW(), NOW())
               `, [randomUUID(), legalEntityId, peppolResult.participant_id]);
 
               console.log('Created PEPPOL identifier:', peppolResult.participant_id);
@@ -2942,14 +2942,14 @@ router.post('/v1/legal-entities/:legalentityid/peppol/fetch', requireAuth, async
             validation_status, registry_name, registry_url,
             dt_created, dt_modified
           )
-          VALUES ($1, $2, 'PEPPOL', $3, 'VERIFIED', 'Peppol Directory', 'https://directory.peppol.eu/', NOW(), NOW())
+          VALUES ($1, $2, 'PEPPOL', $3, 'VALID', 'Peppol Directory', 'https://directory.peppol.eu/', NOW(), NOW())
         `, [identifierId, legalentityid, peppolResult.participant_id]);
       } else {
         identifierId = existingRows[0].legal_entity_reference_id;
         // Update existing identifier
         await pool.query(`
           UPDATE legal_entity_number
-          SET identifier_value = $1, validation_status = 'VERIFIED', dt_modified = NOW()
+          SET identifier_value = $1, validation_status = 'VALID', dt_modified = NOW()
           WHERE legal_entity_reference_id = $2
         `, [peppolResult.participant_id, identifierId]);
       }
@@ -3198,7 +3198,7 @@ router.post('/v1/legal-entities/:legalentityid/vies/fetch', requireAuth, async (
             validation_status, registry_name, registry_url, dt_created, dt_modified, country_code
           )
           VALUES ($1, $2, 'VIES', $3, $4, 'EU VIES System', 'https://ec.europa.eu/taxation_customs/vies', NOW(), NOW(), $5)
-        `, [identifierId, legalentityid, viesData.fullVatNumber, viesData.isValid ? 'VERIFIED' : 'FAILED', viesData.countryCode]);
+        `, [identifierId, legalentityid, viesData.fullVatNumber, viesData.isValid ? 'VALID' : 'INVALID', viesData.countryCode]);
       } else {
         // Update existing identifier
         await pool.query(`
@@ -3207,7 +3207,7 @@ router.post('/v1/legal-entities/:legalentityid/vies/fetch', requireAuth, async (
             validation_status = $2,
             dt_modified = NOW()
           WHERE legal_entity_reference_id = $3
-        `, [viesData.fullVatNumber, viesData.isValid ? 'VERIFIED' : 'FAILED', identifierId]);
+        `, [viesData.fullVatNumber, viesData.isValid ? 'VALID' : 'INVALID', identifierId]);
       }
 
       // Upsert VIES registry data
