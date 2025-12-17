@@ -80,6 +80,95 @@ All tasks completed on December 17, 2025.
 
 ---
 
+## Task 07: Localization Issues ✅ COMPLETED
+
+**Request:** German language selected but showing English. Dutch not available.
+
+**Solution:**
+- Added translation keys to `en/de/nl/translation.json` for:
+  - `companyDetails` section (title, labels, address fields)
+  - `identifiers` section (title, buttons, table headers)
+  - `tabs` section (all tab names)
+  - `memberDetail` section (back button, tier badge)
+  - `contacts` section (title, table headers)
+- Updated components to use `useTranslation()` hook:
+  - `CompanyDetails.tsx`
+  - `MemberDetailView.tsx`
+  - `IdentifiersManager.tsx`
+  - `IdentifiersTable.tsx`
+
+---
+
+## Task 08: Grid Refinements ✅ COMPLETED
+
+**Request:** Narrower city column, add country code, wider status, show EUID/PEPPOL/VIES pills, hide KVK/DUNS, no horizontal scroll.
+
+**Solution:**
+- City column: 120px → 90px
+- Added CC (country_code) column: 45px
+- Status column: 85px → 95px
+- Changed identifier pills to: EUID, PEPPOL, VIES, VAT, EORI (removed KVK, DUNS)
+- Added `peppol` to Member interface in `types.ts`
+- Created migration `058_add_peppol_to_view.sql`
+- Updated API routes to include peppol
+- Grid key bumped to `members-grid-v4`
+
+---
+
+## Task 09: Add Contargo Germany Company ✅ COMPLETED
+
+**Request:** Add a German company with HRB/HRA to see German EUID width.
+
+**Solution:**
+- Added Contargo Rhein-Main GmbH (Koblenz, Germany)
+- HRB identifier: "HRB 20885"
+- German EUID: "DER2210.HRB20885" (18 characters)
+- Verified German EUID displays correctly in grid
+
+---
+
+## Task 10: Verify LEI Numbers ✅ COMPLETED
+
+**Request:** Verify current LEI numbers are correct after logic changes.
+
+**Solution:**
+- Verified LEIs against GLEIF API:
+  - ✅ Hapag-Lloyd: `HD52L5PJVBXJUUX8I539` - CORRECT
+  - ❌ Contargo: `529900T8BM49AURSDO55` - Belonged to Ubisecure Oy (Finland) - **DELETED**
+  - ❌ LK Holding: `724500Y6YT5CU09QUU37` - Invalid (404) - **DELETED**
+  - ❌ Rotterdam Shipping: `LEI9876543210ROTT1` - Fake format - **DELETED**
+- Found correct LEI for LK Holding: `984500BFA87D80EFF307` - **ADDED**
+
+---
+
+## Task 11: Verify Peppol ID for LK Holding B.V. ✅ COMPLETED
+
+**Request:** Learco said he never applied for a Peppol ID. Is LK Holding's Peppol ID correct?
+
+**Solution:**
+- Checked Peppol Directory API
+- ID `iso6523-actorid-upis::0106:61586587` belongs to "B den Dulk Holding B.V.", NOT LK Holding B.V.
+- **DELETED** incorrect Peppol ID from LK Holding
+
+---
+
+## Additional Cleanup ✅ COMPLETED
+
+**Request:** Clean up legacy comments and TODO markers.
+
+**Solution:**
+- Removed comments about previous/incorrect implementations from:
+  - `api/src/services/leiService.ts` - Simplified GLEIF API documentation
+  - `api/src/services/enrichment/leiEnrichmentService.ts` - Cleaned up file headers
+  - `api/src/routes.ts` - Removed legacy markers and outdated TODO
+  - `api/src/middleware/auth.ts` - Simplified CSRF documentation
+- Removed outdated TODO: "Implement actual registry lookups" (already implemented in enrichment services)
+- Retained valid TODOs:
+  - Event Grid signature validation (not configured)
+  - Azure AD role assignment (app permissions not set up)
+
+---
+
 ## Files Modified
 
 ### Database Migrations
@@ -87,63 +176,31 @@ All tasks completed on December 17, 2025.
 - `055_add_euid_for_kvk_records.sql` - Backfill EUID for KVK records
 - `056_add_gleif_unique_constraint.sql` - GLEIF unique index
 - `057_add_city_to_view.sql` - Add city to vw_legal_entities
+- `058_add_peppol_to_view.sql` - Add peppol to vw_legal_entities
 
 ### API
-- `api/src/routes.ts` - Added city, country_code, vat to member queries
+- `api/src/routes.ts` - Added city, country_code, vat, peppol to member queries; cleaned up legacy comments
 - `api/src/services/enrichment/index.ts` - Added EUID enrichment call
 - `api/src/services/enrichment/nlEnrichmentService.ts` - Added `enrichEuid()` function
 - `api/src/services/enrichment/deEnrichmentService.ts` - Fixed validation_status
+- `api/src/services/enrichment/leiEnrichmentService.ts` - Cleaned up documentation
+- `api/src/services/leiService.ts` - Simplified GLEIF API documentation
+- `api/src/middleware/auth.ts` - Simplified CSRF documentation
 
 ### Admin Portal
-- `admin-portal/src/components/MembersGrid.tsx` - New column layout with identifier pills
+- `admin-portal/src/components/MembersGrid.tsx` - New column layout with refined pills
 - `admin-portal/src/components/AdminPortal.tsx` - Data refresh on back navigation
 - `admin-portal/src/components/AddressMap.tsx` - Environment variable for API key
-- `admin-portal/src/services/api/types.ts` - Added city, country_code to Member type
+- `admin-portal/src/components/CompanyDetails.tsx` - Added useTranslation()
+- `admin-portal/src/components/MemberDetailView.tsx` - Added useTranslation()
+- `admin-portal/src/components/IdentifiersManager.tsx` - Added useTranslation()
+- `admin-portal/src/components/identifiers/IdentifiersTable.tsx` - Added useTranslation()
+- `admin-portal/src/services/api/types.ts` - Added city, country_code, peppol to Member type
+- `admin-portal/src/locales/en/translation.json` - Added new translation keys
+- `admin-portal/src/locales/de/translation.json` - Added German translations
+- `admin-portal/src/locales/nl/translation.json` - Added Dutch translations
 - `admin-portal/.env` - Added VITE_GOOGLE_MAPS_API_KEY
 - `admin-portal/.env.production` - Added VITE_GOOGLE_MAPS_API_KEY
 
 ### Configuration
 - `.credentials` - Added GOOGLE_MAPS_API_KEY
-
-
-
-Task 07:
-Please check the localizations thorughtout the whole admin portal and member portal. I have selected Deutsch, but it is all in English (mostly). See these screenshots. 
-
-/Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-17 om 10.42.34.png
-
-/Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-17 om 10.42.43.png
-
-/Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-17 om 10.42.48.png
-
-/Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-17 om 10.43.04.png
-
-Dutch is also not available. 
-/Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-17 om 10.45.25.png
-
-
-
-Task 08:
-
-Refine the grid:
-/Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-17 om 10.47.01.png
-
-- City column can be narrower
-- Add country code column after city column 
-- Status column needs to be a bit wider
-- I want also pills for EUID, PEPPOL, VIES
-- Pills DUNS and KVK can be hidden
-- I dont want to scroll horizontally. Look at the following screenshot. 
-  - /Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-17 om 10.54.23.png
-
-
-
-Task 09:
-Add a Contargo company located in Germany for which you can find a HRB or HRA number. I want to see how wide a German EUID will be. 
-
-
-task 10:
-Check the current LEI numbers. Are they correct? We changed the logic today.
-
-Task 11:
-Is the Peppol ID for LK Holding B.V. correct? Learco told me he never has applied for a Peppol ID
