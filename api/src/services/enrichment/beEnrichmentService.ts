@@ -8,6 +8,10 @@
  * 4. VAT derivation (BE + KBO number)
  * 5. EUID generation (BE.KBO.{number})
  *
+ * Data Sources:
+ * - KBO Public Search (free): Web scraping of kbopub.economie.fgov.be
+ * - KBO API (paid): Official API via kbodata.app (when enabled)
+ *
  * Note: Belgian VAT numbers are directly derived from KBO numbers.
  * Format: BE + 10-digit KBO number (e.g., BE0439291125)
  *
@@ -18,6 +22,7 @@ import { randomUUID } from 'crypto';
 import { Pool } from 'pg';
 import { EnrichmentContext, EnrichmentResult, getExistingValue } from './types';
 import { kboService, KboCompanyData } from '../kboService';
+import { kboApiService, KboApiEnterprise } from '../kboApiService';
 
 /**
  * Enrich Belgian company from KBO
@@ -58,7 +63,24 @@ export async function enrichBelgianRegistry(ctx: EnrichmentContext): Promise<Enr
 
       if (existingKbo) {
         console.log('[BE Enrichment] Searching by KBO number:', existingKbo.identifier_value);
-        kboResult = await kboService.searchByKboNumber(existingKbo.identifier_value);
+
+        // Try KBO API first if enabled (paid service with richer data)
+        if (kboApiService.isEnabled()) {
+          console.log('[BE Enrichment] Using KBO API (paid service)');
+          const apiResult = await kboApiService.fetchCompleteProfile(existingKbo.identifier_value);
+          if (apiResult) {
+            kboResult = {
+              status: 'found',
+              companyData: transformApiToKboData(apiResult),
+            };
+          }
+        }
+
+        // Fallback to public scraping if API not available or failed
+        if (!kboResult) {
+          console.log('[BE Enrichment] Using KBO Public Search (web scraping)');
+          kboResult = await kboService.searchByKboNumber(existingKbo.identifier_value);
+        }
       } else {
         // Unlike German Handelsregister, KBO name search is not reliable via public interface
         // We need a KBO number to proceed
@@ -273,4 +295,90 @@ async function updateLegalEntityAddress(
       WHERE legal_entity_id = $${idx} AND is_deleted = false
     `, updateVals);
   }
+}
+
+/**
+ * Transform KBO API response to KboCompanyData format
+ * This allows the enrichment service to work with both data sources
+ */
+function transformApiToKboData(apiData: KboApiEnterprise): KboCompanyData {
+  // Get primary denomination (social name)
+  const socialName = apiData.denominations?.find(d => d.type === 'social');
+  const companyName = socialName?.value || '';
+
+  // Map juridical form to short code
+  let legalForm = apiData.juridicalForm?.code || '';
+  const legalFormFull = apiData.juridicalForm?.description?.nl || apiData.juridicalForm?.description?.en || '';
+
+  // Common Belgian legal form mappings
+  if (legalFormFull.toLowerCase().includes('besloten vennootschap')) {
+    legalForm = 'BV';
+  } else if (legalFormFull.toLowerCase().includes('naamloze vennootschap')) {
+    legalForm = 'NV';
+  } else if (legalFormFull.toLowerCase().includes('coöperatieve')) {
+    legalForm = 'CVBA';
+  } else if (legalFormFull.toLowerCase().includes('vereniging zonder winstoogmerk') || legalFormFull.toLowerCase().includes('vzw')) {
+    legalForm = 'VZW';
+  }
+
+  // Map status
+  let status: 'Actief' | 'Stopgezet' | 'Start' | 'Unknown' = 'Unknown';
+  if (apiData.active) {
+    status = 'Actief';
+  } else if (apiData.dateEnd) {
+    status = 'Stopgezet';
+  }
+
+  // Get primary address
+  const primaryAddress = apiData.addresses?.[0];
+
+  // Build NACE codes array
+  const naceCodes = apiData.activities?.map((act, idx) => ({
+    code: act.naceCode,
+    description: act.description?.nl || act.description?.en || '',
+    isMain: idx === 0,
+  })) || [];
+
+  // Build representatives array
+  const representatives = apiData.roles?.map(role => ({
+    name: role.name,
+    role: role.roleTitle?.nl || role.roleTitle?.en || 'Bestuurder',
+    startDate: role.dateStart,
+  })) || [];
+
+  return {
+    kboNumber: apiData.enterpriseNumberFormatted,
+    kboNumberClean: apiData.enterpriseNumber,
+    enterpriseType: apiData.type === 'entity' ? 'Rechtspersoon' : 'Natuurlijk persoon',
+    enterpriseTypeCode: apiData.type === 'entity' ? '2' : '1',
+    companyName,
+    legalForm,
+    legalFormFull,
+    status,
+    startDate: apiData.dateStart,
+    endDate: apiData.dateEnd,
+    address: primaryAddress ? {
+      street: primaryAddress.street,
+      houseNumber: primaryAddress.houseNumber,
+      busNumber: primaryAddress.box,
+      postalCode: primaryAddress.zipcode,
+      city: primaryAddress.city,
+      country: 'Belgium',
+      fullAddress: [
+        primaryAddress.street,
+        primaryAddress.houseNumber,
+        primaryAddress.box ? `bus ${primaryAddress.box}` : '',
+        primaryAddress.zipcode,
+        primaryAddress.city,
+      ].filter(Boolean).join(' '),
+    } : undefined,
+    vatNumber: apiData.vatNumber,
+    naceCodes: naceCodes.length > 0 ? naceCodes : undefined,
+    mainActivity: naceCodes[0]?.description,
+    representatives: representatives.length > 0 ? representatives : undefined,
+    establishmentCount: apiData.establishments?.length,
+    dataSource: 'kbo_api',
+    sourceUrl: `https://api.kbodata.app/enterprise/${apiData.enterpriseNumber}`,
+    rawResponse: apiData,
+  };
 }

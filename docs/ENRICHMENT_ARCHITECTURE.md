@@ -227,6 +227,12 @@ flowchart TD
 
 **VAT for Belgian Companies:** Belgian VAT numbers are directly derived from the KBO (Kruispuntbank van Ondernemingen) number. The format is `BE` + the 10-digit KBO number (without dots). For example, KBO `0439.291.125` becomes VAT `BE0439291125`. This is much simpler than Dutch or German VAT derivation.
 
+**Data Sources:**
+- **KBO Public Search (free)**: Web scraping of `kbopub.economie.fgov.be` - Always available
+- **KBO API (paid)**: Official API via `kbodata.app` - Richer data, requires subscription
+
+The enrichment service tries KBO API first if enabled, then falls back to public scraping.
+
 ```mermaid
 flowchart TD
     START([Start Enrichment - BE])
@@ -234,6 +240,9 @@ flowchart TD
     subgraph KBO_Flow["Belgian KBO Flow"]
         CHECK_BE_DATA{belgium_registry_data exists?}
         HAS_KBO{KBO identifier exists?}
+        CHECK_API{KBO API enabled?}
+        CALL_KBO_API[Call KBO API kbodata.app]
+        API_SUCCESS{Data found?}
         SEARCH_BY_KBO[Scrape KBO Public Search]
         KBO_FOUND{Company found?}
         STORE_BE_DATA[Store belgium_registry_data]
@@ -242,9 +251,13 @@ flowchart TD
         (public search requires enterprise number)"]
     end
 
-    subgraph VAT_Flow["VAT Derivation"]
+    subgraph VAT_Flow["VAT Derivation + VIES Verification"]
         DERIVE_VAT["Derive VAT: BE + KBO number"]
-        STORE_VAT[Store VAT identifier]
+        VERIFY_VIES[Verify against VIES API]
+        VIES_VALID{VIES valid?}
+        STORE_VAT_VERIFIED[Store VAT as VERIFIED]
+        STORE_VAT_DERIVED[Store VAT as DERIVED]
+        STORE_VIES[Store vies_registry_data]
     end
 
     subgraph EUID_Flow["EUID Generation"]
@@ -265,15 +278,25 @@ flowchart TD
 
     START --> CHECK_BE_DATA
     CHECK_BE_DATA -->|No| HAS_KBO
-    HAS_KBO -->|Yes| SEARCH_BY_KBO
+    HAS_KBO -->|Yes| CHECK_API
     HAS_KBO -->|No| NO_KBO
+    CHECK_API -->|Yes| CALL_KBO_API
+    CHECK_API -->|No| SEARCH_BY_KBO
+    CALL_KBO_API --> API_SUCCESS
+    API_SUCCESS -->|Yes| STORE_BE_DATA
+    API_SUCCESS -->|No| SEARCH_BY_KBO
     SEARCH_BY_KBO --> KBO_FOUND
     KBO_FOUND -->|Yes| STORE_BE_DATA
     STORE_BE_DATA --> STORE_KBO
     STORE_KBO --> DERIVE_VAT
-    DERIVE_VAT --> STORE_VAT
+    DERIVE_VAT --> VERIFY_VIES
+    VERIFY_VIES --> VIES_VALID
+    VIES_VALID -->|Yes| STORE_VAT_VERIFIED
+    VIES_VALID -->|No| STORE_VAT_DERIVED
+    STORE_VAT_VERIFIED --> STORE_VIES
 
-    STORE_VAT --> HAS_EUID
+    STORE_VAT_VERIFIED --> HAS_EUID
+    STORE_VAT_DERIVED --> HAS_EUID
     CHECK_BE_DATA -->|Yes| HAS_EUID
     HAS_EUID -->|No| GENERATE_EUID
     GENERATE_EUID --> STORE_EUID
@@ -294,8 +317,10 @@ flowchart TD
 flowchart LR
     subgraph Services["TypeScript Services"]
         KVK_SVC[kvkService.ts for NL]
-        KBO_SVC[kboService.ts for BE]
+        KBO_SVC[kboService.ts for BE - scraping]
+        KBO_API_SVC[kboApiService.ts for BE - API]
         VIES_SVC[viesService.ts]
+        VIES_ENRICH[viesEnrichmentService.ts]
         LEI_SVC[leiService.ts]
         HR_SVC[handelsregisterService.ts for DE]
         PEPPOL_SVC[peppolService.ts]
@@ -307,7 +332,10 @@ flowchart LR
         api.kvk.nl"]
         KBO_WEB["KBO Public Search
         kbopub.economie.fgov.be
-        (web scraping)"]
+        (web scraping - free)"]
+        KBO_API["KBO API
+        api.kbodata.app
+        (paid subscription)"]
         VIES_API["VIES API
         ec.europa.eu/taxation_customs/vies"]
         GLEIF_API["GLEIF API
@@ -329,7 +357,9 @@ flowchart LR
     KVK_SVC --> KVK_API
     KVK_SVC --> GLEIF_API
     KBO_SVC --> KBO_WEB
+    KBO_API_SVC -.->|disabled| KBO_API
     VIES_SVC --> VIES_API
+    VIES_ENRICH --> VIES_API
     LEI_SVC --> GLEIF_API
     HR_SVC --> HR_WEB
     HR_SVC --> GLEIF_API
@@ -337,10 +367,13 @@ flowchart LR
 
     KVK_API --> KVK_DATA
     KBO_WEB --> BE_DATA
+    KBO_API -.-> BE_DATA
     VIES_API --> VIES_DATA
     GLEIF_API --> GLEIF_DATA
     HR_WEB --> DE_DATA
 ```
+
+**Note:** The KBO API (kbodata.app) is currently disabled pending subscription. When enabled, it provides richer data including contacts, roles, and financial information.
 
 ---
 
@@ -512,21 +545,51 @@ flowchart TD
 | **BE Enrichment** | `api/src/services/enrichment/beEnrichmentService.ts` | Belgian: KBO, VAT derivation |
 | **LEI Enrichment** | `api/src/services/enrichment/leiEnrichmentService.ts` | GLEIF lookup (ALL countries) |
 | **Peppol Enrichment** | `api/src/services/enrichment/peppolEnrichmentService.ts` | Peppol lookup (ALL countries) |
+| **VIES Enrichment** | `api/src/services/enrichment/viesEnrichmentService.ts` | Batch VAT verification against VIES |
 | **Types** | `api/src/services/enrichment/types.ts` | Shared TypeScript types |
 
 ### External API Services
 
-| Service | File | Purpose |
-|---------|------|---------|
-| KVK | `api/src/services/kvkService.ts` | Dutch Chamber of Commerce API |
-| KBO | `api/src/services/kboService.ts` | Belgian KBO public search scraping |
-| VIES | `api/src/services/viesService.ts` | EU VAT validation |
-| LEI | `api/src/services/leiService.ts` | GLEIF LEI lookup + storage |
-| Handelsregister | `api/src/services/handelsregisterService.ts` | German commercial register |
-| BundesAPI | `api/src/services/bundesApiService.ts` | Handelsregister.de scraping |
-| Peppol | `api/src/services/peppolService.ts` | Peppol directory lookup |
-| EUID | `api/src/services/euidService.ts` | EUID format generation |
-| DNS | `api/src/services/dnsVerificationService.ts` | Domain ownership verification |
+| Service | File | Purpose | Status |
+|---------|------|---------|--------|
+| KVK | `api/src/services/kvkService.ts` | Dutch Chamber of Commerce API | Active |
+| KBO (scraping) | `api/src/services/kboService.ts` | Belgian KBO public search scraping | Active |
+| KBO API | `api/src/services/kboApiService.ts` | Belgian KBO official API (kbodata.app) | **Disabled** (requires subscription) |
+| VIES | `api/src/services/viesService.ts` | EU VAT validation | Active |
+| LEI | `api/src/services/leiService.ts` | GLEIF LEI lookup + storage | Active |
+| Handelsregister | `api/src/services/handelsregisterService.ts` | German commercial register | Active |
+| BundesAPI | `api/src/services/bundesApiService.ts` | Handelsregister.de scraping | Active |
+| Peppol | `api/src/services/peppolService.ts` | Peppol directory lookup | Active |
+| EUID | `api/src/services/euidService.ts` | EUID format generation | Active |
+| DNS | `api/src/services/dnsVerificationService.ts` | Domain ownership verification | Active |
+
+### KBO API (Belgium) - Paid Service
+
+The Belgian KBO API service (`kboApiService.ts`) provides access to the official KBO database via `kbodata.app`.
+
+**Current Status:** DISABLED (requires paid subscription)
+
+**To Enable:**
+1. Subscribe at https://kbodata.app
+2. Get API key from dashboard
+3. Set environment variable: `KBO_API_KEY=your_api_key`
+4. Set `KBO_API_ENABLED=true` in `kboApiService.ts`
+
+**Available Plans:**
+- **Search**: Basic search functionality
+- **Medium**: Includes NSSO/RSZ employee data
+- **Large**: Full access including contacts, roles, financial data
+
+**Endpoints Available:**
+- `GET /enterprise/{number}` - Enterprise details
+- `GET /enterprise/{number}/address` - Addresses
+- `GET /enterprise/{number}/activities` - NACE codes
+- `GET /enterprise/{number}/denominations` - Business names
+- `GET /enterprise/{number}/establishments` - Branch offices
+- `GET /enterprise/{number}/contact` - Contact info (Large plan)
+- `GET /enterprise/{number}/roles` - Board members (Large plan)
+- `GET /enterprise/{number}/financial` - Capital/fiscal year (Large plan)
+- `GET /denominations?query=` - Search by name
 
 ### Service Structure
 
@@ -540,9 +603,11 @@ api/src/services/
 │   ├── deEnrichmentService.ts      # enrichGermanRegistry() - DE only
 │   ├── beEnrichmentService.ts      # enrichBelgianRegistry() - BE only
 │   ├── leiEnrichmentService.ts     # enrichLei() - ALL countries via CoC or name
-│   └── peppolEnrichmentService.ts  # enrichPeppol() - ALL countries via CoC/VAT or name
+│   ├── peppolEnrichmentService.ts  # enrichPeppol() - ALL countries via CoC/VAT or name
+│   └── viesEnrichmentService.ts    # verifyVatAgainstVies(), batch verification
 ├── kvkService.ts                   # KVK API client (NL)
-├── kboService.ts                   # KBO Public Search scraping (BE)
+├── kboService.ts                   # KBO Public Search scraping (BE) - free
+├── kboApiService.ts                # KBO API client (BE) - paid, DISABLED
 ├── viesService.ts                  # VIES API client
 ├── leiService.ts                   # GLEIF API client + storeGleifRegistryData()
 ├── handelsregisterService.ts       # Handelsregister search logic (DE)
@@ -638,9 +703,11 @@ The `validation_status` field in `legal_entity_number` table uses these values:
 |--------|---------|----------|
 | `VERIFIED` | Confirmed via external API | LEI from GLEIF, VAT from VIES, RSIN from KVK |
 | `VALIDATED` | Format validated, auto-generated | EUID generated from national identifier |
+| `DERIVED` | Mathematically derived from verified identifier | Belgian VAT (BE + KBO number) before VIES check |
 | `PENDING` | Awaiting verification | Manual entry, awaiting API check |
 | `UNVERIFIED` | Manual entry, not yet checked | User-entered identifier |
-| `INVALID` | Failed verification | VIES returned invalid, GLEIF not found |
+| `FAILED` | Failed verification | VIES returned invalid, GLEIF not found |
+| `EXPIRED` | Verification has expired | Periodic re-verification needed |
 
 ### Status Mapping
 
@@ -651,6 +718,8 @@ The `validation_status` field in `legal_entity_number` table uses these values:
 | RSIN from KVK API | `added` | `VERIFIED` |
 | EUID auto-generated | `added` | `VALIDATED` |
 | Peppol from Directory | `added` | `VERIFIED` |
+| Belgian VAT (derived, not yet VIES checked) | `added` | `DERIVED` |
+| Belgian VAT (after VIES verification) | `added` | `VERIFIED` |
 | Manual entry | N/A | `UNVERIFIED` or `PENDING` |
 
 ---
