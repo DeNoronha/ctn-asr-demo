@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict wUM6i7n05dHLWiWOZXAYCbNzHo3w2V0k0jeGlUZHk0vowVhzgaVhPHIeczBxDp9
+\restrict CUmdrfbCSSnhhTrhOU1zxEMIjRuYmj836rGZTZSbIAK20uijGfvhKlcvnZYCRVI
 
 -- Dumped from database version 15.14
 -- Dumped by pg_dump version 15.15 (Homebrew)
@@ -102,6 +102,20 @@ $$;
 
 
 --
+-- Name: update_german_registry_modified(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.update_german_registry_modified() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.dt_modified = NOW();
+    RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: update_identifier_verification_updated_at(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -120,6 +134,20 @@ $$;
 --
 
 CREATE FUNCTION public.update_kvk_registry_modified() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.dt_modified = NOW();
+    RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: update_legal_entity_branding_modified(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.update_legal_entity_branding_modified() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
@@ -727,6 +755,178 @@ COMMENT ON COLUMN public.dns_verification_tokens.verification_details IS 'JSON d
 
 
 --
+-- Name: german_court_codes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.german_court_codes (
+    court_code_id integer NOT NULL,
+    court_name character varying(100) NOT NULL,
+    court_code character varying(20) NOT NULL,
+    state character varying(50),
+    is_active boolean DEFAULT true,
+    dt_created timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE german_court_codes; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.german_court_codes IS 'Lookup table for German court codes used in EUID generation';
+
+
+--
+-- Name: german_court_codes_court_code_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.german_court_codes_court_code_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: german_court_codes_court_code_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.german_court_codes_court_code_id_seq OWNED BY public.german_court_codes.court_code_id;
+
+
+--
+-- Name: german_registry_data; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.german_registry_data (
+    registry_data_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    legal_entity_id uuid NOT NULL,
+    register_number character varying(50) NOT NULL,
+    register_type character varying(10) NOT NULL,
+    register_court character varying(100),
+    register_court_code character varying(20),
+    euid character varying(100),
+    company_name character varying(500) NOT NULL,
+    legal_form character varying(200),
+    legal_form_long character varying(500),
+    company_status character varying(100),
+    registration_date date,
+    dissolution_date date,
+    street character varying(255),
+    house_number character varying(20),
+    postal_code character varying(20),
+    city character varying(100),
+    country character varying(50) DEFAULT 'Germany'::character varying,
+    full_address text,
+    business_purpose text,
+    share_capital character varying(100),
+    share_capital_currency character varying(10) DEFAULT 'EUR'::character varying,
+    representatives jsonb,
+    shareholders jsonb,
+    is_main_establishment boolean DEFAULT true,
+    branch_count integer,
+    vat_number character varying(50),
+    lei character varying(20),
+    data_source character varying(50) DEFAULT 'handelsregister'::character varying,
+    source_url text,
+    raw_response jsonb,
+    fetched_at timestamp with time zone DEFAULT now() NOT NULL,
+    last_verified_at timestamp with time zone,
+    dt_created timestamp with time zone DEFAULT now(),
+    dt_modified timestamp with time zone DEFAULT now(),
+    created_by character varying(255),
+    modified_by character varying(255),
+    is_deleted boolean DEFAULT false
+);
+
+
+--
+-- Name: TABLE german_registry_data; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.german_registry_data IS 'Stores German Handelsregister (commercial register) data fetched from various sources';
+
+
+--
+-- Name: COLUMN german_registry_data.register_number; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.german_registry_data.register_number IS 'Full register number including type, e.g., HRB 116737';
+
+
+--
+-- Name: COLUMN german_registry_data.register_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.german_registry_data.register_type IS 'Register type: HRA (Einzelkaufleute/Personengesellschaften), HRB (Kapitalgesellschaften), GnR (Genossenschaften), PR (Partnerschaftsregister), VR (Vereinsregister)';
+
+
+--
+-- Name: COLUMN german_registry_data.register_court_code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.german_registry_data.register_court_code IS 'Court code used in EUID format, e.g., K1101R for Hamburg';
+
+
+--
+-- Name: COLUMN german_registry_data.euid; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.german_registry_data.euid IS 'European Unique Identifier in format DE{CourtCode}.{RegisterType}{Number}';
+
+
+--
+-- Name: gleif_registration_authorities; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gleif_registration_authorities (
+    ra_code character varying(20) NOT NULL,
+    country_code character varying(2) NOT NULL,
+    country_name character varying(100) NOT NULL,
+    jurisdiction character varying(100),
+    register_name_intl character varying(255) NOT NULL,
+    register_name_local character varying(255),
+    org_name_intl character varying(255),
+    org_name_local character varying(255),
+    website character varying(500),
+    comments text,
+    is_primary boolean DEFAULT false,
+    is_active boolean DEFAULT true NOT NULL,
+    dt_created timestamp with time zone DEFAULT now() NOT NULL,
+    dt_modified timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE gleif_registration_authorities; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.gleif_registration_authorities IS 'GLEIF Registration Authorities List - official business register codes from GLEIF';
+
+
+--
+-- Name: COLUMN gleif_registration_authorities.ra_code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.gleif_registration_authorities.ra_code IS 'Unique GLEIF Registration Authority code (e.g., RA000463)';
+
+
+--
+-- Name: COLUMN gleif_registration_authorities.country_code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.gleif_registration_authorities.country_code IS 'ISO 3166-1 alpha-2 country code';
+
+
+--
+-- Name: COLUMN gleif_registration_authorities.is_primary; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.gleif_registration_authorities.is_primary IS 'Whether this is the primary commercial register for the country';
+
+
+--
 -- Name: gleif_registry_data; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1327,6 +1527,61 @@ COMMENT ON COLUMN public.legal_entity.azure_ad_object_id IS 'Azure AD B2C object
 
 
 --
+-- Name: legal_entity_branding; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.legal_entity_branding (
+    branding_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    legal_entity_id uuid NOT NULL,
+    logo_url text,
+    logo_source character varying(50),
+    logo_format character varying(10),
+    favicon_url text,
+    primary_color character varying(7),
+    secondary_color character varying(7),
+    accent_color character varying(7),
+    background_color character varying(7),
+    text_color character varying(7),
+    preferred_theme character varying(10) DEFAULT 'light'::character varying,
+    extracted_from_domain character varying(255),
+    extracted_at timestamp with time zone,
+    dt_created timestamp with time zone DEFAULT now(),
+    dt_modified timestamp with time zone DEFAULT now(),
+    created_by character varying(255),
+    modified_by character varying(255),
+    is_deleted boolean DEFAULT false
+);
+
+
+--
+-- Name: TABLE legal_entity_branding; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.legal_entity_branding IS 'Stores company branding information (logos, colors) for member portal theming';
+
+
+--
+-- Name: COLUMN legal_entity_branding.logo_url; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.legal_entity_branding.logo_url IS 'URL to company logo, fetched from Logo.dev or other sources';
+
+
+--
+-- Name: COLUMN legal_entity_branding.logo_source; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.legal_entity_branding.logo_source IS 'Source of the logo: logo_dev, favicon, manual, brandfetch, etc.';
+
+
+--
+-- Name: COLUMN legal_entity_branding.primary_color; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.legal_entity_branding.primary_color IS 'Primary brand color in hex format (e.g., #0066b3)';
+
+
+--
 -- Name: legal_entity_contact; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1351,15 +1606,15 @@ CREATE TABLE public.legal_entity_contact (
     is_active boolean DEFAULT true,
     first_name character varying(100),
     last_name character varying(100),
-    CONSTRAINT chk_contact_type CHECK (((contact_type)::text = ANY ((ARRAY['PRIMARY'::character varying, 'TECHNICAL'::character varying, 'BILLING'::character varying, 'SUPPORT'::character varying, 'LEGAL'::character varying, 'OTHER'::character varying])::text[])))
+    CONSTRAINT chk_contact_type CHECK (((contact_type)::text = ANY ((ARRAY['AUTHORIZED_REP'::character varying, 'TECHNICAL'::character varying, 'BILLING'::character varying, 'SUPPORT'::character varying, 'LEGAL'::character varying, 'OTHER'::character varying])::text[])))
 );
 
 
 --
--- Name: CONSTRAINT chk_contact_type ON legal_entity_contact; Type: COMMENT; Schema: public; Owner: -
+-- Name: COLUMN legal_entity_contact.contact_type; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON CONSTRAINT chk_contact_type ON public.legal_entity_contact IS 'Ensures contact type is one of: PRIMARY, TECHNICAL, BILLING, SUPPORT, LEGAL, OTHER';
+COMMENT ON COLUMN public.legal_entity_contact.contact_type IS 'Contact type: AUTHORIZED_REP (bestuurder/gevolmachtigde - verified via eHerkenning), TECHNICAL, BILLING, SUPPORT, LEGAL, OTHER';
 
 
 --
@@ -1476,8 +1731,7 @@ CREATE TABLE public.legal_entity_number (
     issued_at timestamp without time zone,
     expires_at timestamp without time zone,
     verification_status character varying(50) DEFAULT 'PENDING'::character varying,
-    CONSTRAINT chk_validation_status_valid CHECK (((validation_status)::text = ANY ((ARRAY['PENDING'::character varying, 'VALIDATED'::character varying, 'VERIFIED'::character varying, 'FAILED'::character varying, 'EXPIRED'::character varying])::text[]))),
-    CONSTRAINT legal_entity_number_verification_status_check CHECK (((verification_status)::text = ANY ((ARRAY['PENDING'::character varying, 'VERIFIED'::character varying, 'FAILED'::character varying, 'EXPIRED'::character varying])::text[])))
+    CONSTRAINT chk_validation_status_valid CHECK (((validation_status)::text = ANY ((ARRAY['PENDING'::character varying, 'VALIDATED'::character varying, 'VERIFIED'::character varying, 'FAILED'::character varying, 'EXPIRED'::character varying])::text[])))
 );
 
 
@@ -1566,7 +1820,7 @@ CREATE TABLE public.legal_entity_number_type (
     type_code character varying(20) NOT NULL,
     type_name character varying(100) NOT NULL,
     description text,
-    country_scope character varying(2),
+    country_scope character varying(10),
     format_regex character varying(255),
     format_example character varying(100),
     registry_url character varying(500),
@@ -1575,7 +1829,8 @@ CREATE TABLE public.legal_entity_number_type (
     dt_created timestamp with time zone DEFAULT now() NOT NULL,
     dt_modified timestamp with time zone DEFAULT now() NOT NULL,
     created_by character varying(255) DEFAULT 'system'::character varying,
-    modified_by character varying(255)
+    modified_by character varying(255),
+    gleif_ra_code character varying(20)
 );
 
 
@@ -1597,7 +1852,7 @@ COMMENT ON COLUMN public.legal_entity_number_type.type_code IS 'Unique identifie
 -- Name: COLUMN legal_entity_number_type.country_scope; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.legal_entity_number_type.country_scope IS 'Country restriction (NULL = global, country code = country-specific)';
+COMMENT ON COLUMN public.legal_entity_number_type.country_scope IS 'Geographic scope: 2-letter country code (NL, DE, BE, FR), EU for European Union identifiers, or GLOBAL for worldwide identifiers';
 
 
 --
@@ -1605,6 +1860,13 @@ COMMENT ON COLUMN public.legal_entity_number_type.country_scope IS 'Country rest
 --
 
 COMMENT ON COLUMN public.legal_entity_number_type.format_regex IS 'Optional regex pattern for format validation';
+
+
+--
+-- Name: COLUMN legal_entity_number_type.gleif_ra_code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.legal_entity_number_type.gleif_ra_code IS 'Optional link to the GLEIF Registration Authority for this identifier type';
 
 
 --
@@ -1885,6 +2147,30 @@ COMMENT ON VIEW public.vw_audit_log_summary IS 'Audit log summary view with pseu
 
 
 --
+-- Name: vw_gleif_ra_by_country; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.vw_gleif_ra_by_country AS
+ SELECT g1.country_code,
+    g1.country_name,
+    array_agg(g1.ra_code ORDER BY g1.is_primary DESC, g1.ra_code) AS ra_codes,
+    ( SELECT g2.ra_code
+           FROM public.gleif_registration_authorities g2
+          WHERE (((g2.country_code)::text = (g1.country_code)::text) AND (g2.is_primary = true) AND (g2.is_active = true))
+         LIMIT 1) AS primary_ra_code
+   FROM public.gleif_registration_authorities g1
+  WHERE (g1.is_active = true)
+  GROUP BY g1.country_code, g1.country_name;
+
+
+--
+-- Name: VIEW vw_gleif_ra_by_country; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON VIEW public.vw_gleif_ra_by_country IS 'GLEIF Registration Authority codes grouped by country';
+
+
+--
 -- Name: vw_identifiers_with_type; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -1909,13 +2195,6 @@ CREATE VIEW public.vw_identifiers_with_type AS
    FROM (public.legal_entity_number len
      LEFT JOIN public.legal_entity_number_type lent ON (((len.identifier_type)::text = (lent.type_code)::text)))
   WHERE ((len.is_deleted = false) OR (len.is_deleted IS NULL));
-
-
---
--- Name: VIEW vw_identifiers_with_type; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON VIEW public.vw_identifiers_with_type IS 'Identifiers enriched with type metadata from legal_entity_number_type lookup table';
 
 
 --
@@ -2061,6 +2340,13 @@ ALTER TABLE ONLY public.audit_log ALTER COLUMN audit_log_id SET DEFAULT nextval(
 
 
 --
+-- Name: german_court_codes court_code_id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.german_court_codes ALTER COLUMN court_code_id SET DEFAULT nextval('public.german_court_codes_court_code_id_seq'::regclass);
+
+
+--
 -- Name: admin_tasks admin_tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2125,6 +2411,38 @@ ALTER TABLE ONLY public.dns_verification_tokens
 
 
 --
+-- Name: german_court_codes german_court_codes_court_code_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.german_court_codes
+    ADD CONSTRAINT german_court_codes_court_code_key UNIQUE (court_code);
+
+
+--
+-- Name: german_court_codes german_court_codes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.german_court_codes
+    ADD CONSTRAINT german_court_codes_pkey PRIMARY KEY (court_code_id);
+
+
+--
+-- Name: german_registry_data german_registry_data_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.german_registry_data
+    ADD CONSTRAINT german_registry_data_pkey PRIMARY KEY (registry_data_id);
+
+
+--
+-- Name: gleif_registration_authorities gleif_registration_authorities_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gleif_registration_authorities
+    ADD CONSTRAINT gleif_registration_authorities_pkey PRIMARY KEY (ra_code);
+
+
+--
 -- Name: gleif_registry_data gleif_registry_data_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2154,6 +2472,14 @@ ALTER TABLE ONLY public.issued_tokens
 
 ALTER TABLE ONLY public.kvk_registry_data
     ADD CONSTRAINT kvk_registry_data_pkey PRIMARY KEY (registry_data_id);
+
+
+--
+-- Name: legal_entity_branding legal_entity_branding_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.legal_entity_branding
+    ADD CONSTRAINT legal_entity_branding_pkey PRIMARY KEY (branding_id);
 
 
 --
@@ -2237,11 +2563,11 @@ ALTER TABLE ONLY public.peppol_registry_data
 
 
 --
--- Name: legal_entity_number uq_identifier; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: legal_entity_branding uq_legal_entity_branding_active; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.legal_entity_number
-    ADD CONSTRAINT uq_identifier UNIQUE (legal_entity_id, identifier_type, identifier_value);
+ALTER TABLE ONLY public.legal_entity_branding
+    ADD CONSTRAINT uq_legal_entity_branding_active UNIQUE (legal_entity_id);
 
 
 --
@@ -2526,6 +2852,20 @@ CREATE INDEX idx_dns_tokens_status ON public.dns_verification_tokens USING btree
 
 
 --
+-- Name: idx_dns_verification_entity_domain_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_dns_verification_entity_domain_status ON public.dns_verification_tokens USING btree (legal_entity_id, domain, status) WHERE ((status)::text = 'pending'::text);
+
+
+--
+-- Name: INDEX idx_dns_verification_entity_domain_status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON INDEX public.idx_dns_verification_entity_domain_status IS 'Composite index for DNS verification lookups (entity + domain + status)';
+
+
+--
 -- Name: idx_endpoint_verification_expires; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2544,6 +2884,55 @@ CREATE INDEX idx_endpoint_verification_status ON public.legal_entity_endpoint US
 --
 
 CREATE INDEX idx_endpoint_verification_token ON public.legal_entity_endpoint USING btree (verification_token) WHERE ((verification_token IS NOT NULL) AND (is_deleted = false));
+
+
+--
+-- Name: idx_german_registry_company_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_german_registry_company_name ON public.german_registry_data USING btree (company_name) WHERE (is_deleted = false);
+
+
+--
+-- Name: idx_german_registry_euid; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_german_registry_euid ON public.german_registry_data USING btree (euid) WHERE ((is_deleted = false) AND (euid IS NOT NULL));
+
+
+--
+-- Name: idx_german_registry_legal_entity; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_german_registry_legal_entity ON public.german_registry_data USING btree (legal_entity_id) WHERE (is_deleted = false);
+
+
+--
+-- Name: idx_german_registry_register_number; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_german_registry_register_number ON public.german_registry_data USING btree (register_number) WHERE (is_deleted = false);
+
+
+--
+-- Name: idx_german_registry_unique_active; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_german_registry_unique_active ON public.german_registry_data USING btree (legal_entity_id) WHERE (is_deleted = false);
+
+
+--
+-- Name: idx_gleif_ra_active; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_gleif_ra_active ON public.gleif_registration_authorities USING btree (is_active) WHERE (is_active = true);
+
+
+--
+-- Name: idx_gleif_ra_country_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_gleif_ra_country_code ON public.gleif_registration_authorities USING btree (country_code);
 
 
 --
@@ -2624,6 +3013,13 @@ CREATE INDEX idx_legal_entity_auth_method ON public.legal_entity USING btree (au
 
 
 --
+-- Name: idx_legal_entity_branding_entity; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_legal_entity_branding_entity ON public.legal_entity_branding USING btree (legal_entity_id) WHERE (is_deleted = false);
+
+
+--
 -- Name: idx_legal_entity_contact_active; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2642,6 +3038,20 @@ CREATE INDEX idx_legal_entity_contact_deleted ON public.legal_entity_contact USI
 --
 
 CREATE INDEX idx_legal_entity_contact_email ON public.legal_entity_contact USING btree (email);
+
+
+--
+-- Name: idx_legal_entity_contact_email_active; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_legal_entity_contact_email_active ON public.legal_entity_contact USING btree (email, is_active) WHERE ((is_active = true) AND (is_deleted = false));
+
+
+--
+-- Name: INDEX idx_legal_entity_contact_email_active; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON INDEX public.idx_legal_entity_contact_email_active IS 'Composite index for authentication queries (email + is_active on critical path)';
 
 
 --
@@ -2768,6 +3178,20 @@ CREATE INDEX idx_legal_entity_number_deleted ON public.legal_entity_number USING
 --
 
 CREATE INDEX idx_legal_entity_number_entity ON public.legal_entity_number USING btree (legal_entity_id);
+
+
+--
+-- Name: idx_legal_entity_number_entity_type_active; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_legal_entity_number_entity_type_active ON public.legal_entity_number USING btree (legal_entity_id, identifier_type) WHERE (is_deleted = false);
+
+
+--
+-- Name: INDEX idx_legal_entity_number_entity_type_active; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON INDEX public.idx_legal_entity_number_entity_type_active IS 'Composite index for frequent WHERE legal_entity_id = X AND identifier_type = Y queries (17 occurrences in API routes.ts)';
 
 
 --
@@ -3079,6 +3503,20 @@ CREATE INDEX idx_verification_identifier ON public.identifier_verification_histo
 
 
 --
+-- Name: idx_verification_identifier_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_verification_identifier_id ON public.identifier_verification_history USING btree (identifier_id) WHERE (identifier_id IS NOT NULL);
+
+
+--
+-- Name: INDEX idx_verification_identifier_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON INDEX public.idx_verification_identifier_id IS 'FK index for joins from legal_entity_number to identifier_verification_history';
+
+
+--
 -- Name: idx_verification_legal_entity; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3149,6 +3587,20 @@ CREATE UNIQUE INDEX uq_dns_token_active ON public.dns_verification_tokens USING 
 
 
 --
+-- Name: uq_identifier_active; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uq_identifier_active ON public.legal_entity_number USING btree (legal_entity_id, identifier_type, identifier_value) WHERE (is_deleted = false);
+
+
+--
+-- Name: INDEX uq_identifier_active; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON INDEX public.uq_identifier_active IS 'Unique constraint on identifiers - only applies to active (non-deleted) records';
+
+
+--
 -- Name: uq_legal_entity_party_id_active; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3205,10 +3657,24 @@ CREATE TRIGGER trg_party_reference_modified BEFORE UPDATE ON public.party_refere
 
 
 --
+-- Name: german_registry_data trigger_german_registry_modified; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER trigger_german_registry_modified BEFORE UPDATE ON public.german_registry_data FOR EACH ROW EXECUTE FUNCTION public.update_german_registry_modified();
+
+
+--
 -- Name: kvk_registry_data trigger_kvk_registry_modified; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER trigger_kvk_registry_modified BEFORE UPDATE ON public.kvk_registry_data FOR EACH ROW EXECUTE FUNCTION public.update_kvk_registry_modified();
+
+
+--
+-- Name: legal_entity_branding trigger_legal_entity_branding_modified; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER trigger_legal_entity_branding_modified BEFORE UPDATE ON public.legal_entity_branding FOR EACH ROW EXECUTE FUNCTION public.update_legal_entity_branding_modified();
 
 
 --
@@ -3432,6 +3898,14 @@ ALTER TABLE ONLY public.legal_entity
 
 
 --
+-- Name: german_registry_data german_registry_data_legal_entity_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.german_registry_data
+    ADD CONSTRAINT german_registry_data_legal_entity_id_fkey FOREIGN KEY (legal_entity_id) REFERENCES public.legal_entity(legal_entity_id) ON DELETE CASCADE;
+
+
+--
 -- Name: identifier_verification_history identifier_verification_history_identifier_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3464,6 +3938,22 @@ ALTER TABLE ONLY public.kvk_registry_data
 
 
 --
+-- Name: legal_entity_branding legal_entity_branding_legal_entity_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.legal_entity_branding
+    ADD CONSTRAINT legal_entity_branding_legal_entity_id_fkey FOREIGN KEY (legal_entity_id) REFERENCES public.legal_entity(legal_entity_id) ON DELETE CASCADE;
+
+
+--
+-- Name: legal_entity_number_type legal_entity_number_type_gleif_ra_code_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.legal_entity_number_type
+    ADD CONSTRAINT legal_entity_number_type_gleif_ra_code_fkey FOREIGN KEY (gleif_ra_code) REFERENCES public.gleif_registration_authorities(ra_code);
+
+
+--
 -- Name: peppol_registry_data peppol_registry_data_legal_entity_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3483,5 +3973,5 @@ ALTER TABLE ONLY public.vies_registry_data
 -- PostgreSQL database dump complete
 --
 
-\unrestrict wUM6i7n05dHLWiWOZXAYCbNzHo3w2V0k0jeGlUZHk0vowVhzgaVhPHIeczBxDp9
+\unrestrict CUmdrfbCSSnhhTrhOU1zxEMIjRuYmj836rGZTZSbIAK20uijGfvhKlcvnZYCRVI
 
