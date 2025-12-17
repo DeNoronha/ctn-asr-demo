@@ -266,7 +266,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
   // Column definitions for mantine-datatable
   // Task 08: ID, Official Name, City (narrower), Country Code (new), EUID, LEI, Identifiers (pills), Status (wider), Actions
   const { effectiveColumns } = useDataTableColumns<Member>({
-    key: 'members-grid-v4',
+    key: 'members-grid-v5',
     columns: [
       {
         accessor: 'legal_entity_id',
@@ -613,7 +613,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             selectedRecords={sortedData.filter((m) => selectedIds.includes(m.legal_entity_id))}
             onSelectedRecordsChange={handleSelectedRecordsChange}
             idAccessor="legal_entity_id"
-            storeColumnsKey="members-grid-v4"
+            storeColumnsKey="members-grid-v5"
             onRowClick={handleRowClick}
             rowStyle={() => ({ cursor: 'pointer' })}
             rowBackgroundColor={(member) =>
