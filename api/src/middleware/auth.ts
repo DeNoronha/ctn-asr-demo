@@ -651,14 +651,6 @@ export function requireScopes(...requiredScopes: string[]) {
 }
 
 /**
- * CSRF validation is now handled by the csrf.ts utility module.
- * See: api/src/utils/csrf.ts for the complete implementation.
- *
- * The old validateCsrf() function has been removed and replaced with:
- * - generateCsrfToken() - Cryptographically secure token generation
- * - validateCsrfTokens() - Double-submit pattern validation with constant-time comparison
- * - Token expiration support
- * - Comprehensive security logging
- *
- * Integration point: api/src/middleware/endpointWrapper.ts (lines 376-438)
+ * CSRF validation: See api/src/utils/csrf.ts
+ * Integration point: api/src/middleware/endpointWrapper.ts
  */

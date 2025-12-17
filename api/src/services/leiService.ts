@@ -4,13 +4,13 @@
  * Service for retrieving Legal Entity Identifiers (LEI) from the GLEIF API.
  * Supports multi-country lookups using registration authority codes.
  *
- * IMPORTANT: The GLEIF API uses two separate fields:
- * - entity.registeredAs: Contains ONLY the identifier number (e.g., "33031431")
- * - entity.registeredAt.id: Contains the GLEIF RA code (e.g., "RA000463")
- *
- * Our previous implementation incorrectly combined these as "NL-KVK/12345678".
- * The correct approach is to filter by registeredAs (number only) and optionally
- * by country to narrow results.
+ * GLEIF API search approach:
+ * 1. Primary: Search by registration number + country code
+ *    - filter[entity.registeredAs]: Just the identifier number (e.g., "33031431")
+ *    - filter[entity.legalAddress.country]: Country code (e.g., "NL", "DE")
+ * 2. Fallback: Search by company name + country code
+ *    - filter[entity.legalName]: Company name with optional wildcards
+ *    - filter[entity.legalAddress.country]: Country code
  *
  * @see https://www.gleif.org/en/lei-data/gleif-api
  * @see https://api.gleif.org/api/v1/
@@ -52,8 +52,7 @@ export const GLEIF_RA_CODES: Record<string, string[]> = {
 };
 
 /**
- * Legacy mapping for backwards compatibility - maps our identifier types to country codes
- * This is used to determine which country to filter by when searching GLEIF
+ * Maps identifier types to country codes for GLEIF lookups
  */
 export const IDENTIFIER_TO_COUNTRY: Record<string, string> = {
   'KVK': 'NL',
@@ -72,35 +71,12 @@ export const IDENTIFIER_TO_COUNTRY: Record<string, string> = {
 };
 
 /**
- * @deprecated Use GLEIF_RA_CODES instead. Kept for backwards compatibility.
+ * Alias for GLEIF_RA_CODES (use GLEIF_RA_CODES for new code)
  */
-export const REGISTRATION_AUTHORITY_MAP: Record<string, string[]> = {
-  NL: ['RA000463'],
-  DE: ['RA000217', 'RA000234', 'RA000242', 'RA000254'],
-  BE: ['RA000025'],
-  FR: ['RA000192'],
-  GB: ['RA000585'],
-  IT: ['RA000407'],
-  ES: ['RA000533'],
-  PT: ['RA000487'],
-  LU: ['RA000432'],
-  AT: ['RA000017'],
-  DK: ['RA000170'],
-  SE: ['RA000544'],
-  NO: ['RA000472'],
-  FI: ['RA000188'],
-  IE: ['RA000402'],
-  PL: ['RA000484'],
-  CZ: ['RA000163'],
-  CH: ['RA000549'],
-};
+export const REGISTRATION_AUTHORITY_MAP: Record<string, string[]> = GLEIF_RA_CODES;
 
 /**
  * Interface for GLEIF API LEI record
- *
- * Key fields:
- * - entity.registeredAs: Contains ONLY the identifier number (e.g., "33031431")
- * - entity.registeredAt.id: Contains the GLEIF RA code (e.g., "RA000463")
  */
 interface GLEIFLeiRecord {
   type: 'lei-records';

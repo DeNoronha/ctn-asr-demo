@@ -215,11 +215,6 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
   }
 });
 
-// GET /v1/members/:id endpoint removed (Dec 12, 2025)
-// - Used vw_legal_entity_full view which was dropped
-// - getMember() function was never called from UI
-// - Admin portal fetches contacts, endpoints, identifiers separately
-
 // ============================================================================
 // APPLICATIONS
 // ============================================================================
@@ -1232,7 +1227,7 @@ router.delete('/v1/legal-entities/:legalentityid/contacts/:contactId', requireAu
   }
 });
 
-// Legacy contact endpoints (used by admin portal and tests)
+// Contact endpoints
 router.get('/v1/contacts/:contactId', requireAuth, async (req: Request, res: Response) => {
   try {
     const pool = getPool();
@@ -3416,18 +3411,8 @@ router.post('/v1/legal-entities/:legalentityid/enrich', requireAuth, async (req:
   }
 });
 
-// NOTE: The following code block (lines ~3426-4324 in the original) has been moved to:
-// - api/src/services/enrichment/nlEnrichmentService.ts (Dutch: RSIN, VAT, KVK)
-// - api/src/services/enrichment/deEnrichmentService.ts (German: HRB, EUID)
-// - api/src/services/enrichment/leiEnrichmentService.ts (LEI lookup)
-// - api/src/services/enrichment/peppolEnrichmentService.ts (Peppol)
-// - api/src/services/enrichment/brandingService.ts (Logo/branding)
-// - api/src/services/enrichment/index.ts (orchestrator)
+// Enrichment logic is in api/src/services/enrichment/
 // See: docs/ENRICHMENT_ARCHITECTURE.md for flow diagrams
-//
-// LEGACY CODE REMOVED - START MARKER (for reference if rollback needed)
-// Original inline enrichment logic was approximately 900 lines
-// LEGACY CODE REMOVED - END MARKER
 
 // ============================================================================
 // BRANDING

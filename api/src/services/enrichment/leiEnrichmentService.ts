@@ -2,18 +2,11 @@
  * LEI Enrichment Service
  *
  * Handles LEI lookup from GLEIF for ALL countries:
- * 1. Search by Chamber of Commerce / registration number first (all countries)
- * 2. Fallback to company name + city search
- * 3. Store LEI identifier
- * 4. Store GLEIF registry data
+ * 1. Search by registration number + country code
+ * 2. Fallback to company name + country code
+ * 3. Store LEI identifier and GLEIF registry data
  *
- * Supported CoC identifiers:
- * - NL: KVK (NL-KVK)
- * - DE: HRB/HRA (DE-HRB, DE-HRA)
- * - BE: KBO/BCE (BE-BCE)
- * - FR: RCS (FR-RCS)
- * - GB: CRN (GB-COH)
- * - And many more via REGISTRATION_AUTHORITY_MAP in leiService.ts
+ * Supported registration identifiers: KVK (NL), HRB/HRA (DE), KBO (BE), RCS (FR), CRN (GB), etc.
  *
  * @see docs/ENRICHMENT_ARCHITECTURE.md
  */
@@ -22,11 +15,7 @@ import { randomUUID } from 'crypto';
 import { EnrichmentContext, EnrichmentResult, getExistingValue } from './types';
 
 /**
- * Map of identifier types to country codes for GLEIF lookup.
- *
- * Note: The GLEIF API's registeredAs field contains ONLY the identifier number,
- * so we use the country code to narrow search results instead of registration
- * authority prefixes.
+ * Maps identifier types to country codes for GLEIF lookups
  */
 const IDENTIFIER_TO_COUNTRY: Record<string, string> = {
   'KVK': 'NL',
@@ -46,17 +35,14 @@ const IDENTIFIER_TO_COUNTRY: Record<string, string> = {
 };
 
 /**
- * Enrich with LEI from GLEIF - works for ALL countries
+ * Enrich with LEI from GLEIF
  *
  * Flow:
  * 1. Check if LEI already exists
- * 2. Find any available CoC/registration number (KVK, HRB, KBO, CRN, etc.)
- * 3. Search GLEIF by registration number (registeredAs field) + country filter
- * 4. Fallback to company name search
+ * 2. Find registration number (KVK, HRB, KBO, CRN, etc.)
+ * 3. Search GLEIF by registration number + country filter
+ * 4. Fallback to company name + country filter
  * 5. Store LEI identifier and GLEIF registry data
- *
- * Note: The GLEIF API's registeredAs field contains ONLY the identifier number,
- * NOT a combined "authority/number" format. We use country filtering to narrow results.
  */
 export async function enrichLei(ctx: EnrichmentContext): Promise<EnrichmentResult> {
   const { pool, legalEntityId, companyName, countryCode, existingIdentifiers, existingTypes } = ctx;
