@@ -1,6 +1,7 @@
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
 import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import type React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { LegalEntityIdentifier } from "../../services/api";
 import { formatDate } from '../../utils/dateUtils';
 import { sanitizeGridCell } from '../../utils/sanitize';
@@ -125,13 +126,15 @@ export const IdentifiersTable: React.FC<IdentifiersTableProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { t } = useTranslation();
+
   // mantine-datatable column definitions
   const { effectiveColumns } = useDataTableColumns<LegalEntityIdentifier>({
     key: 'identifiers-grid',
     columns: [
       {
         accessor: 'identifier_type',
-        title: 'Type',
+        title: t('identifiers.type'),
         width: 100,
         toggleable: true,
         resizable: true,
@@ -139,7 +142,7 @@ export const IdentifiersTable: React.FC<IdentifiersTableProps> = ({
       },
       {
         accessor: 'identifier_value',
-        title: 'Identifier Value',
+        title: t('identifiers.identifierValue'),
         width: 180,
         toggleable: true,
         resizable: true,
@@ -149,7 +152,7 @@ export const IdentifiersTable: React.FC<IdentifiersTableProps> = ({
       },
       {
         accessor: 'country_code',
-        title: 'Country',
+        title: t('identifiers.country'),
         width: 100,
         toggleable: true,
         resizable: true,
@@ -157,7 +160,7 @@ export const IdentifiersTable: React.FC<IdentifiersTableProps> = ({
       },
       {
         accessor: 'registry_name',
-        title: 'Registry',
+        title: t('identifiers.registry'),
         width: 220,
         toggleable: true,
         resizable: true,
@@ -167,7 +170,7 @@ export const IdentifiersTable: React.FC<IdentifiersTableProps> = ({
       },
       {
         accessor: 'validation_status',
-        title: 'Status',
+        title: t('common.status'),
         width: 140,
         toggleable: true,
         resizable: true,
@@ -176,7 +179,7 @@ export const IdentifiersTable: React.FC<IdentifiersTableProps> = ({
       },
       {
         accessor: 'document_verification' as unknown as string,
-        title: 'Doc Verification',
+        title: t('kvk.documentVerification'),
         width: 160,
         toggleable: true,
         resizable: true,
@@ -192,7 +195,7 @@ export const IdentifiersTable: React.FC<IdentifiersTableProps> = ({
       },
       {
         accessor: 'validation_date',
-        title: 'Last Verified',
+        title: t('identifiers.lastVerified', 'Last Verified'),
         width: 140,
         toggleable: true,
         resizable: true,
@@ -203,7 +206,7 @@ export const IdentifiersTable: React.FC<IdentifiersTableProps> = ({
       },
       {
         accessor: 'dt_modified',
-        title: 'Last Edited',
+        title: t('identifiers.lastEdited'),
         width: 140,
         toggleable: true,
         resizable: true,
@@ -212,12 +215,12 @@ export const IdentifiersTable: React.FC<IdentifiersTableProps> = ({
       },
       {
         accessor: 'actions' as unknown as string,
-        title: 'Actions',
+        title: t('identifiers.actions'),
         width: '0%',
         toggleable: false,
         render: (record) => (
           <Group gap={4} wrap="nowrap">
-            <Tooltip label={`Edit ${record.identifier_type} identifier`}>
+            <Tooltip label={`${t('common.edit')} ${record.identifier_type}`}>
               <ActionIcon
                 variant="subtle"
                 color="gray"
@@ -225,12 +228,12 @@ export const IdentifiersTable: React.FC<IdentifiersTableProps> = ({
                   e.stopPropagation();
                   onEdit(record);
                 }}
-                aria-label={`Edit ${record.identifier_type} identifier`}
+                aria-label={`${t('common.edit')} ${record.identifier_type}`}
               >
                 <Pencil size={16} />
               </ActionIcon>
             </Tooltip>
-            <Tooltip label={`Delete ${record.identifier_type} identifier`}>
+            <Tooltip label={`${t('common.delete')} ${record.identifier_type}`}>
               <ActionIcon
                 variant="subtle"
                 color="red"
@@ -238,7 +241,7 @@ export const IdentifiersTable: React.FC<IdentifiersTableProps> = ({
                   e.stopPropagation();
                   onDelete(record);
                 }}
-                aria-label={`Delete ${record.identifier_type} identifier`}
+                aria-label={`${t('common.delete')} ${record.identifier_type}`}
               >
                 <Trash2 size={16} />
               </ActionIcon>

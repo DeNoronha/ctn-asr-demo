@@ -186,6 +186,7 @@ export interface Member {
   eori?: string;
   duns?: string;
   vat?: string;
+  peppol?: string;
   domain: string;
   status: string;
   membership_level: string;

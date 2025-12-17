@@ -413,6 +413,70 @@
       "refresh": "Protokolle aktualisieren"
     }
   },
+  "companyDetails": {
+    "title": "Unternehmensdetails",
+    "basicInformation": "Grundinformationen",
+    "legalEntityId": "Rechtsträger-ID",
+    "legalName": "Offizieller Name",
+    "legalForm": "Rechtsform",
+    "euid": "EUID",
+    "domain": "Domäne",
+    "status": "Status",
+    "recordInformation": "Datensatzinformationen",
+    "created": "Erstellt",
+    "lastModified": "Zuletzt geändert",
+    "modifiedBy": "Geändert von",
+    "address": "Adresse",
+    "street": "Straße",
+    "postalCodeCity": "PLZ / Stadt",
+    "provinceState": "Bundesland",
+    "country": "Land",
+    "corporateStructure": "Unternehmensstruktur",
+    "directParent": "Direkter Muttergesellschaft",
+    "ultimateParent": "Oberste Muttergesellschaft",
+    "editCompany": "Unternehmen bearbeiten",
+    "update": "Aktualisieren"
+  },
+  "identifiers": {
+    "title": "Rechtliche Kennungen",
+    "addIdentifier": "Kennung hinzufügen",
+    "enrich": "Anreichern",
+    "enriching": "Anreicherung läuft...",
+    "type": "Typ",
+    "identifierValue": "Kennungswert",
+    "country": "Land",
+    "registry": "Register",
+    "lastEdited": "Zuletzt bearbeitet",
+    "lastVerified": "Zuletzt verifiziert",
+    "actions": "Aktionen"
+  },
+  "tabs": {
+    "companyDetails": "Unternehmensdetails",
+    "identifiers": "Kennungen",
+    "contacts": "Kontakte",
+    "documentVerification": "Dokumentenprüfung",
+    "authenticationTier": "Authentifizierungsstufe",
+    "coc": "HK",
+    "gleif": "GLEIF",
+    "peppol": "Peppol",
+    "vies": "VIES",
+    "handelsregister": "Handelsregister"
+  },
+  "memberDetail": {
+    "backToMembers": "Zurück zu Mitgliedern",
+    "activateMember": "Mitglied aktivieren",
+    "tier": "Stufe"
+  },
+  "contacts": {
+    "title": "Kontakte",
+    "addContact": "Kontakt hinzufügen",
+    "type": "Typ",
+    "name": "Name",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "jobTitle": "Position",
+    "actions": "Aktionen"
+  },
   "shortcuts": {
     "title": "Tastaturkürzel",
     "description": "Verwenden Sie diese Tastaturkürzel, um schneller zu navigieren und Aktionen effizienter auszuführen.",

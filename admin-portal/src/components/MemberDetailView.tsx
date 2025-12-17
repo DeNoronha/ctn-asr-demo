@@ -5,6 +5,7 @@
 import { Button, Tabs } from '@mantine/core';
 import type React from 'react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { RoleGuard } from '../auth/ProtectedRoute';
 import { UserRole } from '../auth/authConfig';
 import { useNotification } from '../contexts/NotificationContext';
@@ -41,6 +42,7 @@ interface MemberDetailViewProps {
 }
 
 export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBack }) => {
+  const { t } = useTranslation();
   logger.log('Member with legal_entity_id:', member.legal_entity_id);
   const [selected, setSelected] = useState<string | null>('company-details');
   const [isEditingCompany, setIsEditingCompany] = useState(false);
@@ -112,7 +114,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
     if (!tier) return null;
     return (
       <span className="tier-badge" style={{ backgroundColor: getTierColor(tier) }}>
-        Tier {tier}
+        {t('memberDetail.tier')} {tier}
       </span>
     );
   };
@@ -122,7 +124,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
       <div className="detail-header">
         <Button color="gray" onClick={onBack} className="back-button">
           <ArrowLeft size={16} />
-          Back to Members
+          {t('memberDetail.backToMembers')}
         </Button>
         <div className="header-info">
           <h1>{member.legal_name}</h1>
@@ -136,9 +138,9 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
                   onClick={handleApproveMember}
                   disabled={loading}
                   style={{ marginLeft: '12px' }}
-                  aria-label="Activate member"
+                  aria-label={t('memberDetail.activateMember')}
                 >
-                  Activate Member
+                  {t('memberDetail.activateMember')}
                 </Button>
               </RoleGuard>
             )}
@@ -148,19 +150,19 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
 
       <Tabs value={selected} onChange={setSelected} className="detail-tabs">
         <Tabs.List>
-          <Tabs.Tab value="company-details">Company Details</Tabs.Tab>
-          <Tabs.Tab value="identifiers">Identifiers</Tabs.Tab>
+          <Tabs.Tab value="company-details">{t('tabs.companyDetails')}</Tabs.Tab>
+          <Tabs.Tab value="identifiers">{t('tabs.identifiers')}</Tabs.Tab>
           {/* System Integrations and API Access tabs hidden for debugging - will re-enable later */}
           {/* <Tabs.Tab value="system-integrations">System Integrations</Tabs.Tab> */}
           {/* <Tabs.Tab value="api-access">API Access</Tabs.Tab> */}
-          <Tabs.Tab value="contacts">Contacts</Tabs.Tab>
-          <Tabs.Tab value="document-verification">Document Verification</Tabs.Tab>
-          <Tabs.Tab value="authentication-tier">Authentication Tier</Tabs.Tab>
-          {hasKvkRegistryData && <Tabs.Tab value="kvk-registry">CoC</Tabs.Tab>}
-          {hasLeiRegistryData && <Tabs.Tab value="lei-registry">GLEIF</Tabs.Tab>}
-          {hasPeppolRegistryData && <Tabs.Tab value="peppol-registry">Peppol</Tabs.Tab>}
-          {hasViesRegistryData && <Tabs.Tab value="vies-registry">VIES</Tabs.Tab>}
-          {hasGermanRegistryData && <Tabs.Tab value="german-registry">Handelsregister</Tabs.Tab>}
+          <Tabs.Tab value="contacts">{t('tabs.contacts')}</Tabs.Tab>
+          <Tabs.Tab value="document-verification">{t('tabs.documentVerification')}</Tabs.Tab>
+          <Tabs.Tab value="authentication-tier">{t('tabs.authenticationTier')}</Tabs.Tab>
+          {hasKvkRegistryData && <Tabs.Tab value="kvk-registry">{t('tabs.coc')}</Tabs.Tab>}
+          {hasLeiRegistryData && <Tabs.Tab value="lei-registry">{t('tabs.gleif')}</Tabs.Tab>}
+          {hasPeppolRegistryData && <Tabs.Tab value="peppol-registry">{t('tabs.peppol')}</Tabs.Tab>}
+          {hasViesRegistryData && <Tabs.Tab value="vies-registry">{t('tabs.vies')}</Tabs.Tab>}
+          {hasGermanRegistryData && <Tabs.Tab value="german-registry">{t('tabs.handelsregister')}</Tabs.Tab>}
         </Tabs.List>
 
         <Tabs.Panel value="company-details" pt="md">
@@ -183,22 +185,22 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
                 )
               ) : (
                 <div className="info-section">
-                  <h3>Basic Information</h3>
+                  <h3>{t('companyDetails.basicInformation')}</h3>
                   <div className="info-grid">
                     <div className="info-field">
-                      <strong>Legal Entity ID</strong>
+                      <strong>{t('companyDetails.legalEntityId')}</strong>
                       <span>{member.legal_entity_id}</span>
                     </div>
                     <div className="info-field">
-                      <strong>Legal Name</strong>
+                      <strong>{t('companyDetails.legalName')}</strong>
                       <span>{member.legal_name}</span>
                     </div>
                     <div className="info-field">
-                      <strong>Domain</strong>
+                      <strong>{t('companyDetails.domain')}</strong>
                       <span>{member.domain}</span>
                     </div>
                     <div className="info-field">
-                      <strong>Status</strong>
+                      <strong>{t('companyDetails.status')}</strong>
                       {getStatusBadge(member.status)}
                     </div>
                     {/* Membership Level field hidden - membership levels feature disabled */}

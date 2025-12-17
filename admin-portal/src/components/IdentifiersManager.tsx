@@ -1,5 +1,6 @@
 import { Button } from '@mantine/core';
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { LegalEntityIdentifier } from "../services/api";
 import { getEmptyState } from '../utils/emptyStates';
 import { EmptyState } from './EmptyState';
@@ -35,6 +36,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
   onIdentifierDelete,
   onRefresh,
 }) => {
+  const { t } = useTranslation();
   // Use custom hooks for managing state and operations
   const {
     isDialogOpen,
@@ -81,7 +83,7 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
   return (
     <div className="identifiers-manager">
       <div className="section-header">
-        <h3>Legal Identifiers</h3>
+        <h3>{t('identifiers.title')}</h3>
         <div style={{ display: 'flex', gap: '8px' }}>
           <Button
             variant="outline"
@@ -89,13 +91,13 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
             onClick={handleEnrich}
             disabled={fetchingLei || identifiers.length === 0}
             title="Enrich from registries: RSIN (from KVK), VAT (via VIES), LEI (GLEIF), Peppol"
-            aria-label={fetchingLei ? 'Enriching from registries...' : 'Enrich from registries'}
+            aria-label={fetchingLei ? t('identifiers.enriching') : t('identifiers.enrich')}
           >
-            {fetchingLei ? 'Enriching...' : '>> Enrich'}
+            {fetchingLei ? t('identifiers.enriching') : `>> ${t('identifiers.enrich')}`}
           </Button>
-          <Button color="blue" onClick={handleAdd} aria-label="Add new identifier">
+          <Button color="blue" onClick={handleAdd} aria-label={t('identifiers.addIdentifier')}>
             <Plus size={16} />
-            Add Identifier
+            {t('identifiers.addIdentifier')}
           </Button>
         </div>
       </div>

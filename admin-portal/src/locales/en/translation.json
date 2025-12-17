@@ -354,6 +354,70 @@
       }
     }
   },
+  "companyDetails": {
+    "title": "Company Details",
+    "basicInformation": "Basic Information",
+    "legalEntityId": "Legal Entity ID",
+    "legalName": "Legal Name",
+    "legalForm": "Legal Form",
+    "euid": "EUID",
+    "domain": "Domain",
+    "status": "Status",
+    "recordInformation": "Record Information",
+    "created": "Created",
+    "lastModified": "Last Modified",
+    "modifiedBy": "Modified By",
+    "address": "Address",
+    "street": "Street",
+    "postalCodeCity": "Postal Code / City",
+    "provinceState": "Province/State",
+    "country": "Country",
+    "corporateStructure": "Corporate Structure",
+    "directParent": "Direct Parent",
+    "ultimateParent": "Ultimate Parent",
+    "editCompany": "Edit Company",
+    "update": "Update"
+  },
+  "identifiers": {
+    "title": "Legal Identifiers",
+    "addIdentifier": "Add Identifier",
+    "enrich": "Enrich",
+    "enriching": "Enriching...",
+    "type": "Type",
+    "identifierValue": "Identifier Value",
+    "country": "Country",
+    "registry": "Registry",
+    "lastEdited": "Last Edited",
+    "lastVerified": "Last Verified",
+    "actions": "Actions"
+  },
+  "tabs": {
+    "companyDetails": "Company Details",
+    "identifiers": "Identifiers",
+    "contacts": "Contacts",
+    "documentVerification": "Document Verification",
+    "authenticationTier": "Authentication Tier",
+    "coc": "CoC",
+    "gleif": "GLEIF",
+    "peppol": "Peppol",
+    "vies": "VIES",
+    "handelsregister": "Handelsregister"
+  },
+  "memberDetail": {
+    "backToMembers": "Back to Members",
+    "activateMember": "Activate Member",
+    "tier": "Tier"
+  },
+  "contacts": {
+    "title": "Contacts",
+    "addContact": "Add Contact",
+    "type": "Type",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "jobTitle": "Job Title",
+    "actions": "Actions"
+  },
   "shortcuts": {
     "title": "Keyboard Shortcuts",
     "description": "Use these keyboard shortcuts to navigate faster and perform actions more efficiently.",

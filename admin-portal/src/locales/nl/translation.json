@@ -413,6 +413,70 @@
       "refresh": "Logs vernieuwen"
     }
   },
+  "companyDetails": {
+    "title": "Bedrijfsgegevens",
+    "basicInformation": "Basisinformatie",
+    "legalEntityId": "Rechtspersoon-ID",
+    "legalName": "Officiële naam",
+    "legalForm": "Rechtsvorm",
+    "euid": "EUID",
+    "domain": "Domein",
+    "status": "Status",
+    "recordInformation": "Recordgegevens",
+    "created": "Aangemaakt",
+    "lastModified": "Laatst gewijzigd",
+    "modifiedBy": "Gewijzigd door",
+    "address": "Adres",
+    "street": "Straat",
+    "postalCodeCity": "Postcode / Plaats",
+    "provinceState": "Provincie",
+    "country": "Land",
+    "corporateStructure": "Bedrijfsstructuur",
+    "directParent": "Directe moedermaatschappij",
+    "ultimateParent": "Uiteindelijke moedermaatschappij",
+    "editCompany": "Bedrijf bewerken",
+    "update": "Bijwerken"
+  },
+  "identifiers": {
+    "title": "Juridische identificatienummers",
+    "addIdentifier": "Identificatie toevoegen",
+    "enrich": "Verrijken",
+    "enriching": "Verrijken...",
+    "type": "Type",
+    "identifierValue": "Identificatiewaarde",
+    "country": "Land",
+    "registry": "Register",
+    "lastEdited": "Laatst bewerkt",
+    "lastVerified": "Laatst geverifieerd",
+    "actions": "Acties"
+  },
+  "tabs": {
+    "companyDetails": "Bedrijfsgegevens",
+    "identifiers": "Identificaties",
+    "contacts": "Contacten",
+    "documentVerification": "Documentverificatie",
+    "authenticationTier": "Authenticatieniveau",
+    "coc": "KvK",
+    "gleif": "GLEIF",
+    "peppol": "Peppol",
+    "vies": "VIES",
+    "handelsregister": "Handelsregister"
+  },
+  "memberDetail": {
+    "backToMembers": "Terug naar leden",
+    "activateMember": "Lid activeren",
+    "tier": "Niveau"
+  },
+  "contacts": {
+    "title": "Contacten",
+    "addContact": "Contact toevoegen",
+    "type": "Type",
+    "name": "Naam",
+    "email": "E-mail",
+    "phone": "Telefoon",
+    "jobTitle": "Functie",
+    "actions": "Acties"
+  },
   "shortcuts": {
     "title": "Sneltoetsen",
     "description": "Gebruik deze sneltoetsen om sneller te navigeren en acties efficiënter uit te voeren.",

@@ -104,3 +104,46 @@ All tasks completed on December 17, 2025.
 
 ### Configuration
 - `.credentials` - Added GOOGLE_MAPS_API_KEY
+
+
+
+Task 07:
+Please check the localizations thorughtout the whole admin portal and member portal. I have selected Deutsch, but it is all in English (mostly). See these screenshots. 
+
+/Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-17 om 10.42.34.png
+
+/Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-17 om 10.42.43.png
+
+/Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-17 om 10.42.48.png
+
+/Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-17 om 10.43.04.png
+
+Dutch is also not available. 
+/Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-17 om 10.45.25.png
+
+
+
+Task 08:
+
+Refine the grid:
+/Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-17 om 10.47.01.png
+
+- City column can be narrower
+- Add country code column after city column 
+- Status column needs to be a bit wider
+- I want also pills for EUID, PEPPOL, VIES
+- Pills DUNS and KVK can be hidden
+- I dont want to scroll horizontally. Look at the following screenshot. 
+  - /Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-17 om 10.54.23.png
+
+
+
+Task 09:
+Add a Contargo company located in Germany for which you can find a HRB or HRA number. I want to see how wide a German EUID will be. 
+
+
+task 10:
+Check the current LEI numbers. Are they correct? We changed the logic today.
+
+Task 11:
+Is the Peppol ID for LK Holding B.V. correct? Learco told me he never has applied for a Peppol ID
