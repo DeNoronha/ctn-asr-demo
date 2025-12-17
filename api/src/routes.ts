@@ -1616,8 +1616,7 @@ router.post('/v1/identifiers/:identifierId/validate', requireAuth, async (req: R
       identifier_value: identifier.identifier_value,
     };
 
-    // For now, do basic format validation based on type
-    // TODO: Implement actual registry lookups (KVK API, GLEIF API, VIES API, etc.)
+    // Basic format validation (registry lookups via enrichment services)
     switch (identifier.identifier_type) {
       case 'KVK':
         // KVK is 8 digits
