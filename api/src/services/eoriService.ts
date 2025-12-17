@@ -230,19 +230,17 @@ export class EoriService {
    */
   private buildSoapRequest(eoriNumbers: string[]): string {
     const eoriElements = eoriNumbers
-      .map(eori => `<eos:EORINumber>${this.escapeXml(eori)}</eos:EORINumber>`)
-      .join('\n        ');
+      .map(eori => `      <ev:eori>${this.escapeXml(eori)}</ev:eori>`)
+      .join('\n');
 
     return `<?xml version="1.0" encoding="UTF-8"?>
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                  xmlns:eos="http://eos.dds.ec/">
-  <soapenv:Header/>
-  <soapenv:Body>
-    <eos:validateEORI>
-        ${eoriElements}
-    </eos:validateEORI>
-  </soapenv:Body>
-</soapenv:Envelope>`;
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ev="http://eori.ws.eos.dds.s/">
+  <soap:Body>
+    <ev:validateEORI>
+${eoriElements}
+    </ev:validateEORI>
+  </soap:Body>
+</soap:Envelope>`;
   }
 
   /**
