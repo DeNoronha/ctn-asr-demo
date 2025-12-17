@@ -3516,11 +3516,11 @@ router.post('/v1/legal-entities/:legalentityid/eori/fetch', requireAuth, async (
           trader_name, trader_address,
           street, postal_code, city, country,
           request_date, data_source, raw_api_response,
-          fetched_at, last_verified_at, created_by
+          fetched_at, last_verified_at, created_by, is_deleted
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'ec_eori_soap', $15, NOW(), NOW(), 'api'
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'ec_eori_soap', $15, NOW(), NOW(), 'api', false
         )
-        ON CONFLICT ON CONSTRAINT idx_eori_registry_unique_active
+        ON CONFLICT (legal_entity_id) WHERE is_deleted = false
         DO UPDATE SET
           eori_number = EXCLUDED.eori_number,
           country_code = EXCLUDED.country_code,
