@@ -184,11 +184,74 @@ export const IdentifierDialog: React.FC<IdentifierDialogProps> = ({
   onIdentifierTypeChange,
   onIdentifierValueChange,
 }) => {
+  const isEditing = !!editingIdentifier;
+
+  // Simplified edit mode - only show value and validation fields
+  if (isEditing) {
+    return (
+      <Modal
+        opened={isOpen}
+        onClose={onCancel}
+        title="Edit Identifier"
+        size="md"
+      >
+        <Stack gap="md">
+          {/* Show type and country as read-only info */}
+          <div style={{ padding: '12px', backgroundColor: 'var(--mantine-color-gray-0)', borderRadius: '8px' }}>
+            <div style={{ fontSize: '0.875rem', color: 'var(--mantine-color-dimmed)' }}>Type</div>
+            <div style={{ fontWeight: 500 }}>{formData.identifier_type} ({formData.country_code})</div>
+          </div>
+
+          <TextInput
+            label="Identifier Value"
+            value={formData.identifier_value || ''}
+            onChange={(e) => onIdentifierValueChange(e.target.value)}
+            placeholder="Enter identifier value"
+            error={validationError}
+          />
+
+          <Select
+            label="Validation Status"
+            data={VALIDATION_STATUSES}
+            value={formData.validation_status}
+            onChange={(value) =>
+              setFormData({
+                ...formData,
+                validation_status: value as LegalEntityIdentifier['validation_status'],
+              })
+            }
+          />
+
+          <TextInput
+            label="Verification Notes"
+            value={formData.verification_notes || ''}
+            onChange={(e) => setFormData({ ...formData, verification_notes: e.target.value })}
+            placeholder="Optional notes"
+          />
+
+          <Group mt="md" justify="flex-end">
+            <Button onClick={onCancel} variant="default">
+              Cancel
+            </Button>
+            <Button
+              color="blue"
+              onClick={onSave}
+              disabled={!isValidIdentifier || !formData.identifier_value}
+            >
+              Update
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+    );
+  }
+
+  // Full create mode - show all fields
   return (
     <Modal
       opened={isOpen}
       onClose={onCancel}
-      title={editingIdentifier ? 'Edit Identifier' : 'Add Identifier'}
+      title="Add Identifier"
       size="lg"
     >
       <div className="identifier-form">
@@ -284,7 +347,7 @@ export const IdentifierDialog: React.FC<IdentifierDialogProps> = ({
           onClick={onSave}
           disabled={!isValidIdentifier || !formData.identifier_type || !formData.identifier_value}
         >
-          {editingIdentifier ? 'Update' : 'Add'}
+          Add
         </Button>
       </Group>
     </Modal>
