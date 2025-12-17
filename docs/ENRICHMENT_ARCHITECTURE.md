@@ -65,14 +65,14 @@ GET https://api.gleif.org/api/v1/lei-records
 
 ## High-Level Overview
 
+The enrichment flow starts with a Legal Entity that has a **CoC Number** (Chamber of Commerce identifier like KVK, HRB, KBO, etc.) and/or **Company Name**. These inputs feed into the enrichment engine which then branches based on country code:
+
 ```mermaid
 flowchart TB
-    subgraph Input["Input Data"]
-        LE[Legal Entity]
+    subgraph Input["Input Data (from Legal Entity)"]
         COC_ID["CoC Number
         (KVK/HRB/KBO/CRN/etc)"]
         NAME[Company Name]
-        DOMAIN[Domain]
     end
 
     subgraph Enrichment["Enrichment Engine"]
@@ -82,7 +82,7 @@ flowchart TB
     subgraph NL["Dutch Company Flow (NL only)"]
         KVK_API[KVK API]
         RSIN[RSIN Identifier]
-        VAT_DERIVE[Derive VAT: NL + RSIN + B01]
+        VAT_DERIVE[Derive VAT: NL + RSIN + B0x]
         VIES[VIES Validation]
     end
 
@@ -100,7 +100,6 @@ flowchart TB
         PEPPOL_SEARCH["Peppol Search
         1. CoC/VAT + country scheme
         2. Company name fallback"]
-        BRANDING[Logo from Domain]
     end
 
     subgraph Output["Stored Data"]
@@ -109,10 +108,10 @@ flowchart TB
         GLEIF_DATA[gleif_registry_data]
         VIES_DATA[vies_registry_data]
         DE_DATA[german_registry_data]
-        BRAND[legal_entity_branding]
     end
 
-    LE --> ENRICH
+    COC_ID --> ENRICH
+    NAME --> ENRICH
     ENRICH --> |country=NL| NL
     ENRICH --> |country=DE| DE
     ENRICH --> |ALL EU countries| Global
@@ -142,14 +141,13 @@ flowchart TB
     COC_ID --> PEPPOL_SEARCH
     NAME --> PEPPOL_SEARCH
     PEPPOL_SEARCH --> LEN
-
-    DOMAIN --> BRANDING
-    BRANDING --> BRAND
 ```
 
 ---
 
 ## Dutch Company Enrichment Flow (NL)
+
+**RSIN Availability:** RSIN (Rechtspersonen en Samenwerkingsverbanden Informatienummer) is only available for legal entities that are registered as a "rechtspersoon" (legal person) in the Dutch system. **Eenmanszaken (sole proprietorships)** do not have an RSIN because they are not separate legal entities—the business and the owner are legally the same person. For these businesses, only the KVK number is available, and VAT cannot be auto-derived.
 
 ```mermaid
 flowchart TD
@@ -163,15 +161,17 @@ flowchart TD
         EXTRACT_RSIN[Extract RSIN from response]
         STORE_KVK[Store in kvk_registry_data]
         STORE_RSIN[Store RSIN identifier]
+        NO_RSIN_EENMANSZAAK["No RSIN available
+        (eenmanszaak)"]
     end
 
     subgraph VAT_Flow["RSIN -> VAT Flow"]
         HAS_RSIN{RSIN available?}
-        DERIVE_VAT["Derive VAT: NL RSIN B01"]
+        DERIVE_VAT["Derive VAT: NL + RSIN + B01"]
         CALL_VIES[Call VIES API to validate]
         VIES_VALID{VIES returns valid?}
-        TRY_B02["Try B02 suffix (fiscal unit)"]
-        VIES_B02_VALID{B02 valid?}
+        TRY_B0x["Try B02, B03, B04... suffix"]
+        VIES_B0x_VALID{B0x valid?}
         STORE_VAT[Store VAT identifier]
         STORE_VIES[Store vies_registry_data]
         VAT_NOT_AVAILABLE[VAT not available]
@@ -208,19 +208,21 @@ flowchart TD
     CHECK_KVK_REGISTRY -->|Yes| EXTRACT_RSIN
     FETCH_KVK --> STORE_KVK
     STORE_KVK --> EXTRACT_RSIN
-    EXTRACT_RSIN --> STORE_RSIN
+    EXTRACT_RSIN -->|RSIN found| STORE_RSIN
+    EXTRACT_RSIN -->|No RSIN| NO_RSIN_EENMANSZAAK
     CHECK_RSIN -->|Yes| HAS_RSIN
 
     STORE_RSIN --> HAS_RSIN
+    NO_RSIN_EENMANSZAAK --> HAS_RSIN
     HAS_RSIN -->|Yes| DERIVE_VAT
     HAS_RSIN -->|No| VAT_NOT_AVAILABLE
     DERIVE_VAT --> CALL_VIES
     CALL_VIES --> VIES_VALID
     VIES_VALID -->|Yes| STORE_VAT
-    VIES_VALID -->|No| TRY_B02
-    TRY_B02 --> VIES_B02_VALID
-    VIES_B02_VALID -->|Yes| STORE_VAT
-    VIES_B02_VALID -->|No| VAT_NOT_AVAILABLE
+    VIES_VALID -->|No| TRY_B0x
+    TRY_B0x --> VIES_B0x_VALID
+    VIES_B0x_VALID -->|Yes| STORE_VAT
+    VIES_B0x_VALID -->|No| VAT_NOT_AVAILABLE
     STORE_VAT --> STORE_VIES
 
     CHECK_KVK -->|Yes| CHECK_EUID
@@ -243,6 +245,8 @@ flowchart TD
 ---
 
 ## German Company Enrichment Flow (DE)
+
+**VAT for German Companies:** VAT numbers must be provided manually for German companies. The Handelsregister does not contain VAT data, and the VIES API can only validate existing VAT numbers—it cannot derive them. This is a fundamental difference from Dutch companies where VAT can be derived from RSIN.
 
 ```mermaid
 flowchart TD
@@ -273,14 +277,6 @@ flowchart TD
         LEI_FOUND{LEI found?}
         STORE_LEI[Store LEI identifier]
         STORE_GLEIF[Store gleif_registry_data]
-    end
-
-    subgraph VAT_Note["VAT for German Companies"]
-        VAT_MANUAL["VAT must be provided manually
-
-        Reason:
-        - Handelsregister has no VAT data
-        - VIES only validates, does not search"]
     end
 
     START --> CHECK_DE_DATA
@@ -342,6 +338,7 @@ flowchart LR
     end
 
     KVK_SVC --> KVK_API
+    KVK_SVC -.->|KVK number for LEI lookup| GLEIF_API
     VIES_SVC --> VIES_API
     LEI_SVC --> GLEIF_API
     HR_SVC --> HR_WEB
@@ -364,7 +361,7 @@ flowchart LR
 |---------|------------|--------|------------------|
 | NL | KVK | Input | Manual entry or application |
 | NL | RSIN | KVK API | Extracted from `_embedded.eigenaar.rsin` |
-| NL | VAT | Derived | `NL` + `RSIN` + `B01` (or B02 for fiscal units) |
+| NL | VAT | Derived | `NL` + `RSIN` + `B01` (or B02, B03, B04, etc. for fiscal units) |
 | NL | EUID | Generated | `NL.KVK.{kvkNumber}` |
 | DE | HRB/HRA | Handelsregister | Scraped or manual entry |
 | DE | EUID | Generated | `DE{courtCode}.{type}{number}` |
@@ -380,7 +377,6 @@ flowchart LR
 | **EUID** | Generated | From national identifier (KVK, KBO, HRB, SIREN, etc.) |
 | **LEI** | GLEIF | 1. Registration number + country code<br>2. Company name + country fallback |
 | **PEPPOL** | Peppol Directory | 1. CoC/VAT by country-specific scheme<br>2. Company name + country search fallback |
-| **Branding** | Domain | Google/DuckDuckGo favicon services |
 
 ### EUID Format by Country
 
@@ -522,7 +518,6 @@ flowchart TD
 | **DE Enrichment** | `api/src/services/enrichment/deEnrichmentService.ts` | German: HRB/HRA, registry data |
 | **LEI Enrichment** | `api/src/services/enrichment/leiEnrichmentService.ts` | GLEIF lookup (ALL countries) |
 | **Peppol Enrichment** | `api/src/services/enrichment/peppolEnrichmentService.ts` | Peppol lookup (ALL countries) |
-| **Branding** | `api/src/services/enrichment/brandingService.ts` | Logo/favicon from domain |
 | **Types** | `api/src/services/enrichment/types.ts` | Shared TypeScript types |
 
 ### External API Services
@@ -549,8 +544,7 @@ api/src/services/
 │   ├── nlEnrichmentService.ts      # enrichRsin(), enrichVat() - NL only
 │   ├── deEnrichmentService.ts      # enrichGermanRegistry() - DE only
 │   ├── leiEnrichmentService.ts     # enrichLei() - ALL countries via CoC or name
-│   ├── peppolEnrichmentService.ts  # enrichPeppol() - ALL countries via CoC/VAT or name
-│   └── brandingService.ts          # enrichBranding() - logo from domain
+│   └── peppolEnrichmentService.ts  # enrichPeppol() - ALL countries via CoC/VAT or name
 ├── kvkService.ts                   # KVK API client
 ├── viesService.ts                  # VIES API client
 ├── leiService.ts                   # GLEIF API client + storeGleifRegistryData()
@@ -574,10 +568,13 @@ interface EnrichmentContext {
 
 interface EnrichmentResult {
   identifier: string;                      // e.g., 'LEI', 'VAT', 'EUID'
-  status: 'added' | 'exists' | 'error' | 'not_available';
+  status: EnrichmentStatus;                // See Enrichment Status Values below
   value?: string;                          // The identifier value if found
   message?: string;                        // Human-readable status message
 }
+
+// Enrichment status maps to verification_status when storing
+type EnrichmentStatus = 'added' | 'exists' | 'error' | 'not_available';
 ```
 
 ### Benefits of Modular Architecture
@@ -603,8 +600,6 @@ interface EnrichmentResult {
   "added_count": 3,
   "company_details_updated": true,
   "updated_fields": ["primary_legal_name", "city", "address_line1"],
-  "logo_fetched": true,
-  "logo_url": "https://example.com/favicon.ico",
   "german_registry_fetched": false,
   "results": [
     { "identifier": "RSIN", "status": "added", "value": "123456789" },
@@ -618,52 +613,48 @@ interface EnrichmentResult {
     "already_exists": ["LEI"],
     "not_available": ["PEPPOL (No Peppol participant found)"],
     "errors": [],
-    "company_fields_updated": ["primary_legal_name", "city", "address_line1"],
-    "branding": "Logo fetched from domain"
+    "company_fields_updated": ["primary_legal_name", "city", "address_line1"]
   }
 }
 ```
 
 ---
 
-## Verification Status Values
+## Status Values
 
-| Status | Meaning |
-|--------|---------|
-| `VERIFIED` | Confirmed via external API (KVK, VIES, GLEIF) |
-| `VALIDATED` | Format validated, auto-generated (EUID) |
-| `PENDING` | Awaiting verification |
-| `UNVERIFIED` | Manual entry, not yet checked |
-| `INVALID` | Failed verification |
+### Enrichment Status (API Response)
+
+When enrichment runs, each identifier returns one of these statuses:
+
+| Enrichment Status | Meaning | Maps to Verification Status |
+|-------------------|---------|----------------------------|
+| `added` | New identifier found and stored | `VERIFIED` or `VALIDATED` |
+| `exists` | Identifier already in database | (unchanged) |
+| `not_available` | Identifier cannot be found/derived | (not stored) |
+| `error` | API or processing error occurred | (not stored) |
+
+### Verification Status (Database)
+
+The `validation_status` field in `legal_entity_number` table uses these values:
+
+| Status | Meaning | Set When |
+|--------|---------|----------|
+| `VERIFIED` | Confirmed via external API | LEI from GLEIF, VAT from VIES, RSIN from KVK |
+| `VALIDATED` | Format validated, auto-generated | EUID generated from national identifier |
+| `PENDING` | Awaiting verification | Manual entry, awaiting API check |
+| `UNVERIFIED` | Manual entry, not yet checked | User-entered identifier |
+| `INVALID` | Failed verification | VIES returned invalid, GLEIF not found |
+
+### Status Mapping
+
+| Source | Enrichment Status | Verification Status |
+|--------|-------------------|---------------------|
+| LEI from GLEIF API | `added` | `VERIFIED` |
+| VAT from VIES API | `added` | `VERIFIED` |
+| RSIN from KVK API | `added` | `VERIFIED` |
+| EUID auto-generated | `added` | `VALIDATED` |
+| Peppol from Directory | `added` | `VERIFIED` |
+| Manual entry | N/A | `UNVERIFIED` or `PENDING` |
 
 ---
 
-## Lessons Learned (December 2025)
-
-### GLEIF API Search
-
-1. **Use registration number + country**, NOT combined formats like `NL-KVK/12345678`
-2. **The `registeredAs` field** contains only the identifier number
-3. **Country filter is more reliable** than Registration Authority codes for Germany
-4. **Fallback to company name search** when registration number lookup fails
-
-### LEI Verification
-
-1. **Always verify LEIs against GLEIF API** before storing
-2. **Check for 404 responses** - indicates invalid/inactive LEI
-3. **Store GLEIF registry data** for audit trail and re-verification
-4. **Example verified LEIs:**
-   - Hapag-Lloyd: `HD52L5PJVBXJUUX8I539` (valid)
-   - LK Holding B.V.: `984500BFA87D80EFF307` (valid)
-
-### Peppol Verification
-
-1. **Peppol IDs belong to specific companies** - verify the company name matches
-2. **Use the Peppol Directory API** to validate participant IDs
-3. **Delete incorrect Peppol IDs** rather than keeping unverified data
-
-### EUID Generation
-
-1. **NL format**: `NL.KVK.{kvkNumber}` - simple and predictable
-2. **DE format**: Requires court code from german_registry_data
-3. **Auto-generate from KVK** for all Dutch companies during enrichment
