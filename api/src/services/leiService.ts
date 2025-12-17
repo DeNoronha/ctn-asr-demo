@@ -4,8 +4,17 @@
  * Service for retrieving Legal Entity Identifiers (LEI) from the GLEIF API.
  * Supports multi-country lookups using registration authority codes.
  *
+ * IMPORTANT: The GLEIF API uses two separate fields:
+ * - entity.registeredAs: Contains ONLY the identifier number (e.g., "33031431")
+ * - entity.registeredAt.id: Contains the GLEIF RA code (e.g., "RA000463")
+ *
+ * Our previous implementation incorrectly combined these as "NL-KVK/12345678".
+ * The correct approach is to filter by registeredAs (number only) and optionally
+ * by country to narrow results.
+ *
  * @see https://www.gleif.org/en/lei-data/gleif-api
  * @see https://api.gleif.org/api/v1/
+ * @see https://www.gleif.org/en/about-lei/code-lists/gleif-registration-authorities-list
  */
 
 import axios from 'axios';
@@ -14,32 +23,84 @@ import { InvocationContext } from '@azure/functions';
 const GLEIF_API_BASE_URL = 'https://api.gleif.org/api/v1';
 
 /**
- * Mapping of country codes to registration authority codes
- * Each country may have multiple registration authorities
+ * Official GLEIF Registration Authority codes
+ * @see https://www.gleif.org/en/about-lei/code-lists/gleif-registration-authorities-list
+ *
+ * Note: Germany has many RA codes (one per local court/Amtsgericht), so we use
+ * multiple common ones. The API filter by country is more reliable for DE.
+ */
+export const GLEIF_RA_CODES: Record<string, string[]> = {
+  NL: ['RA000463'],                        // Netherlands - KvK (Kamer van Koophandel)
+  BE: ['RA000025'],                        // Belgium - KBO/BCE (Kruispuntbank van Ondernemingen)
+  FR: ['RA000192', 'RA000189'],            // France - RCS (Infogreffe) and SIRENE
+  GB: ['RA000585', 'RA000586', 'RA000587'], // UK - Companies House (England/Wales, NI, Scotland)
+  IT: ['RA000407'],                        // Italy - Registro Delle Imprese
+  ES: ['RA000533', 'RA000780'],            // Spain - Registro Mercantil (local and central)
+  PT: ['RA000487'],                        // Portugal - Registo Comercial
+  LU: ['RA000432'],                        // Luxembourg - RCS
+  AT: ['RA000017'],                        // Austria - Firmenbuch
+  DK: ['RA000170'],                        // Denmark - CVR (Central Business Register)
+  SE: ['RA000544'],                        // Sweden - Bolagsverket
+  NO: ['RA000472', 'RA000473'],            // Norway - Brønnøysund (Foretaksregisteret / Enhetsregisteret)
+  FI: ['RA000188'],                        // Finland - PRH (Patent and Registration Office)
+  IE: ['RA000402'],                        // Ireland - CRO (Companies Registration Office)
+  PL: ['RA000484'],                        // Poland - KRS (Krajowy Rejestr Sądowy)
+  CZ: ['RA000163'],                        // Czech Republic - Obchodní rejstřík
+  CH: ['RA000549', 'RA000548'],            // Switzerland - Handelsregister / UID-Register
+  // Germany has ~100 local court RA codes (RA000197-RA000296), use country filter instead
+  DE: ['RA000217', 'RA000234', 'RA000242', 'RA000254'], // DE - Berlin, Düsseldorf, Frankfurt, Hamburg (common ones)
+};
+
+/**
+ * Legacy mapping for backwards compatibility - maps our identifier types to country codes
+ * This is used to determine which country to filter by when searching GLEIF
+ */
+export const IDENTIFIER_TO_COUNTRY: Record<string, string> = {
+  'KVK': 'NL',
+  'HRB': 'DE',
+  'HRA': 'DE',
+  'KBO': 'BE',
+  'BCE': 'BE',
+  'RCS': 'FR',
+  'SIREN': 'FR',
+  'CRN': 'GB',
+  'REA': 'IT',
+  'CIF': 'ES',
+  'CVR': 'DK',
+  'CHR': 'CH',
+  'KRS': 'PL',
+};
+
+/**
+ * @deprecated Use GLEIF_RA_CODES instead. Kept for backwards compatibility.
  */
 export const REGISTRATION_AUTHORITY_MAP: Record<string, string[]> = {
-  NL: ['NL-KVK'],                          // Netherlands - Kamer van Koophandel
-  DE: ['DE-HRB', 'DE-HRA'],                // Germany - Handelsregister B and A
-  BE: ['BE-BCE'],                          // Belgium - Banque-Carrefour des Entreprises / Kruispuntbank van Ondernemingen
-  FR: ['FR-RCS'],                          // France - Registre du Commerce et des Sociétés
-  GB: ['GB-COH'],                          // United Kingdom - Companies House
-  IT: ['IT-REA'],                          // Italy - Registro delle Imprese
-  ES: ['ES-CIF'],                          // Spain - Registro Mercantil
-  PT: ['PT-CR'],                           // Portugal - Conservatória do Registo Comercial
-  LU: ['LU-RCS'],                          // Luxembourg - Registre de Commerce et des Sociétés
-  AT: ['AT-FB'],                           // Austria - Firmenbuch
-  DK: ['DK-CVR'],                          // Denmark - Central Business Register
-  SE: ['SE-BR'],                           // Sweden - Bolagsverket
-  NO: ['NO-BR'],                           // Norway - Brønnøysundregistrene
-  FI: ['FI-PRH'],                          // Finland - Patent- ja rekisterihallitus
-  IE: ['IE-CRO'],                          // Ireland - Companies Registration Office
-  PL: ['PL-KRS'],                          // Poland - Krajowy Rejestr Sądowy
-  CZ: ['CZ-OR'],                           // Czech Republic - Obchodní rejstřík
-  CH: ['CH-EHRA', 'CH-CHRB'],             // Switzerland - Handelsregister
+  NL: ['RA000463'],
+  DE: ['RA000217', 'RA000234', 'RA000242', 'RA000254'],
+  BE: ['RA000025'],
+  FR: ['RA000192'],
+  GB: ['RA000585'],
+  IT: ['RA000407'],
+  ES: ['RA000533'],
+  PT: ['RA000487'],
+  LU: ['RA000432'],
+  AT: ['RA000017'],
+  DK: ['RA000170'],
+  SE: ['RA000544'],
+  NO: ['RA000472'],
+  FI: ['RA000188'],
+  IE: ['RA000402'],
+  PL: ['RA000484'],
+  CZ: ['RA000163'],
+  CH: ['RA000549'],
 };
 
 /**
  * Interface for GLEIF API LEI record
+ *
+ * Key fields:
+ * - entity.registeredAs: Contains ONLY the identifier number (e.g., "33031431")
+ * - entity.registeredAt.id: Contains the GLEIF RA code (e.g., "RA000463")
  */
 interface GLEIFLeiRecord {
   type: 'lei-records';
@@ -49,30 +110,55 @@ interface GLEIFLeiRecord {
     entity: {
       legalName: {
         name: string;
+        language?: string;
       };
       registeredAs: string;
-      registrationAuthority: {
+      /** The registration authority - contains the GLEIF RA code (e.g., "RA000463") */
+      registeredAt: {
         id: string;
         other: string | null;
       };
+      /** @deprecated Use registeredAt instead */
+      registrationAuthority?: {
+        id: string;
+        other: string | null;
+      };
+      jurisdiction: string;
       legalAddress: {
         country: string;
         addressLines: string[];
         city: string;
         postalCode: string;
+        region?: string;
+        language?: string;
       };
       headquartersAddress: {
         country: string;
         addressLines: string[];
         city: string;
         postalCode: string;
+        region?: string;
+        language?: string;
       };
+      status: string;
+      category?: string;
     };
     registration: {
       registrationStatus: string;
-      registrationDate: string;
+      initialRegistrationDate?: string;
+      registrationDate?: string;
       lastUpdateDate: string;
+      nextRenewalDate?: string;
+      managingLou?: string;
+      corroborationLevel?: string;
+      validatedAt?: {
+        id: string;
+        other: string | null;
+      };
+      validatedAs?: string;
     };
+    bic?: string[];
+    ocid?: string;
   };
 }
 
@@ -102,28 +188,42 @@ export interface LeiFetchResult {
 }
 
 /**
- * Fetches LEI from GLEIF API using registration authority and number
+ * Fetches LEI from GLEIF API using registration number and country
  *
- * @param registrationAuthority - e.g., 'NL-KVK', 'DE-HRB'
- * @param registrationNumber - e.g., '12345678'
+ * The GLEIF API expects:
+ * - filter[entity.registeredAs]: Just the identifier number (e.g., "33031431")
+ * - filter[entity.legalAddress.country]: Country code to narrow results (e.g., "NL")
+ *
+ * Note: The registeredAt.id filter (for RA codes) is not supported in combination
+ * with registeredAs, so we use country filtering instead.
+ *
+ * @param registrationNumber - e.g., '33031431' (just the number, no authority prefix)
+ * @param countryCode - e.g., 'NL', 'DE' - used to filter results by country
  * @param context - Azure Functions invocation context for logging
  * @returns LEI record if found, null otherwise
  */
 async function fetchLeiFromGleif(
-  registrationAuthority: string,
   registrationNumber: string,
+  countryCode: string | null,
   context: InvocationContext
 ): Promise<GLEIFLeiRecord | null> {
-  const registeredAs = `${registrationAuthority}/${registrationNumber}`;
   const url = `${GLEIF_API_BASE_URL}/lei-records`;
 
-  context.log(`Querying GLEIF API: ${url}?filter[entity.registeredAs]=${registeredAs}`);
+  // Build filter params - registeredAs is just the number
+  const params: Record<string, string> = {
+    'filter[entity.registeredAs]': registrationNumber,
+  };
+
+  // Add country filter if provided (helps narrow results for common numbers)
+  if (countryCode) {
+    params['filter[entity.legalAddress.country]'] = countryCode.toUpperCase();
+  }
+
+  context.log(`Querying GLEIF API: ${url}?filter[entity.registeredAs]=${registrationNumber}${countryCode ? `&filter[entity.legalAddress.country]=${countryCode}` : ''}`);
 
   try {
     const response = await axios.get<GLEIFResponse>(url, {
-      params: {
-        'filter[entity.registeredAs]': registeredAs,
-      },
+      params,
       headers: {
         'Accept': 'application/json',
       },
@@ -131,18 +231,29 @@ async function fetchLeiFromGleif(
     });
 
     if (response.data.data && response.data.data.length > 0) {
+      // If multiple results, try to find one matching the expected country
+      if (response.data.data.length > 1 && countryCode) {
+        const countryMatch = response.data.data.find(
+          r => r.attributes.entity.legalAddress.country === countryCode.toUpperCase()
+        );
+        if (countryMatch) {
+          context.log(`✓ Found LEI (matched by country ${countryCode}): ${countryMatch.attributes.lei}`);
+          return countryMatch;
+        }
+      }
+
       context.log(`✓ Found LEI: ${response.data.data[0].attributes.lei}`);
       return response.data.data[0];
     }
 
-    context.log(`✗ No LEI found for ${registeredAs}`);
+    context.log(`✗ No LEI found for registeredAs=${registrationNumber}${countryCode ? ` in ${countryCode}` : ''}`);
     return null;
 
   } catch (error: any) {
     if (error.response) {
       // Axios error with response
       if (error.response.status === 404) {
-        context.log(`✗ No LEI found for ${registeredAs} (404)`);
+        context.log(`✗ No LEI found for registeredAs=${registrationNumber} (404)`);
         return null;
       }
       context.error(`GLEIF API error: ${error.response.status} ${error.message}`);
@@ -157,13 +268,16 @@ async function fetchLeiFromGleif(
  * Retrieves LEI for an organization using registration number and country
  *
  * This function:
- * 1. Determines applicable registration authority codes for the country
- * 2. Tries each authority code sequentially until LEI is found
- * 3. Returns the first successful match
+ * 1. Searches GLEIF by registration number (registeredAs field)
+ * 2. Uses country code to narrow results
+ * 3. Returns the matching LEI if found
  *
- * @param registrationNumber - Organization's registration number (e.g., KvK, HRB)
+ * Note: The GLEIF API's registeredAs field contains ONLY the identifier number,
+ * not a combined "authority/number" format.
+ *
+ * @param registrationNumber - Organization's registration number (e.g., '33031431' for KvK)
  * @param countryCode - Two-letter country code (e.g., 'NL', 'DE')
- * @param identifierType - Type of identifier (e.g., 'KVK', 'HRB')
+ * @param identifierType - Type of identifier (e.g., 'KVK', 'HRB') - used for logging
  * @param context - Azure Functions invocation context for logging
  * @returns LEI fetch result with status and data
  */
@@ -174,9 +288,30 @@ export async function fetchLeiForOrganization(
   context: InvocationContext
 ): Promise<LeiFetchResult> {
   const upperCountryCode = countryCode.toUpperCase();
-  const authorities = REGISTRATION_AUTHORITY_MAP[upperCountryCode];
 
-  if (!authorities || authorities.length === 0) {
+  context.log(`Fetching LEI for ${identifierType} ${registrationNumber} in ${upperCountryCode}`);
+
+  try {
+    // Search GLEIF by registration number and country
+    const record = await fetchLeiFromGleif(registrationNumber, upperCountryCode, context);
+
+    if (record) {
+      // Extract the RA code from the response for logging/storage
+      const raCode = record.attributes.entity.registeredAt?.id || null;
+
+      return {
+        lei: record.attributes.lei,
+        legal_name: record.attributes.entity.legalName.name,
+        registration_authority: raCode,
+        registration_number: record.attributes.entity.registeredAs || registrationNumber,
+        country: record.attributes.entity.legalAddress.country,
+        status: 'found',
+        attempts: 1,
+        message: `LEI found for ${identifierType} ${registrationNumber}${raCode ? ` (RA: ${raCode})` : ''}`,
+        gleif_response: record,
+      };
+    }
+
     return {
       lei: null,
       legal_name: null,
@@ -184,56 +319,25 @@ export async function fetchLeiForOrganization(
       registration_number: null,
       country: null,
       status: 'not_found',
-      attempts: 0,
-      message: `No registration authority mapping found for country: ${upperCountryCode}`,
+      attempts: 1,
+      message: `No LEI found for ${identifierType} ${registrationNumber} in ${upperCountryCode}`,
+    };
+
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    context.warn(`Failed to fetch LEI for ${identifierType} ${registrationNumber}: ${errorMsg}`);
+
+    return {
+      lei: null,
+      legal_name: null,
+      registration_authority: null,
+      registration_number: null,
+      country: null,
+      status: 'error',
+      attempts: 1,
+      message: `Error fetching LEI: ${errorMsg}`,
     };
   }
-
-  context.log(`Fetching LEI for ${identifierType} ${registrationNumber} in ${upperCountryCode}`);
-  context.log(`Will try authorities: ${authorities.join(', ')}`);
-
-  let attempts = 0;
-  const errors: string[] = [];
-
-  // Try each registration authority sequentially
-  for (const authority of authorities) {
-    attempts++;
-    try {
-      const record = await fetchLeiFromGleif(authority, registrationNumber, context);
-
-      if (record) {
-        return {
-          lei: record.attributes.lei,
-          legal_name: record.attributes.entity.legalName.name,
-          registration_authority: authority,
-          registration_number: registrationNumber,
-          country: record.attributes.entity.legalAddress.country,
-          status: 'found',
-          attempts,
-          message: `LEI found using ${authority}`,
-          gleif_response: record,
-        };
-      }
-
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      errors.push(`${authority}: ${errorMsg}`);
-      context.warn(`Failed to fetch LEI using ${authority}: ${errorMsg}`);
-      // Continue to next authority
-    }
-  }
-
-  // No LEI found after trying all authorities
-  return {
-    lei: null,
-    legal_name: null,
-    registration_authority: null,
-    registration_number: null,
-    country: null,
-    status: 'not_found',
-    attempts,
-    message: `No LEI found after trying ${attempts} registration ${attempts === 1 ? 'authority' : 'authorities'}: ${authorities.join(', ')}`,
-  };
 }
 
 /**
@@ -370,7 +474,7 @@ export async function fetchLeiForOrganizationWithNameFallback(
       return {
         lei: record.attributes.lei,
         legal_name: record.attributes.entity.legalName.name,
-        registration_authority: record.attributes.entity.registrationAuthority?.id || null,
+        registration_authority: record.attributes.entity.registeredAt?.id || null,
         registration_number: record.attributes.entity.registeredAs || null,
         country: record.attributes.entity.legalAddress.country,
         status: 'found',
@@ -393,7 +497,7 @@ export async function fetchLeiForOrganizationWithNameFallback(
       return {
         lei: exactMatch.attributes.lei,
         legal_name: exactMatch.attributes.entity.legalName.name,
-        registration_authority: exactMatch.attributes.entity.registrationAuthority?.id || null,
+        registration_authority: exactMatch.attributes.entity.registeredAt?.id || null,
         registration_number: exactMatch.attributes.entity.registeredAs || null,
         country: exactMatch.attributes.entity.legalAddress.country,
         status: 'found',
@@ -413,7 +517,7 @@ export async function fetchLeiForOrganizationWithNameFallback(
       return {
         lei: startsWithMatch.attributes.lei,
         legal_name: startsWithMatch.attributes.entity.legalName.name,
-        registration_authority: startsWithMatch.attributes.entity.registrationAuthority?.id || null,
+        registration_authority: startsWithMatch.attributes.entity.registeredAt?.id || null,
         registration_number: startsWithMatch.attributes.entity.registeredAs || null,
         country: startsWithMatch.attributes.entity.legalAddress.country,
         status: 'found',
@@ -524,18 +628,18 @@ export async function storeGleifRegistryData(
     legalEntityId,
     gleifRecord.attributes.lei,
     entity.legalName?.name || null,
-    null, // legal_name_language - not directly available in current structure
-    entity.legalAddress?.country || null,
+    entity.legalName?.language || null, // legal_name_language
+    entity.jurisdiction || entity.legalAddress?.country || null,
     entity.registeredAs || null,
-    entity.registrationAuthority?.id || null,
+    entity.registeredAt?.id || null, // GLEIF RA code (e.g., "RA000463")
     entity.legalAddress ? JSON.stringify(entity.legalAddress) : null,
     entity.headquartersAddress ? JSON.stringify(entity.headquartersAddress) : null,
-    null, // entity_status - need to check if in response
-    registration?.registrationDate ? new Date(registration.registrationDate) : null,
+    entity.status || null, // entity_status
+    registration?.initialRegistrationDate ? new Date(registration.initialRegistrationDate) : null,
     registration?.lastUpdateDate ? new Date(registration.lastUpdateDate) : null,
-    null, // next_renewal_date
+    registration?.nextRenewalDate ? new Date(registration.nextRenewalDate) : null,
     registration?.registrationStatus || null,
-    null, // managing_lou
+    registration?.managingLou || null, // managing_lou
     JSON.stringify(gleifRecord)
   ]);
 

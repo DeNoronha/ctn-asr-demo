@@ -21,20 +21,28 @@
 import { randomUUID } from 'crypto';
 import { EnrichmentContext, EnrichmentResult, getExistingValue } from './types';
 
-// Map of identifier types to GLEIF registration authority prefixes
-const IDENTIFIER_TO_AUTHORITY: Record<string, string> = {
-  'KVK': 'NL-KVK',
-  'HRB': 'DE-HRB',
-  'HRA': 'DE-HRA',
-  'KBO': 'BE-BCE',
-  'BCE': 'BE-BCE',
-  'RCS': 'FR-RCS',
-  'SIREN': 'FR-RCS',
-  'CRN': 'GB-COH',
-  'REA': 'IT-REA',
-  'CIF': 'ES-CIF',
-  'CVR': 'DK-CVR',
-  'CHR': 'CH-CHRB',
+/**
+ * Map of identifier types to country codes for GLEIF lookup.
+ *
+ * Note: The GLEIF API's registeredAs field contains ONLY the identifier number,
+ * so we use the country code to narrow search results instead of registration
+ * authority prefixes.
+ */
+const IDENTIFIER_TO_COUNTRY: Record<string, string> = {
+  'KVK': 'NL',
+  'HRB': 'DE',
+  'HRA': 'DE',
+  'KBO': 'BE',
+  'BCE': 'BE',
+  'RCS': 'FR',
+  'SIREN': 'FR',
+  'CRN': 'GB',
+  'REA': 'IT',
+  'CIF': 'ES',
+  'CVR': 'DK',
+  'CHR': 'CH',
+  'KRS': 'PL',
+  'FB': 'AT',  // Austria Firmenbuch
 };
 
 /**
@@ -43,9 +51,12 @@ const IDENTIFIER_TO_AUTHORITY: Record<string, string> = {
  * Flow:
  * 1. Check if LEI already exists
  * 2. Find any available CoC/registration number (KVK, HRB, KBO, CRN, etc.)
- * 3. Search GLEIF by registration authority + number
+ * 3. Search GLEIF by registration number (registeredAs field) + country filter
  * 4. Fallback to company name search
  * 5. Store LEI identifier and GLEIF registry data
+ *
+ * Note: The GLEIF API's registeredAs field contains ONLY the identifier number,
+ * NOT a combined "authority/number" format. We use country filtering to narrow results.
  */
 export async function enrichLei(ctx: EnrichmentContext): Promise<EnrichmentResult> {
   const { pool, legalEntityId, companyName, countryCode, existingIdentifiers, existingTypes } = ctx;
