@@ -1,18 +1,69 @@
 # Enrichment & Verification Architecture
 
-**Last Updated:** 2025-12-14
+**Last Updated:** 2025-12-17
 **Related Code:**
 - `api/src/routes.ts` - POST /v1/legal-entities/:id/enrich endpoint
-- `api/src/services/enrichment/` - Extracted enrichment services
+- `api/src/services/enrichment/` - Modular enrichment services
+- `api/src/services/leiService.ts` - GLEIF API client
 
 This document visualizes the data enrichment and verification flows in the ASR system.
+
+---
 
 ## Key Principles
 
 1. **LEI, Peppol, and branding apply to ALL countries** - not just NL/DE
-2. **Chamber of Commerce (CoC) first, then name fallback** - LEI and Peppol search by CoC number first
+2. **Registration Number + Country first, then company name fallback** - LEI and Peppol search strategy
 3. **Country-specific flows** - RSIN/VAT for NL, HRB/EUID for DE
-4. **Modular services** - Each enrichment type in its own service file
+4. **Modular services** - Each enrichment type in its own service file for maintainability
+
+---
+
+## GLEIF API Search Strategy
+
+**Critical:** The GLEIF API uses a specific search approach that must be followed exactly.
+
+### Primary Search: Registration Number + Country
+
+```
+GET https://api.gleif.org/api/v1/lei-records
+  ?filter[entity.registeredAs]={registrationNumber}
+  &filter[entity.legalAddress.country]={countryCode}
+```
+
+**Parameters:**
+- `filter[entity.registeredAs]` - Just the identifier number (e.g., `33031431`), NOT a combined format
+- `filter[entity.legalAddress.country]` - Two-letter country code (e.g., `NL`, `DE`)
+
+**Example for Dutch company:**
+```
+filter[entity.registeredAs]=33031431
+filter[entity.legalAddress.country]=NL
+```
+
+### Fallback Search: Company Name + Country
+
+If registration number lookup fails:
+
+```
+GET https://api.gleif.org/api/v1/lei-records
+  ?filter[entity.legalName]={companyName}*
+  &filter[entity.legalAddress.country]={countryCode}
+  &page[size]=20
+```
+
+**Name Matching Logic:**
+1. Single result -> Use it
+2. Multiple results -> Try exact match (normalized, alphanumeric only)
+3. No exact match -> Try starts-with match
+4. No match -> Return not_found
+
+### Important Notes
+
+- **DO NOT** use combined formats like `NL-KVK/12345678` in registeredAs
+- **DO NOT** try to filter by Registration Authority ID (RA code) in combination with registeredAs
+- Germany has ~100 local court RA codes, making country filter more reliable than RA filtering
+- The `registeredAt.id` field in GLEIF responses contains the RA code (e.g., `RA000463` for NL-KVK)
 
 ---
 
@@ -37,20 +88,21 @@ flowchart TB
         RSIN[RSIN Identifier]
         VAT_DERIVE[Derive VAT: NL + RSIN + B01]
         VIES[VIES Validation]
+        EUID_NL[EUID: NL.KVK.number]
     end
 
     subgraph DE["German Company Flow (DE only)"]
         HR_SEARCH[Handelsregister Search]
         HRB[HRB/HRA Identifier]
-        EUID_GEN[Generate EUID]
+        EUID_DE[EUID: DEcourtCode.typenumber]
     end
 
     subgraph Global["Global Enrichment (ALL Countries)"]
         LEI_SEARCH["LEI Search
-        1. CoC number first
-        2. Company name fallback"]
+        1. Registration number + country
+        2. Company name + country fallback"]
         PEPPOL_SEARCH["Peppol Search
-        1. CoC/VAT first
+        1. CoC/VAT + country scheme
         2. Company name fallback"]
         BRANDING[Logo from Domain]
     end
@@ -76,13 +128,15 @@ flowchart TB
     VAT_DERIVE --> VIES
     VIES --> |valid| LEN
     VIES --> VIES_DATA
+    COC_ID --> EUID_NL
+    EUID_NL --> LEN
 
     COC_ID --> HR_SEARCH
     NAME --> HR_SEARCH
     HR_SEARCH --> HRB
     HR_SEARCH --> DE_DATA
-    HRB --> EUID_GEN
-    EUID_GEN --> LEN
+    HRB --> EUID_DE
+    EUID_DE --> LEN
 
     COC_ID --> LEI_SEARCH
     NAME --> LEI_SEARCH
@@ -106,7 +160,7 @@ flowchart TD
     START([Start Enrichment])
     CHECK_KVK{KVK Number exists?}
 
-    subgraph KVK_Flow["KVK → RSIN Flow"]
+    subgraph KVK_Flow["KVK -> RSIN Flow"]
         CHECK_RSIN{RSIN already stored?}
         CHECK_KVK_REGISTRY{kvk_registry_data exists?}
         FETCH_KVK[Fetch from KVK API]
@@ -115,9 +169,9 @@ flowchart TD
         STORE_RSIN[Store RSIN identifier]
     end
 
-    subgraph VAT_Flow["RSIN → VAT Flow"]
+    subgraph VAT_Flow["RSIN -> VAT Flow"]
         HAS_RSIN{RSIN available?}
-        DERIVE_VAT["Derive VAT: NL{RSIN}B01"]
+        DERIVE_VAT["Derive VAT: NL RSIN B01"]
         CALL_VIES[Call VIES API to validate]
         VIES_VALID{VIES returns valid?}
         TRY_B02["Try B02 suffix (fiscal unit)"]
@@ -127,8 +181,16 @@ flowchart TD
         VAT_NOT_AVAILABLE[VAT not available]
     end
 
+    subgraph EUID_Flow["EUID Generation"]
+        CHECK_EUID{EUID exists?}
+        GEN_EUID["Generate: NL.KVK.kvkNumber"]
+        STORE_EUID_NL[Store EUID identifier]
+    end
+
     subgraph LEI_Flow["LEI Lookup"]
-        SEARCH_LEI_KVK["Search GLEIF by NL-KVK/{number}"]
+        SEARCH_LEI_KVK["Search GLEIF:
+        registeredAs=kvkNumber
+        country=NL"]
         LEI_FOUND{LEI found?}
         SEARCH_LEI_NAME["Fallback: Search by company name"]
         NAME_FOUND{Single/exact match?}
@@ -137,7 +199,8 @@ flowchart TD
     end
 
     subgraph Peppol_Flow["Peppol Lookup"]
-        SEARCH_PEPPOL["Query Peppol Directory by KVK"]
+        SEARCH_PEPPOL["Query Peppol Directory
+        scheme=0106, id=kvkNumber"]
         PEPPOL_FOUND{Participant found?}
         STORE_PEPPOL[Store PEPPOL identifier]
     end
@@ -163,6 +226,10 @@ flowchart TD
     VIES_B02_VALID -->|Yes| STORE_VAT
     VIES_B02_VALID -->|No| VAT_NOT_AVAILABLE
     STORE_VAT --> STORE_VIES
+
+    CHECK_KVK -->|Yes| CHECK_EUID
+    CHECK_EUID -->|No| GEN_EUID
+    GEN_EUID --> STORE_EUID_NL
 
     CHECK_KVK -->|Yes| SEARCH_LEI_KVK
     SEARCH_LEI_KVK --> LEI_FOUND
@@ -198,13 +265,15 @@ flowchart TD
     subgraph EUID_Flow["EUID Generation"]
         HAS_EUID{EUID already exists?}
         HAS_COURT_CODE{Court code available?}
-        GENERATE_EUID["Generate: DE{courtCode}.{type}{number}"]
+        GENERATE_EUID["Generate: DEcourtCode.typenumber"]
         STORE_EUID[Store EUID identifier]
     end
 
     subgraph LEI_Flow["LEI from GLEIF"]
-        SEARCH_GLEIF_DE["Search GLEIF by DE-HRB/{number}"]
-        SEARCH_GLEIF_NAME["Search GLEIF by company name"]
+        SEARCH_GLEIF_DE["Search GLEIF:
+        registeredAs=hrbNumber
+        country=DE"]
+        SEARCH_GLEIF_NAME["Fallback: Search by company name"]
         LEI_FOUND{LEI found?}
         STORE_LEI[Store LEI identifier]
         STORE_GLEIF[Store gleif_registry_data]
@@ -212,11 +281,10 @@ flowchart TD
 
     subgraph VAT_Note["VAT for German Companies"]
         VAT_MANUAL["VAT must be provided manually
-        (cannot be auto-derived)
 
         Reason:
         - Handelsregister has no VAT data
-        - VIES only validates, doesn't search"]
+        - VIES only validates, does not search"]
     end
 
     START --> CHECK_DE_DATA
@@ -263,7 +331,7 @@ flowchart LR
         VIES_API["VIES API
         ec.europa.eu/taxation_customs/vies"]
         GLEIF_API["GLEIF API
-        api.gleif.org"]
+        api.gleif.org/api/v1"]
         PEPPOL_API["Peppol Directory
         directory.peppol.eu"]
         HR_WEB["Handelsregister.de
@@ -313,23 +381,25 @@ flowchart LR
 
 | Identifier | Source | Lookup Strategy |
 |------------|--------|-----------------|
-| **LEI** | GLEIF | 1. CoC number (KVK/HRB/KBO/CRN/etc) via registration authority<br>2. Company name search fallback |
+| **LEI** | GLEIF | 1. Registration number + country code<br>2. Company name + country fallback |
 | **PEPPOL** | Peppol Directory | 1. CoC/VAT by country-specific scheme<br>2. Company name + country search fallback |
 | **Branding** | Domain | Google/DuckDuckGo favicon services |
 
 ### Supported CoC Types for LEI Lookup
 
-| Type | Country | GLEIF Authority |
-|------|---------|-----------------|
-| KVK | NL | NL-KVK |
-| HRB/HRA | DE | DE-HRB, DE-HRA |
-| KBO/BCE | BE | BE-BCE |
-| RCS/SIREN | FR | FR-RCS |
-| CRN | GB | GB-COH |
-| REA | IT | IT-REA |
-| CIF | ES | ES-CIF |
-| CVR | DK | DK-CVR |
-| CHR | CH | CH-CHRB |
+| Type | Country | GLEIF Registration Authority |
+|------|---------|------------------------------|
+| KVK | NL | RA000463 (Kamer van Koophandel) |
+| HRB/HRA | DE | RA000197-RA000296 (~100 local courts) |
+| KBO/BCE | BE | RA000025 (Kruispuntbank) |
+| RCS/SIREN | FR | RA000192, RA000189 (Infogreffe, SIRENE) |
+| CRN | GB | RA000585-RA000587 (Companies House) |
+| REA | IT | RA000407 (Registro Delle Imprese) |
+| CIF | ES | RA000533, RA000780 (Registro Mercantil) |
+| CVR | DK | RA000170 (Central Business Register) |
+| CHR | CH | RA000549, RA000548 (Handelsregister) |
+| KRS | PL | RA000484 (Krajowy Rejestr Sadowy) |
+| FB | AT | RA000017 (Firmenbuch) |
 
 ### Supported Identifiers for Peppol Lookup
 
@@ -353,12 +423,14 @@ flowchart LR
 | Netherlands | `NL.KVK.{number}` | `NL.KVK.12345678` |
 | Germany | `DE{courtCode}.{type}{number}` | `DED4601R.HRB15884` |
 | Germany | `DEK1101R.{type}{number}` | `DEK1101R.HRB116737` (Hamburg) |
+| Germany | `DER2210R.{type}{number}` | `DER2210R.HRB20885` (Koblenz) |
 
 **German Court Codes:**
 - D4601R = Amtsgericht Neuss
 - K1101R = Amtsgericht Hamburg
-- M1301R = Amtsgericht München
+- M1301R = Amtsgericht Munchen
 - K1704R = Amtsgericht Duisburg
+- R2210R = Amtsgericht Koblenz
 
 ---
 
@@ -387,7 +459,7 @@ flowchart TD
     Q1 -->|No| MANUAL["VAT must be provided manually
     (Handelsregister has no VAT data,
     VIES only validates existing VAT)"]
-    Q2 -->|Yes| DERIVE["Derive: NL{RSIN}B01"]
+    Q2 -->|Yes| DERIVE["Derive: NL RSIN B01"]
     Q2 -->|No| NO_RSIN["Cannot derive VAT
     without RSIN"]
     DERIVE --> VALIDATE[Validate via VIES]
@@ -401,13 +473,13 @@ flowchart TD
 flowchart TD
     Q1{Country = NL?}
     Q1 -->|Yes| Q2{KVK number exists?}
-    Q2 -->|Yes| GEN_NL["Generate: NL.KVK.{kvkNumber}"]
+    Q2 -->|Yes| GEN_NL["Generate: NL.KVK.kvkNumber"]
     Q2 -->|No| NO_NL["Cannot generate EUID"]
 
     Q1 -->|No| Q3{Country = DE?}
     Q3 -->|Yes| Q4{HRB/HRA exists?}
     Q4 -->|Yes| Q5{Court code available?}
-    Q5 -->|Yes| GEN_DE["Generate: DE{courtCode}.{type}{number}"]
+    Q5 -->|Yes| GEN_DE["Generate: DEcourtCode.typenumber"]
     Q5 -->|No| NO_CODE["Cannot generate EUID
     (missing court code)"]
     Q4 -->|No| NO_HRB["Cannot generate EUID
@@ -418,21 +490,21 @@ flowchart TD
 
 ---
 
-## Service Architecture (Task 18 - COMPLETED)
+## Service Architecture
 
-### Enrichment Services (NEW - extracted from routes.ts)
+### Enrichment Services (Modular Design)
 
 | Service | File | Purpose |
 |---------|------|---------|
 | **Orchestrator** | `api/src/services/enrichment/index.ts` | Main enrichment coordinator |
-| **NL Enrichment** | `api/src/services/enrichment/nlEnrichmentService.ts` | Dutch: RSIN, VAT, KVK registry |
+| **NL Enrichment** | `api/src/services/enrichment/nlEnrichmentService.ts` | Dutch: RSIN, VAT, EUID, KVK registry |
 | **DE Enrichment** | `api/src/services/enrichment/deEnrichmentService.ts` | German: HRB/HRA, EUID generation |
 | **LEI Enrichment** | `api/src/services/enrichment/leiEnrichmentService.ts` | GLEIF lookup (ALL countries) |
 | **Peppol Enrichment** | `api/src/services/enrichment/peppolEnrichmentService.ts` | Peppol lookup (ALL countries) |
 | **Branding** | `api/src/services/enrichment/brandingService.ts` | Logo/favicon from domain |
 | **Types** | `api/src/services/enrichment/types.ts` | Shared TypeScript types |
 
-### External API Services (existing)
+### External API Services
 
 | Service | File | Purpose |
 |---------|------|---------|
@@ -449,10 +521,10 @@ flowchart TD
 
 ```
 api/src/services/
-├── enrichment/                     # ENRICHMENT ORCHESTRATION (NEW)
+├── enrichment/                     # ENRICHMENT ORCHESTRATION
 │   ├── index.ts                    # Main orchestrator - enrichLegalEntity()
 │   ├── types.ts                    # EnrichmentContext, EnrichmentResult types
-│   ├── nlEnrichmentService.ts      # enrichRsin(), enrichVat(), ensureKvkRegistryData()
+│   ├── nlEnrichmentService.ts      # enrichRsin(), enrichVat(), enrichEuid()
 │   ├── deEnrichmentService.ts      # enrichGermanRegistry(), generateEuidFromExisting()
 │   ├── leiEnrichmentService.ts     # enrichLei() - ALL countries via CoC or name
 │   ├── peppolEnrichmentService.ts  # enrichPeppol() - ALL countries via CoC/VAT or name
@@ -466,10 +538,110 @@ api/src/services/
 └── euidService.ts                  # EUID format generation
 ```
 
-### Benefits of Extraction
+### Enrichment Context
+
+```typescript
+interface EnrichmentContext {
+  pool: Pool;                              // PostgreSQL connection pool
+  legalEntityId: string;                   // UUID of entity being enriched
+  companyName: string | null;              // Company name for fallback searches
+  countryCode: string;                     // Two-letter country code
+  existingIdentifiers: ExistingIdentifier[]; // Already stored identifiers
+  existingTypes: Set<string>;              // Quick lookup of existing types
+}
+
+interface EnrichmentResult {
+  identifier: string;                      // e.g., 'LEI', 'VAT', 'EUID'
+  status: 'added' | 'exists' | 'error' | 'not_available';
+  value?: string;                          // The identifier value if found
+  message?: string;                        // Human-readable status message
+}
+```
+
+### Benefits of Modular Architecture
 
 1. **Separation of concerns** - Each enrichment type in its own service
 2. **Testability** - Services can be unit tested independently
 3. **Readability** - ~100-200 lines per service vs 900+ lines inline
-4. **Global scope** - LEI and Peppol now work for ALL countries, not just NL/DE
+4. **Global scope** - LEI and Peppol work for ALL countries, not just NL/DE
 5. **Extensibility** - Easy to add new country-specific enrichments (BE, FR, etc.)
+
+---
+
+## API Response Format
+
+### Enrichment Endpoint
+
+**POST** `/api/v1/legal-entities/:id/enrich`
+
+**Response:**
+```json
+{
+  "success": true,
+  "added_count": 3,
+  "company_details_updated": true,
+  "updated_fields": ["primary_legal_name", "city", "address_line1"],
+  "logo_fetched": true,
+  "logo_url": "https://example.com/favicon.ico",
+  "german_registry_fetched": false,
+  "results": [
+    { "identifier": "RSIN", "status": "added", "value": "123456789" },
+    { "identifier": "VAT", "status": "added", "value": "NL123456789B01" },
+    { "identifier": "EUID", "status": "added", "value": "NL.KVK.12345678" },
+    { "identifier": "LEI", "status": "exists", "value": "724500Y6YT5CU09QUU37" },
+    { "identifier": "PEPPOL", "status": "not_available", "message": "No Peppol participant found" }
+  ],
+  "summary": {
+    "added": ["RSIN: 123456789", "VAT: NL123456789B01", "EUID: NL.KVK.12345678"],
+    "already_exists": ["LEI"],
+    "not_available": ["PEPPOL (No Peppol participant found)"],
+    "errors": [],
+    "company_fields_updated": ["primary_legal_name", "city", "address_line1"],
+    "branding": "Logo fetched from domain"
+  }
+}
+```
+
+---
+
+## Verification Status Values
+
+| Status | Meaning |
+|--------|---------|
+| `VERIFIED` | Confirmed via external API (KVK, VIES, GLEIF) |
+| `VALIDATED` | Format validated, auto-generated (EUID) |
+| `PENDING` | Awaiting verification |
+| `UNVERIFIED` | Manual entry, not yet checked |
+| `INVALID` | Failed verification |
+
+---
+
+## Lessons Learned (December 2025)
+
+### GLEIF API Search
+
+1. **Use registration number + country**, NOT combined formats like `NL-KVK/12345678`
+2. **The `registeredAs` field** contains only the identifier number
+3. **Country filter is more reliable** than Registration Authority codes for Germany
+4. **Fallback to company name search** when registration number lookup fails
+
+### LEI Verification
+
+1. **Always verify LEIs against GLEIF API** before storing
+2. **Check for 404 responses** - indicates invalid/inactive LEI
+3. **Store GLEIF registry data** for audit trail and re-verification
+4. **Example verified LEIs:**
+   - Hapag-Lloyd: `HD52L5PJVBXJUUX8I539` (valid)
+   - LK Holding B.V.: `984500BFA87D80EFF307` (valid)
+
+### Peppol Verification
+
+1. **Peppol IDs belong to specific companies** - verify the company name matches
+2. **Use the Peppol Directory API** to validate participant IDs
+3. **Delete incorrect Peppol IDs** rather than keeping unverified data
+
+### EUID Generation
+
+1. **NL format**: `NL.KVK.{kvkNumber}` - simple and predictable
+2. **DE format**: Requires court code from german_registry_data
+3. **Auto-generate from KVK** for all Dutch companies during enrichment
