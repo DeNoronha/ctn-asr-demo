@@ -178,6 +178,8 @@ export interface LegalEntity {
 export interface Member {
   legal_entity_id: string;
   legal_name: string;
+  city?: string;
+  country_code?: string;
   lei?: string;
   kvk?: string;
   euid?: string;

@@ -459,6 +459,67 @@ async function storeKvkRegistryData(
   console.log('[NL Enrichment] Stored KVK registry data for:', kvkNumber);
 }
 
+/**
+ * Enrich Dutch company with EUID derived from KVK
+ *
+ * Flow:
+ * 1. Check if EUID already exists
+ * 2. Get KVK number from existing identifiers
+ * 3. Generate EUID in format: NL.KVK.{kvkNumber}
+ * 4. Store EUID identifier
+ */
+export async function enrichEuid(ctx: EnrichmentContext): Promise<EnrichmentResult> {
+  const { pool, legalEntityId, existingTypes, existingIdentifiers } = ctx;
+  const kvkNumber = getExistingValue(existingIdentifiers, 'KVK');
+
+  // EUID is only applicable for Dutch companies with KVK
+  if (ctx.countryCode !== 'NL') {
+    return { identifier: 'EUID', status: 'not_available', message: 'EUID only for NL companies' };
+  }
+
+  // Check if EUID already exists
+  if (existingTypes.has('EUID')) {
+    const existingEuid = getExistingValue(existingIdentifiers, 'EUID');
+    return {
+      identifier: 'EUID',
+      status: 'exists',
+      value: existingEuid || undefined
+    };
+  }
+
+  // Need KVK to generate EUID
+  if (!kvkNumber) {
+    return {
+      identifier: 'EUID',
+      status: 'not_available',
+      message: 'Cannot generate EUID without KVK number'
+    };
+  }
+
+  // Generate EUID: NL.KVK.{kvkNumber}
+  const euidValue = `NL.KVK.${kvkNumber}`;
+
+  await pool.query(`
+    INSERT INTO legal_entity_number (
+      legal_entity_reference_id, legal_entity_id,
+      identifier_type, identifier_value, country_code,
+      validation_status, registry_name, registry_url,
+      verification_notes, dt_created, dt_modified
+    )
+    VALUES ($1, $2, 'EUID', $3, 'NL', 'VALIDATED', 'BRIS', 'https://e-justice.europa.eu/489/EN/business_registers',
+            'Auto-generated from KVK', NOW(), NOW())
+  `, [randomUUID(), legalEntityId, euidValue]);
+
+  console.log('[NL Enrichment] Generated EUID from KVK:', euidValue);
+
+  return {
+    identifier: 'EUID',
+    status: 'added',
+    value: euidValue,
+    message: 'Generated from KVK number'
+  };
+}
+
 // Helper: Store VIES registry data
 async function storeViesRegistryData(
   pool: any,

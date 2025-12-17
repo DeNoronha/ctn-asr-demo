@@ -6,6 +6,7 @@ import {
   Group,
   Menu,
   Modal,
+  Pill,
   Stack,
   TextInput,
   Tooltip,
@@ -119,14 +120,19 @@ const MembersGrid: React.FC<MembersGridProps> = ({
 
     // Apply search filter
     if (query) {
+      const lowerQuery = query.toLowerCase();
       filtered = filtered.filter(
         (member) =>
-          member.legal_name?.toLowerCase().includes(query.toLowerCase()) ||
-          member.status?.toLowerCase().includes(query.toLowerCase()) ||
-          member.lei?.toLowerCase().includes(query.toLowerCase()) ||
-          member.euid?.toLowerCase().includes(query.toLowerCase()) ||
-          member.kvk?.toLowerCase().includes(query.toLowerCase()) ||
-          member.legal_entity_id?.toLowerCase().includes(query.toLowerCase())
+          member.legal_name?.toLowerCase().includes(lowerQuery) ||
+          member.city?.toLowerCase().includes(lowerQuery) ||
+          member.status?.toLowerCase().includes(lowerQuery) ||
+          member.lei?.toLowerCase().includes(lowerQuery) ||
+          member.euid?.toLowerCase().includes(lowerQuery) ||
+          member.kvk?.toLowerCase().includes(lowerQuery) ||
+          member.vat?.toLowerCase().includes(lowerQuery) ||
+          member.eori?.toLowerCase().includes(lowerQuery) ||
+          member.duns?.toLowerCase().includes(lowerQuery) ||
+          member.legal_entity_id?.toLowerCase().includes(lowerQuery)
       );
     }
 
@@ -222,22 +228,57 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     BASIC: 'Basic membership - limited access to essential services',
   };
 
+  // Render identifier pills for a member
+  const renderIdentifierPills = (member: Member) => {
+    const identifiers = [
+      { key: 'KVK', value: member.kvk, label: 'KVK' },
+      { key: 'VAT', value: member.vat, label: 'VAT' },
+      { key: 'DUNS', value: member.duns, label: 'DUNS' },
+      { key: 'EORI', value: member.eori, label: 'EORI' },
+    ];
+
+    return (
+      <Group gap={4} wrap="nowrap">
+        {identifiers.map(({ key, value, label }) => {
+          const hasValue = !!value;
+          return (
+            <Tooltip
+              key={key}
+              label={hasValue ? `${label}: ${value}` : `${label}: Not available`}
+              position="top"
+            >
+              <Pill
+                size="xs"
+                c={hasValue ? 'white' : 'gray.6'}
+                bg={hasValue ? 'teal.6' : 'gray.2'}
+                style={{ cursor: 'default', fontWeight: 500, fontSize: '0.65rem' }}
+              >
+                {label}
+              </Pill>
+            </Tooltip>
+          );
+        })}
+      </Group>
+    );
+  };
+
   // Column definitions for mantine-datatable
+  // Task 06: Columns - ID, Official Name, City, EUID, LEI, Identifiers (pills), Status, Actions
   const { effectiveColumns } = useDataTableColumns<Member>({
-    key: 'members-grid-v2',
+    key: 'members-grid-v3',
     columns: [
       {
         accessor: 'legal_entity_id',
         title: 'ID',
-        width: 90,
-        toggleable: false, // Cannot be hidden - always visible
-        draggable: false, // Fixed as first column
+        width: 80,
+        toggleable: false,
+        draggable: false,
         resizable: true,
         sortable: true,
         render: (member) => (
           <span
             title={member.legal_entity_id}
-            style={{ fontFamily: 'monospace', fontSize: '0.85em', cursor: 'help' }}
+            style={{ fontFamily: 'monospace', fontSize: '0.8em', cursor: 'help' }}
           >
             {member.legal_entity_id?.substring(0, 8)}…
           </span>
@@ -245,18 +286,66 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       },
       {
         accessor: 'legal_name',
-        title: getColumnTitle('legal_name'),
-        width: 200,
-        toggleable: false, // Cannot be hidden - always visible
+        title: 'Official Name',
+        width: 220,
+        toggleable: false,
         draggable: true,
         resizable: true,
         sortable: true,
-        render: (member) => <div>{sanitizeGridCell(member.legal_name)}</div>,
+        render: (member) => <div style={{ fontWeight: 500 }}>{sanitizeGridCell(member.legal_name)}</div>,
+      },
+      {
+        accessor: 'city',
+        title: 'City',
+        width: 120,
+        toggleable: true,
+        draggable: true,
+        resizable: true,
+        sortable: true,
+        render: (member) => <div>{sanitizeGridCell(member.city || '—')}</div>,
+      },
+      {
+        accessor: 'euid',
+        title: 'EUID',
+        width: 150,
+        toggleable: true,
+        draggable: true,
+        resizable: true,
+        sortable: true,
+        render: (member) => (
+          <span style={{ fontFamily: 'monospace', fontSize: '0.85em' }}>
+            {member.euid || '—'}
+          </span>
+        ),
+      },
+      {
+        accessor: 'lei',
+        title: 'LEI',
+        width: 190,
+        toggleable: true,
+        draggable: true,
+        resizable: true,
+        sortable: true,
+        render: (member) => (
+          <span style={{ fontFamily: 'monospace', fontSize: '0.85em' }}>
+            {member.lei || '—'}
+          </span>
+        ),
+      },
+      {
+        accessor: 'identifiers',
+        title: 'Identifiers',
+        width: 180,
+        toggleable: true,
+        draggable: true,
+        resizable: true,
+        sortable: false,
+        render: renderIdentifierPills,
       },
       {
         accessor: 'status',
-        title: getColumnTitle('status'),
-        width: 100,
+        title: 'Status',
+        width: 85,
         toggleable: true,
         draggable: true,
         resizable: true,
@@ -264,40 +353,17 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         render: (member) => (
           <output
             className="status-badge"
-            style={{ backgroundColor: getStatusColor(member.status) }}
+            style={{
+              backgroundColor: getStatusColor(member.status),
+              fontSize: '0.75rem',
+              padding: '2px 8px'
+            }}
             title={statusTooltips[member.status] || 'Member status'}
             aria-label={`Status: ${member.status}`}
           >
             {member.status}
           </output>
         ),
-      },
-      {
-        accessor: 'lei',
-        title: 'LEI',
-        width: 130,
-        toggleable: true,
-        draggable: true,
-        resizable: true,
-        sortable: true,
-      },
-      {
-        accessor: 'euid',
-        title: 'EUID',
-        width: 130,
-        toggleable: true,
-        draggable: true,
-        resizable: true,
-        sortable: true,
-      },
-      {
-        accessor: 'kvk',
-        title: 'KVK',
-        width: 90,
-        toggleable: true,
-        draggable: true,
-        resizable: true,
-        sortable: true,
       },
       {
         accessor: 'domain',
@@ -307,14 +373,13 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         draggable: true,
         resizable: true,
         sortable: true,
-        defaultToggle: false, // Hidden by default
+        defaultToggle: false,
         render: (member) => <div>{sanitizeGridCell(member.domain || '')}</div>,
       },
-      /* membership_level column hidden - membership levels feature disabled */
       {
         accessor: 'actions',
         title: 'Actions',
-        width: 150,
+        width: 110,
         toggleable: false,
         draggable: false,
         sortable: false,
@@ -536,7 +601,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             selectedRecords={sortedData.filter((m) => selectedIds.includes(m.legal_entity_id))}
             onSelectedRecordsChange={handleSelectedRecordsChange}
             idAccessor="legal_entity_id"
-            storeColumnsKey="members-grid-v2"
+            storeColumnsKey="members-grid-v3"
             onRowClick={handleRowClick}
             rowStyle={() => ({ cursor: 'pointer' })}
             rowBackgroundColor={(member) =>

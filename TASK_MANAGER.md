@@ -1,168 +1,106 @@
-Task 13: ✅ COMPLETED (2025-12-14)
+# Task Manager
 
-/Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-14 om 13.32.12.png /Users/ramondenoronha/Documents/Screenshots/Scherm­afbeelding 2025-12-14 om 13.32.21.png
+All tasks completed on December 17, 2025.
 
-Tier 3 is there for Contargo, but it doesn't show up as such on the Dashboard. Wrong field again?
+---
 
-**Root Cause:** The `/v1/members` and `/v1/all-members` API endpoints were not returning the `authentication_tier` field, even though it exists in the `vw_legal_entities` view.
+## Task 01: ISO 20275 Entity Legal Forms ✅ COMPLETED
+
+**Request:** Add legal forms code as a lookup list for NL, BE, DACH countries, FR, UK from https://www.gleif.org/en/lei-data/code-lists/iso-20275-entity-legal-forms-code-list
 
 **Solution:**
-1. Added `authentication_tier` and `authentication_method` to SELECT statements in both member list endpoints
-2. Fixed Dashboard.tsx to handle `authentication_tier` as a number (1, 2, 3) instead of string
-3. Updated TIER_COLORS to use "Tier 1", "Tier 2", "Tier 3" labels for the bar chart
-
-**Files Modified:**
-- `api/src/routes.ts` - Added authentication_tier to /v1/members and /v1/all-members queries
-- `admin-portal/src/components/Dashboard.tsx` - Fixed tier data calculation and colors
+- Created migration `054_entity_legal_forms.sql`
+- Added `entity_legal_forms` table with 479 unique ELF codes
+- Added `entity_legal_form_translations` table for multilingual support (EN, NL, DE, FR)
+- Covers: NL, BE, DE, AT, CH, FR, GB
 
 ---
 
-Task 14: ✅ COMPLETED (2025-12-14)
+## Task 02: Google Map Not Showing ✅ COMPLETED
 
-Don't start a build manually before checking if a build is still running. Put this in CLAUDE.md
-
-**Solution:** Added build check instructions to CLAUDE.md in the "Standard Flow" section:
-- Added step 3: Check for running builds with `az pipelines build list`
-- Added warning: Never push while another build is running
-- Explains risks: deployment conflicts and race conditions
-
----
-
-Task 15: ✅ COMPLETED (2025-12-14)
-
-Fetching a VAT number in NL can be done via RSIN. But in Germany it might be returned via the BundesAPI. Hence the logic RSIN --> VAT accommodate that. Aka RSIN is not mandatory for non-NL companies
-
-**Analysis:**
-- VIES: Can only **validate** existing VAT numbers (not search by name)
-- Handelsregister/BundesAPI: Commercial register - does NOT contain VAT data
-- GLEIF: LEI data only, no VAT numbers
-- For German companies: VAT must be provided manually
+**Request:** Google Map not visible on Company Details page
 
 **Solution:**
-1. Made RSIN enrichment conditional on `countryCode === 'NL'`
-2. Updated VAT error messages to be country-specific:
-   - NL: "Cannot derive VAT without RSIN (Dutch companies)"
-   - Non-NL: "VAT for {country} companies must be provided manually (cannot be auto-derived)"
-
-**Files Modified:**
-- `api/src/routes.ts` - Updated enrichment endpoint to skip RSIN for non-NL companies
+- Added `VITE_GOOGLE_MAPS_API_KEY` to `.env` and `.env.production`
+- Updated `AddressMap.tsx` to use environment variable instead of hardcoded key
+- Added fallback message when API key not configured
+- Added key to `.credentials` for reference
 
 ---
 
-Task 16: ✅ COMPLETED (2025-12-14)
+## Task 03: Datagrid Not Updating After Edit ✅ COMPLETED
 
-If LEI Found: HD52L5PJVBXJUUX8I539 then also fetch all other info of GLEIF registry. This error/message should not occur>> LEI identifier exists but detailed registry data has not been fetched yet.
-
-If LEI number is fetched/updated always fetch the detailed registry data
+**Request:** After editing a company record (e.g., delete identifier) and returning to Members page, the table shows old data
 
 **Solution:**
-1. Added `storeGleifRegistryData()` function to leiService.ts to store GLEIF registry data
-2. Added `fetchLeiByCode()` function to fetch LEI details directly by LEI code
-3. Modified enrichment endpoint: When LEI is found during enrichment, GLEIF registry data is now automatically stored
-4. Modified LEI registry endpoint: If no GLEIF data exists, it now auto-fetches from GLEIF API on-demand
-
-**Files Modified:**
-- `api/src/services/leiService.ts` - Added storeGleifRegistryData() and fetchLeiByCode() functions
-- `api/src/routes.ts` - Updated enrichment to store GLEIF data, updated lei-registry endpoint to fetch on-demand
+- Modified `AdminPortal.tsx` `handleBackToMembers` function
+- Added `await loadMembersData()` to refresh data when navigating back from detail view
 
 ---
 
-Task 17: ✅ COMPLETED (2025-12-14)
+## Task 04: KVK → EUID Auto-Generation ✅ COMPLETED
 
-GLEIF and bundesAPI are separate registries. Not fall-backs for each other. Each can be searched via a CoC number or via a Name (+address/city).
+**Request:** Every KVK identifier should also have an EUID (e.g., KVK ID: 24139123)
 
 **Solution:**
-1. Updated service header documentation to clarify registry differences
-2. Added `searchGleifOnly()` method for LEI-specific searches
-3. Added `searchHandelsregisterOnly()` method for German commercial register searches
-4. Kept combined `searchByCompanyName()` for backward compatibility (searches both)
-
-**Registry Distinction:**
-- GLEIF: Global LEI database (~2M companies with LEIs)
-- BundesAPI/Handelsregister.de: German commercial register (all German companies)
-
-**Files Modified:**
-- `api/src/services/handelsregisterService.ts` - Added registry-specific search methods
+- Added `enrichEuid()` function to `nlEnrichmentService.ts`
+- Integrated EUID enrichment in enrichment orchestrator (`index.ts`)
+- Created migration `055_add_euid_for_kvk_records.sql` to backfill EUID for all existing KVK records
+- EUID format: `NL.KVK.{kvkNumber}` (e.g., `NL.KVK.24139123`)
+- All 8 existing KVK records now have corresponding EUID
 
 ---
 
-Task 18: ✅ COMPLETED (2025-12-14)
+## Task 05: GLEIF Registry Data ON CONFLICT Error ✅ COMPLETED
 
-Make sure that verifications and enrichments are stored as separate TS services. In order to avoid a huge validator.ts files that no one can decipher.
+**Request:** Error: "no unique or exclusion constraint matching the ON CONFLICT specification" when fetching GLEIF registry data
 
 **Solution:**
-Extracted ~900 lines of inline enrichment logic from `routes.ts` into a dedicated service directory with modular architecture:
-
-**New Directory:** `api/src/services/enrichment/`
-- `types.ts` - Shared types (EnrichmentContext, EnrichmentResult, EnrichmentSummary)
-- `nlEnrichmentService.ts` - Dutch-specific: RSIN from KVK, VAT derivation, KVK registry data sync
-- `deEnrichmentService.ts` - German-specific: HRB/HRA lookup, EUID generation
-- `leiEnrichmentService.ts` - Global LEI lookup via GLEIF (supports all CoC types: KVK, HRB, KBO, CRN, etc.)
-- `peppolEnrichmentService.ts` - Global Peppol lookup (supports all countries via CoC/VAT)
-- `brandingService.ts` - Company logo/branding from domain
-- `index.ts` - Main orchestrator coordinating all enrichment services
-
-**Key Principles:**
-1. LEI, Peppol, and branding apply to ALL countries (not just NL/DE)
-2. LEI lookup uses Chamber of Commerce number first, then company name fallback
-3. Each service has single responsibility and clear interfaces
-
-**Files Modified:**
-- `api/src/routes.ts` - Replaced inline enrichment with service call
-- Created 7 new files in `api/src/services/enrichment/`
+- Created migration `056_add_gleif_unique_constraint.sql`
+- Added unique partial index `idx_gleif_registry_unique_legal_entity` on `legal_entity_id`
+- Fixed validation_status values from 'GENERATED' to 'VALIDATED' (constraint-compliant)
 
 ---
 
-Task 19: ✅ COMPLETED (2025-12-14)
+## Task 06: Redesign Members Datagrid ✅ COMPLETED
 
-make sure you can transform a HRB number to an EUID. Look at for instance Contargo Neuss record. HRB known. But no EUID.
+**Request:** Datagrid columns: ID, Official Name, City, EUID, LEI, Identifiers (pills), Actions. Status column narrower.
 
 **Solution:**
-When german_registry_data already exists but EUID is missing:
-1. Enrichment now checks for existing HRB/HRA identifier
-2. Gets court_code from german_registry_data table
-3. Generates EUID using `DE{courtCode}.{registerType}{number}` format
-4. Example: HRB 15884 at Neuss (D4601R) → DED4601R.HRB15884
-
-**Files Modified:**
-- `api/src/routes.ts` - Added EUID generation from existing HRB in enrichment else-branch
-
----
-
-Task 20: ✅ COMPLETED (2025-12-14)
-
-Push to remote and test thoroughly.
-
-**Status:** All changes committed and pushed. See Task 18 and 21 for details.
+- Created migration `057_add_city_to_view.sql` to add city and country_code to `vw_legal_entities`
+- Updated `Member` type to include city and country_code
+- Redesigned `MembersGrid.tsx` with new columns:
+  - **ID** (80px) | **Official Name** (220px) | **City** (120px) | **EUID** (150px) | **LEI** (190px) | **Identifiers** (180px) | **Status** (85px) | **Actions** (110px)
+- Added identifier pills (KVK, VAT, DUNS, EORI) with color coding:
+  - **Teal**: Identifier available
+  - **Gray**: Not available
+- Updated API routes to return city, country_code, and vat fields
+- Updated search to include city in filter
+- Changed grid key to `members-grid-v3` to reset user column preferences
 
 ---
 
-Task 21: ✅ COMPLETED (2025-12-14)
+## Files Modified
 
-Make a mermaid diagram of the verification/enrichment logic we have. Including all data uses for parameters/decisions
+### Database Migrations
+- `054_entity_legal_forms.sql` - ISO 20275 Entity Legal Forms
+- `055_add_euid_for_kvk_records.sql` - Backfill EUID for KVK records
+- `056_add_gleif_unique_constraint.sql` - GLEIF unique index
+- `057_add_city_to_view.sql` - Add city to vw_legal_entities
 
-E.g. NL then RSIN via KVK. Via RSIN to VAT. Verification via VIES.
+### API
+- `api/src/routes.ts` - Added city, country_code, vat to member queries
+- `api/src/services/enrichment/index.ts` - Added EUID enrichment call
+- `api/src/services/enrichment/nlEnrichmentService.ts` - Added `enrichEuid()` function
+- `api/src/services/enrichment/deEnrichmentService.ts` - Fixed validation_status
 
-**Solution:**
-Created comprehensive documentation with mermaid diagrams:
+### Admin Portal
+- `admin-portal/src/components/MembersGrid.tsx` - New column layout with identifier pills
+- `admin-portal/src/components/AdminPortal.tsx` - Data refresh on back navigation
+- `admin-portal/src/components/AddressMap.tsx` - Environment variable for API key
+- `admin-portal/src/services/api/types.ts` - Added city, country_code to Member type
+- `admin-portal/.env` - Added VITE_GOOGLE_MAPS_API_KEY
+- `admin-portal/.env.production` - Added VITE_GOOGLE_MAPS_API_KEY
 
-**New File:** `docs/ENRICHMENT_ARCHITECTURE.md`
-- High-level overview flowchart showing enrichment orchestration
-- Detailed Dutch enrichment flow (KVK → RSIN → VAT → VIES)
-- German enrichment flow (HRB/HRA → Handelsregister → EUID)
-- Global enrichment flows (LEI via CoC/name, Peppol via identifier)
-- Identifier Type Matrix showing country-specific vs global identifiers
-- Service Architecture section documenting all extracted services
-
-**Key Diagrams:**
-1. High-Level Overview - Shows orchestrator calling country-specific + global services
-2. Dutch Enrichment - KVK API → RSIN extraction → VAT derivation → VIES validation
-3. German Enrichment - HRB lookup → BundesAPI → EUID generation
-4. LEI Enrichment - CoC identifier search → name fallback → GLEIF storage
-5. Peppol Enrichment - CoC/VAT identifier → name search fallback
-
-**Files Created:**
-- `docs/ENRICHMENT_ARCHITECTURE.md` - Complete architecture documentation with mermaid diagrams 
-
-
-
+### Configuration
+- `.credentials` - Added GOOGLE_MAPS_API_KEY

@@ -2,12 +2,15 @@
  * AddressMap Component
  * Displays a Google Maps embed for a given address
  *
- * Uses Google Maps Embed API (no API key required for basic usage)
- * For advanced features, set VITE_GOOGLE_MAPS_API_KEY in .env
+ * Uses Google Maps Embed API
+ * API key configured via VITE_GOOGLE_MAPS_API_KEY environment variable
  */
 
 import { Text } from '@mantine/core';
 import type React from 'react';
+
+// Google Maps API key from environment (shared across CTN projects)
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 interface AddressMapProps {
   address: string;
@@ -22,7 +25,7 @@ export const AddressMap: React.FC<AddressMapProps> = ({
   city,
   postalCode,
   country,
-  height = 250,
+  height = 200,
 }) => {
   // Build full address string for geocoding
   const fullAddress = [address, postalCode, city, country]
@@ -32,9 +35,7 @@ export const AddressMap: React.FC<AddressMapProps> = ({
   // URL encode the address for the embed
   const encodedAddress = encodeURIComponent(fullAddress);
 
-  // Check for API key - if available, use Maps JavaScript API, otherwise use static embed
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
+  // Show placeholder if no address or no API key
   if (!address && !city) {
     return (
       <div
@@ -55,11 +56,28 @@ export const AddressMap: React.FC<AddressMapProps> = ({
     );
   }
 
-  // Use Google Maps Embed API (free tier, no API key required for basic embedding)
-  // Note: For production with higher usage, an API key is recommended
-  const embedUrl = apiKey
-    ? `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodedAddress}`
-    : `https://maps.google.com/maps?q=${encodedAddress}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  if (!GOOGLE_MAPS_API_KEY) {
+    return (
+      <div
+        style={{
+          height,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#f8f9fa',
+          borderRadius: 8,
+          border: '1px dashed #dee2e6',
+        }}
+      >
+        <Text c="dimmed" size="sm">
+          Map unavailable (API key not configured)
+        </Text>
+      </div>
+    );
+  }
+
+  // Google Maps Embed API
+  const embedUrl = `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${encodedAddress}`;
 
   return (
     <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #dee2e6' }}>

@@ -86,10 +86,11 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
     const pool = getPool();
     const { page = '1', limit = '50', search, status } = req.query;
 
-    // Use vw_legal_entities view for member listing
+    // Use vw_legal_entities view for member listing (includes city, country_code, vat for UI)
     let query = `
-      SELECT legal_entity_id, primary_legal_name as legal_name, kvk, lei, euid, eori, duns, domain, status, membership_level,
-             authentication_tier, authentication_method, dt_created as created_at, metadata, contact_count, endpoint_count
+      SELECT legal_entity_id, primary_legal_name as legal_name, city, country_code, kvk, lei, euid, eori, duns, vat,
+             domain, status, membership_level, authentication_tier, authentication_method,
+             dt_created as created_at, metadata, contact_count, endpoint_count
       FROM vw_legal_entities
       WHERE 1=1
     `;
@@ -97,7 +98,7 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
     let paramIndex = 1;
 
     if (search) {
-      query += ` AND (primary_legal_name ILIKE $${paramIndex} OR kvk ILIKE $${paramIndex})`;
+      query += ` AND (primary_legal_name ILIKE $${paramIndex} OR city ILIKE $${paramIndex} OR kvk ILIKE $${paramIndex})`;
       params.push(`%${search}%`);
       paramIndex++;
     }
@@ -121,7 +122,7 @@ router.get('/v1/members', requireAuth, async (req: Request, res: Response) => {
     const countParams: any[] = [];
     let countParamIndex = 1;
     if (search) {
-      countQuery += ` AND (primary_legal_name ILIKE $${countParamIndex} OR kvk ILIKE $${countParamIndex})`;
+      countQuery += ` AND (primary_legal_name ILIKE $${countParamIndex} OR city ILIKE $${countParamIndex} OR kvk ILIKE $${countParamIndex})`;
       countParams.push(`%${search}%`);
       countParamIndex++;
     }
@@ -153,10 +154,11 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
     const { page = '1', page_size = '50', search, status } = req.query;
     const limit = page_size; // all-members uses page_size param
 
-    // Use vw_legal_entities view for member listing
+    // Use vw_legal_entities view for member listing (includes city, country_code, vat for UI)
     let query = `
-      SELECT legal_entity_id, primary_legal_name as legal_name, kvk, lei, euid, eori, duns, domain, status, membership_level,
-             authentication_tier, authentication_method, dt_created as created_at, metadata, contact_count, endpoint_count
+      SELECT legal_entity_id, primary_legal_name as legal_name, city, country_code, kvk, lei, euid, eori, duns, vat,
+             domain, status, membership_level, authentication_tier, authentication_method,
+             dt_created as created_at, metadata, contact_count, endpoint_count
       FROM vw_legal_entities
       WHERE 1=1
     `;
@@ -164,7 +166,7 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
     let paramIndex = 1;
 
     if (search) {
-      query += ` AND (primary_legal_name ILIKE $${paramIndex} OR kvk ILIKE $${paramIndex})`;
+      query += ` AND (primary_legal_name ILIKE $${paramIndex} OR city ILIKE $${paramIndex} OR kvk ILIKE $${paramIndex})`;
       params.push(`%${search}%`);
       paramIndex++;
     }
@@ -188,7 +190,7 @@ router.get('/v1/all-members', requireAuth, async (req: Request, res: Response) =
     const countParams: any[] = [];
     let countParamIndex = 1;
     if (search) {
-      countQuery += ` AND (primary_legal_name ILIKE $${countParamIndex} OR kvk ILIKE $${countParamIndex})`;
+      countQuery += ` AND (primary_legal_name ILIKE $${countParamIndex} OR city ILIKE $${countParamIndex} OR kvk ILIKE $${countParamIndex})`;
       countParams.push(`%${search}%`);
       countParamIndex++;
     }

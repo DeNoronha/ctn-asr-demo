@@ -135,10 +135,12 @@ const AdminPortal: React.FC = () => {
     setSelectedView('member-detail');
   }, []);
 
-  const handleBackToMembers = useCallback(() => {
+  const handleBackToMembers = useCallback(async () => {
     setSelectedMember(null);
     setSelectedView('members');
-  }, []);
+    // Refresh members data to reflect any changes made in the detail view
+    await loadMembersData();
+  }, [loadMembersData]);
 
   const handleMenuSelect = useCallback((item: MenuItem) => {
     if (item.route) {

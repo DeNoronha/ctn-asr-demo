@@ -11,7 +11,7 @@
 
 import { Pool } from 'pg';
 import { EnrichmentContext, EnrichmentResult, EnrichmentSummary, ExistingIdentifier } from './types';
-import { enrichRsin, enrichVat, ensureKvkRegistryData, updateLegalEntityFromKvk } from './nlEnrichmentService';
+import { enrichRsin, enrichVat, enrichEuid, ensureKvkRegistryData, updateLegalEntityFromKvk } from './nlEnrichmentService';
 import { enrichGermanRegistry } from './deEnrichmentService';
 import { enrichLei } from './leiEnrichmentService';
 import { enrichPeppol } from './peppolEnrichmentService';
@@ -91,6 +91,12 @@ export async function enrichLegalEntity(
   // VAT derivation (works for NL with RSIN, shows message for others)
   const vatResult = await enrichVat(ctx, rsin);
   results.push(vatResult);
+
+  // EUID from KVK (Dutch companies)
+  if (countryCode === 'NL') {
+    const euidResult = await enrichEuid(ctx);
+    results.push(euidResult);
+  }
 
   // =========================================================================
   // 2. German-specific enrichment (DE)
