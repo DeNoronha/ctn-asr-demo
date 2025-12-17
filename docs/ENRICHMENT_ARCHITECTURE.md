@@ -8,9 +8,9 @@ This document visualizes the data enrichment and verification flows in the ASR s
 
 ## Key Principles
 
-1. **EUID, LEI, Peppol apply to ALL EU countries** - not just NL/DE
+1. **EUID, LEI, Peppol apply to ALL EU countries** - not just NL/DE/BE
 2. **Registration Number + Country first, then company name fallback** - LEI and Peppol search strategy
-3. **Country-specific flows** - RSIN/VAT for NL, Handelsregister for DE
+3. **Country-specific flows** - RSIN/VAT for NL, Handelsregister for DE, KBO for BE
 4. **Modular services** - Each enrichment type in its own service file for maintainability
 
 ---
@@ -28,10 +28,11 @@ GET https://api.gleif.org/api/v1/lei-records
 ```
 
 **Parameters:**
-- `filter[entity.registeredAs]` - Just the identifier number (e.g., `33031431`), NOT a combined format
+- `filter[entity.registeredAs]` - Just the (CoC) identifier number (e.g., `33031431`)
 - `filter[entity.legalAddress.country]` - Two-letter country code (e.g., `NL`, `DE`)
 
 **Example for Dutch company:**
+
 ```
 filter[entity.registeredAs]=33031431
 filter[entity.legalAddress.country]=NL
@@ -60,88 +61,6 @@ GET https://api.gleif.org/api/v1/lei-records
 - The GLEIF API does **NOT** support filtering by Registration Authority (RA) code - there is no `filter[registeredAt.id]` parameter
 - Use `filter[entity.legalAddress.country]` instead of RA code filtering (works reliably for all countries including Germany with its ~100 local court RA codes)
 - The GLEIF **response** contains `registeredAt.id` with the RA code (e.g., `RA000463` for NL-KVK) - we store this for reference, but cannot use it for searching
-
----
-
-## High-Level Overview
-
-The enrichment flow starts with a Legal Entity that has a **CoC Number** (Chamber of Commerce identifier like KVK, HRB, KBO, etc.) and/or **Company Name**. These inputs feed into the enrichment engine which then branches based on country code:
-
-```mermaid
-flowchart TB
-    subgraph Input["Input Data (from Legal Entity)"]
-        COC_ID["CoC Number
-        (KVK/HRB/KBO/CRN/etc)"]
-        NAME[Company Name]
-    end
-
-    subgraph Enrichment["Enrichment Engine"]
-        ENRICH["/v1/legal-entities/:id/enrich"]
-    end
-
-    subgraph NL["Dutch Company Flow (NL only)"]
-        KVK_API[KVK API]
-        RSIN[RSIN Identifier]
-        VAT_DERIVE[Derive VAT: NL + RSIN + B0x]
-        VIES[VIES Validation]
-    end
-
-    subgraph DE["German Company Flow (DE only)"]
-        HR_SEARCH[Handelsregister Search]
-        HRB[HRB/HRA Identifier]
-    end
-
-    subgraph Global["Global Enrichment (ALL EU Countries)"]
-        EUID_GEN["EUID Generation
-        From national identifiers"]
-        LEI_SEARCH["LEI Search
-        1. Registration number + country
-        2. Company name + country fallback"]
-        PEPPOL_SEARCH["Peppol Search
-        1. CoC/VAT + country scheme
-        2. Company name fallback"]
-    end
-
-    subgraph Output["Stored Data"]
-        LEN[legal_entity_number]
-        KVK_DATA[kvk_registry_data]
-        GLEIF_DATA[gleif_registry_data]
-        VIES_DATA[vies_registry_data]
-        DE_DATA[german_registry_data]
-    end
-
-    COC_ID --> ENRICH
-    NAME --> ENRICH
-    ENRICH --> |country=NL| NL
-    ENRICH --> |country=DE| DE
-    ENRICH --> |ALL EU countries| Global
-
-    COC_ID --> KVK_API
-    KVK_API --> RSIN
-    KVK_API --> KVK_DATA
-    RSIN --> VAT_DERIVE
-    VAT_DERIVE --> VIES
-    VIES --> |valid| LEN
-    VIES --> VIES_DATA
-
-    COC_ID --> HR_SEARCH
-    NAME --> HR_SEARCH
-    HR_SEARCH --> HRB
-    HR_SEARCH --> DE_DATA
-    HRB --> LEN
-
-    COC_ID --> EUID_GEN
-    EUID_GEN --> LEN
-
-    COC_ID --> LEI_SEARCH
-    NAME --> LEI_SEARCH
-    LEI_SEARCH --> LEN
-    LEI_SEARCH --> GLEIF_DATA
-
-    COC_ID --> PEPPOL_SEARCH
-    NAME --> PEPPOL_SEARCH
-    PEPPOL_SEARCH --> LEN
-```
 
 ---
 
@@ -304,15 +223,81 @@ flowchart TD
 
 ---
 
+## Belgian Company Enrichment Flow (BE)
+
+**VAT for Belgian Companies:** Belgian VAT numbers are directly derived from the KBO (Kruispuntbank van Ondernemingen) number. The format is `BE` + the 10-digit KBO number (without dots). For example, KBO `0439.291.125` becomes VAT `BE0439291125`. This is much simpler than Dutch or German VAT derivation.
+
+```mermaid
+flowchart TD
+    START([Start Enrichment - BE])
+
+    subgraph KBO_Flow["Belgian KBO Flow"]
+        CHECK_BE_DATA{belgium_registry_data exists?}
+        HAS_KBO{KBO identifier exists?}
+        SEARCH_BY_KBO[Scrape KBO Public Search]
+        KBO_FOUND{Company found?}
+        STORE_BE_DATA[Store belgium_registry_data]
+        STORE_KBO[Store KBO identifier]
+        NO_KBO["Cannot enrich without KBO number
+        (public search requires enterprise number)"]
+    end
+
+    subgraph VAT_Flow["VAT Derivation"]
+        DERIVE_VAT["Derive VAT: BE + KBO number"]
+        STORE_VAT[Store VAT identifier]
+    end
+
+    subgraph EUID_Flow["EUID Generation"]
+        HAS_EUID{EUID already exists?}
+        GENERATE_EUID["Generate: BE.KBO.{kboNumber}"]
+        STORE_EUID[Store EUID identifier]
+    end
+
+    subgraph LEI_Flow["LEI from GLEIF"]
+        SEARCH_GLEIF_BE["Search GLEIF:
+        registeredAs=kboNumber
+        country=BE"]
+        SEARCH_GLEIF_NAME["Fallback: Search by company name"]
+        LEI_FOUND{LEI found?}
+        STORE_LEI[Store LEI identifier]
+        STORE_GLEIF[Store gleif_registry_data]
+    end
+
+    START --> CHECK_BE_DATA
+    CHECK_BE_DATA -->|No| HAS_KBO
+    HAS_KBO -->|Yes| SEARCH_BY_KBO
+    HAS_KBO -->|No| NO_KBO
+    SEARCH_BY_KBO --> KBO_FOUND
+    KBO_FOUND -->|Yes| STORE_BE_DATA
+    STORE_BE_DATA --> STORE_KBO
+    STORE_KBO --> DERIVE_VAT
+    DERIVE_VAT --> STORE_VAT
+
+    STORE_VAT --> HAS_EUID
+    CHECK_BE_DATA -->|Yes| HAS_EUID
+    HAS_EUID -->|No| GENERATE_EUID
+    GENERATE_EUID --> STORE_EUID
+
+    START --> SEARCH_GLEIF_BE
+    SEARCH_GLEIF_BE --> LEI_FOUND
+    LEI_FOUND -->|No| SEARCH_GLEIF_NAME
+    SEARCH_GLEIF_NAME --> LEI_FOUND
+    LEI_FOUND -->|Yes| STORE_LEI
+    STORE_LEI --> STORE_GLEIF
+```
+
+---
+
 ## External Registry Services
 
 ```mermaid
 flowchart LR
     subgraph Services["TypeScript Services"]
-        KVK_SVC[kvkService.ts]
+        KVK_SVC[kvkService.ts for NL]
+        KBO_SVC[kboService.ts for BE]
         VIES_SVC[viesService.ts]
         LEI_SVC[leiService.ts]
-        HR_SVC[handelsregisterService.ts]
+        HR_SVC[handelsregisterService.ts for DE]
         PEPPOL_SVC[peppolService.ts]
         EUID_SVC[euidService.ts]
     end
@@ -320,6 +305,9 @@ flowchart LR
     subgraph APIs["External APIs"]
         KVK_API["KVK API
         api.kvk.nl"]
+        KBO_WEB["KBO Public Search
+        kbopub.economie.fgov.be
+        (web scraping)"]
         VIES_API["VIES API
         ec.europa.eu/taxation_customs/vies"]
         GLEIF_API["GLEIF API
@@ -332,13 +320,15 @@ flowchart LR
 
     subgraph Data["Registry Data Tables"]
         KVK_DATA[(kvk_registry_data)]
+        BE_DATA[(belgium_registry_data)]
         VIES_DATA[(vies_registry_data)]
         GLEIF_DATA[(gleif_registry_data)]
         DE_DATA[(german_registry_data)]
     end
 
     KVK_SVC --> KVK_API
-    KVK_SVC -.->|KVK number for LEI lookup| GLEIF_API
+    KVK_SVC --> GLEIF_API
+    KBO_SVC --> KBO_WEB
     VIES_SVC --> VIES_API
     LEI_SVC --> GLEIF_API
     HR_SVC --> HR_WEB
@@ -346,6 +336,7 @@ flowchart LR
     PEPPOL_SVC --> PEPPOL_API
 
     KVK_API --> KVK_DATA
+    KBO_WEB --> BE_DATA
     VIES_API --> VIES_DATA
     GLEIF_API --> GLEIF_DATA
     HR_WEB --> DE_DATA
@@ -361,12 +352,14 @@ flowchart LR
 |---------|------------|--------|------------------|
 | NL | KVK | Input | Manual entry or application |
 | NL | RSIN | KVK API | Extracted from `_embedded.eigenaar.rsin` |
-| NL | VAT | Derived | `NL` + `RSIN` + `B01` (or B02, B03, B04, etc. for fiscal units) |
+| NL | VAT | Generated | `NL` + `RSIN` + `B01` (or B02, B03, B04, etc. for fiscal units) |
 | NL | EUID | Generated | `NL.KVK.{kvkNumber}` |
 | DE | HRB/HRA | Handelsregister | Scraped or manual entry |
 | DE | EUID | Generated | `DE{courtCode}.{type}{number}` |
 | DE | VAT | Manual | Cannot be auto-derived (Handelsregister has no VAT) |
-| BE | KBO/BCE | Input | Belgian business register number |
+| BE | KBO/BCE | Input/KBO Public | Belgian business register number (10 digits) |
+| BE | VAT | Generated | `BE` + KBO number (without dots) |
+| BE | EUID | Generated | `BE.KBO.{kboNumber}` |
 | FR | SIRET/RCS | Input | French business register number |
 | GB | CRN | Input | UK Companies House number |
 
@@ -516,6 +509,7 @@ flowchart TD
 | **EUID Enrichment** | `api/src/services/enrichment/euidEnrichmentService.ts` | EUID generation (ALL EU countries) |
 | **NL Enrichment** | `api/src/services/enrichment/nlEnrichmentService.ts` | Dutch: RSIN, VAT, KVK registry |
 | **DE Enrichment** | `api/src/services/enrichment/deEnrichmentService.ts` | German: HRB/HRA, registry data |
+| **BE Enrichment** | `api/src/services/enrichment/beEnrichmentService.ts` | Belgian: KBO, VAT derivation |
 | **LEI Enrichment** | `api/src/services/enrichment/leiEnrichmentService.ts` | GLEIF lookup (ALL countries) |
 | **Peppol Enrichment** | `api/src/services/enrichment/peppolEnrichmentService.ts` | Peppol lookup (ALL countries) |
 | **Types** | `api/src/services/enrichment/types.ts` | Shared TypeScript types |
@@ -525,6 +519,7 @@ flowchart TD
 | Service | File | Purpose |
 |---------|------|---------|
 | KVK | `api/src/services/kvkService.ts` | Dutch Chamber of Commerce API |
+| KBO | `api/src/services/kboService.ts` | Belgian KBO public search scraping |
 | VIES | `api/src/services/viesService.ts` | EU VAT validation |
 | LEI | `api/src/services/leiService.ts` | GLEIF LEI lookup + storage |
 | Handelsregister | `api/src/services/handelsregisterService.ts` | German commercial register |
@@ -543,12 +538,14 @@ api/src/services/
 │   ├── euidEnrichmentService.ts    # enrichEuid() - ALL EU countries
 │   ├── nlEnrichmentService.ts      # enrichRsin(), enrichVat() - NL only
 │   ├── deEnrichmentService.ts      # enrichGermanRegistry() - DE only
+│   ├── beEnrichmentService.ts      # enrichBelgianRegistry() - BE only
 │   ├── leiEnrichmentService.ts     # enrichLei() - ALL countries via CoC or name
 │   └── peppolEnrichmentService.ts  # enrichPeppol() - ALL countries via CoC/VAT or name
-├── kvkService.ts                   # KVK API client
+├── kvkService.ts                   # KVK API client (NL)
+├── kboService.ts                   # KBO Public Search scraping (BE)
 ├── viesService.ts                  # VIES API client
 ├── leiService.ts                   # GLEIF API client + storeGleifRegistryData()
-├── handelsregisterService.ts       # Handelsregister search logic
+├── handelsregisterService.ts       # Handelsregister search logic (DE)
 ├── bundesApiService.ts             # Handelsregister.de web scraping
 ├── peppolService.ts                # Peppol Directory API client
 └── euidService.ts                  # EUID format generation (legacy)

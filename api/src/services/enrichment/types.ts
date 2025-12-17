@@ -47,6 +47,7 @@ export interface EnrichmentSummary {
   logoFetched: boolean;
   logoUrl: string | null;
   germanRegistryFetched: boolean;
+  belgiumRegistryFetched: boolean;
 }
 
 /**

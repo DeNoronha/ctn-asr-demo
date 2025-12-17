@@ -4,6 +4,7 @@
  * Coordinates all enrichment operations for legal entities:
  * - NL: KVK → RSIN → VAT → VIES
  * - DE: Handelsregister → HRB
+ * - BE: KBO → VAT (derived)
  * - ALL EU: EUID generation (from national identifiers)
  * - Global: LEI (GLEIF), Peppol, Branding
  *
@@ -14,6 +15,7 @@ import { Pool } from 'pg';
 import { EnrichmentContext, EnrichmentResult, EnrichmentSummary, ExistingIdentifier } from './types';
 import { enrichRsin, enrichVat, ensureKvkRegistryData, updateLegalEntityFromKvk } from './nlEnrichmentService';
 import { enrichGermanRegistry } from './deEnrichmentService';
+import { enrichBelgianRegistry } from './beEnrichmentService';
 import { enrichLei } from './leiEnrichmentService';
 import { enrichPeppol } from './peppolEnrichmentService';
 import { enrichBranding } from './brandingService';
@@ -28,8 +30,9 @@ export * from './types';
  * Performs comprehensive enrichment based on country code:
  * 1. NL: RSIN from KVK → VAT derivation → VIES validation
  * 2. DE: Handelsregister → HRB/HRA
- * 3. ALL EU: EUID generation from national identifiers
- * 4. Global: LEI from GLEIF, Peppol lookup, branding
+ * 3. BE: KBO → VAT derivation (BE + KBO number)
+ * 4. ALL EU: EUID generation from national identifiers
+ * 5. Global: LEI from GLEIF, Peppol lookup, branding
  *
  * @param pool - PostgreSQL connection pool
  * @param legalEntityId - UUID of the legal entity to enrich
@@ -109,13 +112,25 @@ export async function enrichLegalEntity(
   }
 
   // =========================================================================
-  // 3. EUID generation (ALL EU countries)
+  // 3. Belgian-specific enrichment (BE)
+  // =========================================================================
+  let belgiumRegistryFetched = false;
+
+  if (countryCode === 'BE') {
+    const beResults = await enrichBelgianRegistry(ctx);
+    // Filter out VAT as it's derived from KBO - we'll report it separately
+    results.push(...beResults);
+    belgiumRegistryFetched = beResults.some(r => r.identifier === 'KBO' && r.status === 'added');
+  }
+
+  // =========================================================================
+  // 4. EUID generation (ALL EU countries)
   // =========================================================================
   const euidResult = await enrichEuid(ctx);
   results.push(euidResult);
 
   // =========================================================================
-  // 4. Global enrichment (all countries)
+  // 5. Global enrichment (all countries)
   // =========================================================================
 
   // LEI from GLEIF
@@ -127,14 +142,14 @@ export async function enrichLegalEntity(
   results.push(peppolResult);
 
   // =========================================================================
-  // 5. Ensure KVK registry data exists (NL)
+  // 6. Ensure KVK registry data exists (NL)
   // =========================================================================
   if (countryCode === 'NL') {
     await ensureKvkRegistryData(ctx);
   }
 
   // =========================================================================
-  // 6. Update legal_entity with registry data
+  // 7. Update legal_entity with registry data
   // =========================================================================
   let companyDetailsUpdated = false;
   let updatedFields: string[] = [];
@@ -146,7 +161,7 @@ export async function enrichLegalEntity(
   }
 
   // =========================================================================
-  // 7. Branding (logo from domain)
+  // 8. Branding (logo from domain)
   // =========================================================================
   const brandingResult = await enrichBranding(ctx);
 
@@ -167,7 +182,8 @@ export async function enrichLegalEntity(
     companyDetailsUpdated,
     updatedFields,
     logoFetched: brandingResult.fetched,
-    germanRegistryFetched
+    germanRegistryFetched,
+    belgiumRegistryFetched
   });
 
   return {
@@ -176,7 +192,8 @@ export async function enrichLegalEntity(
     updatedFields,
     logoFetched: brandingResult.fetched,
     logoUrl: brandingResult.logoUrl,
-    germanRegistryFetched
+    germanRegistryFetched,
+    belgiumRegistryFetched
   };
 }
 
@@ -184,7 +201,7 @@ export async function enrichLegalEntity(
  * Format enrichment summary for API response
  */
 export function formatEnrichmentResponse(summary: EnrichmentSummary): any {
-  const { results, companyDetailsUpdated, updatedFields, logoFetched, logoUrl, germanRegistryFetched } = summary;
+  const { results, companyDetailsUpdated, updatedFields, logoFetched, logoUrl, germanRegistryFetched, belgiumRegistryFetched } = summary;
 
   const added = results.filter(r => r.status === 'added');
   const exists = results.filter(r => r.status === 'exists');
@@ -199,6 +216,7 @@ export function formatEnrichmentResponse(summary: EnrichmentSummary): any {
     logo_fetched: logoFetched,
     logo_url: logoUrl,
     german_registry_fetched: germanRegistryFetched,
+    belgium_registry_fetched: belgiumRegistryFetched,
     results,
     summary: {
       added: added.map(r => `${r.identifier}: ${r.value}`),
