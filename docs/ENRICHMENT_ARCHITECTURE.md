@@ -17,7 +17,7 @@ This document visualizes the data enrichment and verification flows in the ASR s
 
 ## GLEIF API Search Strategy
 
-**Critical:** The GLEIF API uses a specific search approach that must be followed exactly.
+**Critical:** The GLEIF API uses a specific search approach that must be followed.
 
 ### Primary Search: Registration Number + Country
 
@@ -57,9 +57,8 @@ GET https://api.gleif.org/api/v1/lei-records
 ### Important Notes
 
 - **DO NOT** use combined formats like `NL-KVK/12345678` in registeredAs
-- **DO NOT** try to filter by Registration Authority ID (RA code) in combination with registeredAs
-- Germany has ~100 local court RA codes, making country filter more reliable than RA filtering
-- The `registeredAt.id` field in GLEIF responses contains the RA code (e.g., `RA000463` for NL-KVK)
+- **DO NOT** filter by Registration Authority ID (RA code) - Germany has ~100 local court RA codes, making country filter more reliable
+- The GLEIF **response** contains `registeredAt.id` with the RA code (e.g., `RA000463` for NL-KVK), but this is for reference only, not for searching
 
 ---
 
