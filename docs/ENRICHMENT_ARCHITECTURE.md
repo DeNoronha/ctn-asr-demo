@@ -423,6 +423,7 @@ flowchart LR
         VIES_DATA[(vies_registry_data)]
         GLEIF_DATA[(gleif_registry_data)]
         DE_DATA[(german_registry_data)]
+        PEPPOL_DATA[(peppol_registry_data)]
     end
 
     KVK_SVC --> KVK_API
@@ -438,13 +439,16 @@ flowchart LR
 
     KVK_API --> KVK_DATA
     KBO_WEB --> BE_DATA
-    KBO_API -.-> BE_DATA
+    KBO_API -.->|disabled| BE_DATA
     VIES_API --> VIES_DATA
     GLEIF_API --> GLEIF_DATA
     HR_WEB --> DE_DATA
+    PEPPOL_API -.->|not stored| PEPPOL_DATA
 ```
 
-**Note:** The KBO API (kbodata.app) is currently disabled pending subscription. When enabled, it provides richer data including contacts, roles, and financial information.
+**Notes:**
+- The KBO API (kbodata.app) is currently disabled pending subscription. When enabled, it provides richer data including contacts, roles, and financial information.
+- The `peppol_registry_data` table exists in the schema but is not currently used by the enrichment service. Only the PEPPOL identifier is stored in `legal_entity_number`. Future enhancement: store full Peppol API response for audit trail.
 
 ---
 
