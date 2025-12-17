@@ -32,6 +32,8 @@ interface UseMemberDetailsReturn {
   hasPeppolRegistryData: boolean;
   hasViesRegistryData: boolean;
   hasGermanRegistryData: boolean;
+  hasEoriRegistryData: boolean;
+  hasBelgiumRegistryData: boolean;
   loading: boolean;
   handlers: {
     updateLegalEntity: (data: LegalEntity) => Promise<void>;
@@ -63,6 +65,8 @@ interface UseMemberDetailsReturn {
     refreshPeppolData: () => Promise<void>;
     refreshViesData: () => Promise<void>;
     refreshGermanData: () => Promise<void>;
+    refreshEoriData: () => Promise<void>;
+    refreshBelgiumData: () => Promise<void>;
   };
 }
 
@@ -76,6 +80,8 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
   const [hasPeppolRegistryData, setHasPeppolRegistryData] = useState(false);
   const [hasViesRegistryData, setHasViesRegistryData] = useState(false);
   const [hasGermanRegistryData, setHasGermanRegistryData] = useState(false);
+  const [hasEoriRegistryData, setHasEoriRegistryData] = useState(false);
+  const [hasBelgiumRegistryData, setHasBelgiumRegistryData] = useState(false);
   const [loading, setLoading] = useState(false);
   const notification = useNotification();
 
@@ -177,6 +183,34 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
             }
           }
           setHasGermanRegistryData(false);
+        }
+
+        // Check EORI registry data (non-blocking)
+        try {
+          const eoriResponse = await apiV2.getEoriRegistryData(legalEntityId);
+          setHasEoriRegistryData(eoriResponse.hasData);
+        } catch (eoriError: unknown) {
+          if (eoriError && typeof eoriError === 'object' && 'response' in eoriError) {
+            const axiosError = eoriError as { response?: { status: number } };
+            if (axiosError.response?.status !== 404) {
+              logger.error('Error checking EORI registry data:', eoriError);
+            }
+          }
+          setHasEoriRegistryData(false);
+        }
+
+        // Check Belgium registry data (non-blocking)
+        try {
+          const belgiumResponse = await apiV2.getBelgiumRegistryData(legalEntityId);
+          setHasBelgiumRegistryData(belgiumResponse.hasData);
+        } catch (belgiumError: unknown) {
+          if (belgiumError && typeof belgiumError === 'object' && 'response' in belgiumError) {
+            const axiosError = belgiumError as { response?: { status: number } };
+            if (axiosError.response?.status !== 404) {
+              logger.error('Error checking Belgium registry data:', belgiumError);
+            }
+          }
+          setHasBelgiumRegistryData(false);
         }
       } catch (error) {
         logger.error('Failed to load legal entity data:', error);
@@ -417,6 +451,20 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
       } catch (_error) {
         setHasGermanRegistryData(false);
       }
+
+      try {
+        const eoriResponse = await apiV2.getEoriRegistryData(legalEntityId);
+        setHasEoriRegistryData(eoriResponse.hasData);
+      } catch (_error) {
+        setHasEoriRegistryData(false);
+      }
+
+      try {
+        const belgiumResponse = await apiV2.getBelgiumRegistryData(legalEntityId);
+        setHasBelgiumRegistryData(belgiumResponse.hasData);
+      } catch (_error) {
+        setHasBelgiumRegistryData(false);
+      }
     } catch (error) {
       logger.error('Failed to refresh all data:', error);
       throw error;
@@ -531,6 +579,34 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
     }
   };
 
+  // Handler for refreshing EORI registry data
+  const refreshEoriData = async (): Promise<void> => {
+    if (!legalEntityId) {
+      return;
+    }
+
+    try {
+      const response = await apiV2.getEoriRegistryData(legalEntityId);
+      setHasEoriRegistryData(response.hasData);
+    } catch (_error) {
+      setHasEoriRegistryData(false);
+    }
+  };
+
+  // Handler for refreshing Belgium KBO registry data
+  const refreshBelgiumData = async (): Promise<void> => {
+    if (!legalEntityId) {
+      return;
+    }
+
+    try {
+      const response = await apiV2.getBelgiumRegistryData(legalEntityId);
+      setHasBelgiumRegistryData(response.hasData);
+    } catch (_error) {
+      setHasBelgiumRegistryData(false);
+    }
+  };
+
   return {
     legalEntity,
     contacts,
@@ -541,6 +617,8 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
     hasPeppolRegistryData,
     hasViesRegistryData,
     hasGermanRegistryData,
+    hasEoriRegistryData,
+    hasBelgiumRegistryData,
     loading,
     handlers: {
       updateLegalEntity,
@@ -559,6 +637,8 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
       refreshPeppolData,
       refreshViesData,
       refreshGermanData,
+      refreshEoriData,
+      refreshBelgiumData,
     },
   };
 }

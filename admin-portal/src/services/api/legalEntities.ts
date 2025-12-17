@@ -330,3 +330,131 @@ export async function getGermanRegistryData(legalEntityId: string): Promise<Germ
   );
   return response.data;
 }
+
+// =====================================================
+// EORI REGISTRY DATA (EU Economic Operators Registration)
+// =====================================================
+
+export interface EoriRegistryData {
+  registry_data_id: string;
+  legal_entity_id?: string;
+  eori_number: string;
+  country_code: string;
+  status: string;             // '0' = valid, '1' = invalid, '2' = error
+  status_description?: string;
+  error_reason?: string;
+  trader_name?: string;
+  trader_address?: string;
+  street?: string;
+  postal_code?: string;
+  city?: string;
+  country?: string;
+  request_date?: string;
+  request_identifier?: string;
+  data_source: string;
+  raw_api_response?: Record<string, unknown>;
+  fetched_at: string;
+  last_verified_at?: string;
+  dt_created?: string;
+  dt_modified?: string;
+}
+
+export interface EoriRegistryResponse {
+  hasData: boolean;
+  data?: EoriRegistryData;
+  message?: string;
+}
+
+export async function getEoriRegistryData(legalEntityId: string): Promise<EoriRegistryResponse> {
+  const axiosInstance = await getAuthenticatedAxios();
+  const response = await axiosInstance.get<EoriRegistryResponse>(
+    `/legal-entities/${legalEntityId}/eori-registry`
+  );
+  return response.data;
+}
+
+export interface EoriFetchRequest {
+  eori_number: string;
+  save_to_database?: boolean;
+}
+
+export interface EoriFetchResponse {
+  status: 'validated' | 'error';
+  is_valid: boolean;
+  eori_number?: string;
+  trader_name?: string;
+  trader_address?: string;
+  request_date?: string;
+  was_saved: boolean;
+  flags?: string[];
+  message: string;
+}
+
+export async function fetchEoriData(
+  legalEntityId: string,
+  request: EoriFetchRequest
+): Promise<EoriFetchResponse> {
+  const axiosInstance = await getAuthenticatedAxios();
+  const response = await axiosInstance.post<EoriFetchResponse>(
+    `/legal-entities/${legalEntityId}/eori/fetch`,
+    request
+  );
+  return response.data;
+}
+
+// =====================================================
+// BELGIUM REGISTRY DATA (KBO - Kruispuntbank van Ondernemingen)
+// =====================================================
+
+export interface BelgiumRegistryData {
+  registry_data_id: string;
+  legal_entity_id?: string;
+  kbo_number: string;
+  kbo_number_clean: string;
+  enterprise_type?: string;
+  enterprise_type_code?: string;
+  company_name: string;
+  legal_form?: string;
+  legal_form_full?: string;
+  company_status?: string;
+  status_start_date?: string;
+  start_date?: string;
+  end_date?: string;
+  street?: string;
+  house_number?: string;
+  bus_number?: string;
+  postal_code?: string;
+  city?: string;
+  country?: string;
+  full_address?: string;
+  vat_number?: string;
+  vat_status?: string;
+  vat_start_date?: string;
+  nace_codes?: Array<{ code: string; description: string; isMain?: boolean }>;
+  main_activity?: string;
+  representatives?: Array<{ name: string; role: string; startDate?: string }>;
+  establishment_count?: number;
+  establishments?: unknown[];
+  lei?: string;
+  data_source: string;
+  source_url?: string;
+  raw_response?: Record<string, unknown>;
+  fetched_at: string;
+  last_verified_at?: string;
+  dt_created?: string;
+  dt_modified?: string;
+}
+
+export interface BelgiumRegistryResponse {
+  hasData: boolean;
+  data?: BelgiumRegistryData;
+  message?: string;
+}
+
+export async function getBelgiumRegistryData(legalEntityId: string): Promise<BelgiumRegistryResponse> {
+  const axiosInstance = await getAuthenticatedAxios();
+  const response = await axiosInstance.get<BelgiumRegistryResponse>(
+    `/legal-entities/${legalEntityId}/belgium-registry`
+  );
+  return response.data;
+}

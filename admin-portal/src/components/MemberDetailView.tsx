@@ -23,8 +23,10 @@ import { ArrowLeft } from './icons';
 import {
   APIAccessSection,
   AuthenticationTierSection,
+  BelgiumRegistrySection,
   ContactsSection,
   DocumentVerificationSection,
+  EoriRegistrySection,
   GermanRegistrySection,
   IdentifiersSection,
   KvkRegistrySection,
@@ -50,7 +52,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
   const { handleError } = useApiError();
 
   // Use custom hook for all member data management
-  const { legalEntity, contacts, identifiers, hasKvkRegistryData, hasLeiRegistryData, hasPeppolRegistryData, hasViesRegistryData, hasGermanRegistryData, loading, handlers } =
+  const { legalEntity, contacts, identifiers, hasKvkRegistryData, hasLeiRegistryData, hasPeppolRegistryData, hasViesRegistryData, hasGermanRegistryData, hasEoriRegistryData, hasBelgiumRegistryData, loading, handlers } =
     useMemberDetails(member.legal_entity_id);
 
   const handleUpdateCompany = async (data: typeof legalEntity) => {
@@ -163,6 +165,8 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
           {hasPeppolRegistryData && <Tabs.Tab value="peppol-registry">{t('tabs.peppol')}</Tabs.Tab>}
           {hasViesRegistryData && <Tabs.Tab value="vies-registry">{t('tabs.vies')}</Tabs.Tab>}
           {hasGermanRegistryData && <Tabs.Tab value="german-registry">{t('tabs.handelsregister')}</Tabs.Tab>}
+          {hasEoriRegistryData && <Tabs.Tab value="eori-registry">EORI</Tabs.Tab>}
+          {hasBelgiumRegistryData && <Tabs.Tab value="belgium-registry">KBO</Tabs.Tab>}
         </Tabs.List>
 
         <Tabs.Panel value="company-details" pt="md">
@@ -257,6 +261,10 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
         {hasViesRegistryData && <ViesRegistrySection legalEntity={legalEntity} />}
 
         {hasGermanRegistryData && <GermanRegistrySection legalEntity={legalEntity} />}
+
+        {hasEoriRegistryData && <EoriRegistrySection legalEntity={legalEntity} />}
+
+        {hasBelgiumRegistryData && <BelgiumRegistrySection legalEntity={legalEntity} />}
       </Tabs>
     </div>
   );

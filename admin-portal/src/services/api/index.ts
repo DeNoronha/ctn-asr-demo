@@ -49,6 +49,9 @@ export {
   getViesRegistryData,
   fetchViesData,
   getGermanRegistryData,
+  getEoriRegistryData,
+  fetchEoriData,
+  getBelgiumRegistryData,
 } from './legalEntities';
 export type {
   EnrichmentResult,
@@ -65,6 +68,12 @@ export type {
   ViesFetchResponse,
   GermanRegistryData,
   GermanRegistryResponse,
+  EoriRegistryData,
+  EoriRegistryResponse,
+  EoriFetchRequest,
+  EoriFetchResponse,
+  BelgiumRegistryData,
+  BelgiumRegistryResponse,
 } from './legalEntities';
 
 // Export identifier operations

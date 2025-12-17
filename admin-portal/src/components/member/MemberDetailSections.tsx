@@ -15,6 +15,8 @@ import { EmptyState } from '../EmptyState';
 import { EndpointManagement } from '../EndpointManagement';
 import { IdentifiersManager } from '../IdentifiersManager';
 import { KvkDocumentUpload } from '../KvkDocumentUpload';
+import { BelgiumRegistryDetails } from '../BelgiumRegistryDetails';
+import { EoriRegistryDetails } from '../EoriRegistryDetails';
 import { GermanRegistryDetails } from '../GermanRegistryDetails';
 import { KvkRegistryDetails } from '../KvkRegistryDetails';
 import { LeiRegistryDetails } from '../LeiRegistryDetails';
@@ -423,6 +425,64 @@ export const GermanRegistrySection: React.FC<GermanRegistrySectionProps> = ({ le
             return (
               <div className="info-section">
                 <h3>German Registry Data</h3>
+                <EmptyState message={es.message} hint={es.hint} />
+              </div>
+            );
+          })()
+        )}
+      </div>
+    </Tabs.Panel>
+  );
+};
+
+interface EoriRegistrySectionProps {
+  legalEntity: LegalEntity | null;
+}
+
+export const EoriRegistrySection: React.FC<EoriRegistrySectionProps> = ({ legalEntity }) => {
+  return (
+    <Tabs.Panel value="eori-registry" pt="md">
+      <div className="tab-content">
+        {legalEntity ? (
+          <EoriRegistryDetails
+            // biome-ignore lint/style/noNonNullAssertion: legalEntity null-check performed in ternary guard above
+            legalEntityId={legalEntity.legal_entity_id!}
+          />
+        ) : (
+          (() => {
+            const es = getEmptyState('generic', 'noData');
+            return (
+              <div className="info-section">
+                <h3>EORI Registry Data</h3>
+                <EmptyState message={es.message} hint={es.hint} />
+              </div>
+            );
+          })()
+        )}
+      </div>
+    </Tabs.Panel>
+  );
+};
+
+interface BelgiumRegistrySectionProps {
+  legalEntity: LegalEntity | null;
+}
+
+export const BelgiumRegistrySection: React.FC<BelgiumRegistrySectionProps> = ({ legalEntity }) => {
+  return (
+    <Tabs.Panel value="belgium-registry" pt="md">
+      <div className="tab-content">
+        {legalEntity ? (
+          <BelgiumRegistryDetails
+            // biome-ignore lint/style/noNonNullAssertion: legalEntity null-check performed in ternary guard above
+            legalEntityId={legalEntity.legal_entity_id!}
+          />
+        ) : (
+          (() => {
+            const es = getEmptyState('generic', 'noData');
+            return (
+              <div className="info-section">
+                <h3>Belgium KBO Registry Data</h3>
                 <EmptyState message={es.message} hint={es.hint} />
               </div>
             );
