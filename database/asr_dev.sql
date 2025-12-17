@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 1pInXDVvrsEuGVayRkRa66XZMvlsERngKdZMQddwIZbbF78E0Z0LutqYpqWqORc
+\restrict jIYk2xwdtamPISDkOs0Kae2ZggDvLqqCbBUi6LdcTcIf2S3Uzc5yZtVt8R19pOF
 
 -- Dumped from database version 15.14
 -- Dumped by pg_dump version 15.15 (Homebrew)
@@ -96,6 +96,20 @@ CREATE FUNCTION public.update_applications_timestamp() RETURNS trigger
     AS $$
 BEGIN
     NEW.dt_updated = NOW();
+    RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: update_belgium_registry_modified(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.update_belgium_registry_modified() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.dt_modified = NOW();
     RETURN NEW;
 END;
 $$;
@@ -577,6 +591,95 @@ COMMENT ON COLUMN public.authorization_log.denial_reason IS 'Reason for denial (
 
 
 --
+-- Name: belgium_registry_data; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.belgium_registry_data (
+    registry_data_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    legal_entity_id uuid NOT NULL,
+    kbo_number character varying(20) NOT NULL,
+    kbo_number_clean character varying(10) NOT NULL,
+    enterprise_type character varying(50),
+    enterprise_type_code character varying(10),
+    company_name character varying(500) NOT NULL,
+    legal_form character varying(200),
+    legal_form_full character varying(500),
+    company_status character varying(100),
+    status_start_date date,
+    start_date date,
+    end_date date,
+    street character varying(255),
+    house_number character varying(20),
+    bus_number character varying(20),
+    postal_code character varying(20),
+    city character varying(100),
+    country character varying(50) DEFAULT 'Belgium'::character varying,
+    full_address text,
+    vat_number character varying(20),
+    vat_status character varying(100),
+    vat_start_date date,
+    nace_codes jsonb,
+    main_activity character varying(500),
+    representatives jsonb,
+    establishment_count integer,
+    establishments jsonb,
+    lei character varying(20),
+    data_source character varying(50) DEFAULT 'kbo_public'::character varying,
+    source_url text,
+    raw_response jsonb,
+    fetched_at timestamp with time zone DEFAULT now() NOT NULL,
+    last_verified_at timestamp with time zone,
+    dt_created timestamp with time zone DEFAULT now(),
+    dt_modified timestamp with time zone DEFAULT now(),
+    created_by character varying(255),
+    modified_by character varying(255),
+    is_deleted boolean DEFAULT false
+);
+
+
+--
+-- Name: TABLE belgium_registry_data; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.belgium_registry_data IS 'Stores Belgian KBO (Kruispuntbank van Ondernemingen) company data';
+
+
+--
+-- Name: COLUMN belgium_registry_data.kbo_number; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.belgium_registry_data.kbo_number IS 'KBO number with dots, e.g., 0439.291.125';
+
+
+--
+-- Name: COLUMN belgium_registry_data.kbo_number_clean; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.belgium_registry_data.kbo_number_clean IS 'KBO number without formatting, 10 digits';
+
+
+--
+-- Name: COLUMN belgium_registry_data.enterprise_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.belgium_registry_data.enterprise_type IS 'Enterprise type: Rechtspersoon (legal entity) or Natuurlijk persoon (natural person)';
+
+
+--
+-- Name: COLUMN belgium_registry_data.bus_number; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.belgium_registry_data.bus_number IS 'Belgian bus/box number for addresses (unit within building)';
+
+
+--
+-- Name: COLUMN belgium_registry_data.nace_codes; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.belgium_registry_data.nace_codes IS 'NACE activity codes with descriptions';
+
+
+--
 -- Name: ctn_m2m_credentials; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -752,6 +855,92 @@ COMMENT ON COLUMN public.dns_verification_tokens.record_name IS 'Full DNS record
 --
 
 COMMENT ON COLUMN public.dns_verification_tokens.verification_details IS 'JSON details from DNS lookup (resolvers, responses, timestamps)';
+
+
+--
+-- Name: entity_legal_form_translations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.entity_legal_form_translations (
+    id integer NOT NULL,
+    elf_code character varying(4) NOT NULL,
+    language_code character varying(2) NOT NULL,
+    language_name character varying(50) NOT NULL,
+    local_name character varying(500) NOT NULL,
+    transliterated_name character varying(500),
+    abbreviation_local character varying(100),
+    abbreviation_transliterated character varying(100),
+    dt_created timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE entity_legal_form_translations; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.entity_legal_form_translations IS 'Multilingual translations for Entity Legal Forms';
+
+
+--
+-- Name: entity_legal_form_translations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.entity_legal_form_translations_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: entity_legal_form_translations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.entity_legal_form_translations_id_seq OWNED BY public.entity_legal_form_translations.id;
+
+
+--
+-- Name: entity_legal_forms; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.entity_legal_forms (
+    elf_code character varying(4) NOT NULL,
+    country_code character varying(2) NOT NULL,
+    country_name character varying(100) NOT NULL,
+    jurisdiction character varying(100),
+    jurisdiction_code character varying(10),
+    date_created date NOT NULL,
+    elf_status character varying(10) DEFAULT 'ACTV'::character varying NOT NULL,
+    modification character varying(50),
+    modification_date date,
+    modification_reason text,
+    is_active boolean DEFAULT true NOT NULL,
+    dt_created timestamp with time zone DEFAULT now() NOT NULL,
+    dt_modified timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE entity_legal_forms; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.entity_legal_forms IS 'ISO 20275 Entity Legal Forms (ELF) Code List - legal entity types from GLEIF';
+
+
+--
+-- Name: COLUMN entity_legal_forms.elf_code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.entity_legal_forms.elf_code IS 'Unique 4-character alphanumeric ISO 20275 code';
+
+
+--
+-- Name: COLUMN entity_legal_forms.elf_status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.entity_legal_forms.elf_status IS 'ACTV = Active, INAC = Inactive (legacy forms)';
 
 
 --
@@ -1731,7 +1920,7 @@ CREATE TABLE public.legal_entity_number (
     issued_at timestamp without time zone,
     expires_at timestamp without time zone,
     verification_status character varying(50) DEFAULT 'PENDING'::character varying,
-    CONSTRAINT chk_validation_status_valid CHECK (((validation_status)::text = ANY ((ARRAY['PENDING'::character varying, 'VALIDATED'::character varying, 'VERIFIED'::character varying, 'FAILED'::character varying, 'EXPIRED'::character varying])::text[])))
+    CONSTRAINT chk_validation_status_valid CHECK (((validation_status)::text = ANY ((ARRAY['PENDING'::character varying, 'VALIDATED'::character varying, 'VERIFIED'::character varying, 'FAILED'::character varying, 'EXPIRED'::character varying, 'DERIVED'::character varying])::text[])))
 );
 
 
@@ -1760,7 +1949,7 @@ COMMENT ON COLUMN public.legal_entity_number.identifier_value IS 'Actual identif
 -- Name: COLUMN legal_entity_number.validation_status; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.legal_entity_number.validation_status IS 'Validation status (PENDING, VERIFIED, FAILED, FLAGGED). Tracks verification workflow.';
+COMMENT ON COLUMN public.legal_entity_number.validation_status IS 'Validation status: PENDING (not yet checked), VALIDATED (format validated), VERIFIED (externally verified), FAILED (verification failed), EXPIRED (verification expired), DERIVED (mathematically derived from another identifier)';
 
 
 --
@@ -1803,13 +1992,6 @@ COMMENT ON COLUMN public.legal_entity_number.expires_at IS 'Date when the identi
 --
 
 COMMENT ON COLUMN public.legal_entity_number.verification_status IS 'Verification status: PENDING (awaiting verification), VERIFIED (confirmed valid), FAILED (verification failed), EXPIRED (no longer valid)';
-
-
---
--- Name: CONSTRAINT chk_validation_status_valid ON legal_entity_number; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON CONSTRAINT chk_validation_status_valid ON public.legal_entity_number IS 'Ensures validation_status is one of: PENDING, VALIDATED, VERIFIED, FAILED, EXPIRED';
 
 
 --
@@ -2147,6 +2329,36 @@ COMMENT ON VIEW public.vw_audit_log_summary IS 'Audit log summary view with pseu
 
 
 --
+-- Name: vw_entity_legal_forms; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.vw_entity_legal_forms AS
+ SELECT e.elf_code,
+    e.country_code,
+    e.country_name,
+    e.jurisdiction,
+    e.elf_status,
+    e.date_created,
+    t.language_code,
+    t.language_name,
+    t.local_name,
+    t.abbreviation_local,
+    t.transliterated_name,
+    t.abbreviation_transliterated
+   FROM (public.entity_legal_forms e
+     LEFT JOIN public.entity_legal_form_translations t ON (((e.elf_code)::text = (t.elf_code)::text)))
+  WHERE (e.is_active = true)
+  ORDER BY e.country_code, e.elf_code, t.language_code;
+
+
+--
+-- Name: VIEW vw_entity_legal_forms; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON VIEW public.vw_entity_legal_forms IS 'ISO 20275 Entity Legal Forms with translations for easy lookup';
+
+
+--
 -- Name: vw_gleif_ra_by_country; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -2202,62 +2414,29 @@ CREATE VIEW public.vw_identifiers_with_type AS
 --
 
 CREATE VIEW public.vw_legal_entities AS
- SELECT le.legal_entity_id,
-    le.party_id,
-    le.primary_legal_name,
-    le.domain,
-    le.status,
-    le.membership_level,
-    le.authentication_tier,
-    le.authentication_method,
-    le.dt_created,
-    le.dt_modified,
-    le.metadata,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'KVK'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS kvk,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'LEI'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS lei,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'EUID'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS euid,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'EORI'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS eori,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'DUNS'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS duns,
-    max((
-        CASE
-            WHEN ((len.identifier_type)::text = 'VAT'::text) THEN len.identifier_value
-            ELSE NULL::character varying
-        END)::text) AS vat,
-    count(DISTINCT lec.legal_entity_contact_id) FILTER (WHERE (lec.is_deleted = false)) AS contact_count,
-    count(DISTINCT lee.legal_entity_endpoint_id) FILTER (WHERE (lee.is_deleted = false)) AS endpoint_count
-   FROM (((public.legal_entity le
-     LEFT JOIN public.legal_entity_number len ON (((le.legal_entity_id = len.legal_entity_id) AND ((len.is_deleted = false) OR (len.is_deleted IS NULL)))))
-     LEFT JOIN public.legal_entity_contact lec ON ((le.legal_entity_id = lec.legal_entity_id)))
-     LEFT JOIN public.legal_entity_endpoint lee ON ((le.legal_entity_id = lee.legal_entity_id)))
-  WHERE (le.is_deleted = false)
-  GROUP BY le.legal_entity_id, le.party_id, le.primary_legal_name, le.domain, le.status, le.membership_level, le.authentication_tier, le.authentication_method, le.dt_created, le.dt_modified, le.metadata;
-
-
---
--- Name: VIEW vw_legal_entities; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON VIEW public.vw_legal_entities IS 'Legal entities with pivoted identifiers and counts. Replaces the dropped vw_members_full view. Dec 12, 2025.';
+SELECT
+    NULL::uuid AS legal_entity_id,
+    NULL::uuid AS party_id,
+    NULL::character varying(255) AS primary_legal_name,
+    NULL::character varying(255) AS city,
+    NULL::character varying(2) AS country_code,
+    NULL::character varying(255) AS domain,
+    NULL::character varying(20) AS status,
+    NULL::character varying(20) AS membership_level,
+    NULL::integer AS authentication_tier,
+    NULL::character varying(50) AS authentication_method,
+    NULL::timestamp with time zone AS dt_created,
+    NULL::timestamp with time zone AS dt_modified,
+    NULL::jsonb AS metadata,
+    NULL::text AS kvk,
+    NULL::text AS lei,
+    NULL::text AS euid,
+    NULL::text AS eori,
+    NULL::text AS duns,
+    NULL::text AS vat,
+    NULL::text AS peppol,
+    NULL::bigint AS contact_count,
+    NULL::bigint AS endpoint_count;
 
 
 --
@@ -2340,6 +2519,13 @@ ALTER TABLE ONLY public.audit_log ALTER COLUMN audit_log_id SET DEFAULT nextval(
 
 
 --
+-- Name: entity_legal_form_translations id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_legal_form_translations ALTER COLUMN id SET DEFAULT nextval('public.entity_legal_form_translations_id_seq'::regclass);
+
+
+--
 -- Name: german_court_codes court_code_id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2379,6 +2565,14 @@ ALTER TABLE ONLY public.authorization_log
 
 
 --
+-- Name: belgium_registry_data belgium_registry_data_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.belgium_registry_data
+    ADD CONSTRAINT belgium_registry_data_pkey PRIMARY KEY (registry_data_id);
+
+
+--
 -- Name: ctn_m2m_credentials ctn_m2m_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2408,6 +2602,30 @@ ALTER TABLE ONLY public.ctn_m2m_secret_audit
 
 ALTER TABLE ONLY public.dns_verification_tokens
     ADD CONSTRAINT dns_verification_tokens_pkey PRIMARY KEY (token_id);
+
+
+--
+-- Name: entity_legal_form_translations entity_legal_form_translations_elf_code_language_code_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_legal_form_translations
+    ADD CONSTRAINT entity_legal_form_translations_elf_code_language_code_key UNIQUE (elf_code, language_code);
+
+
+--
+-- Name: entity_legal_form_translations entity_legal_form_translations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_legal_form_translations
+    ADD CONSTRAINT entity_legal_form_translations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: entity_legal_forms entity_legal_forms_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_legal_forms
+    ADD CONSTRAINT entity_legal_forms_pkey PRIMARY KEY (elf_code);
 
 
 --
@@ -2810,6 +3028,41 @@ CREATE INDEX idx_auth_log_user ON public.authorization_log USING btree (user_ide
 
 
 --
+-- Name: idx_belgium_registry_company_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_belgium_registry_company_name ON public.belgium_registry_data USING btree (company_name) WHERE (is_deleted = false);
+
+
+--
+-- Name: idx_belgium_registry_kbo_number; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_belgium_registry_kbo_number ON public.belgium_registry_data USING btree (kbo_number_clean) WHERE (is_deleted = false);
+
+
+--
+-- Name: idx_belgium_registry_legal_entity; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_belgium_registry_legal_entity ON public.belgium_registry_data USING btree (legal_entity_id) WHERE (is_deleted = false);
+
+
+--
+-- Name: idx_belgium_registry_unique_active; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_belgium_registry_unique_active ON public.belgium_registry_data USING btree (legal_entity_id) WHERE (is_deleted = false);
+
+
+--
+-- Name: idx_belgium_registry_vat_number; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_belgium_registry_vat_number ON public.belgium_registry_data USING btree (vat_number) WHERE ((is_deleted = false) AND (vat_number IS NOT NULL));
+
+
+--
 -- Name: idx_dns_tokens_cleanup; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2863,6 +3116,41 @@ CREATE INDEX idx_dns_verification_entity_domain_status ON public.dns_verificatio
 --
 
 COMMENT ON INDEX public.idx_dns_verification_entity_domain_status IS 'Composite index for DNS verification lookups (entity + domain + status)';
+
+
+--
+-- Name: idx_elf_active; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_elf_active ON public.entity_legal_forms USING btree (is_active) WHERE (is_active = true);
+
+
+--
+-- Name: idx_elf_country_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_elf_country_code ON public.entity_legal_forms USING btree (country_code);
+
+
+--
+-- Name: idx_elf_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_elf_status ON public.entity_legal_forms USING btree (elf_status);
+
+
+--
+-- Name: idx_elf_trans_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_elf_trans_code ON public.entity_legal_form_translations USING btree (elf_code);
+
+
+--
+-- Name: idx_elf_trans_lang; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_elf_trans_lang ON public.entity_legal_form_translations USING btree (language_code);
 
 
 --
@@ -2954,6 +3242,13 @@ CREATE INDEX idx_gleif_registry_legal_entity_id ON public.gleif_registry_data US
 --
 
 CREATE INDEX idx_gleif_registry_lei ON public.gleif_registry_data USING btree (lei);
+
+
+--
+-- Name: idx_gleif_registry_unique_legal_entity; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_gleif_registry_unique_legal_entity ON public.gleif_registry_data USING btree (legal_entity_id) WHERE (legal_entity_id IS NOT NULL);
 
 
 --
@@ -3615,6 +3910,71 @@ COMMENT ON INDEX public.uq_legal_entity_party_id_active IS 'Ensures 1:1 relation
 
 
 --
+-- Name: vw_legal_entities _RETURN; Type: RULE; Schema: public; Owner: -
+--
+
+CREATE OR REPLACE VIEW public.vw_legal_entities AS
+ SELECT le.legal_entity_id,
+    le.party_id,
+    le.primary_legal_name,
+    le.city,
+    le.country_code,
+    le.domain,
+    le.status,
+    le.membership_level,
+    le.authentication_tier,
+    le.authentication_method,
+    le.dt_created,
+    le.dt_modified,
+    le.metadata,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'KVK'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS kvk,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'LEI'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS lei,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'EUID'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS euid,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'EORI'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS eori,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'DUNS'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS duns,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'VAT'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS vat,
+    max((
+        CASE
+            WHEN ((len.identifier_type)::text = 'PEPPOL'::text) THEN len.identifier_value
+            ELSE NULL::character varying
+        END)::text) AS peppol,
+    ( SELECT count(*) AS count
+           FROM public.legal_entity_contact lec
+          WHERE ((lec.legal_entity_id = le.legal_entity_id) AND (lec.is_active = true))) AS contact_count,
+    ( SELECT count(*) AS count
+           FROM public.legal_entity_endpoint lee
+          WHERE ((lee.legal_entity_id = le.legal_entity_id) AND (lee.is_active = true))) AS endpoint_count
+   FROM (public.legal_entity le
+     LEFT JOIN public.legal_entity_number len ON (((le.legal_entity_id = len.legal_entity_id) AND (len.is_deleted = false))))
+  WHERE (le.is_deleted = false)
+  GROUP BY le.legal_entity_id;
+
+
+--
 -- Name: legal_entity_contact trg_legal_entity_contact_modified; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -3654,6 +4014,13 @@ CREATE TRIGGER trg_m2m_credentials_modified BEFORE UPDATE ON public.ctn_m2m_cred
 --
 
 CREATE TRIGGER trg_party_reference_modified BEFORE UPDATE ON public.party_reference FOR EACH ROW EXECUTE FUNCTION public.update_modified_timestamp();
+
+
+--
+-- Name: belgium_registry_data trigger_belgium_registry_modified; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER trigger_belgium_registry_modified BEFORE UPDATE ON public.belgium_registry_data FOR EACH ROW EXECUTE FUNCTION public.update_belgium_registry_modified();
 
 
 --
@@ -3711,6 +4078,22 @@ CREATE TRIGGER update_admin_tasks_updated_at BEFORE UPDATE ON public.admin_tasks
 
 ALTER TABLE ONLY public.applications
     ADD CONSTRAINT applications_created_member_id_fkey FOREIGN KEY (created_member_id) REFERENCES public.legal_entity(legal_entity_id) ON DELETE SET NULL;
+
+
+--
+-- Name: belgium_registry_data belgium_registry_data_legal_entity_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.belgium_registry_data
+    ADD CONSTRAINT belgium_registry_data_legal_entity_id_fkey FOREIGN KEY (legal_entity_id) REFERENCES public.legal_entity(legal_entity_id) ON DELETE CASCADE;
+
+
+--
+-- Name: entity_legal_form_translations entity_legal_form_translations_elf_code_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_legal_form_translations
+    ADD CONSTRAINT entity_legal_form_translations_elf_code_fkey FOREIGN KEY (elf_code) REFERENCES public.entity_legal_forms(elf_code) ON DELETE CASCADE;
 
 
 --
@@ -3973,5 +4356,5 @@ ALTER TABLE ONLY public.vies_registry_data
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 1pInXDVvrsEuGVayRkRa66XZMvlsERngKdZMQddwIZbbF78E0Z0LutqYpqWqORc
+\unrestrict jIYk2xwdtamPISDkOs0Kae2ZggDvLqqCbBUi6LdcTcIf2S3Uzc5yZtVt8R19pOF
 
