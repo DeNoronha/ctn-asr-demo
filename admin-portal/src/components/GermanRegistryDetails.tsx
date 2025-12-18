@@ -203,9 +203,9 @@ export const GermanRegistryDetails: React.FC<GermanRegistryDetailsProps> = ({ le
                 {registryData.register_court && ` - ${registryData.register_court}`}
               </p>
             </div>
-            <span className={`status-badge ${getStatusColor(registryData.company_status)}`}>
-              {registryData.company_status === 'Active' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
-              {registryData.company_status || 'Unknown'}
+            <span className={`validation-badge ${registryData.company_status === 'Active' ? 'validation-valid' : 'validation-invalid'}`}>
+              {registryData.company_status === 'Active' ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
+              {registryData.company_status === 'Active' ? 'VALID' : (registryData.company_status || 'Unknown')}
             </span>
           </div>
 

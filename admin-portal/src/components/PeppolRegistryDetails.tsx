@@ -122,9 +122,9 @@ export const PeppolRegistryDetails: React.FC<PeppolRegistryDetailsProps> = ({ le
               <h2>{registryData.entity_name || 'Peppol Participant'}</h2>
               <p className="participant-id">{registryData.participant_id}</p>
             </div>
-            <span className="status-badge status-active">
+            <span className="validation-badge validation-valid">
               <CheckCircle size={14} />
-              Registered
+              VALID
             </span>
           </div>
 

@@ -119,14 +119,14 @@ export const ViesRegistryDetails: React.FC<ViesRegistryDetailsProps> = ({ legalE
               </p>
             </div>
             {registryData.is_valid ? (
-              <span className="status-badge status-active">
+              <span className="validation-badge validation-valid">
                 <CheckCircle size={14} />
-                VAT Valid
+                VALID
               </span>
             ) : (
-              <span className="status-badge status-inactive">
+              <span className="validation-badge validation-invalid">
                 <XCircle size={14} />
-                VAT Invalid
+                INVALID
               </span>
             )}
           </div>

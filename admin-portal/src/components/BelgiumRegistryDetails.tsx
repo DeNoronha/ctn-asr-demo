@@ -115,9 +115,9 @@ export const BelgiumRegistryDetails: React.FC<BelgiumRegistryDetailsProps> = ({ 
                 KBO: <span className="vat-value">{registryData.kbo_number}</span>
               </p>
             </div>
-            <span className={`status-badge ${isActive ? 'status-active' : 'status-inactive'}`}>
+            <span className={`validation-badge ${isActive ? 'validation-valid' : 'validation-invalid'}`}>
               {isActive ? <CheckCircle size={14} /> : <XCircle size={14} />}
-              {getStatusBadge(registryData.company_status).label}
+              {isActive ? 'VALID' : 'INVALID'}
             </span>
           </div>
 

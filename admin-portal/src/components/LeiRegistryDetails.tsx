@@ -68,23 +68,23 @@ export const LeiRegistryDetails: React.FC<LeiRegistryDetailsProps> = ({ legalEnt
 
     if (status === 'ISSUED' || status === 'ACTIVE') {
       return (
-        <span className="status-badge status-active">
+        <span className="validation-badge validation-valid">
           <CheckCircle size={14} />
-          {status}
+          VALID
         </span>
       );
     }
 
     if (status === 'LAPSED' || status === 'RETIRED' || status === 'CANCELLED') {
       return (
-        <span className="status-badge status-inactive">
+        <span className="validation-badge validation-invalid">
           <AlertCircle size={14} />
-          {status}
+          INVALID
         </span>
       );
     }
 
-    return <span className="status-badge">{status}</span>;
+    return <span className="validation-badge">{status}</span>;
   };
 
   const formatAddress = (address?: LeiAddress) => {

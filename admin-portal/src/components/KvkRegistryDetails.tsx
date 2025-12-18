@@ -156,23 +156,23 @@ export const KvkRegistryDetails: React.FC<KvkRegistryDetailsProps> = ({ legalEnt
   const getStatusBadge = (status?: string) => {
     if (!status || status === 'Active') {
       return (
-        <span className="status-badge status-active">
+        <span className="validation-badge validation-valid">
           <CheckCircle size={14} />
-          Active
+          VALID
         </span>
       );
     }
 
     if (status === 'Faillissement' || status === 'Ontbonden') {
       return (
-        <span className="status-badge status-inactive">
+        <span className="validation-badge validation-invalid">
           <AlertCircle size={14} />
           {status}
         </span>
       );
     }
 
-    return <span className="status-badge">{status}</span>;
+    return <span className="validation-badge">{status}</span>;
   };
 
   return (

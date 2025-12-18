@@ -112,9 +112,9 @@ export const EoriRegistryDetails: React.FC<EoriRegistryDetailsProps> = ({ legalE
                 EORI: <span className="vat-value">{registryData.eori_number}</span>
               </p>
             </div>
-            <span className={`status-badge ${isValid ? 'status-active' : 'status-inactive'}`}>
+            <span className={`validation-badge ${isValid ? 'validation-valid' : 'validation-invalid'}`}>
               {getStatusBadge(registryData.status).icon}
-              {getStatusBadge(registryData.status).label}
+              {isValid ? 'VALID' : 'INVALID'}
             </span>
           </div>
 
