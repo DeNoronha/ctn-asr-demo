@@ -298,7 +298,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'city',
         title: 'City',
-        width: 90,
+        width: 75,
         toggleable: true,
         draggable: true,
         resizable: true,
@@ -308,7 +308,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'country_code',
         title: 'CC',
-        width: 45,
+        width: 40,
         toggleable: true,
         draggable: true,
         resizable: true,
@@ -318,7 +318,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       {
         accessor: 'euid',
         title: 'EUID',
-        width: 120,
+        width: 105,
         toggleable: true,
         draggable: true,
         resizable: true,
