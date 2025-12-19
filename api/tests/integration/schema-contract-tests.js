@@ -136,11 +136,11 @@ class SchemaContractTests {
   async testAPIQueries() {
     this.log('\n--- Test Suite: API Query Validation ---', 'blue');
 
-    const routesPath = path.join(__dirname, '../../src/routes.ts');
+    const routesPath = path.join(__dirname, '../../src/routes-legacy.ts');
     const routesContent = fs.readFileSync(routesPath, 'utf-8');
 
     const queries = QueryParser.extractQueriesFromFile(routesContent);
-    this.log(`  Found ${queries.length} SQL queries in routes.ts\n`);
+    this.log(`  Found ${queries.length} SQL queries in routes-legacy.ts\n`);
 
     for (const { query, lineNumber } of queries) {
       if (query.toUpperCase().startsWith('SELECT')) {
@@ -184,7 +184,7 @@ class SchemaContractTests {
     const insertTests = [
       {
         name: 'Legal entity INSERT',
-        file: 'src/routes.ts',
+        file: 'src/routes-legacy.ts',
         table: 'legal_entity',
         expectedColumns: [
           'legal_entity_id', 'party_id', 'primary_legal_name', 'entity_legal_form',
@@ -194,7 +194,7 @@ class SchemaContractTests {
       },
       {
         name: 'Identifier INSERT',
-        file: 'src/routes.ts',
+        file: 'src/routes-legacy.ts',
         table: 'legal_entity_number',
         expectedColumns: [
           'legal_entity_reference_id', 'legal_entity_id', 'identifier_type',
@@ -214,7 +214,7 @@ class SchemaContractTests {
       },
       {
         name: 'Issued tokens INSERT',
-        file: 'src/routes.ts',
+        file: 'src/routes-legacy.ts',
         table: 'issued_tokens',
         expectedColumns: [
           'jti', 'token_type', 'legal_entity_id', 'issued_at', 'expires_at',

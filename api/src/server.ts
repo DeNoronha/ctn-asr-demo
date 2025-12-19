@@ -158,7 +158,9 @@ try {
   logger.error('Failed to load Swagger UI', error);
 }
 
-// Import and register all route handlers
+// Import and register all route handlers from modular routes structure
+// Note: './routes' now points to routes/index.ts (modular structure)
+// The old routes.ts is kept for reference but no longer used
 import { router } from './routes';
 app.use('/api', router);
 

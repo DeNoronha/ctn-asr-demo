@@ -15,4 +15,6 @@ const router = Router();
 // Mount v1 API routes
 router.use(v1Routes);
 
+// Named export for compatibility with server.ts
+export { router };
 export default router;
