@@ -59,35 +59,37 @@ module staticWebApps './modules/static-web-apps.bicep' = {
   }
 }
 
-// Deploy WAF Policy for Front Door
-module wafPolicy './modules/waf-policy.bicep' = {
-  name: 'waf-policy-deployment'
-  scope: resourceGroup
-  params: {
-    environment: environment
-    location: location
-    resourcePrefix: resourcePrefix
-    tags: tags
-  }
-}
+// NOTE: Front Door Premium and WAF disabled for cost savings (December 19, 2025)
+// Front Door Premium costs €170/month - use Static Web Apps direct URLs instead
+// Re-enable if production requires CDN/WAF protection
+//
+// module wafPolicy './modules/waf-policy.bicep' = {
+//   name: 'waf-policy-deployment'
+//   scope: resourceGroup
+//   params: {
+//     environment: environment
+//     location: location
+//     resourcePrefix: resourcePrefix
+//     tags: tags
+//   }
+// }
 
-// Deploy Front Door with WAF protection
-module frontDoor './modules/front-door.bicep' = {
-  name: 'front-door-deployment'
-  scope: resourceGroup
-  params: {
-    environment: environment
-    resourcePrefix: resourcePrefix
-    tags: tags
-    wafPolicyId: wafPolicy.outputs.wafPolicyId
-    adminPortalHostname: staticWebApps.outputs.adminPortalUrl
-    memberPortalHostname: staticWebApps.outputs.memberPortalUrl
-  }
-  dependsOn: [
-    wafPolicy
-    staticWebApps
-  ]
-}
+// module frontDoor './modules/front-door.bicep' = {
+//   name: 'front-door-deployment'
+//   scope: resourceGroup
+//   params: {
+//     environment: environment
+//     resourcePrefix: resourcePrefix
+//     tags: tags
+//     wafPolicyId: wafPolicy.outputs.wafPolicyId
+//     adminPortalHostname: staticWebApps.outputs.adminPortalUrl
+//     memberPortalHostname: staticWebApps.outputs.memberPortalUrl
+//   }
+//   dependsOn: [
+//     wafPolicy
+//     staticWebApps
+//   ]
+// }
 
 // Deploy database
 @description('Database administrator password')
@@ -175,7 +177,6 @@ module keyVaultSecrets './modules/key-vault-secrets.bicep' = if (enableSecretsDe
     enableSecretCreation: true
   }
   dependsOn: [
-    coreInfrastructure
     database
   ]
 }
@@ -193,8 +194,13 @@ output keyVaultName string = coreInfrastructure.outputs.keyVaultName
 // NOTE: API Management commented out - see line 142
 // output apimGatewayUrl string = apiManagement.outputs.apimGatewayUrl
 // output apimName string = apiManagement.outputs.apimName
-output frontDoorId string = frontDoor.outputs.frontDoorId
-output frontDoorName string = frontDoor.outputs.frontDoorName
-output adminFrontDoorUrl string = frontDoor.outputs.adminEndpointUrl
-output memberFrontDoorUrl string = frontDoor.outputs.memberEndpointUrl
-output wafPolicyName string = wafPolicy.outputs.wafPolicyName
+// NOTE: Front Door outputs disabled - Front Door removed for cost savings
+// output frontDoorId string = frontDoor.outputs.frontDoorId
+// output frontDoorName string = frontDoor.outputs.frontDoorName
+// output adminFrontDoorUrl string = frontDoor.outputs.adminEndpointUrl
+// output memberFrontDoorUrl string = frontDoor.outputs.memberEndpointUrl
+// output wafPolicyName string = wafPolicy.outputs.wafPolicyName
+
+// Direct Static Web App URLs (use these instead of Front Door)
+output adminPortalUrl string = staticWebApps.outputs.adminPortalUrl
+output memberPortalUrl string = staticWebApps.outputs.memberPortalUrl
