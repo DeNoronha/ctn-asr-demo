@@ -1,0 +1,148 @@
+# Admin Portal - CI/CD Pipeline
+# Deploys to Azure Static Web Apps
+
+name: Admin Portal - Build and Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'admin-portal/**'
+      - '.github/workflows/admin-portal.yml'
+    paths-ignore:
+      - '**/*.md'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  VITE_AZURE_CLIENT_ID: d3037c11-a541-4f21-8862-8079137a0cde
+  VITE_AZURE_TENANT_ID: 598664e7-725c-4daa-bd1f-89c4ada717ff
+  VITE_REDIRECT_URI: https://calm-tree-03352ba03.1.azurestaticapps.net
+  VITE_API_URL: https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: TypeScript check
+        run: cd admin-portal && npm run typecheck
+
+      - name: Lint check
+        run: npm run lint -w admin-portal
+        continue-on-error: true
+
+      - name: Security audit
+        run: |
+          cd admin-portal
+          npm audit --audit-level=moderate || true
+        continue-on-error: true
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update -qq
+          sudo apt-get install -y trivy
+
+      - name: Trivy vulnerability scan
+        run: |
+          cd admin-portal
+          trivy fs --severity HIGH,CRITICAL --exit-code 1 --scanners vuln .
+
+      - name: Trivy secret scan
+        run: trivy fs --scanners secret --exit-code 1 --severity HIGH,CRITICAL .
+
+      - name: Generate version.json
+        run: |
+          chmod +x scripts/generate-version.sh
+          ./scripts/generate-version.sh admin-portal/public
+
+      - name: Build
+        run: npm run build -w admin-portal
+        env:
+          CI: false
+          NODE_ENV: production
+
+      - name: Deploy to staging
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.ADMIN_PORTAL_DEPLOYMENT_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: 'upload'
+          app_location: 'admin-portal/build'
+          skip_app_build: true
+          deployment_environment: 'staging'
+
+      - name: Smoke tests on staging
+        run: |
+          STAGING_URL="https://calm-tree-03352ba03-staging.1.azurestaticapps.net"
+          sleep 30
+
+          echo "Running smoke tests on: $STAGING_URL"
+
+          # Test homepage
+          for i in 1 2 3; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -m 10 "$STAGING_URL")
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "Homepage returned HTTP 200"
+              break
+            elif [ $i -eq 3 ]; then
+              echo "Homepage test failed (HTTP $HTTP_CODE)"
+              exit 1
+            fi
+            sleep 10
+          done
+
+          # Test response time
+          RESPONSE_TIME=$(curl -s -o /dev/null -w "%{time_total}" "$STAGING_URL")
+          RESPONSE_MS=$(echo "$RESPONSE_TIME * 1000" | bc | cut -d'.' -f1)
+          echo "Response time: ${RESPONSE_MS}ms"
+
+          # Check for JS bundle
+          HTML_CONTENT=$(curl -s "$STAGING_URL")
+          if echo "$HTML_CONTENT" | grep -q "/assets/index.*\.js"; then
+            echo "JavaScript bundle found"
+          else
+            echo "JavaScript bundle not found"
+            exit 1
+          fi
+
+          echo "All smoke tests passed!"
+
+      - name: Deploy to production
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.ADMIN_PORTAL_DEPLOYMENT_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: 'upload'
+          app_location: 'admin-portal/build'
+          skip_app_build: true
+          deployment_environment: 'production'
+
+      - name: Verify production deployment
+        run: |
+          sleep 10
+          PORTAL_URL="https://calm-tree-03352ba03.1.azurestaticapps.net"
+          PORTAL_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PORTAL_URL")
+
+          if [ "$PORTAL_STATUS" != "200" ]; then
+            echo "Production deployment failed (HTTP $PORTAL_STATUS)"
+            exit 1
+          fi
+
+          echo "Admin Portal deployed successfully!"
+          echo "URL: $PORTAL_URL"

@@ -1,0 +1,67 @@
+# Bicep Infrastructure Pipeline
+# Deploys Azure infrastructure using Bicep templates
+
+name: Infrastructure - Bicep Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infrastructure/bicep/**'
+      - '.github/workflows/bicep-infrastructure.yml'
+  workflow_dispatch:
+
+env:
+  RESOURCE_GROUP: rg-ctn-demo-asr-dev
+
+jobs:
+  validate:
+    name: Validate Bicep
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Validate Bicep syntax
+        run: |
+          az bicep build --file infrastructure/bicep/main.bicep
+          echo "Bicep syntax validation passed"
+
+      - name: What-if deployment
+        run: |
+          az deployment sub what-if \
+            --location westeurope \
+            --template-file infrastructure/bicep/main.bicep \
+            --parameters infrastructure/bicep/parameters.dev.json \
+            --parameters databaseAdminPassword=${{ secrets.DATABASE_ADMIN_PASSWORD }}
+
+  deploy:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Bicep
+        run: |
+          az deployment sub create \
+            --location westeurope \
+            --template-file infrastructure/bicep/main.bicep \
+            --parameters infrastructure/bicep/parameters.dev.json \
+            --parameters databaseAdminPassword=${{ secrets.DATABASE_ADMIN_PASSWORD }}
+
+      - name: Show outputs
+        run: |
+          az deployment sub show \
+            --name main \
+            --query properties.outputs
