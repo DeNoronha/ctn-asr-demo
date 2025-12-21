@@ -8,9 +8,8 @@ on:
     branches: [main]
     paths:
       - 'admin-portal/**'
+      - '!admin-portal/**/*.md'
       - '.github/workflows/admin-portal.yml'
-    paths-ignore:
-      - '**/*.md'
   workflow_dispatch:
 
 env:
