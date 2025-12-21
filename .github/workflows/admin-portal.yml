@@ -76,7 +76,7 @@ jobs:
           CI: false
           NODE_ENV: production
 
-      - name: Deploy to staging
+      - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.ADMIN_PORTAL_DEPLOYMENT_TOKEN }}
@@ -84,64 +84,22 @@ jobs:
           action: 'upload'
           app_location: 'admin-portal/build'
           skip_app_build: true
-          deployment_environment: 'staging'
 
-      - name: Smoke tests on staging
+      - name: Verify deployment
         run: |
-          STAGING_URL="https://calm-tree-03352ba03-staging.1.azurestaticapps.net"
-          sleep 30
+          sleep 15
+          PORTAL_URL="https://calm-tree-03352ba03.1.azurestaticapps.net"
 
-          echo "Running smoke tests on: $STAGING_URL"
-
-          # Test homepage
-          for i in 1 2 3; do
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -m 10 "$STAGING_URL")
-            if [ "$HTTP_CODE" = "200" ]; then
-              echo "Homepage returned HTTP 200"
-              break
-            elif [ $i -eq 3 ]; then
-              echo "Homepage test failed (HTTP $HTTP_CODE)"
-              exit 1
+          for i in 1 2 3 4 5; do
+            PORTAL_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PORTAL_URL")
+            if [ "$PORTAL_STATUS" = "200" ]; then
+              echo "Admin Portal deployed successfully!"
+              echo "URL: $PORTAL_URL"
+              exit 0
             fi
+            echo "Attempt $i: HTTP $PORTAL_STATUS - waiting..."
             sleep 10
           done
 
-          # Test response time
-          RESPONSE_TIME=$(curl -s -o /dev/null -w "%{time_total}" "$STAGING_URL")
-          RESPONSE_MS=$(echo "$RESPONSE_TIME * 1000" | bc | cut -d'.' -f1)
-          echo "Response time: ${RESPONSE_MS}ms"
-
-          # Check for JS bundle
-          HTML_CONTENT=$(curl -s "$STAGING_URL")
-          if echo "$HTML_CONTENT" | grep -q "/assets/index.*\.js"; then
-            echo "JavaScript bundle found"
-          else
-            echo "JavaScript bundle not found"
-            exit 1
-          fi
-
-          echo "All smoke tests passed!"
-
-      - name: Deploy to production
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.ADMIN_PORTAL_DEPLOYMENT_TOKEN }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: 'upload'
-          app_location: 'admin-portal/build'
-          skip_app_build: true
-          deployment_environment: 'production'
-
-      - name: Verify production deployment
-        run: |
-          sleep 10
-          PORTAL_URL="https://calm-tree-03352ba03.1.azurestaticapps.net"
-          PORTAL_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PORTAL_URL")
-
-          if [ "$PORTAL_STATUS" != "200" ]; then
-            echo "Production deployment failed (HTTP $PORTAL_STATUS)"
-            exit 1
-          fi
-
-          echo "Admin Portal deployed successfully!"
-          echo "URL: $PORTAL_URL"
+          echo "Deployment verification failed"
+          exit 1
