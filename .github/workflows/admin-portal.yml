@@ -65,6 +65,29 @@ jobs:
       - name: Trivy secret scan
         run: trivy fs --scanners secret --exit-code 1 --severity HIGH,CRITICAL .
 
+      - name: Install Semgrep
+        run: pip3 install semgrep
+
+      - name: Semgrep SAST scan
+        run: |
+          echo "Running Semgrep security analysis..."
+          semgrep scan --config=auto \
+            --severity=ERROR \
+            --severity=WARNING \
+            --exclude='node_modules' \
+            --exclude='dist' \
+            --exclude='*.test.ts' \
+            --exclude='*.spec.ts' \
+            --exclude='e2e' \
+            admin-portal/ || true
+        continue-on-error: true
+
+      - name: Run unit tests (Vitest)
+        run: npm run test:ci -w admin-portal || true
+        continue-on-error: true
+        env:
+          CI: true
+
       - name: Generate version.json
         run: |
           chmod +x scripts/generate-version.sh
