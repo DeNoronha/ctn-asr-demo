@@ -1,0 +1,49 @@
+# Dependabot configuration
+# Automatically checks for vulnerable dependencies and creates PRs
+# https://docs.github.com/en/code-security/dependabot
+
+version: 2
+updates:
+  # API (Node.js)
+  - package-ecosystem: "npm"
+    directory: "/api"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
+
+  # Admin Portal (Node.js)
+  - package-ecosystem: "npm"
+    directory: "/admin-portal"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
+
+  # Member Portal (Node.js)
+  - package-ecosystem: "npm"
+    directory: "/member-portal"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "ci"
