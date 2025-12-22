@@ -2,7 +2,7 @@
 
 **Created:** November 10, 2025
 **Test Engineer:** Claude Code (Test Automation Specialist)
-**API Base URL:** https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1
+**API Base URL:** https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1
 
 ---
 
@@ -25,7 +25,7 @@ This directory contains comprehensive API tests for the new **Endpoint Registrat
 - **Commit Message:** `feat(member-portal): add endpoint registration wizard with verification workflow`
 - **Current Status:** API functions NOT yet deployed to Azure
 - **Expected Deployment:** 3-5 minutes from commit time
-- **Monitor:** https://dev.azure.com/ctn-demo/ASR/_build
+- **Monitor:** https://github.com/DeNoronha/ctn-asr-demo/actions
 
 ---
 
@@ -399,11 +399,11 @@ Test output is written to:
 **Cause:** API functions not deployed yet
 
 **Solution:**
-1. Check Azure DevOps build status: https://dev.azure.com/ctn-demo/ASR/_build
-2. Wait for API pipeline to complete (~3-5 minutes)
+1. Check GitHub Actions status: https://github.com/DeNoronha/ctn-asr-demo/actions
+2. Wait for API workflow to complete (~3-5 minutes)
 3. Verify deployment:
    ```bash
-   func azure functionapp list-functions func-ctn-demo-asr-dev | grep -i "InitiateEndpoint"
+   curl https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health
    ```
 
 ### Issue: 401 Unauthorized
@@ -418,7 +418,7 @@ Test output is written to:
 2. Verify token is valid:
    ```bash
    TOKEN=$(cat /tmp/asr-api-token.txt)
-   curl -H "Authorization: Bearer $TOKEN" https://func-ctn-demo-asr-dev.azurewebsites.net/api/health
+   curl -H "Authorization: Bearer $TOKEN" https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health
    ```
 
 ### Issue: 403 Forbidden
@@ -515,8 +515,9 @@ Test output is written to:
 - **RBAC Model:** https://github.com/ramondenoronha/DEV-CTN-Documentation/blob/main/docs/arc42/05-building-blocks/ctn-three-tier-authentication.md
 
 ### API Resources
-- **Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
-- **Azure Functions:** https://func-ctn-demo-asr-dev.azurewebsites.net
+- **GitHub Repository:** https://github.com/DeNoronha/ctn-asr-demo
+- **GitHub Actions:** https://github.com/DeNoronha/ctn-asr-demo/actions
+- **Container Apps API:** https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io
 - **Application Insights:** https://portal.azure.com/#@/resource/.../appi-ctn-demo-asr-dev
 
 ---
@@ -543,8 +544,8 @@ Test output is written to:
 
 ### Next Steps
 
-1. ⏳ Wait for Azure DevOps API pipeline to complete
-2. ✅ Verify functions deployed with `func azure functionapp list-functions`
+1. Wait for GitHub Actions API workflow to complete
+2. Verify deployment with `curl .../api/health`
 3. ✅ Run comprehensive E2E test
 4. ✅ Run error scenarios test
 5. ✅ Document results in test report

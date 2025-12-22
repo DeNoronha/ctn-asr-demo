@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Deployment Sync Verification Script
-# Ensures changes are committed and deployed to Azure before proceeding
+# Ensures changes are committed and deployed via GitHub Actions before proceeding
 # Usage: ./scripts/verify-deployment-sync.sh [--skip-build-check]
 
 set -e
@@ -70,61 +70,54 @@ fi
 echo -e "${GREEN}✓ Commit pushed to origin/main${NC}"
 echo ""
 
-# 5. Check Azure DevOps pipeline status (optional)
+# 5. Check GitHub Actions workflow status (optional)
 if [ "$1" != "--skip-build-check" ]; then
-    echo -e "${BLUE}[5/5]${NC} Checking Azure DevOps pipeline status..."
+    echo -e "${BLUE}[5/5]${NC} Checking GitHub Actions workflow status..."
 
-    # Try to get latest pipeline run for ASR API
-    if command -v az &> /dev/null; then
-        LATEST_RUN=$(az pipelines runs list --pipeline-ids 9 --top 1 --output json 2>/dev/null || echo "[]")
+    if command -v gh &> /dev/null; then
+        # Get the most recent workflow run for main branch
+        LATEST_RUN=$(gh run list --branch main --limit 1 --json status,conclusion,name,headSha,createdAt 2>/dev/null)
 
-        if [ "$LATEST_RUN" != "[]" ]; then
-            RUN_STATUS=$(echo "$LATEST_RUN" | grep -o '"status": "[^"]*"' | head -1 | cut -d'"' -f4)
-            RUN_RESULT=$(echo "$LATEST_RUN" | grep -o '"result": "[^"]*"' | head -1 | cut -d'"' -f4)
-            RUN_TIME=$(echo "$LATEST_RUN" | grep -o '"queueTime": "[^"]*"' | head -1 | cut -d'"' -f4)
-            RUN_NUMBER=$(echo "$LATEST_RUN" | grep -o '"buildNumber": "[^"]*"' | head -1 | cut -d'"' -f4)
+        if [ -n "$LATEST_RUN" ] && [ "$LATEST_RUN" != "[]" ]; then
+            RUN_STATUS=$(echo "$LATEST_RUN" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4)
+            RUN_CONCLUSION=$(echo "$LATEST_RUN" | grep -o '"conclusion":"[^"]*"' | head -1 | cut -d'"' -f4)
+            RUN_NAME=$(echo "$LATEST_RUN" | grep -o '"name":"[^"]*"' | head -1 | cut -d'"' -f4)
+            RUN_SHA=$(echo "$LATEST_RUN" | grep -o '"headSha":"[^"]*"' | head -1 | cut -d'"' -f4)
 
-            echo -e "  Latest pipeline run: ${YELLOW}$RUN_NUMBER${NC}"
+            echo -e "  Latest workflow: ${YELLOW}$RUN_NAME${NC}"
             echo -e "  Status: ${YELLOW}$RUN_STATUS${NC}"
 
             if [ "$RUN_STATUS" = "completed" ]; then
-                if [ "$RUN_RESULT" = "succeeded" ]; then
-                    echo -e "  Result: ${GREEN}$RUN_RESULT${NC}"
-                    echo -e "${GREEN}✓ Pipeline completed successfully${NC}"
+                if [ "$RUN_CONCLUSION" = "success" ]; then
+                    echo -e "  Conclusion: ${GREEN}$RUN_CONCLUSION${NC}"
+                    echo -e "${GREEN}✓ Workflow completed successfully${NC}"
                 else
-                    echo -e "  Result: ${RED}$RUN_RESULT${NC}"
-                    echo -e "${YELLOW}⚠ WARNING: Latest pipeline did not succeed${NC}"
-                    echo -e "  Check: ${BLUE}https://dev.azure.com/ctn-demo/ASR/_build${NC}"
+                    echo -e "  Conclusion: ${RED}$RUN_CONCLUSION${NC}"
+                    echo -e "${YELLOW}⚠ WARNING: Latest workflow did not succeed${NC}"
+                    echo -e "  Check: ${BLUE}https://github.com/DeNoronha/ctn-asr-demo/actions${NC}"
                 fi
-            elif [ "$RUN_STATUS" = "inProgress" ]; then
-                echo -e "${YELLOW}⚠ Pipeline is currently running${NC}"
+            elif [ "$RUN_STATUS" = "in_progress" ]; then
+                echo -e "${YELLOW}⚠ Workflow is currently running${NC}"
                 echo -e "  Wait for completion before testing changes"
             else
-                echo -e "${YELLOW}⚠ Pipeline status: $RUN_STATUS${NC}"
+                echo -e "${YELLOW}⚠ Workflow status: $RUN_STATUS${NC}"
             fi
 
-            # Calculate time difference
-            COMMIT_EPOCH=$(git log -1 --format="%at")
-            RUN_EPOCH=$(date -j -f "%Y-%m-%dT%H:%M:%S" "${RUN_TIME:0:19}" "+%s" 2>/dev/null || echo "0")
-
-            if [ "$RUN_EPOCH" != "0" ]; then
-                TIME_DIFF=$((RUN_EPOCH - COMMIT_EPOCH))
-
-                if [ $TIME_DIFF -lt 0 ]; then
-                    AGE=$((0 - TIME_DIFF))
-                    AGE_MIN=$((AGE / 60))
-                    echo -e "${YELLOW}⚠ WARNING: Latest build is $AGE_MIN minutes OLDER than your commit${NC}"
-                    echo -e "  Your commit may not be deployed yet. Wait 2-3 minutes and re-run this script."
-                    exit 1
-                fi
+            # Check if the workflow ran for our commit
+            FULL_COMMIT=$(git log -1 --format="%H")
+            if [ "${RUN_SHA:0:8}" != "${FULL_COMMIT:0:8}" ]; then
+                echo -e "${YELLOW}⚠ WARNING: Latest workflow is not for your commit${NC}"
+                echo -e "  Workflow SHA: ${RUN_SHA:0:8}, Your commit: ${FULL_COMMIT:0:8}"
+                echo -e "  A new workflow may still be starting. Wait and re-run this script."
             fi
         else
-            echo -e "${YELLOW}⚠ Could not retrieve pipeline status${NC}"
-            echo -e "  Manually check: ${BLUE}https://dev.azure.com/ctn-demo/ASR/_build${NC}"
+            echo -e "${YELLOW}⚠ Could not retrieve workflow status${NC}"
+            echo -e "  Manually check: ${BLUE}https://github.com/DeNoronha/ctn-asr-demo/actions${NC}"
         fi
     else
-        echo -e "${YELLOW}⚠ Azure CLI not available, skipping pipeline check${NC}"
-        echo -e "  Manually verify: ${BLUE}https://dev.azure.com/ctn-demo/ASR/_build${NC}"
+        echo -e "${YELLOW}⚠ GitHub CLI (gh) not available, skipping workflow check${NC}"
+        echo -e "  Install: ${BLUE}brew install gh${NC}"
+        echo -e "  Manually verify: ${BLUE}https://github.com/DeNoronha/ctn-asr-demo/actions${NC}"
     fi
 else
     echo -e "${BLUE}[5/5]${NC} Skipping build check (--skip-build-check flag provided)"
@@ -137,9 +130,9 @@ echo -e "${GREEN}═════════════════════
 echo ""
 echo -e "${BLUE}Next steps:${NC}"
 echo -e "  • Latest commit: ${GREEN}$LATEST_COMMIT${NC} ($COMMIT_TIME)"
-echo -e "  • Verify API: ${BLUE}curl https://func-ctn-demo-asr-dev.azurewebsites.net/api/health${NC}"
-echo -e "  • Verify deployment: ${BLUE}curl https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1/version${NC}"
+echo -e "  • Verify API: ${BLUE}curl https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health${NC}"
 echo -e "  • Admin Portal: ${BLUE}https://calm-tree-03352ba03.1.azurestaticapps.net${NC}"
+echo -e "  • GitHub Actions: ${BLUE}https://github.com/DeNoronha/ctn-asr-demo/actions${NC}"
 echo ""
 
 exit 0

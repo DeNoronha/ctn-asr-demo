@@ -132,8 +132,8 @@ if [ "$HEALTH_CODE" -eq 200 ]; then
 else
   log_error "API health check failed (HTTP $HEALTH_CODE)"
   echo "$HEALTH_BODY"
-  log_warning "Deployment may be out of sync. Check Azure DevOps pipeline status."
-  log_warning "URL: https://dev.azure.com/ctn-demo/ASR/_build"
+  log_warning "Deployment may be out of sync. Check GitHub Actions workflow status."
+  log_warning "URL: https://github.com/DeNoronha/ctn-asr-demo/actions"
   exit 1
 fi
 
@@ -378,7 +378,7 @@ if [ "$NOT_FOUND_COUNT" -gt 0 ]; then
   log_error "ACTION REQUIRED:"
   log_error "1. Check api/src/index.ts contains: import './functions/TierManagement';"
   log_error "2. Rebuild API: cd api && npm run build"
-  log_error "3. Redeploy: func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote"
+  log_error "3. Push changes to trigger GitHub Actions workflow"
   log_error "4. Wait 2-3 minutes for deployment"
   log_error "5. Re-run this test script"
 fi
@@ -405,7 +405,7 @@ else
   echo -e "${RED}✗ Some tests failed!${NC}"
   echo ""
   log_warning "Common Issues:"
-  log_warning "1. API not deployed - check Azure DevOps pipeline"
+  log_warning "1. API not deployed - check GitHub Actions workflow"
   log_warning "2. Functions not registered - check index.ts imports"
   log_warning "3. Database migration not run - check database schema"
   exit 1

@@ -285,7 +285,7 @@ Wait 2-3 more minutes and run this script again
 ```
 
 **Action Required:**
-- Monitor Azure DevOps: https://dev.azure.com/ctn-demo/ASR/_build
+- Monitor GitHub Actions: https://github.com/DeNoronha/ctn-asr-demo/actions
 - Wait for API pipeline to complete
 - Re-run `./check-deployment.sh`
 
@@ -485,7 +485,7 @@ Test Suite 4: Input Validation
 ### For User
 
 1. **Monitor Deployment:**
-   - Check Azure DevOps: https://dev.azure.com/ctn-demo/ASR/_build
+   - Check GitHub Actions: https://github.com/DeNoronha/ctn-asr-demo/actions
    - Wait for green checkmark on API pipeline
 
 2. **Verify Deployment:**

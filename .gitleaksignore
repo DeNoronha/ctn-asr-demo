@@ -125,7 +125,7 @@ docs/MANTINE_DATATABLE_REFERENCE.md
 
 # ============================================================================
 # Git & CI/CD Metadata
-# Pipeline variables are in Azure DevOps, not in files
+# Workflow secrets are in GitHub repository secrets, not in files
 # ============================================================================
 .git/**
 .github/**

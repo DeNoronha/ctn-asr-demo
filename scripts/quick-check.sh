@@ -42,27 +42,33 @@ else
     echo -e "Push status:   ${RED}✗ Not pushed${NC}"
 fi
 
-# Pipeline status
-if command -v az &> /dev/null; then
-    LATEST_RUN=$(az pipelines runs list --pipeline-ids 9 --top 1 --output json 2>/dev/null || echo "[]")
-    if [ "$LATEST_RUN" != "[]" ]; then
-        STATUS=$(echo "$LATEST_RUN" | grep -o '"status": "[^"]*"' | head -1 | cut -d'"' -f4)
-        RESULT=$(echo "$LATEST_RUN" | grep -o '"result": "[^"]*"' | head -1 | cut -d'"' -f4)
+# GitHub Actions workflow status
+if command -v gh &> /dev/null; then
+    # Get the most recent workflow run
+    LATEST_RUN=$(gh run list --branch main --limit 1 --json status,conclusion,name 2>/dev/null)
+    if [ -n "$LATEST_RUN" ] && [ "$LATEST_RUN" != "[]" ]; then
+        STATUS=$(echo "$LATEST_RUN" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4)
+        CONCLUSION=$(echo "$LATEST_RUN" | grep -o '"conclusion":"[^"]*"' | head -1 | cut -d'"' -f4)
+        NAME=$(echo "$LATEST_RUN" | grep -o '"name":"[^"]*"' | head -1 | cut -d'"' -f4)
 
-        if [ "$STATUS" = "completed" ] && [ "$RESULT" = "succeeded" ]; then
-            echo -e "Pipeline:      ${GREEN}✓ Build succeeded${NC}"
-        elif [ "$STATUS" = "inProgress" ]; then
-            echo -e "Pipeline:      ${YELLOW}⚠ Build in progress${NC}"
+        if [ "$STATUS" = "completed" ] && [ "$CONCLUSION" = "success" ]; then
+            echo -e "Workflow:      ${GREEN}✓ $NAME succeeded${NC}"
+        elif [ "$STATUS" = "in_progress" ]; then
+            echo -e "Workflow:      ${YELLOW}⚠ $NAME in progress${NC}"
+        elif [ "$STATUS" = "completed" ] && [ "$CONCLUSION" = "failure" ]; then
+            echo -e "Workflow:      ${RED}✗ $NAME failed${NC}"
         else
-            echo -e "Pipeline:      ${RED}✗ Status: $STATUS${NC}"
+            echo -e "Workflow:      ${YELLOW}⚠ $NAME: $STATUS${NC}"
         fi
     else
-        echo -e "Pipeline:      ${YELLOW}⚠ Could not check${NC}"
+        echo -e "Workflow:      ${YELLOW}⚠ Could not check (gh auth login required?)${NC}"
     fi
+else
+    echo -e "Workflow:      ${YELLOW}⚠ gh CLI not installed${NC}"
 fi
 
 echo "─────────────────────────────────────"
-echo -e "Azure DevOps:  ${BLUE}https://dev.azure.com/ctn-demo/ASR/_build${NC}"
+echo -e "GitHub Actions: ${BLUE}https://github.com/DeNoronha/ctn-asr-demo/actions${NC}"
 echo ""
 
 exit 0

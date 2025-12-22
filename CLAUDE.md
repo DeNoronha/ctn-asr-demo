@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Last Updated:** December 12, 2025
+**Last Updated:** December 22, 2025
 
 ---
 
@@ -16,7 +16,7 @@ git branch --show-current  # MUST be on 'main' - NO feature branches allowed
 
 # 2. CHECK DEPLOYMENT STATUS
 git log -1 --format="%ar - %s"
-# Compare to: https://dev.azure.com/ctn-demo/ASR/_build
+# Compare to: https://github.com/DeNoronha/ctn-asr-demo/actions
 
 # 3. VERIFY CLEAN STATUS
 git status
@@ -57,7 +57,13 @@ ctn-asr-monorepo/
 │       ├── container-app.bicep  # Container Apps deployment
 │       ├── parameters.*.json    # Environment parameters
 │       └── modules/        # Bicep modules
-└── .azure-pipelines/       # CI/CD pipelines
+└── .github/
+    ├── workflows/          # GitHub Actions CI/CD
+    │   ├── api.yml         # API build & deploy
+    │   ├── admin-portal.yml    # Admin portal deploy
+    │   ├── member-portal.yml   # Member portal deploy
+    │   └── bicep-infrastructure.yml  # Infrastructure deploy
+    └── dependabot.yml      # Automated dependency updates
 ```
 
 **Workspaces:** Root `package.json` defines workspaces: `["admin-portal", "member-portal", "api", "packages/*"]`
@@ -66,12 +72,14 @@ ctn-asr-monorepo/
 - **[DocuFlow](https://dev.azure.com/ctn-demo/DocuFlow/_git/DocuFlow)** - Document submission and approval workflows (extracted Nov 11, 2025)
 - **[Orchestration Register](https://dev.azure.com/ctn-demo/Orchestrator%20Portal/_git/Orchestrator%20Portal)** - Cross-system workflow orchestration (extracted Nov 11, 2025)
 
-### Pipeline Architecture
+### CI/CD Architecture (GitHub Actions)
+
+**As of December 22, 2025:** CI/CD migrated from Azure DevOps to GitHub Actions.
 
 ```
 ┌──────────────────────────────────────┐
-│  1. Association-Register-Backend     │
-│  .azure-pipelines/container-app-api.yml│
+│  1. API Workflow                     │
+│  .github/workflows/api.yml           │
 └─────────┬────────────────────────────┘
           │ Triggers on: api/* changes
           │ Deploys to: ca-ctn-asr-api-dev (Container Apps)
@@ -81,22 +89,26 @@ ctn-asr-monorepo/
 ┌──────────────┐ ┌──────────────┐
 │2. Admin      │ │3. Member     │
 │   Portal     │ │   Portal     │
-│   Pipeline   │ │   Pipeline   │
+│   Workflow   │ │   Workflow   │
 └──────────────┘ └──────────────┘
   admin-portal.yml  member-portal.yml
-  (triggered by API OR admin-portal/* changes)
 ```
 
-**Additional Pipelines:**
+**GitHub Actions Workflows:**
+- `api.yml` - API build, Docker image push to ACR, Container Apps deployment
+- `admin-portal.yml` - Admin portal build and deploy to Azure Static Web Apps
+- `member-portal.yml` - Member portal build and deploy to Azure Static Web Apps
 - `bicep-infrastructure.yml` - Infrastructure as Code deployments (Azure Bicep)
-  - Deploys: `infrastructure/bicep/main.bicep`
-  - Includes: Static Web Apps, Front Door, PostgreSQL, Key Vault
-- `playwright-tests.yml` - E2E test execution pipeline
+
+**Automated Dependency Updates:**
+- Dependabot configured for npm packages and GitHub Actions
+- Auto-creates PRs for security updates
 
 **Path Filters:**
-- Changes to `api/*` → Triggers ASR API + Admin + Member pipelines
-- Changes to `admin-portal/*` → ONLY Admin portal pipeline
-- Changes to `member-portal/*` → ONLY Member portal pipeline
+- Changes to `api/*` → Triggers API workflow
+- Changes to `admin-portal/*` → Triggers Admin portal workflow
+- Changes to `member-portal/*` → Triggers Member portal workflow
+- Changes to `infrastructure/bicep/*` → Triggers Bicep infrastructure workflow
 
 ### API Architecture (Container Apps)
 
@@ -357,9 +369,9 @@ npm run watch
 npm run docker:build  # Build Docker image
 npm run docker:run    # Run container locally on port 8080
 
-# Deployment (via Azure DevOps Pipeline)
-# Push to main branch triggers: .azure-pipelines/container-app-api.yml
-# Pipeline builds Docker image → pushes to ACR → deploys to Container Apps
+# Deployment (via GitHub Actions)
+# Push to main branch triggers: .github/workflows/api.yml
+# Workflow builds Docker image → pushes to ACR → deploys to Container Apps
 
 # View logs (Azure CLI)
 az containerapp logs show \
@@ -464,22 +476,22 @@ git status
 git add -A
 git commit -m "feat: descriptive message"
 
-# 3. CHECK FOR RUNNING BUILDS BEFORE PUSHING
-az pipelines build list --project "ASR" --top 3 --query "[].{status:status,result:result,definition:definition.name}" -o table
-# WAIT if any builds show "inProgress" status!
+# 3. CHECK FOR RUNNING WORKFLOWS BEFORE PUSHING
+gh run list --branch main --limit 3
+# WAIT if any workflows show "in_progress" status!
 
-# 4. Push to trigger pipeline (only if no builds running)
+# 4. Push to trigger workflow (only if no workflows running)
 git push origin main
 
 # 5. Wait ~2-3 minutes, verify deployment
-# Check: https://dev.azure.com/ctn-demo/ASR/_build
+# Check: https://github.com/DeNoronha/ctn-asr-demo/actions
 
 # 6. Test deployed changes (TE agent pattern: API curl first, then UI)
 ```
 
-**⚠️ CRITICAL: Never start a manual build or push while another build is running!**
-- Concurrent builds can cause deployment conflicts and race conditions
-- Always check `az pipelines build list` before triggering new builds
+**⚠️ CRITICAL: Never push while another workflow is running!**
+- Concurrent workflows can cause deployment conflicts and race conditions
+- Always check `gh run list` before pushing new changes
 - Wait for "completed" status before pushing new changes
 
 **Verification Scripts:**
@@ -619,7 +631,7 @@ git push --force-with-lease origin main
 26. **Alerts defined in Bicep** → `infrastructure/bicep/modules/container-app-alerts.bicep` contains 4 metric alerts for Container Apps monitoring
 27. **No App Service Plan needed** → Container Apps use managed environments (Microsoft.App/managedEnvironments), not App Service Plans
 28. **Bicep parameter files** → `parameters.dev.json` and `parameters.prod.json` for environment-specific configs
-29. **Pipeline auto-deploys Bicep** → Changes to `infrastructure/bicep/*` trigger `bicep-infrastructure.yml` pipeline
+29. **Workflow auto-deploys Bicep** → Changes to `infrastructure/bicep/*` trigger `bicep-infrastructure.yml` workflow
 
 ---
 
@@ -698,7 +710,8 @@ The system supports multiple legal entity identifier types stored in the `legal_
 ### Backend & Infrastructure
 - **API (Container Apps):** https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api
 - **Database:** psql-ctn-demo-asr-dev.postgres.database.azure.com (PostgreSQL 15)
-- **Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
+- **GitHub Repository:** https://github.com/DeNoronha/ctn-asr-demo
+- **GitHub Actions:** https://github.com/DeNoronha/ctn-asr-demo/actions
 - **Container Registry:** crctnasrdev.azurecr.io
 - **Key Vault:** kv-ctn-demo-asr-dev
 
@@ -734,10 +747,10 @@ The system supports multiple legal entity identifier types stored in the `legal_
 | DB schema questions | Read `database/asr_dev.sql` (authoritative source) |
 | Missing table/field | Check `database/asr_dev.sql` - table likely exists with different name |
 | Data modeling questions | Review views: `vw_members_full`, `vw_members`, etc. |
-| "Old version" | Run `git log -1`, compare to Azure DevOps build time |
+| "Old version" | Run `git log -1`, compare to GitHub Actions workflow run time |
 | Members not showing | Test API health: `curl https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health` |
 | E2E tests failing | Verify auth state in `playwright/.auth/user.json` |
-| Pipeline path filters not working | Ensure no mixed commits from concurrent sessions |
+| Workflow path filters not working | Ensure no mixed commits from concurrent sessions |
 | Container App not starting | Check logs: `az containerapp logs show --type console --name ca-ctn-asr-api-dev` |
 | 404s after successful deployment | Check Container App revision status, verify route in routes.ts |
 | Alerts not firing | Verify alerts exist: `az monitor metrics alert list --resource-group rg-ctn-demo-asr-dev` |
@@ -805,7 +818,7 @@ When working via Claude Desktop, the **Desktop Commander** MCP server provides d
 - **Database:** PostgreSQL 15 (Azure Flexible Server)
 - **Auth:** Azure AD (MSAL), RBAC with JWT (RS256)
 - **Testing:** Playwright (E2E), Vitest (unit tests)
-- **CI/CD:** Azure DevOps Pipelines
+- **CI/CD:** GitHub Actions
 - **Containerization:** Docker, Azure Container Registry
 - **Security:** Aikido scanning, Content Security Policy, rate limiting
 - **Monitoring:** Application Insights

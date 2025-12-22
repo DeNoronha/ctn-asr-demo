@@ -2,10 +2,10 @@
 
 ## Quick Reference
 
-**API Health:** https://func-ctn-demo-asr-dev.azurewebsites.net/api/health
+**API Health:** https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health
 **Admin Portal:** https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net
 **Member Portal:** https://portal-ctn-dev-fdb5cpeagdendtck.z02.azurefd.net
-**Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
+**GitHub Actions:** https://github.com/DeNoronha/ctn-asr-demo/actions
 **Database:** psql-ctn-demo-asr-dev.postgres.database.azure.com
 
 ## Pre-Deployment Checklist
@@ -33,19 +33,19 @@ git commit -m "feat: description" # or fix:, refactor:, etc.
 
 # 7. Push and monitor
 git push origin main
-./scripts/check-pipeline-status.sh
+gh run list --branch main --limit 3
 ```
 
 ## Deployment Verification
 
-**After Pipeline Success (2-3 minutes):**
+**After Workflow Success (2-3 minutes):**
 
 ```bash
 # 1. Check API health
-curl https://func-ctn-demo-asr-dev.azurewebsites.net/api/health | jq
+curl https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health | jq
 
-# 2. Verify function deployment
-curl -I https://func-ctn-demo-asr-dev.azurewebsites.net/api/v1/members
+# 2. Verify API endpoint
+curl -I https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1/entities
 
 # 3. Check portal accessibility
 curl -I https://admin-ctn-dev-gma8fnethbetbjgj.z02.azurefd.net
@@ -53,7 +53,8 @@ curl -I https://portal-ctn-dev-fdb5cpeagdendtck.z02.azurefd.net
 
 # 4. Verify latest version deployed
 git log -1 --format="%ar - %s"
-# Compare to Azure DevOps build time
+# Compare to GitHub Actions workflow run time
+gh run list --branch main --limit 1
 ```
 
 ## Common Issues & Solutions
@@ -63,30 +64,35 @@ git log -1 --format="%ar - %s"
 **Symptoms:** Endpoint returns 404 instead of expected response
 
 **Causes:**
-1. Function not registered in index.ts
+1. Route not registered in routes.ts
 2. Route mismatch (lowercase params: {legalentityid} not {legalEntityId})
-3. Deployment sync issue
+3. Container App revision not active
 
 **Solutions:**
 
 ```bash
-# Check function registration
-grep "FunctionName" api/src/index.ts
+# Check route registration
+grep -r "router\." api/src/routes/
 
-# Check deployment status
-func azure functionapp logstream func-ctn-demo-asr-dev --timeout 20
+# Check Container App revision status
+az containerapp revision list \
+  --name ca-ctn-asr-api-dev \
+  --resource-group rg-ctn-demo-asr-dev \
+  --output table
 
-# Force redeploy
-cd api
-npm run build
-func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote
+# Check Container App logs
+az containerapp logs show \
+  --name ca-ctn-asr-api-dev \
+  --resource-group rg-ctn-demo-asr-dev \
+  --type console \
+  --follow
 ```
 
 ### Issue 2: "Old Version" in Production
 
 **Symptoms:** Code changes not reflected in deployed API
 
-**Cause:** Deployment succeeded but Azure cached old version
+**Cause:** Deployment succeeded but old Container App revision still serving traffic
 
 **Solution:**
 
@@ -94,13 +100,18 @@ func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote
 # 1. Verify deployment time
 git log -1 --format="%ar - %s"
 
-# 2. Check Azure build time
-# Visit: https://dev.azure.com/ctn-demo/ASR/_build
+# 2. Check GitHub Actions workflow time
+gh run list --branch main --limit 5
 
-# 3. If mismatch, restart function app
-# Azure Portal → Function App → Overview → Restart
+# 3. Check active revision
+az containerapp revision list \
+  --name ca-ctn-asr-api-dev \
+  --resource-group rg-ctn-demo-asr-dev \
+  --query "[?properties.active].name" -o tsv
 
-# 4. Wait 2 minutes and verify again
+# 4. If mismatch, force new deployment
+# Push an empty commit or trigger workflow manually
+gh workflow run api.yml
 ```
 
 ### Issue 3: Database Connection Errors
@@ -119,13 +130,11 @@ git log -1 --format="%ar - %s"
 psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com \
       port=5432 dbname=asr_dev user=asradmin sslmode=require"
 
-# Check connection pool
-# In API logs, look for "pool" errors
-
-# Verify environment variables
-echo $POSTGRES_HOST
-echo $POSTGRES_PORT
-echo $POSTGRES_DB
+# Check connection pool in Container App logs
+az containerapp logs show \
+  --name ca-ctn-asr-api-dev \
+  --resource-group rg-ctn-demo-asr-dev \
+  --type console | grep -i "pool\|connection"
 ```
 
 ### Issue 4: Auth Errors (401/403)
@@ -150,9 +159,9 @@ console.log(jwt_decode(token.accessToken));
 // Should have: roles: ['SystemAdmin', 'AssociationAdmin', etc.]
 ```
 
-### Issue 5: Pipeline Failures
+### Issue 5: Workflow Failures
 
-**Symptoms:** Azure Pipeline shows red X
+**Symptoms:** GitHub Actions workflow shows red X
 
 **Common Causes & Fixes:**
 
@@ -165,15 +174,22 @@ console.log(jwt_decode(token.accessToken));
 # → Run tests locally: npm test
 # → Fix failing tests, commit, push
 
-# Secret scanner blocked:
-# → Remove secrets from code
-# → Use environment variables
-# → Re-commit
+# Docker build failure:
+# → Check Dockerfile syntax
+# → Verify base image availability
 
 # Deployment failure:
-# → Check Azure Portal for function app status
-# → Verify service plan not paused
-# → Check function app logs
+# → Check Azure Container Apps status
+# → Verify ACR credentials in GitHub secrets
+# → Check Container App logs
+```
+
+```bash
+# View workflow run details
+gh run view --log-failed
+
+# Re-run failed workflow
+gh run rerun
 ```
 
 ## Monitoring & Alerts
@@ -182,7 +198,7 @@ console.log(jwt_decode(token.accessToken));
 
 ```bash
 # Automated monitoring (every 5 minutes)
-curl -f https://func-ctn-demo-asr-dev.azurewebsites.net/api/health || \
+curl -f https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/health || \
   echo "ALERT: API health check failed"
 ```
 
@@ -190,15 +206,13 @@ curl -f https://func-ctn-demo-asr-dev.azurewebsites.net/api/health || \
 ```json
 {
   "status": "healthy",
-  "timestamp": "2025-11-13T20:00:00Z",
+  "timestamp": "2025-12-22T20:00:00Z",
   "uptime": 3600,
   "environment": "production",
   "version": "1.0.0",
   "checks": {
     "database": { "status": "up", "responseTime": 45 },
-    "applicationInsights": { "status": "up" },
-    "azureKeyVault": { "status": "up" },
-    "staticWebApps": { "status": "up" }
+    "applicationInsights": { "status": "up" }
   }
 }
 ```
@@ -246,8 +260,8 @@ git revert <commit-hash>
 # 3. Push rollback
 git push origin main
 
-# 4. Monitor deployment
-./scripts/check-pipeline-status.sh
+# 4. Monitor workflow
+gh run watch
 ```
 
 ### Database Recovery
@@ -258,20 +272,34 @@ psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com \
       port=5432 dbname=asr_dev user=asradmin sslmode=require"
 
 # 2. Check recent changes
-SELECT * FROM audit_logs ORDER BY dt_created DESC LIMIT 50;
+SELECT * FROM audit_log ORDER BY created_at DESC LIMIT 50;
 
 # 3. If data corruption, restore from backup
 # Contact Azure support for point-in-time restore
 ```
 
-### Clear Azure Function Cache
+### Restart Container App
 
 ```bash
-# Sometimes function app caches old code
-# 1. Stop function app
-# 2. Wait 30 seconds
-# 3. Start function app
-# 4. Verify health endpoint returns new version
+# Restart the Container App (creates new revision)
+az containerapp revision restart \
+  --name ca-ctn-asr-api-dev \
+  --resource-group rg-ctn-demo-asr-dev \
+  --revision <revision-name>
+
+# Or scale down and up
+az containerapp update \
+  --name ca-ctn-asr-api-dev \
+  --resource-group rg-ctn-demo-asr-dev \
+  --min-replicas 0 \
+  --max-replicas 0
+
+# Wait 30 seconds, then scale back up
+az containerapp update \
+  --name ca-ctn-asr-api-dev \
+  --resource-group rg-ctn-demo-asr-dev \
+  --min-replicas 0 \
+  --max-replicas 10
 ```
 
 ## Scheduled Maintenance
@@ -288,20 +316,21 @@ SELECT * FROM audit_logs ORDER BY dt_created DESC LIMIT 50;
 - Performance optimization review
 - Documentation updates
 
-## Contact & Escalation
-
-**On-Call:** [TBD]
-**Slack Channel:** [TBD]
-**Incident Tracking:** [TBD]
-
 ## Useful Commands Reference
 
 ```bash
-# API Deployment
-func azure functionapp publish func-ctn-demo-asr-dev --typescript --build remote
+# View Container App Logs
+az containerapp logs show \
+  --name ca-ctn-asr-api-dev \
+  --resource-group rg-ctn-demo-asr-dev \
+  --type console \
+  --follow
 
-# View API Logs
-func azure functionapp logstream func-ctn-demo-asr-dev --timeout 20
+# Check Container App Status
+az containerapp show \
+  --name ca-ctn-asr-api-dev \
+  --resource-group rg-ctn-demo-asr-dev \
+  --query "{status:properties.runningStatus}"
 
 # Database Query
 psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com port=5432 dbname=asr_dev user=asradmin sslmode=require"
@@ -309,7 +338,6 @@ psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com port=5432 dbname=as
 # Run Tests
 npm test                  # Run all tests
 npm run test:coverage     # With coverage report
-npm run test:verbose      # Verbose output
 
 # Build
 npm run build            # Compile TypeScript
@@ -320,6 +348,8 @@ git status              # Check uncommitted changes
 git log -1              # Last commit
 git diff                # See changes
 
-# Pipeline Status
-./scripts/check-pipeline-status.sh
+# GitHub Actions Status
+gh run list --branch main --limit 5
+gh run view --log-failed
+./scripts/quick-check.sh
 ```

@@ -3,8 +3,8 @@
 # ============================================
 # Check Deployment Status
 # ============================================
-# Purpose: Verify if new endpoint registration functions are deployed
-# Last Updated: November 10, 2025
+# Purpose: Verify if API endpoints are deployed and accessible
+# Last Updated: December 22, 2025
 # ============================================
 
 echo "============================================"
@@ -17,63 +17,64 @@ echo "Last commit:"
 git log -1 --format="%h - %ar - %s"
 echo ""
 
-echo "Azure DevOps Build URL:"
-echo "https://dev.azure.com/ctn-demo/ASR/_build"
+echo "GitHub Actions URL:"
+echo "https://github.com/DeNoronha/ctn-asr-demo/actions"
 echo ""
 
-echo "Checking deployed functions..."
+echo "Checking API health..."
 echo ""
 
-FUNCTIONS=$(func azure functionapp list-functions func-ctn-demo-asr-dev 2>&1)
+API_BASE="https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io"
 
-echo "Looking for new registration workflow functions:"
-echo ""
+# Check API health
+HEALTH_RESPONSE=$(curl -s -w '\n%{http_code}' "$API_BASE/api/health")
+HEALTH_CODE=$(echo "$HEALTH_RESPONSE" | tail -n1)
+HEALTH_BODY=$(echo "$HEALTH_RESPONSE" | sed '$d')
 
-FOUND=0
-
-if echo "$FUNCTIONS" | grep -q "InitiateEndpointRegistration"; then
-  echo "✅ InitiateEndpointRegistration - DEPLOYED"
-  FOUND=$((FOUND + 1))
+if [ "$HEALTH_CODE" -eq 200 ]; then
+  echo "API Health: OK (HTTP $HEALTH_CODE)"
+  echo "$HEALTH_BODY" | python3 -m json.tool 2>/dev/null || echo "$HEALTH_BODY"
+  echo ""
 else
-  echo "❌ InitiateEndpointRegistration - NOT FOUND"
-fi
-
-if echo "$FUNCTIONS" | grep -q "SendEndpointVerificationEmail"; then
-  echo "✅ SendEndpointVerificationEmail - DEPLOYED"
-  FOUND=$((FOUND + 1))
-else
-  echo "❌ SendEndpointVerificationEmail - NOT FOUND"
-fi
-
-if echo "$FUNCTIONS" | grep -q "VerifyEndpointToken"; then
-  echo "✅ VerifyEndpointToken - DEPLOYED"
-  FOUND=$((FOUND + 1))
-else
-  echo "❌ VerifyEndpointToken - NOT FOUND"
-fi
-
-if echo "$FUNCTIONS" | grep -q "TestEndpoint"; then
-  echo "✅ TestEndpoint - DEPLOYED"
-  FOUND=$((FOUND + 1))
-else
-  echo "❌ TestEndpoint - NOT FOUND (Note: Generic name, may have false negatives)"
-fi
-
-if echo "$FUNCTIONS" | grep -q "ActivateEndpoint"; then
-  echo "✅ ActivateEndpoint - DEPLOYED"
-  FOUND=$((FOUND + 1))
-else
-  echo "❌ ActivateEndpoint - NOT FOUND"
+  echo "API Health: FAILED (HTTP $HEALTH_CODE)"
+  echo "Deployment may still be in progress."
+  echo ""
+  echo "Check GitHub Actions: https://github.com/DeNoronha/ctn-asr-demo/actions"
+  exit 1
 fi
 
 echo ""
 echo "============================================"
+echo "Checking endpoint availability..."
+echo "============================================"
+echo ""
 
-if [ $FOUND -eq 5 ]; then
-  echo "✅ DEPLOYMENT COMPLETE"
+FOUND=0
+ENDPOINTS=(
+  "/api/v1/entities"
+  "/api/v1/tiers/requirements"
+)
+
+for endpoint in "${ENDPOINTS[@]}"; do
+  RESPONSE=$(curl -s -w '\n%{http_code}' -X GET "$API_BASE$endpoint" -H "Content-Type: application/json")
+  HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+
+  if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 401 ]; then
+    echo "Endpoint available: $endpoint (HTTP $HTTP_CODE)"
+    FOUND=$((FOUND + 1))
+  else
+    echo "Endpoint NOT available: $endpoint (HTTP $HTTP_CODE)"
+  fi
+done
+
+echo ""
+echo "============================================"
+
+if [ $FOUND -eq ${#ENDPOINTS[@]} ]; then
+  echo "DEPLOYMENT COMPLETE"
   echo "============================================"
   echo ""
-  echo "All 5 new functions are deployed."
+  echo "All endpoints are accessible."
   echo "You can now run the test suite:"
   echo ""
   echo "  ./00-comprehensive-e2e-test.sh"
@@ -81,10 +82,10 @@ if [ $FOUND -eq 5 ]; then
   echo ""
   exit 0
 else
-  echo "⏳ DEPLOYMENT IN PROGRESS"
+  echo "DEPLOYMENT IN PROGRESS"
   echo "============================================"
   echo ""
-  echo "Found: $FOUND / 5 functions"
+  echo "Found: $FOUND / ${#ENDPOINTS[@]} endpoints"
   echo ""
   echo "Wait 2-3 more minutes and run this script again:"
   echo "  ./check-deployment.sh"

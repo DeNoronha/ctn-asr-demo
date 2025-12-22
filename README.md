@@ -12,18 +12,15 @@ Full-stack application for managing CTN member organizations, endpoints, tokens,
 ### Deploy to Production
 
 ```bash
-# API
-cd api
-# Container Apps deployment via pipeline: .azure-pipelines/container-app-api.yml --typescript --build remote
+# API - Deployed via GitHub Actions workflow: .github/workflows/api.yml
+# Push to main branch triggers automatic deployment to Container Apps
 
-# Frontend
-cd web
-mv .env.local .env.local.backup
-npm run build
-npx @azure/static-web-apps-cli deploy ./build \
-  --deployment-token <token> \
-  --env production
-mv .env.local.backup .env.local
+# Frontend - Deployed via GitHub Actions workflows
+# Admin Portal: .github/workflows/admin-portal.yml
+# Member Portal: .github/workflows/member-portal.yml
+
+# Check workflow status:
+gh run list --branch main --limit 5
 ```
 
 ## Azure Resources
@@ -38,7 +35,8 @@ mv .env.local.backup .env.local
 
 ### Backend & Infrastructure
 - **API:** https://ca-ctn-asr-api-dev.calmriver-700a8c55.westeurope.azurecontainerapps.io/api/v1
-- **Azure DevOps:** https://dev.azure.com/ctn-demo/ASR
+- **GitHub Repository:** https://github.com/DeNoronha/ctn-asr-demo
+- **GitHub Actions:** https://github.com/DeNoronha/ctn-asr-demo/actions
 - **Resource Group:** rg-ctn-demo-asr-dev
 - **Database:** psql-ctn-demo-asr-dev.postgres.database.azure.com
 
@@ -76,10 +74,11 @@ This repository contains the **Association Register (ASR)** portals and supporti
 
 - **`admin-portal/`** - Admin Portal (React 18 + TypeScript + Mantine v8)
 - **`member-portal/`** - Member Portal (React 18 + TypeScript + Mantine v8)
-- **`api/`** - Azure Functions API (Node.js 20 + TypeScript)
+- **`api/`** - Express.js API on Azure Container Apps (Node.js 20 + TypeScript)
 - **`database/`** - PostgreSQL schema and migrations
 - **`packages/`** - Shared packages (api-client, vite-config-base)
 - **`infrastructure/`** - Azure infrastructure as code (Bicep)
+- **`.github/workflows/`** - GitHub Actions CI/CD workflows
 
 ### Related Repositories
 
@@ -94,10 +93,10 @@ These systems have been extracted into separate repositories:
 - **Build Tools:** Vite 7.1.10
 - **Authentication:** Azure AD (MSAL) with RBAC
 - **API Client:** Shared TypeScript client package with retry logic
-- **Backend:** Azure Functions v4 (Node.js 20 + TypeScript)
-- **Database:** PostgreSQL 14 (Azure Flexible Server)
+- **Backend:** Azure Container Apps (Express.js + Node.js 20 + TypeScript)
+- **Database:** PostgreSQL 15 (Azure Flexible Server)
 - **Testing:** Playwright (E2E), Vitest (unit tests)
-- **CI/CD:** Azure DevOps Pipelines
+- **CI/CD:** GitHub Actions
 - **Security:** Aikido scanning, Content Security Policy, rate limiting
 
 ## Support
