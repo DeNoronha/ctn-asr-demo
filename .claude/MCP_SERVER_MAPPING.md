@@ -1,7 +1,7 @@
 # MCP Server Mapping for Agents
 
-**Last Updated:** November 14, 2025
-**Global MCP Config:** `/Users/ramondenoronha/.config/claude-code/mcp.json`
+**Last Updated:** December 22, 2025
+**Global MCP Config:** `/Users/ramon/Library/Application Support/Claude/claude_desktop_config.json`
 
 This document defines which MCP servers each specialized agent should use. These MCP servers are configured globally and available to all agents across all projects.
 
@@ -52,7 +52,17 @@ This document defines which MCP servers each specialized agent should use. These
 - Create data flow diagrams
 - Document system architecture
 
-### 5. **Mantine Documentation (Local Files)**
+### 5. **github** - `ghcr.io/github/github-mcp-server`
+**Purpose:** GitHub integration for repositories, issues, PRs, and GitHub Actions
+**Command:** `docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server`
+**Capabilities:**
+- Repository management (browse, search, commits, branches)
+- Issues & Pull Requests (create, update, manage)
+- GitHub Actions (monitor workflow runs, analyze failures)
+- Code security (Dependabot alerts, vulnerabilities)
+- Team collaboration (discussions, notifications)
+
+### 6. **Mantine Documentation (Local Files)**
 **Purpose:** Mantine UI component documentation
 **Location:** `docs/MANTINE_LLMS.txt` (79,408 lines from https://mantine.dev/llms.txt)
 **Additional:** `docs/MANTINE_DATATABLE_REFERENCE.md` for mantine-datatable component reference
@@ -200,10 +210,19 @@ This document defines which MCP servers each specialized agent should use. These
 ---
 
 ### DevOps Guardian (DG)
-**MCP Servers:** ❌ None required
-- DG focuses on Git operations, Azure DevOps pipelines, and monorepo management
-- Uses Bash for Git commands and Azure CLI operations
-- No browser or automation tools needed
+**Primary MCP Servers:**
+- ✅ **github** - For GitHub Actions workflow monitoring, PR management, and repository operations
+
+**Use Cases:**
+- Monitor GitHub Actions workflow runs and analyze failures
+- Create and manage Pull Requests
+- Review Dependabot alerts and security vulnerabilities
+- Query repository information and commit history
+- Manage issues and discussions
+
+**When NOT to use MCP servers:**
+- Simple git commands (use Bash tool with git CLI)
+- Azure CLI operations (use Bash tool)
 
 ---
 
