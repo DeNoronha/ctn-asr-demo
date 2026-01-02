@@ -46,6 +46,9 @@ api/tests/.auth-token
 # Claude Code local settings (may contain sensitive data)
 .claude/settings.local.json
 
+# MCP server configuration (contains tokens)
+.mcp.json
+
 # IDE
 .idea/
 *.swp
