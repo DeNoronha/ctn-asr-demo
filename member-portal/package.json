@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@azure/msal-browser": "^4.24.1",
-    "@azure/msal-react": "^3.0.20",
+    "@azure/msal-react": "^5.0.2",
     "@ctn/api-client": "file:../packages/api-client",
     "@mantine/core": "^8.3.10",
     "@mantine/dates": "^8.3.10",
