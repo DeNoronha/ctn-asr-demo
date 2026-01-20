@@ -144,6 +144,50 @@ interface KvKVestigingListResponse {
 }
 
 // ============================================================================
+// KVK Open Data API Types (for status/insolvency info)
+// Based on OpenAPI spec v1.1.0 - https://opendata.kvk.nl/api/v1/hvds
+// ============================================================================
+
+/**
+ * Insolvency codes from Open Data API
+ */
+export type KvKInsolventieCode = 'FAIL' | 'SSAN' | 'SURS';
+
+/**
+ * Open Data API activity structure
+ */
+interface KvKOpenDataActiviteit {
+  sbiCode: string;
+  soortActiviteit: 'Hoofdactiviteit' | 'Nevenactiviteit';
+}
+
+/**
+ * Open Data API response (basis bedrijfsgegevens)
+ * Note: Only available for BV and NV legal forms
+ */
+interface KvKOpenDataResponse {
+  datumAanvang?: string; // Start date (format: YYYYMMDD)
+  actief?: 'J' | 'N'; // J = Active, N = Inactive
+  insolventieCode?: KvKInsolventieCode; // FAIL, SSAN, or SURS (only present if applicable)
+  rechtsvormCode?: string; // Legal form code (BV, NV)
+  postcodeRegio?: number; // First 2 digits of postal code
+  activiteiten?: KvKOpenDataActiviteit[];
+  lidstaat?: string; // Country code (NL)
+}
+
+/**
+ * Company status information from Open Data API
+ */
+export interface KvKCompanyStatus {
+  isActive: boolean; // Derived from actief field
+  actief?: 'J' | 'N'; // Raw value from API
+  insolventieCode?: KvKInsolventieCode;
+  insolventieDescription?: string; // Human-readable description
+  statusSource: 'open_data_api' | 'basisprofiel_derived' | 'unavailable';
+  statusMessage: string;
+}
+
+// ============================================================================
 // Internal Data Structures
 // ============================================================================
 
@@ -234,6 +278,9 @@ export interface KvKCompanyData {
 
   // Raw response for storage
   rawApiResponse?: KvKApiResponse;
+
+  // Status information (from Open Data API)
+  companyStatus?: KvKCompanyStatus;
 }
 
 /**
@@ -252,6 +299,7 @@ export interface KvKValidationResult {
 
 export class KvKService {
   private readonly baseUrl = 'https://api.kvk.nl/api/v1';
+  private readonly openDataUrl = 'https://opendata.kvk.nl/api/v1/hvds';
   private readonly apiKey: string;
 
   constructor() {
@@ -259,6 +307,97 @@ export class KvKService {
     if (!this.apiKey) {
       console.warn('KVK_API_KEY not configured - validation will be skipped');
     }
+  }
+
+  /**
+   * Get human-readable description for insolvency code
+   */
+  private getInsolventieDescription(code: KvKInsolventieCode): string {
+    switch (code) {
+      case 'FAIL':
+        return 'Faillissement';
+      case 'SSAN':
+        return 'Schuldsanering';
+      case 'SURS':
+        return 'Surseance van betaling';
+      default:
+        return 'Onbekende bijzondere rechtstoestand';
+    }
+  }
+
+  /**
+   * Fetch company status from KVK Open Data API
+   * Note: Only available for BV and NV legal forms
+   * @param kvkNumber - 8-digit KVK number
+   * @returns Company status or fallback based on Basisprofiel data
+   */
+  async fetchCompanyStatus(kvkNumber: string): Promise<KvKCompanyStatus> {
+    try {
+      const response = await axios.get<KvKOpenDataResponse>(
+        `${this.openDataUrl}/basisbedrijfsgegevens/kvknummer/${kvkNumber}`,
+        {
+          headers: {
+            Accept: 'application/json',
+          },
+          timeout: 10000,
+        }
+      );
+
+      const data = response.data;
+      const isActive = data.actief === 'J';
+
+      return {
+        isActive,
+        actief: data.actief,
+        insolventieCode: data.insolventieCode,
+        insolventieDescription: data.insolventieCode
+          ? this.getInsolventieDescription(data.insolventieCode)
+          : undefined,
+        statusSource: 'open_data_api',
+        statusMessage: this.buildStatusMessage(isActive, data.insolventieCode),
+      };
+    } catch (error: any) {
+      // Handle specific error cases
+      if (error.response?.status === 404) {
+        const errorData = error.response.data;
+        // IPD0015 = Legal form not supported (not BV/NV)
+        if (errorData?.fout?.[0]?.code === 'IPD0015') {
+          console.log(`KvK ${kvkNumber}: Open Data API not available for this legal form`);
+          return {
+            isActive: true, // Assume active if we can't check
+            statusSource: 'unavailable',
+            statusMessage: 'Status niet beschikbaar via Open Data API (alleen BV/NV ondersteund)',
+          };
+        }
+      }
+
+      if (error.response?.status === 429) {
+        console.warn('KvK Open Data API rate limited');
+        return {
+          isActive: true, // Assume active on rate limit
+          statusSource: 'unavailable',
+          statusMessage: 'Status tijdelijk niet beschikbaar (rate limit)',
+        };
+      }
+
+      console.error('KvK Open Data API error:', error.message);
+      return {
+        isActive: true, // Assume active on error
+        statusSource: 'unavailable',
+        statusMessage: 'Status niet kunnen ophalen',
+      };
+    }
+  }
+
+  /**
+   * Build human-readable status message
+   */
+  private buildStatusMessage(isActive: boolean, insolventieCode?: KvKInsolventieCode): string {
+    if (insolventieCode) {
+      const description = this.getInsolventieDescription(insolventieCode);
+      return `Inactief - ${description}`;
+    }
+    return isActive ? 'Actief' : 'Inactief';
   }
 
   /**
@@ -332,6 +471,11 @@ export class KvKService {
 
   /**
    * Validate a company against KVK registry
+   * Flow:
+   * 1. Fetch company profile from Basisprofiel API (names, addresses, etc.)
+   * 2. Fetch company status from Open Data API (active/inactive, insolvency)
+   * 3. Combine results and determine validation flags
+   *
    * @param kvkNumber - 8-digit KVK number
    * @param companyName - Expected company name for validation
    */
@@ -346,6 +490,7 @@ export class KvKService {
     }
 
     try {
+      // Step 1: Fetch basic company profile from Basisprofiel API
       const companyData = await this.fetchCompanyProfile(kvkNumber, false);
 
       if (!companyData) {
@@ -359,12 +504,27 @@ export class KvKService {
 
       const flags: string[] = [];
 
-      // Check for bankruptcies or dissolution
-      if (companyData.materialEndDate) {
-        flags.push('dissolved');
+      // Step 2: Fetch status from Open Data API (actief/insolventie)
+      const companyStatus = await this.fetchCompanyStatus(kvkNumber);
+      companyData.companyStatus = companyStatus;
+
+      // Check status flags from Open Data API
+      if (companyStatus.statusSource === 'open_data_api') {
+        // We have authoritative status info
+        if (!companyStatus.isActive) {
+          flags.push('inactive');
+        }
+        if (companyStatus.insolventieCode) {
+          flags.push(`insolvency_${companyStatus.insolventieCode.toLowerCase()}`);
+        }
+      } else {
+        // Fallback: use materialEndDate from Basisprofiel API
+        if (companyData.materialEndDate) {
+          flags.push('dissolved');
+        }
       }
 
-      // Check company name match (fuzzy comparison)
+      // Step 3: Check company name match (fuzzy comparison)
       const normalizedInput = this.normalizeCompanyName(companyName);
       const normalizedCompany = this.normalizeCompanyName(companyData.companyName);
       const normalizedStatutory = companyData.statutoryName
@@ -534,4 +694,5 @@ export type {
   KvKMaterieleRegistratie,
   KvKVestigingListResponse,
   NormalizedAddress,
+  KvKOpenDataResponse,
 };

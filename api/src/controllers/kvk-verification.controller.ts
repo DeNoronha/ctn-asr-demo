@@ -610,6 +610,20 @@ async function processKvKVerification(legalEntityId: string, blobUrl: string, ve
  * Store KvK registry data and enrich with additional identifiers (EUID, LEI, Peppol)
  */
 async function storeKvkRegistryDataAndEnrich(pool: any, legalEntityId: string, kvkData: any): Promise<void> {
+  // Determine company status from Open Data API or fallback to materialEndDate
+  let companyStatus: string;
+  if (kvkData.companyStatus?.statusSource === 'open_data_api') {
+    // Use authoritative status from Open Data API
+    if (kvkData.companyStatus.insolventieCode) {
+      companyStatus = `${kvkData.companyStatus.insolventieDescription} (${kvkData.companyStatus.insolventieCode})`;
+    } else {
+      companyStatus = kvkData.companyStatus.isActive ? 'Actief' : 'Inactief';
+    }
+  } else {
+    // Fallback: derive from materialEndDate (less reliable)
+    companyStatus = kvkData.materialEndDate ? 'Inactief (uitgeschreven)' : 'Actief (verondersteld)';
+  }
+
   // Store KvK registry data
   await pool.query(`
     INSERT INTO kvk_registry_data (
@@ -627,7 +641,7 @@ async function storeKvkRegistryDataAndEnrich(pool: any, legalEntityId: string, k
     JSON.stringify(kvkData.tradeNames),
     kvkData.formalRegistrationDate,
     kvkData.materialStartDate,
-    kvkData.materialEndDate ? 'Inactive' : 'Active',
+    companyStatus,
     JSON.stringify(kvkData.addresses),
     JSON.stringify(kvkData.sbiActivities),
     kvkData.totalEmployees,
