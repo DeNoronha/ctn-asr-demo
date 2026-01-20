@@ -116,7 +116,8 @@ jobs:
             --template-file infrastructure/bicep/container-app.bicep \
             --parameters \
               environmentName=dev \
-              containerImage=${IMAGE}
+              containerImage=${IMAGE} \
+              skipRoleAssignments=true
 
       - name: Force Container App update
         run: |

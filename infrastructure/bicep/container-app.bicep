@@ -13,6 +13,9 @@ param containerImage string
 @description('Key Vault name for secrets')
 param keyVaultName string = 'kv-ctn-demo-asr-${environmentName}'
 
+@description('Skip role assignments if they already exist')
+param skipRoleAssignments bool = false
+
 @description('Log Analytics workspace name (shared across services)')
 param logAnalyticsWorkspaceName string = 'log-ctn-demo'
 
@@ -184,8 +187,8 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
   }
 }
 
-// Grant Container App access to Key Vault
-resource keyVaultRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+// Grant Container App access to Key Vault (skip if already exists)
+resource keyVaultRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!skipRoleAssignments) {
   name: guid(keyVault.id, containerApp.id, 'Key Vault Secrets User')
   scope: keyVault
   properties: {
@@ -195,8 +198,8 @@ resource keyVaultRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04
   }
 }
 
-// Grant Container App access to Container Registry
-resource acrRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+// Grant Container App access to Container Registry (skip if already exists)
+resource acrRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!skipRoleAssignments) {
   name: guid(containerApp.id, 'AcrPull')
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d') // AcrPull
