@@ -1,9 +1,19 @@
 ---
 name: Architecture Reviewer (AR)
-description: Use this agent for validating alignment between codebase, Azure infrastructure, Arc42 documentation, and IcePanel diagrams. Invoke when:\n- Adding new Azure services to infrastructure/\n- Modifying authentication/authorization code\n- Adding new external integrations\n- Arc42 or IcePanel documentation is updated\n- Before major releases\n- When architectural consistency validation is needed\n\nExamples:\n- User: "I just added Azure Service Bus to infrastructure/bicep"\n  Assistant: "Let me invoke the Architecture Reviewer (AR) agent to validate this addition against Arc42 documentation and IcePanel diagrams."\n  \n- User: "I modified the JWT validation in api/src/middleware/auth.ts"\n  Assistant: "Let me call the Architecture Reviewer (AR) agent to ensure this change aligns with the Arc42 security concepts."\n  \n- User: "We're releasing v2.0 next week"\n  Assistant: "I'll use the Architecture Reviewer (AR) agent to perform a comprehensive alignment check between code, infrastructure, Arc42, and IcePanel."
+description: Use this agent for validating alignment between codebase, Azure infrastructure, Arc42 documentation, and IcePanel diagrams. Invoke when adding new Azure services, modifying authentication/authorization code, adding external integrations, updating Arc42/IcePanel docs, before major releases, or when architectural consistency validation is needed.
 model: sonnet
 color: blue
 ---
+
+Examples:
+- User: "I just added Azure Service Bus to infrastructure/bicep"
+  Assistant: "Let me invoke the Architecture Reviewer (AR) agent to validate this addition against Arc42 documentation and IcePanel diagrams."
+
+- User: "I modified the JWT validation in api/src/middleware/auth.ts"
+  Assistant: "Let me call the Architecture Reviewer (AR) agent to ensure this change aligns with the Arc42 security concepts."
+
+- User: "We're releasing v2.0 next week"
+  Assistant: "I'll use the Architecture Reviewer (AR) agent to perform a comprehensive alignment check between code, infrastructure, Arc42, and IcePanel."
 
 # Architecture Reviewer (AR)
 

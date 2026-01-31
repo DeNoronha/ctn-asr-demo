@@ -659,11 +659,15 @@ The system supports multiple legal entity identifier types stored in the `legal_
 
 ### **EUID (European Unique Identifier)**
 - **Purpose:** Standardized company identification across EU business registers (BRIS system)
-- **Format:** `{Country}.{Registry}.{Number}` (e.g., `NL.KVK.12345678`, `DEK1101R.HRB116737`)
+- **Format:** `{CountryCode}{RegisterCode}.{Number}` - **NO dots between country and register!**
+  - Netherlands: `NLNHR.{kvk}` (e.g., `NLNHR.51096072`) - NHR = Nationaal Handelsregister
+  - Germany: `DE{court}.{type}{nr}` (e.g., `DEK1101R.HRB116737`)
+  - Belgium: `BEKBOBCE.{kbo}` (e.g., `BEKBOBCE.0656.727.414`)
 - **Auto-generation:** ✅ Yes (from KvK via `/v1/entities/{id}/identifiers/generate-euid`)
 - **Service:** `api/src/services/euidService.ts`
-- **Validation:** Regex: `/^[A-Z]{2}\.[A-Z0-9.]{1,50}$/`
-- **Registry:** https://e-justice.europa.eu/489/EN/business_registers
+- **Validation:** Regex: `/^[A-Z]{2}[A-Z0-9]+\.[A-Z0-9.]+$/`
+- **Registry:** https://e-justice.europa.eu/topics/registers-business-insolvency-land/business-registers-search-company-eu_en
+- **Legal basis:** EU Verordening 2021/1042
 - **Who needs it:** All EU companies for cross-border transparency
 
 ### **EORI (Economic Operators Registration and Identification)**

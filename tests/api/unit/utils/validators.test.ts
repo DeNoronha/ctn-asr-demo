@@ -14,7 +14,7 @@ import {
   isValidLength,
   ValidationError,
   validateAll
-} from '../validators';
+} from '../../../../api/src/utils/validators';
 
 describe('isValidUUID', () => {
   it('should validate correct UUID v4', () => {
@@ -101,15 +101,32 @@ describe('isValidLEI', () => {
 
 describe('isValidEUID', () => {
   it('should validate correct EUID codes', () => {
-    expect(isValidEUID('NL.123456.1234567890')).toBe(true);
-    expect(isValidEUID('nl.123456.1234567890')).toBe(true); // Case insensitive
-    expect(isValidEUID('DE.ABCDEF.GHIJ123456')).toBe(true);
+    // Netherlands - NLNHR.{kvk}
+    expect(isValidEUID('NLNHR.51096072')).toBe(true);
+    expect(isValidEUID('NLNHR.12345678')).toBe(true);
+    expect(isValidEUID('nlnhr.51096072')).toBe(true); // Case insensitive
+    
+    // Germany - DE{court}.{type}{nr}
+    expect(isValidEUID('DEK1101R.HRB116737')).toBe(true);
+    expect(isValidEUID('DEHRE.HRA12345')).toBe(true);
+    
+    // Belgium - BEKBOBCE.{kbo}
+    expect(isValidEUID('BEKBOBCE.0656727414')).toBe(true);
+    expect(isValidEUID('BEKBOBCE.0656.727.414')).toBe(true); // With dots in KBO
   });
 
   it('should reject invalid EUID codes', () => {
-    expect(isValidEUID('NL.123456.123456789')).toBe(false); // Too short
-    expect(isValidEUID('NL123456ABC1234567')).toBe(false); // No dots
-    expect(isValidEUID('N.123456.1234567890')).toBe(false); // Country code too short
+    // Old incorrect format (NL.KVK.xxx)
+    expect(isValidEUID('NL.KVK.12345678')).toBe(false);
+    expect(isValidEUID('NL.123456.1234567890')).toBe(false);
+    
+    // Too short country code
+    expect(isValidEUID('N.NHR.12345678')).toBe(false);
+    
+    // Missing dot separator
+    expect(isValidEUID('NLNHR51096072')).toBe(false);
+    
+    // Empty/null/undefined
     expect(isValidEUID('')).toBe(false);
     expect(isValidEUID(null)).toBe(false);
     expect(isValidEUID(undefined)).toBe(false);

@@ -37,9 +37,15 @@ const LEI_REGEX = /^[A-Z0-9]{20}$/;
 
 /**
  * EUID validation (European Unique Identifier)
- * Format: XX.XXXXXX.XXXXXXXXXX (country code + identifier)
+ * Format: {CountryCode}{RegisterCode}.{Number}
+ * - Netherlands: NLNHR.{kvk} (e.g., NLNHR.51096072)
+ * - Germany: DE{court}.{type}{nr} (e.g., DEK1101R.HRB116737)
+ * - Belgium: BEKBOBCE.{kbo} (e.g., BEKBOBCE.0656727414)
+ * 
+ * @see https://e-justice.europa.eu/topics/registers-business-insolvency-land/business-registers-search-company-eu_en
+ * @see EU Verordening 2021/1042
  */
-const EUID_REGEX = /^[A-Z]{2}\.[A-Z0-9]{6}\.[A-Z0-9]{10}$/;
+const EUID_REGEX = /^[A-Z]{2}[A-Z0-9]+\.[A-Z0-9.]+$/;
 
 /**
  * RSIN validation (Rechtspersonen en Samenwerkingsverbanden Informatie Nummer)
@@ -345,11 +351,19 @@ export function isValidLEI(value: string | undefined | null): boolean {
 
 /**
  * Validates if a string is a valid EUID (European Unique Identifier)
+ * 
+ * Format: {CountryCode}{RegisterCode}.{Number}
+ * - Netherlands: NLNHR.{kvk} (e.g., NLNHR.51096072)
+ * - Germany: DE{court}.{type}{nr} (e.g., DEK1101R.HRB116737)
+ * - Belgium: BEKBOBCE.{kbo} (e.g., BEKBOBCE.0656727414)
+ * 
  * @param value - The string to validate
  * @returns true if valid EUID, false otherwise
  * @example
- * isValidEUID('NL.123456.1234567890') // true
- * isValidEUID('invalid') // false
+ * isValidEUID('NLNHR.51096072') // true (Netherlands)
+ * isValidEUID('DEK1101R.HRB116737') // true (Germany)
+ * isValidEUID('BEKBOBCE.0656727414') // true (Belgium)
+ * isValidEUID('NL.KVK.12345678') // false (old incorrect format)
  */
 export function isValidEUID(value: string | undefined | null): boolean {
   if (!value || typeof value !== 'string') {

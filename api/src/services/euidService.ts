@@ -4,10 +4,13 @@
  * Service for automatically generating European Unique Identifiers (EUID)
  * based on national identifiers like KvK numbers.
  *
- * EUID Format: CC.REGISTRY.NUMBER
- * Example: NL.KVK.12345678
+ * EUID Format: {CountryCode}{RegisterCode}.{Number}
+ * - Netherlands: NLNHR.{kvk} (e.g., NLNHR.51096072) - NHR = Nationaal Handelsregister
+ * - Germany: DE{court}.{type}{nr} (e.g., DEK1101R.HRB116737)
+ * - Belgium: BEKBOBCE.{kbo} (e.g., BEKBOBCE.0656727414)
  *
- * @see https://e-justice.europa.eu/489/EN/business_registers
+ * @see https://e-justice.europa.eu/topics/registers-business-insolvency-land/business-registers-search-company-eu_en
+ * @see EU Verordening 2021/1042
  */
 
 import { getPool } from '../utils/database';
@@ -15,14 +18,15 @@ import { InvocationContext } from '@azure/functions';
 
 /**
  * Supported national identifier types for EUID generation
+ * Maps identifier type to { countryCode, registerCode }
  */
-const EUID_MAPPING: Record<string, string> = {
-  KVK: 'NL',    // Netherlands - Kamer van Koophandel
-  HRB: 'DE',    // Germany - Handelsregister Teil B
-  HRA: 'DE',    // Germany - Handelsregister Teil A
-  KBO: 'BE',    // Belgium - Kruispuntbank van Ondernemingen
-  SIREN: 'FR',  // France - Système d'Identification du Répertoire des Entreprises
-  CRN: 'GB',    // United Kingdom - Company Registration Number
+const EUID_MAPPING: Record<string, { countryCode: string; registerCode: string }> = {
+  KVK: { countryCode: 'NL', registerCode: 'NHR' },    // Netherlands - Nationaal Handelsregister
+  HRB: { countryCode: 'DE', registerCode: '' },       // Germany - Handelsregister Teil B (court code varies)
+  HRA: { countryCode: 'DE', registerCode: '' },       // Germany - Handelsregister Teil A (court code varies)
+  KBO: { countryCode: 'BE', registerCode: 'KBOBCE' }, // Belgium - Kruispuntbank van Ondernemingen
+  SIREN: { countryCode: 'FR', registerCode: 'RCS' },  // France - Registre du Commerce et des Sociétés
+  CRN: { countryCode: 'GB', registerCode: 'CH' },     // United Kingdom - Companies House
 };
 
 /**
@@ -52,23 +56,33 @@ export function validateKvkNumber(kvkNumber: string): boolean {
  * @param identifierValue - Value of the national identifier
  * @returns Generated EUID string
  * @throws Error if identifier type is not supported or value is invalid
+ *
+ * Format: {CountryCode}{RegisterCode}.{Number}
+ * - NL (KVK): NLNHR.{kvk} (e.g., NLNHR.51096072)
+ * - DE (HRB/HRA): Requires court code - not auto-generated
+ * - BE (KBO): BEKBOBCE.{kbo} (e.g., BEKBOBCE.0656727414)
  */
 export function generateEuid(identifierType: string, identifierValue: string): string {
-  const countryCode = EUID_MAPPING[identifierType.toUpperCase()];
+  const mapping = EUID_MAPPING[identifierType.toUpperCase()];
 
-  if (!countryCode) {
+  if (!mapping) {
     throw new Error(`EUID generation not supported for identifier type: ${identifierType}`);
   }
 
-  const cleanedValue = identifierValue.trim().toUpperCase();
+  const cleanedValue = identifierValue.trim().replace(/\./g, ''); // Remove dots for KBO
 
   // Validate based on type
   if (identifierType.toUpperCase() === 'KVK' && !validateKvkNumber(cleanedValue)) {
     throw new Error('Invalid KvK number format. Must be exactly 8 digits.');
   }
 
-  // Generate EUID in format: CC.TYPE.VALUE
-  return `${countryCode}.${identifierType.toUpperCase()}.${cleanedValue}`;
+  // German registers require court code which varies - cannot auto-generate
+  if (['HRB', 'HRA'].includes(identifierType.toUpperCase())) {
+    throw new Error('German EUID requires court code. Cannot auto-generate - please enter manually.');
+  }
+
+  // Generate EUID in format: {CountryCode}{RegisterCode}.{Value}
+  return `${mapping.countryCode}${mapping.registerCode}.${cleanedValue}`;
 }
 
 /**
@@ -98,7 +112,8 @@ export async function syncEuidForEntity(
 
   // Generate the EUID value
   const euidValue = generateEuid(identifierType, identifierValue);
-  const countryCode = EUID_MAPPING[identifierType.toUpperCase()];
+  const mapping = EUID_MAPPING[identifierType.toUpperCase()];
+  const countryCode = mapping.countryCode;
 
   context.log(`Generating EUID for entity ${legalEntityId}: ${euidValue}`);
 
@@ -176,8 +191,8 @@ export async function syncEuidForEntity(
         legalEntityId,
         euidValue,
         countryCode,
-        'European Unique Identifier',
-        'https://e-justice.europa.eu/489/EN/business_registers',
+        'European Unique Identifier (BRIS)',
+        'https://e-justice.europa.eu/topics/registers-business-insolvency-land/business-registers-search-company-eu_en',
         `Auto-generated from ${identifierType}: ${identifierValue}`,
         userEmail
       ]
@@ -203,5 +218,10 @@ export async function syncEuidForEntity(
  * Checks if an identifier type supports EUID generation
  */
 export function supportsEuidGeneration(identifierType: string): boolean {
-  return identifierType.toUpperCase() in EUID_MAPPING;
+  const type = identifierType.toUpperCase();
+  // German registers require court code - cannot auto-generate
+  if (['HRB', 'HRA'].includes(type)) {
+    return false;
+  }
+  return type in EUID_MAPPING;
 }
