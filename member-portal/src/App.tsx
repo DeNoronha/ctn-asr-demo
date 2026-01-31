@@ -113,11 +113,11 @@ function AppContent(_props: AppContentProps) {
       const account = accounts[0];
 
       const tokenResponse = await msal.acquireTokenSilent({
-        scopes: [`api://${process.env.VITE_API_CLIENT_ID}/Member.Read`],
+        scopes: [`api://${import.meta.env.VITE_API_CLIENT_ID}/Member.Read`],
         account: account,
       });
 
-      const response = await fetch(`${process.env.VITE_API_BASE_URL}/member`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/member`, {
         headers: {
           Authorization: `Bearer ${tokenResponse.accessToken}`,
           'Content-Type': 'application/json',
@@ -148,7 +148,7 @@ function AppContent(_props: AppContentProps) {
   const getAccessToken = async (): Promise<string> => {
     const account = accounts[0];
     const tokenResponse = await msal.acquireTokenSilent({
-      scopes: [`api://${process.env.VITE_API_CLIENT_ID}/Member.Read`],
+      scopes: [`api://${import.meta.env.VITE_API_CLIENT_ID}/Member.Read`],
       account: account,
     });
     return tokenResponse.accessToken;
@@ -161,7 +161,7 @@ function AppContent(_props: AppContentProps) {
           'openid',
           'profile',
           'email',
-          `api://${process.env.VITE_API_CLIENT_ID}/Member.Read`,
+          `api://${import.meta.env.VITE_API_CLIENT_ID}/Member.Read`,
         ],
       })
       .catch((err) => {
@@ -221,7 +221,7 @@ function AppContent(_props: AppContentProps) {
     try {
       const formDataToSend = buildRegistrationFormData(formData);
 
-      const response = await fetch(`${process.env.VITE_API_BASE_URL}/register-member`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/register-member`, {
         method: 'POST',
         body: formDataToSend,
       });
@@ -258,7 +258,7 @@ function AppContent(_props: AppContentProps) {
     if (!memberData) return null;
 
     const commonProps = {
-      apiBaseUrl: process.env.VITE_API_BASE_URL || '',
+      apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '',
       getAccessToken,
       memberData,
       onNotification: showNotification,

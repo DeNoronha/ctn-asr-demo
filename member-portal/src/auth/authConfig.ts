@@ -2,9 +2,9 @@ import type { Configuration, PopupRequest } from '@azure/msal-browser';
 
 export const msalConfig: Configuration = {
   auth: {
-    clientId: process.env.VITE_AZURE_CLIENT_ID || '',
-    authority: `https://login.microsoftonline.com/${process.env.VITE_AZURE_TENANT_ID || ''}`,
-    redirectUri: process.env.VITE_REDIRECT_URI || window.location.origin,
+    clientId: import.meta.env.VITE_AZURE_CLIENT_ID || '',
+    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_AZURE_TENANT_ID || ''}`,
+    redirectUri: import.meta.env.VITE_REDIRECT_URI || window.location.origin,
     postLogoutRedirectUri: window.location.origin,
   },
   cache: {
@@ -18,5 +18,5 @@ export const loginRequest: PopupRequest = {
 };
 
 export const apiRequest = {
-  scopes: [`api://${process.env.VITE_API_CLIENT_ID}/Member.Read`],
+  scopes: [`api://${import.meta.env.VITE_API_CLIENT_ID}/Member.Read`],
 };
