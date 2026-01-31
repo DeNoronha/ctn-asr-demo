@@ -28,6 +28,7 @@ export default defineConfig(() => ({
     'process.env.VITE_AZURE_TENANT_ID': JSON.stringify(process.env.VITE_AZURE_TENANT_ID),
     'process.env.VITE_REDIRECT_URI': JSON.stringify(process.env.VITE_REDIRECT_URI),
     'process.env.VITE_API_CLIENT_ID': JSON.stringify(process.env.VITE_API_CLIENT_ID),
+    'process.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL),
     'process.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL),
   },
   build: {
