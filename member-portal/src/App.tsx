@@ -117,7 +117,7 @@ function AppContent(_props: AppContentProps) {
         account: account,
       });
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/member`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/member`, {
         headers: {
           Authorization: `Bearer ${tokenResponse.accessToken}`,
           'Content-Type': 'application/json',
@@ -221,7 +221,7 @@ function AppContent(_props: AppContentProps) {
     try {
       const formDataToSend = buildRegistrationFormData(formData);
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/register-member`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/register-member`, {
         method: 'POST',
         body: formDataToSend,
       });
@@ -258,7 +258,7 @@ function AppContent(_props: AppContentProps) {
     if (!memberData) return null;
 
     const commonProps = {
-      apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '',
+      apiBaseUrl: import.meta.env.VITE_API_URL || '',
       getAccessToken,
       memberData,
       onNotification: showNotification,
