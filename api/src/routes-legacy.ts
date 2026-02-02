@@ -2458,8 +2458,9 @@ async function processKvKVerification(legalEntityId: string, blobUrl: string, ve
           });
         }
 
-        // Create EUID from KvK number (NL.KVK.{kvk_number})
-        const euid = `NL.KVK.${kvkData.kvkNumber}`;
+        // Create EUID from KvK number (NLNHR.{kvk_number})
+        // Format: {CountryCode}{RegisterCode}.{Number} - NHR = Nationaal Handelsregister
+        const euid = `NLNHR.${kvkData.kvkNumber}`;
 
         // Check if EUID identifier already exists
         const { rows: euidRows } = await pool.query(`
