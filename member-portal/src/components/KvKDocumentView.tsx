@@ -134,6 +134,21 @@ export const KvKDocumentView: React.FC<ComponentProps> = ({
                 </div>
               )}
 
+              {verificationStatus.kvk_verification_status === 'pending' && (
+                <div
+                  style={{
+                    marginBottom: '16px',
+                    padding: '12px',
+                    background: '#fef3c7',
+                    borderRadius: '8px',
+                  }}
+                >
+                  <Text size="sm" fw={500} style={{ color: '#92400e' }}>
+                    Your document is awaiting admin verification. You will be notified once it has been reviewed.
+                  </Text>
+                </div>
+              )}
+
               {verificationStatus.kvk_verification_status === 'verified' &&
                 verificationStatus.kvk_verified_at && (
                   <div style={{ marginBottom: '16px' }}>
