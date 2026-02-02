@@ -56,6 +56,17 @@ router.get(
 );
 
 /**
+ * GET /v1/legal-entities/:legalEntityId/kvk-verification/history
+ * Get KvK document upload and verification history for a legal entity
+ * Requires authentication
+ */
+router.get(
+  '/v1/legal-entities/:legalEntityId/kvk-verification/history',
+  requireAuth,
+  kvkVerificationController.getKvkVerificationHistory
+);
+
+/**
  * POST /v1/kvk-verification/:legalentityid/review
  * Review and approve/reject KvK verification for a legal entity
  * Requires authentication

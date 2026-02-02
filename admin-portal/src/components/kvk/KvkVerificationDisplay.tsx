@@ -1,6 +1,8 @@
-import { Button, Loader } from '@mantine/core';
+import { Button, Loader, Table, TextInput, Group, Text, Badge, ActionIcon, Tooltip } from '@mantine/core';
+import { IconCheck, IconX, IconFlag, IconRefresh, IconEye } from '@tabler/icons-react';
 import type React from 'react';
-import type { KvkVerificationStatus } from '../../hooks/useKvkDocumentUpload';
+import { useState } from 'react';
+import type { KvkVerificationStatus, KvkVerificationHistoryItem } from '../../hooks/useKvkDocumentUpload';
 import { TEXT_COLORS } from '../../utils/colors';
 import { formatDate, formatDateTime } from '../../utils/dateFormat';
 
@@ -15,7 +17,11 @@ interface KvkApiResponse {
 
 interface KvkVerificationDisplayProps {
   verificationStatus: KvkVerificationStatus;
+  verificationHistory?: KvkVerificationHistoryItem[];
   onUploadNew: () => void;
+  onReviewVerification?: (status: 'verified' | 'rejected' | 'flagged', notes?: string) => Promise<void>;
+  onTriggerReVerification?: () => Promise<void>;
+  reviewingStatus?: boolean;
 }
 
 // Type guard for KvK API response
@@ -362,15 +368,241 @@ const getStatusBadge = (status: string) => {
   return <span className={`k-badge k-badge-${badge.color}`}>{badge.text}</span>;
 };
 
+// Verification History Table Component
+const VerificationHistoryTable: React.FC<{
+  history: KvkVerificationHistoryItem[];
+}> = ({ history }) => {
+  if (!history || history.length === 0) {
+    return (
+      <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+        <strong style={{ display: 'block', marginBottom: '10px' }}>Document History:</strong>
+        <Text c="dimmed" size="sm">No verification history available.</Text>
+      </div>
+    );
+  }
+
+  const getStatusBadgeColor = (status: string): string => {
+    switch (status.toLowerCase()) {
+      case 'verified':
+      case 'approved':
+        return 'green';
+      case 'rejected':
+        return 'red';
+      case 'flagged':
+        return 'yellow';
+      case 'pending':
+        return 'blue';
+      default:
+        return 'gray';
+    }
+  };
+
+  return (
+    <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+      <strong style={{ display: 'block', marginBottom: '10px' }}>Document History:</strong>
+      <Table striped highlightOnHover withTableBorder>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Date</Table.Th>
+            <Table.Th>Status</Table.Th>
+            <Table.Th>Verified By</Table.Th>
+            <Table.Th>Notes</Table.Th>
+            <Table.Th>Document</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {history.map((item) => (
+            <Table.Tr key={item.verification_id}>
+              <Table.Td>{formatDateTime(item.created_at)}</Table.Td>
+              <Table.Td>
+                <Badge color={getStatusBadgeColor(item.verification_status)} size="sm">
+                  {item.verification_status}
+                </Badge>
+              </Table.Td>
+              <Table.Td>
+                {item.verified_by ? (
+                  <span>
+                    {item.verified_by}
+                    {item.verified_at && (
+                      <Text size="xs" c="dimmed">
+                        {formatDateTime(item.verified_at)}
+                      </Text>
+                    )}
+                  </span>
+                ) : (
+                  <Text c="dimmed" size="sm">—</Text>
+                )}
+              </Table.Td>
+              <Table.Td>
+                {item.verification_notes || <Text c="dimmed" size="sm">—</Text>}
+              </Table.Td>
+              <Table.Td>
+                {item.document_url || item.document_blob_url ? (
+                  <Tooltip label="View document">
+                    <ActionIcon
+                      component="a"
+                      href={item.document_url || item.document_blob_url || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      variant="light"
+                      color="blue"
+                      size="sm"
+                    >
+                      <IconEye size={16} />
+                    </ActionIcon>
+                  </Tooltip>
+                ) : (
+                  <Text c="dimmed" size="sm">—</Text>
+                )}
+              </Table.Td>
+            </Table.Tr>
+          ))}
+        </Table.Tbody>
+      </Table>
+    </div>
+  );
+};
+
+// Admin Verification Actions Component
+const AdminVerificationActions: React.FC<{
+  onReviewVerification: (status: 'verified' | 'rejected' | 'flagged', notes?: string) => Promise<void>;
+  onTriggerReVerification: () => Promise<void>;
+  reviewingStatus: boolean;
+  currentStatus: string;
+}> = ({ onReviewVerification, onTriggerReVerification, reviewingStatus, currentStatus }) => {
+  const [notes, setNotes] = useState('');
+  const [showNotesInput, setShowNotesInput] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'verified' | 'rejected' | 'flagged' | null>(null);
+
+  const handleAction = async (action: 'verified' | 'rejected' | 'flagged') => {
+    if (action === 'rejected' || action === 'flagged') {
+      setPendingAction(action);
+      setShowNotesInput(true);
+    } else {
+      await onReviewVerification(action, notes);
+      setNotes('');
+    }
+  };
+
+  const confirmAction = async () => {
+    if (pendingAction) {
+      await onReviewVerification(pendingAction, notes);
+      setNotes('');
+      setShowNotesInput(false);
+      setPendingAction(null);
+    }
+  };
+
+  const cancelAction = () => {
+    setShowNotesInput(false);
+    setPendingAction(null);
+    setNotes('');
+  };
+
+  // Don't show admin actions if already verified
+  if (currentStatus === 'verified' || currentStatus === 'approved') {
+    return null;
+  }
+
+  return (
+    <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+      <strong style={{ display: 'block', marginBottom: '10px' }}>Admin Verification Actions:</strong>
+
+      {showNotesInput ? (
+        <div>
+          <TextInput
+            placeholder={`Add notes for ${pendingAction} action...`}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            mb="sm"
+          />
+          <Group>
+            <Button
+              size="sm"
+              color={pendingAction === 'rejected' ? 'red' : 'yellow'}
+              onClick={confirmAction}
+              loading={reviewingStatus}
+            >
+              Confirm {pendingAction}
+            </Button>
+            <Button size="sm" variant="outline" onClick={cancelAction} disabled={reviewingStatus}>
+              Cancel
+            </Button>
+          </Group>
+        </div>
+      ) : (
+        <Group>
+          <Tooltip label="Approve this verification">
+            <Button
+              size="sm"
+              color="green"
+              leftSection={<IconCheck size={16} />}
+              onClick={() => handleAction('verified')}
+              loading={reviewingStatus}
+            >
+              Verify
+            </Button>
+          </Tooltip>
+
+          <Tooltip label="Reject this verification">
+            <Button
+              size="sm"
+              color="red"
+              leftSection={<IconX size={16} />}
+              onClick={() => handleAction('rejected')}
+              loading={reviewingStatus}
+            >
+              Reject
+            </Button>
+          </Tooltip>
+
+          <Tooltip label="Flag for further review">
+            <Button
+              size="sm"
+              color="yellow"
+              leftSection={<IconFlag size={16} />}
+              onClick={() => handleAction('flagged')}
+              loading={reviewingStatus}
+            >
+              Flag
+            </Button>
+          </Tooltip>
+
+          <Tooltip label="Re-run document verification">
+            <Button
+              size="sm"
+              variant="outline"
+              leftSection={<IconRefresh size={16} />}
+              onClick={onTriggerReVerification}
+              loading={reviewingStatus}
+            >
+              Re-verify
+            </Button>
+          </Tooltip>
+        </Group>
+      )}
+    </div>
+  );
+};
+
 // Main Verification Display Component
 export const KvkVerificationDisplay: React.FC<KvkVerificationDisplayProps> = ({
   verificationStatus,
+  verificationHistory = [],
   onUploadNew,
+  onReviewVerification,
+  onTriggerReVerification,
+  reviewingStatus = false,
 }) => {
   return (
     <div className="verification-status" style={{ marginBottom: '20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
         <strong>Status:</strong> {getStatusBadge(verificationStatus.kvk_verification_status)}
+        {verificationStatus.document_uploaded_at && (
+          <Text size="sm" c="dimmed" ml="md">
+            Uploaded: {formatDateTime(verificationStatus.document_uploaded_at)}
+          </Text>
+        )}
       </div>
 
       {verificationStatus.kvk_verification_status === 'pending' && (
@@ -384,7 +616,7 @@ export const KvkVerificationDisplay: React.FC<KvkVerificationDisplayProps> = ({
           }}
         >
           <Loader size="sm" />
-          <span>Verifying document...</span>
+          <span>Awaiting admin verification...</span>
         </div>
       )}
 
@@ -404,6 +636,17 @@ export const KvkVerificationDisplay: React.FC<KvkVerificationDisplayProps> = ({
           </Button>
         </a>
       </div>
+
+      {onReviewVerification && onTriggerReVerification && (
+        <AdminVerificationActions
+          onReviewVerification={onReviewVerification}
+          onTriggerReVerification={onTriggerReVerification}
+          reviewingStatus={reviewingStatus}
+          currentStatus={verificationStatus.kvk_verification_status}
+        />
+      )}
+
+      <VerificationHistoryTable history={verificationHistory} />
 
       <div style={{ marginTop: '10px' }}>
         <Button color="blue" size="sm" onClick={onUploadNew}>

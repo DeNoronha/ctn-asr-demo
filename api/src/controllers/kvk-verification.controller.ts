@@ -103,8 +103,64 @@ export async function getFlaggedKvkEntities(req: Request, res: Response): Promis
 }
 
 /**
+ * GET /v1/legal-entities/:legalEntityId/kvk-verification/history
+ * Get KvK document upload and verification history for a legal entity
+ */
+export async function getKvkVerificationHistory(req: Request, res: Response): Promise<void> {
+  try {
+    const pool = getPool();
+    const { legalEntityId } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT
+        verification_id,
+        identifier_type,
+        verification_method,
+        verification_status,
+        document_blob_url,
+        document_filename,
+        document_mime_type,
+        extracted_data,
+        verified_by,
+        verified_at,
+        verification_notes,
+        created_at,
+        updated_at
+      FROM identifier_verification_history
+      WHERE legal_entity_id = $1 AND identifier_type = 'KVK'
+      ORDER BY created_at DESC
+    `, [legalEntityId]);
+
+    // Generate SAS URLs for documents
+    if (rows.length > 0) {
+      try {
+        const { BlobStorageService } = await import('../services/blobStorageService');
+        const blobService = new BlobStorageService();
+        for (const row of rows) {
+          if (row.document_blob_url) {
+            row.document_url = await blobService.getDocumentSasUrl(row.document_blob_url, 60);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to generate SAS URLs for history documents:', error);
+      }
+    }
+
+    res.json({
+      legal_entity_id: legalEntityId,
+      total_uploads: rows.length,
+      history: rows
+    });
+  } catch (error: any) {
+    console.error('Error fetching KvK verification history:', error);
+    res.status(500).json({ error: 'Failed to fetch verification history' });
+  }
+}
+
+/**
  * POST /v1/kvk-verification/:legalentityid/review
  * Review and approve/reject KvK verification for a legal entity
+ * Admin can set status to: verified, approved, rejected, flagged
  */
 export async function reviewKvkVerification(req: Request, res: Response): Promise<void> {
   try {
@@ -112,27 +168,48 @@ export async function reviewKvkVerification(req: Request, res: Response): Promis
     const { legalentityid } = req.params;
     const { status, notes } = req.body;
 
-    if (!status || !['approved', 'rejected'].includes(status)) {
-      res.status(400).json({ error: 'status must be approved or rejected' });
+    const validStatuses = ['verified', 'approved', 'rejected', 'flagged', 'pending'];
+    if (!status || !validStatuses.includes(status)) {
+      res.status(400).json({ error: `status must be one of: ${validStatuses.join(', ')}` });
       return;
     }
+
+    const verifiedBy = (req as any).user?.name || (req as any).user?.preferred_username || 'admin';
 
     const { rowCount } = await pool.query(`
       UPDATE legal_entity
       SET
         kvk_verification_status = $1,
-        kvk_review_notes = $2,
-        kvk_reviewed_at = NOW(),
+        kvk_verification_notes = $2,
+        kvk_verified_by = $3,
+        kvk_verified_at = NOW(),
         dt_modified = NOW()
-      WHERE legal_entity_id = $3 AND is_deleted = false
-    `, [status, notes, legalentityid]);
+      WHERE legal_entity_id = $4 AND is_deleted = false
+    `, [status, notes, verifiedBy, legalentityid]);
 
     if (rowCount === 0) {
       res.status(404).json({ error: 'Legal entity not found' });
       return;
     }
 
-    res.json({ message: `KvK verification ${status}` });
+    // Also update the latest verification history record
+    await pool.query(`
+      UPDATE identifier_verification_history
+      SET verification_status = $1,
+          verification_notes = $2,
+          verified_by = $3,
+          verified_at = NOW(),
+          updated_at = NOW()
+      WHERE legal_entity_id = $4 AND identifier_type = 'KVK'
+        AND created_at = (
+          SELECT MAX(created_at) FROM identifier_verification_history
+          WHERE legal_entity_id = $4 AND identifier_type = 'KVK'
+        )
+    `, [status.toUpperCase(), notes, verifiedBy, legalentityid]);
+
+    console.log('KvK verification reviewed:', { legalEntityId: legalentityid, status, verifiedBy });
+
+    res.json({ message: `KvK verification ${status}`, verifiedBy });
   } catch (error: any) {
     console.error('Error reviewing KvK verification:', error);
     res.status(500).json({ error: 'Failed to review KvK verification' });
@@ -667,8 +744,8 @@ async function storeKvkRegistryDataAndEnrich(pool: any, legalEntityId: string, k
     `, [legalEntityId, addressLine1, postalCode, city, countryCode]);
   }
 
-  // Create EUID from KvK number
-  const euid = `NL.KVK.${kvkData.kvkNumber}`;
+  // Create EUID from KvK number (format: NLNHR.{kvkNumber} per EU Verordening 2021/1042)
+  const euid = `NLNHR.${kvkData.kvkNumber}`;
   const { rows: euidRows } = await pool.query(`
     SELECT legal_entity_reference_id FROM legal_entity_number
     WHERE legal_entity_id = $1 AND identifier_type = 'EUID' AND is_deleted = false

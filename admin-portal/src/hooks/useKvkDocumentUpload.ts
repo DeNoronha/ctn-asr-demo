@@ -29,6 +29,23 @@ export interface KvkVerificationStatus {
   document_uploaded_at: string | null;
 }
 
+export interface KvkVerificationHistoryItem {
+  verification_id: string;
+  identifier_type: string;
+  verification_method: string;
+  verification_status: string;
+  document_blob_url: string | null;
+  document_url: string | null;
+  document_filename: string | null;
+  document_mime_type: string | null;
+  extracted_data: any;
+  verified_by: string | null;
+  verified_at: string | null;
+  verification_notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 interface UseKvkDocumentUploadOptions {
   legalEntityId: string;
   onVerificationComplete?: () => void;
@@ -40,7 +57,9 @@ export const useKvkDocumentUpload = ({
 }: UseKvkDocumentUploadOptions) => {
   const [uploading, setUploading] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<KvkVerificationStatus | null>(null);
+  const [verificationHistory, setVerificationHistory] = useState<KvkVerificationHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reviewingStatus, setReviewingStatus] = useState(false);
   const notification = useNotification();
   const { getError } = useApiError();
 
@@ -124,9 +143,69 @@ export const useKvkDocumentUpload = ({
     setVerificationStatus(null);
   };
 
+  const fetchVerificationHistory = async () => {
+    try {
+      const axiosInstance = await getAuthenticatedAxios();
+      const response = await axiosInstance.get<{
+        legal_entity_id: string;
+        total_uploads: number;
+        history: KvkVerificationHistoryItem[];
+      }>(`/legal-entities/${legalEntityId}/kvk-verification/history`);
+
+      setVerificationHistory(response.data.history || []);
+    } catch (error) {
+      logger.error('Failed to fetch verification history:', error);
+    }
+  };
+
+  const reviewVerification = async (status: 'verified' | 'rejected' | 'flagged', notes?: string) => {
+    setReviewingStatus(true);
+    try {
+      const axiosInstance = await getAuthenticatedAxios();
+      await axiosInstance.post(`/kvk-verification/${legalEntityId}/review`, {
+        status,
+        notes: notes || '',
+      });
+
+      notification.showSuccess(`KvK verification ${status === 'verified' ? 'approved' : status}`);
+
+      // Refresh status
+      await fetchVerificationStatus();
+      await fetchVerificationHistory();
+
+      if (onVerificationComplete) {
+        onVerificationComplete();
+      }
+    } catch (error: unknown) {
+      notification.showError(getError(error, 'reviewing verification'));
+    } finally {
+      setReviewingStatus(false);
+    }
+  };
+
+  const triggerReVerification = async () => {
+    setReviewingStatus(true);
+    try {
+      const axiosInstance = await getAuthenticatedAxios();
+      await axiosInstance.post(`/legal-entities/${legalEntityId}/kvk-document/verify`);
+
+      notification.showSuccess('Re-verification started. Please wait...');
+
+      // Refresh status after delay
+      setTimeout(() => {
+        fetchVerificationStatus();
+      }, 3000);
+    } catch (error: unknown) {
+      notification.showError(getError(error, 'triggering re-verification'));
+    } finally {
+      setReviewingStatus(false);
+    }
+  };
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: Fetch function and status check are stable, polling interval should run on mount
   useEffect(() => {
     fetchVerificationStatus();
+    fetchVerificationHistory();
     // Poll for status updates every 5 seconds if verification is pending
     const interval = setInterval(() => {
       if (verificationStatus?.kvk_verification_status === 'pending') {
@@ -140,9 +219,14 @@ export const useKvkDocumentUpload = ({
   return {
     uploading,
     verificationStatus,
+    verificationHistory,
     loading,
+    reviewingStatus,
     handleUpload,
     fetchVerificationStatus,
+    fetchVerificationHistory,
     resetVerificationStatus,
+    reviewVerification,
+    triggerReVerification,
   };
 };

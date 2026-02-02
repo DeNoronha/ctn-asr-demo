@@ -470,11 +470,28 @@ export class KvKService {
   }
 
   /**
+   * Check if legal form supports Open Data API status lookup
+   * Only BV (Besloten Vennootschap) and NV (Naamloze Vennootschap) are supported
+   */
+  private supportsStatusLookup(rechtsvorm?: string): boolean {
+    if (!rechtsvorm) return false;
+    const upperForm = rechtsvorm.toUpperCase();
+    // BV = Besloten Vennootschap, NV = Naamloze Vennootschap
+    return upperForm === 'BV' || upperForm === 'NV' ||
+           upperForm.includes('BESLOTEN VENNOOTSCHAP') ||
+           upperForm.includes('NAAMLOZE VENNOOTSCHAP');
+  }
+
+  /**
    * Validate a company against KVK registry
    * Flow:
    * 1. Fetch company profile from Basisprofiel API (names, addresses, etc.)
-   * 2. Fetch company status from Open Data API (active/inactive, insolvency)
+   * 2. If BV or NV: Fetch company status from Open Data API (active/inactive, insolvency)
+   *    For other legal forms (eenmanszaak, VOF, etc.): Skip status lookup
    * 3. Combine results and determine validation flags
+   *
+   * Note: Open Data API only supports BV and NV legal forms.
+   * For eenmanszaak (sole proprietorship), VOF, etc., status is unavailable.
    *
    * @param kvkNumber - 8-digit KVK number
    * @param companyName - Expected company name for validation
@@ -504,18 +521,29 @@ export class KvKService {
 
       const flags: string[] = [];
 
-      // Step 2: Fetch status from Open Data API (actief/insolventie)
-      const companyStatus = await this.fetchCompanyStatus(kvkNumber);
-      companyData.companyStatus = companyStatus;
+      // Step 2: Fetch status from Open Data API - ONLY for BV and NV
+      // For eenmanszaak, VOF, stichting etc., status lookup is not available
+      if (this.supportsStatusLookup(companyData.rechtsvorm)) {
+        console.log(`KvK ${kvkNumber}: Legal form ${companyData.rechtsvorm} supports status lookup, calling Open Data API`);
+        const companyStatus = await this.fetchCompanyStatus(kvkNumber);
+        companyData.companyStatus = companyStatus;
+      } else {
+        console.log(`KvK ${kvkNumber}: Legal form ${companyData.rechtsvorm || 'unknown'} does not support status lookup (not BV/NV)`);
+        companyData.companyStatus = {
+          isActive: true, // Assume active for non-BV/NV
+          statusSource: 'unavailable',
+          statusMessage: `Status niet beschikbaar voor rechtsvorm: ${companyData.rechtsvorm || 'onbekend'} (alleen BV/NV ondersteund)`,
+        };
+      }
 
       // Check status flags from Open Data API
-      if (companyStatus.statusSource === 'open_data_api') {
+      if (companyData.companyStatus?.statusSource === 'open_data_api') {
         // We have authoritative status info
-        if (!companyStatus.isActive) {
+        if (!companyData.companyStatus.isActive) {
           flags.push('inactive');
         }
-        if (companyStatus.insolventieCode) {
-          flags.push(`insolvency_${companyStatus.insolventieCode.toLowerCase()}`);
+        if (companyData.companyStatus.insolventieCode) {
+          flags.push(`insolvency_${companyData.companyStatus.insolventieCode.toLowerCase()}`);
         }
       } else {
         // Fallback: use materialEndDate from Basisprofiel API
