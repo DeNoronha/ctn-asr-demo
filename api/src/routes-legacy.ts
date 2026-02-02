@@ -2720,11 +2720,23 @@ router.post('/v1/legal-entities/:legalentityid/kvk-document', requireAuth, uploa
       (req as any).user?.name || (req as any).user?.preferred_username || 'system'
     ]);
 
+    // Update legal_entity with document URL and reset verification status
+    await pool.query(`
+      UPDATE legal_entity
+      SET kvk_document_url = $1,
+          kvk_verification_status = 'pending',
+          kvk_verification_notes = NULL,
+          kvk_mismatch_flags = NULL,
+          dt_modified = NOW()
+      WHERE legal_entity_id = $2
+    `, [blobUrl, legalentityid]);
+
     console.log('KvK document uploaded:', {
       legalEntityId: legalentityid,
       verificationId,
       filename: file.originalname,
       size: file.size,
+      blobUrl,
       uploadedBy: (req as any).user?.name || (req as any).user?.preferred_username
     });
 
