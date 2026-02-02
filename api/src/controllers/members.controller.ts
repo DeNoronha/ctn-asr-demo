@@ -196,11 +196,11 @@ export async function updateMemberStatus(req: Request, res: Response): Promise<v
       return;
     }
 
-    // Log status change to audit_log
+    // Log status change to audit_log (use COALESCE to handle NULL values)
     await pool.query(`
       INSERT INTO audit_log (event_type, severity, result, resource_type, resource_id, action, details)
       VALUES ('member_status_change', 'INFO', 'SUCCESS', 'legal_entity', $1, 'UPDATE_STATUS',
-        jsonb_build_object('old_status', $2, 'new_status', $3, 'notes', $4))
+        jsonb_build_object('old_status', COALESCE($2::text, 'unknown'), 'new_status', $3::text, 'notes', $4::text))
     `, [legalEntityId, oldStatus, status, statusNotes || '']);
 
     res.json({
