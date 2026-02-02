@@ -317,7 +317,26 @@ function AppContent(_props: AppContentProps) {
           </div>
 
           {memberData && (
-            <Tabs value={activeTab} onChange={(value) => setActiveTab(value as TabType)} variant="pills" style={{ padding: '0 24px' }}>
+            <Tabs
+              value={activeTab}
+              onChange={(value) => setActiveTab(value as TabType)}
+              variant="pills"
+              style={{ padding: '0 24px' }}
+              styles={{
+                tab: {
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  fontWeight: 500,
+                  '&:hover': {
+                    color: 'white',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                  '&[data-active]': {
+                    color: 'white',
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  },
+                },
+              }}
+            >
               <Tabs.List>
                 <Tabs.Tab value="dashboard">Dashboard</Tabs.Tab>
                 <Tabs.Tab value="profile">Organization Profile</Tabs.Tab>
