@@ -49,7 +49,7 @@ export const Support: React.FC = () => {
                 style={{
                   color: 'var(--ctn-dark-blue)',
                   textDecoration: 'none',
-                  fontWeight: 500
+                  fontWeight: 500,
                 }}
               >
                 API Documentation (Swagger) →

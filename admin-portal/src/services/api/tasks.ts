@@ -23,12 +23,9 @@ export async function reviewKvkVerification(data: {
 }): Promise<any> {
   const axiosInstance = await getAuthenticatedAxios();
   // API route: /v1/kvk-verification/:legalentityid/review (legalentityid in path)
-  const response = await axiosInstance.post(
-    `/kvk-verification/${data.legal_entity_id}/review`,
-    {
-      decision: data.decision,
-      reviewer_notes: data.reviewer_notes,
-    }
-  );
+  const response = await axiosInstance.post(`/kvk-verification/${data.legal_entity_id}/review`, {
+    decision: data.decision,
+    reviewer_notes: data.reviewer_notes,
+  });
   return response.data;
 }

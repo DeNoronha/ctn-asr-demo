@@ -70,7 +70,6 @@ export const ViesRegistryDetails: React.FC<ViesRegistryDetailsProps> = ({ legalE
         return { label: 'Match', color: 'green' };
       case 2:
         return { label: 'No Match', color: 'red' };
-      case 3:
       default:
         return { label: 'Not Processed', color: 'gray' };
     }
@@ -80,8 +79,8 @@ export const ViesRegistryDetails: React.FC<ViesRegistryDetailsProps> = ({ legalE
     if (!address) return [];
     return address
       .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
   };
 
   return (
@@ -185,9 +184,7 @@ export const ViesRegistryDetails: React.FC<ViesRegistryDetailsProps> = ({ legalE
                   {registryData.request_date && (
                     <div className="info-row">
                       <span className="info-label">Request Date:</span>
-                      <span className="info-value">
-                        {formatDate(registryData.request_date)}
-                      </span>
+                      <span className="info-value">{formatDate(registryData.request_date)}</span>
                     </div>
                   )}
                   {registryData.request_identifier && (
@@ -227,7 +224,9 @@ export const ViesRegistryDetails: React.FC<ViesRegistryDetailsProps> = ({ legalE
               <div className="card-body">
                 <div className="address-card">
                   {parseAddress(registryData.trader_address).map((line, index) => (
-                    <div key={index} className="address-line">{line}</div>
+                    <div key={index} className="address-line">
+                      {line}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -277,12 +276,16 @@ export const ViesRegistryDetails: React.FC<ViesRegistryDetailsProps> = ({ legalE
                   {registryData.match_postal_code !== undefined && (
                     <div className="match-item">
                       <span className="match-label">Postal Code</span>
-                      <Badge color={getMatchLabel(registryData.match_postal_code).color} variant="light">
+                      <Badge
+                        color={getMatchLabel(registryData.match_postal_code).color}
+                        variant="light"
+                      >
                         {getMatchLabel(registryData.match_postal_code).label}
                       </Badge>
-                      {registryData.approx_postal_code && registryData.approx_postal_code !== '---' && (
-                        <span className="match-value">{registryData.approx_postal_code}</span>
-                      )}
+                      {registryData.approx_postal_code &&
+                        registryData.approx_postal_code !== '---' && (
+                          <span className="match-value">{registryData.approx_postal_code}</span>
+                        )}
                     </div>
                   )}
                   {registryData.match_city !== undefined && (
@@ -299,12 +302,16 @@ export const ViesRegistryDetails: React.FC<ViesRegistryDetailsProps> = ({ legalE
                   {registryData.match_company_type !== undefined && (
                     <div className="match-item">
                       <span className="match-label">Company Type</span>
-                      <Badge color={getMatchLabel(registryData.match_company_type).color} variant="light">
+                      <Badge
+                        color={getMatchLabel(registryData.match_company_type).color}
+                        variant="light"
+                      >
                         {getMatchLabel(registryData.match_company_type).label}
                       </Badge>
-                      {registryData.approx_company_type && registryData.approx_company_type !== '---' && (
-                        <span className="match-value">{registryData.approx_company_type}</span>
-                      )}
+                      {registryData.approx_company_type &&
+                        registryData.approx_company_type !== '---' && (
+                          <span className="match-value">{registryData.approx_company_type}</span>
+                        )}
                     </div>
                   )}
                 </div>
@@ -314,7 +321,7 @@ export const ViesRegistryDetails: React.FC<ViesRegistryDetailsProps> = ({ legalE
 
           <div className="external-links">
             <a
-              href={`https://ec.europa.eu/taxation_customs/vies/#/vat-validation`}
+              href={'https://ec.europa.eu/taxation_customs/vies/#/vat-validation'}
               target="_blank"
               rel="noopener noreferrer"
               className="external-link"

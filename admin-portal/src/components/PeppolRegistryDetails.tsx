@@ -7,15 +7,7 @@ import { Badge, Card } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { apiV2 } from '../services/api';
-import {
-  AlertCircle,
-  Calendar,
-  CheckCircle,
-  ExternalLink,
-  FileText,
-  Globe,
-  User,
-} from './icons';
+import { AlertCircle, Calendar, CheckCircle, ExternalLink, FileText, Globe, User } from './icons';
 import './PeppolRegistryDetails.css';
 import { formatDate } from '../utils/dateFormat';
 import { LoadingState } from './shared/LoadingState';
@@ -111,8 +103,9 @@ export const PeppolRegistryDetails: React.FC<PeppolRegistryDetailsProps> = ({ le
           <Globe size={48} />
           <h3>No Peppol Registry Data</h3>
           <p>
-            Peppol registry data will appear here after the company is found in the Peppol Directory.
-            Use the "Fetch Peppol" button in the Identifiers section to look up this entity.
+            Peppol registry data will appear here after the company is found in the Peppol
+            Directory. Use the "Fetch Peppol" button in the Identifiers section to look up this
+            entity.
           </p>
         </div>
       ) : (
@@ -238,26 +231,27 @@ export const PeppolRegistryDetails: React.FC<PeppolRegistryDetailsProps> = ({ le
           )}
 
           {/* Additional Identifiers */}
-          {registryData.additional_identifiers && registryData.additional_identifiers.length > 0 && (
-            <Card className="full-width-card" withBorder shadow="sm" padding="lg">
-              <div className="card-header">
-                <div className="card-title">
-                  <FileText size={20} />
-                  Additional Identifiers
+          {registryData.additional_identifiers &&
+            registryData.additional_identifiers.length > 0 && (
+              <Card className="full-width-card" withBorder shadow="sm" padding="lg">
+                <div className="card-header">
+                  <div className="card-title">
+                    <FileText size={20} />
+                    Additional Identifiers
+                  </div>
                 </div>
-              </div>
-              <div className="card-body">
-                <div className="info-table">
-                  {registryData.additional_identifiers.map((identifier, index) => (
-                    <div key={`${identifier.scheme}-${index}`} className="info-row">
-                      <span className="info-label">{identifier.scheme}:</span>
-                      <span className="info-value">{identifier.value}</span>
-                    </div>
-                  ))}
+                <div className="card-body">
+                  <div className="info-table">
+                    {registryData.additional_identifiers.map((identifier, index) => (
+                      <div key={`${identifier.scheme}-${index}`} className="info-row">
+                        <span className="info-label">{identifier.scheme}:</span>
+                        <span className="info-value">{identifier.value}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </Card>
-          )}
+              </Card>
+            )}
 
           {/* Contacts */}
           {registryData.contacts && registryData.contacts.length > 0 && (
@@ -279,11 +273,7 @@ export const PeppolRegistryDetails: React.FC<PeppolRegistryDetailsProps> = ({ le
                           <a href={`mailto:${contact.email}`}>{contact.email}</a>
                         </div>
                       )}
-                      {contact.phone && (
-                        <div className="contact-detail">
-                          {contact.phone}
-                        </div>
-                      )}
+                      {contact.phone && <div className="contact-detail">{contact.phone}</div>}
                     </div>
                   ))}
                 </div>

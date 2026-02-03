@@ -1,8 +1,21 @@
-import { Button, Loader, Table, TextInput, Group, Text, Badge, ActionIcon, Tooltip } from '@mantine/core';
-import { IconCheck, IconX, IconFlag, IconRefresh, IconEye } from '@tabler/icons-react';
+import {
+  ActionIcon,
+  Badge,
+  Button,
+  Group,
+  Loader,
+  Table,
+  Text,
+  TextInput,
+  Tooltip,
+} from '@mantine/core';
+import { IconCheck, IconEye, IconFlag, IconRefresh, IconX } from '@tabler/icons-react';
 import type React from 'react';
 import { useState } from 'react';
-import type { KvkVerificationStatus, KvkVerificationHistoryItem } from '../../hooks/useKvkDocumentUpload';
+import type {
+  KvkVerificationHistoryItem,
+  KvkVerificationStatus,
+} from '../../hooks/useKvkDocumentUpload';
 import { TEXT_COLORS } from '../../utils/colors';
 import { formatDate, formatDateTime } from '../../utils/dateFormat';
 
@@ -19,7 +32,10 @@ interface KvkVerificationDisplayProps {
   verificationStatus: KvkVerificationStatus;
   verificationHistory?: KvkVerificationHistoryItem[];
   onUploadNew: () => void;
-  onReviewVerification?: (status: 'verified' | 'rejected' | 'flagged', notes?: string) => Promise<void>;
+  onReviewVerification?: (
+    status: 'verified' | 'rejected' | 'flagged',
+    notes?: string
+  ) => Promise<void>;
   onTriggerReVerification?: () => Promise<void>;
   reviewingStatus?: boolean;
 }
@@ -376,7 +392,9 @@ const VerificationHistoryTable: React.FC<{
     return (
       <div style={{ marginTop: '20px', marginBottom: '20px' }}>
         <strong style={{ display: 'block', marginBottom: '10px' }}>Document History:</strong>
-        <Text c="dimmed" size="sm">No verification history available.</Text>
+        <Text c="dimmed" size="sm">
+          No verification history available.
+        </Text>
       </div>
     );
   }
@@ -430,11 +448,17 @@ const VerificationHistoryTable: React.FC<{
                     )}
                   </span>
                 ) : (
-                  <Text c="dimmed" size="sm">—</Text>
+                  <Text c="dimmed" size="sm">
+                    —
+                  </Text>
                 )}
               </Table.Td>
               <Table.Td>
-                {item.verification_notes || <Text c="dimmed" size="sm">—</Text>}
+                {item.verification_notes || (
+                  <Text c="dimmed" size="sm">
+                    —
+                  </Text>
+                )}
               </Table.Td>
               <Table.Td>
                 {item.document_url || item.document_blob_url ? (
@@ -452,7 +476,9 @@ const VerificationHistoryTable: React.FC<{
                     </ActionIcon>
                   </Tooltip>
                 ) : (
-                  <Text c="dimmed" size="sm">—</Text>
+                  <Text c="dimmed" size="sm">
+                    —
+                  </Text>
                 )}
               </Table.Td>
             </Table.Tr>
@@ -465,14 +491,19 @@ const VerificationHistoryTable: React.FC<{
 
 // Admin Verification Actions Component
 const AdminVerificationActions: React.FC<{
-  onReviewVerification: (status: 'verified' | 'rejected' | 'flagged', notes?: string) => Promise<void>;
+  onReviewVerification: (
+    status: 'verified' | 'rejected' | 'flagged',
+    notes?: string
+  ) => Promise<void>;
   onTriggerReVerification: () => Promise<void>;
   reviewingStatus: boolean;
   currentStatus: string;
 }> = ({ onReviewVerification, onTriggerReVerification, reviewingStatus, currentStatus }) => {
   const [notes, setNotes] = useState('');
   const [showNotesInput, setShowNotesInput] = useState(false);
-  const [pendingAction, setPendingAction] = useState<'verified' | 'rejected' | 'flagged' | null>(null);
+  const [pendingAction, setPendingAction] = useState<'verified' | 'rejected' | 'flagged' | null>(
+    null
+  );
 
   const handleAction = async (action: 'verified' | 'rejected' | 'flagged') => {
     if (action === 'rejected' || action === 'flagged') {
@@ -505,8 +536,17 @@ const AdminVerificationActions: React.FC<{
   }
 
   return (
-    <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-      <strong style={{ display: 'block', marginBottom: '10px' }}>Admin Verification Actions:</strong>
+    <div
+      style={{
+        marginTop: '20px',
+        padding: '15px',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px',
+      }}
+    >
+      <strong style={{ display: 'block', marginBottom: '10px' }}>
+        Admin Verification Actions:
+      </strong>
 
       {showNotesInput ? (
         <div>

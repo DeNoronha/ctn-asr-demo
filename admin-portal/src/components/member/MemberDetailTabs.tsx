@@ -23,7 +23,7 @@ const getStatusBadge = (status: string) => {
   );
 };
 
-const getMembershipBadge = (level: string) => {
+const _getMembershipBadge = (level: string) => {
   return (
     <span
       className="detail-badge"

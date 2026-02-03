@@ -20,8 +20,7 @@ export const test = base.extend({
       // Find the member portal origin
       const appOrigin = storageState.origins?.find(
         (origin: { origin: string; sessionStorage?: unknown[] }) =>
-          origin.origin.includes('azurestaticapps.net') ||
-          origin.origin.includes('calm-pebble')
+          origin.origin.includes('azurestaticapps.net') || origin.origin.includes('calm-pebble')
       );
 
       if (appOrigin?.sessionStorage) {

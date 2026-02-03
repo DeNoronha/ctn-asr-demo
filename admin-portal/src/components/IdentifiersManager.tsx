@@ -1,7 +1,7 @@
 import { Button } from '@mantine/core';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { LegalEntityIdentifier } from "../services/api";
+import type { LegalEntityIdentifier } from '../services/api';
 import { getEmptyState } from '../utils/emptyStates';
 import { EmptyState } from './EmptyState';
 import { FileCheck, Plus } from './icons';
@@ -65,13 +65,8 @@ const IdentifiersManagerComponent: React.FC<IdentifiersManagerProps> = ({
     onIdentifierDelete
   );
 
-  const {
-    kvkVerificationFlags,
-    hasKvkDocument,
-    fetchingLei,
-    fetchKvkVerification,
-    handleEnrich,
-  } = useIdentifierVerification(legalEntityId, identifiers, onRefresh);
+  const { kvkVerificationFlags, hasKvkDocument, fetchingLei, fetchKvkVerification, handleEnrich } =
+    useIdentifierVerification(legalEntityId, identifiers, onRefresh);
 
   // Fetch KvK verification status on mount
   useEffect(() => {

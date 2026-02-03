@@ -2,7 +2,7 @@ import { Button, Group, Modal, Select, Stack, TextInput } from '@mantine/core';
 import type React from 'react';
 import { helpContent } from '../../config/helpContent';
 import { COUNTRY_IDENTIFIER_MAP, IDENTIFIER_VALIDATION } from '../../hooks/useIdentifiers';
-import type { LegalEntityIdentifier } from "../../services/api";
+import type { LegalEntityIdentifier } from '../../services/api';
 import { getDescribedById, getValidationProps } from '../../utils/aria';
 import { TEXT_COLORS, getStatusColor } from '../../utils/colors';
 import { ConfirmDialog } from '../ConfirmDialog';
@@ -189,17 +189,20 @@ export const IdentifierDialog: React.FC<IdentifierDialogProps> = ({
   // Simplified edit mode - only show value and validation fields
   if (isEditing) {
     return (
-      <Modal
-        opened={isOpen}
-        onClose={onCancel}
-        title="Edit Identifier"
-        size="md"
-      >
+      <Modal opened={isOpen} onClose={onCancel} title="Edit Identifier" size="md">
         <Stack gap="md">
           {/* Show type and country as read-only info */}
-          <div style={{ padding: '12px', backgroundColor: 'var(--mantine-color-gray-0)', borderRadius: '8px' }}>
+          <div
+            style={{
+              padding: '12px',
+              backgroundColor: 'var(--mantine-color-gray-0)',
+              borderRadius: '8px',
+            }}
+          >
             <div style={{ fontSize: '0.875rem', color: 'var(--mantine-color-dimmed)' }}>Type</div>
-            <div style={{ fontWeight: 500 }}>{formData.identifier_type} ({formData.country_code})</div>
+            <div style={{ fontWeight: 500 }}>
+              {formData.identifier_type} ({formData.country_code})
+            </div>
           </div>
 
           <TextInput
@@ -248,12 +251,7 @@ export const IdentifierDialog: React.FC<IdentifierDialogProps> = ({
 
   // Full create mode - show all fields
   return (
-    <Modal
-      opened={isOpen}
-      onClose={onCancel}
-      title="Add Identifier"
-      size="lg"
-    >
+    <Modal opened={isOpen} onClose={onCancel} title="Add Identifier" size="lg">
       <div className="identifier-form">
         <div className="form-field">
           <Select
@@ -273,9 +271,7 @@ export const IdentifierDialog: React.FC<IdentifierDialogProps> = ({
             searchable
             clearable
           />
-          <span className="field-hint">
-            Select country to see applicable identifier types
-          </span>
+          <span className="field-hint">Select country to see applicable identifier types</span>
         </div>
 
         <div className="form-field">

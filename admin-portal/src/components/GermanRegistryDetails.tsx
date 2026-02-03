@@ -7,7 +7,7 @@ import { Card } from '@mantine/core';
 
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { apiV2 } from "../services/api";
+import { apiV2 } from '../services/api';
 import {
   AlertCircle,
   Building2,
@@ -43,7 +43,7 @@ interface Shareholder {
 interface GermanRegistryData {
   registry_data_id: string;
   register_number: string;
-  register_type: string;  // HRA, HRB, etc.
+  register_type: string; // HRA, HRB, etc.
   register_court: string;
   register_court_code?: string;
   euid?: string;
@@ -129,7 +129,7 @@ export const GermanRegistryDetails: React.FC<GermanRegistryDetailsProps> = ({ le
   };
 
   // Map status to badge color
-  const getStatusColor = (status?: string): string => {
+  const _getStatusColor = (status?: string): string => {
     if (!status) return 'status-unknown';
     switch (status.toLowerCase()) {
       case 'active':
@@ -185,7 +185,10 @@ export const GermanRegistryDetails: React.FC<GermanRegistryDetailsProps> = ({ le
       <div className="german-registry-empty">
         <Building2 size={48} />
         <h3>No German Registry Data</h3>
-        <p>{registryData?.message || 'Click "Enrich" to fetch company data from the German Handelsregister.'}</p>
+        <p>
+          {registryData?.message ||
+            'Click "Enrich" to fetch company data from the German Handelsregister.'}
+        </p>
       </div>
     );
   }
@@ -203,9 +206,17 @@ export const GermanRegistryDetails: React.FC<GermanRegistryDetailsProps> = ({ le
                 {registryData.register_court && ` - ${registryData.register_court}`}
               </p>
             </div>
-            <span className={`validation-badge ${registryData.company_status === 'Active' ? 'validation-valid' : 'validation-invalid'}`}>
-              {registryData.company_status === 'Active' ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
-              {registryData.company_status === 'Active' ? 'VALID' : (registryData.company_status || 'Unknown')}
+            <span
+              className={`validation-badge ${registryData.company_status === 'Active' ? 'validation-valid' : 'validation-invalid'}`}
+            >
+              {registryData.company_status === 'Active' ? (
+                <CheckCircle size={14} />
+              ) : (
+                <AlertCircle size={14} />
+              )}
+              {registryData.company_status === 'Active'
+                ? 'VALID'
+                : registryData.company_status || 'Unknown'}
             </span>
           </div>
 
@@ -223,11 +234,15 @@ export const GermanRegistryDetails: React.FC<GermanRegistryDetailsProps> = ({ le
                 <div className="info-table">
                   <div className="info-row">
                     <span className="info-label">Register Number:</span>
-                    <span className="info-value">{registryData.register_type} {registryData.register_number}</span>
+                    <span className="info-value">
+                      {registryData.register_type} {registryData.register_number}
+                    </span>
                   </div>
                   <div className="info-row">
                     <span className="info-label">Register Type:</span>
-                    <span className="info-value">{getRegisterTypeName(registryData.register_type)}</span>
+                    <span className="info-value">
+                      {getRegisterTypeName(registryData.register_type)}
+                    </span>
                   </div>
                   {registryData.register_court && (
                     <div className="info-row">
@@ -251,12 +266,13 @@ export const GermanRegistryDetails: React.FC<GermanRegistryDetailsProps> = ({ le
                       <span className="info-value">{registryData.legal_form}</span>
                     </div>
                   )}
-                  {registryData.legal_form_long && registryData.legal_form_long !== registryData.legal_form && (
-                    <div className="info-row">
-                      <span className="info-label">Legal Form (Full):</span>
-                      <span className="info-value">{registryData.legal_form_long}</span>
-                    </div>
-                  )}
+                  {registryData.legal_form_long &&
+                    registryData.legal_form_long !== registryData.legal_form && (
+                      <div className="info-row">
+                        <span className="info-label">Legal Form (Full):</span>
+                        <span className="info-value">{registryData.legal_form_long}</span>
+                      </div>
+                    )}
                 </div>
               </div>
             </Card>
@@ -274,13 +290,17 @@ export const GermanRegistryDetails: React.FC<GermanRegistryDetailsProps> = ({ le
                   {registryData.registration_date && (
                     <div className="info-row">
                       <span className="info-label">Registration Date:</span>
-                      <span className="info-value">{formatDate(registryData.registration_date)}</span>
+                      <span className="info-value">
+                        {formatDate(registryData.registration_date)}
+                      </span>
                     </div>
                   )}
                   {registryData.dissolution_date && (
                     <div className="info-row">
                       <span className="info-label">Dissolution Date:</span>
-                      <span className="info-value">{formatDate(registryData.dissolution_date)}</span>
+                      <span className="info-value">
+                        {formatDate(registryData.dissolution_date)}
+                      </span>
                     </div>
                   )}
                   <div className="info-row">
@@ -290,7 +310,9 @@ export const GermanRegistryDetails: React.FC<GermanRegistryDetailsProps> = ({ le
                   {registryData.last_verified_at && (
                     <div className="info-row">
                       <span className="info-label">Last Verified:</span>
-                      <span className="info-value">{formatDate(registryData.last_verified_at)}</span>
+                      <span className="info-value">
+                        {formatDate(registryData.last_verified_at)}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -367,8 +389,12 @@ export const GermanRegistryDetails: React.FC<GermanRegistryDetailsProps> = ({ le
                     <div key={`rep-${index}`} className="representative-card">
                       <div className="rep-name">{rep.name}</div>
                       <div className="rep-role">{rep.role}</div>
-                      {rep.residence && <div className="rep-detail">Residence: {rep.residence}</div>}
-                      {rep.appointedDate && <div className="rep-detail">Appointed: {formatDate(rep.appointedDate)}</div>}
+                      {rep.residence && (
+                        <div className="rep-detail">Residence: {rep.residence}</div>
+                      )}
+                      {rep.appointedDate && (
+                        <div className="rep-detail">Appointed: {formatDate(rep.appointedDate)}</div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -418,7 +444,7 @@ export const GermanRegistryDetails: React.FC<GermanRegistryDetailsProps> = ({ le
               </a>
             )}
             <a
-              href={`https://www.handelsregister.de/rp_web/search.xhtml`}
+              href={'https://www.handelsregister.de/rp_web/search.xhtml'}
               target="_blank"
               rel="noopener noreferrer"
               className="external-link"
@@ -428,7 +454,9 @@ export const GermanRegistryDetails: React.FC<GermanRegistryDetailsProps> = ({ le
             </a>
             {registryData.euid && (
               <a
-                href={`https://e-justice.europa.eu/489/EN/business_registers__search_for_a_company_in_the_eu.do`}
+                href={
+                  'https://e-justice.europa.eu/489/EN/business_registers__search_for_a_company_in_the_eu.do'
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="external-link"
@@ -442,9 +470,12 @@ export const GermanRegistryDetails: React.FC<GermanRegistryDetailsProps> = ({ le
           {/* Data Source Footer */}
           <div className="data-source-footer">
             <p>
-              Data source: {registryData.data_source === 'gleif' ? 'GLEIF (Global Legal Entity Identifier Foundation)' :
-                registryData.data_source === 'handelsregister' ? 'German Handelsregister' :
-                registryData.data_source}
+              Data source:{' '}
+              {registryData.data_source === 'gleif'
+                ? 'GLEIF (Global Legal Entity Identifier Foundation)'
+                : registryData.data_source === 'handelsregister'
+                  ? 'German Handelsregister'
+                  : registryData.data_source}
             </p>
           </div>
         </div>

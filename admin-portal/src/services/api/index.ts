@@ -5,27 +5,27 @@
 // Import everything from here instead of individual modules
 
 // Import types for internal use
-import type { Member, LegalEntity, LegalEntityContact } from './types';
+import type { LegalEntity, LegalEntityContact, Member } from './types';
 
 // Export all types (both for type imports and runtime)
-export {
-  type PaginationMetadata,
-  type Metadata,
-  type ConnectionTestDetails,
-  type IdentifierValidationDetails,
-  type PartyReference,
-  type LegalEntityIdentifier,
-  type LegalEntityContact,
-  type LegalEntityEndpoint,
-  type LegalEntity,
-  type Member,
-  type Application,
-  type M2MClient,
-  type VerificationRecord,
-  type MembersResponse,
-  type HealthCheckResponse,
-  type TierInfo,
-  type TierUpdateData,
+export type {
+  PaginationMetadata,
+  Metadata,
+  ConnectionTestDetails,
+  IdentifierValidationDetails,
+  PartyReference,
+  LegalEntityIdentifier,
+  LegalEntityContact,
+  LegalEntityEndpoint,
+  LegalEntity,
+  Member,
+  Application,
+  M2MClient,
+  VerificationRecord,
+  MembersResponse,
+  HealthCheckResponse,
+  TierInfo,
+  TierUpdateData,
 } from './types';
 
 // Export client utilities
@@ -127,17 +127,17 @@ export { getTierInfo, updateTier } from './tier';
 // This object maintains the exact same interface as the old apiV2 export
 // Components can continue to use apiV2.getMembers(), apiV2.getLegalEntity(), etc.
 
-import * as members from './members';
-import * as legalEntities from './legalEntities';
-import * as identifiers from './identifiers';
+import * as applications from './applications';
 import * as contacts from './contacts';
 import * as endpoints from './endpoints';
-import * as applications from './applications';
-import * as m2mClients from './m2mClients';
-import * as verification from './verification';
-import * as tasks from './tasks';
 import * as health from './health';
+import * as identifiers from './identifiers';
+import * as legalEntities from './legalEntities';
+import * as m2mClients from './m2mClients';
+import * as members from './members';
+import * as tasks from './tasks';
 import * as tier from './tier';
+import * as verification from './verification';
 
 export const apiV2 = {
   // Member operations

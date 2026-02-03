@@ -28,9 +28,11 @@ export default defineConfig({
     },
   ],
 
-  webServer: process.env.CI ? undefined : {
-    command: 'npm start',
-    url: 'http://localhost:3001',
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: process.env.CI
+    ? undefined
+    : {
+        command: 'npm start',
+        url: 'http://localhost:3001',
+        reuseExistingServer: !process.env.CI,
+      },
 });

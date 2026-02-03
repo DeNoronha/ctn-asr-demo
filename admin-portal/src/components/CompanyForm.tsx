@@ -16,7 +16,6 @@ interface CompanyFormProps {
 }
 
 export const CompanyForm: React.FC<CompanyFormProps> = ({ data, onSave, onCancel }) => {
-
   const form = useForm({
     initialValues: {
       primary_legal_name: data.primary_legal_name || '',

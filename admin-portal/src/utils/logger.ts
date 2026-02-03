@@ -146,7 +146,7 @@ class StructuredLogger {
   /**
    * Output log entry (JSON in production, readable in dev)
    */
-  private output(level: LogLevel, entry: LogEntry, consoleMethod: (...args: unknown[]) => void) {
+  private output(_level: LogLevel, entry: LogEntry, consoleMethod: (...args: unknown[]) => void) {
     if (isDevelopment) {
       // Development: Human-readable format with colors
       const prefix = `[${entry.level}] ${entry.timestamp} [${entry.correlationId.slice(0, 8)}]`;

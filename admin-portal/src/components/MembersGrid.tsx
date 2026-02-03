@@ -222,7 +222,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
     FLAGGED: 'Member flagged for review',
   };
 
-  const membershipTooltips: Record<string, string> = {
+  const _membershipTooltips: Record<string, string> = {
     PREMIUM: 'Premium membership - full access to all services and priority support',
     FULL: 'Full membership - access to all standard services',
     BASIC: 'Basic membership - limited access to essential services',
@@ -252,7 +252,12 @@ const MembersGrid: React.FC<MembersGridProps> = ({
                 size="xs"
                 c={hasValue ? 'white' : 'gray.6'}
                 bg={hasValue ? 'teal.6' : 'gray.2'}
-                style={{ cursor: 'default', fontWeight: 500, fontSize: '0.6rem', padding: '1px 4px' }}
+                style={{
+                  cursor: 'default',
+                  fontWeight: 500,
+                  fontSize: '0.6rem',
+                  padding: '1px 4px',
+                }}
               >
                 {label}
               </Pill>
@@ -293,7 +298,11 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         draggable: true,
         resizable: true,
         sortable: true,
-        render: (member) => <div style={{ fontWeight: 500, fontSize: '0.9em' }}>{sanitizeGridCell(member.legal_name)}</div>,
+        render: (member) => (
+          <div style={{ fontWeight: 500, fontSize: '0.9em' }}>
+            {sanitizeGridCell(member.legal_name)}
+          </div>
+        ),
       },
       {
         accessor: 'city',
@@ -303,7 +312,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         draggable: true,
         resizable: true,
         sortable: true,
-        render: (member) => <div style={{ fontSize: '0.9em' }}>{sanitizeGridCell(member.city || '—')}</div>,
+        render: (member) => (
+          <div style={{ fontSize: '0.9em' }}>{sanitizeGridCell(member.city || '—')}</div>
+        ),
       },
       {
         accessor: 'country_code',
@@ -324,9 +335,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         resizable: true,
         sortable: true,
         render: (member) => (
-          <span style={{ fontFamily: 'monospace', fontSize: '0.75em' }}>
-            {member.euid || '—'}
-          </span>
+          <span style={{ fontFamily: 'monospace', fontSize: '0.75em' }}>{member.euid || '—'}</span>
         ),
       },
       {
@@ -339,9 +348,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         sortable: true,
         defaultToggle: false, // Hidden by default per user request
         render: (member) => (
-          <span style={{ fontFamily: 'monospace', fontSize: '0.8em' }}>
-            {member.lei || '—'}
-          </span>
+          <span style={{ fontFamily: 'monospace', fontSize: '0.8em' }}>{member.lei || '—'}</span>
         ),
       },
       {
@@ -368,7 +375,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             style={{
               backgroundColor: getStatusColor(member.status),
               fontSize: '0.65rem',
-              padding: '2px 5px'
+              padding: '2px 5px',
             }}
             title={statusTooltips[member.status] || 'Member status'}
             aria-label={`Status: ${member.status}`}
@@ -386,7 +393,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
         resizable: true,
         sortable: true,
         defaultToggle: false,
-        render: (member) => <div style={{ fontSize: '0.85em' }}>{sanitizeGridCell(member.domain || '')}</div>,
+        render: (member) => (
+          <div style={{ fontSize: '0.85em' }}>{sanitizeGridCell(member.domain || '')}</div>
+        ),
       },
       {
         accessor: 'actions',
@@ -562,12 +571,7 @@ const MembersGrid: React.FC<MembersGridProps> = ({
       </Modal>
 
       {/* Delete Confirmation Dialog */}
-      <Modal
-        opened={showDeleteDialog}
-        onClose={handleDeleteCancel}
-        title="Delete Member"
-        size="md"
-      >
+      <Modal opened={showDeleteDialog} onClose={handleDeleteCancel} title="Delete Member" size="md">
         <Stack gap="md" p="md">
           <p style={{ fontSize: '16px' }}>
             Are you sure you want to delete <strong>{memberToDelete?.legal_name}</strong>?
@@ -582,7 +586,9 @@ const MembersGrid: React.FC<MembersGridProps> = ({
             <li>Registry data</li>
             <li>Verification history</li>
           </ul>
-          <Badge color="red" size="lg">This action cannot be undone!</Badge>
+          <Badge color="red" size="lg">
+            This action cannot be undone!
+          </Badge>
         </Stack>
         <Group mt="xl" justify="flex-end">
           <Button onClick={handleDeleteCancel} variant="default" disabled={isDeleting}>

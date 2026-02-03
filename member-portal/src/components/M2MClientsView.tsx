@@ -3,7 +3,17 @@
  * Member-scoped M2M client management (members see only their own clients)
  */
 
-import { ActionIcon, Button, Checkbox, Group, Modal, Select, TextInput, Textarea, Tooltip } from '@mantine/core';
+import {
+  ActionIcon,
+  Button,
+  Checkbox,
+  Group,
+  Modal,
+  Select,
+  TextInput,
+  Textarea,
+  Tooltip,
+} from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -277,7 +287,9 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
                 title: 'Scopes',
                 width: 250,
                 render: (client) => {
-                  const scopes = Array.isArray(client.assigned_scopes) ? client.assigned_scopes : [];
+                  const scopes = Array.isArray(client.assigned_scopes)
+                    ? client.assigned_scopes
+                    : [];
                   return (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                       {scopes.map((scope: string) => (
@@ -312,7 +324,9 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
                   return (
                     <div style={{ fontSize: '0.875rem' }}>
                       <div style={{ fontWeight: 500 }}>{client.endpointName}</div>
-                      <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>{client.endpointUrl}</div>
+                      <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
+                        {client.endpointUrl}
+                      </div>
                     </div>
                   );
                 },
@@ -411,7 +425,9 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
                 value: ep.legal_entity_endpoint_id,
                 label: `${ep.endpoint_name} - ${ep.endpoint_url}`,
               }))}
-              placeholder={loadingEndpoints ? 'Loading endpoints...' : 'Select an endpoint (optional)'}
+              placeholder={
+                loadingEndpoints ? 'Loading endpoints...' : 'Select an endpoint (optional)'
+              }
               searchable
               clearable
               disabled={loadingEndpoints}
@@ -419,7 +435,8 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
               style={{ width: '100%' }}
             />
             <p style={{ fontSize: '0.75rem', color: '#666', margin: '4px 0 0 0' }}>
-              Link this credential to a specific endpoint. One endpoint can have multiple credentials.
+              Link this credential to a specific endpoint. One endpoint can have multiple
+              credentials.
             </p>
           </div>
 
@@ -443,7 +460,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
                   cursor: 'not-allowed',
                   fontFamily: 'monospace',
                   fontSize: '0.875rem',
-                }
+                },
               }}
             />
             <p style={{ fontSize: '0.75rem', color: '#666', margin: '4px 0 0 0' }}>

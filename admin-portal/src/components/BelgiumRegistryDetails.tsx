@@ -28,7 +28,9 @@ interface BelgiumRegistryDetailsProps {
   legalEntityId: string;
 }
 
-export const BelgiumRegistryDetails: React.FC<BelgiumRegistryDetailsProps> = ({ legalEntityId }) => {
+export const BelgiumRegistryDetails: React.FC<BelgiumRegistryDetailsProps> = ({
+  legalEntityId,
+}) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [registryData, setRegistryData] = useState<BelgiumRegistryData | null>(null);
@@ -78,8 +80,9 @@ export const BelgiumRegistryDetails: React.FC<BelgiumRegistryDetailsProps> = ({ 
     return { label: status, color: 'gray' };
   };
 
-  const isActive = registryData?.company_status?.toLowerCase() === 'actief' ||
-                   registryData?.company_status?.toLowerCase() === 'active';
+  const isActive =
+    registryData?.company_status?.toLowerCase() === 'actief' ||
+    registryData?.company_status?.toLowerCase() === 'active';
 
   return (
     <LoadingState loading={loading} minHeight={400}>
@@ -115,7 +118,9 @@ export const BelgiumRegistryDetails: React.FC<BelgiumRegistryDetailsProps> = ({ 
                 KBO: <span className="vat-value">{registryData.kbo_number}</span>
               </p>
             </div>
-            <span className={`validation-badge ${isActive ? 'validation-valid' : 'validation-invalid'}`}>
+            <span
+              className={`validation-badge ${isActive ? 'validation-valid' : 'validation-invalid'}`}
+            >
               {isActive ? <CheckCircle size={14} /> : <XCircle size={14} />}
               {isActive ? 'VALID' : 'INVALID'}
             </span>
@@ -164,7 +169,10 @@ export const BelgiumRegistryDetails: React.FC<BelgiumRegistryDetailsProps> = ({ 
                   <div className="info-row">
                     <span className="info-label">Status:</span>
                     <span className="info-value">
-                      <Badge color={getStatusBadge(registryData.company_status).color} variant="light">
+                      <Badge
+                        color={getStatusBadge(registryData.company_status).color}
+                        variant="light"
+                      >
                         {getStatusBadge(registryData.company_status).label}
                       </Badge>
                     </span>
@@ -193,7 +201,12 @@ export const BelgiumRegistryDetails: React.FC<BelgiumRegistryDetailsProps> = ({ 
                     <div className="info-row">
                       <span className="info-label">VAT Status:</span>
                       <span className="info-value">
-                        <Badge color={registryData.vat_status.toLowerCase() === 'active' ? 'green' : 'gray'} variant="light">
+                        <Badge
+                          color={
+                            registryData.vat_status.toLowerCase() === 'active' ? 'green' : 'gray'
+                          }
+                          variant="light"
+                        >
                           {registryData.vat_status}
                         </Badge>
                       </span>
@@ -246,9 +259,7 @@ export const BelgiumRegistryDetails: React.FC<BelgiumRegistryDetailsProps> = ({ 
                       )}
                       {(registryData.postal_code || registryData.city) && (
                         <div className="address-line">
-                          {[registryData.postal_code, registryData.city]
-                            .filter(Boolean)
-                            .join(' ')}
+                          {[registryData.postal_code, registryData.city].filter(Boolean).join(' ')}
                         </div>
                       )}
                       {registryData.country && (
@@ -283,12 +294,16 @@ export const BelgiumRegistryDetails: React.FC<BelgiumRegistryDetailsProps> = ({ 
                     {registryData.nace_codes.map((nace, index) => (
                       <Table.Tr key={index}>
                         <Table.Td>
-                          <Badge color="blue" variant="light">{nace.code}</Badge>
+                          <Badge color="blue" variant="light">
+                            {nace.code}
+                          </Badge>
                         </Table.Td>
                         <Table.Td>{nace.description}</Table.Td>
                         <Table.Td>
                           {nace.isMain && (
-                            <Badge color="green" variant="light">Main</Badge>
+                            <Badge color="green" variant="light">
+                              Main
+                            </Badge>
                           )}
                         </Table.Td>
                       </Table.Tr>
@@ -322,11 +337,11 @@ export const BelgiumRegistryDetails: React.FC<BelgiumRegistryDetailsProps> = ({ 
                       <Table.Tr key={index}>
                         <Table.Td>{rep.name}</Table.Td>
                         <Table.Td>
-                          <Badge color="gray" variant="light">{rep.role}</Badge>
+                          <Badge color="gray" variant="light">
+                            {rep.role}
+                          </Badge>
                         </Table.Td>
-                        <Table.Td>
-                          {rep.startDate ? formatDate(rep.startDate) : '-'}
-                        </Table.Td>
+                        <Table.Td>{rep.startDate ? formatDate(rep.startDate) : '-'}</Table.Td>
                       </Table.Tr>
                     ))}
                   </Table.Tbody>
@@ -365,19 +380,23 @@ export const BelgiumRegistryDetails: React.FC<BelgiumRegistryDetailsProps> = ({ 
                     <span className="info-value">{formatDate(registryData.last_verified_at)}</span>
                   </div>
                 )}
-                {registryData.establishment_count !== undefined && registryData.establishment_count > 0 && (
-                  <div className="info-row">
-                    <span className="info-label">Establishments:</span>
-                    <span className="info-value">{registryData.establishment_count}</span>
-                  </div>
-                )}
+                {registryData.establishment_count !== undefined &&
+                  registryData.establishment_count > 0 && (
+                    <div className="info-row">
+                      <span className="info-label">Establishments:</span>
+                      <span className="info-value">{registryData.establishment_count}</span>
+                    </div>
+                  )}
               </div>
             </div>
           </Card>
 
           <div className="external-links">
             <a
-              href={registryData.source_url || `https://kbopub.economie.fgov.be/kbopub/zoeknummeraliasaliasaliasalias.html?onderession_number=${registryData.kbo_number_clean}`}
+              href={
+                registryData.source_url ||
+                `https://kbopub.economie.fgov.be/kbopub/zoeknummeraliasaliasaliasalias.html?onderession_number=${registryData.kbo_number_clean}`
+              }
               target="_blank"
               rel="noopener noreferrer"
               className="external-link"
@@ -388,9 +407,7 @@ export const BelgiumRegistryDetails: React.FC<BelgiumRegistryDetailsProps> = ({ 
           </div>
 
           <div className="data-source-footer">
-            <p>
-              Data source: KBO - Kruispuntbank van Ondernemingen (Belgian Business Register)
-            </p>
+            <p>Data source: KBO - Kruispuntbank van Ondernemingen (Belgian Business Register)</p>
           </div>
         </div>
       )}

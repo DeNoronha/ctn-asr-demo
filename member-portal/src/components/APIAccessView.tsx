@@ -7,9 +7,9 @@ import { Tabs } from '@mantine/core';
 import type React from 'react';
 import { useState } from 'react';
 import type { MemberData } from '../types';
-import { Key, Plug } from './icons';
 import { M2MClientsView } from './M2MClientsView';
 import { TokensView } from './TokensView';
+import { Key, Plug } from './icons';
 
 interface APIAccessViewProps {
   getAccessToken: () => Promise<string>;
@@ -61,9 +61,9 @@ export const APIAccessView: React.FC<APIAccessViewProps> = ({
           >
             <h3 style={{ margin: '0 0 8px 0' }}>M2M API Clients (Modern Authentication)</h3>
             <p style={{ color: '#0369a1', fontSize: '0.875rem', margin: 0, maxWidth: '800px' }}>
-              Create API clients for your systems to securely access CTN data using OAuth 2.0
-              Client Credentials flow. Each client receives a unique Client ID and Secret with
-              granular scope-based permissions.
+              Create API clients for your systems to securely access CTN data using OAuth 2.0 Client
+              Credentials flow. Each client receives a unique Client ID and Secret with granular
+              scope-based permissions.
               <strong> This is the recommended method for system-to-system integration.</strong>
             </p>
           </div>

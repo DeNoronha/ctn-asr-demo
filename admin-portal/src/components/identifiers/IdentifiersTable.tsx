@@ -2,7 +2,7 @@ import { ActionIcon, Group, Tooltip } from '@mantine/core';
 import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import type React from 'react';
 import { useTranslation } from 'react-i18next';
-import type { LegalEntityIdentifier } from "../../services/api";
+import type { LegalEntityIdentifier } from '../../services/api';
 import { formatDate } from '../../utils/dateUtils';
 import { sanitizeGridCell } from '../../utils/sanitize';
 import { ErrorBoundary } from '../ErrorBoundary';

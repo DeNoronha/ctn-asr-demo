@@ -22,10 +22,7 @@ export async function updateLegalEntity(
   data: Partial<LegalEntity>
 ): Promise<LegalEntity> {
   const axiosInstance = await getAuthenticatedAxios();
-  const response = await axiosInstance.put<LegalEntity>(
-    `/legal-entities/${legalEntityId}`,
-    data
-  );
+  const response = await axiosInstance.put<LegalEntity>(`/legal-entities/${legalEntityId}`, data);
   return response.data;
 }
 
@@ -154,7 +151,9 @@ export interface PeppolRegistryResponse {
   message?: string;
 }
 
-export async function getPeppolRegistryData(legalEntityId: string): Promise<PeppolRegistryResponse> {
+export async function getPeppolRegistryData(
+  legalEntityId: string
+): Promise<PeppolRegistryResponse> {
   const axiosInstance = await getAuthenticatedAxios();
   const response = await axiosInstance.get<PeppolRegistryResponse>(
     `/legal-entities/${legalEntityId}/peppol-registry`
@@ -276,7 +275,7 @@ export interface GermanRegistryData {
   registry_data_id: string;
   legal_entity_id: string;
   register_number: string;
-  register_type: string;  // HRA, HRB, GnR, PR, VR
+  register_type: string; // HRA, HRB, GnR, PR, VR
   register_court?: string;
   register_court_code?: string;
   euid?: string;
@@ -323,7 +322,9 @@ export interface GermanRegistryResponse {
   message?: string;
 }
 
-export async function getGermanRegistryData(legalEntityId: string): Promise<GermanRegistryResponse> {
+export async function getGermanRegistryData(
+  legalEntityId: string
+): Promise<GermanRegistryResponse> {
   const axiosInstance = await getAuthenticatedAxios();
   const response = await axiosInstance.get<GermanRegistryResponse>(
     `/legal-entities/${legalEntityId}/german-registry`
@@ -340,7 +341,7 @@ export interface EoriRegistryData {
   legal_entity_id?: string;
   eori_number: string;
   country_code: string;
-  status: string;             // '0' = valid, '1' = invalid, '2' = error
+  status: string; // '0' = valid, '1' = invalid, '2' = error
   status_description?: string;
   error_reason?: string;
   trader_name?: string;
@@ -451,7 +452,9 @@ export interface BelgiumRegistryResponse {
   message?: string;
 }
 
-export async function getBelgiumRegistryData(legalEntityId: string): Promise<BelgiumRegistryResponse> {
+export async function getBelgiumRegistryData(
+  legalEntityId: string
+): Promise<BelgiumRegistryResponse> {
   const axiosInstance = await getAuthenticatedAxios();
   const response = await axiosInstance.get<BelgiumRegistryResponse>(
     `/legal-entities/${legalEntityId}/belgium-registry`

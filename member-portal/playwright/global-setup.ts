@@ -6,7 +6,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { type FullConfig } from '@playwright/test';
+import type { FullConfig } from '@playwright/test';
 
 async function globalSetup(_config: FullConfig) {
   console.log('Member Portal E2E: Preparing authentication state...');

@@ -1,8 +1,8 @@
 import { getAuthenticatedAxios } from './client';
 import type {
+  IdentifierValidationDetails,
   LegalEntityIdentifier,
   PaginationMetadata,
-  IdentifierValidationDetails,
 } from './types';
 
 // =====================================================

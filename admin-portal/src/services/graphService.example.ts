@@ -7,10 +7,10 @@
  * TASK-CR-010: Improved Logging - Structured Logging with Correlation IDs
  */
 
-import { Client } from '@microsoft/microsoft-graph-client';
+import type { Client } from '@microsoft/microsoft-graph-client';
 import type { User as GraphUser } from '@microsoft/microsoft-graph-types';
 import { msalInstance } from '../auth/AuthContext';
-import { UserRole } from '../auth/authConfig';
+import type { UserRole } from '../auth/authConfig';
 import { createLogger } from '../utils/logger';
 
 /**
@@ -20,7 +20,9 @@ export async function requestGraphConsentExample(): Promise<void> {
   const logger = createLogger({ operation: 'requestGraphConsent' });
 
   try {
-    logger.info('Requesting Graph API consent', { scopes: ['User.Read.All', 'User.ReadWrite.All'] });
+    logger.info('Requesting Graph API consent', {
+      scopes: ['User.Read.All', 'User.ReadWrite.All'],
+    });
     // ... actual consent logic
     logger.info('Graph API consent granted successfully');
   } catch (error) {
@@ -83,9 +85,14 @@ export async function listUsersExample(): Promise<any[]> {
     logger.debug('Querying users assigned to CTN service principal', { ctnSpId });
 
     // Get app role definitions
-    const servicePrincipal = await client.api(`/servicePrincipals/${ctnSpId}`).select(['appRoles']).get();
+    const servicePrincipal = await client
+      .api(`/servicePrincipals/${ctnSpId}`)
+      .select(['appRoles'])
+      .get();
 
-    logger.debug('Loaded app role definitions', { roleCount: servicePrincipal.appRoles?.length || 0 });
+    logger.debug('Loaded app role definitions', {
+      roleCount: servicePrincipal.appRoles?.length || 0,
+    });
 
     // Query users
     const assignmentsResponse = await client
@@ -93,7 +100,9 @@ export async function listUsersExample(): Promise<any[]> {
       .select(['principalId', 'principalDisplayName', 'principalType', 'appRoleId'])
       .get();
 
-    logger.debug('Found app role assignments', { assignmentCount: assignmentsResponse.value.length });
+    logger.debug('Found app role assignments', {
+      assignmentCount: assignmentsResponse.value.length,
+    });
 
     // Process users...
     const users: any[] = [];

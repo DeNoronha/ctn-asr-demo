@@ -1,4 +1,14 @@
-import { ActionIcon, Badge, Button, Group, Modal, Select, Stack, TextInput, Tooltip } from '@mantine/core';
+import {
+  ActionIcon,
+  Badge,
+  Button,
+  Group,
+  Modal,
+  Select,
+  Stack,
+  TextInput,
+  Tooltip,
+} from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -113,92 +123,92 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
 
   const columns = useMemo(
     () => [
-                {
-                  accessor: 'full_name',
-                  title: 'Full Name',
-                  width: 200,
-                },
-                {
-                  accessor: 'email',
-                  title: 'Email',
-                  width: 220,
-                },
-                {
-                  accessor: 'phone',
-                  title: 'Phone',
-                  width: 140,
-                  render: (contact: Contact) => contact.phone || '-',
-                },
-                {
-                  accessor: 'job_title',
-                  title: 'Job Title',
-                  width: 180,
-                  render: (contact: Contact) => contact.job_title || '-',
-                },
-                {
-                  accessor: 'contact_type',
-                  title: 'Type',
-                  width: 120,
-                  render: (contact: Contact) => (
-                    <Badge
-                      color={
-                        contact.contact_type === 'AUTHORIZED_REP'
-                          ? 'blue'
-                          : contact.contact_type === 'TECHNICAL'
-                            ? 'cyan'
-                            : contact.contact_type === 'BILLING'
-                              ? 'green'
-                              : 'gray'
-                      }
-                      variant="light"
-                    >
-                      {contact.contact_type}
-                    </Badge>
-                  ),
-                },
-                {
-                  accessor: 'is_primary',
-                  title: 'Primary',
-                  width: 80,
-                  render: (contact: Contact) =>
-                    contact.is_primary ? (
-                      <span style={{ color: '#2563eb', fontSize: '1.25rem' }}>✓</span>
-                    ) : (
-                      <span style={{ color: '#d1d5db' }}>-</span>
-                    ),
-                },
-                {
-                  accessor: 'is_active',
-                  title: 'Status',
-                  width: 100,
-                  render: (contact: Contact) => (
-                    <Badge color={contact.is_active ? 'green' : 'red'} variant="light">
-                      {contact.is_active ? 'Active' : 'Inactive'}
-                    </Badge>
-                  ),
-                },
-                {
-                  accessor: 'actions',
-                  title: 'Actions',
-                  width: 80,
-                  render: (contact: Contact) => (
-                    <Group gap={4} wrap="nowrap">
-                      <Tooltip label="Edit contact">
-                        <ActionIcon
-                          variant="subtle"
-                          color="blue"
-                          onClick={(e: React.MouseEvent) => {
-                            e.stopPropagation();
-                            handleEdit(contact);
-                          }}
-                        >
-                          <Edit2 size={16} />
-                        </ActionIcon>
-                      </Tooltip>
-                    </Group>
-                  ),
-                },
-              ],
+      {
+        accessor: 'full_name',
+        title: 'Full Name',
+        width: 200,
+      },
+      {
+        accessor: 'email',
+        title: 'Email',
+        width: 220,
+      },
+      {
+        accessor: 'phone',
+        title: 'Phone',
+        width: 140,
+        render: (contact: Contact) => contact.phone || '-',
+      },
+      {
+        accessor: 'job_title',
+        title: 'Job Title',
+        width: 180,
+        render: (contact: Contact) => contact.job_title || '-',
+      },
+      {
+        accessor: 'contact_type',
+        title: 'Type',
+        width: 120,
+        render: (contact: Contact) => (
+          <Badge
+            color={
+              contact.contact_type === 'AUTHORIZED_REP'
+                ? 'blue'
+                : contact.contact_type === 'TECHNICAL'
+                  ? 'cyan'
+                  : contact.contact_type === 'BILLING'
+                    ? 'green'
+                    : 'gray'
+            }
+            variant="light"
+          >
+            {contact.contact_type}
+          </Badge>
+        ),
+      },
+      {
+        accessor: 'is_primary',
+        title: 'Primary',
+        width: 80,
+        render: (contact: Contact) =>
+          contact.is_primary ? (
+            <span style={{ color: '#2563eb', fontSize: '1.25rem' }}>✓</span>
+          ) : (
+            <span style={{ color: '#d1d5db' }}>-</span>
+          ),
+      },
+      {
+        accessor: 'is_active',
+        title: 'Status',
+        width: 100,
+        render: (contact: Contact) => (
+          <Badge color={contact.is_active ? 'green' : 'red'} variant="light">
+            {contact.is_active ? 'Active' : 'Inactive'}
+          </Badge>
+        ),
+      },
+      {
+        accessor: 'actions',
+        title: 'Actions',
+        width: 80,
+        render: (contact: Contact) => (
+          <Group gap={4} wrap="nowrap">
+            <Tooltip label="Edit contact">
+              <ActionIcon
+                variant="subtle"
+                color="blue"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  handleEdit(contact);
+                }}
+              >
+                <Edit2 size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        ),
+      },
+    ],
     [handleEdit]
   );
 
@@ -234,12 +244,7 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
               </p>
             </div>
           ) : (
-            <DataTable
-              records={contacts}
-              columns={columns}
-              minHeight={400}
-              fetching={loading}
-            />
+            <DataTable records={contacts} columns={columns} minHeight={400} fetching={loading} />
           )}
         </LoadingState>
       </div>
@@ -322,14 +327,18 @@ export const ContactsView: React.FC<ComponentProps> = ({ onNotification, onDataC
                 label="Contact Type"
                 name="contact_type"
                 value={formData.contact_type || 'TECHNICAL'}
-                onChange={(value) => setFormData({ ...formData, contact_type: value || 'TECHNICAL' })}
+                onChange={(value) =>
+                  setFormData({ ...formData, contact_type: value || 'TECHNICAL' })
+                }
                 data={contactTypes}
               />
               <Select
                 label="Preferred Contact Method"
                 name="preferred_contact_method"
                 value={formData.preferred_contact_method || 'EMAIL'}
-                onChange={(value) => setFormData({ ...formData, preferred_contact_method: value || 'EMAIL' })}
+                onChange={(value) =>
+                  setFormData({ ...formData, preferred_contact_method: value || 'EMAIL' })
+                }
                 data={contactMethods}
               />
             </Group>

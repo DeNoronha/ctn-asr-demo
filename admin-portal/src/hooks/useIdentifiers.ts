@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useCallback, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
-import type { LegalEntityIdentifier } from "../services/api";
+import type { LegalEntityIdentifier } from '../services/api';
 import { getAccessToken } from '../utils/auth';
 import { logger } from '../utils/logger';
 import { sanitizeFormData } from '../utils/sanitize';
@@ -30,7 +30,8 @@ export const IDENTIFIER_VALIDATION: Record<
   EORI: {
     pattern: /^[A-Z]{2}[A-Z0-9]{1,15}$/,
     example: 'NL123456789',
-    description: 'Country code + up to 15 alphanumeric (e.g., NL123456789 for Netherlands, DE12345678912345 for Germany)',
+    description:
+      'Country code + up to 15 alphanumeric (e.g., NL123456789 for Netherlands, DE12345678912345 for Germany)',
   },
   VAT: {
     pattern: /^[A-Z]{2}[A-Z0-9]{2,13}$/,
@@ -631,9 +632,7 @@ export function useIdentifierVerification(
   // Fetch VIES data for VAT validation
   const handleFetchVies = useCallback(async (): Promise<boolean> => {
     // Find a VAT identifier for VIES validation
-    const vatIdentifier = identifiers.find((id) =>
-      ['VAT'].includes(id.identifier_type)
-    );
+    const vatIdentifier = identifiers.find((id) => ['VAT'].includes(id.identifier_type));
 
     if (!vatIdentifier || !vatIdentifier.country_code) {
       // No VAT identifier available - skip silently (not an error)
@@ -670,9 +669,10 @@ export function useIdentifierVerification(
 
       const result = response.data;
       if (result.status === 'valid' && result.was_saved) {
-        notification.showSuccess(`VIES validation successful - VAT number is valid`);
+        notification.showSuccess('VIES validation successful - VAT number is valid');
         return true;
-      } else if (result.status === 'invalid') {
+      }
+      if (result.status === 'invalid') {
         notification.showWarning(`VIES: VAT number ${vatIdentifier.identifier_value} is not valid`);
       }
       return false;
@@ -734,8 +734,8 @@ export function useIdentifierVerification(
       // Show detailed reasons for not available identifiers
       if (summary.not_available?.length > 0) {
         const notAvailableReasons = results
-          .filter(r => r.status === 'not_available')
-          .map(r => {
+          .filter((r) => r.status === 'not_available')
+          .map((r) => {
             // Make messages more user-friendly
             if (r.identifier === 'RSIN' && r.message?.includes('not found')) {
               return 'RSIN: Not available for this company type';

@@ -52,9 +52,9 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const TIER_COLORS: Record<string, string> = {
-  '3': COLORS.accent,      // Tier 3 - highest
-  '2': COLORS.primary,     // Tier 2 - medium
-  '1': COLORS.info,        // Tier 1 - basic
+  '3': COLORS.accent, // Tier 3 - highest
+  '2': COLORS.primary, // Tier 2 - medium
+  '1': COLORS.info, // Tier 1 - basic
   'Tier 3': COLORS.accent,
   'Tier 2': COLORS.primary,
   'Tier 1': COLORS.info,
@@ -206,7 +206,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members, totalMembers }) => {
           </Text>
         </Paper>
 
-{/* Premium Members card hidden - membership levels feature disabled */}
+        {/* Premium Members card hidden - membership levels feature disabled */}
       </SimpleGrid>
 
       {/* Charts Section */}

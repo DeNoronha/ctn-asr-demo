@@ -8,7 +8,17 @@ import {
 import React, { useEffect, useState } from 'react';
 
 // Mantine imports
-import { Button, Container, Group, MantineProvider, Paper, Stack, Tabs, Text, createTheme } from '@mantine/core';
+import {
+  Button,
+  Container,
+  Group,
+  MantineProvider,
+  Paper,
+  Stack,
+  Tabs,
+  Text,
+  createTheme,
+} from '@mantine/core';
 import { Notifications, notifications } from '@mantine/notifications';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
@@ -34,8 +44,8 @@ import { KvKDocumentView } from './components/KvKDocumentView';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import { ProfileView } from './components/ProfileView';
 import { RegistrationForm } from './components/RegistrationForm';
-import { KeyboardShortcutsHelp } from './components/shared/KeyboardShortcutsHelp';
 import { Support } from './components/Support';
+import { KeyboardShortcutsHelp } from './components/shared/KeyboardShortcutsHelp';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 
 interface AppContentProps {
@@ -455,10 +465,19 @@ function AppContent(_props: AppContentProps) {
           )}
 
           {!loading && !memberData && !error && (
-            <Stack align="center" gap="md" py="xl" style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
-              <Text size="xl" fw={600}>No Member Data</Text>
+            <Stack
+              align="center"
+              gap="md"
+              py="xl"
+              style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}
+            >
+              <Text size="xl" fw={600}>
+                No Member Data
+              </Text>
               <Text size="md">We couldn't find any member information for your account.</Text>
-              <Text size="sm" c="dimmed">Please contact support if you believe this is an error.</Text>
+              <Text size="sm" c="dimmed">
+                Please contact support if you believe this is an error.
+              </Text>
             </Stack>
           )}
         </AuthenticatedTemplate>

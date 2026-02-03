@@ -27,7 +27,8 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ onClose, onInvite }
     },
     validate: {
       email: (value) => {
-        if (!value.trim()) return t('userManagement.validation.emailRequired') || 'Email is required';
+        if (!value.trim())
+          return t('userManagement.validation.emailRequired') || 'Email is required';
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
           return t('userManagement.validation.emailInvalid') || 'Invalid email format';
         }
@@ -77,7 +78,10 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ onClose, onInvite }
           {...form.getInputProps('role')}
           label={t('userManagement.roleLabel')}
           data={[
-            { value: UserRole.ASSOCIATION_ADMIN, label: t('userManagement.roles.associationAdmin') },
+            {
+              value: UserRole.ASSOCIATION_ADMIN,
+              label: t('userManagement.roles.associationAdmin'),
+            },
             { value: UserRole.MEMBER, label: t('userManagement.roles.member') },
             { value: UserRole.SYSTEM_ADMIN, label: t('userManagement.roles.systemAdmin') },
           ]}

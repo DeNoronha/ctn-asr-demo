@@ -107,10 +107,7 @@ export const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
           )}
         </Text>
 
-        {renderShortcutTable(
-          navigationShortcuts,
-          t('shortcuts.categoryNavigation', 'Navigation')
-        )}
+        {renderShortcutTable(navigationShortcuts, t('shortcuts.categoryNavigation', 'Navigation'))}
         {renderShortcutTable(searchShortcuts, t('shortcuts.categorySearch', 'Search & Filter'))}
         {renderShortcutTable(actionShortcuts, t('shortcuts.categoryActions', 'Actions'))}
         {renderShortcutTable(generalShortcuts, t('shortcuts.categoryGeneral', 'General'))}

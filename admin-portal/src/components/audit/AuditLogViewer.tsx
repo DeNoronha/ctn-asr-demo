@@ -28,11 +28,32 @@ import { useTranslation } from 'react-i18next';
 import { RoleGuard } from '../../auth/ProtectedRoute';
 import { UserRole } from '../../auth/authConfig';
 import { useNotification } from '../../contexts/NotificationContext';
-import { AuditAction, type AuditLog, auditLogService, type AuditLogFilters } from '../../services/auditLogService';
+import {
+  AuditAction,
+  type AuditLog,
+  type AuditLogFilters,
+  auditLogService,
+} from '../../services/auditLogService';
 import { formatDateTimeGB } from '../../utils/dateFormat';
-import { exportAuditLogsAsCSV, exportAuditLogsAsExcel, exportAuditLogsAsJSON } from '../../utils/export';
+import {
+  exportAuditLogsAsCSV,
+  exportAuditLogsAsExcel,
+  exportAuditLogsAsJSON,
+} from '../../utils/export';
 import { ErrorBoundary } from '../ErrorBoundary';
-import { Activity, ChevronDown, ChevronUp, Clock, Download, FileSpreadsheet, FileJson, FileText, RefreshCw, Shield, X } from '../icons';
+import {
+  Activity,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Download,
+  FileJson,
+  FileSpreadsheet,
+  FileText,
+  RefreshCw,
+  Shield,
+  X,
+} from '../icons';
 import { defaultDataTableProps } from '../shared/DataTableConfig';
 import { PageHeader } from '../shared/PageHeader';
 import './AuditLogViewer.css';
@@ -120,7 +141,7 @@ const AuditLogViewer: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
 
   // Sorting state
-  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<AuditLog>>({
+  const [_sortStatus, _setSortStatus] = useState<DataTableSortStatus<AuditLog>>({
     columnAccessor: 'timestamp',
     direction: 'desc',
   });
@@ -168,7 +189,17 @@ const AuditLogViewer: React.FC = () => {
     }
 
     return filters;
-  }, [page, pageSize, eventTypes, debouncedUserEmail, startDate, endDate, resourceTypes, severity, result]);
+  }, [
+    page,
+    pageSize,
+    eventTypes,
+    debouncedUserEmail,
+    startDate,
+    endDate,
+    resourceTypes,
+    severity,
+    result,
+  ]);
 
   // Count active filters for badge
   const activeFilterCount = useMemo(() => {
@@ -187,7 +218,9 @@ const AuditLogViewer: React.FC = () => {
     setLoading(true);
     try {
       const response = await auditLogService.fetchLogs(activeFilters);
-      const transformedLogs = response.data.map((log) => auditLogService.transformToFrontendFormat(log));
+      const transformedLogs = response.data.map((log) =>
+        auditLogService.transformToFrontendFormat(log)
+      );
 
       // Client-side filtering for multiple event types (API only supports one)
       let filteredLogs = transformedLogs;
@@ -443,7 +476,9 @@ const AuditLogViewer: React.FC = () => {
                 onClick={() => setFiltersVisible(!filtersVisible)}
                 rightSection={filtersVisible ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               >
-                {filtersVisible ? t('auditLogs.actions.hideFilters') : t('auditLogs.actions.showFilters')}
+                {filtersVisible
+                  ? t('auditLogs.actions.hideFilters')
+                  : t('auditLogs.actions.showFilters')}
               </Button>
               {activeFilterCount > 0 && (
                 <Badge color="blue" variant="filled" size="lg">
@@ -452,7 +487,12 @@ const AuditLogViewer: React.FC = () => {
               )}
             </Group>
             {activeFilterCount > 0 && (
-              <Button variant="subtle" color="red" onClick={handleClearFilters} leftSection={<X size={16} />}>
+              <Button
+                variant="subtle"
+                color="red"
+                onClick={handleClearFilters}
+                leftSection={<X size={16} />}
+              >
                 {t('auditLogs.actions.clearFilters')}
               </Button>
             )}
@@ -479,7 +519,13 @@ const AuditLogViewer: React.FC = () => {
                   placeholder={t('auditLogs.filters.userEmailPlaceholder')}
                   value={userEmail}
                   onChange={(e) => setUserEmail(e.currentTarget.value)}
-                  rightSection={userEmail && <ActionIcon size="sm" variant="subtle" onClick={() => setUserEmail('')}><X size={14} /></ActionIcon>}
+                  rightSection={
+                    userEmail && (
+                      <ActionIcon size="sm" variant="subtle" onClick={() => setUserEmail('')}>
+                        <X size={14} />
+                      </ActionIcon>
+                    )
+                  }
                 />
 
                 {/* Resource Type Filter */}
@@ -604,11 +650,7 @@ const AuditLogViewer: React.FC = () => {
                     {t('auditLogs.emptyState.description')}
                   </Text>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={loadLogs}
-                  leftSection={<RefreshCw size={18} />}
-                >
+                <Button variant="outline" onClick={loadLogs} leftSection={<RefreshCw size={18} />}>
                   {t('auditLogs.emptyState.refresh')}
                 </Button>
               </Stack>

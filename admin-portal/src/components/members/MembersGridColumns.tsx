@@ -18,7 +18,7 @@ const statusTooltips: Record<string, string> = {
   FLAGGED: 'Member flagged for review',
 };
 
-const membershipTooltips: Record<string, string> = {
+const _membershipTooltips: Record<string, string> = {
   PREMIUM: 'Premium membership - full access to all services and priority support',
   FULL: 'Full membership - access to all standard services',
   BASIC: 'Basic membership - limited access to essential services',

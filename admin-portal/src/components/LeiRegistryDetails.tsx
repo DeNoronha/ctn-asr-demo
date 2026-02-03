@@ -7,7 +7,7 @@ import { Card } from '@mantine/core';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { apiV2 } from '../services/api';
-import type { LeiRegistryResponse, LeiAddress } from '../services/api/legalEntities';
+import type { LeiAddress, LeiRegistryResponse } from '../services/api/legalEntities';
 import {
   AlertCircle,
   Building2,
@@ -171,9 +171,7 @@ export const LeiRegistryDetails: React.FC<LeiRegistryDetailsProps> = ({ legalEnt
                   {registryData.data?.registrationAuthority && (
                     <div className="info-row">
                       <span className="info-label">Registration Authority:</span>
-                      <span className="info-value">
-                        {registryData.data.registrationAuthority}
-                      </span>
+                      <span className="info-value">{registryData.data.registrationAuthority}</span>
                     </div>
                   )}
                   {registryData.data?.registrationNumber && (

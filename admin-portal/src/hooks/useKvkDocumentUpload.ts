@@ -158,7 +158,10 @@ export const useKvkDocumentUpload = ({
     }
   };
 
-  const reviewVerification = async (status: 'verified' | 'rejected' | 'flagged', notes?: string) => {
+  const reviewVerification = async (
+    status: 'verified' | 'rejected' | 'flagged',
+    notes?: string
+  ) => {
     setReviewingStatus(true);
     try {
       const axiosInstance = await getAuthenticatedAxios();

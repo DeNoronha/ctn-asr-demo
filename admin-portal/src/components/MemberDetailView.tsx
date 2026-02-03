@@ -12,7 +12,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useApiError } from '../hooks/useApiError';
 import { useMemberDetails } from '../hooks/useMemberDetails';
 import { type Member, api } from '../services/api';
-import { apiV2 } from "../services/api";
+import { apiV2 } from '../services/api';
 import { getStatusColor, getTierColor } from '../utils/colors';
 import { getEmptyState } from '../utils/emptyStates';
 import { logger } from '../utils/logger';
@@ -32,8 +32,8 @@ import {
   KvkRegistrySection,
   LeiRegistrySection,
   PeppolRegistrySection,
-  ViesRegistrySection,
   SystemIntegrationsSection,
+  ViesRegistrySection,
 } from './member/MemberDetailSections';
 import { LoadingState } from './shared/LoadingState';
 import './MemberDetailView.css';
@@ -52,8 +52,20 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
   const { handleError } = useApiError();
 
   // Use custom hook for all member data management
-  const { legalEntity, contacts, identifiers, hasKvkRegistryData, hasLeiRegistryData, hasPeppolRegistryData, hasViesRegistryData, hasGermanRegistryData, hasEoriRegistryData, hasBelgiumRegistryData, loading, handlers } =
-    useMemberDetails(member.legal_entity_id);
+  const {
+    legalEntity,
+    contacts,
+    identifiers,
+    hasKvkRegistryData,
+    hasLeiRegistryData,
+    hasPeppolRegistryData,
+    hasViesRegistryData,
+    hasGermanRegistryData,
+    hasEoriRegistryData,
+    hasBelgiumRegistryData,
+    loading,
+    handlers,
+  } = useMemberDetails(member.legal_entity_id);
 
   const handleUpdateCompany = async (data: typeof legalEntity) => {
     if (!data) return;
@@ -164,7 +176,9 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onBa
           {hasLeiRegistryData && <Tabs.Tab value="lei-registry">{t('tabs.gleif')}</Tabs.Tab>}
           {hasPeppolRegistryData && <Tabs.Tab value="peppol-registry">{t('tabs.peppol')}</Tabs.Tab>}
           {hasViesRegistryData && <Tabs.Tab value="vies-registry">{t('tabs.vies')}</Tabs.Tab>}
-          {hasGermanRegistryData && <Tabs.Tab value="german-registry">{t('tabs.handelsregister')}</Tabs.Tab>}
+          {hasGermanRegistryData && (
+            <Tabs.Tab value="german-registry">{t('tabs.handelsregister')}</Tabs.Tab>
+          )}
           {hasEoriRegistryData && <Tabs.Tab value="eori-registry">EORI</Tabs.Tab>}
           {hasBelgiumRegistryData && <Tabs.Tab value="belgium-registry">KBO</Tabs.Tab>}
         </Tabs.List>

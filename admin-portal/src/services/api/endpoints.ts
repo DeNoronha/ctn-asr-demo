@@ -1,8 +1,5 @@
 import { getAuthenticatedAxios } from './client';
-import type {
-  LegalEntityEndpoint,
-  ConnectionTestDetails,
-} from './types';
+import type { ConnectionTestDetails, LegalEntityEndpoint } from './types';
 
 // =====================================================
 // ENDPOINT ENDPOINTS (Multi-System Support)

@@ -134,12 +134,7 @@ export const EndpointsView: React.FC<ComponentProps> = ({
               </p>
             </div>
           ) : (
-            <DataTable
-              records={endpoints}
-              columns={columns}
-              minHeight={400}
-              fetching={loading}
-            />
+            <DataTable records={endpoints} columns={columns} minHeight={400} fetching={loading} />
           )}
         </LoadingState>
       </div>

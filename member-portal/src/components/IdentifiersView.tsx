@@ -1,4 +1,14 @@
-import { ActionIcon, Badge, Button, Group, Modal, Select, Stack, TextInput, Tooltip } from '@mantine/core';
+import {
+  ActionIcon,
+  Badge,
+  Button,
+  Group,
+  Modal,
+  Select,
+  Stack,
+  TextInput,
+  Tooltip,
+} from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -298,12 +308,7 @@ export const IdentifiersView: React.FC<ComponentProps> = ({
               </p>
             </div>
           ) : (
-            <DataTable
-              records={identifiers}
-              columns={columns}
-              minHeight={400}
-              fetching={loading}
-            />
+            <DataTable records={identifiers} columns={columns} minHeight={400} fetching={loading} />
           )}
         </LoadingState>
       </div>

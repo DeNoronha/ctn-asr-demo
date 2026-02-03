@@ -2,7 +2,7 @@ import { Workbook } from 'exceljs';
 import { useCallback, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import type { Member } from '../services/api';
-import { apiV2, deleteLegalEntity } from "../services/api";
+import { apiV2, deleteLegalEntity } from '../services/api';
 import { exportToCSV, exportToPDF } from '../utils/exportUtils';
 import { useApiError } from './useApiError';
 
@@ -229,9 +229,7 @@ async function handleDeleteAction(
   onRefresh?: () => Promise<void>
 ): Promise<void> {
   // Use actual delete endpoint which performs soft delete
-  const deletePromises = selectedIds.map((legalEntityId) =>
-    deleteLegalEntity(legalEntityId)
-  );
+  const deletePromises = selectedIds.map((legalEntityId) => deleteLegalEntity(legalEntityId));
   await Promise.all(deletePromises);
 
   const count = selectedIds.length;

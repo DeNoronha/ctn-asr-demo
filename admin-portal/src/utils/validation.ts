@@ -26,7 +26,8 @@ export const validateMemberForm = (data: MemberFormData): ValidationResult => {
   } else if (data.legal_entity_id.length < 5) {
     errors.legal_entity_id = 'Legal Entity ID is too short';
   } else if (!/^org:[a-z0-9-]+$/.test(data.legal_entity_id)) {
-    errors.legal_entity_id = 'Legal Entity ID can only contain lowercase letters, numbers, and hyphens';
+    errors.legal_entity_id =
+      'Legal Entity ID can only contain lowercase letters, numbers, and hyphens';
   }
 
   // Legal name validation

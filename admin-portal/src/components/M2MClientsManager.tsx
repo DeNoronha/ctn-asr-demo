@@ -15,7 +15,7 @@ import {
 import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
-import { type M2MClient, apiV2 } from "../services/api";
+import { type M2MClient, apiV2 } from '../services/api';
 import { announceToScreenReader } from '../utils/aria';
 import { formatDate } from '../utils/dateUtils';
 import { getEmptyState } from '../utils/emptyStates';

@@ -7,22 +7,22 @@ import { Tabs } from '@mantine/core';
 import type React from 'react';
 import type { LegalEntity, LegalEntityContact, Member } from '../../services/api';
 import { api, apiV2 } from '../../services/api';
-import type { LegalEntityIdentifier } from "../../services/api";
+import type { LegalEntityIdentifier } from '../../services/api';
 import { getEmptyState } from '../../utils/emptyStates';
 import { APIAccessManager } from '../APIAccessManager';
+import { BelgiumRegistryDetails } from '../BelgiumRegistryDetails';
 import { ContactsManager } from '../ContactsManager';
 import { EmptyState } from '../EmptyState';
 import { EndpointManagement } from '../EndpointManagement';
-import { IdentifiersManager } from '../IdentifiersManager';
-import { KvkDocumentUpload } from '../KvkDocumentUpload';
-import { BelgiumRegistryDetails } from '../BelgiumRegistryDetails';
 import { EoriRegistryDetails } from '../EoriRegistryDetails';
 import { GermanRegistryDetails } from '../GermanRegistryDetails';
+import { IdentifiersManager } from '../IdentifiersManager';
+import { KvkDocumentUpload } from '../KvkDocumentUpload';
 import { KvkRegistryDetails } from '../KvkRegistryDetails';
 import { LeiRegistryDetails } from '../LeiRegistryDetails';
 import { PeppolRegistryDetails } from '../PeppolRegistryDetails';
-import { ViesRegistryDetails } from '../ViesRegistryDetails';
 import { TierManagement } from '../TierManagement';
+import { ViesRegistryDetails } from '../ViesRegistryDetails';
 import { LoadingState } from '../shared/LoadingState';
 
 interface IdentifiersSectionProps {

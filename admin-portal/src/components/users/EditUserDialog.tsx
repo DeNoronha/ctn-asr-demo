@@ -47,7 +47,13 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ user, onClose, onUpdate
   };
 
   return (
-    <Modal opened onClose={onClose} title={t('userManagement.editUserTitle', { userName: user.name })} size="md" trapFocus>
+    <Modal
+      opened
+      onClose={onClose}
+      title={t('userManagement.editUserTitle', { userName: user.name })}
+      size="md"
+      trapFocus
+    >
       <TextInput
         label={t('userManagement.emailLabel')}
         type="email"

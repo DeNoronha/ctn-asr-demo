@@ -20,7 +20,7 @@ import './TasksGrid.css';
 import { useReviewTasks } from '../hooks/useReviewTasks';
 import { useTaskDialogs } from '../hooks/useTaskDialogs';
 import { useTaskManagement } from '../hooks/useTaskManagement';
-import type { Application } from "../services/api";
+import type { Application } from '../services/api';
 import { ErrorBoundary } from './ErrorBoundary';
 import { LoadingState } from './shared/LoadingState';
 

@@ -223,7 +223,9 @@ export const MemberRegistrationWizard: React.FC = () => {
               error={touched.legal_entity_id && errors.legal_entity_id}
               className={touched.legal_entity_id && errors.legal_entity_id ? 'invalid' : ''}
             />
-            {touched.legal_entity_id && errors.legal_entity_id && <FormError>{errors.legal_entity_id}</FormError>}
+            {touched.legal_entity_id && errors.legal_entity_id && (
+              <FormError>{errors.legal_entity_id}</FormError>
+            )}
             <Hint>Format: org:company-name (lowercase, letters, numbers, hyphens only)</Hint>
           </div>
 

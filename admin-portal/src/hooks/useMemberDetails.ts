@@ -19,7 +19,12 @@
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { type LegalEntity, type LegalEntityContact, api } from '../services/api';
-import { type LegalEntityEndpoint, type LegalEntityIdentifier, apiV2, enrichLegalEntity } from "../services/api";
+import {
+  type LegalEntityEndpoint,
+  type LegalEntityIdentifier,
+  apiV2,
+  enrichLegalEntity,
+} from '../services/api';
 import { logger } from '../utils/logger';
 
 interface UseMemberDetailsReturn {
@@ -491,9 +496,7 @@ export function useMemberDetails(legalEntityId?: string): UseMemberDetailsReturn
           `Company details updated: ${enrichResult.updated_fields.join(', ')}`
         );
       } else if (enrichResult.added_count > 0) {
-        notification.showSuccess(
-          `Added ${enrichResult.added_count} new identifier(s)`
-        );
+        notification.showSuccess(`Added ${enrichResult.added_count} new identifier(s)`);
       } else {
         notification.showInfo('Company details are already up to date');
       }

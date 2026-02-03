@@ -8,8 +8,8 @@ import {
   DomainSection,
   KVKSection,
   LEISection,
-  LegalNameSection,
   LegalEntityIdSection,
+  LegalNameSection,
 } from './forms/MemberFormSections';
 import { ProgressiveSection } from './forms/ProgressiveSection';
 import './MemberForm.css';

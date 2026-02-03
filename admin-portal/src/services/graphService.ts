@@ -267,7 +267,7 @@ export async function listUsers(): Promise<User[]> {
           if (!userRoleMap.has(assignment.principalId)) {
             userRoleMap.set(assignment.principalId, new Set());
           }
-          userRoleMap.get(assignment.principalId)!.add(roleName);
+          userRoleMap.get(assignment.principalId)?.add(roleName);
         }
       }
     }

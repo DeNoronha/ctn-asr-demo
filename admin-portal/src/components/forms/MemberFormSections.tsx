@@ -92,7 +92,9 @@ export const LegalEntityIdSection: React.FC<FormSectionProps> = ({
       aria-invalid={touched.legal_entity_id && Boolean(errors.legal_entity_id)}
       aria-describedby={`legal-entity-id-hint${touched.legal_entity_id && errors.legal_entity_id ? ' legal-entity-id-error' : ''}`}
     />
-    {touched.legal_entity_id && errors.legal_entity_id && <FormError id="legal-entity-id-error">{errors.legal_entity_id}</FormError>}
+    {touched.legal_entity_id && errors.legal_entity_id && (
+      <FormError id="legal-entity-id-error">{errors.legal_entity_id}</FormError>
+    )}
     <Hint id="legal-entity-id-hint">
       Format: org:company-name (lowercase, letters, numbers, hyphens only)
     </Hint>

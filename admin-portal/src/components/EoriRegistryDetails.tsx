@@ -70,7 +70,6 @@ export const EoriRegistryDetails: React.FC<EoriRegistryDetailsProps> = ({ legalE
         return { label: 'Valid', color: 'green', icon: <CheckCircle size={14} /> };
       case '1':
         return { label: 'Invalid', color: 'red', icon: <XCircle size={14} /> };
-      case '2':
       default:
         return { label: 'Error', color: 'orange', icon: <AlertCircle size={14} /> };
     }
@@ -112,7 +111,9 @@ export const EoriRegistryDetails: React.FC<EoriRegistryDetailsProps> = ({ legalE
                 EORI: <span className="vat-value">{registryData.eori_number}</span>
               </p>
             </div>
-            <span className={`validation-badge ${isValid ? 'validation-valid' : 'validation-invalid'}`}>
+            <span
+              className={`validation-badge ${isValid ? 'validation-valid' : 'validation-invalid'}`}
+            >
               {getStatusBadge(registryData.status).icon}
               {isValid ? 'VALID' : 'INVALID'}
             </span>
@@ -141,7 +142,8 @@ export const EoriRegistryDetails: React.FC<EoriRegistryDetailsProps> = ({ legalE
                     <span className="info-label">Validation Status:</span>
                     <span className="info-value">
                       <Badge color={getStatusBadge(registryData.status).color} variant="light">
-                        {registryData.status_description || getStatusBadge(registryData.status).label}
+                        {registryData.status_description ||
+                          getStatusBadge(registryData.status).label}
                       </Badge>
                     </span>
                   </div>
@@ -176,9 +178,7 @@ export const EoriRegistryDetails: React.FC<EoriRegistryDetailsProps> = ({ legalE
                   {registryData.request_date && (
                     <div className="info-row">
                       <span className="info-label">Request Date:</span>
-                      <span className="info-value">
-                        {formatDate(registryData.request_date)}
-                      </span>
+                      <span className="info-value">{formatDate(registryData.request_date)}</span>
                     </div>
                   )}
                   {registryData.request_identifier && (
@@ -226,9 +226,7 @@ export const EoriRegistryDetails: React.FC<EoriRegistryDetailsProps> = ({ legalE
                       )}
                       {(registryData.postal_code || registryData.city) && (
                         <div className="address-line">
-                          {[registryData.postal_code, registryData.city]
-                            .filter(Boolean)
-                            .join(' ')}
+                          {[registryData.postal_code, registryData.city].filter(Boolean).join(' ')}
                         </div>
                       )}
                       {registryData.country && (
@@ -251,10 +249,11 @@ export const EoriRegistryDetails: React.FC<EoriRegistryDetailsProps> = ({ legalE
             </div>
             <div className="card-body">
               <p style={{ color: '#495057', lineHeight: 1.6 }}>
-                The <strong>Economic Operators Registration and Identification (EORI)</strong> number
-                is a unique identifier used for customs purposes in the European Union. It is required
-                for businesses engaged in import/export activities with non-EU countries. The EORI number
-                is validated against the EU's central EORI database maintained by DG TAXUD.
+                The <strong>Economic Operators Registration and Identification (EORI)</strong>{' '}
+                number is a unique identifier used for customs purposes in the European Union. It is
+                required for businesses engaged in import/export activities with non-EU countries.
+                The EORI number is validated against the EU's central EORI database maintained by DG
+                TAXUD.
               </p>
             </div>
           </Card>

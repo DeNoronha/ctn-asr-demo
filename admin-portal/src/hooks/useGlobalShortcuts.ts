@@ -5,7 +5,7 @@
  */
 
 import { useHotkeys } from '@mantine/hooks';
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 export interface ShortcutAction {
   key: string;
@@ -117,7 +117,8 @@ export function useGlobalShortcuts({
  * Platform-aware: shows Cmd on macOS, Ctrl elsewhere
  */
 export function getShortcutsList(): ShortcutAction[] {
-  const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().includes('MAC');
+  const isMac =
+    typeof navigator !== 'undefined' && navigator.platform.toUpperCase().includes('MAC');
   const modKey = isMac ? 'Cmd' : 'Ctrl';
 
   return [
@@ -193,7 +194,7 @@ export function getShortcutsList(): ShortcutAction[] {
 
     // General shortcuts
     {
-      key: '? or ' + `${modKey}+/`,
+      key: `? or ${modKey}+/`,
       description: 'shortcuts.help',
       category: 'general',
       action: () => {},

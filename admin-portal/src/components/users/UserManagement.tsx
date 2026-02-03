@@ -1,12 +1,22 @@
 import * as graphService from '../../services/graphService';
+import { getErrorMessage, isConsentRequiredError, logError } from '../../types/errors';
 import { logger } from '../../utils/logger';
-import { isConsentRequiredError, getErrorMessage, logError } from '../../types/errors';
 /**
  * User Management Page
  * System Admins can view and manage all users
  */
 
-import { ActionIcon, Alert, Badge, Button, Group, Paper, Stack, Text, Tooltip } from '@mantine/core';
+import {
+  ActionIcon,
+  Alert,
+  Badge,
+  Button,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  Tooltip,
+} from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { DataTable, type DataTableColumn, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState, useMemo } from 'react';
@@ -87,7 +97,9 @@ const UserManagement: React.FC = () => {
           'Administrator consent is required to access Microsoft Graph API for user management.'
         );
       } else {
-        setConsentError(getErrorMessage(error, 'Failed to load users. Please try again or contact support.'));
+        setConsentError(
+          getErrorMessage(error, 'Failed to load users. Please try again or contact support.')
+        );
       }
     } finally {
       setLoading(false);
@@ -265,9 +277,7 @@ const UserManagement: React.FC = () => {
               <Text size="xs" c="dimmed" fw={500}>
                 Last Login:
               </Text>
-              <Text size="xs">
-                {user.lastLogin ? formatDateTimeGB(user.lastLogin) : '—'}
-              </Text>
+              <Text size="xs">{user.lastLogin ? formatDateTimeGB(user.lastLogin) : '—'}</Text>
             </Group>
             <Group gap="xs">
               <Text size="xs" c="dimmed" fw={500}>
@@ -472,7 +482,9 @@ const UserManagement: React.FC = () => {
                   <Text size="sm">Application.Read.All - Read service principal metadata</Text>
                 </li>
                 <li>
-                  <Text size="sm">AppRoleAssignment.ReadWrite.All - Manage app role assignments</Text>
+                  <Text size="sm">
+                    AppRoleAssignment.ReadWrite.All - Manage app role assignments
+                  </Text>
                 </li>
               </ul>
               <Button

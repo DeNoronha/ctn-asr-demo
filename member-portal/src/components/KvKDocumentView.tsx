@@ -144,7 +144,8 @@ export const KvKDocumentView: React.FC<ComponentProps> = ({
                   }}
                 >
                   <Text size="sm" fw={500} style={{ color: '#92400e' }}>
-                    Your document is awaiting admin verification. You will be notified once it has been reviewed.
+                    Your document is awaiting admin verification. You will be notified once it has
+                    been reviewed.
                   </Text>
                 </div>
               )}
@@ -223,8 +224,7 @@ export const KvKDocumentView: React.FC<ComponentProps> = ({
               <FileButton onChange={handleUpload} accept="application/pdf,image/*">
                 {(props) => (
                   <Button {...props} color="blue" disabled={uploading}>
-                    <Upload size={16} />{' '}
-                    {uploading ? 'Uploading...' : 'Upload KvK Document'}
+                    <Upload size={16} /> {uploading ? 'Uploading...' : 'Upload KvK Document'}
                   </Button>
                 )}
               </FileButton>

@@ -80,7 +80,7 @@ export class GraphApiError extends AppError {
  */
 export class ConsentRequiredError extends GraphApiError {
   constructor(
-    message: string = 'Administrator consent is required to access Microsoft Graph API',
+    message = 'Administrator consent is required to access Microsoft Graph API',
     public readonly requiredScopes: string[] = [],
     originalError?: unknown
   ) {
@@ -98,11 +98,7 @@ export class ConsentRequiredError extends GraphApiError {
       message?: string;
     };
 
-    const consentErrorCodes = [
-      'consent_required',
-      'interaction_required',
-      'invalid_grant',
-    ];
+    const consentErrorCodes = ['consent_required', 'interaction_required', 'invalid_grant'];
 
     return (
       consentErrorCodes.includes(msalError.errorCode || '') ||
@@ -118,9 +114,9 @@ export class ConsentRequiredError extends GraphApiError {
  */
 export class GraphAuthError extends GraphApiError {
   constructor(
-    message: string = 'Authentication failed for Microsoft Graph API',
-    code: string = 'GRAPH_AUTH_ERROR',
-    statusCode: number = 401,
+    message = 'Authentication failed for Microsoft Graph API',
+    code = 'GRAPH_AUTH_ERROR',
+    statusCode = 401,
     originalError?: unknown
   ) {
     super(message, code, statusCode, originalError);
@@ -134,7 +130,7 @@ export class GraphAuthError extends GraphApiError {
  */
 export class GraphRateLimitError extends GraphApiError {
   constructor(
-    message: string = 'Microsoft Graph API rate limit exceeded',
+    message = 'Microsoft Graph API rate limit exceeded',
     public readonly retryAfterSeconds?: number,
     originalError?: unknown
   ) {
@@ -150,11 +146,7 @@ export class GraphRateLimitError extends GraphApiError {
  * User, service principal, or other resource doesn't exist
  */
 export class GraphNotFoundError extends GraphApiError {
-  constructor(
-    resourceType: string,
-    resourceId: string,
-    originalError?: unknown
-  ) {
+  constructor(resourceType: string, resourceId: string, originalError?: unknown) {
     super(
       `${resourceType} with ID ${resourceId} not found`,
       'GRAPH_NOT_FOUND',
@@ -172,7 +164,7 @@ export class GraphNotFoundError extends GraphApiError {
  */
 export class GraphPermissionError extends GraphApiError {
   constructor(
-    message: string = 'Insufficient permissions for this operation',
+    message = 'Insufficient permissions for this operation',
     public readonly requiredPermissions?: string[],
     originalError?: unknown
   ) {
@@ -195,7 +187,7 @@ export class ValidationError extends AppError {
       field: string;
       message: string;
     }>,
-    originalError?: unknown
+    _originalError?: unknown
   ) {
     super(message, 'VALIDATION_ERROR', 400, { field, validationErrors }, true);
     this.name = 'ValidationError';
@@ -208,7 +200,7 @@ export class ValidationError extends AppError {
  */
 export class NetworkError extends AppError {
   constructor(
-    message: string = 'Network error occurred',
+    message = 'Network error occurred',
     public readonly url?: string,
     originalError?: unknown
   ) {
@@ -223,7 +215,7 @@ export class NetworkError extends AppError {
  */
 export class TimeoutError extends AppError {
   constructor(
-    message: string = 'Request timed out',
+    message = 'Request timed out',
     public readonly timeoutMs?: number,
     originalError?: unknown
   ) {

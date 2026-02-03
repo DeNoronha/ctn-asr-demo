@@ -115,7 +115,10 @@ const MemberDetailDialog: React.FC<MemberDetailDialogProps> = ({
         </Tabs.Panel>
 
         <Tabs.Panel value="endpoints" pt="md">
-          <EndpointsTab legalEntityId={member.legal_entity_id} legalEntityName={member.legal_name} />
+          <EndpointsTab
+            legalEntityId={member.legal_entity_id}
+            legalEntityName={member.legal_name}
+          />
         </Tabs.Panel>
 
         <Tabs.Panel value="activity" pt="md">

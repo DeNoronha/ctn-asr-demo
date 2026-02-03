@@ -47,18 +47,15 @@ function formatDutchPostalCode(postalCode: string): string {
  * Example: Morsstr 111, 2312 BK  LEIDEN
  */
 function formatDutchAddress(address: AddressInput): FormattedAddress {
-  const streetLine = [address.address_line1, address.address_line2]
-    .filter(Boolean)
-    .join(', ');
+  const streetLine = [address.address_line1, address.address_line2].filter(Boolean).join(', ');
 
-  const postalCode = address.postal_code
-    ? formatDutchPostalCode(address.postal_code)
-    : '';
+  const postalCode = address.postal_code ? formatDutchPostalCode(address.postal_code) : '';
   // Dutch standard: double space between postal code and city, city in CAPITALS
   const city = address.city?.toUpperCase() || '';
-  const postalCityLine = postalCode && city
-    ? `${postalCode}  ${city}` // Double space per Dutch standard
-    : postalCode || city;
+  const postalCityLine =
+    postalCode && city
+      ? `${postalCode}  ${city}` // Double space per Dutch standard
+      : postalCode || city;
 
   return {
     streetLine,
@@ -77,15 +74,11 @@ function formatDutchAddress(address: AddressInput): FormattedAddress {
  * Example: Weberstr. 2, 53113 BONN
  */
 function formatGermanAddress(address: AddressInput): FormattedAddress {
-  const streetLine = [address.address_line1, address.address_line2]
-    .filter(Boolean)
-    .join(', ');
+  const streetLine = [address.address_line1, address.address_line2].filter(Boolean).join(', ');
 
   const postalCode = address.postal_code || '';
   const city = address.city?.toUpperCase() || '';
-  const postalCityLine = postalCode && city
-    ? `${postalCode} ${city}`
-    : postalCode || city;
+  const postalCityLine = postalCode && city ? `${postalCode} ${city}` : postalCode || city;
 
   return {
     streetLine,
@@ -105,15 +98,11 @@ function formatGermanAddress(address: AddressInput): FormattedAddress {
  * Note: No separators between postal code and city
  */
 function formatBelgianAddress(address: AddressInput): FormattedAddress {
-  const streetLine = [address.address_line1, address.address_line2]
-    .filter(Boolean)
-    .join(', ');
+  const streetLine = [address.address_line1, address.address_line2].filter(Boolean).join(', ');
 
   const postalCode = address.postal_code || '';
   const city = address.city?.toUpperCase() || '';
-  const postalCityLine = postalCode && city
-    ? `${postalCode} ${city}`
-    : postalCode || city;
+  const postalCityLine = postalCode && city ? `${postalCode} ${city}` : postalCode || city;
 
   return {
     streetLine,
@@ -132,15 +121,11 @@ function formatBelgianAddress(address: AddressInput): FormattedAddress {
  * Example: 23 Rue de Grenelle, 75700 PARIS CEDEX
  */
 function formatFrenchAddress(address: AddressInput): FormattedAddress {
-  const streetLine = [address.address_line1, address.address_line2]
-    .filter(Boolean)
-    .join(', ');
+  const streetLine = [address.address_line1, address.address_line2].filter(Boolean).join(', ');
 
   const postalCode = address.postal_code || '';
   const city = address.city?.toUpperCase() || '';
-  const postalCityLine = postalCode && city
-    ? `${postalCode} ${city}`
-    : postalCode || city;
+  const postalCityLine = postalCode && city ? `${postalCode} ${city}` : postalCode || city;
 
   return {
     streetLine,
@@ -159,15 +144,11 @@ function formatFrenchAddress(address: AddressInput): FormattedAddress {
  * Similar to Germany
  */
 function formatAustrianAddress(address: AddressInput): FormattedAddress {
-  const streetLine = [address.address_line1, address.address_line2]
-    .filter(Boolean)
-    .join(', ');
+  const streetLine = [address.address_line1, address.address_line2].filter(Boolean).join(', ');
 
   const postalCode = address.postal_code || '';
   const city = address.city?.toUpperCase() || '';
-  const postalCityLine = postalCode && city
-    ? `${postalCode} ${city}`
-    : postalCode || city;
+  const postalCityLine = postalCode && city ? `${postalCode} ${city}` : postalCode || city;
 
   return {
     streetLine,
@@ -186,15 +167,11 @@ function formatAustrianAddress(address: AddressInput): FormattedAddress {
  * Example: Schanzenstrasse 7, 3030 BERNE
  */
 function formatSwissAddress(address: AddressInput): FormattedAddress {
-  const streetLine = [address.address_line1, address.address_line2]
-    .filter(Boolean)
-    .join(', ');
+  const streetLine = [address.address_line1, address.address_line2].filter(Boolean).join(', ');
 
   const postalCode = address.postal_code || '';
   const city = address.city?.toUpperCase() || '';
-  const postalCityLine = postalCode && city
-    ? `${postalCode} ${city}`
-    : postalCode || city;
+  const postalCityLine = postalCode && city ? `${postalCode} ${city}` : postalCode || city;
 
   return {
     streetLine,
@@ -208,23 +185,17 @@ function formatSwissAddress(address: AddressInput): FormattedAddress {
  * Default format for other countries
  */
 function formatDefaultAddress(address: AddressInput): FormattedAddress {
-  const streetLine = [address.address_line1, address.address_line2]
-    .filter(Boolean)
-    .join(', ');
+  const streetLine = [address.address_line1, address.address_line2].filter(Boolean).join(', ');
 
   const postalCode = address.postal_code || '';
   const city = address.city || '';
-  const postalCityLine = postalCode && city
-    ? `${postalCode} ${city}`
-    : postalCode || city;
+  const postalCityLine = postalCode && city ? `${postalCode} ${city}` : postalCode || city;
 
   return {
     streetLine,
     postalCityLine,
     countryLine: address.country_code || undefined,
-    fullAddress: [streetLine, postalCityLine, address.country_code]
-      .filter(Boolean)
-      .join('\n'),
+    fullAddress: [streetLine, postalCityLine, address.country_code].filter(Boolean).join('\n'),
   };
 }
 
@@ -263,9 +234,8 @@ export function formatPostalCodeCity(
   if (!postalCode && !city) return '-';
 
   const code = countryCode?.toUpperCase();
-  const formattedPostal = code === 'NL' && postalCode
-    ? formatDutchPostalCode(postalCode)
-    : postalCode;
+  const formattedPostal =
+    code === 'NL' && postalCode ? formatDutchPostalCode(postalCode) : postalCode;
 
   // For NL: double space, city in capitals
   // For other EU countries: single space, city in capitals

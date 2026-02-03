@@ -1,17 +1,10 @@
-import {
-  Button,
-  Group,
-  Modal,
-  Select,
-  TextInput,
-  Textarea,
-} from '@mantine/core';
+import { Button, Group, Modal, Select, TextInput, Textarea } from '@mantine/core';
 import { DataTable, useDataTableColumns } from 'mantine-datatable';
 import React, { useEffect, useState } from 'react';
 
 import { helpContent } from '../config/helpContent';
 import { useNotification } from '../contexts/NotificationContext';
-import { type LegalEntityEndpoint, apiV2 } from "../services/api";
+import { type LegalEntityEndpoint, apiV2 } from '../services/api';
 import { formatDateTime } from '../utils/dateFormat';
 import { getEmptyState } from '../utils/emptyStates';
 import { endpointSuccessMessages } from '../utils/successMessages';

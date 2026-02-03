@@ -111,7 +111,8 @@ const ContactsManagerComponent: React.FC<ContactsManagerProps> = ({
   };
 
   const contactTypeTooltips: Record<string, string> = {
-    AUTHORIZED_REP: 'Authorized representative (bestuurder/gevolmachtigde) - verified via eHerkenning',
+    AUTHORIZED_REP:
+      'Authorized representative (bestuurder/gevolmachtigde) - verified via eHerkenning',
     TECHNICAL: 'Technical contact for system integration and API issues',
     BILLING: 'Billing and invoicing contact',
     SUPPORT: 'Customer support and service desk contact',

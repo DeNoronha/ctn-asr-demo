@@ -28,9 +28,7 @@ export const AddressMap: React.FC<AddressMapProps> = ({
   height = 200,
 }) => {
   // Build full address string for geocoding
-  const fullAddress = [address, postalCode, city, country]
-    .filter(Boolean)
-    .join(', ');
+  const fullAddress = [address, postalCode, city, country].filter(Boolean).join(', ');
 
   // URL encode the address for the embed
   const encodedAddress = encodeURIComponent(fullAddress);

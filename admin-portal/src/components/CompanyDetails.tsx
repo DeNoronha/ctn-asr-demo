@@ -18,10 +18,15 @@ interface CompanyDetailsProps {
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Display component renders comprehensive company details with many conditional fields
-export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, identifiers = [], onEdit, onRefresh }) => {
+export const CompanyDetails: React.FC<CompanyDetailsProps> = ({
+  company,
+  identifiers = [],
+  onEdit,
+  onRefresh,
+}) => {
   const { t } = useTranslation();
   // Find EUID from identifiers for EUID field display
-  const euidIdentifier = identifiers.find(id => id.identifier_type === 'EUID');
+  const euidIdentifier = identifiers.find((id) => id.identifier_type === 'EUID');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -57,7 +62,9 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, identif
 
             <div className="detail-row">
               <div className="detail-label">{t('companyDetails.legalEntityId')}:</div>
-              <span style={{ fontFamily: 'monospace', fontSize: '0.9em' }}>{company.legal_entity_id || '-'}</span>
+              <span style={{ fontFamily: 'monospace', fontSize: '0.9em' }}>
+                {company.legal_entity_id || '-'}
+              </span>
             </div>
 
             <div className="detail-row">
@@ -122,7 +129,9 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ company, identif
 
             <div className="detail-row">
               <div className="detail-label">{t('companyDetails.postalCodeCity')}:</div>
-              <span>{formatPostalCodeCity(company.postal_code, company.city, company.country_code)}</span>
+              <span>
+                {formatPostalCodeCity(company.postal_code, company.city, company.country_code)}
+              </span>
             </div>
 
             {company.province && (
