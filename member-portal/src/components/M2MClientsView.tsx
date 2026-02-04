@@ -1,6 +1,9 @@
 /**
  * M2M Clients View - Member Portal
- * Member-scoped M2M client management (members see only their own clients)
+ *
+ * System Credentials for consuming other members' endpoints.
+ * These OAuth 2.0 credentials are used by YOUR backend systems to authenticate
+ * when calling endpoints published by OTHER CTN members.
  */
 
 import {
@@ -9,7 +12,6 @@ import {
   Checkbox,
   Group,
   Modal,
-  Select,
   TextInput,
   Textarea,
   Tooltip,
@@ -21,12 +23,6 @@ import { apiClient } from '../services/apiClient';
 import { AlertTriangle, Copy, Key, Plus, Trash2 } from './icons';
 import { LoadingState } from './shared/LoadingState';
 
-interface Endpoint {
-  legal_entity_endpoint_id: string;
-  endpoint_name: string;
-  endpoint_url: string;
-}
-
 interface M2MClient {
   m2m_client_id: string;
   legal_entity_id: string;
@@ -36,9 +32,6 @@ interface M2MClient {
   assigned_scopes: string[];
   is_active: boolean;
   dt_created: string;
-  legal_entity_endpoint_id?: string | null;
-  endpointName?: string | null;
-  endpointUrl?: string | null;
 }
 
 interface M2MClientsViewProps {
@@ -64,9 +57,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
   onNotification,
 }) => {
   const [clients, setClients] = useState<M2MClient[]>([]);
-  const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [loading, setLoading] = useState(false);
-  const [loadingEndpoints, setLoadingEndpoints] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showSecretDialog, setShowSecretDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -77,7 +68,6 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
     client_name: '',
     description: '',
     scopes: [] as string[],
-    legal_entity_endpoint_id: '' as string | null,
   });
   const [previewClientId, setPreviewClientId] = useState<string>('');
 
@@ -94,28 +84,6 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
       setPreviewClientId(uuid);
     }
   }, [showAddDialog, previewClientId]);
-
-  // Load endpoints when modal opens
-  useEffect(() => {
-    if (showAddDialog && endpoints.length === 0) {
-      loadEndpoints();
-    }
-  }, [showAddDialog, endpoints.length]);
-
-  const loadEndpoints = async () => {
-    setLoadingEndpoints(true);
-    try {
-      const data = await apiClient.member.getEndpoints();
-      const endpointsArray = Array.isArray(data?.endpoints) ? data.endpoints : [];
-      setEndpoints(endpointsArray);
-    } catch (error) {
-      console.error('Error loading endpoints:', error);
-      onNotification('Failed to load endpoints', 'error');
-      setEndpoints([]);
-    } finally {
-      setLoadingEndpoints(false);
-    }
-  };
 
   const loadClients = async () => {
     setLoading(true);
@@ -145,12 +113,11 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
         client_name: formData.client_name,
         description: formData.description,
         assigned_scopes: formData.scopes,
-        legal_entity_endpoint_id: formData.legal_entity_endpoint_id || null,
       });
 
-      onNotification('M2M client created successfully', 'success');
+      onNotification('System credential created successfully', 'success');
       setShowAddDialog(false);
-      setFormData({ client_name: '', description: '', scopes: [], legal_entity_endpoint_id: '' });
+      setFormData({ client_name: '', description: '', scopes: [] });
 
       // Show secret dialog with the generated secret
       setSelectedClient(newClient.client);
@@ -240,13 +207,13 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
         }}
       >
         <div>
-          <h3 style={{ margin: 0 }}>API Clients (M2M Authentication)</h3>
+          <h3 style={{ margin: 0 }}>System Credentials</h3>
           <p style={{ color: '#666', fontSize: '0.875rem', margin: '8px 0 0 0' }}>
-            Manage OAuth 2.0 API clients for secure system-to-system integration
+            OAuth 2.0 credentials for your systems to access endpoints from other CTN members
           </p>
         </div>
         <Button color="blue" onClick={() => setShowAddDialog(true)} disabled={loading}>
-          <Plus size={16} /> Add M2M Client
+          <Plus size={16} /> Add Credential
         </Button>
       </div>
 
@@ -262,10 +229,10 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
           >
             <Key size={48} style={{ color: '#9ca3af' }} />
             <p style={{ fontSize: '1.125rem', fontWeight: 500, margin: '16px 0 8px 0' }}>
-              No M2M clients configured
+              No system credentials configured
             </p>
             <p style={{ color: '#6b7280', margin: 0 }}>
-              Create API clients to allow your systems to access CTN data securely
+              Create credentials to allow your backend systems to call endpoints from other CTN members
             </p>
           </div>
         ) : (
@@ -305,28 +272,6 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
                           {scope}
                         </span>
                       ))}
-                    </div>
-                  );
-                },
-              },
-              {
-                accessor: 'endpointName',
-                title: 'Linked Endpoint',
-                width: 200,
-                render: (client) => {
-                  if (!client.endpointName) {
-                    return (
-                      <span style={{ color: '#9ca3af', fontSize: '0.875rem', fontStyle: 'italic' }}>
-                        Not linked
-                      </span>
-                    );
-                  }
-                  return (
-                    <div style={{ fontSize: '0.875rem' }}>
-                      <div style={{ fontWeight: 500 }}>{client.endpointName}</div>
-                      <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
-                        {client.endpointUrl}
-                      </div>
                     </div>
                   );
                 },
@@ -399,47 +344,17 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
         )}
       </LoadingState>
 
-      {/* Add M2M Client Dialog */}
+      {/* Add System Credential Dialog */}
       <Modal
         opened={showAddDialog}
         onClose={() => {
           setShowAddDialog(false);
           setPreviewClientId('');
         }}
-        title="Add M2M Client"
+        title="Add System Credential"
         size="lg"
       >
         <div style={{ padding: '20px 0' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <label
-              htmlFor="endpoint_select"
-              style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}
-            >
-              Published Endpoint (Optional)
-            </label>
-            <Select
-              id="endpoint_select"
-              value={formData.legal_entity_endpoint_id}
-              onChange={(value) => setFormData({ ...formData, legal_entity_endpoint_id: value })}
-              data={endpoints.map((ep) => ({
-                value: ep.legal_entity_endpoint_id,
-                label: `${ep.endpoint_name} - ${ep.endpoint_url}`,
-              }))}
-              placeholder={
-                loadingEndpoints ? 'Loading endpoints...' : 'Select an endpoint (optional)'
-              }
-              searchable
-              clearable
-              disabled={loadingEndpoints}
-              nothingFoundMessage="No endpoints configured yet"
-              style={{ width: '100%' }}
-            />
-            <p style={{ fontSize: '0.75rem', color: '#666', margin: '4px 0 0 0' }}>
-              Link this credential to a specific endpoint. One endpoint can have multiple
-              credentials.
-            </p>
-          </div>
-
           <div style={{ marginBottom: '20px' }}>
             <label
               htmlFor="preview_client_id"
@@ -473,15 +388,18 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
               htmlFor="client_name"
               style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}
             >
-              Client Name *
+              Credential Name *
             </label>
             <TextInput
               id="client_name"
               value={formData.client_name}
               onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-              placeholder="e.g., Container Tracking System"
+              placeholder="e.g., TMS Backend, ERP Integration"
               style={{ width: '100%' }}
             />
+            <p style={{ fontSize: '0.75rem', color: '#666', margin: '4px 0 0 0' }}>
+              Name of the backend system that will use this credential
+            </p>
           </div>
 
           <div style={{ marginBottom: '20px' }}>
@@ -495,7 +413,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Brief description of this client application"
+              placeholder="What will this system use CTN data for?"
               rows={3}
               style={{ width: '100%' }}
             />
@@ -503,8 +421,11 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
 
           <fieldset style={{ border: 'none', padding: 0, margin: '0 0 20px 0' }}>
             <legend style={{ display: 'block', marginBottom: '8px', fontWeight: 500, padding: 0 }}>
-              Assigned Scopes *
+              Requested Scopes *
             </legend>
+            <p style={{ fontSize: '0.75rem', color: '#666', margin: '0 0 8px 0' }}>
+              Select the data types your system needs to access from other members
+            </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
               {AVAILABLE_SCOPES.map((scope) => (
                 <Checkbox
@@ -525,7 +446,7 @@ export const M2MClientsView: React.FC<M2MClientsViewProps> = ({
             onClick={handleAddClient}
             disabled={!formData.client_name || formData.scopes.length === 0 || loading}
           >
-            Create Client
+            Create Credential
           </Button>
         </Group>
       </Modal>
