@@ -811,8 +811,16 @@ export async function initiateRegistration(
 
 /**
  * POST /v1/endpoints/:endpointId/send-verification
- * Step 2: Send verification email (mock in development)
- * Generates a token and stores it in the database
+ * Step 2: Callback Challenge-Response Verification
+ *
+ * Sends a challenge to the endpoint URL and verifies the response.
+ * This proves the registrant actually controls the endpoint.
+ *
+ * Flow:
+ * 1. Generate a unique challenge token
+ * 2. POST to their endpoint: { "type": "ctn_verification", "challenge": "abc123" }
+ * 3. Expect response: { "challenge": "abc123" }
+ * 4. If challenge matches → endpoint verified
  */
 export async function sendVerificationEmail(
 	req: Request,
@@ -845,56 +853,156 @@ export async function sendVerificationEmail(
 			return;
 		}
 
-		// Generate verification token
-		const token = generateVerificationToken();
-		const expiresAt = new Date(
-			Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000,
-		);
+		if (!endpoint.endpoint_url) {
+			res.status(400).json({ error: "Endpoint URL is required for verification" });
+			return;
+		}
 
-		// Update endpoint with verification token
+		// SSRF protection
+		const urlValidation = isUrlSafeForFetch(endpoint.endpoint_url);
+		if (!urlValidation.safe) {
+			res.status(400).json({ error: `Invalid URL: ${urlValidation.reason}` });
+			return;
+		}
+
+		// Generate challenge token
+		const challenge = generateVerificationToken();
+		const timestamp = new Date().toISOString();
+
+		// Update status to indicate verification in progress
 		await pool.query(
 			`
       UPDATE legal_entity_endpoint
       SET verification_token = $2,
           verification_status = 'SENT',
           verification_sent_at = NOW(),
-          verification_expires_at = $3,
           dt_modified = NOW()
       WHERE legal_entity_endpoint_id = $1
     `,
-			[endpointId, token, expiresAt.toISOString()],
+			[endpointId, challenge],
 		);
 
-		console.log(
-			`Verification email "sent" for endpoint ${endpointId}, token: ${token.substring(0, 8)}...`,
-		);
+		// Prepare the challenge payload
+		const challengePayload = {
+			type: "ctn_endpoint_verification",
+			challenge: challenge,
+			endpoint_id: endpointId,
+			timestamp: timestamp,
+			// Include info so their endpoint knows what this is
+			message: "Please respond with the challenge value to verify endpoint ownership",
+		};
 
-		// In development/mock mode, return the token directly
-		// In production, this would send an actual email
-		const isMockMode =
-			process.env.NODE_ENV !== "production" ||
-			process.env.MOCK_EMAIL === "true";
+		console.log(`Sending verification challenge to ${endpoint.endpoint_url}`);
 
-		res.json({
-			message: "Verification email sent",
-			mock: isMockMode,
-			// Only include token in mock mode for development
-			...(isMockMode && { token, expires_at: expiresAt.toISOString() }),
-		});
-	} catch (error: any) {
-		console.error("Error sending verification email:", error);
-		res
-			.status(500)
-			.json({
-				error: "Failed to send verification email",
-				detail: error.message,
+		let verificationSuccess = false;
+		let errorMessage: string | undefined;
+		let responseData: any;
+
+		try {
+			const controller = new AbortController();
+			const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+			const response = await fetch(endpoint.endpoint_url, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"X-CTN-Verification": "true",
+					"X-CTN-Challenge": challenge,
+				},
+				body: JSON.stringify(challengePayload),
+				signal: controller.signal,
+				redirect: "manual",
 			});
+			clearTimeout(timeout);
+
+			if (response.ok) {
+				try {
+					responseData = await response.json();
+
+					// Check if the challenge was echoed back correctly
+					if (responseData.challenge === challenge) {
+						verificationSuccess = true;
+					} else {
+						errorMessage = "Challenge response mismatch. Endpoint must echo back the challenge value.";
+					}
+				} catch {
+					errorMessage = "Endpoint did not return valid JSON response";
+				}
+			} else {
+				errorMessage = `Endpoint returned HTTP ${response.status}`;
+			}
+		} catch (fetchError: any) {
+			if (fetchError.name === "AbortError") {
+				errorMessage = "Connection timeout (15s) - endpoint did not respond";
+			} else {
+				errorMessage = fetchError.message || "Failed to connect to endpoint";
+			}
+		}
+
+		if (verificationSuccess) {
+			// Update to VERIFIED status
+			const { rows: updatedRows } = await pool.query(
+				`
+        UPDATE legal_entity_endpoint
+        SET verification_status = 'VERIFIED',
+            verification_token = NULL,
+            dt_modified = NOW()
+        WHERE legal_entity_endpoint_id = $1
+        RETURNING *
+      `,
+				[endpointId],
+			);
+
+			console.log(`Endpoint ${endpointId} verified successfully via callback`);
+
+			// Invalidate cache
+			invalidateCacheForUser(req, `/v1/legal-entities/${endpoint.legal_entity_id}/endpoints`);
+			invalidateCacheForUser(req, "/v1/member-endpoints");
+
+			res.json({
+				message: "Endpoint verified successfully",
+				verified: true,
+				endpoint: updatedRows[0],
+			});
+		} else {
+			// Update to FAILED status
+			await pool.query(
+				`
+        UPDATE legal_entity_endpoint
+        SET verification_status = 'FAILED',
+            verification_token = NULL,
+            connection_test_details = $2,
+            dt_modified = NOW()
+        WHERE legal_entity_endpoint_id = $1
+      `,
+				[endpointId, JSON.stringify({ error: errorMessage, attempted_at: timestamp })],
+			);
+
+			res.status(400).json({
+				message: "Endpoint verification failed",
+				verified: false,
+				error: errorMessage,
+				hint: "Your endpoint must respond to POST requests with JSON containing the challenge value: { \"challenge\": \"<received_challenge>\" }",
+			});
+		}
+	} catch (error: any) {
+		console.error("Error during endpoint verification:", error);
+		res.status(500).json({
+			error: "Failed to verify endpoint",
+			detail: error.message,
+		});
 	}
 }
 
 /**
  * POST /v1/endpoints/:endpointId/verify-token
- * Step 3: Verify the token provided by user
+ * Step 3: Check verification status (callback verification is automatic)
+ *
+ * With callback verification, this endpoint now serves as a status check.
+ * The actual verification happens in send-verification via callback.
+ *
+ * For backward compatibility, if a token is provided, it will be validated
+ * against the stored token (manual verification fallback).
  */
 export async function verifyToken(req: Request, res: Response): Promise<void> {
 	try {

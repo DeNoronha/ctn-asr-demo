@@ -39,11 +39,21 @@ export declare class EndpointsEndpoint {
      */
     initiateRegistration(legalEntityId: string, request: InitiateEndpointRegistrationRequest): Promise<Endpoint>;
     /**
-     * Step 2: Send verification email (mock in development)
+     * Step 2: Verify endpoint via callback challenge-response
+     *
+     * Sends a POST request to the endpoint URL with a challenge.
+     * Endpoint must respond with the challenge value to verify ownership.
+     *
+     * Response on success: { message, verified: true, endpoint }
+     * Response on failure: { message, verified: false, error, hint }
      */
     sendVerificationEmail(endpointId: string): Promise<{
         message: string;
-        mock: boolean;
+        verified?: boolean;
+        endpoint?: Endpoint;
+        error?: string;
+        hint?: string;
+        mock?: boolean;
         token?: string;
         expires_at?: string;
     }>;

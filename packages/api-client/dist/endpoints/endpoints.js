@@ -58,7 +58,13 @@ export class EndpointsEndpoint {
         return data;
     }
     /**
-     * Step 2: Send verification email (mock in development)
+     * Step 2: Verify endpoint via callback challenge-response
+     *
+     * Sends a POST request to the endpoint URL with a challenge.
+     * Endpoint must respond with the challenge value to verify ownership.
+     *
+     * Response on success: { message, verified: true, endpoint }
+     * Response on failure: { message, verified: false, error, hint }
      */
     async sendVerificationEmail(endpointId) {
         const { data } = await this.axios.post(`/endpoints/${endpointId}/send-verification`);

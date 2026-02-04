@@ -141,8 +141,14 @@ router.post(
 
 /**
  * POST /v1/endpoints/:endpointId/send-verification
- * Step 2: Send verification email (mock in development)
- * Generates token and stores it for later verification
+ * Step 2: Callback Challenge-Response Verification
+ *
+ * Sends a challenge to the endpoint URL:
+ * - POST { "type": "ctn_endpoint_verification", "challenge": "abc123" }
+ * - Expects response: { "challenge": "abc123" }
+ * - If challenge matches → endpoint verified immediately
+ *
+ * This proves the registrant actually controls the endpoint.
  * Requires authentication
  */
 router.post(
@@ -153,8 +159,8 @@ router.post(
 
 /**
  * POST /v1/endpoints/:endpointId/verify-token
- * Step 3: Verify the token provided by user
- * Validates token and updates status to VERIFIED
+ * Step 3: Check verification status (callback handles verification automatically)
+ * Serves as status check or manual token verification fallback
  * Requires authentication
  */
 router.post(

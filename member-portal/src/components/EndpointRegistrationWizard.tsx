@@ -21,9 +21,8 @@ import { notifications } from '@mantine/notifications';
 import {
   IconAlertCircle,
   IconCheck,
-  IconClock,
   IconKey,
-  IconMail,
+  IconLink,
   IconRocket,
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
@@ -62,8 +61,6 @@ export function EndpointRegistrationWizard({
   const [active, setActive] = useState(0);
   const [loading, setLoading] = useState(false);
   const [endpointId, setEndpointId] = useState<string | null>(null);
-  const [verificationToken, setVerificationToken] = useState<string | null>(null);
-  const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<TestResults | null>(null);
 
   // Initialize API client with retry logic and token management
@@ -95,16 +92,7 @@ export function EndpointRegistrationWizard({
     },
   });
 
-  const tokenForm = useForm({
-    initialValues: {
-      token: '',
-    },
-    validate: {
-      token: (value) => (value.length === 0 ? 'Token is required' : null),
-    },
-  });
-
-  // Step 1: Create endpoint and generate token
+  // Step 1: Create endpoint (verification happens in Step 2)
   const handleInitiateRegistration = async () => {
     if (!form.validate().hasErrors) {
       setLoading(true);
@@ -116,20 +104,9 @@ export function EndpointRegistrationWizard({
         )) as unknown as Endpoint;
         setEndpointId(endpoint.legal_entity_endpoint_id);
 
-        // Automatically send verification email
-        const emailResult = await apiClient.endpoints.sendVerificationEmail(
-          endpoint.legal_entity_endpoint_id
-        );
-
-        // In mock mode, the token is returned
-        if (emailResult.mock && emailResult.token) {
-          setVerificationToken(emailResult.token);
-          setExpiresAt(emailResult.expires_at || null);
-        }
-
         notifications.show({
-          title: 'Registration Initiated',
-          message: 'Endpoint created. Verification email sent.',
+          title: 'Endpoint Created',
+          message: 'Now verify ownership by allowing our callback request.',
           color: 'green',
           icon: <IconCheck size={16} />,
         });
@@ -149,35 +126,46 @@ export function EndpointRegistrationWizard({
     }
   };
 
-  // Step 2: Verify token
-  const handleVerifyToken = async () => {
-    if (!tokenForm.validate().hasErrors && endpointId) {
-      setLoading(true);
-      try {
-        // Verify token using api-client
-        await apiClient.endpoints.verifyToken(endpointId, {
-          token: tokenForm.values.token,
-        });
+  // Step 2: Verify endpoint via callback challenge-response
+  const handleVerifyEndpoint = async () => {
+    if (!endpointId) return;
 
+    setLoading(true);
+    try {
+      // Send verification callback to endpoint
+      // Backend will POST a challenge to the endpoint URL
+      // Endpoint must respond with the challenge value to verify ownership
+      const result = await apiClient.endpoints.sendVerificationEmail(endpointId);
+
+      if (result.verified) {
         notifications.show({
-          title: 'Email Verified',
-          message: 'Your endpoint email has been verified successfully.',
+          title: 'Endpoint Verified',
+          message: 'Your endpoint responded correctly to the verification challenge.',
           color: 'green',
           icon: <IconCheck size={16} />,
         });
-
         setActive(2);
-      } catch (error) {
-        console.error('Error verifying token:', error);
+      } else {
         notifications.show({
           title: 'Verification Failed',
-          message: error instanceof Error ? error.message : 'Failed to verify token',
+          message: result.error || 'Endpoint did not respond correctly to the challenge.',
           color: 'red',
           icon: <IconAlertCircle size={16} />,
         });
-      } finally {
-        setLoading(false);
       }
+    } catch (error: any) {
+      console.error('Error verifying endpoint:', error);
+      const errorMessage = error?.response?.data?.error || error?.message || 'Failed to verify endpoint';
+      const hint = error?.response?.data?.hint;
+
+      notifications.show({
+        title: 'Verification Failed',
+        message: hint ? `${errorMessage}. ${hint}` : errorMessage,
+        color: 'red',
+        icon: <IconAlertCircle size={16} />,
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -315,44 +303,67 @@ export function EndpointRegistrationWizard({
 
         <Stepper.Step
           label="2. Verify"
-          description="Email verification"
-          icon={<IconMail size={18} />}
+          description="Endpoint callback"
+          icon={<IconLink size={18} />}
         >
           <Stack gap="md" mt="md">
-            <Alert icon={<IconMail size={16} />} title="Verification Email Sent" color="blue">
-              A verification email has been sent with a token. Please enter the token below.
+            <Alert icon={<IconLink size={16} />} title="Verify Endpoint Ownership" color="blue">
+              We will send a challenge request to your endpoint to verify you control it.
             </Alert>
 
-            {verificationToken && (
-              <Alert icon={<IconKey size={16} />} title="Mock Mode - Token Provided" color="teal">
-                <Text size="sm" mb="xs">
-                  In development mode, the token is displayed here:
+            <Paper withBorder p="md">
+              <Stack gap="xs">
+                <Text size="sm" fw={500}>
+                  How Callback Verification Works
                 </Text>
-                <Code block>{verificationToken}</Code>
-                {expiresAt && (
-                  <Group gap="xs" mt="xs">
-                    <IconClock size={14} />
-                    <Text size="xs" c="dimmed">
-                      Expires: {new Date(expiresAt).toLocaleString()}
-                    </Text>
-                  </Group>
-                )}
-              </Alert>
-            )}
+                <Text size="sm" c="dimmed">
+                  When you click "Verify Endpoint", we will:
+                </Text>
+                <List size="sm" mt="xs">
+                  <List.Item
+                    icon={
+                      <ThemeIcon size={16} radius="xl" color="blue">
+                        <IconCheck size={12} />
+                      </ThemeIcon>
+                    }
+                  >
+                    Send a POST request to your endpoint with a challenge token
+                  </List.Item>
+                  <List.Item
+                    icon={
+                      <ThemeIcon size={16} radius="xl" color="blue">
+                        <IconCheck size={12} />
+                      </ThemeIcon>
+                    }
+                  >
+                    Your endpoint must respond with the same challenge value
+                  </List.Item>
+                  <List.Item
+                    icon={
+                      <ThemeIcon size={16} radius="xl" color="blue">
+                        <IconCheck size={12} />
+                      </ThemeIcon>
+                    }
+                  >
+                    If the challenge matches, your endpoint is verified
+                  </List.Item>
+                </List>
+              </Stack>
+            </Paper>
 
-            <TextInput
-              label="Verification Token"
-              placeholder="Enter the token from the email"
-              required
-              {...tokenForm.getInputProps('token')}
-            />
+            <Alert icon={<IconKey size={16} />} title="Required Endpoint Response" color="teal">
+              <Text size="sm" mb="xs">
+                Your endpoint must respond to POST requests with JSON:
+              </Text>
+              <Code block>{'{ "challenge": "<received_challenge_value>" }'}</Code>
+            </Alert>
 
             <Group justify="space-between" mt="md">
               <Button variant="default" onClick={() => setActive(0)}>
                 Back
               </Button>
-              <Button onClick={handleVerifyToken} loading={loading}>
-                Verify Token
+              <Button onClick={handleVerifyEndpoint} loading={loading} leftSection={<IconLink size={16} />}>
+                Verify Endpoint
               </Button>
             </Group>
           </Stack>
@@ -360,8 +371,8 @@ export function EndpointRegistrationWizard({
 
         <Stepper.Step label="3. Test" description="Connection test" icon={<IconKey size={18} />}>
           <Stack gap="md" mt="md">
-            <Alert icon={<IconCheck size={16} />} title="Email Verified" color="green">
-              Your email has been verified successfully. Now let's test the endpoint connection.
+            <Alert icon={<IconCheck size={16} />} title="Endpoint Verified" color="green">
+              Your endpoint ownership has been verified. Now let's test the connection.
             </Alert>
 
             <Paper withBorder p="md">
