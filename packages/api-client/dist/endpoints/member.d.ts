@@ -1,5 +1,5 @@
-import axiosLib from 'axios';
-import type { Contact, ContactRequest, UpdateContactRequest, Endpoint } from '../types';
+import type axiosLib from "axios";
+import type { Contact, ContactRequest, Endpoint, UpdateContactRequest } from "../types";
 /**
  * Member Self-Service Endpoint
  *

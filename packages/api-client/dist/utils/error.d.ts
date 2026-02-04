@@ -1,4 +1,4 @@
-import { ApiError } from '../types';
+import type { ApiError } from "../types";
 export declare class AsrApiError extends Error implements ApiError {
     status: number;
     code?: string;

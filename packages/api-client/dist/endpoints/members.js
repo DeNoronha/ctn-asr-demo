@@ -6,7 +6,7 @@ export class MembersEndpoint {
      * Get all members (admin only)
      */
     async getAll(params) {
-        const { data } = await this.axios.get('/all-members', { params });
+        const { data } = await this.axios.get("/all-members", { params });
         return data;
     }
     /**
@@ -20,7 +20,7 @@ export class MembersEndpoint {
      * Create new member
      */
     async create(member) {
-        const { data } = await this.axios.post('/members', member);
+        const { data } = await this.axios.post("/members", member);
         return data;
     }
     /**

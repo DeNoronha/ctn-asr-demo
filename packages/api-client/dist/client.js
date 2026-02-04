@@ -1,14 +1,14 @@
-import axios from 'axios';
-import { configureRetry } from './utils/retry';
-import { configureInterceptors } from './utils/interceptors';
-import { MembersEndpoint } from './endpoints/members';
-import { MemberEndpoint } from './endpoints/member';
-import { LegalEntitiesEndpoint } from './endpoints/legalEntities';
-import { ContactsEndpoint } from './endpoints/contacts';
-import { IdentifiersEndpoint } from './endpoints/identifiers';
-import { EndpointsEndpoint } from './endpoints/endpoints';
-import { AuditLogsEndpoint } from './endpoints/audit';
-import { AuthEndpoint } from './endpoints/auth';
+import axios from "axios";
+import { AuditLogsEndpoint } from "./endpoints/audit";
+import { AuthEndpoint } from "./endpoints/auth";
+import { ContactsEndpoint } from "./endpoints/contacts";
+import { EndpointsEndpoint } from "./endpoints/endpoints";
+import { IdentifiersEndpoint } from "./endpoints/identifiers";
+import { LegalEntitiesEndpoint } from "./endpoints/legalEntities";
+import { MemberEndpoint } from "./endpoints/member";
+import { MembersEndpoint } from "./endpoints/members";
+import { configureInterceptors } from "./utils/interceptors";
+import { configureRetry } from "./utils/retry";
 /**
  * CTN Association Register API Client
  *
@@ -40,18 +40,18 @@ export class AsrApiClient {
     constructor(config) {
         // Validate configuration
         if (!config.baseURL) {
-            throw new Error('baseURL is required in ApiClientConfig');
+            throw new Error("baseURL is required in ApiClientConfig");
         }
         if (!config.getAccessToken) {
-            throw new Error('getAccessToken is required in ApiClientConfig');
+            throw new Error("getAccessToken is required in ApiClientConfig");
         }
         // Create axios instance
         this.axiosInstance = axios.create({
             baseURL: config.baseURL,
             timeout: config.timeout || 30000,
             headers: {
-                'Content-Type': 'application/json'
-            }
+                "Content-Type": "application/json",
+            },
         });
         // Configure retry logic
         configureRetry(this.axiosInstance, config.retryAttempts);

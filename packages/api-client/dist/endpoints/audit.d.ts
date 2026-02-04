@@ -1,5 +1,5 @@
-import axiosLib from 'axios';
-import type { AuditLog, AuditLogFilters, PaginatedResponse } from '../types';
+import type axiosLib from "axios";
+import type { AuditLog, AuditLogFilters, PaginatedResponse } from "../types";
 export declare class AuditLogsEndpoint {
     private axios;
     constructor(axios: ReturnType<typeof axiosLib.create>);

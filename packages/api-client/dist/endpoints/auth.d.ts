@@ -1,5 +1,5 @@
-import axiosLib from 'axios';
-import type { PartyInfo } from '../types';
+import type axiosLib from "axios";
+import type { PartyInfo } from "../types";
 export declare class AuthEndpoint {
     private axios;
     constructor(axios: ReturnType<typeof axiosLib.create>);

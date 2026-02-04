@@ -6,7 +6,7 @@ export class LegalEntitiesEndpoint {
      * Get all legal entities
      */
     async getAll() {
-        const { data } = await this.axios.get('/legal-entities');
+        const { data } = await this.axios.get("/legal-entities");
         return data;
     }
     /**

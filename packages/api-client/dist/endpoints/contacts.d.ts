@@ -1,5 +1,5 @@
-import axiosLib from 'axios';
-import type { Contact, ContactRequest, UpdateContactRequest } from '../types';
+import type axiosLib from "axios";
+import type { Contact, ContactRequest, UpdateContactRequest } from "../types";
 export declare class ContactsEndpoint {
     private axios;
     constructor(axios: ReturnType<typeof axiosLib.create>);

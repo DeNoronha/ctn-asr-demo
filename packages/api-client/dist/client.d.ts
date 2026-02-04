@@ -1,13 +1,13 @@
-import axios from 'axios';
-import { ApiClientConfig } from './types';
-import { MembersEndpoint } from './endpoints/members';
-import { MemberEndpoint } from './endpoints/member';
-import { LegalEntitiesEndpoint } from './endpoints/legalEntities';
-import { ContactsEndpoint } from './endpoints/contacts';
-import { IdentifiersEndpoint } from './endpoints/identifiers';
-import { EndpointsEndpoint } from './endpoints/endpoints';
-import { AuditLogsEndpoint } from './endpoints/audit';
-import { AuthEndpoint } from './endpoints/auth';
+import axios from "axios";
+import { AuditLogsEndpoint } from "./endpoints/audit";
+import { AuthEndpoint } from "./endpoints/auth";
+import { ContactsEndpoint } from "./endpoints/contacts";
+import { EndpointsEndpoint } from "./endpoints/endpoints";
+import { IdentifiersEndpoint } from "./endpoints/identifiers";
+import { LegalEntitiesEndpoint } from "./endpoints/legalEntities";
+import { MemberEndpoint } from "./endpoints/member";
+import { MembersEndpoint } from "./endpoints/members";
+import type { ApiClientConfig } from "./types";
 /**
  * CTN Association Register API Client
  *

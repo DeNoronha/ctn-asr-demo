@@ -1,7 +1,7 @@
 export class AsrApiError extends Error {
     constructor(message, status, code, details) {
         super(message);
-        this.name = 'AsrApiError';
+        this.name = "AsrApiError";
         this.status = status;
         this.code = code;
         this.details = details;
@@ -18,11 +18,11 @@ export class AsrApiError extends Error {
         }
         else if (error.request) {
             // Request made but no response received
-            return new AsrApiError('No response from server', 0, 'NETWORK_ERROR');
+            return new AsrApiError("No response from server", 0, "NETWORK_ERROR");
         }
         else {
             // Error setting up request
-            return new AsrApiError(error.message, 0, 'UNKNOWN_ERROR');
+            return new AsrApiError(error.message, 0, "UNKNOWN_ERROR");
         }
     }
     /**

@@ -91,4 +91,87 @@ export class EndpointsEndpoint {
         const { data } = await this.axios.post(`/endpoints/${endpointId}/activate`);
         return data;
     }
+    // ==========================================================================
+    // ENDPOINT LIFECYCLE - PUBLICATION (Phase 3)
+    // ==========================================================================
+    /**
+     * Publish endpoint to CTN directory (makes it discoverable)
+     * Requires endpoint to be VERIFIED
+     */
+    async publish(endpointId) {
+        const { data } = await this.axios.post(`/endpoints/${endpointId}/publish`);
+        return data;
+    }
+    /**
+     * Unpublish endpoint from CTN directory (removes from discovery)
+     */
+    async unpublish(endpointId) {
+        const { data } = await this.axios.post(`/endpoints/${endpointId}/unpublish`);
+        return data;
+    }
+    // ==========================================================================
+    // ENDPOINT DIRECTORY - CONSUMER DISCOVERY (Phase 4)
+    // ==========================================================================
+    /**
+     * Get published endpoints for consumer discovery
+     * Excludes consumer's own endpoints
+     */
+    async getDirectory() {
+        const { data } = await this.axios.get("/endpoint-directory");
+        return data.endpoints;
+    }
+    // ==========================================================================
+    // ACCESS REQUEST WORKFLOW (Phase 4-5)
+    // ==========================================================================
+    /**
+     * Consumer requests access to an endpoint
+     * For 'open' endpoints: auto-approved immediately
+     * For 'restricted'/'private': creates pending request
+     */
+    async requestAccess(endpointId, payload) {
+        const { data } = await this.axios.post(`/endpoints/${endpointId}/request-access`, payload || {});
+        return data;
+    }
+    /**
+     * Provider views access requests for their endpoint
+     * @param status Optional filter by status (pending, approved, denied, revoked)
+     */
+    async getAccessRequests(endpointId, status) {
+        const params = status ? { status } : {};
+        const { data } = await this.axios.get(`/endpoints/${endpointId}/access-requests`, { params });
+        return data.access_requests;
+    }
+    /**
+     * Provider approves an access request
+     * Creates a grant for the consumer
+     */
+    async approveAccess(requestId, payload) {
+        const { data } = await this.axios.post(`/access-requests/${requestId}/approve`, payload || {});
+        return data;
+    }
+    /**
+     * Provider denies an access request
+     */
+    async denyAccess(requestId, payload) {
+        const { data } = await this.axios.post(`/access-requests/${requestId}/deny`, payload || {});
+        return data;
+    }
+    // ==========================================================================
+    // CONSUMER GRANTS (Phase 6)
+    // ==========================================================================
+    /**
+     * Consumer views their granted endpoint accesses
+     */
+    async getMyGrants() {
+        const { data } = await this.axios.get("/my-access-grants");
+        return data.grants;
+    }
+    /**
+     * Revoke an access grant
+     * Can be done by provider (endpoint owner) or consumer (grant holder)
+     */
+    async revokeGrant(grantId, payload) {
+        const { data } = await this.axios.post(`/grants/${grantId}/revoke`, payload || {});
+        return data;
+    }
 }

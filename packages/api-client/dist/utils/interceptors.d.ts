@@ -1,4 +1,4 @@
-import axiosLib from 'axios';
+import type axiosLib from "axios";
 /**
  * Configure axios interceptors for authentication and error handling.
  *

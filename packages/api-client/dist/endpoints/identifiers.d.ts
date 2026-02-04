@@ -1,5 +1,5 @@
-import axiosLib from 'axios';
-import type { Identifier, CreateIdentifierRequest, UpdateIdentifierRequest } from '../types';
+import type axiosLib from "axios";
+import type { CreateIdentifierRequest, Identifier, UpdateIdentifierRequest } from "../types";
 export declare class IdentifiersEndpoint {
     private axios;
     constructor(axios: ReturnType<typeof axiosLib.create>);

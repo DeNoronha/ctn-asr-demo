@@ -1,5 +1,5 @@
-import axiosLib from 'axios';
-import type { Member, CreateMemberRequest, UpdateMemberRequest, PaginatedResponse, PaginationParams } from '../types';
+import type axiosLib from "axios";
+import type { CreateMemberRequest, Member, PaginatedResponse, PaginationParams, UpdateMemberRequest } from "../types";
 export declare class MembersEndpoint {
     private axios;
     constructor(axios: ReturnType<typeof axiosLib.create>);

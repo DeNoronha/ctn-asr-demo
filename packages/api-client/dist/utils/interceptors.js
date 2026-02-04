@@ -1,4 +1,4 @@
-import { AsrApiError } from './error';
+import { AsrApiError } from "./error";
 /**
  * Configure axios interceptors for authentication and error handling.
  *
@@ -16,7 +16,7 @@ export function configureInterceptors(instance, getAccessToken, onError) {
             }
         }
         catch (error) {
-            console.error('Failed to get access token:', error);
+            console.error("Failed to get access token:", error);
             throw error;
         }
         return config;

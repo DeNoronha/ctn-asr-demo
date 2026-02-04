@@ -6,7 +6,7 @@ export class AuditLogsEndpoint {
      * Get audit logs with optional filters
      */
     async getAll(filters) {
-        const { data } = await this.axios.get('/audit-logs', { params: filters });
+        const { data } = await this.axios.get("/audit-logs", { params: filters });
         return data;
     }
     /**
@@ -20,11 +20,11 @@ export class AuditLogsEndpoint {
      * Get audit logs for a specific resource
      */
     async getByResource(resourceType, resourceId) {
-        const { data } = await this.axios.get('/audit-logs', {
+        const { data } = await this.axios.get("/audit-logs", {
             params: {
                 resource_type: resourceType,
-                resource_id: resourceId
-            }
+                resource_id: resourceId,
+            },
         });
         return Array.isArray(data) ? data : data.data;
     }
@@ -32,11 +32,11 @@ export class AuditLogsEndpoint {
      * Get audit logs for a specific user
      */
     async getByUser(userEmail, filters) {
-        const { data } = await this.axios.get('/audit-logs', {
+        const { data } = await this.axios.get("/audit-logs", {
             params: {
                 ...filters,
-                user_email: userEmail
-            }
+                user_email: userEmail,
+            },
         });
         return data;
     }

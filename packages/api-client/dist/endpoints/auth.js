@@ -6,7 +6,7 @@ export class AuthEndpoint {
      * Get current user's party information
      */
     async getPartyInfo() {
-        const { data } = await this.axios.get('/me/party-info');
+        const { data } = await this.axios.get("/me/party-info");
         return data;
     }
     /**
@@ -14,7 +14,7 @@ export class AuthEndpoint {
      */
     async validateToken() {
         try {
-            const { data } = await this.axios.get('/me/validate');
+            const { data } = await this.axios.get("/me/validate");
             return { valid: true, expires_at: data.expires_at };
         }
         catch (error) {

@@ -12,27 +12,27 @@ export class MemberEndpoint {
      * Get current member's profile
      */
     async getProfile() {
-        const { data } = await this.axios.get('/member/profile');
+        const { data } = await this.axios.get("/member/profile");
         return data;
     }
     /**
      * Update current member's profile
      */
     async updateProfile(updates) {
-        await this.axios.put('/member/profile', updates);
+        await this.axios.put("/member/profile", updates);
     }
     /**
      * Get current member's contacts
      */
     async getContacts() {
-        const { data } = await this.axios.get('/member-contacts');
+        const { data } = await this.axios.get("/member-contacts");
         return data;
     }
     /**
      * Create contact for current member
      */
     async createContact(contact) {
-        const { data } = await this.axios.post('/member/contacts', contact);
+        const { data } = await this.axios.post("/member/contacts", contact);
         return data;
     }
     /**
@@ -46,14 +46,14 @@ export class MemberEndpoint {
      * Get current member's endpoints
      */
     async getEndpoints() {
-        const { data } = await this.axios.get('/member-endpoints');
+        const { data } = await this.axios.get("/member-endpoints");
         return data;
     }
     /**
      * Create endpoint for current member
      */
     async createEndpoint(endpoint) {
-        const { data } = await this.axios.post('/member/endpoints', endpoint);
+        const { data } = await this.axios.post("/member/endpoints", endpoint);
         return data;
     }
     /**
@@ -73,14 +73,14 @@ export class MemberEndpoint {
      * Get current member's API tokens
      */
     async getTokens() {
-        const { data } = await this.axios.get('/member/tokens');
+        const { data } = await this.axios.get("/member/tokens");
         return data;
     }
     /**
      * Create API token for current member
      */
     async createToken(tokenData) {
-        const { data } = await this.axios.post('/member/tokens', tokenData);
+        const { data } = await this.axios.post("/member/tokens", tokenData);
         return data;
     }
     /**
@@ -156,10 +156,10 @@ export class MemberEndpoint {
      */
     async uploadKvkDocument(legalEntityId, file) {
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append("file", file);
         const { data } = await this.axios.post(`/legal-entities/${legalEntityId}/kvk-document`, formData, {
             headers: {
-                'Content-Type': 'multipart/form-data',
+                "Content-Type": "multipart/form-data",
             },
         });
         return data;

@@ -1,5 +1,5 @@
-import axiosLib from 'axios';
-import type { LegalEntity, UpdateLegalEntityRequest, PaginatedResponse } from '../types';
+import type axiosLib from "axios";
+import type { LegalEntity, PaginatedResponse, UpdateLegalEntityRequest } from "../types";
 export declare class LegalEntitiesEndpoint {
     private axios;
     constructor(axios: ReturnType<typeof axiosLib.create>);
