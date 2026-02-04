@@ -13,14 +13,20 @@
  * - PATCH /v1/endpoints/:endpointId/toggle - Toggle endpoint active status
  * - GET  /v1/member-endpoints - Get endpoints for current user's entity
  *
+ * Registration Workflow Routes:
+ * - POST /v1/entities/:legalEntityId/endpoints/register - Initiate registration
+ * - POST /v1/endpoints/:endpointId/send-verification - Send verification email
+ * - POST /v1/endpoints/:endpointId/verify-token - Verify email token
+ * - POST /v1/endpoints/:endpointId/activate - Activate endpoint
+ *
  * @module routes/v1/endpoints
  */
 
-import { Router } from 'express';
-import { requireAuth } from '../middleware/requireAuth';
-import { cacheMiddleware } from '../../middleware/cache';
-import { CacheTTL } from '../../utils/cache';
-import * as endpointsController from '../../controllers/endpoints.controller';
+import { Router } from "express";
+import * as endpointsController from "../../controllers/endpoints.controller";
+import { cacheMiddleware } from "../../middleware/cache";
+import { CacheTTL } from "../../utils/cache";
+import { requireAuth } from "../middleware/requireAuth";
 
 const router = Router();
 
@@ -34,9 +40,9 @@ const router = Router();
  * Requires authentication
  */
 router.get(
-  '/v1/legal-entities/:legalentityid/endpoints',
-  requireAuth,
-  endpointsController.getEndpointsByLegalEntity
+	"/v1/legal-entities/:legalentityid/endpoints",
+	requireAuth,
+	endpointsController.getEndpointsByLegalEntity,
 );
 
 /**
@@ -45,9 +51,9 @@ router.get(
  * Requires authentication
  */
 router.post(
-  '/v1/legal-entities/:legalentityid/endpoints',
-  requireAuth,
-  endpointsController.createEndpointForLegalEntity
+	"/v1/legal-entities/:legalentityid/endpoints",
+	requireAuth,
+	endpointsController.createEndpointForLegalEntity,
 );
 
 // ============================================================================
@@ -59,14 +65,22 @@ router.post(
  * Update an endpoint
  * Requires authentication
  */
-router.put('/v1/endpoints/:endpointId', requireAuth, endpointsController.updateEndpoint);
+router.put(
+	"/v1/endpoints/:endpointId",
+	requireAuth,
+	endpointsController.updateEndpoint,
+);
 
 /**
  * DELETE /v1/endpoints/:endpointId
  * Soft-delete an endpoint
  * Requires authentication
  */
-router.delete('/v1/endpoints/:endpointId', requireAuth, endpointsController.deleteEndpoint);
+router.delete(
+	"/v1/endpoints/:endpointId",
+	requireAuth,
+	endpointsController.deleteEndpoint,
+);
 
 /**
  * POST /v1/endpoints/:endpointId/test
@@ -74,7 +88,11 @@ router.delete('/v1/endpoints/:endpointId', requireAuth, endpointsController.dele
  * Includes SSRF protection (SEC-005) and IDOR protection (SEC-006)
  * Requires authentication
  */
-router.post('/v1/endpoints/:endpointId/test', requireAuth, endpointsController.testEndpoint);
+router.post(
+	"/v1/endpoints/:endpointId/test",
+	requireAuth,
+	endpointsController.testEndpoint,
+);
 
 /**
  * PATCH /v1/endpoints/:endpointId/toggle
@@ -82,7 +100,11 @@ router.post('/v1/endpoints/:endpointId/test', requireAuth, endpointsController.t
  * Includes IDOR protection (SEC-006)
  * Requires authentication
  */
-router.patch('/v1/endpoints/:endpointId/toggle', requireAuth, endpointsController.toggleEndpoint);
+router.patch(
+	"/v1/endpoints/:endpointId/toggle",
+	requireAuth,
+	endpointsController.toggleEndpoint,
+);
 
 // ============================================================================
 // MEMBER ENDPOINTS (Self-service)
@@ -95,10 +117,62 @@ router.patch('/v1/endpoints/:endpointId/toggle', requireAuth, endpointsControlle
  * Requires authentication
  */
 router.get(
-  '/v1/member-endpoints',
-  requireAuth,
-  cacheMiddleware(CacheTTL.ENDPOINTS),
-  endpointsController.getMemberEndpoints
+	"/v1/member-endpoints",
+	requireAuth,
+	cacheMiddleware(CacheTTL.ENDPOINTS),
+	endpointsController.getMemberEndpoints,
+);
+
+// ============================================================================
+// ENDPOINT REGISTRATION WORKFLOW
+// ============================================================================
+
+/**
+ * POST /v1/entities/:legalEntityId/endpoints/register
+ * Step 1: Initiate endpoint registration
+ * Creates endpoint with PENDING verification status
+ * Requires authentication
+ */
+router.post(
+	"/v1/entities/:legalEntityId/endpoints/register",
+	requireAuth,
+	endpointsController.initiateRegistration,
+);
+
+/**
+ * POST /v1/endpoints/:endpointId/send-verification
+ * Step 2: Send verification email (mock in development)
+ * Generates token and stores it for later verification
+ * Requires authentication
+ */
+router.post(
+	"/v1/endpoints/:endpointId/send-verification",
+	requireAuth,
+	endpointsController.sendVerificationEmail,
+);
+
+/**
+ * POST /v1/endpoints/:endpointId/verify-token
+ * Step 3: Verify the token provided by user
+ * Validates token and updates status to VERIFIED
+ * Requires authentication
+ */
+router.post(
+	"/v1/endpoints/:endpointId/verify-token",
+	requireAuth,
+	endpointsController.verifyToken,
+);
+
+/**
+ * POST /v1/endpoints/:endpointId/activate
+ * Step 5: Activate endpoint after successful testing
+ * Sets is_active=true and activation_date
+ * Requires authentication
+ */
+router.post(
+	"/v1/endpoints/:endpointId/activate",
+	requireAuth,
+	endpointsController.activateEndpoint,
 );
 
 export default router;
