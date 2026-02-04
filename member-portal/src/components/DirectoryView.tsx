@@ -179,9 +179,9 @@ export const DirectoryView: React.FC<ComponentProps> = ({
     <div className="directory-view">
       <div className="page-header">
         <div>
-          <h2>CTN Directory</h2>
+          <h2>Step 3: Discover Endpoints</h2>
           <p className="page-subtitle">
-            Discover data endpoints published by other CTN members
+            Browse endpoints published by other CTN members and request access to consume their data
           </p>
         </div>
       </div>

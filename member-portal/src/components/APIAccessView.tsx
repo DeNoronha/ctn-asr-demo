@@ -39,6 +39,15 @@ export const APIAccessView: React.FC<APIAccessViewProps> = ({
 
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      <div className="page-header">
+        <div>
+          <h2>Step 1: API Keys</h2>
+          <p className="page-subtitle">
+            Create credentials for your backend systems to authenticate with CTN endpoints
+          </p>
+        </div>
+      </div>
+
       <Tabs value={activeTab} onChange={setActiveTab}>
         <Tabs.List>
           <Tabs.Tab value="m2m" leftSection={<Key size={16} />}>

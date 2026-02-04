@@ -106,9 +106,10 @@ export const MyAccessGrantsView: React.FC<ComponentProps> = ({
     <div className="my-access-grants-view">
       <div className="page-header">
         <div>
-          <h2>My Access Grants</h2>
+          <h2>Step 4: My Connections</h2>
           <p className="page-subtitle">
-            Endpoints you have been granted access to from other CTN members
+            View endpoints you're connected to. Use your API Keys to authenticate and start
+            exchanging data.
           </p>
         </div>
       </div>

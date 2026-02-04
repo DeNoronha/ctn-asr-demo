@@ -270,8 +270,11 @@ export const EndpointsView: React.FC<ComponentProps> = ({
     <div className="endpoints-view">
       <div className="page-header">
         <div>
-          <h2>Data Endpoints</h2>
-          <p className="page-subtitle">Manage your organization's data endpoints</p>
+          <h2>Step 2: Publish Your Endpoints</h2>
+          <p className="page-subtitle">
+            Register, verify, and publish your data endpoints to the CTN Directory for other members
+            to discover
+          </p>
         </div>
         <Button color="blue" onClick={handleAdd}>
           <Plus size={16} /> Add Endpoint

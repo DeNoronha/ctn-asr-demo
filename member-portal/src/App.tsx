@@ -357,15 +357,15 @@ function AppContent(_props: AppContentProps) {
             >
               <Tabs.List>
                 <Tabs.Tab value="dashboard">Dashboard</Tabs.Tab>
-                <Tabs.Tab value="profile">Organization Profile</Tabs.Tab>
+                <Tabs.Tab value="profile">Organization</Tabs.Tab>
                 <Tabs.Tab value="contacts">Contacts</Tabs.Tab>
-                <Tabs.Tab value="identifiers">Legal Identifiers</Tabs.Tab>
+                <Tabs.Tab value="identifiers">Identifiers</Tabs.Tab>
                 <Tabs.Tab value="kvk-document">KvK Document</Tabs.Tab>
-                <Tabs.Tab value="integrations">My Endpoints</Tabs.Tab>
-                <Tabs.Tab value="directory">CTN Directory</Tabs.Tab>
-                <Tabs.Tab value="my-grants">My Access Grants</Tabs.Tab>
-                <Tabs.Tab value="api-access">Access Credentials</Tabs.Tab>
-                <Tabs.Tab value="dns-verification">DNS Verification</Tabs.Tab>
+                <Tabs.Tab value="api-access">1. API Keys</Tabs.Tab>
+                <Tabs.Tab value="integrations">2. Publish</Tabs.Tab>
+                <Tabs.Tab value="directory">3. Discover</Tabs.Tab>
+                <Tabs.Tab value="my-grants">4. My Connections</Tabs.Tab>
+                <Tabs.Tab value="dns-verification">Domain Verification</Tabs.Tab>
                 <Tabs.Tab value="support">Support</Tabs.Tab>
               </Tabs.List>
             </Tabs>

@@ -1,4 +1,23 @@
-import { Stack, Text } from '@mantine/core';
+import {
+  Badge,
+  Card,
+  Group,
+  List,
+  Paper,
+  Stack,
+  Text,
+  ThemeIcon,
+  Timeline,
+  Title,
+} from '@mantine/core';
+import {
+  IconApi,
+  IconArrowRight,
+  IconCheck,
+  IconCloud,
+  IconLink,
+  IconSearch,
+} from '@tabler/icons-react';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { apiClient } from '../services/apiClient';
@@ -213,6 +232,112 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
           </p>
         </div>
       </div>
+
+      {/* Getting Started Guide */}
+      <Paper withBorder p="lg" radius="md" mb="xl">
+        <Group justify="space-between" mb="md">
+          <div>
+            <Title order={3} mb={4}>
+              Getting Started with Data Sharing
+            </Title>
+            <Text size="sm" c="dimmed">
+              Follow these 4 steps to share and consume data on the CTN network
+            </Text>
+          </div>
+          <Badge color="blue" variant="light" size="lg">
+            Data Sharing Flow
+          </Badge>
+        </Group>
+
+        <Timeline active={-1} bulletSize={32} lineWidth={2}>
+          <Timeline.Item
+            bullet={
+              <ThemeIcon size={32} radius="xl" color="blue">
+                <IconApi size={18} />
+              </ThemeIcon>
+            }
+            title={
+              <Group gap="xs">
+                <Text fw={600}>Step 1: API Keys</Text>
+                <Badge size="xs" color="gray">
+                  Tab: "1. API Keys"
+                </Badge>
+              </Group>
+            }
+          >
+            <Text c="dimmed" size="sm" mt={4}>
+              Create M2M API credentials for your backend systems. These are OAuth 2.0 client
+              credentials that your TMS, ERP, or other systems use to authenticate when calling
+              endpoints.
+            </Text>
+          </Timeline.Item>
+
+          <Timeline.Item
+            bullet={
+              <ThemeIcon size={32} radius="xl" color="teal">
+                <IconCloud size={18} />
+              </ThemeIcon>
+            }
+            title={
+              <Group gap="xs">
+                <Text fw={600}>Step 2: Publish Your Endpoints</Text>
+                <Badge size="xs" color="gray">
+                  Tab: "2. Publish"
+                </Badge>
+              </Group>
+            }
+          >
+            <Text c="dimmed" size="sm" mt={4}>
+              Register your data endpoints, verify ownership via callback, and publish them to the
+              CTN Directory. Choose an access model: Open (auto-approve), Restricted (manual
+              approval), or Private (invitation only).
+            </Text>
+          </Timeline.Item>
+
+          <Timeline.Item
+            bullet={
+              <ThemeIcon size={32} radius="xl" color="grape">
+                <IconSearch size={18} />
+              </ThemeIcon>
+            }
+            title={
+              <Group gap="xs">
+                <Text fw={600}>Step 3: Discover Other Endpoints</Text>
+                <Badge size="xs" color="gray">
+                  Tab: "3. Discover"
+                </Badge>
+              </Group>
+            }
+          >
+            <Text c="dimmed" size="sm" mt={4}>
+              Browse the CTN Directory to find endpoints published by other members. Request access
+              to endpoints you want to consume. Open endpoints grant access immediately; others
+              require provider approval.
+            </Text>
+          </Timeline.Item>
+
+          <Timeline.Item
+            bullet={
+              <ThemeIcon size={32} radius="xl" color="green">
+                <IconLink size={18} />
+              </ThemeIcon>
+            }
+            title={
+              <Group gap="xs">
+                <Text fw={600}>Step 4: My Connections</Text>
+                <Badge size="xs" color="gray">
+                  Tab: "4. My Connections"
+                </Badge>
+              </Group>
+            }
+          >
+            <Text c="dimmed" size="sm" mt={4}>
+              View all endpoints you've been granted access to. Use your API Keys (from Step 1) to
+              authenticate your systems and start exchanging data with connected endpoints.
+            </Text>
+          </Timeline.Item>
+        </Timeline>
+      </Paper>
 
       <div className="card-grid">
         <div className="card">
