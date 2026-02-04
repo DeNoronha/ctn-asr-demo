@@ -37,11 +37,13 @@ const theme = createTheme({
 import { APIAccessView } from './components/APIAccessView';
 import { ContactsView } from './components/ContactsView';
 import { Dashboard } from './components/Dashboard';
+import { DirectoryView } from './components/DirectoryView';
 import { DnsVerificationView } from './components/DnsVerificationView';
 import { EndpointsView } from './components/EndpointsView';
 import { IdentifiersView } from './components/IdentifiersView';
 import { KvKDocumentView } from './components/KvKDocumentView';
 import LanguageSwitcher from './components/LanguageSwitcher';
+import { MyAccessGrantsView } from './components/MyAccessGrantsView';
 import { ProfileView } from './components/ProfileView';
 import { RegistrationForm } from './components/RegistrationForm';
 import { Support } from './components/Support';
@@ -59,6 +61,8 @@ type TabType =
   | 'identifiers'
   | 'kvk-document'
   | 'integrations'
+  | 'directory'
+  | 'my-grants'
   | 'api-access'
   | 'dns-verification'
   | 'support';
@@ -288,6 +292,10 @@ function AppContent(_props: AppContentProps) {
         return <KvKDocumentView {...commonProps} />;
       case 'integrations':
         return <EndpointsView {...commonProps} />;
+      case 'directory':
+        return <DirectoryView {...commonProps} />;
+      case 'my-grants':
+        return <MyAccessGrantsView {...commonProps} />;
       case 'api-access':
         return <APIAccessView {...commonProps} />;
       case 'dns-verification':
@@ -353,7 +361,9 @@ function AppContent(_props: AppContentProps) {
                 <Tabs.Tab value="contacts">Contacts</Tabs.Tab>
                 <Tabs.Tab value="identifiers">Legal Identifiers</Tabs.Tab>
                 <Tabs.Tab value="kvk-document">KvK Document</Tabs.Tab>
-                <Tabs.Tab value="integrations">Published Endpoints</Tabs.Tab>
+                <Tabs.Tab value="integrations">My Endpoints</Tabs.Tab>
+                <Tabs.Tab value="directory">CTN Directory</Tabs.Tab>
+                <Tabs.Tab value="my-grants">My Access Grants</Tabs.Tab>
                 <Tabs.Tab value="api-access">Access Credentials</Tabs.Tab>
                 <Tabs.Tab value="dns-verification">DNS Verification</Tabs.Tab>
                 <Tabs.Tab value="support">Support</Tabs.Tab>
