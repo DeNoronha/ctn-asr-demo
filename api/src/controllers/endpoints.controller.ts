@@ -160,6 +160,9 @@ export async function getEndpointsByLegalEntity(
         verification_status,
         verification_sent_at,
         verification_expires_at,
+        access_model,
+        publication_status,
+        published_at,
         dt_created,
         dt_modified
       FROM legal_entity_endpoint
@@ -672,6 +675,9 @@ export async function getMemberEndpoints(
         verification_status,
         verification_sent_at,
         verification_expires_at,
+        access_model,
+        publication_status,
+        published_at,
         dt_created,
         dt_modified
       FROM legal_entity_endpoint
@@ -719,6 +725,7 @@ export async function initiateRegistration(
 			endpoint_description,
 			data_category,
 			endpoint_type,
+			access_model,
 		} = req.body;
 
 		// Validate required fields
@@ -756,6 +763,16 @@ export async function initiateRegistration(
 			return;
 		}
 
+		// Validate access_model if provided
+		const validAccessModels = ["open", "restricted", "private"];
+		const accessModelValue = access_model || "private";
+		if (!validAccessModels.includes(accessModelValue)) {
+			res.status(400).json({
+				error: `Invalid access_model. Must be one of: ${validAccessModels.join(", ")}`,
+			});
+			return;
+		}
+
 		// Create endpoint with PENDING verification status
 		const { rows } = await pool.query(
 			`
@@ -767,12 +784,14 @@ export async function initiateRegistration(
         endpoint_description,
         data_category,
         endpoint_type,
+        access_model,
+        publication_status,
         verification_status,
         is_active,
         dt_created,
         dt_modified
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, 'PENDING', false, NOW(), NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'draft', 'PENDING', false, NOW(), NOW())
       RETURNING *
     `,
 			[
@@ -783,6 +802,7 @@ export async function initiateRegistration(
 				endpoint_description || null,
 				data_category || "DATA_EXCHANGE",
 				endpoint_type || "REST_API",
+				accessModelValue,
 			],
 		);
 
@@ -1341,5 +1361,996 @@ export async function activateEndpoint(
 		res
 			.status(500)
 			.json({ error: "Failed to activate endpoint", detail: error.message });
+	}
+}
+
+// ============================================================================
+// ENDPOINT LIFECYCLE - PUBLICATION (Phase 3)
+// ============================================================================
+
+/**
+ * POST /v1/endpoints/:endpointId/publish
+ * Publish endpoint to the CTN directory (makes it discoverable)
+ * Requires endpoint to be VERIFIED
+ */
+export async function publishEndpoint(
+	req: Request,
+	res: Response,
+): Promise<void> {
+	try {
+		const pool = getPool();
+		const { endpointId } = req.params;
+
+		// Get the endpoint
+		const { rows, rowCount } = await pool.query(
+			`
+      SELECT
+        legal_entity_endpoint_id,
+        endpoint_name,
+        verification_status,
+        publication_status,
+        is_active,
+        legal_entity_id
+      FROM legal_entity_endpoint
+      WHERE legal_entity_endpoint_id = $1 AND is_deleted = false
+    `,
+			[endpointId],
+		);
+
+		if (rowCount === 0) {
+			res.status(404).json({ error: "Endpoint not found" });
+			return;
+		}
+
+		const endpoint = rows[0];
+
+		// IDOR protection: Verify user has access to this endpoint
+		const userEmail = (req as any).userEmail;
+		const userRoles = (req as any).userRoles || [];
+		const isAdmin =
+			userRoles.includes("SystemAdmin") ||
+			userRoles.includes("AssociationAdmin");
+
+		if (!isAdmin) {
+			const { rows: partyRows } = await pool.query(
+				`
+        SELECT 1 FROM legal_entity le
+        JOIN legal_entity_contact lec ON lec.legal_entity_id = le.legal_entity_id
+        WHERE le.legal_entity_id = $1
+          AND lec.email = $2
+          AND lec.is_active = true
+          AND le.is_deleted = false
+      `,
+				[endpoint.legal_entity_id, userEmail],
+			);
+
+			if (partyRows.length === 0) {
+				res.status(404).json({ error: "Endpoint not found" });
+				return;
+			}
+		}
+
+		// Check if endpoint is verified
+		if (endpoint.verification_status !== "VERIFIED") {
+			res.status(400).json({
+				error: "Endpoint must be verified before publishing",
+				verification_status: endpoint.verification_status,
+			});
+			return;
+		}
+
+		// Check if already published
+		if (endpoint.publication_status === "published") {
+			res.status(400).json({ error: "Endpoint is already published" });
+			return;
+		}
+
+		// Publish the endpoint (also activate if not active)
+		const { rows: updatedRows } = await pool.query(
+			`
+      UPDATE legal_entity_endpoint
+      SET publication_status = 'published',
+          published_at = COALESCE(published_at, NOW()),
+          is_active = true,
+          activation_date = COALESCE(activation_date, NOW()),
+          dt_modified = NOW()
+      WHERE legal_entity_endpoint_id = $1
+      RETURNING *
+    `,
+			[endpointId],
+		);
+
+		console.log(`Endpoint ${endpointId} published to directory`);
+
+		// Invalidate cache
+		invalidateCacheForUser(
+			req,
+			`/v1/legal-entities/${endpoint.legal_entity_id}/endpoints`,
+		);
+		invalidateCacheForUser(req, "/v1/member-endpoints");
+		invalidateCacheForUser(req, "/v1/endpoint-directory");
+
+		res.json({
+			message: "Endpoint published successfully",
+			endpoint: updatedRows[0],
+		});
+	} catch (error: any) {
+		console.error("Error publishing endpoint:", error);
+		res
+			.status(500)
+			.json({ error: "Failed to publish endpoint", detail: error.message });
+	}
+}
+
+/**
+ * POST /v1/endpoints/:endpointId/unpublish
+ * Remove endpoint from the CTN directory (makes it undiscoverable)
+ */
+export async function unpublishEndpoint(
+	req: Request,
+	res: Response,
+): Promise<void> {
+	try {
+		const pool = getPool();
+		const { endpointId } = req.params;
+
+		// Get the endpoint
+		const { rows, rowCount } = await pool.query(
+			`
+      SELECT
+        legal_entity_endpoint_id,
+        endpoint_name,
+        publication_status,
+        legal_entity_id
+      FROM legal_entity_endpoint
+      WHERE legal_entity_endpoint_id = $1 AND is_deleted = false
+    `,
+			[endpointId],
+		);
+
+		if (rowCount === 0) {
+			res.status(404).json({ error: "Endpoint not found" });
+			return;
+		}
+
+		const endpoint = rows[0];
+
+		// IDOR protection
+		const userEmail = (req as any).userEmail;
+		const userRoles = (req as any).userRoles || [];
+		const isAdmin =
+			userRoles.includes("SystemAdmin") ||
+			userRoles.includes("AssociationAdmin");
+
+		if (!isAdmin) {
+			const { rows: partyRows } = await pool.query(
+				`
+        SELECT 1 FROM legal_entity le
+        JOIN legal_entity_contact lec ON lec.legal_entity_id = le.legal_entity_id
+        WHERE le.legal_entity_id = $1
+          AND lec.email = $2
+          AND lec.is_active = true
+          AND le.is_deleted = false
+      `,
+				[endpoint.legal_entity_id, userEmail],
+			);
+
+			if (partyRows.length === 0) {
+				res.status(404).json({ error: "Endpoint not found" });
+				return;
+			}
+		}
+
+		// Check if not published
+		if (endpoint.publication_status !== "published") {
+			res.status(400).json({ error: "Endpoint is not currently published" });
+			return;
+		}
+
+		// Unpublish the endpoint
+		const { rows: updatedRows } = await pool.query(
+			`
+      UPDATE legal_entity_endpoint
+      SET publication_status = 'unpublished',
+          dt_modified = NOW()
+      WHERE legal_entity_endpoint_id = $1
+      RETURNING *
+    `,
+			[endpointId],
+		);
+
+		console.log(`Endpoint ${endpointId} unpublished from directory`);
+
+		// Invalidate cache
+		invalidateCacheForUser(
+			req,
+			`/v1/legal-entities/${endpoint.legal_entity_id}/endpoints`,
+		);
+		invalidateCacheForUser(req, "/v1/member-endpoints");
+		invalidateCacheForUser(req, "/v1/endpoint-directory");
+
+		res.json({
+			message: "Endpoint unpublished successfully",
+			endpoint: updatedRows[0],
+		});
+	} catch (error: any) {
+		console.error("Error unpublishing endpoint:", error);
+		res
+			.status(500)
+			.json({ error: "Failed to unpublish endpoint", detail: error.message });
+	}
+}
+
+// ============================================================================
+// ENDPOINT DIRECTORY - CONSUMER DISCOVERY (Phase 4)
+// ============================================================================
+
+/**
+ * GET /v1/endpoint-directory
+ * Get published endpoints for consumer discovery
+ * Excludes the consumer's own endpoints
+ */
+export async function getPublishedEndpoints(
+	req: Request,
+	res: Response,
+): Promise<void> {
+	try {
+		const pool = getPool();
+		const userEmail = (req as any).userEmail;
+
+		// Get the consumer's legal entity ID to exclude their own endpoints
+		let consumerEntityId: string | null = null;
+
+		const { rows: contactRows } = await pool.query(
+			`
+      SELECT DISTINCT le.legal_entity_id
+      FROM legal_entity le
+      INNER JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
+      WHERE c.email = $1 AND c.is_active = true AND le.is_deleted = false
+      LIMIT 1
+    `,
+			[userEmail],
+		);
+
+		if (contactRows.length > 0) {
+			consumerEntityId = contactRows[0].legal_entity_id;
+		}
+
+		// Get all published endpoints (excluding consumer's own)
+		const { rows } = await pool.query(
+			`
+      SELECT
+        e.legal_entity_endpoint_id,
+        e.endpoint_name,
+        e.endpoint_description,
+        e.data_category,
+        e.endpoint_type,
+        e.access_model,
+        e.published_at,
+        e.legal_entity_id as provider_entity_id,
+        le.primary_legal_name as provider_name,
+        le.domain as provider_domain
+      FROM legal_entity_endpoint e
+      JOIN legal_entity le ON e.legal_entity_id = le.legal_entity_id
+      WHERE e.publication_status = 'published'
+        AND e.is_active = true
+        AND e.is_deleted = false
+        AND le.is_deleted = false
+        AND ($1::uuid IS NULL OR e.legal_entity_id != $1)
+      ORDER BY e.published_at DESC
+    `,
+			[consumerEntityId],
+		);
+
+		// For each endpoint, check if consumer has an existing access request or grant
+		const endpointsWithAccess = await Promise.all(
+			rows.map(async (endpoint) => {
+				if (!consumerEntityId) {
+					return { ...endpoint, access_status: null };
+				}
+
+				// Check for existing access request
+				const { rows: requestRows } = await pool.query(
+					`
+          SELECT status FROM endpoint_access_request
+          WHERE endpoint_id = $1 AND consumer_entity_id = $2 AND is_deleted = false
+          ORDER BY requested_at DESC LIMIT 1
+        `,
+					[endpoint.legal_entity_endpoint_id, consumerEntityId],
+				);
+
+				// Check for active grant
+				const { rows: grantRows } = await pool.query(
+					`
+          SELECT grant_id FROM endpoint_consumer_grant
+          WHERE endpoint_id = $1 AND consumer_entity_id = $2 AND is_active = true
+          LIMIT 1
+        `,
+					[endpoint.legal_entity_endpoint_id, consumerEntityId],
+				);
+
+				let accessStatus = null;
+				if (grantRows.length > 0) {
+					accessStatus = "granted";
+				} else if (requestRows.length > 0) {
+					accessStatus = requestRows[0].status;
+				}
+
+				return { ...endpoint, access_status: accessStatus };
+			}),
+		);
+
+		res.json({ endpoints: endpointsWithAccess });
+	} catch (error: any) {
+		console.error("Error fetching published endpoints:", error);
+		res
+			.status(500)
+			.json({ error: "Failed to fetch endpoint directory", detail: error.message });
+	}
+}
+
+// ============================================================================
+// ACCESS REQUEST WORKFLOW (Phase 4-5)
+// ============================================================================
+
+/**
+ * POST /v1/endpoints/:endpointId/request-access
+ * Consumer requests access to an endpoint
+ * For 'open' endpoints: auto-approve immediately
+ * For 'restricted'/'private': create pending request
+ */
+export async function requestAccess(
+	req: Request,
+	res: Response,
+): Promise<void> {
+	try {
+		const pool = getPool();
+		const { endpointId } = req.params;
+		const { requested_scopes } = req.body;
+		const userEmail = (req as any).userEmail;
+
+		// Get consumer's legal entity
+		const { rows: contactRows } = await pool.query(
+			`
+      SELECT DISTINCT le.legal_entity_id
+      FROM legal_entity le
+      INNER JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
+      WHERE c.email = $1 AND c.is_active = true AND le.is_deleted = false
+      LIMIT 1
+    `,
+			[userEmail],
+		);
+
+		if (contactRows.length === 0) {
+			res.status(403).json({ error: "No legal entity associated with your account" });
+			return;
+		}
+
+		const consumerEntityId = contactRows[0].legal_entity_id;
+
+		// Get the endpoint
+		const { rows: endpointRows, rowCount } = await pool.query(
+			`
+      SELECT
+        legal_entity_endpoint_id,
+        endpoint_name,
+        access_model,
+        publication_status,
+        legal_entity_id as provider_entity_id
+      FROM legal_entity_endpoint
+      WHERE legal_entity_endpoint_id = $1
+        AND is_deleted = false
+        AND publication_status = 'published'
+        AND is_active = true
+    `,
+			[endpointId],
+		);
+
+		if (rowCount === 0) {
+			res.status(404).json({ error: "Endpoint not found or not published" });
+			return;
+		}
+
+		const endpoint = endpointRows[0];
+
+		// Check if consumer is trying to request their own endpoint
+		if (endpoint.provider_entity_id === consumerEntityId) {
+			res.status(400).json({ error: "Cannot request access to your own endpoint" });
+			return;
+		}
+
+		// Check for existing pending request
+		const { rows: existingRequest } = await pool.query(
+			`
+      SELECT access_request_id, status
+      FROM endpoint_access_request
+      WHERE endpoint_id = $1 AND consumer_entity_id = $2 AND is_deleted = false
+      ORDER BY requested_at DESC LIMIT 1
+    `,
+			[endpointId, consumerEntityId],
+		);
+
+		if (existingRequest.length > 0) {
+			const status = existingRequest[0].status;
+			if (status === "pending") {
+				res.status(400).json({ error: "You already have a pending request for this endpoint" });
+				return;
+			}
+			if (status === "approved") {
+				res.status(400).json({ error: "You already have access to this endpoint" });
+				return;
+			}
+		}
+
+		// Check for existing active grant
+		const { rows: existingGrant } = await pool.query(
+			`
+      SELECT grant_id FROM endpoint_consumer_grant
+      WHERE endpoint_id = $1 AND consumer_entity_id = $2 AND is_active = true
+      LIMIT 1
+    `,
+			[endpointId, consumerEntityId],
+		);
+
+		if (existingGrant.length > 0) {
+			res.status(400).json({ error: "You already have an active grant for this endpoint" });
+			return;
+		}
+
+		const requestId = randomUUID();
+		const scopes = requested_scopes || ["read"];
+
+		// Handle based on access model
+		if (endpoint.access_model === "open") {
+			// Auto-approve for open endpoints
+			// Create request with approved status
+			await pool.query(
+				`
+        INSERT INTO endpoint_access_request (
+          access_request_id, endpoint_id, consumer_entity_id, provider_entity_id,
+          status, requested_scopes, approved_scopes, requested_at, decided_at, decided_by
+        )
+        VALUES ($1, $2, $3, $4, 'approved', $5, $5, NOW(), NOW(), 'AUTO_APPROVED')
+      `,
+				[requestId, endpointId, consumerEntityId, endpoint.provider_entity_id, scopes],
+			);
+
+			// Create grant immediately
+			const grantId = randomUUID();
+			const { rows: grantRows } = await pool.query(
+				`
+        INSERT INTO endpoint_consumer_grant (
+          grant_id, access_request_id, endpoint_id, consumer_entity_id,
+          granted_scopes, is_active, granted_at
+        )
+        VALUES ($1, $2, $3, $4, $5, true, NOW())
+        RETURNING *
+      `,
+				[grantId, requestId, endpointId, consumerEntityId, scopes],
+			);
+
+			console.log(`Auto-approved access request ${requestId} for open endpoint ${endpointId}`);
+
+			res.status(201).json({
+				message: "Access granted automatically (open endpoint)",
+				access_request_id: requestId,
+				grant: grantRows[0],
+				status: "approved",
+			});
+		} else {
+			// For restricted/private: create pending request
+			const { rows: requestRows } = await pool.query(
+				`
+        INSERT INTO endpoint_access_request (
+          access_request_id, endpoint_id, consumer_entity_id, provider_entity_id,
+          status, requested_scopes, requested_at
+        )
+        VALUES ($1, $2, $3, $4, 'pending', $5, NOW())
+        RETURNING *
+      `,
+				[requestId, endpointId, consumerEntityId, endpoint.provider_entity_id, scopes],
+			);
+
+			console.log(`Access request ${requestId} created for ${endpoint.access_model} endpoint ${endpointId}`);
+
+			res.status(201).json({
+				message: `Access request submitted. Provider will review your request.`,
+				access_request: requestRows[0],
+				status: "pending",
+			});
+		}
+	} catch (error: any) {
+		console.error("Error requesting access:", error);
+		res
+			.status(500)
+			.json({ error: "Failed to request access", detail: error.message });
+	}
+}
+
+/**
+ * GET /v1/endpoints/:endpointId/access-requests
+ * Provider views access requests for their endpoint
+ */
+export async function getAccessRequests(
+	req: Request,
+	res: Response,
+): Promise<void> {
+	try {
+		const pool = getPool();
+		const { endpointId } = req.params;
+		const { status } = req.query;
+		const userEmail = (req as any).userEmail;
+		const userRoles = (req as any).userRoles || [];
+
+		// Get the endpoint and verify ownership
+		const { rows: endpointRows, rowCount } = await pool.query(
+			`
+      SELECT legal_entity_endpoint_id, legal_entity_id
+      FROM legal_entity_endpoint
+      WHERE legal_entity_endpoint_id = $1 AND is_deleted = false
+    `,
+			[endpointId],
+		);
+
+		if (rowCount === 0) {
+			res.status(404).json({ error: "Endpoint not found" });
+			return;
+		}
+
+		const endpoint = endpointRows[0];
+
+		// IDOR protection
+		const isAdmin =
+			userRoles.includes("SystemAdmin") ||
+			userRoles.includes("AssociationAdmin");
+
+		if (!isAdmin) {
+			const { rows: partyRows } = await pool.query(
+				`
+        SELECT 1 FROM legal_entity le
+        JOIN legal_entity_contact lec ON lec.legal_entity_id = le.legal_entity_id
+        WHERE le.legal_entity_id = $1
+          AND lec.email = $2
+          AND lec.is_active = true
+          AND le.is_deleted = false
+      `,
+				[endpoint.legal_entity_id, userEmail],
+			);
+
+			if (partyRows.length === 0) {
+				res.status(404).json({ error: "Endpoint not found" });
+				return;
+			}
+		}
+
+		// Build query with optional status filter
+		let query = `
+      SELECT
+        ar.access_request_id,
+        ar.endpoint_id,
+        ar.consumer_entity_id,
+        ar.status,
+        ar.requested_scopes,
+        ar.approved_scopes,
+        ar.requested_at,
+        ar.decided_at,
+        ar.decided_by,
+        ar.denial_reason,
+        le.primary_legal_name as consumer_name,
+        le.domain as consumer_domain
+      FROM endpoint_access_request ar
+      JOIN legal_entity le ON ar.consumer_entity_id = le.legal_entity_id
+      WHERE ar.endpoint_id = $1 AND ar.is_deleted = false
+    `;
+		const params: any[] = [endpointId];
+
+		if (status) {
+			query += ` AND ar.status = $2`;
+			params.push(status);
+		}
+
+		query += ` ORDER BY ar.requested_at DESC`;
+
+		const { rows } = await pool.query(query, params);
+
+		res.json({ access_requests: rows });
+	} catch (error: any) {
+		console.error("Error fetching access requests:", error);
+		res
+			.status(500)
+			.json({ error: "Failed to fetch access requests", detail: error.message });
+	}
+}
+
+/**
+ * POST /v1/access-requests/:requestId/approve
+ * Provider approves an access request
+ */
+export async function approveAccessRequest(
+	req: Request,
+	res: Response,
+): Promise<void> {
+	try {
+		const pool = getPool();
+		const { requestId } = req.params;
+		const { approved_scopes } = req.body;
+		const userEmail = (req as any).userEmail;
+		const userRoles = (req as any).userRoles || [];
+
+		// Get the access request
+		const { rows: requestRows, rowCount } = await pool.query(
+			`
+      SELECT
+        ar.access_request_id,
+        ar.endpoint_id,
+        ar.consumer_entity_id,
+        ar.provider_entity_id,
+        ar.status,
+        ar.requested_scopes,
+        e.endpoint_name
+      FROM endpoint_access_request ar
+      JOIN legal_entity_endpoint e ON ar.endpoint_id = e.legal_entity_endpoint_id
+      WHERE ar.access_request_id = $1 AND ar.is_deleted = false
+    `,
+			[requestId],
+		);
+
+		if (rowCount === 0) {
+			res.status(404).json({ error: "Access request not found" });
+			return;
+		}
+
+		const request = requestRows[0];
+
+		// IDOR protection: verify user owns the endpoint
+		const isAdmin =
+			userRoles.includes("SystemAdmin") ||
+			userRoles.includes("AssociationAdmin");
+
+		if (!isAdmin) {
+			const { rows: partyRows } = await pool.query(
+				`
+        SELECT 1 FROM legal_entity le
+        JOIN legal_entity_contact lec ON lec.legal_entity_id = le.legal_entity_id
+        WHERE le.legal_entity_id = $1
+          AND lec.email = $2
+          AND lec.is_active = true
+          AND le.is_deleted = false
+      `,
+				[request.provider_entity_id, userEmail],
+			);
+
+			if (partyRows.length === 0) {
+				res.status(404).json({ error: "Access request not found" });
+				return;
+			}
+		}
+
+		// Check if request is pending
+		if (request.status !== "pending") {
+			res.status(400).json({
+				error: `Request is not pending (current status: ${request.status})`,
+			});
+			return;
+		}
+
+		// Use approved_scopes from body or default to requested_scopes
+		const scopes = approved_scopes || request.requested_scopes;
+
+		// Update request to approved
+		await pool.query(
+			`
+      UPDATE endpoint_access_request
+      SET status = 'approved',
+          approved_scopes = $2,
+          decided_at = NOW(),
+          decided_by = $3,
+          dt_modified = NOW()
+      WHERE access_request_id = $1
+    `,
+			[requestId, scopes, userEmail],
+		);
+
+		// Create grant
+		const grantId = randomUUID();
+		const { rows: grantRows } = await pool.query(
+			`
+      INSERT INTO endpoint_consumer_grant (
+        grant_id, access_request_id, endpoint_id, consumer_entity_id,
+        granted_scopes, is_active, granted_at
+      )
+      VALUES ($1, $2, $3, $4, $5, true, NOW())
+      RETURNING *
+    `,
+			[grantId, requestId, request.endpoint_id, request.consumer_entity_id, scopes],
+		);
+
+		console.log(`Access request ${requestId} approved by ${userEmail}`);
+
+		res.json({
+			message: "Access request approved",
+			grant: grantRows[0],
+		});
+	} catch (error: any) {
+		console.error("Error approving access request:", error);
+		res
+			.status(500)
+			.json({ error: "Failed to approve access request", detail: error.message });
+	}
+}
+
+/**
+ * POST /v1/access-requests/:requestId/deny
+ * Provider denies an access request
+ */
+export async function denyAccessRequest(
+	req: Request,
+	res: Response,
+): Promise<void> {
+	try {
+		const pool = getPool();
+		const { requestId } = req.params;
+		const { denial_reason } = req.body;
+		const userEmail = (req as any).userEmail;
+		const userRoles = (req as any).userRoles || [];
+
+		// Get the access request
+		const { rows: requestRows, rowCount } = await pool.query(
+			`
+      SELECT
+        ar.access_request_id,
+        ar.provider_entity_id,
+        ar.status
+      FROM endpoint_access_request ar
+      WHERE ar.access_request_id = $1 AND ar.is_deleted = false
+    `,
+			[requestId],
+		);
+
+		if (rowCount === 0) {
+			res.status(404).json({ error: "Access request not found" });
+			return;
+		}
+
+		const request = requestRows[0];
+
+		// IDOR protection
+		const isAdmin =
+			userRoles.includes("SystemAdmin") ||
+			userRoles.includes("AssociationAdmin");
+
+		if (!isAdmin) {
+			const { rows: partyRows } = await pool.query(
+				`
+        SELECT 1 FROM legal_entity le
+        JOIN legal_entity_contact lec ON lec.legal_entity_id = le.legal_entity_id
+        WHERE le.legal_entity_id = $1
+          AND lec.email = $2
+          AND lec.is_active = true
+          AND le.is_deleted = false
+      `,
+				[request.provider_entity_id, userEmail],
+			);
+
+			if (partyRows.length === 0) {
+				res.status(404).json({ error: "Access request not found" });
+				return;
+			}
+		}
+
+		// Check if request is pending
+		if (request.status !== "pending") {
+			res.status(400).json({
+				error: `Request is not pending (current status: ${request.status})`,
+			});
+			return;
+		}
+
+		// Update request to denied
+		const { rows: updatedRows } = await pool.query(
+			`
+      UPDATE endpoint_access_request
+      SET status = 'denied',
+          decided_at = NOW(),
+          decided_by = $2,
+          denial_reason = $3,
+          dt_modified = NOW()
+      WHERE access_request_id = $1
+      RETURNING *
+    `,
+			[requestId, userEmail, denial_reason || null],
+		);
+
+		console.log(`Access request ${requestId} denied by ${userEmail}`);
+
+		res.json({
+			message: "Access request denied",
+			access_request: updatedRows[0],
+		});
+	} catch (error: any) {
+		console.error("Error denying access request:", error);
+		res
+			.status(500)
+			.json({ error: "Failed to deny access request", detail: error.message });
+	}
+}
+
+/**
+ * GET /v1/my-access-grants
+ * Consumer views their granted accesses
+ */
+export async function getMyAccessGrants(
+	req: Request,
+	res: Response,
+): Promise<void> {
+	try {
+		const pool = getPool();
+		const userEmail = (req as any).userEmail;
+
+		// Get consumer's legal entity
+		const { rows: contactRows } = await pool.query(
+			`
+      SELECT DISTINCT le.legal_entity_id
+      FROM legal_entity le
+      INNER JOIN legal_entity_contact c ON le.legal_entity_id = c.legal_entity_id
+      WHERE c.email = $1 AND c.is_active = true AND le.is_deleted = false
+      LIMIT 1
+    `,
+			[userEmail],
+		);
+
+		if (contactRows.length === 0) {
+			res.status(403).json({ error: "No legal entity associated with your account" });
+			return;
+		}
+
+		const consumerEntityId = contactRows[0].legal_entity_id;
+
+		// Get all grants for this consumer
+		const { rows } = await pool.query(
+			`
+      SELECT
+        g.grant_id,
+        g.endpoint_id,
+        g.granted_scopes,
+        g.is_active,
+        g.granted_at,
+        g.revoked_at,
+        e.endpoint_name,
+        e.endpoint_url,
+        e.endpoint_description,
+        e.data_category,
+        e.endpoint_type,
+        le.primary_legal_name as provider_name,
+        le.domain as provider_domain
+      FROM endpoint_consumer_grant g
+      JOIN legal_entity_endpoint e ON g.endpoint_id = e.legal_entity_endpoint_id
+      JOIN legal_entity le ON e.legal_entity_id = le.legal_entity_id
+      WHERE g.consumer_entity_id = $1
+      ORDER BY g.granted_at DESC
+    `,
+			[consumerEntityId],
+		);
+
+		res.json({ grants: rows });
+	} catch (error: any) {
+		console.error("Error fetching access grants:", error);
+		res
+			.status(500)
+			.json({ error: "Failed to fetch access grants", detail: error.message });
+	}
+}
+
+/**
+ * POST /v1/grants/:grantId/revoke
+ * Revoke an access grant (can be done by provider or consumer)
+ */
+export async function revokeGrant(
+	req: Request,
+	res: Response,
+): Promise<void> {
+	try {
+		const pool = getPool();
+		const { grantId } = req.params;
+		const { revocation_reason } = req.body;
+		const userEmail = (req as any).userEmail;
+		const userRoles = (req as any).userRoles || [];
+
+		// Get the grant
+		const { rows: grantRows, rowCount } = await pool.query(
+			`
+      SELECT
+        g.grant_id,
+        g.endpoint_id,
+        g.consumer_entity_id,
+        g.is_active,
+        e.legal_entity_id as provider_entity_id
+      FROM endpoint_consumer_grant g
+      JOIN legal_entity_endpoint e ON g.endpoint_id = e.legal_entity_endpoint_id
+      WHERE g.grant_id = $1
+    `,
+			[grantId],
+		);
+
+		if (rowCount === 0) {
+			res.status(404).json({ error: "Grant not found" });
+			return;
+		}
+
+		const grant = grantRows[0];
+
+		if (!grant.is_active) {
+			res.status(400).json({ error: "Grant is already revoked" });
+			return;
+		}
+
+		// IDOR protection: user must be consumer, provider, or admin
+		const isAdmin =
+			userRoles.includes("SystemAdmin") ||
+			userRoles.includes("AssociationAdmin");
+
+		if (!isAdmin) {
+			// Check if user is consumer or provider
+			const { rows: partyRows } = await pool.query(
+				`
+        SELECT le.legal_entity_id,
+          CASE
+            WHEN le.legal_entity_id = $2 THEN 'consumer'
+            WHEN le.legal_entity_id = $3 THEN 'provider'
+          END as role
+        FROM legal_entity le
+        JOIN legal_entity_contact lec ON lec.legal_entity_id = le.legal_entity_id
+        WHERE lec.email = $1
+          AND lec.is_active = true
+          AND le.is_deleted = false
+          AND le.legal_entity_id IN ($2, $3)
+      `,
+				[userEmail, grant.consumer_entity_id, grant.provider_entity_id],
+			);
+
+			if (partyRows.length === 0) {
+				res.status(404).json({ error: "Grant not found" });
+				return;
+			}
+		}
+
+		// Revoke the grant
+		const { rows: updatedRows } = await pool.query(
+			`
+      UPDATE endpoint_consumer_grant
+      SET is_active = false,
+          revoked_at = NOW(),
+          revoked_by = $2,
+          revocation_reason = $3,
+          dt_modified = NOW()
+      WHERE grant_id = $1
+      RETURNING *
+    `,
+			[grantId, userEmail, revocation_reason || null],
+		);
+
+		// Also update the corresponding access request to 'revoked'
+		await pool.query(
+			`
+      UPDATE endpoint_access_request
+      SET status = 'revoked', dt_modified = NOW()
+      WHERE access_request_id = (
+        SELECT access_request_id FROM endpoint_consumer_grant WHERE grant_id = $1
+      )
+    `,
+			[grantId],
+		);
+
+		console.log(`Grant ${grantId} revoked by ${userEmail}`);
+
+		res.json({
+			message: "Grant revoked successfully",
+			grant: updatedRows[0],
+		});
+	} catch (error: any) {
+		console.error("Error revoking grant:", error);
+		res
+			.status(500)
+			.json({ error: "Failed to revoke grant", detail: error.message });
 	}
 }

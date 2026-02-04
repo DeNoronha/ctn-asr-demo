@@ -19,6 +19,17 @@
  * - POST /v1/endpoints/:endpointId/verify-token - Verify email token
  * - POST /v1/endpoints/:endpointId/activate - Activate endpoint
  *
+ * Lifecycle Routes (CTN 6-phase model):
+ * - POST /v1/endpoints/:endpointId/publish - Publish endpoint to directory
+ * - POST /v1/endpoints/:endpointId/unpublish - Remove from directory
+ * - GET  /v1/endpoint-directory - Consumer discovery of published endpoints
+ * - POST /v1/endpoints/:endpointId/request-access - Consumer requests access
+ * - GET  /v1/endpoints/:endpointId/access-requests - Provider views requests
+ * - POST /v1/access-requests/:requestId/approve - Approve access request
+ * - POST /v1/access-requests/:requestId/deny - Deny access request
+ * - GET  /v1/my-access-grants - Consumer views their granted accesses
+ * - POST /v1/grants/:grantId/revoke - Revoke an access grant
+ *
  * @module routes/v1/endpoints
  */
 
@@ -179,6 +190,130 @@ router.post(
 	"/v1/endpoints/:endpointId/activate",
 	requireAuth,
 	endpointsController.activateEndpoint,
+);
+
+// ============================================================================
+// ENDPOINT LIFECYCLE - PUBLICATION (Phase 3)
+// ============================================================================
+
+/**
+ * POST /v1/endpoints/:endpointId/publish
+ * Publish endpoint to CTN directory (makes it discoverable)
+ * Requires endpoint to be VERIFIED
+ * Includes IDOR protection (SEC-006)
+ * Requires authentication
+ */
+router.post(
+	"/v1/endpoints/:endpointId/publish",
+	requireAuth,
+	endpointsController.publishEndpoint,
+);
+
+/**
+ * POST /v1/endpoints/:endpointId/unpublish
+ * Remove endpoint from CTN directory
+ * Includes IDOR protection (SEC-006)
+ * Requires authentication
+ */
+router.post(
+	"/v1/endpoints/:endpointId/unpublish",
+	requireAuth,
+	endpointsController.unpublishEndpoint,
+);
+
+// ============================================================================
+// ENDPOINT DIRECTORY - CONSUMER DISCOVERY (Phase 4)
+// ============================================================================
+
+/**
+ * GET /v1/endpoint-directory
+ * Get published endpoints for consumer discovery
+ * Excludes consumer's own endpoints
+ * Requires authentication
+ */
+router.get(
+	"/v1/endpoint-directory",
+	requireAuth,
+	cacheMiddleware(CacheTTL.ENDPOINTS),
+	endpointsController.getPublishedEndpoints,
+);
+
+// ============================================================================
+// ACCESS REQUEST WORKFLOW (Phase 4-5)
+// ============================================================================
+
+/**
+ * POST /v1/endpoints/:endpointId/request-access
+ * Consumer requests access to an endpoint
+ * Auto-approves for 'open' access model
+ * Creates pending request for 'restricted'/'private'
+ * Requires authentication
+ */
+router.post(
+	"/v1/endpoints/:endpointId/request-access",
+	requireAuth,
+	endpointsController.requestAccess,
+);
+
+/**
+ * GET /v1/endpoints/:endpointId/access-requests
+ * Provider views access requests for their endpoint
+ * Includes IDOR protection (SEC-006)
+ * Requires authentication
+ */
+router.get(
+	"/v1/endpoints/:endpointId/access-requests",
+	requireAuth,
+	endpointsController.getAccessRequests,
+);
+
+/**
+ * POST /v1/access-requests/:requestId/approve
+ * Provider approves an access request
+ * Creates grant for consumer
+ * Includes IDOR protection (SEC-006)
+ * Requires authentication
+ */
+router.post(
+	"/v1/access-requests/:requestId/approve",
+	requireAuth,
+	endpointsController.approveAccessRequest,
+);
+
+/**
+ * POST /v1/access-requests/:requestId/deny
+ * Provider denies an access request
+ * Includes IDOR protection (SEC-006)
+ * Requires authentication
+ */
+router.post(
+	"/v1/access-requests/:requestId/deny",
+	requireAuth,
+	endpointsController.denyAccessRequest,
+);
+
+/**
+ * GET /v1/my-access-grants
+ * Consumer views their granted endpoint accesses
+ * Requires authentication
+ */
+router.get(
+	"/v1/my-access-grants",
+	requireAuth,
+	endpointsController.getMyAccessGrants,
+);
+
+/**
+ * POST /v1/grants/:grantId/revoke
+ * Revoke an access grant
+ * Can be done by provider (endpoint owner) or consumer (grant holder)
+ * Includes IDOR protection (SEC-006)
+ * Requires authentication
+ */
+router.post(
+	"/v1/grants/:grantId/revoke",
+	requireAuth,
+	endpointsController.revokeGrant,
 );
 
 export default router;
