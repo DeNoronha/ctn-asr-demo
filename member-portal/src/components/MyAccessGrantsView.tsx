@@ -108,8 +108,8 @@ export const MyAccessGrantsView: React.FC<ComponentProps> = ({
         <div>
           <h2>Step 4: My Connections</h2>
           <p className="page-subtitle">
-            View endpoints you're connected to. Use your API Keys to authenticate and start
-            exchanging data.
+            View endpoints you're connected to. Use your System Credentials to authenticate and
+            start exchanging data.
           </p>
         </div>
       </div>

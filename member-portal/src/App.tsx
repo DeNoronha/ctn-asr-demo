@@ -361,7 +361,7 @@ function AppContent(_props: AppContentProps) {
                 <Tabs.Tab value="contacts">Contacts</Tabs.Tab>
                 <Tabs.Tab value="identifiers">Identifiers</Tabs.Tab>
                 <Tabs.Tab value="kvk-document">KvK Document</Tabs.Tab>
-                <Tabs.Tab value="api-access">1. API Keys</Tabs.Tab>
+                <Tabs.Tab value="api-access">1. System Credentials</Tabs.Tab>
                 <Tabs.Tab value="integrations">2. Publish</Tabs.Tab>
                 <Tabs.Tab value="directory">3. Discover</Tabs.Tab>
                 <Tabs.Tab value="my-grants">4. My Connections</Tabs.Tab>

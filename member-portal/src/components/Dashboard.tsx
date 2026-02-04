@@ -258,17 +258,16 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
             }
             title={
               <Group gap="xs">
-                <Text fw={600}>Step 1: API Keys</Text>
+                <Text fw={600}>Step 1: System Credentials</Text>
                 <Badge size="xs" color="gray">
-                  Tab: "1. API Keys"
+                  Tab: "1. System Credentials"
                 </Badge>
               </Group>
             }
           >
             <Text c="dimmed" size="sm" mt={4}>
-              Create M2M API credentials for your backend systems. These are OAuth 2.0 client
-              credentials that your TMS, ERP, or other systems use to authenticate when calling
-              endpoints.
+              Create OAuth 2.0 client credentials for your backend systems. Your TMS, ERP, or other
+              systems use these credentials to securely authenticate when calling CTN endpoints.
             </Text>
           </Timeline.Item>
 
@@ -332,8 +331,8 @@ export const Dashboard: React.FC<ComponentProps> = ({ memberData }) => {
             }
           >
             <Text c="dimmed" size="sm" mt={4}>
-              View all endpoints you've been granted access to. Use your API Keys (from Step 1) to
-              authenticate your systems and start exchanging data with connected endpoints.
+              View all endpoints you've been granted access to. Use your System Credentials (from
+              Step 1) to authenticate and start exchanging data with connected endpoints.
             </Text>
           </Timeline.Item>
         </Timeline>

@@ -41,9 +41,10 @@ export const APIAccessView: React.FC<APIAccessViewProps> = ({
     <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
       <div className="page-header">
         <div>
-          <h2>Step 1: API Keys</h2>
+          <h2>Step 1: System Credentials</h2>
           <p className="page-subtitle">
-            Create credentials for your backend systems to authenticate with CTN endpoints
+            Create OAuth 2.0 credentials for your backend systems to securely authenticate with CTN
+            endpoints
           </p>
         </div>
       </div>
