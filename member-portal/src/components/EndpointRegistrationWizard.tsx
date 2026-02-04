@@ -8,6 +8,7 @@ import {
   List,
   Loader,
   Paper,
+  Radio,
   Select,
   Stack,
   Stepper,
@@ -21,6 +22,7 @@ import { notifications } from '@mantine/notifications';
 import {
   IconAlertCircle,
   IconCheck,
+  IconCloudUpload,
   IconKey,
   IconLink,
   IconRocket,
@@ -36,12 +38,15 @@ interface EndpointRegistrationWizardProps {
   onCancel: () => void;
 }
 
+type AccessModel = 'open' | 'restricted' | 'private';
+
 interface EndpointData {
   endpoint_name: string;
   endpoint_url: string;
   endpoint_description: string;
   data_category: string;
   endpoint_type: string;
+  access_model: AccessModel;
 }
 
 interface TestResults {
@@ -81,6 +86,7 @@ export function EndpointRegistrationWizard({
       endpoint_description: '',
       data_category: 'DATA_EXCHANGE',
       endpoint_type: 'REST_API',
+      access_model: 'open',
     },
     validate: {
       endpoint_name: (value) => (value.length === 0 ? 'Name is required' : null),
@@ -155,7 +161,8 @@ export function EndpointRegistrationWizard({
       }
     } catch (error: any) {
       console.error('Error verifying endpoint:', error);
-      const errorMessage = error?.response?.data?.error || error?.message || 'Failed to verify endpoint';
+      const errorMessage =
+        error?.response?.data?.error || error?.message || 'Failed to verify endpoint';
       const hint = error?.response?.data?.hint;
 
       notifications.show({
@@ -200,23 +207,52 @@ export function EndpointRegistrationWizard({
     }
   };
 
-  // Step 4: Activate endpoint
-  const handleActivateEndpoint = async () => {
+  // Step 4: Publish endpoint to CTN Directory
+  const handlePublishEndpoint = async () => {
     if (!endpointId) return;
 
     setLoading(true);
     try {
-      // Activate endpoint using api-client
+      // Publish endpoint using api-client (this also activates it)
+      await apiClient.endpoints.publish(endpointId);
+
+      notifications.show({
+        title: 'Endpoint Published',
+        message: 'Your endpoint is now live in the CTN Directory!',
+        color: 'green',
+        icon: <IconCloudUpload size={16} />,
+      });
+
+      // Move to completion screen instead of closing immediately
+      setActive(4);
+    } catch (error) {
+      console.error('Error publishing endpoint:', error);
+      notifications.show({
+        title: 'Publish Failed',
+        message: error instanceof Error ? error.message : 'Failed to publish endpoint',
+        color: 'red',
+        icon: <IconAlertCircle size={16} />,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 4 (alternative): Just activate without publishing (keep as draft)
+  const handleActivateOnly = async () => {
+    if (!endpointId) return;
+
+    setLoading(true);
+    try {
       await apiClient.endpoints.activateEndpoint(endpointId);
 
       notifications.show({
         title: 'Endpoint Activated',
-        message: 'Your endpoint is now active and ready to use.',
-        color: 'green',
+        message: 'Your endpoint is active but not published. You can publish it later.',
+        color: 'blue',
         icon: <IconRocket size={16} />,
       });
 
-      // Move to completion screen instead of closing immediately
       setActive(4);
     } catch (error) {
       console.error('Error activating endpoint:', error);
@@ -290,6 +326,31 @@ export function EndpointRegistrationWizard({
               {...form.getInputProps('endpoint_type')}
             />
 
+            <Radio.Group
+              label="Access Model"
+              description="Control who can request access to this endpoint once published"
+              required
+              {...form.getInputProps('access_model')}
+            >
+              <Stack gap="xs" mt="xs">
+                <Radio
+                  value="open"
+                  label="Open"
+                  description="Any CTN member can access immediately (auto-approve)"
+                />
+                <Radio
+                  value="restricted"
+                  label="Restricted"
+                  description="Access requires your approval for each request"
+                />
+                <Radio
+                  value="private"
+                  label="Private"
+                  description="Invitation-only, not visible in directory"
+                />
+              </Stack>
+            </Radio.Group>
+
             <Group justify="flex-end" mt="md">
               <Button variant="default" onClick={onCancel}>
                 Cancel
@@ -362,7 +423,11 @@ export function EndpointRegistrationWizard({
               <Button variant="default" onClick={() => setActive(0)}>
                 Back
               </Button>
-              <Button onClick={handleVerifyEndpoint} loading={loading} leftSection={<IconLink size={16} />}>
+              <Button
+                onClick={handleVerifyEndpoint}
+                loading={loading}
+                leftSection={<IconLink size={16} />}
+              >
                 Verify Endpoint
               </Button>
             </Group>
@@ -434,22 +499,85 @@ export function EndpointRegistrationWizard({
           </Stack>
         </Stepper.Step>
 
-        <Stepper.Step label="4. Activate" description="Final step" icon={<IconRocket size={18} />}>
+        <Stepper.Step label="4. Publish" description="Go live" icon={<IconCloudUpload size={18} />}>
           <Stack gap="md" mt="md">
             <Alert icon={<IconCheck size={16} />} title="Test Successful" color="green">
-              Your endpoint passed all tests and is ready to be activated.
+              Your endpoint passed all tests and is ready to be published!
             </Alert>
 
             <Paper withBorder p="md">
               <Stack gap="xs">
                 <Text size="sm" fw={500}>
-                  Ready for Activation
+                  Access Model:{' '}
+                  <Badge
+                    color={
+                      form.values.access_model === 'open'
+                        ? 'green'
+                        : form.values.access_model === 'restricted'
+                          ? 'yellow'
+                          : 'red'
+                    }
+                    variant="light"
+                  >
+                    {form.values.access_model}
+                  </Badge>
                 </Text>
                 <Text size="sm" c="dimmed">
-                  Click "Activate Endpoint" below to make this endpoint available for data exchange.
-                  Once activated, other members will be able to discover and communicate with this
-                  endpoint.
+                  {form.values.access_model === 'open' && (
+                    <>
+                      Any CTN member will be able to access this endpoint immediately upon request.
+                    </>
+                  )}
+                  {form.values.access_model === 'restricted' && (
+                    <>
+                      CTN members can request access, but you will need to approve each request
+                      before they can connect.
+                    </>
+                  )}
+                  {form.values.access_model === 'private' && (
+                    <>
+                      This endpoint will not be visible in the directory. Only invited members can
+                      access it.
+                    </>
+                  )}
                 </Text>
+              </Stack>
+            </Paper>
+
+            <Paper withBorder p="md">
+              <Stack gap="xs">
+                <Text size="sm" fw={500}>
+                  What happens when you publish?
+                </Text>
+                <List size="sm" mt="xs">
+                  <List.Item
+                    icon={
+                      <ThemeIcon size={16} radius="xl" color="blue">
+                        <IconCheck size={12} />
+                      </ThemeIcon>
+                    }
+                  >
+                    Your endpoint becomes visible in the CTN Directory
+                  </List.Item>
+                  <List.Item
+                    icon={
+                      <ThemeIcon size={16} radius="xl" color="blue">
+                        <IconCheck size={12} />
+                      </ThemeIcon>
+                    }
+                  >
+                    Other members can discover and request access
+                  </List.Item>
+                  <List.Item
+                    icon={
+                      <ThemeIcon size={16} radius="xl" color="blue">
+                        <IconCheck size={12} />
+                      </ThemeIcon>
+                    }
+                  >
+                    You can unpublish at any time from the Endpoints page
+                  </List.Item>
+                </List>
               </Stack>
             </Paper>
 
@@ -457,13 +585,18 @@ export function EndpointRegistrationWizard({
               <Button variant="default" onClick={() => setActive(2)}>
                 Back
               </Button>
-              <Button
-                onClick={handleActivateEndpoint}
-                loading={loading}
-                leftSection={<IconRocket size={16} />}
-              >
-                Activate Endpoint
-              </Button>
+              <Group gap="xs">
+                <Button variant="light" onClick={handleActivateOnly} loading={loading}>
+                  Activate Only (Draft)
+                </Button>
+                <Button
+                  onClick={handlePublishEndpoint}
+                  loading={loading}
+                  leftSection={<IconCloudUpload size={16} />}
+                >
+                  Publish to Directory
+                </Button>
+              </Group>
             </Group>
           </Stack>
         </Stepper.Step>
@@ -471,14 +604,28 @@ export function EndpointRegistrationWizard({
         <Stepper.Completed>
           <Stack gap="md" mt="md" align="center">
             <ThemeIcon size={60} radius="xl" color="green">
-              <IconCheck size={30} />
+              <IconCloudUpload size={30} />
             </ThemeIcon>
             <Text size="lg" fw={500}>
-              Endpoint Activated Successfully!
+              Endpoint Ready!
             </Text>
             <Text size="sm" c="dimmed" ta="center">
-              Your endpoint is now active and available for data exchange.
+              Your endpoint has been registered and is ready for data exchange.
+              <br />
+              You can manage its publication status from the Endpoints page.
             </Text>
+            <Paper withBorder p="md" w="100%">
+              <Stack gap="xs">
+                <Text size="sm" fw={500}>
+                  Next Steps:
+                </Text>
+                <List size="sm">
+                  <List.Item>View your endpoint in the Endpoints list</List.Item>
+                  <List.Item>Publish to make it visible in the CTN Directory</List.Item>
+                  <List.Item>Manage access requests from other members</List.Item>
+                </List>
+              </Stack>
+            </Paper>
             <Button onClick={onComplete} mt="md">
               Close
             </Button>

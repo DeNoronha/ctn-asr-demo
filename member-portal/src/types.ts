@@ -44,6 +44,9 @@ export interface Contact {
   dt_modified: string;
 }
 
+export type AccessModel = 'open' | 'restricted' | 'private';
+export type PublicationStatus = 'draft' | 'published' | 'unpublished';
+
 export interface Endpoint {
   legal_entity_endpoint_id: string;
   endpoint_name: string;
@@ -57,6 +60,13 @@ export interface Endpoint {
   is_active: boolean;
   activation_date?: string;
   deactivation_date?: string;
+  verification_status?: 'PENDING' | 'SENT' | 'VERIFIED' | 'FAILED' | 'EXPIRED';
+  verification_sent_at?: string;
+  verification_expires_at?: string;
+  // Lifecycle fields (CTN 6-phase model)
+  access_model?: AccessModel;
+  publication_status?: PublicationStatus;
+  published_at?: string;
   dt_created: string;
   dt_modified: string;
 }
