@@ -1,10 +1,5 @@
 import type axiosLib from "axios";
-import type {
-	Contact,
-	ContactRequest,
-	Endpoint,
-	UpdateContactRequest,
-} from "../types";
+import type { Contact, ContactRequest, UpdateContactRequest } from "../types";
 
 /**
  * Member Self-Service Endpoint
@@ -71,34 +66,8 @@ export class MemberEndpoint {
 		return data;
 	}
 
-	/**
-	 * Create endpoint for current member
-	 */
-	async createEndpoint(endpoint: any): Promise<Endpoint> {
-		const { data } = await this.axios.post<Endpoint>(
-			"/member/endpoints",
-			endpoint,
-		);
-		return data;
-	}
-
-	/**
-	 * Update endpoint for current member
-	 */
-	async updateEndpoint(endpointId: string, updates: any): Promise<Endpoint> {
-		const { data } = await this.axios.put<Endpoint>(
-			`/member/endpoints/${endpointId}`,
-			updates,
-		);
-		return data;
-	}
-
-	/**
-	 * Delete endpoint for current member
-	 */
-	async deleteEndpoint(endpointId: string): Promise<void> {
-		await this.axios.delete(`/member/endpoints/${endpointId}`);
-	}
+	// Note: Endpoint CRUD operations are handled via EndpointsEndpoint class
+	// using /v1/legal-entities/:id/endpoints and /v1/endpoints/:id routes
 
 	/**
 	 * Get current member's API tokens

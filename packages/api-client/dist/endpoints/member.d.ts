@@ -1,5 +1,5 @@
 import type axiosLib from "axios";
-import type { Contact, ContactRequest, Endpoint, UpdateContactRequest } from "../types";
+import type { Contact, ContactRequest, UpdateContactRequest } from "../types";
 /**
  * Member Self-Service Endpoint
  *
@@ -33,18 +33,6 @@ export declare class MemberEndpoint {
      * Get current member's endpoints
      */
     getEndpoints(): Promise<any>;
-    /**
-     * Create endpoint for current member
-     */
-    createEndpoint(endpoint: any): Promise<Endpoint>;
-    /**
-     * Update endpoint for current member
-     */
-    updateEndpoint(endpointId: string, updates: any): Promise<Endpoint>;
-    /**
-     * Delete endpoint for current member
-     */
-    deleteEndpoint(endpointId: string): Promise<void>;
     /**
      * Get current member's API tokens
      */

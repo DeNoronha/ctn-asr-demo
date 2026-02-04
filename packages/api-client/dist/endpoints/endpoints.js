@@ -66,9 +66,15 @@ export class EndpointsEndpoint {
      * Response on success: { message, verified: true, endpoint }
      * Response on failure: { message, verified: false, error, hint }
      */
-    async sendVerificationEmail(endpointId) {
+    async sendVerificationCallback(endpointId) {
         const { data } = await this.axios.post(`/endpoints/${endpointId}/send-verification`);
         return data;
+    }
+    /**
+     * @deprecated Use sendVerificationCallback instead
+     */
+    async sendVerificationEmail(endpointId) {
+        return this.sendVerificationCallback(endpointId);
     }
     /**
      * Step 3: Verify the token provided by user

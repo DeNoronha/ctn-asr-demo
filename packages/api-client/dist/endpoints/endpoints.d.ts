@@ -47,15 +47,22 @@ export declare class EndpointsEndpoint {
      * Response on success: { message, verified: true, endpoint }
      * Response on failure: { message, verified: false, error, hint }
      */
+    sendVerificationCallback(endpointId: string): Promise<{
+        message: string;
+        verified?: boolean;
+        endpoint?: Endpoint;
+        error?: string;
+        hint?: string;
+    }>;
+    /**
+     * @deprecated Use sendVerificationCallback instead
+     */
     sendVerificationEmail(endpointId: string): Promise<{
         message: string;
         verified?: boolean;
         endpoint?: Endpoint;
         error?: string;
         hint?: string;
-        mock?: boolean;
-        token?: string;
-        expires_at?: string;
     }>;
     /**
      * Step 3: Verify the token provided by user

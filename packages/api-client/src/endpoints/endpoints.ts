@@ -118,16 +118,12 @@ export class EndpointsEndpoint {
 	 * Response on success: { message, verified: true, endpoint }
 	 * Response on failure: { message, verified: false, error, hint }
 	 */
-	async sendVerificationEmail(endpointId: string): Promise<{
+	async sendVerificationCallback(endpointId: string): Promise<{
 		message: string;
 		verified?: boolean;
 		endpoint?: Endpoint;
 		error?: string;
 		hint?: string;
-		// Legacy fields (deprecated)
-		mock?: boolean;
-		token?: string;
-		expires_at?: string;
 	}> {
 		const { data } = await this.axios.post<{
 			message: string;
@@ -135,11 +131,21 @@ export class EndpointsEndpoint {
 			endpoint?: Endpoint;
 			error?: string;
 			hint?: string;
-			mock?: boolean;
-			token?: string;
-			expires_at?: string;
 		}>(`/endpoints/${endpointId}/send-verification`);
 		return data;
+	}
+
+	/**
+	 * @deprecated Use sendVerificationCallback instead
+	 */
+	async sendVerificationEmail(endpointId: string): Promise<{
+		message: string;
+		verified?: boolean;
+		endpoint?: Endpoint;
+		error?: string;
+		hint?: string;
+	}> {
+		return this.sendVerificationCallback(endpointId);
 	}
 
 	/**

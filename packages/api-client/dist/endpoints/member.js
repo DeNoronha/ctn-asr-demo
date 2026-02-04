@@ -49,26 +49,8 @@ export class MemberEndpoint {
         const { data } = await this.axios.get("/member-endpoints");
         return data;
     }
-    /**
-     * Create endpoint for current member
-     */
-    async createEndpoint(endpoint) {
-        const { data } = await this.axios.post("/member/endpoints", endpoint);
-        return data;
-    }
-    /**
-     * Update endpoint for current member
-     */
-    async updateEndpoint(endpointId, updates) {
-        const { data } = await this.axios.put(`/member/endpoints/${endpointId}`, updates);
-        return data;
-    }
-    /**
-     * Delete endpoint for current member
-     */
-    async deleteEndpoint(endpointId) {
-        await this.axios.delete(`/member/endpoints/${endpointId}`);
-    }
+    // Note: Endpoint CRUD operations are handled via EndpointsEndpoint class
+    // using /v1/legal-entities/:id/endpoints and /v1/endpoints/:id routes
     /**
      * Get current member's API tokens
      */
