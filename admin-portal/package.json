@@ -70,7 +70,7 @@
     "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.3.10",
     "@playwright/test": "^1.56.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/axios": "^0.9.36",
