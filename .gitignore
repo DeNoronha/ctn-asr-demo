@@ -21,9 +21,6 @@ build/
 # See: docs/LESSONS_LEARNED_BUILD_FAILURE_2025-11-14.md
 !packages/api-client/dist/
 
-# Azure
-.azure-pipelines/variables.secret.yml
-
 # Environment
 .env
 .env.local
