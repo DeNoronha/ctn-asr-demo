@@ -44,11 +44,14 @@ gh run list --branch main --limit 5
 
 ## Essential Documentation
 
-- **[~/Desktop/ROADMAP.md](~/Desktop/ROADMAP.md)** - Next actions and priorities (synced across devices)
-- **[CLAUDE.md](./CLAUDE.md)** - Way of working, agent registry, lessons learned
-- **[docs/COMPLETED_ACTIONS.md](./docs/COMPLETED_ACTIONS.md)** - Historical record of completed work
-- **[docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)** - Deployment instructions
-- **[docs/SECRET_ROTATION_GUIDE.md](./docs/SECRET_ROTATION_GUIDE.md)** - Security and secret management
+- **[docs/THREE_TIER_AUTHENTICATION.md](./docs/THREE_TIER_AUTHENTICATION.md)** - Authentication architecture (Azure AD + Keycloak M2M + RBAC)
+- **[docs/KEYCLOAK_M2M_AUTHENTICATION.md](./docs/KEYCLOAK_M2M_AUTHENTICATION.md)** - Machine-to-machine OAuth2 client credentials flow
+- **[docs/CLOUD_IAM_SETUP_GUIDE.md](./docs/CLOUD_IAM_SETUP_GUIDE.md)** - Cloud IAM (Keycloak) provider setup
+- **[docs/FRONT_DOOR_WAF_SETUP.md](./docs/FRONT_DOOR_WAF_SETUP.md)** - Azure Front Door + WAF configuration
+- **[docs/ENRICHMENT_ARCHITECTURE.md](./docs/ENRICHMENT_ARCHITECTURE.md)** - Data enrichment & verification flows
+- **[docs/OPERATIONAL_RUNBOOK.md](./docs/OPERATIONAL_RUNBOOK.md)** - Day-2 operations and troubleshooting
+- **[docs/CODING_STANDARDS.md](./docs/CODING_STANDARDS.md)** - Coding standards and conventions
+- **[database/asr_dev.sql](./database/asr_dev.sql)** - Database schema (source of truth)
 
 ## Common Commands
 
@@ -61,8 +64,11 @@ psql "host=psql-ctn-demo-asr-dev.postgres.database.azure.com port=5432 \
   dbname=asr_dev user=asradmin sslmode=require" \
   -f database/migrations/XXX_migration.sql
 
-# Build frontend
-cd web && npm run build
+# Build admin portal
+cd admin-portal && npm run build
+
+# Build member portal
+cd member-portal && npm run build
 
 # Build API
 cd api && npm run build
@@ -101,4 +107,4 @@ These systems have been extracted into separate repositories:
 
 ## Support
 
-See [docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md) for troubleshooting.
+See [docs/OPERATIONAL_RUNBOOK.md](./docs/OPERATIONAL_RUNBOOK.md) for troubleshooting and day-2 operations.
