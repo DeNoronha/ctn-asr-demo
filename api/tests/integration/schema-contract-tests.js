@@ -363,6 +363,12 @@ class SchemaContractTests {
 
 // Main execution
 async function main() {
+  if (!process.env.PGPASSWORD) {
+    console.error('ERROR: PGPASSWORD environment variable is required.');
+    console.error('See api/tests/integration/README.md for setup instructions.');
+    process.exit(1);
+  }
+
   // Database connection config
   const config = {
     database: {
@@ -370,7 +376,7 @@ async function main() {
       port: parseInt(process.env.PGPORT || '5432'),
       database: process.env.PGDATABASE || 'asr_dev',
       user: process.env.PGUSER || 'asradmin',
-      password: process.env.PGPASSWORD || 'TnRjBFn5o9uay5M',
+      password: process.env.PGPASSWORD,
       ssl: {
         rejectUnauthorized: false
       }

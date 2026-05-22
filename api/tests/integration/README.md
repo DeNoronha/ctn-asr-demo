@@ -89,14 +89,14 @@ npm run build  # Automatically runs schema tests first
 Tests use PostgreSQL connection from environment:
 
 ```bash
-export PGHOST=psql-ctn-demo-asr-dev.postgres.database.azure.com
+export PGHOST=<db-host>
 export PGPORT=5432
-export PGDATABASE=asr_dev
-export PGUSER=asradmin
-export PGPASSWORD=TnRjBFn5o9uay5M
+export PGDATABASE=<db-name>
+export PGUSER=<db-user>
+export PGPASSWORD=<db-password>
 ```
 
-**Defaults:** If not set, tests use hardcoded dev database credentials.
+`PGPASSWORD` is required — the tests will fail to start if it is not set. Retrieve the dev password from your Azure Key Vault (`kv-ctn-demo-asr-dev`) or from a teammate.
 
 ## Test Output
 
