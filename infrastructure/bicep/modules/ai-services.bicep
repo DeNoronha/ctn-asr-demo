@@ -17,7 +17,6 @@ param tags object
 
 // Variables
 var documentIntelligenceName = 'di-${resourcePrefix}-${environment}'
-var cognitiveServicesName = 'cog-${resourcePrefix}-${environment}'
 
 // Azure AI Document Intelligence (Form Recognizer)
 resource documentIntelligence 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = {
@@ -41,35 +40,14 @@ resource documentIntelligence 'Microsoft.CognitiveServices/accounts@2023-10-01-p
   }
 }
 
-// Multi-service Cognitive Services account (for future AI features)
-resource cognitiveServices 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = {
-  name: cognitiveServicesName
-  location: location
-  tags: tags
-  kind: 'CognitiveServices'
-  sku: {
-    name: environment == 'prod' ? 'S0' : 'F0'
-  }
-  identity: {
-    type: 'SystemAssigned'
-  }
-  properties: {
-    customSubDomainName: cognitiveServicesName
-    publicNetworkAccess: 'Enabled'
-    networkAcls: {
-      defaultAction: 'Allow'
-    }
-    disableLocalAuth: false
-  }
-}
+// NOTE: A multi-service Microsoft.CognitiveServices/accounts (kind 'CognitiveServices')
+// account was removed here. It was unused (no consumers of its outputs), did not exist in
+// the live environment, and the dev SKU 'F0' is invalid for that account kind ('CognitiveServices'
+// has no free tier), which broke the infra deployment's preflight validation. Re-add a
+// correctly-tiered account (S0) when a feature actually needs it.
 
 // Outputs
 output documentIntelligenceName string = documentIntelligence.name
 output documentIntelligenceId string = documentIntelligence.id
 output documentIntelligenceEndpoint string = documentIntelligence.properties.endpoint
 output documentIntelligenceKey string = documentIntelligence.listKeys().key1
-
-output cognitiveServicesName string = cognitiveServices.name
-output cognitiveServicesId string = cognitiveServices.id
-output cognitiveServicesEndpoint string = cognitiveServices.properties.endpoint
-output cognitiveServicesKey string = cognitiveServices.listKeys().key1
