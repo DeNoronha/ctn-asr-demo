@@ -299,43 +299,30 @@ const insertTests = [
 
 ## CI/CD Integration
 
-### Azure DevOps Pipeline
+Schema contract tests run as a **dedicated job**, decoupled from the build. They are no
+longer wired into `npm run build` (a `prebuild` hook used to do this, which broke the Docker
+image build because the container has no database access).
+
+In `.github/workflows/api.yml` the `Schema Contract Tests` job runs before the Docker build
+and gates it:
 
 ```yaml
-- task: Npm@1
-  displayName: 'Build API with Schema Tests'
-  inputs:
-    command: 'custom'
-    workingDir: 'api'
-    customCommand: 'run build'
-  env:
-    PGHOST: $(POSTGRES_HOST)
-    PGPORT: $(POSTGRES_PORT)
-    PGDATABASE: $(POSTGRES_DATABASE)
-    PGUSER: $(POSTGRES_USER)
-    PGPASSWORD: $(POSTGRES_PASSWORD)
-```
-
-**Required Pipeline Variables:**
-- `POSTGRES_HOST` - Database hostname
-- `POSTGRES_PORT` - Database port (5432)
-- `POSTGRES_DATABASE` - Database name (asr_dev)
-- `POSTGRES_USER` - Database username
-- `POSTGRES_PASSWORD` - Database password (secret)
-
-### GitHub Actions
-
-```yaml
-- name: Build API with Schema Tests
+- name: Run Schema Contract Tests
   run: |
     cd api
-    npm run build
-  env:
-    PGHOST: ${{ secrets.POSTGRES_HOST }}
-    PGPORT: 5432
-    PGDATABASE: asr_dev
-    PGUSER: ${{ secrets.POSTGRES_USER }}
-    PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+    export PGHOST=psql-ctn-demo-asr-dev.postgres.database.azure.com
+    export PGPORT=5432
+    export PGDATABASE=asr_dev
+    export PGUSER=asradmin
+    export PGPASSWORD=$POSTGRES_PASSWORD   # fetched from Key Vault, see workflow
+    npm run test:schema-contracts
+```
+
+Run them locally the same way:
+
+```bash
+cd api
+PGHOST=... PGPORT=5432 PGDATABASE=... PGUSER=... PGPASSWORD=... npm run test:schema-contracts
 ```
 
 ## Benefits
