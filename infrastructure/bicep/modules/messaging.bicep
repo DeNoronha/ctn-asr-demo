@@ -45,6 +45,13 @@ resource communicationServices 'Microsoft.Communication/communicationServices@20
   tags: tags
   properties: {
     dataLocation: 'Europe'
+    // Link the Azure-managed email domain. This is the supported way to connect a
+    // domain to ACS — the previous child resource type
+    // Microsoft.Communication/communicationServices/domains does not exist and caused
+    // a ResourceTypeRegistrationNotFound preflight failure.
+    linkedDomains: [
+      emailDomain.id
+    ]
   }
 }
 
@@ -66,16 +73,6 @@ resource emailDomain 'Microsoft.Communication/emailServices/domains@2023-04-01' 
   properties: {
     domainManagement: 'AzureManaged'
     userEngagementTracking: 'Enabled'
-  }
-}
-
-// Link Communication Services with Email Service
-resource emailServiceLink 'Microsoft.Communication/communicationServices/domains@2023-04-01' = {
-  parent: communicationServices
-  name: emailDomain.name
-  location: 'global'
-  properties: {
-    domainManagement: 'AzureManaged'
   }
 }
 
