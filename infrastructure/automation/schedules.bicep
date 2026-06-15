@@ -17,6 +17,15 @@ param stopHour int = 20  // 20:00 CET
 @description('Start time (hour in 24h format, CET timezone)')
 param startHour int = 8  // 08:00 CET
 
+// UTC offset that is in effect for W. Europe at the moment of deployment.
+// Azure locks the recurring wall-clock time to the first occurrence, then keeps it
+// DST-aware via timeZone. So this offset only needs to be correct for the *first* run:
+//   - Summer (CEST, ~late Mar–late Oct): +02:00
+//   - Winter (CET): +01:00
+// Get it wrong and every run lands one hour off until redeployed.
+@description('UTC offset in effect for W. Europe at deploy time (+02:00 summer / +01:00 winter)')
+param localUtcOffset string = '+02:00'
+
 // Reference existing automation account
 resource automationAccount 'Microsoft.Automation/automationAccounts@2023-11-01' existing = {
   name: 'aa-${resourcePrefix}-${environment}'
@@ -46,7 +55,7 @@ resource stopSchedule 'Microsoft.Automation/automationAccounts/schedules@2023-11
   name: 'StopPostgreSQL-Evening'
   properties: {
     description: 'Stop PostgreSQL at 20:00 CET (Mon-Fri)'
-    startTime: '${tomorrowDate}T${padLeft(stopHour, 2, '0')}:00:00+01:00'
+    startTime: '${tomorrowDate}T${padLeft(stopHour, 2, '0')}:00:00${localUtcOffset}'
     frequency: 'Week'
     interval: 1
     timeZone: 'W. Europe Standard Time'
@@ -62,7 +71,7 @@ resource startSchedule 'Microsoft.Automation/automationAccounts/schedules@2023-1
   name: 'StartPostgreSQL-Morning'
   properties: {
     description: 'Start PostgreSQL at 08:00 CET (Mon-Fri)'
-    startTime: '${tomorrowDate}T${padLeft(startHour, 2, '0')}:00:00+01:00'
+    startTime: '${tomorrowDate}T${padLeft(startHour, 2, '0')}:00:00${localUtcOffset}'
     frequency: 'Week'
     interval: 1
     timeZone: 'W. Europe Standard Time'
@@ -72,10 +81,15 @@ resource startSchedule 'Microsoft.Automation/automationAccounts/schedules@2023-1
   }
 }
 
+// Salt for the jobSchedule GUIDs. Azure Automation keeps deleted jobSchedule IDs reserved
+// for a while, so reusing the same derived GUID after a delete/recreate fails with
+// "A jobSchedule with same id already exists." Bump this salt to force fresh GUIDs.
+var jobScheduleSalt = 'weekday-v3'
+
 // Link schedules to runbooks
 resource stopJobSchedule 'Microsoft.Automation/automationAccounts/jobSchedules@2023-11-01' = {
   parent: automationAccount
-  name: guid(automationAccount.id, stopSchedule.name, stopRunbook.name)
+  name: guid(automationAccount.id, stopSchedule.name, stopRunbook.name, jobScheduleSalt)
   properties: {
     runbook: {
       name: stopRunbook.name
@@ -88,7 +102,7 @@ resource stopJobSchedule 'Microsoft.Automation/automationAccounts/jobSchedules@2
 
 resource startJobSchedule 'Microsoft.Automation/automationAccounts/jobSchedules@2023-11-01' = {
   parent: automationAccount
-  name: guid(automationAccount.id, startSchedule.name, startRunbook.name)
+  name: guid(automationAccount.id, startSchedule.name, startRunbook.name, jobScheduleSalt)
   properties: {
     runbook: {
       name: startRunbook.name
