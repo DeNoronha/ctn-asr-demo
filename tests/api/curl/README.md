@@ -394,39 +394,6 @@ curl -X DELETE \
 
 These scripts can be used in CI/CD pipelines:
 
-### Azure DevOps Pipeline Example
-
-```yaml
-- task: Bash@3
-  displayName: 'Run API Tests'
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Get token from service principal
-      export AUTH_TOKEN=$(az account get-access-token --resource api://$(API_CLIENT_ID) --query accessToken -o tsv)
-
-      # Run all tests using test runner
-      cd api/tests
-      ./run-all-tests.sh
-```
-
-**Alternative (individual tests):**
-```yaml
-- task: Bash@3
-  displayName: 'Run API Tests'
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Get token from service principal
-      export AUTH_TOKEN=$(az account get-access-token --resource api://$(API_CLIENT_ID) --query accessToken -o tsv)
-
-      # Run tests individually
-      cd api/tests
-      ./identifier-crud-test.sh
-      ./contact-crud-test.sh
-      ./address-update-test.sh
-```
-
 ### GitHub Actions Example
 
 ```yaml
@@ -670,7 +637,7 @@ Duration: 45.23s
 
 ### CI/CD Integration
 
-Results are saved as JSON artifacts for pipeline analysis. See `.azure-pipelines/api-tests.yml` for configuration.
+Results are saved as JSON artifacts for pipeline analysis. See `.github/workflows/api.yml` for configuration.
 
 ### Extending
 

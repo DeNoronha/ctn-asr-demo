@@ -298,7 +298,7 @@ npm run test:api:ci
 
 ### CI/CD Pipeline
 
-Tests are configured to run automatically after API deployment via `.azure-pipelines/api-tests.yml`.
+Tests are configured to run automatically after API deployment via the `API Smoke Tests` job in `.github/workflows/api.yml`.
 
 ---
 

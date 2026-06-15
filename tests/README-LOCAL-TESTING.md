@@ -183,4 +183,4 @@ Azure DevOps pipelines set environment variables automatically:
 - `API_URL`: Set to deployed Container App FQDN
 - `PLAYWRIGHT_BASE_URL`: Set to deployed Static Web App URL
 
-See `.azure-pipelines/*.yml` for pipeline-specific configurations.
+See `.github/workflows/*.yml` for pipeline-specific configurations.
