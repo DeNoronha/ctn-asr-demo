@@ -17,7 +17,6 @@ param tags object
 
 // Variables
 var storageAccountName = replace('st${resourcePrefix}${environment}', '-', '')
-var kvkStorageAccountName = replace('st${resourcePrefix}${environment}${uniqueString(resourceGroup().id)}', '-', '')
 var appInsightsName = 'ai-${resourcePrefix}-${environment}'
 var keyVaultName = replace('kv-${resourcePrefix}-${environment}', '-', '')
 // Consolidated Log Analytics workspace (renamed from log-ctn-demo-asr-dev to log-ctn-demo on Nov 20, 2025)
@@ -88,64 +87,9 @@ resource applicationDocumentsContainer 'Microsoft.Storage/storageAccounts/blobSe
   }
 }
 
-// Dedicated Storage Account for KVK Documents (separate for security isolation)
-resource kvkStorageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
-  name: kvkStorageAccountName
-  location: location
-  tags: union(tags, {
-    Purpose: 'KVK Document Storage'
-  })
-  sku: {
-    name: environment == 'prod' ? 'Standard_GRS' : 'Standard_LRS'
-  }
-  kind: 'StorageV2'
-  properties: {
-    minimumTlsVersion: 'TLS1_2'
-    supportsHttpsTrafficOnly: true
-    allowBlobPublicAccess: false
-    accessTier: 'Hot'
-    encryption: {
-      services: {
-        blob: {
-          enabled: true
-        }
-        file: {
-          enabled: true
-        }
-      }
-      keySource: 'Microsoft.Storage'
-    }
-    networkAcls: {
-      defaultAction: 'Allow'
-      bypass: 'AzureServices'
-    }
-  }
-}
-
-// KVK Storage Blob Services
-resource kvkBlobServices 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = {
-  parent: kvkStorageAccount
-  name: 'default'
-  properties: {
-    deleteRetentionPolicy: {
-      enabled: true
-      days: 90 // Longer retention for KVK documents
-    }
-    containerDeleteRetentionPolicy: {
-      enabled: true
-      days: 90
-    }
-  }
-}
-
-// KVK Documents Container
-resource kvkDocsContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
-  parent: kvkBlobServices
-  name: 'kvk-documents'
-  properties: {
-    publicAccess: 'None'
-  }
-}
+// NOTE: A second, dedicated KVK storage account (uniqueString-suffixed) was removed here.
+// It duplicated the kvk-documents container that already exists on the storage account
+// above, and the live environment runs a single storage account. Consolidated to one.
 
 // Log Analytics Workspace
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
@@ -205,9 +149,6 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
 output storageAccountName string = storageAccount.name
 output storageAccountId string = storageAccount.id
 output storageAccountKey string = storageAccount.listKeys().keys[0].value
-output kvkStorageAccountName string = kvkStorageAccount.name
-output kvkStorageAccountId string = kvkStorageAccount.id
-output kvkStorageAccountKey string = kvkStorageAccount.listKeys().keys[0].value
 output appInsightsInstrumentationKey string = appInsights.properties.InstrumentationKey
 output appInsightsConnectionString string = appInsights.properties.ConnectionString
 output keyVaultName string = keyVault.name

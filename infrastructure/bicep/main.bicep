@@ -126,7 +126,6 @@ module messaging './modules/messaging.bicep' = {
   scope: resourceGroup
   params: {
     environment: environment
-    location: location
     resourcePrefix: resourcePrefix
     tags: tags
   }
