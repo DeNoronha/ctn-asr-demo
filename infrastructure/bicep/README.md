@@ -418,49 +418,11 @@ az group delete \
 
 ## CI/CD Integration
 
-### Azure DevOps Pipeline
-
-```yaml
-# azure-pipelines-infrastructure.yml
-trigger:
-  branches:
-    include:
-      - main
-  paths:
-    include:
-      - infrastructure/bicep/**
-
-variables:
-  azureSubscription: 'CTN-Azure-Subscription'
-  location: 'westeurope'
-  resourcePrefix: 'ctn-asr'
-
-stages:
-  - stage: DeployDev
-    displayName: 'Deploy to Development'
-    jobs:
-      - job: DeployInfrastructure
-        displayName: 'Deploy Bicep Templates'
-        pool:
-          vmImage: 'ubuntu-latest'
-        steps:
-          - task: AzureCLI@2
-            displayName: 'Deploy Infrastructure'
-            inputs:
-              azureSubscription: $(azureSubscription)
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                az deployment sub create \
-                  --name "ctn-asr-dev-$(Build.BuildId)" \
-                  --location $(location) \
-                  --template-file infrastructure/bicep/main.bicep \
-                  --parameters \
-                    environment=dev \
-                    location=$(location) \
-                    resourcePrefix=$(resourcePrefix) \
-                    databaseAdminPassword="$(DB_ADMIN_PASSWORD)"
-```
+Infrastructure is deployed via GitHub Actions. The workflow
+`.github/workflows/bicep-infrastructure.yml` runs `what-if` on every push that touches
+`infrastructure/bicep/**` and deploys `main.bicep` at subscription scope on `main`. It
+authenticates with the `AZURE_CREDENTIALS` secret and reads the database password from the
+`DATABASE_ADMIN_PASSWORD` secret — see that workflow for the authoritative configuration.
 
 ## Security Best Practices
 

@@ -349,23 +349,23 @@ cd tests/api/curl
 
 ## CI/CD Integration
 
-### Azure DevOps Pipeline
+### GitHub Actions
 
 ```yaml
 # Unit tests
-- script: cd api && npm test
-  displayName: 'Run API unit tests'
+- name: Run API unit tests
+  run: cd api && npm test
 
 # Integration tests
-- script: cd api && npm run test:api:ci
-  displayName: 'Run API integration tests'
+- name: Run API integration tests
+  run: cd api && npm run test:api:ci
 
 # E2E tests (after deployment)
-- script: |
+- name: Run Admin Portal E2E tests
+  run: |
     cd admin-portal
     npx playwright install --with-deps
     npm run test:e2e
-  displayName: 'Run Admin Portal E2E tests'
 ```
 
 ---

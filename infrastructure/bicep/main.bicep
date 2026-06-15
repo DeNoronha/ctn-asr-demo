@@ -45,7 +45,7 @@ module coreInfrastructure './modules/core-infrastructure.bicep' = {
 
 // NOTE: Function App module removed - migrated to Container Apps (November 19, 2025)
 // See: infrastructure/bicep/container-app.bicep for Container Apps deployment
-// Deployment handled by: .azure-pipelines/container-app-api.yml
+// Deployment handled by: .github/workflows/api.yml
 
 // Deploy static web apps
 module staticWebApps './modules/static-web-apps.bicep' = {
