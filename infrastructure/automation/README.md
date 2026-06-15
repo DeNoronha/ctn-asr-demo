@@ -4,18 +4,21 @@ Automatically stops and starts the PostgreSQL Flexible Server to save costs outs
 
 ## Schedule
 
-| Action | Time (CET) | Time (UTC) |
-|--------|------------|------------|
-| Stop   | 20:00      | 19:00      |
-| Start  | 08:00      | 07:00      |
+Runs **Monday–Friday only**. The server stays stopped all weekend.
+
+| Action | Time (CET) | Days      |
+|--------|------------|-----------|
+| Stop   | 20:00      | Mon–Fri   |
+| Start  | 08:00      | Mon–Fri   |
 
 ## Cost Savings
 
-The PostgreSQL Flexible Server is billed per hour while running. By stopping it for 12 hours daily (20:00-08:00) and on weekends, you save approximately:
+The PostgreSQL Flexible Server is billed per hour while running. With this schedule the
+server only runs ~12 hours on weekdays and is off the entire weekend:
 
-- **Weekday savings**: 12 hours × 5 days = 60 hours/week
-- **Weekend savings**: 48 hours/week (if manually stopped Friday evening)
-- **Monthly savings**: ~50% of compute costs
+- **Weekday off-hours**: 12 hours × 5 days = 60 hours/week
+- **Weekend**: 48 hours/week (Fri 20:00 → Mon 08:00, fully automatic)
+- **Monthly savings**: ~60% of compute costs (server runs ~60 of 168 hours/week)
 
 ## Files
 
@@ -28,11 +31,21 @@ The PostgreSQL Flexible Server is billed per hour while running. By stopping it 
 
 ## Deployment
 
+Deployed automatically via the **Infrastructure - PostgreSQL Automation** GitHub Actions
+workflow (`.github/workflows/postgres-automation.yml`) on changes to this directory, or run
+manually via *workflow_dispatch*.
+
+To deploy locally:
+
 ```bash
-cd /Users/ramon/DEV/CTN-ASR/infrastructure/automation
+cd infrastructure/automation
 chmod +x deploy.sh
 ./deploy.sh
 ```
+
+The deploy creates the Automation Account, runbooks, the **Contributor role assignment** on
+the PostgreSQL server (required — without it the runbooks fail and the DB runs 24/7), and the
+weekday schedules.
 
 ## Manual Control
 

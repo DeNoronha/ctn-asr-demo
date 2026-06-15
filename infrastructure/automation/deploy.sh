@@ -46,13 +46,27 @@ PRINCIPAL_ID=$(az automation account show \
 echo "  Principal ID: $PRINCIPAL_ID"
 
 echo ""
-echo "Step 3: Assigning Contributor role to PostgreSQL server..."
-az role assignment create \
+echo "Step 3: Verifying Contributor role on PostgreSQL server..."
+# The role assignment is created by automation-account.bicep (Step 1). We verify it here
+# instead of silently swallowing errors — a missing role makes Start/Stop runbooks fail and
+# the server keeps running 24/7. If it's missing (e.g. deployer lacked rights), create it loudly.
+PG_SCOPE="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.DBforPostgreSQL/flexibleServers/$POSTGRES_SERVER"
+ROLE_COUNT=$(az role assignment list \
     --assignee-object-id "$PRINCIPAL_ID" \
-    --assignee-principal-type ServicePrincipal \
-    --role "Contributor" \
-    --scope "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.DBforPostgreSQL/flexibleServers/$POSTGRES_SERVER" \
-    2>/dev/null || echo "  Role assignment already exists (OK)"
+    --scope "$PG_SCOPE" \
+    --query "length([?roleDefinitionName=='Contributor'])" -o tsv)
+
+if [ "$ROLE_COUNT" -ge 1 ]; then
+    echo "  ✓ Contributor role present on $POSTGRES_SERVER"
+else
+    echo "  Role missing — creating Contributor assignment..."
+    az role assignment create \
+        --assignee-object-id "$PRINCIPAL_ID" \
+        --assignee-principal-type ServicePrincipal \
+        --role "Contributor" \
+        --scope "$PG_SCOPE"
+    echo "  ✓ Contributor role created"
+fi
 
 echo ""
 echo "Step 4: Importing PowerShell modules..."
