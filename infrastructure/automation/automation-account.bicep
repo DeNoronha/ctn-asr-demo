@@ -95,25 +95,15 @@ resource subscriptionIdVar 'Microsoft.Automation/automationAccounts/variables@20
   }
 }
 
-// Reference the PostgreSQL server this account manages, so we can grant access to it
-resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-03-01-preview' existing = {
-  name: postgresServerName
-}
-
-// Grant the Automation Account's managed identity Contributor on the PostgreSQL server.
-// Without this the Start/Stop runbooks fail at Set-AzContext/Get-AzPostgreSqlFlexibleServer
-// and the server silently keeps running 24/7. Codified here so it cannot drift away.
-var contributorRoleId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-46d3c1a936ae')
-
-resource postgresContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: postgresServer
-  name: guid(postgresServer.id, automationAccount.id, contributorRoleId)
-  properties: {
-    principalId: automationAccount.identity.principalId
-    roleDefinitionId: contributorRoleId
-    principalType: 'ServicePrincipal'
-  }
-}
+// NOTE: The Automation Account's managed identity needs Contributor on the PostgreSQL
+// server (otherwise the Start/Stop runbooks fail at Set-AzContext /
+// Get-AzPostgreSqlFlexibleServer and the server silently keeps running 24/7).
+//
+// That role assignment is intentionally NOT created here. The CI service principal only
+// has Contributor, which cannot create role assignments (needs Owner / User Access
+// Administrator). So the assignment is granted out-of-band by an Owner and verified by
+// deploy.sh (Step 3), which fails loudly if it is missing. Keeping it out of this template
+// lets the automation deploy run with a least-privilege CI identity.
 
 // Outputs
 output automationAccountName string = automationAccount.name
