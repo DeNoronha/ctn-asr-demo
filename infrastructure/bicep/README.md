@@ -4,41 +4,46 @@
 
 This directory contains Bicep templates for deploying the complete infrastructure for the CTN Association Register system on Azure. The infrastructure is modular, environment-aware, and follows Azure best practices.
 
+> **Important — this is a greenfield/reference definition, not 1:1 with the running dev
+> environment.** The live `dev` environment (`rg-ctn-demo-asr-dev`) was built up over time with
+> inconsistent resource names (e.g. `psql-ctn-demo-asr-dev`, `doc-intel-ctn-asr-dev`,
+> `log-ctn-demo`), so this template does **not** reproduce those exact names. Because of that
+> the **Deploy Infrastructure** job in `.github/workflows/bicep-infrastructure.yml` is
+> `workflow_dispatch`-only: every push runs `what-if` validation, but an actual deploy is
+> manual. **Always review the `what-if` output before deploying** — against the live RG it
+> would update existing resources, and against a fresh RG it provisions a clean parallel stack.
+
 ## Architecture
 
 The infrastructure is organized into the following modules:
 
 1. **Core Infrastructure** (`modules/core-infrastructure.bicep`)
    - Storage Account with blob containers
-   - App Service Plan
    - Application Insights
    - Log Analytics Workspace
    - Azure Key Vault
 
-2. **Function App** (`modules/function-app.bicep`)
-   - Azure Functions (Node.js 20)
-   - Backend API with CORS configuration
-   - Managed identity enabled
-
-3. **Static Web Apps** (`modules/static-web-apps.bicep`)
+2. **Static Web Apps** (`modules/static-web-apps.bicep`)
    - Admin Portal
    - Member Portal
    - Custom domains (prod only)
 
-4. **Database** (`modules/database.bicep`)
+3. **Database** (`modules/database.bicep`)
    - Azure Database for PostgreSQL Flexible Server
    - Automated backups
    - High availability (prod)
    - Firewall rules
 
-5. **AI Services** (`modules/ai-services.bicep`)
+4. **AI Services** (`modules/ai-services.bicep`)
    - Azure AI Document Intelligence
-   - Cognitive Services (multi-service)
 
-6. **Messaging** (`modules/messaging.bicep`)
-   - Event Grid Topic
+5. **Messaging** (`modules/messaging.bicep`)
    - Azure Communication Services
    - Email Service
+
+> The API runs on **Azure Container Apps** (`container-app.bicep`), deployed by
+> `.github/workflows/api.yml` — the former Azure Functions app was retired. An Event Grid
+> topic and a multi-service Cognitive Services account were also removed (unused).
 
 ## Prerequisites
 
@@ -178,133 +183,41 @@ az deployment group create \
 
 ## Post-Deployment Configuration
 
-### 1. Configure Function App Environment Variables
+The API runs on **Azure Container Apps** and is configured by `.github/workflows/api.yml`
+(image build + `az containerapp` deploy). Its connection strings and keys (Postgres, storage,
+Document Intelligence, App Insights) live as **Container App secrets/env vars**, not in this
+template. The steps below are the one-off, out-of-band configuration after a fresh infra deploy.
 
-After deployment, add these additional environment variables to the Function App:
-
-```bash
-FUNCTION_APP_NAME="fa-ctn-asr-dev"
-RESOURCE_GROUP="rg-ctn-asr-dev"
-
-# Get output values from deployment
-POSTGRES_HOST=$(az deployment group show \
-  --resource-group ${RESOURCE_GROUP} \
-  --name database-deployment \
-  --query properties.outputs.serverFqdn.value -o tsv)
-
-POSTGRES_DB=$(az deployment group show \
-  --resource-group ${RESOURCE_GROUP} \
-  --name database-deployment \
-  --query properties.outputs.databaseName.value -o tsv)
-
-DOCUMENT_INTELLIGENCE_ENDPOINT=$(az deployment group show \
-  --resource-group ${RESOURCE_GROUP} \
-  --name ai-services-deployment \
-  --query properties.outputs.documentIntelligenceEndpoint.value -o tsv)
-
-DOCUMENT_INTELLIGENCE_KEY=$(az deployment group show \
-  --resource-group ${RESOURCE_GROUP} \
-  --name ai-services-deployment \
-  --query properties.outputs.documentIntelligenceKey.value -o tsv)
-
-EVENT_GRID_ENDPOINT=$(az deployment group show \
-  --resource-group ${RESOURCE_GROUP} \
-  --name messaging-deployment \
-  --query properties.outputs.eventGridTopicEndpoint.value -o tsv)
-
-EVENT_GRID_KEY=$(az deployment group show \
-  --resource-group ${RESOURCE_GROUP} \
-  --name messaging-deployment \
-  --query properties.outputs.eventGridTopicKey.value -o tsv)
-
-COMMUNICATION_SERVICES_CONNECTION=$(az deployment group show \
-  --resource-group ${RESOURCE_GROUP} \
-  --name messaging-deployment \
-  --query properties.outputs.communicationServicesConnectionString.value -o tsv)
-
-EMAIL_SENDER_ADDRESS=$(az deployment group show \
-  --resource-group ${RESOURCE_GROUP} \
-  --name messaging-deployment \
-  --query properties.outputs.emailSenderAddress.value -o tsv)
-
-# Update Function App settings
-az functionapp config appsettings set \
-  --name ${FUNCTION_APP_NAME} \
-  --resource-group ${RESOURCE_GROUP} \
-  --settings \
-    POSTGRES_HOST="${POSTGRES_HOST}" \
-    POSTGRES_PORT="5432" \
-    POSTGRES_DATABASE="${POSTGRES_DB}" \
-    POSTGRES_USER="ctnadmin" \
-    POSTGRES_PASSWORD="${DB_ADMIN_PASSWORD}" \
-    DOCUMENT_INTELLIGENCE_ENDPOINT="${DOCUMENT_INTELLIGENCE_ENDPOINT}" \
-    DOCUMENT_INTELLIGENCE_KEY="${DOCUMENT_INTELLIGENCE_KEY}" \
-    EVENT_GRID_TOPIC_ENDPOINT="${EVENT_GRID_ENDPOINT}" \
-    EVENT_GRID_TOPIC_KEY="${EVENT_GRID_KEY}" \
-    COMMUNICATION_SERVICES_CONNECTION_STRING="${COMMUNICATION_SERVICES_CONNECTION}" \
-    EMAIL_SENDER_ADDRESS="${EMAIL_SENDER_ADDRESS}" \
-    MEMBER_PORTAL_URL="https://calm-pebble-0b2ffb603-12.westeurope.5.azurestaticapps.net"
-```
-
-### 2. Configure Static Web Apps
-
-Get deployment tokens:
+### 1. Static Web App deployment tokens
 
 ```bash
-# Admin Portal deployment token
 az staticwebapp secrets list \
-  --name ctn-admin-portal \
-  --resource-group rg-ctn-asr-dev \
-  --query properties.apiKey -o tsv
-
-# Member Portal deployment token
-az staticwebapp secrets list \
-  --name ctn-member-portal \
-  --resource-group rg-ctn-asr-dev \
+  --name <static-web-app-name> \
+  --resource-group rg-ctn-demo-asr-dev \
   --query properties.apiKey -o tsv
 ```
 
-Add these tokens to your CI/CD pipeline (Azure DevOps).
+Store the tokens as **GitHub Actions secrets** (consumed by `admin-portal.yml` / `member-portal.yml`).
 
-### 3. Initialize Database Schema
-
-```bash
-# Connect to PostgreSQL
-psql "host=${POSTGRES_HOST} port=5432 dbname=${POSTGRES_DB} user=ctnadmin password=${DB_ADMIN_PASSWORD} sslmode=require"
-
-# Run schema initialization script
-\i api/database/schema.sql
-```
-
-### 4. Configure Event Grid Subscriptions
+### 2. Initialize the database schema
 
 ```bash
-# Get EventGridHandler webhook URL from Function App
-WEBHOOK_URL="https://fa-ctn-asr-dev.azurewebsites.net/api/EventGridHandler"
-
-# Create Event Grid subscription
-az eventgrid event-subscription create \
-  --name event-handler-subscription \
-  --source-resource-id $(az eventgrid topic show \
-    --name egt-ctn-asr-dev \
-    --resource-group rg-ctn-asr-dev \
-    --query id -o tsv) \
-  --endpoint ${WEBHOOK_URL} \
-  --endpoint-type webhook \
-  --included-event-types \
-    Member.Application.Created \
-    Member.Activated \
-    Member.Suspended \
-    Member.Terminated \
-    Token.Issued
+psql "host=<postgres-fqdn> port=5432 dbname=<db> user=<admin> sslmode=require" \
+  -f database/schema/<schema>.sql
 ```
+
+### 3. Container App secrets
+
+The API reads its credentials from Container App secrets (`postgres-password`,
+`azure-storage-connection-string`, `doc-intelligence-key`, ...). Set or rotate them with
+`az containerapp secret set`, then reference them from the app's environment variables.
 
 ## Environment-Specific Configurations
 
 ### Development (dev)
 
 - **Cost-optimized** for development
-- SKUs: B1 App Service Plan, F0 AI Services, Burstable PostgreSQL
+- SKUs: F0 Document Intelligence, Burstable PostgreSQL (B-series), Container Apps consumption
 - Public network access enabled
 - Relaxed firewall rules
 - 30-day retention periods
@@ -319,7 +232,7 @@ az eventgrid event-subscription create \
 ### Production (prod)
 
 - **High availability and performance**
-- SKUs: P1v3 App Service Plan, S0 AI Services, General Purpose PostgreSQL
+- SKUs: S0 Document Intelligence, General Purpose PostgreSQL, Container Apps (dedicated workload profile)
 - Zone-redundant PostgreSQL
 - Geo-redundant backups
 - Custom domains enabled
@@ -332,30 +245,33 @@ az eventgrid event-subscription create \
 |--------------|----------------|---------------|
 | Resource Group | `rg-{prefix}-{env}` | `rg-ctn-asr-dev` |
 | Storage Account | `st{prefix}{env}` | `stctnasrdev` |
-| Function App | `fa-{prefix}-{env}` | `fa-ctn-asr-dev` |
+| Container App | `ca-{prefix}-api-{env}` | `ca-ctn-asr-api-dev` |
 | PostgreSQL | `psql-{prefix}-{env}` | `psql-ctn-asr-dev` |
 | Static Web App | `{portal-name}` | `ctn-admin-portal` |
 | Document Intelligence | `di-{prefix}-{env}` | `di-ctn-asr-dev` |
-| Event Grid Topic | `egt-{prefix}-{env}` | `egt-ctn-asr-dev` |
 | Key Vault | `kv{prefix}{env}` | `kvctnasrdev` |
+
+> Note: the patterns above describe this template's naming. The live `dev` environment uses
+> some different names (see the greenfield note at the top).
 
 ## Cost Estimation
 
-### Development Environment (~€50-100/month)
+### Development Environment (~€15-25/month)
 
-- App Service Plan (B1): ~€12/month
-- PostgreSQL (Burstable B2s): ~€20/month
-- Storage Account: ~€5/month
-- AI Services (F0 Free tier): €0
-- Communication Services: Pay-per-use
+- Container Apps (consumption, scales low): ~€0-5/month
+- Container Registry (Basic): ~€4/month
+- PostgreSQL (Burstable B1ms, auto-stopped nights + weekends): ~€5-7/month
+- Storage Account: ~€1-5/month
+- Document Intelligence (F0 Free tier): €0
+- Communication Services / Email: Pay-per-use
 - Static Web Apps (Free): €0
 
 ### Production Environment (~€300-500/month)
 
-- App Service Plan (P1v3): ~€120/month
+- Container Apps (dedicated workload profile): ~€100/month
 - PostgreSQL (General Purpose D4s): ~€200/month
 - Storage Account: ~€10/month
-- AI Services (S0): ~€50/month
+- Document Intelligence (S0): ~€50/month
 - Communication Services: Pay-per-use
 - Static Web Apps (Free): €0
 - Zone redundancy costs
@@ -431,7 +347,7 @@ authenticates with the `AZURE_CREDENTIALS` secret and reads the database passwor
    - Reference Key Vault in parameters file
 
 2. **Enable Managed Identities**
-   - Function App uses managed identity
+   - Container App uses managed identity
    - Grant least-privilege access
 
 3. **Network Security**
