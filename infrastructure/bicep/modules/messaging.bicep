@@ -6,8 +6,6 @@
 @description('Environment name')
 param environment string
 
-@description('Azure region')
-param location string
 
 @description('Resource prefix')
 param resourcePrefix string
@@ -16,27 +14,12 @@ param resourcePrefix string
 param tags object
 
 // Variables
-var eventGridTopicName = 'egt-${resourcePrefix}-${environment}'
 var communicationServicesName = 'acs-${resourcePrefix}-${environment}'
 var emailServiceName = 'email-${resourcePrefix}-${environment}'
 
-// Event Grid Topic
-resource eventGridTopic 'Microsoft.EventGrid/topics@2023-12-15-preview' = {
-  name: eventGridTopicName
-  location: location
-  tags: tags
-  sku: {
-    name: 'Basic'
-  }
-  kind: 'Azure'
-  identity: {
-    type: 'SystemAssigned'
-  }
-  properties: {
-    inputSchema: 'EventGridSchema'
-    publicNetworkAccess: 'Enabled'
-  }
-}
+// NOTE: An Event Grid topic was removed here. Its only subscription was a dead webhook
+// (empty endpoint, left over from the decommissioned Function App), nothing consumed its
+// outputs, and the live topic has been deleted. Re-add if an event-driven consumer returns.
 
 // Communication Services for Email
 resource communicationServices 'Microsoft.Communication/communicationServices@2023-04-01' = {
@@ -89,11 +72,6 @@ resource emailDomain 'Microsoft.Communication/emailServices/domains@2023-04-01' 
 // }
 
 // Outputs
-output eventGridTopicName string = eventGridTopic.name
-output eventGridTopicId string = eventGridTopic.id
-output eventGridTopicEndpoint string = eventGridTopic.properties.endpoint
-output eventGridTopicKey string = eventGridTopic.listKeys().key1
-
 output communicationServicesName string = communicationServices.name
 output communicationServicesId string = communicationServices.id
 output communicationServicesConnectionString string = communicationServices.listKeys().primaryConnectionString
