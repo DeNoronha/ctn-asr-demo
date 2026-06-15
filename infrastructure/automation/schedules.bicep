@@ -37,29 +37,38 @@ resource startRunbook 'Microsoft.Automation/automationAccounts/runbooks@2023-11-
 var tomorrow = dateTimeAdd(baseTime, 'P1D')
 var tomorrowDate = substring(tomorrow, 0, 10) // Extract YYYY-MM-DD
 
-// Schedule - Stop at 20:00 CET
+// Weekdays only (Mon-Fri) - the database stays stopped all weekend to save cost
+var weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+
+// Schedule - Stop at 20:00 CET, weekdays only
 resource stopSchedule 'Microsoft.Automation/automationAccounts/schedules@2023-11-01' = {
   parent: automationAccount
   name: 'StopPostgreSQL-Evening'
   properties: {
-    description: 'Stop PostgreSQL at 20:00 CET'
+    description: 'Stop PostgreSQL at 20:00 CET (Mon-Fri)'
     startTime: '${tomorrowDate}T${padLeft(stopHour, 2, '0')}:00:00+01:00'
-    frequency: 'Day'
+    frequency: 'Week'
     interval: 1
     timeZone: 'W. Europe Standard Time'
+    advancedSchedule: {
+      weekDays: weekDays
+    }
   }
 }
 
-// Schedule - Start at 08:00 CET
+// Schedule - Start at 08:00 CET, weekdays only
 resource startSchedule 'Microsoft.Automation/automationAccounts/schedules@2023-11-01' = {
   parent: automationAccount
   name: 'StartPostgreSQL-Morning'
   properties: {
-    description: 'Start PostgreSQL at 08:00 CET'
+    description: 'Start PostgreSQL at 08:00 CET (Mon-Fri)'
     startTime: '${tomorrowDate}T${padLeft(startHour, 2, '0')}:00:00+01:00'
-    frequency: 'Day'
+    frequency: 'Week'
     interval: 1
     timeZone: 'W. Europe Standard Time'
+    advancedSchedule: {
+      weekDays: weekDays
+    }
   }
 }
 

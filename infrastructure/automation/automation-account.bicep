@@ -95,6 +95,26 @@ resource subscriptionIdVar 'Microsoft.Automation/automationAccounts/variables@20
   }
 }
 
+// Reference the PostgreSQL server this account manages, so we can grant access to it
+resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-03-01-preview' existing = {
+  name: postgresServerName
+}
+
+// Grant the Automation Account's managed identity Contributor on the PostgreSQL server.
+// Without this the Start/Stop runbooks fail at Set-AzContext/Get-AzPostgreSqlFlexibleServer
+// and the server silently keeps running 24/7. Codified here so it cannot drift away.
+var contributorRoleId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-46d3c1a936ae')
+
+resource postgresContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: postgresServer
+  name: guid(postgresServer.id, automationAccount.id, contributorRoleId)
+  properties: {
+    principalId: automationAccount.identity.principalId
+    roleDefinitionId: contributorRoleId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 // Outputs
 output automationAccountName string = automationAccount.name
 output automationAccountPrincipalId string = automationAccount.identity.principalId

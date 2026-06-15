@@ -1,0 +1,34 @@
+# PostgreSQL Start/Stop Automation
+# Deploys the Azure Automation account, runbooks, RBAC and schedules that stop the
+# PostgreSQL Flexible Server outside office hours (Mon-Fri 20:00-08:00 CET, off all weekend).
+#
+# This was previously only deployable by manually running infrastructure/automation/deploy.sh,
+# which let the required role assignment silently drift away and the database run 24/7.
+
+name: Infrastructure - PostgreSQL Automation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infrastructure/automation/**'
+      - '.github/workflows/postgres-automation.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy PostgreSQL Automation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy automation (account, runbooks, RBAC, schedules)
+        working-directory: infrastructure/automation
+        run: |
+          chmod +x deploy.sh
+          ./deploy.sh
